@@ -1,0 +1,141 @@
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { renderApp } from '../src/ui/app.js';
+import { createSampleMailbox } from '../src/lib/sample.js';
+import { createDraftStore } from '../src/lib/drafts.js';
+import { memoryStorage } from '../src/lib/readstate.js';
+
+/**
+ * A desktop notification for new mail, and what its click opens. The
+ * Notification itself is a stub that records what was shown.
+ */
+
+const settle = (ms = 300) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const LATE = [
+  'From: Ana Petrova <ana@example.com>',
+  'To: sample@puter.com',
+  'Subject: Late arrival',
+  'Date: Mon, 17 Aug 2026 10:30:00 GMT',
+  'Content-Type: text/plain; charset=utf-8',
+  '',
+  'One more thing before the quarter closes.',
+].join('\r\n');
+
+let root;
+let mailbox;
+let shown;
+let hadFocus;
+
+class FakeNotification {
+  static permission = 'granted';
+
+  constructor(title, options) {
+    this.title = title;
+    this.options = options;
+    shown.push(this);
+  }
+
+  close() { this.closed = true; }
+}
+
+const mount = async () => {
+  mailbox = createSampleMailbox();
+  renderApp(root, {
+    ...mailbox,
+    sample: false,
+    account: { username: 'tester' },
+    drafts: createDraftStore('tester', memoryStorage()),
+    onCompose: () => {},
+  });
+  await settle();
+};
+
+const deliver = async (subject = 'Late arrival', raw = LATE, suffix = 'f') => {
+  const { fs, objectsPath } = mailbox;
+  const days = (await fs.readdir(objectsPath))
+    .filter((item) => item.is_dir)
+    .map((item) => item.name)
+    .sort();
+  const name = `ffffffff-ffff-7fff-8fff-fffffffffff${suffix}--${btoa(subject).replace(/=+$/, '')}`;
+  await fs.write(`${objectsPath}/${days[days.length - 1]}/${name}`, new Blob([raw]));
+  document.dispatchEvent(new Event('visibilitychange'));
+  await settle(700);
+};
+
+const openSubject = () => root.querySelector('.msg-subject')?.firstChild?.textContent;
+const reading = () => root.querySelector('.app-frame').classList.contains('reading');
+
+beforeEach(() => {
+  window.localStorage.clear();
+  window.localStorage.setItem('puter-mail:notify', '1');
+  shown = [];
+  window.Notification = FakeNotification;
+  hadFocus = document.hasFocus;
+  document.hasFocus = () => false;
+  root = document.createElement('div');
+  root.id = 'app';
+  document.body.append(root);
+});
+
+afterEach(() => {
+  root.remove();
+  delete window.Notification;
+  document.hasFocus = hadFocus;
+  document.querySelectorAll('.toast').forEach((node) => node.remove());
+  window.localStorage.clear();
+});
+
+describe('a new-mail notification', () => {
+  it('names the sender and the subject', async () => {
+    await mount();
+    await deliver();
+    expect(shown).toHaveLength(1);
+    expect(shown[0].options.body).toBe('Ana Petrova — Late arrival');
+  });
+
+  it('opens the message when clicked', async () => {
+    await mount();
+    await deliver();
+    expect(reading()).toBe(false);
+    shown[0].onclick();
+    await settle();
+    expect(reading()).toBe(true);
+    expect(openSubject()).toBe('Late arrival');
+    expect(shown[0].closed).toBe(true);
+  });
+
+  it('opens it out of another folder and a search', async () => {
+    await mount();
+    [...root.querySelectorAll('.nav-item')].find((n) => n.textContent.includes('Archive')).click();
+    await settle();
+    const input = root.querySelector('.search-input');
+    input.value = 'nothing-matches-this';
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    await settle(500);
+
+    await deliver();
+    shown[0].onclick();
+    await settle(500);
+
+    expect(root.querySelector('.nav-item[aria-current="true"]').textContent).toContain('Inbox');
+    expect(root.querySelector('.search-input').value).toBe('');
+    expect(openSubject()).toBe('Late arrival');
+  });
+
+  it('goes to the top of the inbox for several at once', async () => {
+    await mount();
+    const { fs, objectsPath } = mailbox;
+    const days = (await fs.readdir(objectsPath)).filter((i) => i.is_dir).map((i) => i.name).sort();
+    const day = days[days.length - 1];
+    await fs.write(`${objectsPath}/${day}/ffffffff-ffff-7fff-8fff-fffffffffffa--${btoa('First')}`, new Blob([LATE]));
+    await fs.write(`${objectsPath}/${day}/ffffffff-ffff-7fff-8fff-fffffffffffb--${btoa('Second')}`, new Blob([LATE]));
+    document.dispatchEvent(new Event('visibilitychange'));
+    await settle(700);
+
+    expect(shown[0].options.body).toBe('2 new messages');
+    shown[0].onclick();
+    await settle();
+    expect(reading()).toBe(false);
+    expect(document.activeElement.classList.contains('row')).toBe(true);
+  });
+});

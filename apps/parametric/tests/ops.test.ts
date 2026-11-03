@@ -1,0 +1,168 @@
+import { describe, expect, it } from 'vitest';
+import type { SkDimension, SkEntity, SkLine, SketchFeature } from '../src/model/types';
+import { SketchIndex, arcRadius } from '../src/sketch/geom';
+import {
+  availableRelations, deleteItems, extendAt, filletCorner, idFactory, makeRelations, measureDimension, mirrorEntities,
+  offsetCurves, relationsOf, smartDimension, trimAt,
+} from '../src/sketch/ops';
+import { solveSketch } from '../src/sketch/solver';
+import { rect, sketch } from './helpers';
+
+const sk = (entities: SkEntity[]): SketchFeature => sketch('S', entities);
+const value = (d: SkDimension) => Number(d.value);
+
+describe('relations', () => {
+  it('offers relations that fit the selection', () => {
+    const s = sk([...rect(0, 0, 10, 5, 'r'), { id: 'c0', t: 'point', x: 2, y: 2 }, { id: 'circ', t: 'circle', c: 'c0', r: 1 }]);
+    expect(availableRelations(s, ['rl0'])).toEqual(['horizontal', 'vertical', 'fix']);
+    expect(availableRelations(s, ['rl0', 'rl1'])).toContain('perpendicular');
+    expect(availableRelations(s, ['rl0', 'circ'])).toContain('tangent');
+    expect(availableRelations(s, ['rp0', 'rl1'])).toEqual(['coincident', 'midpoint', 'fix']);
+    expect(availableRelations(s, ['O'])).toEqual([]);
+  });
+
+  it('creates one horizontal relation per line and solves them', () => {
+    const s = sk([{ id: 'a', t: 'point', x: 0, y: 0 }, { id: 'b', t: 'point', x: 5, y: 1 }, { id: 'l1', t: 'line', a: 'a', b: 'b' },
+      { id: 'c', t: 'point', x: 0, y: 3 }, { id: 'd', t: 'point', x: 5, y: 2 }, { id: 'l2', t: 'line', a: 'c', b: 'd' }]);
+    const rels = makeRelations(s, 'horizontal', ['l1', 'l2'], idFactory(s));
+    expect(rels).toHaveLength(2);
+    s.constraints.push(...rels);
+    solveSketch(s.entities, s.constraints, { value });
+    const ix = new SketchIndex(s.entities);
+    expect(ix.pt('a')[1]).toBeCloseTo(ix.pt('b')[1], 9);
+    expect(relationsOf(s, ['l1'])).toHaveLength(1);
+  });
+});
+
+describe('deletion', () => {
+  it('removes curves with their orphan points and dependent relations', () => {
+    const s = sk(rect(0, 0, 10, 5, 'r'));
+    s.constraints.push({ id: 'h', type: 'horizontal', refs: ['rl0'] });
+    deleteItems(s, ['rl0']);
+    expect(s.entities.find((e) => e.id === 'rl0')).toBeUndefined();
+    // End points are still used by the neighbouring lines.
+    expect(s.entities.find((e) => e.id === 'rp0')).toBeDefined();
+    expect(s.constraints).toHaveLength(0);
+    deleteItems(s, ['rp0']);
+    expect(s.entities.some((e) => e.t === 'line' && (e.a === 'rp0' || e.b === 'rp0'))).toBe(false);
+  });
+});
+
+describe('dimensions', () => {
+  it('chooses horizontal, vertical or aligned by label placement', () => {
+    const s = sk([{ id: 'a', t: 'point', x: 0, y: 0 }, { id: 'b', t: 'point', x: 10, y: 5 }, { id: 'l', t: 'line', a: 'a', b: 'b' }]);
+    expect(smartDimension(s, ['l'], [5, 20])?.type).toBe('hdistance');
+    expect(smartDimension(s, ['l'], [20, 2])?.type).toBe('vdistance');
+    const aligned = smartDimension(s, ['l'], [5, 2]);
+    expect(aligned?.type).toBe('distance');
+    expect(aligned?.value).toBeCloseTo(Math.hypot(10, 5), 9);
+  });
+
+  it('measures angles between lines and diameters of circles', () => {
+    const s = sk([
+      { id: 'a', t: 'point', x: 0, y: 0 }, { id: 'b', t: 'point', x: 10, y: 0 }, { id: 'l1', t: 'line', a: 'a', b: 'b' },
+      { id: 'c', t: 'point', x: 0, y: 0 }, { id: 'd', t: 'point', x: 5, y: 5 }, { id: 'l2', t: 'line', a: 'c', b: 'd' },
+      { id: 'cc', t: 'point', x: 20, y: 0 }, { id: 'circ', t: 'circle', c: 'cc', r: 3 },
+    ]);
+    const ang = smartDimension(s, ['l1', 'l2'], [4, 1])!;
+    expect(ang.type).toBe('angle');
+    expect(ang.value).toBeCloseTo(45, 9);
+    const dia = smartDimension(s, ['circ'], [25, 3])!;
+    expect(dia).toMatchObject({ type: 'diameter', value: 6 });
+    expect(measureDimension(s, { type: 'distance', refs: ['circ', 'a'] })).toBeCloseTo(20, 9);
+  });
+});
+
+describe('editing tools', () => {
+  it('trims a line between two crossing lines', () => {
+    const s = sk([
+      { id: 'a', t: 'point', x: 0, y: 0 }, { id: 'b', t: 'point', x: 10, y: 0 }, { id: 'h', t: 'line', a: 'a', b: 'b' },
+      { id: 'c', t: 'point', x: 3, y: -2 }, { id: 'd', t: 'point', x: 3, y: 2 }, { id: 'v1', t: 'line', a: 'c', b: 'd' },
+      { id: 'e', t: 'point', x: 7, y: -2 }, { id: 'f', t: 'point', x: 7, y: 2 }, { id: 'v2', t: 'line', a: 'e', b: 'f' },
+    ]);
+    expect(trimAt(s, 'h', [5, 0], idFactory(s))).toBe(true);
+    const lines = s.entities.filter((e): e is SkLine => e.t === 'line' && e.id !== 'v1' && e.id !== 'v2');
+    expect(lines).toHaveLength(2);
+    const ix = new SketchIndex(s.entities);
+    const lengths = lines.map((l) => Math.abs(ix.pt(l.b)[0] - ix.pt(l.a)[0])).sort();
+    expect(lengths[0]).toBeCloseTo(3, 9);
+    expect(lengths[1]).toBeCloseTo(3, 9);
+  });
+
+  it('extends a line to the next curve', () => {
+    const s = sk([
+      { id: 'a', t: 'point', x: 0, y: 0 }, { id: 'b', t: 'point', x: 4, y: 0 }, { id: 'h', t: 'line', a: 'a', b: 'b' },
+      { id: 'c', t: 'point', x: 9, y: -5 }, { id: 'd', t: 'point', x: 9, y: 5 }, { id: 'v', t: 'line', a: 'c', b: 'd' },
+    ]);
+    expect(extendAt(s, 'h', [3.9, 0])).toBe(true);
+    expect(new SketchIndex(s.entities).pt('b')[0]).toBeCloseTo(9, 9);
+  });
+
+  it('fillets a rectangle corner tangentially', () => {
+    const s = sk(rect(0, 0, 20, 10, 'r'));
+    expect(filletCorner(s, 'rp1', 3, idFactory(s))).toBeNull();
+    const arc = s.entities.find((e) => e.t === 'arc');
+    expect(arc).toBeDefined();
+    const ix = new SketchIndex(s.entities);
+    expect(arcRadius(ix, arc as never)).toBeCloseTo(3, 9);
+    const res = solveSketch(s.entities, s.constraints, { value });
+    expect(res.converged).toBe(true);
+    expect(filletCorner(s, 'rp0', 50, idFactory(s))).toMatch(/too large/);
+  });
+
+  it('offsets a closed rectangle outward', () => {
+    const s = sk(rect(0, 0, 10, 10, 'r'));
+    const created = offsetCurves(s, ['rl0', 'rl1', 'rl2', 'rl3'], 2, idFactory(s));
+    expect(created).toHaveLength(4);
+    const ix = new SketchIndex(s.entities);
+    const xs = created.flatMap((id) => { const l = ix.get(id) as SkLine; return [ix.pt(l.a)[0], ix.pt(l.b)[0]]; });
+    expect(Math.min(...xs)).toBeCloseTo(-2, 9);
+    expect(Math.max(...xs)).toBeCloseTo(12, 9);
+  });
+
+  it('offsets a loop whose lines point in mixed directions, joining every corner', () => {
+    const s = sk([
+      { id: 'a', t: 'point', x: 0, y: 0 }, { id: 'b', t: 'point', x: 10, y: 0 }, { id: 'c', t: 'point', x: 10, y: 6 }, { id: 'd', t: 'point', x: 0, y: 6 },
+      { id: 'l1', t: 'line', a: 'a', b: 'b' }, { id: 'l2', t: 'line', a: 'c', b: 'b' }, { id: 'l3', t: 'line', a: 'c', b: 'd' }, { id: 'l4', t: 'line', a: 'a', b: 'd' },
+    ]);
+    const created = offsetCurves(s, ['l1', 'l2', 'l3', 'l4'], -1, idFactory(s));
+    const ix = new SketchIndex(s.entities);
+    const pts = created.flatMap((id) => { const l = ix.get(id) as SkLine; return [l.a, l.b]; });
+    // Four corners, each shared by two lines.
+    expect(new Set(pts).size).toBe(4);
+    const xs = pts.map((p) => ix.pt(p)[0]), ys = pts.map((p) => ix.pt(p)[1]);
+    expect(Math.min(...xs)).toBeCloseTo(1, 9);
+    expect(Math.max(...xs)).toBeCloseTo(9, 9);
+    expect(Math.min(...ys)).toBeCloseTo(1, 9);
+    expect(Math.max(...ys)).toBeCloseTo(5, 9);
+  });
+
+  it('offsets a rounded rectangle outward, growing its corner arcs', () => {
+    const s = sk(rect(0, 0, 20, 10, 'r'));
+    for (const p of ['rp0', 'rp1', 'rp2', 'rp3']) filletCorner(s, p, 2, idFactory(s));
+    const ids = s.entities.filter((e) => e.t === 'line' || e.t === 'arc').map((e) => e.id);
+    const created = offsetCurves(s, ids, 1, idFactory(s));
+    expect(created).toHaveLength(8);
+    const ix = new SketchIndex(s.entities);
+    for (const id of created) {
+      const e = ix.get(id)!;
+      if (e.t === 'arc') expect(arcRadius(ix, e)).toBeCloseTo(3, 9);
+    }
+    const res = solveSketch(s.entities, s.constraints, { value });
+    expect(res.converged).toBe(true);
+  });
+
+  it('mirrors entities about a centerline with symmetric relations', () => {
+    const s = sk([
+      { id: 'a', t: 'point', x: 0, y: -10 }, { id: 'b', t: 'point', x: 0, y: 10 }, { id: 'axis', t: 'line', a: 'a', b: 'b', construction: true },
+      { id: 'p', t: 'point', x: 3, y: 1 }, { id: 'q', t: 'point', x: 6, y: 4 }, { id: 'l', t: 'line', a: 'p', b: 'q' },
+    ]);
+    const created = mirrorEntities(s, ['l'], 'axis', idFactory(s));
+    expect(created).toHaveLength(1);
+    const ix = new SketchIndex(s.entities);
+    const m = ix.get(created[0]) as SkLine;
+    expect(ix.pt(m.a)).toEqual([-3, 1]);
+    expect(s.constraints.filter((c) => c.type === 'symmetric')).toHaveLength(2);
+    expect(solveSketch(s.entities, s.constraints, { value }).converged).toBe(true);
+  });
+});

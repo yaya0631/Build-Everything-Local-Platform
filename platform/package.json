@@ -1,0 +1,15 @@
+{
+  "name": "@everything-local/platform",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node server/index.js --dev",
+    "build": "node server/index.js --build",
+    "test": "node --test platform.test.js"
+  },
+  "engines": {
+    "node": ">=22.13.0"
+  }
+}

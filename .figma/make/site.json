@@ -1,0 +1,10 @@
+{
+  "description": "Run a suite of browser apps—including documents, spreadsheets, and chat—on your own PC with local storage and no cloud dependency.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

@@ -1,0 +1,109 @@
+// @vitest-environment jsdom
+import { Blob as NodeBlob } from 'node:buffer';
+import { afterEach, beforeEach, expect, it, vi } from 'vitest';
+import * as X from '../src/vendor/xlsx.mjs';
+import { editorView } from '../src/views/editor.js';
+import { Doc } from '../src/lib/doc.js';
+import { Workbook } from '../src/core/workbook.js';
+import { workbookFromFile, workbookToXlsx } from '../src/core/io.js';
+import { closeAllModals } from '../src/ui/modal.js';
+import { closeMenu } from '../src/ui/menu.js';
+import { newExcelChart } from '../src/core/chart-subtypes.js';
+
+let view;
+beforeEach(() => {
+  vi.useFakeTimers(); vi.stubGlobal('Blob', NodeBlob);
+  vi.stubGlobal('matchMedia', () => ({ matches: true, addEventListener() {}, removeEventListener() {} }));
+  vi.stubGlobal('requestAnimationFrame', fn => setTimeout(fn, 0)); vi.stubGlobal('cancelAnimationFrame', clearTimeout);
+  Element.prototype.scrollIntoView = () => {}; Element.prototype.scrollTo = () => {};
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({ measureText: text => ({ width: text.length * 7 }), font: '' });
+  localStorage.clear(); document.body.replaceChildren();
+});
+afterEach(() => { closeMenu(); closeAllModals(); view?.destroy(); view = null; vi.clearAllTimers(); vi.useRealTimers(); vi.restoreAllMocks(); vi.unstubAllGlobals(); document.body.replaceChildren(); });
+const flush = async () => { for (let i = 0; i < 3; i++) await vi.advanceTimersByTimeAsync(1); };
+
+async function mount(patch = {}) {
+  const doc = new Doc({ name: 'Series' }), wb = doc.wb, id = wb.activeSheetId;
+  [['Month', 'North', 'South'], ['Jan', '1', '6'], ['Feb', '4', '5'], ['Mar', '9', '3'], ['Apr', '16', '2']]
+    .forEach((row, r) => row.forEach((v, c) => wb.setInput(id, r, c, v)));
+  const chartId = wb.addChart(id, { ...newExcelChart(wb, id, { r1: 0, c1: 0, r2: 4, c2: 2 }, 'lineMarkers'), ...patch });
+  view = editorView({ doc, goHome: vi.fn(), openPath: vi.fn(), newDoc: vi.fn(), templateDoc: vi.fn(), importFile: vi.fn() });
+  document.body.append(view.el); await flush();
+  const box = view.el.querySelector('.chart-box');
+  box.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true, button: 0, clientX: 1, clientY: 1 }));
+  box.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, cancelable: true, button: 0, clientX: 1, clientY: 1 }));
+  await flush();
+  return { chart: () => wb.chartById(id, chartId) };
+}
+const svgNode = sel => view.el.querySelector(`.chart-box .chart-body svg ${sel}`);
+const pane = () => view.el.querySelector('.chart-format-pane');
+const menuItem = text => [...document.querySelectorAll('[role="menuitem"]')].find(n => n.textContent.includes(text));
+
+it('opens Format Data Series from a right-click on a series, showing that series\' own line colour', async () => {
+  await mount();
+  const second = svgNode('path.chart-series[data-series="1"]');
+  second.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 5, clientY: 5 }));
+  await flush();
+  menuItem('Format Data Series').click(); await flush();
+  expect(pane().hidden).toBe(false);
+  expect(pane().querySelector('.chart-pane-title').textContent).toBe('Format Data Series');
+  const drawn = second.getAttribute('stroke');
+  expect(drawn).not.toBe(svgNode('path.chart-series[data-series="0"]').getAttribute('stroke'));
+  expect(pane().querySelector('input[aria-label="Line Color"]').value).toBe(drawn);
+});
+
+it('offers the Format pane of a trendline from a right-click on it', async () => {
+  await mount({ trendline: true });
+  svgNode('[data-el="trendline"][data-series="0"]').dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: 5, clientY: 5 }));
+  await flush();
+  menuItem('Format Trendline').click(); await flush();
+  expect(pane().querySelector('.chart-pane-title').textContent).toBe('Format Trendline');
+});
+
+it('moves a trendline label where it is dragged, and Reset Position puts it back', async () => {
+  const { chart } = await mount({ trendline: true, trendlines: [{ type: 'linear', dispEq: true }, false] });
+  const label = () => svgNode('[data-el="trendlineLabel"]');
+  const before = { left: Number(label().getAttribute('data-left')), top: Number(label().getAttribute('data-top')) };
+  const [, , W, H] = label().closest('svg').getAttribute('viewBox').split(' ').map(Number);
+  label().querySelector('text').dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true, button: 0, clientX: 100, clientY: 100 }));
+  window.dispatchEvent(new PointerEvent('pointermove', { clientX: 60, clientY: 130 }));
+  window.dispatchEvent(new PointerEvent('pointerup', { clientX: 60, clientY: 130 }));
+  await flush();
+  const pos = chart().trendlines[0].labelPos;
+  expect(pos.x).toBeCloseTo((before.left - 40) / W, 5);
+  expect(pos.y).toBeCloseTo((before.top + 30) / H, 5);
+  expect(Number(label().getAttribute('data-left'))).toBeCloseTo(before.left - 40, 1);
+  expect(Number(label().getAttribute('data-top'))).toBeCloseTo(before.top + 30, 1);
+
+  view.run('chart', { action: 'formatPane', element: 'trendlineLabel:0' }); await flush();
+  [...pane().querySelectorAll('button')].find(b => b.textContent === 'Reset Position').click(); await flush();
+  expect(chart().trendlines[0].labelPos).toBeUndefined();
+  expect(Number(label().getAttribute('data-left'))).toBeCloseTo(before.left, 1);
+});
+
+it('keeps a click on a trendline label from moving it', async () => {
+  const { chart } = await mount({ trendline: true, trendlines: [{ type: 'linear', dispEq: true }, false] });
+  const label = svgNode('[data-el="trendlineLabel"]');
+  label.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true, button: 0, clientX: 100, clientY: 100 }));
+  window.dispatchEvent(new PointerEvent('pointerup', { clientX: 101, clientY: 100 }));
+  await flush();
+  expect(chart().trendlines[0].labelPos).toBeUndefined();
+  view.run('chart', { action: 'formatPane' }); await flush();
+  expect(pane().querySelector('.chart-pane-title').textContent).toBe('Format Trendline Label');
+});
+
+it('saves a moved trendline label in the file and opens it in the same place', async () => {
+  const wb = new Workbook({ sheets: [{ name: 'Data', charts: [{ type: 'line', title: 'Trend', anchor: { r: 0, c: 3 }, range: { r1: 0, c1: 0, r2: 1, c2: 1 },
+    trendline: true, trendlines: [{ type: 'linear', dispEq: true, labelPos: { x: 0.25, y: 0.125 } }],
+    sourceRefs: [{ name: 'Sales', literal: { categories: ['North', 'South', 'East'], values: [3, 7, 9] } }] }] }] });
+  const blob = await workbookToXlsx(wb);
+  const zip = X.CFB.read(new Uint8Array(await blob.arrayBuffer()), { type: 'array' });
+  const xml = new TextDecoder().decode(zip.FileIndex[zip.FullPaths.findIndex(p => /\/charts\/chart[^/]*\.xml$/.test(p))].content);
+  expect(xml).toContain('<c:trendlineLbl><c:layout><c:manualLayout><c:xMode val="edge"/><c:yMode val="edge"/><c:x val="0.25"/><c:y val="0.125"/></c:manualLayout></c:layout>');
+  // Opened as Excel would save it: without this app's own record of the workbook.
+  const book = X.CFB.find(zip, '/xl/workbook.xml');
+  book.content = new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  book.size = book.content.length;
+  const back = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'trend.xlsx');
+  expect(back.activeSheet.charts[0].trendlines[0].labelPos).toEqual({ x: 0.25, y: 0.125 });
+});

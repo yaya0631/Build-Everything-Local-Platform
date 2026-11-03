@@ -1,0 +1,288 @@
+// The open part document: change transactions, undo/redo, and evaluation of
+// parameters (expressions and global variables) into plain numbers for the
+// geometry worker.
+
+import { evaluate, evaluateVariables } from './expr';
+import { PARAM_FIELDS, getPath, setPath } from './features';
+import type { Feature, Id, Param, PartDocument, SkDimension, SketchFeature, UnitSystem } from './types';
+import { isDimension } from './types';
+import { UNIT_SYSTEMS } from './units';
+import { solveSketch } from '../sketch/solver';
+
+export const FORMAT = 'parametric-part';
+
+export function newDocument(name = 'Part1', units: UnitSystem = 'MMGS'): PartDocument {
+  const now = Date.now();
+  return {
+    format: FORMAT,
+    version: 1,
+    name,
+    units,
+    decimals: units === 'IPS' ? 3 : 2,
+    material: null,
+    color: '#b8c4d2',
+    variables: [],
+    features: [],
+    rollback: null,
+    blobs: {},
+    nextId: 1,
+    created: now,
+    modified: now,
+  };
+}
+
+/** Validates and normalises a parsed document (throws a readable error). */
+export function parseDocument(text: string): PartDocument {
+  let raw: unknown;
+  try {
+    raw = JSON.parse(text);
+  } catch {
+    throw new Error('This file is not a valid part file.');
+  }
+  const d = raw as Partial<PartDocument>;
+  if (!d || d.format !== FORMAT) throw new Error('This file is not a part created with Parametric.');
+  if (d.version !== 1) throw new Error('This part was created with a newer version of Parametric.');
+  if (!Array.isArray(d.features)) throw new Error('The part file is damaged (no feature list).');
+  const base = newDocument(d.name, d.units && d.units in UNIT_SYSTEMS ? d.units : 'MMGS');
+  return { ...base, ...d, blobs: d.blobs ?? {}, variables: d.variables ?? [] } as PartDocument;
+}
+
+export function serializeDocument(doc: PartDocument): string {
+  return JSON.stringify(doc);
+}
+
+export interface ResolveResult {
+  features: Feature[];
+  errors: Map<Id, string>;
+  variables: Map<string, number>;
+  variableErrors: Map<string, string>;
+}
+
+type Listener = (reason: string) => void;
+
+const MAX_UNDO = 120;
+
+export class DocStore {
+  doc: PartDocument;
+  dirty = false;
+  private undoStack: { snap: string; label: string }[] = [];
+  private redoStack: { snap: string; label: string }[] = [];
+  private listeners = new Set<Listener>();
+  private batchDepth = 0;
+  private batchSnap: string | null = null;
+  private batchLabel = '';
+  /** Old steps dropped from the bottom of the undo stack. */
+  private dropped = 0;
+
+  constructor(doc: PartDocument = newDocument()) {
+    this.doc = doc;
+  }
+
+  on(fn: Listener): () => void {
+    this.listeners.add(fn);
+    return () => this.listeners.delete(fn);
+  }
+
+  emit(reason: string) {
+    for (const fn of this.listeners) fn(reason);
+  }
+
+  /** Replaces the whole document (open/new); clears history. */
+  load(doc: PartDocument) {
+    this.doc = doc;
+    this.undoStack = [];
+    this.redoStack = [];
+    this.dropped = 0;
+    this.dirty = false;
+    this.emit('load');
+  }
+
+  private snapshot(): string {
+    const { blobs: _blobs, ...rest } = this.doc;
+    void _blobs;
+    return JSON.stringify(rest);
+  }
+
+  private restore(snap: string) {
+    const blobs = this.doc.blobs;
+    this.doc = { ...(JSON.parse(snap) as PartDocument), blobs };
+  }
+
+  /** Applies a change as one undoable step. */
+  change(label: string, fn: (doc: PartDocument) => void, reason = 'change') {
+    if (this.batchDepth > 0) {
+      fn(this.doc);
+      this.doc.modified = Date.now();
+      this.dirty = true;
+      this.emit(reason);
+      return;
+    }
+    const before = this.snapshot();
+    fn(this.doc);
+    const after = this.snapshot();
+    if (after === before) return;
+    this.doc.modified = Date.now();
+    this.undoStack.push({ snap: before, label });
+    if (this.undoStack.length > MAX_UNDO) { this.undoStack.shift(); this.dropped++; }
+    this.redoStack = [];
+    this.dirty = true;
+    this.emit(reason);
+  }
+
+  /** Groups several changes (e.g. a drag) into one undo step. */
+  beginBatch(label: string) {
+    if (this.batchDepth++ === 0) {
+      this.batchSnap = this.snapshot();
+      this.batchLabel = label;
+    }
+  }
+
+  endBatch() {
+    if (this.batchDepth === 0) return;
+    if (--this.batchDepth === 0 && this.batchSnap) {
+      if (this.snapshot() !== this.batchSnap) {
+        this.undoStack.push({ snap: this.batchSnap, label: this.batchLabel });
+        if (this.undoStack.length > MAX_UNDO) { this.undoStack.shift(); this.dropped++; }
+        this.redoStack = [];
+      }
+      this.batchSnap = null;
+    }
+  }
+
+  /** Drops a batch, restoring the state from before it started. */
+  cancelBatch() {
+    if (this.batchDepth === 0) return;
+    this.batchDepth = 0;
+    if (this.batchSnap) this.restore(this.batchSnap);
+    this.batchSnap = null;
+    this.emit('change');
+  }
+
+  get canUndo() { return this.undoStack.length > 0; }
+  get undoDepth() { return this.undoStack.length; }
+  get canRedo() { return this.redoStack.length > 0; }
+  get undoLabel() { return this.undoStack[this.undoStack.length - 1]?.label ?? ''; }
+  get redoLabel() { return this.redoStack[this.redoStack.length - 1]?.label ?? ''; }
+
+  undo() {
+    const s = this.undoStack.pop();
+    if (!s) return;
+    this.redoStack.push({ snap: this.snapshot(), label: s.label });
+    this.restore(s.snap);
+    this.dirty = true;
+    this.emit('undo');
+  }
+
+  redo() {
+    const s = this.redoStack.pop();
+    if (!s) return;
+    this.undoStack.push({ snap: this.snapshot(), label: s.label });
+    this.restore(s.snap);
+    this.dirty = true;
+    this.emit('redo');
+  }
+
+  /**
+   * Position in the undo history that stays valid while steps are added
+   * (unlike undoDepth, which stops growing once old steps are dropped).
+   */
+  get undoMark(): number {
+    return this.dropped + this.undoStack.length;
+  }
+
+  /**
+   * Restores the document as it was at an undo mark, dropping the steps made
+   * since (they cannot be redone).
+   */
+  revertTo(mark: number) {
+    const i = mark - this.dropped;
+    if (this.batchDepth > 0 || i < 0 || i >= this.undoStack.length) return;
+    const snap = this.undoStack[i].snap;
+    this.undoStack.length = i;
+    this.restore(snap);
+    this.dirty = true;
+    this.emit('undo');
+  }
+
+  /** Merges the undo steps made since an undo mark into one step with this label. */
+  squash(mark: number, label: string) {
+    const i = Math.max(0, mark - this.dropped);
+    if (i >= this.undoStack.length) return;
+    const first = this.undoStack[i];
+    this.undoStack.length = i;
+    this.undoStack.push({ snap: first.snap, label });
+  }
+
+  nextId(prefix = 'f'): Id {
+    return `${prefix}${this.doc.nextId++}`;
+  }
+
+  feature<T extends Feature = Feature>(id: Id): T | undefined {
+    return this.doc.features.find((f) => f.id === id) as T | undefined;
+  }
+
+  indexOf(id: Id): number {
+    return this.doc.features.findIndex((f) => f.id === id);
+  }
+
+  /** Number of features that are built (the rollback position). */
+  get builtCount(): number {
+    const r = this.doc.rollback;
+    return r == null ? this.doc.features.length : Math.max(0, Math.min(r, this.doc.features.length));
+  }
+
+  get unitScale(): number {
+    return UNIT_SYSTEMS[this.doc.units].scale;
+  }
+
+  /** Evaluates one parameter. */
+  evalParam(p: Param, kind: 'length' | 'angle' | 'count', vars?: Map<string, number>): number {
+    if (typeof p === 'number') return p;
+    const values = vars ?? evaluateVariables(this.doc.variables).values;
+    const src = String(p).replace(/^=/, '');
+    const v = evaluate(src, {
+      kind: kind === 'count' ? 'none' : kind,
+      bareScale: kind === 'length' ? this.unitScale : 1,
+      lookup: (n) => values.get(n),
+    });
+    return kind === 'count' ? Math.round(v) : v;
+  }
+
+  dimensionValue(d: SkDimension, vars?: Map<string, number>): number {
+    return this.evalParam(d.value, d.type === 'angle' ? 'angle' : 'length', vars);
+  }
+
+  /** Features with every parameter evaluated; sketches with expressions re-solved. */
+  resolve(): ResolveResult {
+    const { values, errors: variableErrors } = evaluateVariables(this.doc.variables);
+    const errors = new Map<Id, string>();
+    const features = this.doc.features.map((f) => {
+      const fields = PARAM_FIELDS[f.type];
+      let out: Feature = f;
+      if (fields) {
+        for (const fd of fields) {
+          const v = getPath(f, fd.path);
+          if (typeof v !== 'string') continue;
+          if (out === f) out = structuredClone(f);
+          try {
+            setPath(out, fd.path, this.evalParam(v, fd.kind, values));
+          } catch (e) {
+            errors.set(f.id, `${fd.label}: ${(e as Error).message}`);
+            setPath(out, fd.path, 0);
+          }
+        }
+      }
+      if (f.type === 'sketch' && f.constraints.some((c) => isDimension(c) && typeof c.value === 'string')) {
+        const sk = structuredClone(f) as SketchFeature;
+        try {
+          solveSketch(sk.entities, sk.constraints, { value: (d) => this.dimensionValue(d, values), analyze: false });
+        } catch (e) {
+          errors.set(f.id, (e as Error).message);
+        }
+        out = sk;
+      }
+      return out;
+    });
+    return { features, errors, variables: values, variableErrors };
+  }
+}
