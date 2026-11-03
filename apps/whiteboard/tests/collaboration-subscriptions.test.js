@@ -6,7 +6,7 @@ import { memoryStore, owner } from "./collaboration-helpers.js";
 function fixture(onLocal) {
   const session = new CollaborationSession({
     puter: { events: { onLocal } },
-    server: "https://whiteboard-test.puter.work",
+    server: "http://whiteboard-test.localhost:8443",
     room: "subscription-race",
     user: owner,
     store: memoryStore(),

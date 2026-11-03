@@ -1,6 +1,6 @@
 # Signatures
 
-Send documents for signature and manage them. A DocHub-style signing app built with vanilla JavaScript and [Puter](https://puter.com) as the only backend: your documents live in your own Puter cloud, and signers get private links that work without any account.
+Send documents for signature and manage them. A DocHub-style signing app built with vanilla JavaScript and [Puter](https://localhost:8443) as the only backend: your documents live in your own Puter cloud, and signers get private links that work without any account.
 
 ## What it does
 
@@ -47,7 +47,7 @@ Email worker (src/workers/email-worker.js), ONE FOR THE APP
   Deployed once by the app owner (npm run deploy:email-worker). Called via
   puter.workers.exec(), so every send is authorized by the worker but billed
   to the signed-in user. Composes all mail itself, only ever links to
-  *.puter.work sign capabilities, dedupes by content digest, and enforces
+  *.localhost:8443 sign capabilities, dedupes by content digest, and enforces
   per-request and per-day caps. Without it, the app falls back to copy-link
   sharing.
 ```
@@ -89,7 +89,7 @@ Host `dist/` anywhere (Puter hosting works). Two notes:
 - Email needs the shared worker deployed once by the app owner (redeploy after an upgrade: the app asks `/health` which message kinds a deployment can compose, and skips the ones it cannot):
 
   ```sh
-  npm run deploy:email-worker    # -> https://signatures-email.puter.work
+  npm run deploy:email-worker    # -> http://signatures-email.localhost:8443
   ```
 
 ## Scope notes

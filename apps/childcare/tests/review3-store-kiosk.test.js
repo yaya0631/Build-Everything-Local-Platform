@@ -19,7 +19,7 @@ const key = (k) => document.dispatchEvent(new KeyboardEvent('keydown', { key: k,
 async function openKiosk(role) {
   const store = await setupStore({});
   store.saveSettings({ kioskPinHash: role === 'staff' ? '' : await sha256Hex('4321') });
-  Object.assign(app, { demo: false, user: { username: 'director', uuid: 'u1' }, team: { url: 'https://school.puter.work', role } });
+  Object.assign(app, { demo: false, user: { username: 'director', uuid: 'u1' }, team: { url: 'http://school.localhost:8443', role } });
   globalThis.puter = { workers: { exec: async () => Promise.reject(new TypeError('Failed to fetch')) } };
   const { render } = await import('../src/views/kiosk.js');
   ctx = makeCtx();
@@ -72,18 +72,18 @@ describe('kiosk lock and turning on staff and family access', () => {
     const { setKioskLock } = await import('../src/app.js');
     setKioskLock(true);
     // Access turned on from the director's laptop; the tablet reloads.
-    app.team = { url: 'https://school.puter.work', role: 'owner' };
+    app.team = { url: 'http://school.localhost:8443', role: 'owner' };
     expect(restoreKioskLock()).toBe(true);
   });
 });
 
 describe('kiosk lock for someone who is now a family member there', () => {
   it('is not restored, since families cannot open the kiosk and could never leave it', async () => {
-    Object.assign(app, { demo: false, user: { username: 'sam', uuid: 'u7' }, team: { url: 'https://school.puter.work', role: 'staff' } });
+    Object.assign(app, { demo: false, user: { username: 'sam', uuid: 'u7' }, team: { url: 'http://school.localhost:8443', role: 'staff' } });
     const { setKioskLock } = await import('../src/app.js');
     setKioskLock(true);
     // Removed as staff, then invited back to the same school as a parent.
-    app.team = { url: 'https://school.puter.work', role: 'parent' };
+    app.team = { url: 'http://school.localhost:8443', role: 'parent' };
     expect(restoreKioskLock()).toBe(false);
   });
 });

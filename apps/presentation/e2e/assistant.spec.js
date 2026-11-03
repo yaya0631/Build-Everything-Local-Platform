@@ -6,7 +6,7 @@ import { addText, ribbonButton, themeDialog } from "./editor-commands.js";
 // window.__replies (a list of stream parts) and is kept in window.__requests.
 // A { type: "gate" } part holds the reply until the test calls window.__gate.
 async function mockPuter(page) {
-  await page.route("https://js.puter.com/v2/", (route) =>
+  await page.route("**/sdk/puter.js", (route) =>
     route.fulfill({
       contentType: "application/javascript",
       body: `(()=>{window.__requests=[];window.__replies=[];window.puter={env:"web",auth:{isSignedIn:async()=>false,getUser:async()=>null,signIn:async()=>{},signOut:async()=>{}},fs:{readdir:async()=>[],write:async()=>({})},ui:{onLaunchedWithItems:()=>{}},ai:{chat:async(messages,options)=>{window.__requests.push({messages:JSON.parse(JSON.stringify(messages)),options:{...options,tools:options.tools?.length}});const parts=window.__replies.shift()||[{type:"text",text:"Done."}];return (async function*(){for(const part of parts){if(part.type==="gate"){await new Promise(r=>window.__gate=r);continue;}await new Promise(r=>setTimeout(r,20));yield part;}})();}}};})();`,

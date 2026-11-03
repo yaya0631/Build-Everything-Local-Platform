@@ -27,7 +27,7 @@
 // before the shell that references them), which also started pruning the
 // bundles earlier versions accumulated across deploys.
 const CACHE = 'pos-shell-v3';
-const SDK_URL = 'https://js.puter.com/v2/';
+const SDK_URL = '/sdk/puter.js';
 const CORE = [
   './',
   './manifest.json',

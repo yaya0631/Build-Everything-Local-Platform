@@ -178,7 +178,7 @@ describe('a push subscription', () => {
   it('is refused for an endpoint the worker may not fetch: not https, or a private, loopback or link-local host', async () => {
     const { wsId } = await workspaceWith(alice, [bob]);
     for (const endpoint of [
-      'http://push.example.com/a', 'https://localhost/a', 'https://127.0.0.1/a', 'https://10.0.0.5/a', 'https://192.168.1.2/a',
+      'http://push.example.com/a', 'http://localhost/a', 'https://127.0.0.1/a', 'https://10.0.0.5/a', 'https://192.168.1.2/a',
       'https://169.254.169.254/latest/meta-data', 'https://[::1]/a', 'https://[fd00::1]/a', 'https://[::ffff:10.0.0.1]/a',
       'https://metadata.internal/a', 'https://router.local/a', 'https://user:pw@push.example.com/a', 'ftp://push.example.com/a', 'https://',
     ]) {

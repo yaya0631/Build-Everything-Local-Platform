@@ -222,8 +222,8 @@ describe('a member\'s own state written into a copy that has moved', () => {
     expect((await as(bob).post(`/api/ws/${wsId}/conv/${general.id}/messages`, { text: 'x' })).status).toBe(423);
     expect((await rt.kv.get(KEYS.member(wsId, bob.uuid))).notify[thread].follow).toBe(true);
     // Moved: the copy left behind takes none of it, and says where the workspace went.
-    const done = await as(carol).post(`/api/ws/${wsId}/transfer/complete`, { to: 'newcopy123@other.puter.work' });
-    expect(done.data.movedTo).toBe('newcopy123@other.puter.work');
+    const done = await as(carol).post(`/api/ws/${wsId}/transfer/complete`, { to: 'newcopy123@other.localhost' });
+    expect(done.data.movedTo).toBe('newcopy123@other.localhost');
     const before = await rt.kv.get(KEYS.member(wsId, bob.uuid));
     const savedBefore = await rt.kv.get(KEYS.saved(wsId, bob.uuid));
     const blockBefore = await rt.kv.get(KEYS.block(general.id, 0));
@@ -297,7 +297,7 @@ describe('the tidying the saved, threads and reminder lists do when read', () =>
     expect(shown.reminders[0].message).toBeNull();
     expect(await snapshot()).toBe(frozenBefore);
     // Moved: the same, for good.
-    expect((await as(carol).post(`/api/ws/${wsId}/transfer/complete`, { to: 'newcopy123@other.puter.work' })).ok).toBe(true);
+    expect((await as(carol).post(`/api/ws/${wsId}/transfer/complete`, { to: 'newcopy123@other.localhost' })).ok).toBe(true);
     shown = await readAll();
     expect(shown.saved).toEqual([]);
     expect(shown.threads).toEqual([]);

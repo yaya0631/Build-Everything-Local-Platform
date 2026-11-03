@@ -9,7 +9,7 @@ const settled = (page) => expect(page.locator('.editor')).toHaveAttribute('aria-
 // Highlights are comments like any other: the Comments panel, comment summaries, and other
 // readers show who made each one and when.
 test('highlights record who made them and when', async ({ page }) => {
-  await page.route('https://js.puter.com/**', (route) =>
+  await page.route('**/sdk/puter.js', (route) =>
     route.fulfill({ contentType: 'application/javascript', body: PUTER_MOCK }),
   );
   await page.goto('/#library');

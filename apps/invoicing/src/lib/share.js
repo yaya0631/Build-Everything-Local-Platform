@@ -25,7 +25,7 @@ const isToken = (value) => /^[a-z0-9]{6,64}$/i.test(String(value ?? ''));
 /** The public URL for an already-shared document, or null. */
 export function shareUrl(settings, doc) {
   if (!settings.share?.subdomain || !isToken(doc.shareToken)) return null;
-  return `https://${settings.share.subdomain}.puter.site/${doc.shareToken}.html`;
+  return `http://${settings.share.subdomain}.localhost:8443/${doc.shareToken}.html`;
 }
 
 /**
@@ -98,7 +98,7 @@ async function publishNow(store, docId, payLink) {
     }
     throw err;
   }
-  return `https://${store.settings.share.subdomain}.puter.site/${token}.html`;
+  return `http://${store.settings.share.subdomain}.localhost:8443/${token}.html`;
 }
 
 /**

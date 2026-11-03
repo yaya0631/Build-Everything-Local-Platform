@@ -1,10 +1,10 @@
 /**
- * Meeting links for the Puter Meetings app (meetings.puter.com).
+ * Meeting links for the Puter Meetings app (meetings.localhost:8443).
  *
  * Meetings publishes a stateless recipe for other apps ("Minting links from
  * other apps" in its README): an *open room code* is 12 crypto-random
  * lowercase letters grouped `abcd-efgh-ijkl`, wrapped in
- * `https://meetings.puter.com/#/m/<code>` — and that is the entire protocol.
+ * `http://meetings.localhost:8443/#/m/<code>` — and that is the entire protocol.
  * No API call, no launch, no account: nothing is created anywhere at mint
  * time, so minting is synchronous, free, and works everywhere the calendar
  * runs — the open web included.
@@ -26,7 +26,7 @@
  * refuses to offer the feature anywhere that lacks it).
  */
 
-const MEETINGS_ORIGIN = 'https://meetings.puter.com/';
+const MEETINGS_ORIGIN = 'http://meetings.localhost:8443/';
 const LETTERS = 'abcdefghijklmnopqrstuvwxyz';
 const CODE_LETTERS = 12;
 const GROUP_LETTERS = 4; // abcd-efgh-ijkl

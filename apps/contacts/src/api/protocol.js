@@ -2,7 +2,7 @@
  * Wire protocol and access control for the Contacts app-to-app API.
  *
  * Contacts exposes a small RPC surface to *other Puter apps* over an
- * AppConnection (https://docs.puter.com/Objects/AppConnection/). A caller
+ * AppConnection (http://localhost:8443/Objects/AppConnection/). A caller
  * launches us with `puter.ui.launchApp('contacts', { service: 'contacts-api' })`
  * and then talks to the returned connection with `postMessage`; we answer on the
  * connection we get back from `puter.ui.parentApp()`.
@@ -69,7 +69,7 @@ export const READ_METHODS = ['ping', 'list', 'search', 'suggest', 'get']
 /**
  * Which apps may call us, and what each may do. `'*'` grants every method in
  * METHODS; an array grants exactly those methods. Keys are Puter app *names*
- * (as published, e.g. `calendar` for calendar.puter.com).
+ * (as published, e.g. `calendar` for calendar.localhost:8443).
  *
  * This is the only gate, and it governs both protocols: a grant is a set of
  * methods, and an MCP tool is offered only when the method behind it is granted

@@ -10,7 +10,7 @@ for (const action of ['page', 'dialog', 'flatten'])
       test(`only the chosen duplicate-label row is painted after ${action} (sorted=${sorted}, rotation=${rotation})`, async ({
         page,
       }) => {
-        await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+        await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
         await page.goto('/#library');
         const { doc } = await duplicateListPdf({
           sorted,

@@ -265,7 +265,7 @@ test("the reason to verify an email reads in the interface language", async () =
     let dialog;
     const home = createOrganizationHome({
       org: {
-        server: "https://org.puter.work",
+        server: "http://org.localhost:8443",
         info: { role: null },
         onChange() {},
         request: async () => ({}),

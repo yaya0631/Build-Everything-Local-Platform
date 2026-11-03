@@ -16,7 +16,7 @@ import { toast } from './toast.js';
 const SHARE_DIR = 'schedule-share';
 
 function shareUrl(subdomain) {
-  return `https://${subdomain}.puter.site`;
+  return `http://${subdomain}.localhost:8443`;
 }
 
 async function writeSnapshot(store, weekStart, filter) {

@@ -4,7 +4,7 @@ For the composer review, shipped improvements, remaining Gmail gaps, and verific
 
 For measured loading/search improvements, benchmark reproduction, and remaining limits, see [Performance report](docs/performance.md).
 
-A fast, private email client for your [Puter](https://puter.com) account. It reads the mailbox that Puter's `emailrx` backend extension writes into your account, renders every message safely as plain text, and sends mail through the `useremailtx` extension from your `@puter.email` address.
+A fast, private email client for your [Puter](https://localhost:8443) account. It reads the mailbox that Puter's `emailrx` backend extension writes into your account, renders every message safely as plain text, and sends mail through the `useremailtx` extension from your `@puter.email` address.
 
 ## How it works
 
@@ -165,7 +165,7 @@ Results are messages rather than conversations — see [Conversations](#conversa
 
 ### Watching for new mail
 
-The mailbox is watched, not polled. At launch the app subscribes to `fs:/<username>/.mail` with [`puter.events.onLocal()`](https://docs.puter.com/Events/onLocal/): one subscription covering every folder, costing nothing while nothing changes. When emailrx writes a message the app is told the path within a few hundred milliseconds, and `createMailbox().sync()` lists exactly what landed — normally one newest-first recursive `readdir` page, stopping at the newest known message; large folder lists and older SDKs use the root/day traversal — and prepends it. Nothing already on screen is rebuilt, so new rows appear without moving the scroll position, disturbing an open message, or clearing a search. Events are gathered for half a second before they are acted on, so a burst of mail is one listing rather than one per message.
+The mailbox is watched, not polled. At launch the app subscribes to `fs:/<username>/.mail` with [`puter.events.onLocal()`](http://localhost:8443/Events/onLocal/): one subscription covering every folder, costing nothing while nothing changes. When emailrx writes a message the app is told the path within a few hundred milliseconds, and `createMailbox().sync()` lists exactly what landed — normally one newest-first recursive `readdir` page, stopping at the newest known message; large folder lists and older SDKs use the root/day traversal — and prepends it. Nothing already on screen is rebuilt, so new rows appear without moving the scroll position, disturbing an open message, or clearing a search. Events are gathered for half a second before they are acted on, so a burst of mail is one listing rather than one per message.
 
 The same subscription hears what your other devices do. A message archived, deleted or restored from another tab or another phone leaves its folder here the way it would have if the action had been taken here — its row goes, or its conversation shrinks — and the folder it went to is re-listed when it is next opened, or at once if it is on screen. A message put back into the inbox is listed, not announced: it is not new. The app tells its own writes from another device's by remembering the paths it has just written, because an event's `self` flag names the account rather than the tab, and the account's other tabs are exactly what the watch is for. A `gap` marker — the server saying it dropped something — re-lists every folder rather than trusting what is on screen. `src/lib/watch.js` is the reading of events as changes to folders; it touches neither the DOM nor the network.
 
@@ -260,9 +260,9 @@ npm run build     # production build into dist/
 npm run preview   # preview the production build
 ```
 
-No frameworks: the UI is plain DOM, styled with hand-written CSS, with [Lucide](https://lucide.dev) for icons and [Puter.js](https://docs.puter.com) as the only backend.
+No frameworks: the UI is plain DOM, styled with hand-written CSS, with [Lucide](https://lucide.dev) for icons and [Puter.js](http://localhost:8443) as the only backend.
 
-`puter.APIOrigin` is read at send time, so the app targets whichever backend the SDK is pointed at — `api.puter.com` in production, `api.puter.localhost:5101` in local development, with no change here.
+`puter.APIOrigin` is read at send time, so the app targets whichever backend the SDK is pointed at — `api.localhost:8443` in production, `api.puter.localhost:5101` in local development, with no change here.
 
 ## Project layout
 

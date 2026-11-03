@@ -80,7 +80,7 @@ export function makeFakePuter({ user = { username: 'testuser', email: 'me@exampl
       create: vi.fn(async (name, filePath) => {
         if (workersByName.has(name)) throw new Error('name taken');
         counter += 1;
-        const origin = `https://${name}.puter.work`;
+        const origin = `http://${name}.localhost:8443`;
         const source = fs.files.get(filePath);
         if (source == null) throw new Error(`no source at ${filePath}`);
         const record = {

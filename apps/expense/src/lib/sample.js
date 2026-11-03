@@ -149,7 +149,7 @@ export async function wipeSampleData(store) {
 }
 
 /**
- * Draw a plausible receipt for a sample expense so the viewer has something
+ * Draw a realistic receipt for a sample expense so the viewer has something
  * to show. Canvas only; returns null where canvas is unavailable (tests).
  */
 export function renderSampleReceipt(expense, categoryName = '') {

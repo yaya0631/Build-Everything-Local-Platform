@@ -1,9 +1,9 @@
 /**
  * The public respondent page (r/index.html). A survey link looks like
  *
- *   https://survey.puter.com/r/#<label>/<collectorId>
+ *   http://survey.localhost:8443/r/#<label>/<collectorId>
  *
- * where <label> names the creator's collector worker (sv-<label>.puter.work).
+ * where <label> names the creator's collector worker (sv-<label>.localhost:8443).
  * Both parts ride in the URL fragment, which browsers never send to a
  * server. The page loads no SDK: it fetches the survey from the worker and
  * posts the answers back, as CORS-simple requests (no preflight).
@@ -33,7 +33,7 @@ function lockDown() {
     "script-src 'self'",
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data:",
-    "connect-src 'self' https://*.puter.work",
+    "connect-src 'self' https://*.localhost:8443",
     "object-src 'none'",
     "base-uri 'none'",
     "form-action 'none'",
@@ -60,7 +60,7 @@ async function getFetch(label) {
     const { localWorkerFetch, LOCAL_WORKER_URL } = await import('../data/local-worker.js');
     return { fetchFn: localWorkerFetch(), base: LOCAL_WORKER_URL };
   }
-  return { fetchFn: (url, init) => fetch(url, init), base: `https://sv-${label}.puter.work` };
+  return { fetchFn: (url, init) => fetch(url, init), base: `https://sv-${label}.localhost:8443` };
 }
 
 function timeout(ms) {

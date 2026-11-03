@@ -37,7 +37,7 @@ async function settle(rsvp) {
  * through — with `puter.workers.exec` bridged to it the way the real SDK
  * bridges it, caller session and all.
  */
-const STUB_LINK = 'https://cal-rsvp-stub01.puter.work/rsvp/' + 'c1d2'.repeat(10);
+const STUB_LINK = 'http://cal-rsvp-stub01.localhost:8443/rsvp/' + 'c1d2'.repeat(10);
 
 /**
  * A stand-in for rsvp-links with the timing under the test's control: no guest
@@ -748,7 +748,7 @@ describe('invites: cancelling a deleted event', () => {
     expect(mail.text).toContain('event remains scheduled for the other guests');
     const ics = Buffer.from(mail.attachments[0].content, 'base64').toString('utf8');
     expect(ics).toContain('METHOD:CANCEL');
-    expect(ics).toContain(`UID:${event.id}@calendar.puter.com`);
+    expect(ics).toContain(`UID:${event.id}@calendar.localhost`);
     expect(ics).not.toContain('STATUS:');
     expect(ics.match(/^ATTENDEE.*$/gm)).toHaveLength(1);
     expect(ics).toContain('mailto:ada@example.com');
@@ -801,7 +801,7 @@ describe('invites: cancelling a deleted event', () => {
     expect((await world.invites.sendCancellation(cancel)).sent).toBe(1);
     const mail = world.mail.at(-1);
     const ics = Buffer.from(mail.attachments[0].content, 'base64').toString('utf8');
-    expect(ics).toContain(`UID:${event.id}@calendar.puter.com`);
+    expect(ics).toContain(`UID:${event.id}@calendar.localhost`);
     expect(ics.match(/BEGIN:VEVENT/g)).toHaveLength(1);
     expect(ics).toContain(allDay
       ? 'RECURRENCE-ID;VALUE=DATE;RANGE=THISANDFUTURE:20260909'
@@ -902,7 +902,7 @@ describe('invites: cancelling a deleted event', () => {
     // Same UID as the invitation, a later SEQUENCE, and the two cancellation
     // markers — what the guest's calendar needs to retract its copy.
     const ics = Buffer.from(message.attachments[0].content, 'base64').toString('utf8');
-    expect(ics).toContain(`UID:${event.id}@calendar.puter.com`);
+    expect(ics).toContain(`UID:${event.id}@calendar.localhost`);
     expect(ics).toContain('METHOD:CANCEL');
     expect(ics).toContain('STATUS:CANCELLED');
     expect(Number(/^SEQUENCE:(\d+)\r$/m.exec(ics)[1])).toBeGreaterThan(invitationSeq);
@@ -952,7 +952,7 @@ describe('invites: cancelling a deleted event', () => {
     const decode = (mail) => Buffer.from(mail.attachments[0].content, 'base64').toString('utf8');
     const ics = decode(message);
     expect(ics.match(/BEGIN:VEVENT/g)).toHaveLength(1);
-    expect(ics).toContain(`UID:${event.id}@calendar.puter.com`);
+    expect(ics).toContain(`UID:${event.id}@calendar.localhost`);
     expect(ics).toContain('METHOD:CANCEL');
     expect(ics).toContain('STATUS:CANCELLED');
     // The original slot is the same RECURRENCE-ID as in the invitation's override.
@@ -1000,7 +1000,7 @@ describe('invites: cancelling a deleted event', () => {
     const ics = Buffer.from(mail.attachments[0].content, 'base64').toString('utf8');
     expect(mail.text).toContain('This and all following occurrences are cancelled. Earlier occurrences are unchanged.');
     expect(mail.html).toContain('Earlier occurrences are unchanged.');
-    expect(ics).toContain(`UID:${event.id}@calendar.puter.com`);
+    expect(ics).toContain(`UID:${event.id}@calendar.localhost`);
     expect(ics).toContain('METHOD:CANCEL');
     expect(ics).toContain('STATUS:CANCELLED');
     expect(ics).toContain('SUMMARY:Moved meeting');
@@ -1088,7 +1088,7 @@ describe('invites: cancelling a deleted event', () => {
     expect(old.ics).toContain('COUNT=2');
     expect(tail.ics).toContain('COUNT=3');
     expect(tail.ics).toContain('SUMMARY:Future meeting');
-    expect(tail.ics).toContain(`UID:${split.event.id}@calendar.puter.com`);
+    expect(tail.ics).toContain(`UID:${split.event.id}@calendar.localhost`);
     expect(tail.recipients.map((r) => r.email).sort()).toEqual(['ada@example.com', 'bob@example.com']);
     expect(tail.recipients[0].rsvpUrl).toBe(world.rsvp.linksFor(split.event.id)[tail.recipients[0].email]);
     expect(tail.recipients[0].rsvpUrl).not.toBe(world.rsvp.linksFor(event.id)[tail.recipients[0].email]);

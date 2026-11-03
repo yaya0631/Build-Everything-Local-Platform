@@ -123,7 +123,6 @@
         if (Array.isArray(prompt) && options.tools && options.stream) return mockAgent(prompt);
         await delay(500);
         const text = typeof prompt === 'string' ? prompt : JSON.stringify(prompt);
-        // The formula helper's prompts get a plausible formula back; explanations get a sentence.
         if (/Reply with exactly one line containing only the formula/.test(text)) {
           const range = /Data occupies ([A-Z]+\d+:[A-Z]+\d+)/.exec(text)?.[1] || 'A1:A10';
           return { message: { role: 'assistant', content: `=SUM(${range})` } };
@@ -205,7 +204,7 @@
         const who = String(recipient).trim();
         if (who === 'demo' || who === 'demo@example.com') throw Object.assign(new Error('Cannot share with yourself'), { code: 'cannot_share_with_self' });
         if (who === 'nobody') throw Object.assign(new Error('No such user'), { code: 'user_does_not_exist' });
-        const pending = who.includes('@') && !who.endsWith('@puter.com');
+        const pending = who.includes('@') && !who.endsWith('@localhost:8443');
         const holder = pending ? null : who.replace(/@puter\.com$/, '');
         const shares = (state.shares ??= {})[f.uid] ??= [];
         const at = shares.findIndex((s) => (pending ? s.recipientEmail === who : s.holder === holder));
@@ -233,7 +232,7 @@
       async getShareLink(path) {
         const f = state.fs[norm(path)];
         if (!f) throw notFound(path);
-        return `https://puter.com/app/spreadsheet?file=${encodeURIComponent(f.uid)}`;
+        return `http://localhost:8443/app/spreadsheet?file=${encodeURIComponent(f.uid)}`;
       },
     },
     ui: {

@@ -1,6 +1,6 @@
 /**
  * Sending a document to its client — the app's one shared, app-owned Puter
- * worker (deployed to https://invoicing-email.puter.work; see src/lib/mailer.js
+ * worker (deployed to http://invoicing-email.localhost:8443; see src/lib/mailer.js
  * for the calling side).
  *
  * Until this existed, "send" meant handing the finished text to the user's own
@@ -39,7 +39,7 @@
  *     or a tracking pixel of its own.
  *   - the only clickable links in a message are the two this worker validates
  *     and linkifies itself: the document's own share page (https on a
- *     *.puter.site subdomain, the exact `<token>.html` shape src/lib/share.js
+ *     *.localhost:8443 subdomain, the exact `<token>.html` shape src/lib/share.js
  *     mints) and its pay-online link, which is shown as its own URL so a
  *     recipient always reads where a link goes. That is NOT link suppression:
  *     a bare URL typed into a message body stays plain text a mail client may
@@ -215,7 +215,7 @@ function escapeHtml(v) {
 /**
  * The document's own public page, or '' — one of the two links this worker
  * will make clickable. It must be exactly what src/lib/share.js publishes:
- * https, a *.puter.site subdomain in the user's own account, and a
+ * https, a *.localhost:8443 subdomain in the user's own account, and a
  * `<token>.html` file at the root. Query and fragment are dropped rather than
  * trusted.
  */

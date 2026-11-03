@@ -29,7 +29,7 @@ beforeEach(() => {
         const u = new URL(url);
         const path = u.pathname;
         calls.push(`${init.method || 'GET'} ${u.host}${path}${init.body ? ' ' + init.body : ''}`);
-        if (u.host === 'teamchat-test.puter.work' && path === '/api/ws/abc123def0') {
+        if (u.host === 'teamchat-test.localhost:8443' && path === '/api/ws/abc123def0') {
           if (gate) await gate;
           return json({
             workspace: store.ws,
@@ -38,7 +38,7 @@ beforeEach(() => {
             now: Date.now(),
           });
         }
-        if (u.host === 'host-test.puter.work' && path === '/api/ws/hhhhhhhhhh') {
+        if (u.host === 'host-test.localhost:8443' && path === '/api/ws/hhhhhhhhhh') {
           return json({
             workspace: { id: 'hhhhhhhhhh', name: 'Host', channels: { hch: { id: 'hch', name: 'hch', count: 2 } }, members: { alice: { username: 'alice', name: 'Alice', color: 1, role: 'external' }, bob: { username: 'bob', name: 'Bob', color: 2, role: 'owner' } } },
             me: hostMe,

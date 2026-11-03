@@ -1,5 +1,4 @@
 import { defineConfig } from 'vite';
-import puterLocalhost from '../../dev/puter-localhost.mjs';
 
 /**
  * Writes sw.js from the bundle that was just built, so the app shell (HTML,
@@ -34,7 +33,7 @@ function swSource(version, shell) {
   return `/* Generated at build time by vite.config.js. Do not edit. */
 const CACHE = 'bookkeeping-${version}';
 const SHELL = ${JSON.stringify(shell)};
-const SDK = 'https://js.puter.com/';
+const SDK = self.location.origin + '/sdk/';
 
 self.addEventListener('install', (event) => {
   event.waitUntil((async () => {
@@ -95,7 +94,7 @@ self.addEventListener('fetch', (event) => {
 
 export default defineConfig({
   base: './',
-  plugins: [puterLocalhost('accounting'), serviceWorker()],
+  plugins: [serviceWorker()],
   build: {
     target: 'es2022',
     cssTarget: 'safari15',

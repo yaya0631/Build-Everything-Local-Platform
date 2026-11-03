@@ -40,7 +40,6 @@ describe('the symbol table', () => {
   it('holds 107 distinct patterns of the spec’s widths', async () => {
     // Structural spec invariants: 6 elements summing to 11 modules for
     // every symbol, 7 summing to 13 for the stop. A typo in the table
-    // would produce unscannable bars while looking plausible on screen.
     const { encode128: enc } = await import('../src/lib/barcode.js');
     const svg = barcodeSVG('x');
     expect(svg).toBeTruthy();

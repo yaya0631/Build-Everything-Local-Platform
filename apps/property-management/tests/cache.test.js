@@ -7,7 +7,7 @@ import { createMemoryBackend } from '../src/core/backend.js';
 describe('offline copy', () => {
   it('signing out removes every snapshot on the device', async () => {
     const own = createIdbCache('user:u1');
-    const team = createIdbCache('user:u1:team:https://t.puter.work');
+    const team = createIdbCache('user:u1:team:http://t.localhost:8443');
     await own.save({ v: 2, collections: { tenants: [{ id: 't' }] } });
     await team.save({ v: 2, collections: {} });
     await clearAllCaches();

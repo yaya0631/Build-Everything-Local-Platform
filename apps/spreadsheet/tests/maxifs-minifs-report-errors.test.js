@@ -4,7 +4,6 @@ import { calc } from './helpers/calc.js';
 const E = (code) => ({ error: code });
 
 // MAXIFS and MINIFS read only the numbers out of their value range, so a cell holding a broken
-// formula was neither taken nor reported and the tile showed a plausible largest sale beside it.
 // Every sibling in the app reports it: SUMIFS, AVERAGEIFS, SUMIF, MAX, MIN, LARGE, MEDIAN, DMAX,
 // SUBTOTAL(4) and AGGREGATE(4,0). Only AGGREGATE's skip-errors options may leave it out.
 const CELLS = { A1: 'x', A2: 'y', A3: 'x', B1: '10', B2: '=1/0', B3: '30' };

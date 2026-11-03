@@ -205,7 +205,7 @@ describe('template storage', () => {
 
   it('duplicates a sent document into a clean draft', async () => {
     const doc = await draftWithLayout();
-    await store.markSent(doc.id, { s1: 'https://w.puter.work/sign/aa' });
+    await store.markSent(doc.id, { s1: 'http://w.localhost:8443/sign/aa' });
     await store.markSignerSigned(doc.id, 's1', {});
     const copy = await store.duplicateDoc(doc.id);
     expect(copy.status).toBe('draft');

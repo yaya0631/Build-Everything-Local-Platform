@@ -1,4 +1,4 @@
-/** Thin access to the Puter SDK, which index.html loads from js.puter.com. */
+/** Thin access to the Puter SDK, which index.html loads from js.localhost:8443. */
 
 export function sdk() {
   return typeof window !== 'undefined' ? window.puter : undefined;

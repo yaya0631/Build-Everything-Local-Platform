@@ -26,7 +26,7 @@ export function authView({ onSignIn, error = null }) {
       btn,
       el('ul.auth-points', {},
         ['Double-entry books that always balance', 'Profit and loss, balance sheet, cash flow, and aging', 'Your data stays in your account'].map((t) => el('li', {}, el('span', { html: icon('check', 16) }), t))),
-      el('p.auth-foot', {}, 'Powered by ', el('a', { href: 'https://developer.puter.com', target: '_blank', rel: 'noopener' }, 'Puter'))));
+      el('p.auth-foot', {}, 'Powered by ', el('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Puter'))));
 }
 
 export function errorView({ title, message, onRetry }) {

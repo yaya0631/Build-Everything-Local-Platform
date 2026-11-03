@@ -6,7 +6,7 @@ import { radioPagesPdf } from '../fixtures/radio-pages.js';
 for (const defaultOnly of [false, true])
   for (const mode of ['on page', 'dialog'])
     test(`edits inherited radio options (${mode}, default=${defaultOnly})`, async ({ page }) => {
-      await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+      await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
       await page.goto('/#library');
       const { doc, field } = await radioPagesPdf({
         defaultOnly,

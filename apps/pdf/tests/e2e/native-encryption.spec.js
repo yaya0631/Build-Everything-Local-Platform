@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 import * as pdfjs from 'pdfjs-dist/legacy/build/pdf.mjs';
 
 async function setup(page, hold = false) {
-  await page.route('https://js.puter.com/**', (route) =>
+  await page.route('**/sdk/puter.js', (route) =>
     route.fulfill({
       contentType: 'application/javascript',
       body: `window.cryptoWrites=0; window.cryptoPickers=0;

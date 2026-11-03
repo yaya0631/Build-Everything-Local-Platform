@@ -13,7 +13,7 @@ test("native EOT font payloads preserve all four faces and browser glyphs", asyn
       ),
     ],
   }));
-  await page.route("https://js.puter.com/v2/", (route) =>
+  await page.route("**/sdk/puter.js", (route) =>
     route.fulfill({
       contentType: "application/javascript",
       body: 'window.puter={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',
@@ -98,7 +98,7 @@ test("MTX outlines and native hint programs paint identically at multiple pixel 
       native: [...mtxFont(name, "ttf")],
       eot: [...mtxEot(name)],
     }));
-  await page.route("https://js.puter.com/v2/", (route) =>
+  await page.route("**/sdk/puter.js", (route) =>
     route.fulfill({
       contentType: "application/javascript",
       body: 'window.puter={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',

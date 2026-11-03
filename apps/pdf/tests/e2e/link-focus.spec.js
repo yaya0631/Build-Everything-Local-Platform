@@ -9,7 +9,7 @@ for (const kind of ['web', 'page'])
       test(`${shared ? 'shared' : 'ordinary'} ${kind} link edit ${moved ? 'preserves newer focus' : 'restores link focus'}`, async ({
         page,
       }) => {
-        await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+        await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
         await page.goto('/#library');
         const doc = await PDFDocument.create();
         const first = doc.addPage([400, 500]);

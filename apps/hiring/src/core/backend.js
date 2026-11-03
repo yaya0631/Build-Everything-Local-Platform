@@ -13,13 +13,13 @@
  *   listDir(path)           -> Promise<[{ name, size }]>  ([] when absent)
  *
  * `createPuterBackend` is backed by the Puter.js cloud KV store and file
- * system (https://docs.puter.com) and is used in production.
+ * system (http://localhost:8443) and is used in production.
  * `createMemoryBackend` is used for tests.
  */
 
 const NS = 'hiring.v1';
 
-/** Puter KV rejects values over 400 KB (docs.puter.com/KV/set). */
+/** Puter KV rejects values over 400 KB (docs.localhost:8443/KV/set). */
 const MAX_KV_VALUE_BYTES = 400 * 1024;
 
 export function createPuterBackend(puterInstance) {

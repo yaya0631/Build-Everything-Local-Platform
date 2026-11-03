@@ -21,7 +21,7 @@ for (const view of ['editor', 'library'])
           cloud.addPage([310, 400]);
           cloud.addPage([320, 400]);
           const encoded = Buffer.from(await cloud.save()).toString('base64');
-          await page.route('https://js.puter.com/**', (route) =>
+          await page.route('**/sdk/puter.js', (route) =>
             route.fulfill({
               contentType: 'application/javascript',
               body: `window.cloudReads=0;window.cloudPickers=0;window.puter={env:'web',auth:{
@@ -128,7 +128,7 @@ for (const newer of ['picker', 'sign-out'])
       const doc = await PDFDocument.create();
       doc.addPage([410, 500]);
       const encoded = Buffer.from(await doc.save()).toString('base64');
-      await page.route('https://js.puter.com/**', (route) =>
+      await page.route('**/sdk/puter.js', (route) =>
         route.fulfill({
           contentType: 'application/javascript',
           body: `window.pickers=[];window.cloudReads=[];window.puter={env:'web',auth:{

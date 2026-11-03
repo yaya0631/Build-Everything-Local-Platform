@@ -133,12 +133,12 @@ npm run wasm:build
 
 ## Puter references
 
-- [Puter.js documentation index](https://docs.puter.com/llms.txt)
-- [Filesystem writes](https://docs.puter.com/FS/write/)
-- [Open file picker](https://docs.puter.com/UI/showOpenFilePicker/)
-- [Save file picker](https://docs.puter.com/UI/showSaveFilePicker/)
-- [AI image generation](https://docs.puter.com/AI/txt2img/)
-- [AI chat and tool calling](https://docs.puter.com/AI/chat/)
+- [Puter.js documentation index](http://localhost:8443/llms.txt)
+- [Filesystem writes](http://localhost:8443/FS/write/)
+- [Open file picker](http://localhost:8443/UI/showOpenFilePicker/)
+- [Save file picker](http://localhost:8443/UI/showSaveFilePicker/)
+- [AI image generation](http://localhost:8443/AI/txt2img/)
+- [AI chat and tool calling](http://localhost:8443/AI/chat/)
 
 ## License
 

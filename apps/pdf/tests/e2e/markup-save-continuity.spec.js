@@ -9,7 +9,7 @@ async function openMarkup(
 ) {
   const { label } = MARKUP_KINDS[kind];
   await page.setViewportSize({ width: viewportWidth, height: 800 });
-  await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+  await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   for (let index = 0; index < pages; index++) {

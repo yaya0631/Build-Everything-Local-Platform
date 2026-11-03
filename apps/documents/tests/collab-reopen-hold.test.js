@@ -20,7 +20,7 @@ vi.mock('../src/collab/live.js', async (importOriginal) => ({
     if (failures > 0) { failures--; throw Object.assign(new Error('Failed to fetch'), { status: 0 }); }
     const client = new CollabClient({ transport: hub.connect('owner'), user: { id: 'u0', name: 'Ada' }, room: 'room1', sendDelay: 0 });
     await client.connect();
-    return { client, link: { server: 'https://documents-abc.puter.work', room: 'room1' } };
+    return { client, link: { server: 'http://documents-abc.localhost:8443', room: 'room1' } };
   },
 }));
 const { createCollaboration } = await import('../src/views/collab.js');
@@ -35,7 +35,7 @@ const open = engine => createCollaboration({ editor: () => engine, pkg: () => ({
   local: false, error: e => { throw e; }, user: () => ({ id: 'u0', name: 'Ada' }), documentName: () => 'Plan' });
 
 it('reads only while the room a reopened document was shared in is joined, since its state replaces the editor’s', async () => {
-  remembered = { server: 'https://documents-abc.puter.work', room: 'room1' };
+  remembered = { server: 'http://documents-abc.localhost:8443', room: 'room1' };
   release = null;
   const engine = new FakeEngine('Shared');
   const collab = open(engine);
@@ -74,7 +74,7 @@ it('opens a document that was never shared for editing without waiting', async (
 });
 
 it('keeps Viewing chosen while the room was joined', async () => {
-  remembered = { server: 'https://documents-abc.puter.work', room: 'room1' };
+  remembered = { server: 'http://documents-abc.localhost:8443', room: 'room1' };
   release = null;
   const engine = new FakeEngine('Shared');
   const collab = open(engine);
@@ -88,7 +88,7 @@ it('keeps Viewing chosen while the room was joined', async () => {
 });
 
 it('stays read-only with a way to try again when the room of a reopened shared document cannot be reached', async () => {
-  remembered = { server: 'https://documents-abc.puter.work', room: 'room1' };
+  remembered = { server: 'http://documents-abc.localhost:8443', room: 'room1' };
   release = null; failures = 1;
   const engine = new FakeEngine('Shared');
   const collab = open(engine);

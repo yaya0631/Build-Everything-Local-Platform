@@ -4,7 +4,7 @@ import { boot, canvasClick, downloadFrom, historyLabels, idle, openProject, pane
 import { layer, newDocument } from "../../src/model/document";
 
 test.beforeEach(async ({ page }) => {
-  await page.route("https://js.puter.com/**", (r) =>
+  await page.route("**/sdk/puter.js", (r) =>
     r.fulfill({
       contentType: "application/javascript",
       body: "window.puter={};",

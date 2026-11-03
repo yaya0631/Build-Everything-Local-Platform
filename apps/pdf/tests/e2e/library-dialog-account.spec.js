@@ -5,7 +5,7 @@ for (const action of ['Rename', 'Delete', 'Duplicate'])
     test(`${action}'s library dialog ${signedOut ? 'retires when its account ends' : 'still works within its account'}`, async ({
       page,
     }) => {
-      await page.route('https://js.puter.com/**', (route) =>
+      await page.route('**/sdk/puter.js', (route) =>
         route.fulfill({
           contentType: 'application/javascript',
           body: `window.account={username:'Alice'};window.actions=[];

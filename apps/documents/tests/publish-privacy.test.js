@@ -123,7 +123,7 @@ it('reports the live URL when a failed publication also cannot be taken offline'
   });
   P.hostingDelete.mockRejectedValue(new Error('Offline'));
   await expect(publishPage('Documents/Notes.docx', 'Notes', '<p>Content</p>', { random: () => 0 }))
-    .rejects.toThrow('https://notes-aaaaaaaaaaaa.puter.site');
+    .rejects.toThrow('http://notes-aaaaaaaaaaaa.localhost:8443');
   expect(hosting.size).toBe(1);
 });
 

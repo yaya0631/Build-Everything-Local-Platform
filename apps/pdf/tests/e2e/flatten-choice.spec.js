@@ -28,7 +28,7 @@ for (const list of [false, true])
       test(`flatten preserves choice labels and selected rows (list=${list}, value=${value}, stale=${stale})`, async ({
         page,
       }) => {
-        await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+        await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
         await page.goto('/#library');
         const { doc: source } = await flattenChoicePdf({ list, inherited: true, value });
         const original = await source.save();

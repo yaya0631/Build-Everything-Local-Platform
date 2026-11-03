@@ -8,7 +8,7 @@ for (const label of ['j', '\u0301'])
     test(`overhanging watermark ${JSON.stringify(label)} fits on a narrow page (${layout})`, async ({
       page,
     }, testInfo) => {
-      await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+      await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
       await page.goto('/#library');
       const doc = await PDFDocument.create();
       doc.addPage([20, 300]);

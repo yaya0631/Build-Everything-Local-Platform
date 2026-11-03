@@ -13,7 +13,7 @@ async function plainSource() {
 }
 
 async function prepare(page, signedIn = false) {
-  await page.route('https://js.puter.com/**', (route) =>
+  await page.route('**/sdk/puter.js', (route) =>
     route.fulfill({
       contentType: 'application/javascript',
       body: signedIn
@@ -179,7 +179,7 @@ for (const phase of ['password', 'local leave', 'account leave'])
 for (const newer of ['file', 'library'])
   test(`a queued password prompt is cancelled by a newer ${newer}`, async ({ page }) => {
     const base64 = (await plainSource()).toString('base64');
-    await page.route('https://js.puter.com/**', (route) =>
+    await page.route('**/sdk/puter.js', (route) =>
       route.fulfill({
         contentType: 'application/javascript',
         body: `window.puter = {

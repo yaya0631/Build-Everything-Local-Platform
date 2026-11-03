@@ -7,7 +7,7 @@ export function hasPuter() {
 export function getPuter() {
   if (!hasPuter()) {
     throw new Error(
-      'Puter.js is not loaded. Check your connection to https://js.puter.com/v2/ and reload the page.'
+      'Puter.js is not loaded. Check your connection to /sdk/puter.js and reload the page.'
     );
   }
   return window.puter;

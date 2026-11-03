@@ -1,6 +1,6 @@
 /**
  * Online play over the Puter Peer API (WebRTC data channels with built-in
- * signaling — https://docs.puter.com/Peer/).
+ * signaling — http://localhost:8443/Peer/).
  *
  * The Puter SDK is loaded lazily, only when the user enters online mode, so
  * offline play never pays for it. An OnlineSession wraps one private
@@ -27,7 +27,7 @@
  * remote/spontaneous closure surfaces through onClose exactly once.
  */
 
-const PUTER_SRC = 'https://js.puter.com/v2/';
+const PUTER_SRC = '/sdk/puter.js';
 // This is a new app with no deployed peers, so there is no earlier version to
 // stay compatible with — start the count at 1.
 const PROTOCOL_VERSION = 1;

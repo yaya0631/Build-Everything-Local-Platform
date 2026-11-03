@@ -289,7 +289,7 @@ export function createApp({ backend, root }) {
           { class: 'about' },
           h('p', null, 'Build surveys, share them with a link, and analyze the results. Your surveys and responses are stored in your own Puter account.'),
           h('p', { class: 'muted' }, 'Surveys is open source and in early development (alpha).'),
-          h('p', null, h('a', { href: 'https://developer.puter.com', target: '_blank', rel: 'noopener' }, 'Powered by Puter')),
+          h('p', null, h('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Powered by Puter')),
         ),
         foot: h('button', { type: 'button', class: 'btn btn-primary', onclick: () => close() }, 'Close'),
       }),
@@ -519,7 +519,7 @@ export function renderSignIn(root, { onSignIn }) {
         err,
         h('a', { class: 'signin-alt', href: localUrl.href.replace('local=', 'local') }, 'Try it without an account (stays in this browser)'),
       ),
-      h('p', { class: 'signin-foot' }, h('a', { href: 'https://developer.puter.com', target: '_blank', rel: 'noopener' }, 'Powered by Puter')),
+      h('p', { class: 'signin-foot' }, h('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Powered by Puter')),
     ),
   );
 }

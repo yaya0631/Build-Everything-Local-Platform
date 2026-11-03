@@ -2,7 +2,7 @@
 
 Free, open-source property management for landlords and property managers: properties and units, leases and tenants, rent collection, double-entry accounting, maintenance, and reports. An open-source alternative to Buildium, AppFolio, and Rent Manager.
 
-Built with vanilla JavaScript, Vite, [Lucide](https://lucide.dev) icons, and [Puter.js](https://docs.puter.com) as the only backend. There is no framework and no server of its own.
+Built with vanilla JavaScript, Vite, [Lucide](https://lucide.dev) icons, and [Puter.js](http://localhost:8443) as the only backend. There is no framework and no server of its own.
 
 > **Early alpha.** Features may change and data could be lost. Please do not use it for real tenant, lease or accounting records yet.
 
@@ -38,7 +38,7 @@ Open `/?demo` to start straight in the sample portfolio without the welcome scre
 
 ### Email worker
 
-Sending email goes through one app-owned [Puter worker](https://docs.puter.com/Workers/), because outbound mail has to be authorized by a worker's own token. The app calls it with `puter.workers.exec()`, which forwards the signed-in user's session, so each send is billed to, and rate-limited as, that user. The app owner deploys it once:
+Sending email goes through one app-owned [Puter worker](http://localhost:8443/Workers/), because outbound mail has to be authorized by a worker's own token. The app calls it with `puter.workers.exec()`, which forwards the signed-in user's session, so each send is billed to, and rate-limited as, that user. The app owner deploys it once:
 
 ```sh
 npm run deploy:email-worker   # deploys src/workers/email-worker.js as property-management-email
@@ -89,7 +89,7 @@ Each recurring charge on a lease remembers the last due date it was posted for. 
 
 ### Team sign-in
 
-Puter KV and files are private to each account, so a shared company runs through a [Puter worker](https://docs.puter.com/Workers/) in the **owner's own account**. The worker source is `public/worker/property-management-team-worker.js`.
+Puter KV and files are private to each account, so a shared company runs through a [Puter worker](http://localhost:8443/Workers/) in the **owner's own account**. The worker source is `public/worker/property-management-team-worker.js`.
 
 - **Turning it on:** when the owner turns on team sign-in, the app writes the worker to their drive and deploys it with `puter.workers.create`. It then copies the owner's records and files into it.
 - **After that:** everyone, owner included, reads and writes through `puter.workers.exec`, which forwards each person's own session.

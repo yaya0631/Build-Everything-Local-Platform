@@ -402,7 +402,7 @@ describe('REPLY', () => {
         { email: 'carl@example.com', status: 'needs-action' },
       ],
     });
-    const uid = `${existing.id}@calendar.puter.com`;
+    const uid = `${existing.id}@calendar.localhost`;
     kv.map.set(recordKey(), makeRecord({
       from: { email: 'bob@example.com', name: '' },
       method: 'REPLY', mimeMethod: 'REPLY', ical: replyIcal({ uid, attendeeEmail: 'bob@example.com', partstat: 'ACCEPTED' }),
@@ -419,7 +419,7 @@ describe('REPLY', () => {
     const { kv, store } = await setup();
     kv.map.set(recordKey(), makeRecord({
       from: { email: 'bob@example.com', name: '' },
-      method: 'REPLY', mimeMethod: 'REPLY', ical: replyIcal({ uid: 'nobody-hosts-this@calendar.puter.com', attendeeEmail: 'bob@example.com' }),
+      method: 'REPLY', mimeMethod: 'REPLY', ical: replyIcal({ uid: 'nobody-hosts-this@calendar.localhost', attendeeEmail: 'bob@example.com' }),
     }));
     const intake = makeIntake({ kv, store });
     await intake.pump();
@@ -902,7 +902,7 @@ describe('a UID is not a licence to overwrite', () => {
     expect(row.blockedReason).toMatch(/Conflicts with an existing event/i);
   });
 
-  it('cannot reach an event the user hosts through the calendar.puter.com UID suffix', async () => {
+  it('cannot reach an event the user hosts through the calendar.localhost:8443 UID suffix', async () => {
     const { kv, store } = await setup();
     const hosted = await store.saveEvent({
       title: 'My standup',
@@ -914,7 +914,7 @@ describe('a UID is not a licence to overwrite', () => {
       recordKey(),
       makeRecord({
         from: { email: 'mallory@evil.example', name: 'Mallory' },
-        ical: requestIcal({ uid: `${hosted.id}@calendar.puter.com`, summary: 'Hijacked', sequence: 9 }),
+        ical: requestIcal({ uid: `${hosted.id}@calendar.localhost`, summary: 'Hijacked', sequence: 9 }),
       }),
     );
     const intake = makeIntake({ kv, store, contacts: { knows: () => true } });
@@ -946,7 +946,7 @@ describe('a UID is not a licence to overwrite', () => {
       makeRecord({
         from: { email: 'mallory@evil.example' },
         auth: { internal: false, dkim: 'none', dkimAligned: false, spf: 'none', received: true },
-        ical: requestIcal({ uid: `${hosted.id}@calendar.puter.com`, summary: 'Their meeting' }),
+        ical: requestIcal({ uid: `${hosted.id}@calendar.localhost`, summary: 'Their meeting' }),
       }),
     );
     const intake = makeIntake({ kv, store, contacts: { knows: () => true } });
@@ -1302,7 +1302,7 @@ describe('a forged Sender: header is not an identity', () => {
         method: 'REPLY',
         mimeMethod: 'REPLY',
         ical: replyIcal({
-          uid: `${hosted.id}@calendar.puter.com`,
+          uid: `${hosted.id}@calendar.localhost`,
           attendeeEmail: 'bob@example.com',
           partstat: 'ACCEPTED',
         }),

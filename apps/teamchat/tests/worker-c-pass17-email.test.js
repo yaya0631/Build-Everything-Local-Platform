@@ -31,7 +31,7 @@ async function post(body, caller = alice) {
   return { status: res.status, data: await res.json() };
 }
 
-const invite = (over = {}) => ({ kind: 'workspace', server: 'alice.puter.work', code: 'ABCD-EFGH-JKLM', workspace: 'Acme', inviter: 'Alice A.', emails: ['pat@example.com', 'sam@example.com'], ...over });
+const invite = (over = {}) => ({ kind: 'workspace', server: 'alice.localhost:8443', code: 'ABCD-EFGH-JKLM', workspace: 'Acme', inviter: 'Alice A.', emails: ['pat@example.com', 'sam@example.com'], ...over });
 
 describe('the daily cap on a store whose counter answers with something other than a number', () => {
   it('lets the sends through, as a cap that cannot be read is no cap, rather than refusing everyone as over the limit', async () => {

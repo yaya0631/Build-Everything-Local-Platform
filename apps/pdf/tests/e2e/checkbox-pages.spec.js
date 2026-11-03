@@ -45,7 +45,7 @@ const expectSelection = (doc, value, mapped) => {
 for (const appearance of ['missing', 'off-only'])
   for (const mode of ['on page', 'dialog'])
     test(`clears incomplete checkbox groups (${appearance}, ${mode})`, async ({ page }) => {
-      await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+      await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
       await page.goto('/#library');
       const { doc } = await incompleteCheckboxPdf(appearance);
       const open = async (document) => {
@@ -97,7 +97,7 @@ for (const mapped of [false, true])
     test(`checkbox choices on separate pages save their export values (initial=${initial}, mapped=${mapped})`, async ({
       page,
     }) => {
-      await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+      await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
       await page.goto('/#library');
       const open = async (doc) => {
         const pending = page.waitForEvent('filechooser');
@@ -143,7 +143,7 @@ for (const inherited of [false, true])
     test(`Fill forms preserves mapped checkbox options (inherited=${inherited}, first=${JSON.stringify(first)})`, async ({
       page,
     }) => {
-      await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+      await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
       await page.goto('/#library');
       const { doc, field } = await checkboxOptionsPdf({
         inherited,

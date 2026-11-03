@@ -1,7 +1,7 @@
 /**
  * Publishing a document as a web page on Puter hosting. The HTML export is
  * written to Documents/.published/<slug>/index.html, and that folder is
- * served from a puter.site subdomain (puter.hosting). A private JSON file
+ * served from a localhost:8443 subdomain (puter.hosting). A private JSON file
  * beside the served folder records the subdomain and source path, so any
  * device can find the publication without exposing that metadata to readers.
  * Updating rewrites index.html; stopping deletes the site, folder, and record.
@@ -10,7 +10,7 @@
 import * as P from './puter.js';
 
 export const PUBLISH_FOLDER = `${P.FOLDER}/.published`;
-export const SITE_HOST = 'puter.site';
+export const SITE_HOST = 'localhost:8443';
 
 /** A folder and subdomain-safe slug from a document name ("Q3 Report!" -> "q3-report"). */
 export function slugify(name) {

@@ -428,7 +428,7 @@ export async function speak(text, options = {}) {
 
 /* ---------- Hosting ---------- */
 
-/** Whether Puter hosting (puter.site subdomains) is reachable. */
+/** Whether Puter hosting (localhost:8443 subdomains) is reachable. */
 export function canHost() {
   return typeof sdk()?.hosting?.create === 'function';
 }

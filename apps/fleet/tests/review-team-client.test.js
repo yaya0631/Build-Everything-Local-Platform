@@ -14,7 +14,7 @@ Blob.prototype.arrayBuffer ??= function () {
   });
 };
 
-const URL_ = 'https://fleet-abc.puter.work';
+const URL_ = 'http://fleet-abc.localhost:8443';
 let w;
 let userKV;
 beforeEach(() => {
@@ -123,7 +123,7 @@ describe('turning on team access', () => {
         },
       },
       workers: {
-        create: async (name) => ({ url: `https://${name}.puter.work` }),
+        create: async (name) => ({ url: `http://${name}.localhost:8443` }),
         delete: async (name) => deleted.push(name),
         exec: async (url, init) => {
           if (failOp && JSON.parse(init.body).op === failOp) return new Response(JSON.stringify({ ok: false, error: 'server_error' }), { status: 500 });
@@ -197,7 +197,7 @@ describe('reading which fleet to open', () => {
 
   it('falls back to this device’s copy when Puter cannot be read', async () => {
     app.user = { uuid: 'owner-1', username: 'olivia' };
-    const ws = { current: 'own', own: { url: URL_ }, joined: [{ url: 'https://fleet-b.puter.work', business: 'B', role: 'member' }] };
+    const ws = { current: 'own', own: { url: URL_ }, joined: [{ url: 'http://fleet-b.localhost:8443', business: 'B', role: 'member' }] };
     await userKV.set('fl1:workspaces', ws);
     expect(await team.loadWorkspaces(userKV)).toEqual(ws);
     // A hiccup must not open the owner's old personal storage instead of the team.

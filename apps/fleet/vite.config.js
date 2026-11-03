@@ -2,7 +2,6 @@ import { defineConfig } from 'vite';
 import { createHash } from 'node:crypto';
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import puterLocalhost from '../../dev/puter-localhost.mjs';
 
 /**
  * Writes this build's asset list and a build id into the service worker, so
@@ -32,7 +31,7 @@ export function swPrecache() {
 }
 
 export default defineConfig({
-  plugins: [puterLocalhost('fleet'), swPrecache()],
+  plugins: [swPrecache()],
   base: './',
   build: { target: 'es2022', cssTarget: 'safari15' },
   test: {

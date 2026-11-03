@@ -4,7 +4,7 @@
  * This is the other direction of the door Contacts already opens: the Calendar
  * reads this address book to suggest guests (see src/api/), and here we read and
  * write its events over the same kind of AppConnection
- * (https://docs.puter.com/Objects/AppConnection/). We launch Calendar in service
+ * (http://localhost:8443/Objects/AppConnection/). We launch Calendar in service
  * mode — no UI, `background: true` so the desktop never puts a window on screen
  * — and talk to the connection `puter.ui.launchApp` hands back. Calendar only
  * answers apps on its own allowlist, so this works because the desktop tells it,
@@ -33,7 +33,7 @@
  */
 
 /* ---- The contract with the Calendar app ---------------------------------- */
-// Mirrored from calendar.puter.com/src/js/api/protocol.js — a published contract
+// Mirrored from calendar.localhost:8443/src/js/api/protocol.js — a published contract
 // between the two apps. Change them together and bump VERSION when the shape
 // changes.
 const CHANNEL = 'calendar-api'

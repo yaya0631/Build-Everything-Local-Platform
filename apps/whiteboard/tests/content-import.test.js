@@ -598,7 +598,7 @@ test("disallowed, local, and malformed embed URLs are rejected", () => {
     "blob:https://example.org/1234",
     "http://www.youtube.com/watch?v=dQw4w9WgXcQ",
     "https://user:secret@docs.google.com/document/d/abc/edit",
-    "https://localhost/app",
+    "http://localhost/app",
     "https://127.0.0.1/admin",
     "https://192.168.1.10/",
     "https://[::1]/",
@@ -4100,7 +4100,7 @@ test("text files decode UTF-8, UTF-16 with a byte order mark, and Windows-1252",
 test("live embeds close and cannot be opened while hidden", async () => {
   const dom = new JSDOM(
     `<div class="canvas-wrap"><canvas id="canvas" tabindex="0"></canvas></div>`,
-    { url: "https://whiteboard.puter.site/" },
+    { url: "http://whiteboard.localhost:8443/" },
   );
   const saved = {
     document: globalThis.document,
@@ -4185,7 +4185,7 @@ test("live embeds close and cannot be opened while hidden", async () => {
 test("a shared board's organization turns embeds and Google Workspace off for everyone on it", async () => {
   const dom = new JSDOM(
     `<div class="canvas-wrap"><canvas id="canvas" tabindex="0"></canvas></div>`,
-    { url: "https://whiteboard.puter.site/" },
+    { url: "http://whiteboard.localhost:8443/" },
   );
   const saved = {
     document: globalThis.document,
@@ -4258,7 +4258,7 @@ test("a shared board's organization turns embeds and Google Workspace off for ev
 test("the embed dialog lists only the services the organizations allow", async () => {
   const dom = new JSDOM(
     `<div class="canvas-wrap"><canvas id="canvas" tabindex="0"></canvas></div>`,
-    { url: "https://whiteboard.puter.site/" },
+    { url: "http://whiteboard.localhost:8443/" },
   );
   const saved = {
     document: globalThis.document,
@@ -4316,7 +4316,7 @@ test("the embed dialog lists only the services the organizations allow", async (
 test("a focused Open live button that hides hands focus to the canvas", async () => {
   const dom = new JSDOM(
     `<div class="canvas-wrap"><canvas id="canvas" tabindex="0"></canvas></div>`,
-    { url: "https://whiteboard.puter.site/" },
+    { url: "http://whiteboard.localhost:8443/" },
   );
   const saved = {
     document: globalThis.document,
@@ -4390,7 +4390,7 @@ test("a focused Open live button that hides hands focus to the canvas", async ()
 test("a live embed stays within the visible board, below its top controls, with Open in new tab named", async () => {
   const dom = new JSDOM(
     `<div class="canvas-wrap"><div class="canvas-top"><span class="board-tag"></span></div><canvas id="canvas" tabindex="0"></canvas></div>`,
-    { url: "https://whiteboard.puter.site/" },
+    { url: "http://whiteboard.localhost:8443/" },
   );
   const saved = {
     document: globalThis.document,

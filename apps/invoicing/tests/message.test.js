@@ -101,7 +101,7 @@ describe('fillSubject', () => {
 
 describe('messageValues', () => {
   it('formats money and dates the way the paper does', () => {
-    const v = messageValues(invoice(), client, settings, { link: 'https://x.puter.site/a.html' });
+    const v = messageValues(invoice(), client, settings, { link: 'http://x.localhost:8443/a.html' });
     expect(v).toMatchObject({
       number: 'INV-0042',
       client: 'Maya Chen',
@@ -109,7 +109,7 @@ describe('messageValues', () => {
       total: usd(1000),
       balance: usd(1000),
       dueDate: 'Aug 20, 2026',
-      link: 'https://x.puter.site/a.html',
+      link: 'http://x.localhost:8443/a.html',
       payLink: '',
       validUntil: '',
     });
@@ -179,13 +179,13 @@ describe('templateFor', () => {
 describe('buildMessage', () => {
   it('writes a sendable invoice email', () => {
     const { subject, body } = buildMessage(invoice(), client, settings, {
-      link: 'https://x.puter.site/a.html',
+      link: 'http://x.localhost:8443/a.html',
       payLink: 'https://paypal.me/aurora/1000.00USD',
     });
     expect(subject).toBe('Invoice INV-0042 from Aurora Studio');
     expect(body).toContain('Hi Maya Chen,');
     expect(body).toContain(`INV-0042 for ${usd(1000)}`);
-    expect(body).toContain('https://x.puter.site/a.html');
+    expect(body).toContain('http://x.localhost:8443/a.html');
     expect(body).toContain('https://paypal.me/aurora/1000.00USD');
     expect(body).toMatch(/Aurora Studio$/);
   });

@@ -67,7 +67,7 @@ self.addEventListener('fetch', (event) => {
     })());
     return;
   }
-  if (url.hostname === 'js.puter.com') {
+  if (url.hostname === 'js.localhost:8443') {
     event.respondWith((async () => {
       const cache = await caches.open(EXT);
       const hit = await cache.match(req);

@@ -2,7 +2,7 @@
  * Development stand-in for the Puter SDK, used by mock.html. It keeps each
  * pretend user's key-value store in localStorage, runs deployed "workers"
  * in this page with the real backend code, and routes plain fetch() calls
- * to *.puter.work there too, so the whole app (help center included) can
+ * to *.localhost:8443 there too, so the whole app (help center included) can
  * be exercised without a Puter account.
  *
  *   mock.html?as=olivia   sign in as another pretend user (default: olivia)
@@ -168,10 +168,10 @@ window.puter = {
       if (all[name]) throw new Error('name taken');
       all[name] = { owner: username, path, created_at: new Date().toISOString() };
       localStorage.setItem(WORKERS_KEY, JSON.stringify(all));
-      return { url: `https://${name}.puter.work`, file_path: path };
+      return { url: `http://${name}.localhost:8443`, file_path: path };
     },
     async list() {
-      return Object.entries(workers()).filter(([, w]) => w.owner === username).map(([name, w]) => ({ name, url: `https://${name}.puter.work`, file_path: w.path, created_at: w.created_at }));
+      return Object.entries(workers()).filter(([, w]) => w.owner === username).map(([name, w]) => ({ name, url: `http://${name}.localhost:8443`, file_path: w.path, created_at: w.created_at }));
     },
     async get(name) {
       const w = workers()[name];

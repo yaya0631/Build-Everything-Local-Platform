@@ -162,7 +162,7 @@ test("board settings follow the board's own organization, not the viewer's", asy
     };
     const session = {
       role: "facilitator",
-      server: "https://whiteboard-abc.puter.work",
+      server: "http://whiteboard-abc.localhost:8443",
       settings: {
         visibility: "private",
         orgRole: "editor",
@@ -724,7 +724,7 @@ test("administrators choose the highest board role for guests in Policies", asyn
     const saved = [];
     const admin = createAdminConsole({
       org: {
-        server: "https://whiteboard-abc.puter.work",
+        server: "http://whiteboard-abc.localhost:8443",
         isAdmin: true,
         request: async (op, data) => {
           if (op === "org.policy.set") {

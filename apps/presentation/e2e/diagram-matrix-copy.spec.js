@@ -21,7 +21,7 @@ for (const [cached, image, index] of [
     test.setTimeout(60000);
     const errors = [];
     page.on("pageerror", (e) => errors.push(e.message));
-    await page.route("https://js.puter.com/v2/", (r) =>
+    await page.route("**/sdk/puter.js", (r) =>
       r.fulfill({
         contentType: "application/javascript",
         body: 'window.puter={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',

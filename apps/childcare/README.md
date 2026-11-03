@@ -2,7 +2,7 @@
 
 Free, open-source management for childcare centers, preschools, and family daycares. An open-source alternative to brightwheel, Procare, and HiMama.
 
-It is built with vanilla JavaScript, Vite, and [Lucide](https://lucide.dev) icons. [Puter.js](https://docs.puter.com) is the only backend: there is no framework and no server of its own.
+It is built with vanilla JavaScript, Vite, and [Lucide](https://lucide.dev) icons. [Puter.js](http://localhost:8443) is the only backend: there is no framework and no server of its own.
 
 > **Early alpha.** Features may change and data could be lost. Please do not use it for real children's records or billing yet.
 
@@ -146,7 +146,7 @@ How it works:
 
 ### Staff and family access
 
-Puter KV and files are private to each account, so a shared school runs through a [Puter worker](https://docs.puter.com/Workers/) in the **director's own account** (`public/worker/childcare-team-worker.js`).
+Puter KV and files are private to each account, so a shared school runs through a [Puter worker](http://localhost:8443/Workers/) in the **director's own account** (`public/worker/childcare-team-worker.js`).
 
 - **Turning it on:** when the director turns on staff and family access, the app writes the worker to their drive and deploys it with `puter.workers.create`. It then copies the school's records and photos into it.
 - **After that:** everyone reads and writes through `puter.workers.exec`, which forwards each person's own session.

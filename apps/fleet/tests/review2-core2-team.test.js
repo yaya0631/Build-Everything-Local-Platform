@@ -5,7 +5,7 @@ import { describe, it, expect, afterEach } from 'vitest';
 import { loadWorker, OWNER } from './review-team-helpers.js';
 import * as team from '../src/team.js';
 
-const URL_ = 'https://fleet-abc.puter.work';
+const URL_ = 'http://fleet-abc.localhost:8443';
 afterEach(() => {
   delete globalThis.puter;
 });

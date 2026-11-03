@@ -3597,7 +3597,7 @@ test("migrating into a shared board keeps no copy of its images on this device",
   try {
     createMigrationHost({
       org: {
-        server: "https://whiteboard-test.puter.work",
+        server: "http://whiteboard-test.localhost:8443",
         isAdmin: true,
         isMember: true,
         request: async (op) => {

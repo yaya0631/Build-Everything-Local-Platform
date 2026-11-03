@@ -7,7 +7,7 @@
  * A shared worker can be configured instead, for a single deployment that
  * everyone creates workspaces on, the way the first release worked:
  *
- *   ?worker=https://my-teamchat.puter.work   (remembered in localStorage)
+ *   ?worker=http://my-teamchat.localhost:8443   (remembered in localStorage)
  *   VITE_WORKER_URL=https://...              (at build time)
  *
  * With a shared worker set, creating a workspace never deploys anything and
@@ -17,7 +17,7 @@
 import { trustServer } from './lib/refs.js';
 
 /**
- * A shared worker named by a link must be a puter.work worker. The app sends
+ * A shared worker named by a link must be a localhost:8443 worker. The app sends
  * the signed-in user's session to whatever host it calls (see lib/refs.js),
  * and anyone can hand someone a link: `?worker=https://evil.example` would
  * otherwise be remembered and given the session for good. A host elsewhere
@@ -26,7 +26,7 @@ import { trustServer } from './lib/refs.js';
 function acceptableFromLink(url) {
   try {
     const u = new URL(url);
-    return u.protocol === 'https:' && u.hostname.endsWith('.puter.work');
+    return u.protocol === 'https:' && u.hostname.endsWith('.localhost:8443');
   } catch {
     return false;
   }
@@ -53,7 +53,7 @@ function resolveSharedWorkerUrl() {
 
 const shared = resolveSharedWorkerUrl();
 export const SHARED_WORKER_URL = shared ? shared.replace(/\/+$/, '') : null;
-// The one host outside puter.work the app will send the user's session to
+// The one host outside localhost:8443 the app will send the user's session to
 // on its own: the operator configured it (see lib/refs.js).
 if (SHARED_WORKER_URL) trustServer(SHARED_WORKER_URL);
 
@@ -62,7 +62,7 @@ export const WORKER_BUNDLE_URL = typeof document !== 'undefined'
   ? new URL('./worker/teamchat-worker.js', document.baseURI).toString()
   : './worker/teamchat-worker.js';
 
-/** Prefix of the worker names the app creates: teamchat-xxxxxxxxxx.puter.work */
+/** Prefix of the worker names the app creates: teamchat-xxxxxxxxxx.localhost:8443 */
 export const WORKER_NAME_PREFIX = 'teamchat-';
 
 /**
@@ -71,6 +71,6 @@ export const WORKER_NAME_PREFIX = 'teamchat-';
  * never given. Everyone's invitation emails go out through it, each send
  * authorized by the worker and billed to the signed-in sender.
  */
-export const EMAIL_WORKER_URL = import.meta.env?.VITE_EMAIL_WORKER_URL || 'https://teamchat-email.puter.work';
+export const EMAIL_WORKER_URL = import.meta.env?.VITE_EMAIL_WORKER_URL || 'http://teamchat-email.localhost:8443';
 
 export const APP_NAME = 'Teamchat';

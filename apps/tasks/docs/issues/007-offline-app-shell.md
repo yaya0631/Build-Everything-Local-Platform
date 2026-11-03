@@ -12,7 +12,7 @@ localStorage mirror, dirty-write flushing, an offline banner. But there is
 no service worker anywhere in the project, so the app *shell* cannot load
 offline: an installed PWA or a browser tab opened without a connection
 gets a network error (or the explicit "Could not reach Puter" screen from
-`src/main.js`, since the Puter SDK loads from `https://js.puter.com`).
+`src/main.js`, since the Puter SDK loads from `/sdk/`).
 All the offline plumbing exists, yet the one scenario it's for — opening
 your tasks with no signal — fails at the front door. Chromium also gates
 installability on a fetch-handling service worker.

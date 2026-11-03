@@ -72,11 +72,11 @@ describe('sharing through Puter', () => {
   });
 
   it('builds a Puter link only inside the desktop', async () => {
-    const getShareLink = vi.fn().mockResolvedValue('https://puter.com/app/spreadsheet?file=u1');
+    const getShareLink = vi.fn().mockResolvedValue('http://localhost:8443/app/spreadsheet?file=u1');
     withSDK({ getShareLink }, { env: 'web' });
     expect(await P.puterShareLink('a.xlsx')).toBeNull();
     withSDK({ getShareLink }, { env: 'app' });
-    expect(await P.puterShareLink('a.xlsx')).toBe('https://puter.com/app/spreadsheet?file=u1');
+    expect(await P.puterShareLink('a.xlsx')).toBe('http://localhost:8443/app/spreadsheet?file=u1');
   });
 });
 

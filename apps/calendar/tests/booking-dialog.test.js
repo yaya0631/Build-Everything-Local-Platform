@@ -245,12 +245,12 @@ describe('booking editor dialog', () => {
   it('shows the share link for an existing page, and a pending note before it exists', () => {
     const page = normalizePage({ id: 'ab12cd34ef', title: 'Office hours' });
     openBookingEditor({
-      booking: makeBooking({ linkFor: () => 'https://cal-rsvp-x.puter.work/book/ab12cd34ef' }),
+      booking: makeBooking({ linkFor: () => 'http://cal-rsvp-x.localhost:8443/book/ab12cd34ef' }),
       store,
       page,
     });
     expect(dialog().querySelector('.bk-share__url').value).toBe(
-      'https://cal-rsvp-x.puter.work/book/ab12cd34ef',
+      'http://cal-rsvp-x.localhost:8443/book/ab12cd34ef',
     );
     document.querySelectorAll('.modal-scrim').forEach((n) => n.remove());
 
@@ -275,7 +275,7 @@ describe('booking editor dialog', () => {
     openBookingEditor({ booking, store, page });
     expect(dialog().querySelector('.bk-share__pending')).toBeTruthy();
 
-    url = 'https://cal-rsvp-x.puter.work/book/ab12cd34ef';
+    url = 'http://cal-rsvp-x.localhost:8443/book/ab12cd34ef';
     listeners.forEach((cb) => cb());
     expect(dialog().querySelector('.bk-share__pending')).toBeNull();
     expect(dialog().querySelector('.bk-share__url').value).toBe(url);

@@ -111,7 +111,7 @@ describe('document files in a shared firm', () => {
   beforeEach(() => {
     w = loadWorker();
     app.demo = false;
-    app.team = { url: 'https://legalfirm-abc.puter.work', role: 'owner' };
+    app.team = { url: 'http://legalfirm-abc.localhost:8443', role: 'owner' };
     globalThis.puter = { workers: { exec: w.exec(OWNER) } };
   });
   afterEach(() => {
@@ -153,7 +153,7 @@ function ownerAccount(w, { create } = {}) {
         create ||
         (async (name) => {
           deployed.push(name);
-          return { success: true, url: `https://${name}.puter.work` };
+          return { success: true, url: `http://${name}.localhost:8443` };
         }),
       delete: async (name) => void deleted.push(name),
       exec: w.exec(OWNER),
@@ -226,7 +226,7 @@ describe('team sign-in settings: turning it on', () => {
     acct = ownerAccount(w, {
       create: async (name) => {
         await gate;
-        return { success: true, url: `https://${name}.puter.work` };
+        return { success: true, url: `http://${name}.localhost:8443` };
       },
     });
     acct.puter.kv = { get: async () => null, set: async () => true };
@@ -279,7 +279,7 @@ describe('leaving a shared firm', () => {
 
   it('gives up the membership on the firm server, not just the local entry', async () => {
     const w = loadWorker();
-    const url = 'https://legalfirm-abc.puter.work';
+    const url = 'http://legalfirm-abc.localhost:8443';
     const daniel = person('u-2', 'daniel');
     const inv = (await w.api(OWNER, { op: 'invite' })).body;
     await w.api(daniel, { op: 'join', token: inv.token });
@@ -300,7 +300,7 @@ describe('a joined firm', () => {
 
   it('picks up a role the owner changed since joining', async () => {
     const w = loadWorker();
-    const url = 'https://legalfirm-abc.puter.work';
+    const url = 'http://legalfirm-abc.localhost:8443';
     const daniel = person('u-2', 'daniel');
     const inv = (await w.api(OWNER, { op: 'invite' })).body;
     await w.api(daniel, { op: 'join', token: inv.token });
@@ -321,7 +321,7 @@ describe('a joined firm', () => {
 
 describe('team sign-in settings: members', () => {
   const tick = () => new Promise((r) => setTimeout(r, 0));
-  const url = 'https://legalfirm-abc.puter.work';
+  const url = 'http://legalfirm-abc.localhost:8443';
   const daniel = person('u-2', 'daniel');
   const sofia = person('u-3', 'sofia');
   const bob = person('u-4', 'bob');
@@ -430,7 +430,7 @@ describe('team sign-in settings: members', () => {
 });
 
 describe('which firm to open', () => {
-  const url = 'https://legalfirm-abc.puter.work';
+  const url = 'http://legalfirm-abc.localhost:8443';
   beforeEach(() => {
     localStorage.clear();
     app.user = { username: 'eleanor', uuid: 'owner-1' };
@@ -495,8 +495,8 @@ describe('leaving a firm you were already removed from', () => {
     const removed = vi.fn();
     window.addEventListener('legal:removed', removed);
     const exec = async () => new Response(JSON.stringify({ ok: false, error: 'not_a_member', message: 'You are not a member of this firm.' }), { status: 403 });
-    await expect(team.call('https://legalfirm-abc.puter.work', 'leave', {}, { getPuter: () => ({ workers: { exec } }) })).rejects.toMatchObject({ code: 'not_a_member' });
-    await expect(team.call('https://legalfirm-abc.puter.work', 'load', { coll: 'matters' }, { getPuter: () => ({ workers: { exec } }) })).rejects.toBeTruthy();
+    await expect(team.call('http://legalfirm-abc.localhost:8443', 'leave', {}, { getPuter: () => ({ workers: { exec } }) })).rejects.toMatchObject({ code: 'not_a_member' });
+    await expect(team.call('http://legalfirm-abc.localhost:8443', 'load', { coll: 'matters' }, { getPuter: () => ({ workers: { exec } }) })).rejects.toBeTruthy();
     window.removeEventListener('legal:removed', removed);
     // Only the ordinary request reports it.
     expect(removed).toHaveBeenCalledTimes(1);

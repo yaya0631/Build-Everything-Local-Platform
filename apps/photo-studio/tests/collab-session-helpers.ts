@@ -12,7 +12,7 @@ import { openBinding, type SharedBinding } from '../src/collab/shared-history';
 import { TileIndex } from '../src/collab/tile-index';
 import { environment, owner, until, wait, type User } from './collab-helpers';
 
-export const SERVER = 'https://photo-test.puter.work';
+export const SERVER = 'http://photo-test.localhost:8443';
 export type Env = ReturnType<typeof environment>;
 export type Person = { user: User; client: RoomClient; binding: SharedBinding; assets: Assets; store: MemoryStore<OutboxStores> };
 const open: RoomClient[] = [];

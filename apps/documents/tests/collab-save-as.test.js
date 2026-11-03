@@ -27,14 +27,14 @@ import * as P from '../src/lib/puter.js';
 let hub = null;
 let joinAs = null;
 // The file was shared before: its room is remembered.
-vi.mock('../src/collab/room-memory.js', async (importOriginal) => ({ ...await importOriginal(), rememberedRoom: async () => ({ server: 'https://documents-abc.puter.work', room: 'r1' }) }));
+vi.mock('../src/collab/room-memory.js', async (importOriginal) => ({ ...await importOriginal(), rememberedRoom: async () => ({ server: 'http://documents-abc.localhost:8443', room: 'r1' }) }));
 vi.mock('../src/collab/live.js', async (importOriginal) => ({
   ...await importOriginal(),
   // The owner reopening a document they shared: the room is the test's hub.
   reconnect: async () => {
     const client = new CollabClient({ transport: hub.connect(joinAs.role), user: joinAs.user, room: 'r1', sendDelay: 0 });
     await client.connect();
-    return { client, link: { server: 'https://documents-abc.puter.work', room: 'r1' } };
+    return { client, link: { server: 'http://documents-abc.localhost:8443', room: 'r1' } };
   },
 }));
 const { createCollaboration } = await import('../src/views/collab.js');
@@ -66,7 +66,7 @@ async function openShared({ role, user, path }) {
     const client = new CollabClient({ transport: hub.connect(role), user, room: 'r1', sendDelay: 0 });
     await client.connect();
     doc.setSaving(false);
-    doc.collab = { client, link: { server: 'https://documents-abc.puter.work', room: 'r1' } };
+    doc.collab = { client, link: { server: 'http://documents-abc.localhost:8443', room: 'r1' } };
   }
   doc.attach(async () => bytes(engine.model.text));
   const collab = createCollaboration({ editor: () => engine, pkg: () => ({ assets: {} }), doc, local: false, error: e => { throw e; }, user: () => user, documentName: () => 'Plan' });

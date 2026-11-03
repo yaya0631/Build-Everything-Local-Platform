@@ -55,7 +55,7 @@ for (const phase of [
       const update = offline.update(vector),
         digest = await hash(update);
       offline.destroy();
-      const scope = `https://whiteboard-test.puter.work|${initial.id}|${owner.uuid}`;
+      const scope = `http://whiteboard-test.localhost:8443|${initial.id}|${owner.uuid}`;
       await store.collaborationPut({
         id: `${scope}|op:${digest}`,
         scope,
@@ -117,7 +117,7 @@ for (const phase of [
       puter,
       store,
       room: initial.id,
-      server: "https://whiteboard-test.puter.work",
+      server: "http://whiteboard-test.localhost:8443",
       user: owner,
       changed() {
         changes++;
@@ -194,7 +194,7 @@ test("a failed check-in is tried again before presence can expire", async (t) =>
     puter: env.sdk(owner),
     store: memoryStore(),
     room: initial.id,
-    server: "https://whiteboard-test.puter.work",
+    server: "http://whiteboard-test.localhost:8443",
     user: owner,
     changed() {},
     activity() {},
@@ -270,7 +270,7 @@ for (const status of [429, 503, 403])
       puter,
       store: memoryStore(),
       room: initial.id,
-      server: "https://whiteboard-test.puter.work",
+      server: "http://whiteboard-test.localhost:8443",
       user: owner,
       changed() {},
       activity() {},
@@ -309,7 +309,7 @@ test("offline edits larger than one commit are sent in several and all saved", a
   seed.destroy();
   const session = new CollaborationSession({
     puter: env.sdk(owner),
-    server: "https://whiteboard-test.puter.work",
+    server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: owner,
     store: memoryStore(),
@@ -372,7 +372,7 @@ test("offline edits too large to send in time over a slow connection go up in sm
       : exec(url, options);
   const session = new CollaborationSession({
     puter,
-    server: "https://whiteboard-test.puter.work",
+    server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: owner,
     store: memoryStore(),
@@ -430,7 +430,7 @@ test("archiving makes open sessions read-only, and peers return after access doe
   await env.service.call(editor, { op: "join", room: b.id, token });
   const session = new CollaborationSession({
     puter: { ...env.sdk(editor), peer: hub.peer },
-    server: "https://whiteboard-test.puter.work",
+    server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: editor,
     store: memoryStore(),
@@ -482,7 +482,7 @@ test("a member left without peer links catches up on edits, and again when one r
   seed.destroy();
   const session = new CollaborationSession({
     puter: { ...env.sdk(owner), peer: hub.peer },
-    server: "https://whiteboard-test.puter.work",
+    server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: owner,
     store: memoryStore(),
@@ -532,7 +532,7 @@ test("a member left without peer links catches up on edits, and again when one r
   seed.destroy();
   const session = new CollaborationSession({
     puter: { ...env.sdk(owner), peer: hub.peer },
-    server: "https://whiteboard-test.puter.work",
+    server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: owner,
     store: memoryStore(),
@@ -588,7 +588,7 @@ test("a role change keeps a member's live board events", async () => {
   let state;
   const session = new CollaborationSession({
     puter: env.sdk(editor),
-    server: "https://whiteboard-test.puter.work",
+    server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: editor,
     store: memoryStore(),
@@ -662,7 +662,7 @@ test("a burst of edits does not make every participant check in each time", asyn
   let state;
   const session = new CollaborationSession({
     puter: env.sdk(editor),
-    server: "https://whiteboard-test.puter.work",
+    server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: editor,
     store: memoryStore(),
@@ -720,7 +720,7 @@ test("switching tabs checks in only when the last check-in is old, and hiding se
   globalThis.document = page;
   const session = new CollaborationSession({
     puter: env.sdk(owner),
-    server: "https://whiteboard-test.puter.work",
+    server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: owner,
     store: memoryStore(),
@@ -785,7 +785,7 @@ test("a commenter's comment is saved even when their device measured text differ
   let state;
   const session = new CollaborationSession({
     puter: env.sdk(viewer),
-    server: "https://whiteboard-test.puter.work",
+    server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: viewer,
     store: memoryStore(),
@@ -840,7 +840,7 @@ test("an open session whose board is deleted becomes read-only and says so, and 
   const statuses = [];
   const session = new CollaborationSession({
     puter: env.sdk(editor),
-    server: "https://whiteboard-test.puter.work",
+    server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: editor,
     store: memoryStore(),
@@ -917,7 +917,7 @@ test("edits the worker keeps refusing as out of order are made again on its stat
   const statuses = [];
   const session = new CollaborationSession({
     puter: env.sdk(owner),
-    server: "https://whiteboard-test.puter.work",
+    server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: owner,
     store: memoryStore(),
@@ -996,7 +996,7 @@ test("an edit refused as out of order that cannot be made again on the worker's 
   const rejections = [];
   const session = new CollaborationSession({
     puter: env.sdk(owner),
-    server: "https://whiteboard-test.puter.work",
+    server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: owner,
     store: memoryStore(),
@@ -1069,7 +1069,7 @@ test("a board holding what only a newer app writes asks for a reload instead of 
   const statuses = [];
   const session = new CollaborationSession({
     puter: env.sdk(owner),
-    server: "https://whiteboard-test.puter.work",
+    server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: owner,
     store: memoryStore(),
@@ -1126,7 +1126,7 @@ test("what only a newer app writes is noticed when a later synchronization bring
   const statuses = [];
   const session = new CollaborationSession({
     puter: env.sdk(owner),
-    server: "https://whiteboard-test.puter.work",
+    server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: owner,
     store: memoryStore(),
@@ -1182,7 +1182,7 @@ for (const path of ["a peer", "a save's response"])
     const statuses = [];
     const session = new CollaborationSession({
       puter: env.sdk(owner),
-      server: "https://whiteboard-test.puter.work",
+      server: "http://whiteboard-test.localhost:8443",
       room: b.id,
       user: owner,
       store: memoryStore(),
@@ -1249,7 +1249,7 @@ test("a queued edit that no longer fits the board is uploaded and settled before
   const make = () =>
     new CollaborationSession({
       puter: env.sdk(owner),
-      server: "https://whiteboard-test.puter.work",
+      server: "http://whiteboard-test.localhost:8443",
       room: b.id,
       user: owner,
       store,
@@ -1319,7 +1319,7 @@ test("an upload keeps the shared state on this device once", async () => {
   };
   const session = new CollaborationSession({
     puter: env.sdk(owner),
-    server: "https://whiteboard-test.puter.work",
+    server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: owner,
     store,
@@ -1372,7 +1372,7 @@ test("a device that cannot keep its copy of the board still saves, shows others'
     const statuses = [];
     const session = new CollaborationSession({
       puter: env.sdk(user),
-      server: "https://whiteboard-test.puter.work",
+      server: "http://whiteboard-test.localhost:8443",
       room: b.id,
       user,
       store: rows,
@@ -1463,7 +1463,7 @@ test("a session continuing under a new ID publishes its new peer invite at once"
   }
   const session = new CollaborationSession({
     puter: { ...env.sdk(editor), peer: hub.peer },
-    server: "https://whiteboard-test.puter.work",
+    server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: editor,
     store: memoryStore(),
@@ -1516,7 +1516,7 @@ test("an editor demoted to viewer while edits wait is told they stay on this dev
   const statuses = [];
   const session = new CollaborationSession({
     puter: env.sdk(editor),
-    server: "https://whiteboard-test.puter.work",
+    server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: editor,
     store: memoryStore(),
@@ -1561,7 +1561,7 @@ test("edits arriving steadily on a slow board are shown in fewer redraws, and qu
     shown = 0;
   const session = new CollaborationSession({
     puter: {},
-    server: "https://whiteboard-test.puter.work",
+    server: "http://whiteboard-test.localhost:8443",
     room: "slow-board",
     user: owner,
     store: memoryStore(),
@@ -1614,7 +1614,7 @@ test("a resting cursor survives one lost repeat, and a crashed participant's sel
     puter: env.sdk(owner),
     store: memoryStore(),
     room: initial.id,
-    server: "https://whiteboard-test.puter.work",
+    server: "http://whiteboard-test.localhost:8443",
     user: owner,
     changed() {},
     activity() {},

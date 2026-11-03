@@ -8,7 +8,7 @@ for (const table of [false, true]) {
   test(`native outline numbering survives clipboard both ways, download and reopen; table=${table}`, async ({
     page,
   }) => {
-    await page.route("https://js.puter.com/v2/", (route) =>
+    await page.route("**/sdk/puter.js", (route) =>
       route.fulfill({
         contentType: "application/javascript",
         body: 'window.puter={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',

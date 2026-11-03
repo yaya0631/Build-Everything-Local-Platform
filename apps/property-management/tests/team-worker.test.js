@@ -227,7 +227,7 @@ describe('team worker', () => {
   });
 
   it("a member promoted after joining gets the new role on their next start", async () => {
-    const url = 'https://propmgmt-abc.puter.work';
+    const url = 'http://propmgmt-abc.localhost:8443';
     const inv = (await w.api(OWNER, { op: 'invite', role: 'member' })).body;
     await w.api(STRANGER, { op: 'join', token: inv.token });
     await w.api(OWNER, { op: 'setRole', uuid: 'user-2', role: 'admin' });
@@ -249,7 +249,7 @@ describe('team worker', () => {
   it('serves the app store through the worker backend for several people', async () => {
     const inv = (await w.api(OWNER, { op: 'invite', role: 'member' })).body;
     await w.api(STRANGER, { op: 'join', token: inv.token });
-    const url = 'https://propmgmt-abc.puter.work';
+    const url = 'http://propmgmt-abc.localhost:8443';
     const mk = (user) => createStore({ backend: createWorkerBackend(url, { getPuter: () => ({ workers: { exec: w.exec(user) } }) }), flushDelay: 0 });
     const ownerStore = mk(OWNER);
     const memberStore = mk(STRANGER);
@@ -288,7 +288,7 @@ describe('turning on team sign-in', () => {
     const saved = { puter: globalThis.puter, fetch: globalThis.fetch };
     globalThis.puter = {
       fs: { write: async (path) => ({ path }), read: async () => new Blob([]) },
-      workers: { create: async (name) => ({ url: `https://${name}.puter.work` }), exec: w.exec(OWNER) },
+      workers: { create: async (name) => ({ url: `http://${name}.localhost:8443` }), exec: w.exec(OWNER) },
     };
     globalThis.fetch = async (url) => (String(url).endsWith('/health') ? { ok: true, json: () => w.health() } : { ok: true, text: async () => SOURCE });
     try {
@@ -313,7 +313,7 @@ describe('a team setup that fails', () => {
     globalThis.puter = {
       fs: { write: async (path) => ({ path }) },
       workers: {
-        create: async (name) => ({ url: `https://${name}.puter.work` }),
+        create: async (name) => ({ url: `http://${name}.localhost:8443` }),
         delete: async (name) => deleted.push(name),
         exec: async () => {
           throw new Error('offline');
@@ -334,29 +334,29 @@ describe('a team setup that fails', () => {
 describe('loading workspaces', () => {
   it('retries a brief failure and never guesses after a lasting one', async () => {
     let fails = 2;
-    const kv = { get: async () => (fails-- > 0 ? Promise.reject(new Error('blip')) : { current: 'https://t.puter.work', own: { url: 'https://o.puter.work' }, joined: [{ url: 'https://t.puter.work' }] }) };
-    expect((await loadWorkspaces(kv, { wait: 1 })).own.url).toBe('https://o.puter.work');
+    const kv = { get: async () => (fails-- > 0 ? Promise.reject(new Error('blip')) : { current: 'http://t.localhost:8443', own: { url: 'http://o.localhost:8443' }, joined: [{ url: 'http://t.localhost:8443' }] }) };
+    expect((await loadWorkspaces(kv, { wait: 1 })).own.url).toBe('http://o.localhost:8443');
     const down = { get: async () => Promise.reject(new Error('down')) };
     await expect(loadWorkspaces(down, { wait: 1 })).rejects.toThrow('down');
   });
 });
 
 describe('team links', () => {
-  it('builds and parses invitation links, trusting only puter.work', () => {
-    globalThis.location ??= { href: 'https://properties.puter.com/' };
-    const link = inviteLink('https://propmgmt-abc123.puter.work', 'TOKENtoken1234567890');
+  it('builds and parses invitation links, trusting only localhost:8443', () => {
+    globalThis.location ??= { href: 'http://properties.localhost:8443/' };
+    const link = inviteLink('http://propmgmt-abc123.localhost:8443', 'TOKENtoken1234567890');
     expect(link).toMatch(/#\/join\?w=propmgmt-abc123&t=TOKENtoken1234567890$/);
     const q = Object.fromEntries(new URLSearchParams(link.split('?')[1]));
-    expect(parseJoin(q)).toEqual({ url: 'https://propmgmt-abc123.puter.work', token: 'TOKENtoken1234567890' });
+    expect(parseJoin(q)).toEqual({ url: 'http://propmgmt-abc123.localhost:8443', token: 'TOKENtoken1234567890' });
     expect(parseJoin({ w: 'evil.example.com/x', t: 'TOKENtoken1234567890' })).toBeNull();
     expect(isTrustedWorkerUrl('https://evil.example.com')).toBe(false);
-    expect(isTrustedWorkerUrl('http://a.puter.work')).toBe(false);
+    expect(isTrustedWorkerUrl('http://a.localhost:8443')).toBe(false);
   });
 
   it('picks the active workspace', () => {
     expect(activeWorker({ current: 'own', own: {}, joined: [] })).toBeNull();
-    expect(activeWorker({ current: 'own', own: { url: 'https://a.puter.work' }, joined: [] })).toBe('https://a.puter.work');
-    expect(activeWorker({ current: 'https://b.puter.work', own: {}, joined: [{ url: 'https://b.puter.work' }] })).toBe('https://b.puter.work');
+    expect(activeWorker({ current: 'own', own: { url: 'http://a.localhost:8443' }, joined: [] })).toBe('http://a.localhost:8443');
+    expect(activeWorker({ current: 'http://b.localhost:8443', own: {}, joined: [{ url: 'http://b.localhost:8443' }] })).toBe('http://b.localhost:8443');
   });
 });
 

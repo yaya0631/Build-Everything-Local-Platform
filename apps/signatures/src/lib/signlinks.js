@@ -3,7 +3,7 @@
  *
  * The app's only backend is Puter, which signers (who may have no Puter
  * account at all) can't touch. So each user gets their own serverless worker
- * (`https://doc-sign-….puter.work`, deployed here on first send from the
+ * (`https://doc-sign-….localhost:8443`, deployed here on first send from the
  * template in src/workers/sign-worker.js) that runs under THEIR account and
  * serves per-signer capability URLs: unguessable tokenized links a signer
  * opens to review and sign, the industry-standard link-signing pattern.
@@ -45,7 +45,7 @@ export function createSignLinks({
   // the worker at deploy; a version bump redeploys with the current origin.
   pageUrl = (typeof location !== 'undefined' && location.origin && location.origin !== 'null'
     ? location.origin + location.pathname.replace(/[^/]*$/, '')
-    : 'https://puter.com/') + 'sign.html',
+    : 'http://localhost:8443/') + 'sign.html',
   // Where the owner's own copy of a document lives, for the link in the
   // completion mail the worker sends them.
   appUrl = pageUrl.replace(/sign\.html$/, ''),
@@ -170,7 +170,7 @@ export function createSignLinks({
         lastErr = err; // most likely a name collision; retry with a fresh one
         continue;
       }
-      const url = String((dep && dep.url) || `https://${name}.puter.work`).replace(/\/+$/, '');
+      const url = String((dep && dep.url) || `http://${name}.localhost:8443`).replace(/\/+$/, '');
       // Persist BEFORE verifying, with a null version: the worker must never
       // be orphaned (a re-run would deploy a duplicate), and a null version
       // routes the next ensureWorker() into the self-healing upgrade branch.

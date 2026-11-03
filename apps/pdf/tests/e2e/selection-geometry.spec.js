@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { listHighlights } from '../../src/core/highlight.js';
 
 async function mockPuter(page) {
-  await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+  await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
 }
 async function openPdf(page, doc) {
   const chooser = page.waitForEvent('filechooser');

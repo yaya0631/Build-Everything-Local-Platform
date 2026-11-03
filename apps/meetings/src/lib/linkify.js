@@ -7,7 +7,7 @@
  *    `javascript:` / `data:` payload in a message can never become an href.
  *  - Every candidate is re-parsed with `new URL()` and dropped if it does not
  *    survive, so nothing malformed reaches the DOM.
- *  - Candidates carrying credentials (`https://puter.com@evil.test`) or bidi
+ *  - Candidates carrying credentials (`http://localhost:8443@evil.test`) or bidi
  *    controls are left as plain text; both read as one host but resolve to
  *    another.
  *  - The caller renders segments as text nodes / `<a>` elements, never as

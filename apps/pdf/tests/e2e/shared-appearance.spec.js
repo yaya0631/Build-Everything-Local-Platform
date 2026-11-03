@@ -9,7 +9,7 @@ for (const kind of ['text', 'dropdown', 'list'])
     test(`editing one ${kind} preserves a field sharing its appearance (${edit})`, async ({
       page,
     }, testInfo) => {
-      await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+      await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
       await page.goto('/#library');
       const { doc } = await sharedAppearancePdf({ kind });
       const original = await doc.save();

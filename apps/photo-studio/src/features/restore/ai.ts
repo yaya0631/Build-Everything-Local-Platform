@@ -11,7 +11,7 @@ const KEEP = 'Keep the composition, framing, perspective, people and every objec
 /** The complete instruction for an entry, or undefined when its prompt is missing. */
 export function aiInstruction(en: RestoreEntry): string | undefined {
   if (en.id === 'colorize')
-    return 'Colorize this black-and-white photograph with natural, realistic and historically plausible colors. Only add color: keep every detail, the lighting and the tones exactly as they are. ' + KEEP;
+    return 'Colorize this black-and-white photograph with natural, realistic and historically realistic colors. Only add color: keep every detail, the lighting and the tones exactly as they are. ' + KEEP;
   if (en.id === 'style') {
     const p = (en.prompt ?? '').trim();
     if (!p) return undefined;

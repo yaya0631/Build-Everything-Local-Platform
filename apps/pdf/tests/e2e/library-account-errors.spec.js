@@ -5,7 +5,7 @@ for (const action of ['Download', 'Rename', 'Delete', 'Duplicate'])
     test(`${action}'s late cloud failure respects ${newer}`, async ({ page }) => {
       const errors = [];
       page.on('pageerror', (error) => errors.push(error.message));
-      await page.route('https://js.puter.com/**', (route) =>
+      await page.route('**/sdk/puter.js', (route) =>
         route.fulfill({
           contentType: 'application/javascript',
           body: `window.account={username:'Alice'};

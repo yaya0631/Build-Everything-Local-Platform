@@ -184,7 +184,6 @@ describe('board view', () => {
 // light square unless the column also shifts by one — and there are two
 // equally-near dark squares to choose between when it does. These tests pin
 // down the properties that make the result usable rather than merely
-// plausible: navigation always lands on a playable square, left/right stay
 // in the row, up/down stay one row away, and repeated presses settle into a
 // stable back-and-forth instead of drifting sideways or getting stuck at an
 // edge. Covered for both orientations, since a flipped board reverses which

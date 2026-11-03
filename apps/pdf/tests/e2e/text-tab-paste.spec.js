@@ -32,7 +32,7 @@ async function exportedText(page) {
 // Spreadsheet cells and tables copy with tabs between them. The text fonts have no tab, so a
 // pasted tab becomes spaces, as it does in a text box comment, instead of failing the edit.
 test('text pasted with tabs is added and edited with spaces in their place', async ({ page }) => {
-  await page.route('https://js.puter.com/**', (route) => route.abort());
+  await page.route('**/sdk/puter.js', (route) => route.abort());
   const doc = await PDFDocument.create();
   const sheet = doc.addPage([612, 792]);
   const font = await doc.embedFont(StandardFonts.Helvetica),
@@ -105,7 +105,7 @@ test('text pasted with tabs is added and edited with spaces in their place', asy
 // A browser cuts a paste short at a field's length limit without a word. Text too long to keep
 // must be refused with a reason, with the draft left whole for shortening.
 test('text pasted beyond the length limit is not cut short without a word', async ({ page }) => {
-  await page.route('https://js.puter.com/**', (route) => route.abort());
+  await page.route('**/sdk/puter.js', (route) => route.abort());
   const doc = await PDFDocument.create();
   const font = await doc.embedFont(StandardFonts.Helvetica);
   doc.addPage([612, 792]).drawText('Hello world', { x: 60, y: 600, size: 20, font });
@@ -149,7 +149,7 @@ test('text pasted beyond the length limit is not cut short without a word', asyn
 // PowerPoint copies a line break within a paragraph as a vertical tab, and other apps use the
 // Unicode line and paragraph separators. Each is a line break, not a character to draw.
 test('line breaks pasted as vertical tabs or line separators start new lines', async ({ page }) => {
-  await page.route('https://js.puter.com/**', (route) => route.abort());
+  await page.route('**/sdk/puter.js', (route) => route.abort());
   const doc = await PDFDocument.create();
   const font = await doc.embedFont(StandardFonts.Helvetica),
     bold = await doc.embedFont(StandardFonts.HelveticaBold);

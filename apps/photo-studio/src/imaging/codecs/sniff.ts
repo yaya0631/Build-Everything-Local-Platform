@@ -73,7 +73,6 @@ function looksLikeSvg(b: Uint8Array): boolean {
 }
 
 // TGA has no magic number: accept a TGA 2.0 footer, or a header whose fields
-// are all plausible.
 function looksLikeTga(b: Uint8Array): boolean {
   if (b.length >= 26 && asciiAt(b, b.length - 18, 16) === 'TRUEVISION-XFILE') return true;
   if (b.length < 19) return false;

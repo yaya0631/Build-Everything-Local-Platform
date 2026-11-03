@@ -5,7 +5,7 @@ import { decode, pageSource } from '../../src/core/text-edit.js';
 
 for (const form of [false, true]) {
   test(`text in hidden layers has no editing targets (Form XObject=${form})`, async ({ page }) => {
-    await page.route('https://js.puter.com/**', (route) =>
+    await page.route('**/sdk/puter.js', (route) =>
       route.fulfill({
         contentType: 'application/javascript',
         body: `window.puter = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({ username: 'test' }) }, fs: { readdir: async () => [] }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`,

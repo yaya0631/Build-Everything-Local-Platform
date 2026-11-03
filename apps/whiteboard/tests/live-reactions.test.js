@@ -29,7 +29,7 @@ function session(options = {}) {
   const env = environment();
   const s = new CollaborationSession({
     puter: env.sdk(owner),
-    server: "https://whiteboard-test.puter.work",
+    server: "http://whiteboard-test.localhost:8443",
     room: "room",
     user: owner,
     store: memoryStore(),

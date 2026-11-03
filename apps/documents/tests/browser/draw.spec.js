@@ -83,7 +83,7 @@ test('pens draw with the mouse, undo per stroke, save as DrawingML groups and re
   expect(xml).toMatch(/behindDoc="1"/);
   expect(xml).toMatch(/<a:custGeom>/);
   expect(xml).toMatch(/<a:srgbClr val="FFFF00"><a:alpha val="50000"\/><\/a:srgbClr>/);
-  expect(xml).toMatch(/<pdi:stroke xmlns:pdi="http:\/\/schemas.puter.com\/documents\/2026\/ink" tool="pen" color="000000"/);
+  expect(xml).toMatch(/<pdi:stroke xmlns:pdi="http:\/\/schemas.localhost:8443\/documents\/2026\/ink" tool="pen" color="000000"/);
   expect(xml).toMatch(/tool="pen" color="C00000"/);
   expect(xml).toMatch(/<wp:positionV relativeFrom="paragraph">/);
   const text = await input.inputValue();

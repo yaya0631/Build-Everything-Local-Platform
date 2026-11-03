@@ -37,7 +37,7 @@ async function openPdf(page, bytes) {
 
 for (const face of ['Regular', 'Bold']) {
   test(`Korean ${face} subset edits preview, save, and reopen`, async ({ page }) => {
-    await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+    await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
     await page.goto('/#library');
     const doc = await PDFDocument.create();
     doc.registerFontkit(fontkit);
@@ -71,7 +71,7 @@ for (const face of ['Regular', 'Bold']) {
 }
 
 test('new Korean text loads the Korean preview font and can be saved', async ({ page }) => {
-  await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+  await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([500, 300]);
@@ -87,7 +87,7 @@ test('new Korean text loads the Korean preview font and can be saved', async ({ 
 });
 
 test('a failed Korean font download preserves the draft and can be retried', async ({ page }) => {
-  await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+  await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
   let downloads = 0;
   await page.route('**/fonts/NotoSansKR-Regular.ttf', (route) => {
     if (route.request().resourceType() === 'fetch' && ++downloads === 1)

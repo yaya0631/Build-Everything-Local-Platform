@@ -23,7 +23,7 @@ async function setup() {
 }
 
 const open = async (env, user, extra = {}) => {
-  const s = new SharedSpace({ server: 'https://x.puter.work', room: ROOM, request: env.requester(user), cache: extra.cache || memoryCache(), user });
+  const s = new SharedSpace({ server: 'http://x.localhost:8443', room: ROOM, request: env.requester(user), cache: extra.cache || memoryCache(), user });
   await s.open(extra);
   return s;
 };

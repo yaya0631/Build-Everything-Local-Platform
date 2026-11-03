@@ -7,7 +7,6 @@
 // border. It cannot recognize objects, so it struggles with camouflage, busy
 // backgrounds, several unrelated subjects, subjects cut off on several sides and
 // fine translucent detail (veils, smoke). Fine hair against a contrasting plain
-// background comes out soft but plausible; against clutter it does not.
 import { mask8, type Mask8, type Progress, type RGBA8, checkCancelled } from '../types';
 import { downscaleRGBA, guidedFilterColor, guidedUpsample, lumaF32, resizePlane } from './filters';
 import { BG, FG, grabCut, PR_BG, PR_FG } from './grabcut';

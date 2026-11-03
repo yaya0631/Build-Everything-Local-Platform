@@ -1149,7 +1149,7 @@ async function mockPuter(
   page,
   { app = false, failSave = false, signedIn = true, deferList = false, launch = null } = {},
 ) {
-  await page.route('https://js.puter.com/**', (route) =>
+  await page.route('**/sdk/puter.js', (route) =>
     route.fulfill({
       contentType: 'application/javascript',
       body: `
@@ -1565,7 +1565,7 @@ test('home sign-in refreshes the account and library', async ({ page }) => {
 });
 
 test('a second click on a library action while it runs does not repeat it', async ({ page }) => {
-  await page.route('https://js.puter.com/**', (route) =>
+  await page.route('**/sdk/puter.js', (route) =>
     route.fulfill({
       contentType: 'application/javascript',
       body: `window.puter = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [{ name: 'report.pdf', path: 'PDF Editor/report.pdf', size: 2048, modified: 1700000000 }], read: async () => { await new Promise((r) => setTimeout(r, 400)); return new Blob(['%PDF-1.4'], { type: 'application/pdf' }); }, write: async (path) => { window.writes = (window.writes || 0) + 1; return { path, name: path.split('/').pop() }; } }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`,
@@ -1958,7 +1958,7 @@ test('nested leave confirmations have the correct accessible name', async ({ pag
 });
 
 test('local workspace works without Puter and supports themes', async ({ page }) => {
-  await page.route('https://js.puter.com/**', (r) => r.abort());
+  await page.route('**/sdk/puter.js', (r) => r.abort());
   await page.goto('/#library');
   await expect(page.getByRole('button', { name: 'New blank PDF' })).toBeVisible();
   await expect(page.locator('.account-label')).toHaveText('Local workspace');

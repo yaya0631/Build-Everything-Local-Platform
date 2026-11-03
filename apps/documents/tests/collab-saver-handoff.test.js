@@ -43,7 +43,7 @@ async function ownerTab(hub, session) {
   // Both tabs opened the file as it was then.
   const doc = new Doc({ name: 'Plan', path: PATH, modified: 1 });
   doc.attach(async () => new Blob([engine.model.text]));
-  const live = new LiveSession({ engine, doc, client, link: { server: 'https://documents-abc.puter.work', room: 'r1' }, user: { id: 'u0', name: 'Ada' } });
+  const live = new LiveSession({ engine, doc, client, link: { server: 'http://documents-abc.localhost:8443', room: 'r1' }, user: { id: 'u0', name: 'Ada' } });
   return { client, engine, doc, live };
 }
 

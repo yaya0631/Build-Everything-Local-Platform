@@ -18,12 +18,12 @@ describe('normalizeUrl', () => {
   });
 
   it('adds https to bare domains and keeps valid absolute URLs', () => {
-    expect(normalizeUrl('puter.com')).toBe('https://puter.com/');
+    expect(normalizeUrl('localhost:8443')).toBe('http://localhost:8443/');
     expect(normalizeUrl('http://example.com/a?b=1')).toBe('http://example.com/a?b=1');
     expect(normalizeUrl(' https://example.com/editor ')).toBe('https://example.com/editor');
     expect(normalizeUrl('mailto:hi@example.com')).toBe('mailto:hi@example.com');
     expect(normalizeUrl('#section-2')).toBe('#section-2');
-    expect(normalizeUrl('localhost:5173')).toBe('https://localhost:5173/');
+    expect(normalizeUrl('localhost:5173')).toBe('http://localhost:5173/');
   });
 
   it('rejects things that are not web links', () => {

@@ -50,7 +50,7 @@ const outline = {
 // `answers` are what the AI streams back, one list of parts per request:
 // { text } or { tool: name, input }.
 async function start(page, answers = [], hash = "#/home") {
-  await page.route("https://js.puter.com/v2/", (r) =>
+  await page.route("**/sdk/puter.js", (r) =>
     r.fulfill({
       contentType: "application/javascript",
       body: `window.__answers=${JSON.stringify(answers)};window.__requests=[];

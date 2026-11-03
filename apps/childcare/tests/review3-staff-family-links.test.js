@@ -14,7 +14,7 @@ describe('staff and a signed-up family member', () => {
     g = all.find((x) => (x.studentIds || []).length && !x.pickupOnly && all.filter((y) => personName(y) === personName(x)).length === 1);
     app.store.patch('guardians', g.id, { memberUuid: 'user-3' });
     app.demo = false;
-    app.team = { url: 'https://school.puter.work', role: 'staff', school: 'School' };
+    app.team = { url: 'http://school.localhost:8443', role: 'staff', school: 'School' };
   });
   afterAll(() => {
     app.demo = true;

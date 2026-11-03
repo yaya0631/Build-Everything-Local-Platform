@@ -222,7 +222,7 @@ describe('team worker', () => {
   it('serves the app store through the worker backend for several people', async () => {
     const inv = (await w.api(OWNER, { op: 'invite', role: 'member' })).body;
     await w.api(STRANGER, { op: 'join', token: inv.token });
-    const url = 'https://fieldsvc-abc.puter.work';
+    const url = 'http://fieldsvc-abc.localhost:8443';
     const mk = (user) => createStore({ backend: createWorkerBackend(url, { getPuter: () => ({ workers: { exec: w.exec(user) } }) }), flushDelay: 0 });
     const ownerStore = mk(OWNER);
     const memberStore = mk(STRANGER);
@@ -243,7 +243,7 @@ describe('team worker', () => {
 describe('switching to team sign-in from another device', () => {
   it('brings over changes the team does not have, without overwriting newer team edits', async () => {
     const w = loadWorker();
-    const url = 'https://fieldsvc-abc.puter.work';
+    const url = 'http://fieldsvc-abc.localhost:8443';
     const teamBackend = createWorkerBackend(url, { getPuter: () => ({ workers: { exec: w.exec(OWNER) } }) });
     // What the team server got when team sign-in was turned on.
     await teamBackend.putRecords('clients', [
@@ -269,21 +269,21 @@ describe('switching to team sign-in from another device', () => {
 });
 
 describe('team links', () => {
-  it('builds and parses invitation links, trusting only puter.work', () => {
-    globalThis.location ??= { href: 'https://fieldservice.puter.com/' };
-    const link = inviteLink('https://fieldsvc-abc123.puter.work', 'TOKENtoken1234567890');
+  it('builds and parses invitation links, trusting only localhost:8443', () => {
+    globalThis.location ??= { href: 'http://fieldservice.localhost:8443/' };
+    const link = inviteLink('http://fieldsvc-abc123.localhost:8443', 'TOKENtoken1234567890');
     expect(link).toMatch(/#\/join\?w=fieldsvc-abc123&t=TOKENtoken1234567890$/);
     const q = Object.fromEntries(new URLSearchParams(link.split('?')[1]));
-    expect(parseJoin(q)).toEqual({ url: 'https://fieldsvc-abc123.puter.work', token: 'TOKENtoken1234567890' });
+    expect(parseJoin(q)).toEqual({ url: 'http://fieldsvc-abc123.localhost:8443', token: 'TOKENtoken1234567890' });
     expect(parseJoin({ w: 'evil.example.com/x', t: 'TOKENtoken1234567890' })).toBeNull();
     expect(isTrustedWorkerUrl('https://evil.example.com')).toBe(false);
-    expect(isTrustedWorkerUrl('http://a.puter.work')).toBe(false);
+    expect(isTrustedWorkerUrl('http://a.localhost:8443')).toBe(false);
   });
 
   it('picks the active workspace', () => {
     expect(activeWorker({ current: 'own', own: {}, joined: [] })).toBeNull();
-    expect(activeWorker({ current: 'own', own: { url: 'https://a.puter.work' }, joined: [] })).toBe('https://a.puter.work');
-    expect(activeWorker({ current: 'https://b.puter.work', own: {}, joined: [{ url: 'https://b.puter.work' }] })).toBe('https://b.puter.work');
+    expect(activeWorker({ current: 'own', own: { url: 'http://a.localhost:8443' }, joined: [] })).toBe('http://a.localhost:8443');
+    expect(activeWorker({ current: 'http://b.localhost:8443', own: {}, joined: [{ url: 'http://b.localhost:8443' }] })).toBe('http://b.localhost:8443');
   });
 });
 
@@ -322,7 +322,7 @@ describe('worker updates', () => {
     });
     globalThis.puter = { fs: { write: async (path) => writes.push(path) } };
     try {
-      const updated = await updateWorkerIfNeeded({ url: 'https://fieldsvc-abc.puter.work', path: 'field-service-team/worker.js' });
+      const updated = await updateWorkerIfNeeded({ url: 'http://fieldsvc-abc.localhost:8443', path: 'field-service-team/worker.js' });
       return { updated, writes: writes.length };
     } finally {
       globalThis.fetch = realFetch;
@@ -346,11 +346,11 @@ describe('business list', () => {
     globalThis.localStorage = { getItem: (k) => mem.get(k) ?? null, setItem: (k, v) => mem.set(k, String(v)) };
     app.user = { uuid: 'owner-1', username: 'olivia' };
     try {
-      const ws = { current: 'own', own: { url: 'https://fieldsvc-abc.puter.work' }, joined: [] };
+      const ws = { current: 'own', own: { url: 'http://fieldsvc-abc.localhost:8443' }, joined: [] };
       const kv = { data: null, async get() { return this.data; }, async set(k, v) { this.data = v; } };
       await saveWorkspaces(kv, ws);
       const failing = { async get() { throw new Error('network'); } };
-      expect((await loadWorkspaces(failing)).own.url).toBe('https://fieldsvc-abc.puter.work');
+      expect((await loadWorkspaces(failing)).own.url).toBe('http://fieldsvc-abc.localhost:8443');
       mem.clear();
       await expect(loadWorkspaces(failing)).rejects.toThrow('network');
     } finally {
@@ -365,9 +365,9 @@ describe('business list', () => {
     globalThis.location = { hash: '#/clients', reload };
     globalThis.puter = { kv: { async set() { throw new Error('network'); } } };
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    app.workspaces = { current: 'own', own: {}, joined: [{ url: 'https://fieldsvc-abc.puter.work' }] };
+    app.workspaces = { current: 'own', own: {}, joined: [{ url: 'http://fieldsvc-abc.localhost:8443' }] };
     try {
-      await switchWorkspace('https://fieldsvc-abc.puter.work');
+      await switchWorkspace('http://fieldsvc-abc.localhost:8443');
       expect(toast).toHaveBeenCalledWith(expect.stringMatching(/nothing was changed/), { type: 'error' });
       expect(reload).not.toHaveBeenCalled();
       expect(globalThis.location.hash).toBe('#/clients');
@@ -386,7 +386,7 @@ describe('turning on team sign-in', () => {
     globalThis.fetch = async () => ({ ok: true, text: async () => '// field-service-team-worker build=3\n', json: async () => ({ ok: true, build: '3' }) });
     globalThis.puter = {
       fs: { write: async () => ({ path: 'field-service-team-worker.js' }) },
-      workers: { create: async (name) => ({ success: true, url: `https://${name}.puter.work` }), delete: async () => {}, exec: w.exec(OWNER) },
+      workers: { create: async (name) => ({ success: true, url: `http://${name}.localhost:8443` }), delete: async () => {}, exec: w.exec(OWNER) },
     };
     try {
       const own = createMemoryBackend();
@@ -419,7 +419,7 @@ describe('turning on team sign-in', () => {
     });
     globalThis.puter = {
       fs: { write: async () => ({ path: 'field-service-team-worker.js' }) },
-      workers: { create: async (name) => ({ success: true, url: `https://${name}.puter.work` }), delete: async (name) => deleted.push(name) },
+      workers: { create: async (name) => ({ success: true, url: `http://${name}.localhost:8443` }), delete: async (name) => deleted.push(name) },
     };
     try {
       const store = createStore({ backend: createMemoryBackend(), flushDelay: 1e9 });

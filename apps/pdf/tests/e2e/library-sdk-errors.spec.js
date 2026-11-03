@@ -8,7 +8,7 @@ const refusals = {
 };
 for (const [action, reason] of Object.entries(refusals))
   test(`a library ${action} that Puter refuses says why`, async ({ page }) => {
-    await page.route('https://js.puter.com/**', (route) =>
+    await page.route('**/sdk/puter.js', (route) =>
       route.fulfill({
         contentType: 'application/javascript',
         body: `const refuse = async () => { throw { error: { code: 'refused', message: ${JSON.stringify(reason)} } }; };
@@ -40,7 +40,7 @@ for (const [action, reason] of Object.entries(refusals))
   });
 
 test('opening a library PDF over a lost connection says so in plain words', async ({ page }) => {
-  await page.route('https://js.puter.com/**', (route) =>
+  await page.route('**/sdk/puter.js', (route) =>
     route.fulfill({
       contentType: 'application/javascript',
       body: `window.puter = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({ username: 'test-user' }) },

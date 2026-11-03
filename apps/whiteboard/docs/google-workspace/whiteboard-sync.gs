@@ -13,7 +13,7 @@
  */
 
 // Script properties (Project Settings → Script properties).
-//   WHITEBOARD_URL       The organization's worker, https://….puter.work
+//   WHITEBOARD_URL       The organization's worker, http://<name>.localhost:8443
 //   WHITEBOARD_SCIM_KEY  An API key with the scim scope
 //   USER_QUERY           Optional Admin SDK search, such as
 //                        orgUnitPath='/Staff'; every user when empty

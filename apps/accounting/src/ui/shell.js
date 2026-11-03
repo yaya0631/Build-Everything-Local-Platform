@@ -188,7 +188,7 @@ export function mountShell(root, { user, picture, onSignOut }) {
     }
     nodes.push(el('div.panel-foot', {},
       'Your books are stored in your own ',
-      el('a', { href: 'https://developer.puter.com', target: '_blank', rel: 'noopener' }, 'Puter'),
+      el('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Puter'),
       ' account. Powered by Puter.'));
     swap(panel, ...nodes);
     panel.scrollTop = scroll;

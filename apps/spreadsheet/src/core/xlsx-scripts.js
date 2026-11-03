@@ -6,7 +6,7 @@
  */
 import { normalizeScripts, serializeScripts } from './scripts.js';
 
-export const SCRIPTS_RELATIONSHIP = 'https://puter.com/spreadsheet/relationships/scripts';
+export const SCRIPTS_RELATIONSHIP = 'http://localhost:8443/spreadsheet/relationships/scripts';
 export const SCRIPTS_PART = '/puter/scripts.json';
 export const SCRIPTS_CONTENT_TYPE = 'application/vnd.puter.spreadsheet.scripts+json';
 const FORMAT = 'puter-spreadsheet-scripts';

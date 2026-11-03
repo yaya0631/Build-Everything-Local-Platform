@@ -29,7 +29,7 @@ export function accessRevoked(e) {
 export const LOCAL = 'local';
 
 export function serverUrl(server) {
-  return `https://${server}.puter.work`;
+  return `http://${server}.localhost:8443`;
 }
 
 let localBackend = null;

@@ -6,7 +6,7 @@
  */
 import { createLocalKv } from './local-kv.js';
 
-export const LOCAL_WORKER_URL = 'https://sv-local.puter.work';
+export const LOCAL_WORKER_URL = 'http://sv-local.localhost:8443';
 
 function matchRoute(routes, method, pathname) {
   const uSegs = pathname.split('/').filter(Boolean);

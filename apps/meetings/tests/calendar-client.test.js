@@ -102,7 +102,7 @@ describe('calendar client — asking', () => {
   });
 
   it('returns the Calendar’s answer, and reuses one connection for a burst', async () => {
-    const ev = { id: 'e1', title: 'Standup', start: 1, end: 2, meeting: { url: 'https://meetings.puter.com/#/m/abcd-efgh-ijkl' } };
+    const ev = { id: 'e1', title: 'Standup', start: 1, end: 2, meeting: { url: 'http://meetings.localhost:8443/#/m/abcd-efgh-ijkl' } };
     const { calendar, service } = harness({ answer: () => ({ ok: true, result: { events: [ev], total: 1 } }) });
     const [a, b] = await Promise.all([calendar.listMeetings({ from: 0, to: 9 }), calendar.listMeetings({ from: 9, to: 18 })]);
     expect(a.events).toEqual([ev]);

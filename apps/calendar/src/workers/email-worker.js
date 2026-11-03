@@ -1,6 +1,6 @@
 /**
  * Email invitations — the calendar's one shared, app-owned Puter worker
- * (deployed to https://calendar-email.puter.work; see src/js/invites.js for
+ * (deployed to http://calendar-email.localhost:8443; see src/js/invites.js for
  * the calling side).
  *
  * Unlike the RSVP worker — one per calendar user, deployed into their own
@@ -31,7 +31,7 @@
  *     composed here, so every message this worker can be made to send is an
  *     invitation to something, addressed to that event's guests.
  *   - the links the worker itself writes are fixed shapes it controls: the
- *     guest's own RSVP capability URL (https://<worker>.puter.work/rsvp/<40
+ *     guest's own RSVP capability URL (https://<worker>.localhost:8443/rsvp/<40
  *     hex>, minted by that host's RSVP worker) and the event's validated
  *     meeting link. Host-supplied text (title, description, note) is
  *     HTML-escaped, so it can never inject markup or an <a> of its own. That
@@ -236,7 +236,7 @@ function base64Utf8(value) {
 /**
  * A guest's RSVP link, or '' — the ONLY link this worker will put in a mail.
  * It must be an RSVP capability URL on the Puter workers domain: https, a
- * *.puter.work host, and the exact /rsvp/<40 hex> path the RSVP worker mints.
+ * *.localhost:8443 host, and the exact /rsvp/<40 hex> path the RSVP worker mints.
  * Query and fragment are dropped rather than trusted.
  */
 function rsvpUrl(value) {
@@ -256,7 +256,7 @@ function rsvpUrl(value) {
 /**
  * The event's meeting link, or '' — the only other link this worker will put
  * in a mail. Held to the exact shape of a Puter Meetings room link
- * (https://meetings.puter.com/#/m/<room code>), because meeting URLs reach
+ * (http://meetings.localhost:8443/#/m/<room code>), because meeting URLs reach
  * the calendar from outside too (ICS import), and this worker must not
  * become a way to mail guests an arbitrary URL under the calendar's name.
  */

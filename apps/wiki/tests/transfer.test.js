@@ -12,7 +12,7 @@ import { fakePuter, alice } from './helpers/puter.js';
 
 function collabFor(env, user) {
   const request = env.requester(user);
-  return { request: (_s, op, data) => request(op, data), deploy: async () => 'https://wiki-test.puter.work', refresh: async () => {}, events: null };
+  return { request: (_s, op, data) => request(op, data), deploy: async () => 'http://wiki-test.localhost:8443', refresh: async () => {}, events: null };
 }
 
 describe('moving and copying safely', () => {

@@ -62,9 +62,9 @@ Changes were committed and pushed to `main` in tested increments.
 
 ## Evidence and measurement method
 
-Reviewed the official [directory listing](https://docs.puter.com/FS/readdir/),
-[file reading](https://docs.puter.com/FS/read/) and
-[KV documentation](https://docs.puter.com/KV/), plus local Puter source at
+Reviewed the official [directory listing](http://localhost:8443/FS/readdir/),
+[file reading](http://localhost:8443/FS/read/) and
+[KV documentation](http://localhost:8443/KV/), plus local Puter source at
 `abcd58f3d0eab0369b1dedcdd0b48863c3a9b1b0`:
 
 - `puter-js/src/modules/FileSystem/operations/readdir.js`: explicit cursors return

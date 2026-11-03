@@ -4,15 +4,15 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Play checkers for free, right in your browser. Challenge the computer, pass & play with a friend on one device, or invite a friend to a private online game." />
-    <link rel="canonical" href="https://checkers.puter.com/" />
+    <link rel="canonical" href="http://checkers.localhost:8443/" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Checkers" />
-    <meta property="og:url" content="https://checkers.puter.com/" />
+    <meta property="og:url" content="http://checkers.localhost:8443/" />
     <meta property="og:title" content="Play Checkers Online — vs the Computer or a Friend" />
     <meta property="og:description" content="Play checkers for free, right in your browser. Challenge the computer, pass & play on one device, or invite a friend to a private online game." />
     <!-- 1200x630 (1.91:1) is the ratio Facebook, LinkedIn, Slack, and X's
          large card all render. Built from tools/og-image.html. -->
-    <meta property="og:image" content="https://checkers.puter.com/og-image.png" />
+    <meta property="og:image" content="http://checkers.localhost:8443/og-image.png" />
     <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
@@ -20,7 +20,7 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Play Checkers Online — vs the Computer or a Friend" />
     <meta name="twitter:description" content="Play checkers for free, right in your browser. Challenge the computer, pass & play on one device, or invite a friend to a private online game." />
-    <meta name="twitter:image" content="https://checkers.puter.com/og-image.png" />
+    <meta name="twitter:image" content="http://checkers.localhost:8443/og-image.png" />
     <meta name="twitter:image:alt" content="Play Checkers Online — free in your browser. A checkers board showing a crowned king." />
     <link rel="icon" href="favicon.ico" sizes="48x48" />
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png" />
@@ -37,7 +37,7 @@
         "@context": "https://schema.org",
         "@type": ["WebApplication", "VideoGame"],
         "name": "Checkers — Play Online",
-        "url": "https://checkers.puter.com/",
+        "url": "http://checkers.localhost:8443/",
         "description": "Play checkers for free, right in your browser. Challenge the computer, pass & play with a friend on one device, or invite a friend to a private online game.",
         "applicationCategory": "GameApplication",
         "operatingSystem": "Any",
@@ -45,7 +45,7 @@
         "genre": "Board game",
         "gamePlatform": "Web browser",
         "playMode": ["SinglePlayer", "MultiPlayer"],
-        "image": "https://checkers.puter.com/icon-512.png",
+        "image": "http://checkers.localhost:8443/icon-512.png",
         "offers": {
           "@type": "Offer",
           "price": "0",
@@ -71,22 +71,7 @@
         document.documentElement.dataset.theme = theme;
       })();
     </script>
-    <!-- Privacy-friendly analytics by Plausible. The script id below belongs to
-         the checkers.puter.com site — do NOT reuse another app's id here, or
-         this traffic lands on that app's dashboard. The CSP in customHttp.yml
-         already allows the plausible.io origin, so no header change is needed.
-         The inline stub queues events fired before the async script lands, and
-         when the script never arrives at all — blocked by an extension, offline,
-         or a self-hosted deploy — analytics.js absorbs every call, so the game
-         is unaffected either way. One of the script-src hashes in customHttp.yml
-         covers the stub verbatim: editing it, whitespace included, means
-         recomputing that hash. -->
-    <script async src="https://plausible.io/js/pa-m1vqOP4n3aq8Igt6VMaMx.js"></script>
-    <script>
-      window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
-      plausible.init()
-    </script>
-  </head>
+    </head>
   <body>
     <noscript>
       <p class="noscript-note">

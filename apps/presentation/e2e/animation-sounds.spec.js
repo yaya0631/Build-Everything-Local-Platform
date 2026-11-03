@@ -7,7 +7,7 @@ import { synthesizeSound } from "../src/transitions/sounds.js";
 // to the file and the slide show.
 
 async function load(page, pres) {
-  await page.route("https://js.puter.com/v2/", (route) =>
+  await page.route("**/sdk/puter.js", (route) =>
     route.fulfill({
       contentType: "application/javascript",
       body: 'window.puter={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',

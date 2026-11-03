@@ -10,7 +10,7 @@ test.skip(({ isMobile }) => isMobile, 'desktop workspace');
 // Large drawings set a UserUnit so their pages fit PDF's coordinate limits; a page unit of
 // ten points makes Letter paper 61.2 by 79.2 units.
 test('a measurement on a page with large units is labeled like any other', async ({ page }) => {
-  await page.route('https://js.puter.com/**', (route) => route.abort());
+  await page.route('**/sdk/puter.js', (route) => route.abort());
   const doc = await PDFDocument.create();
   doc.addPage([61.2, 79.2]).node.set(PDFName.of('UserUnit'), PDFNumber.of(10));
   await page.goto('/#library');

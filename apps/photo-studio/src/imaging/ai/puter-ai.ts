@@ -4,7 +4,7 @@
 // of its functions is called; the UI must call them solely from an explicit user
 // command (menu item or button), never automatically or for previews.
 //
-// What Puter documents (docs.puter.com, AI/txt2img and AI/chat, October 2026):
+// What Puter documents (docs.localhost:8443, AI/txt2img and AI/chat, October 2026):
 // - puter.ai.txt2img(prompt, options) generates images and accepts reference
 //   images through `input_image` / `input_images` (public URL, data URI or raw
 //   base64 with `input_image_mime_type`). OpenAI gpt-image-* models route these

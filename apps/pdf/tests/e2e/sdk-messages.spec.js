@@ -17,7 +17,7 @@ async function setup(page, context, baseURL, sender) {
   doc.addPage([300, 300]);
   doc.addPage([300, 300]);
   const bytes = Buffer.from(await doc.save()).toString('base64');
-  await context.route('https://js.puter.com/**', (route) =>
+  await context.route('**/sdk/puter.js', (route) =>
     route.fulfill({
       contentType: 'application/javascript',
       body: `

@@ -10,10 +10,10 @@ import {
 import { applyChanges, threadsFor, threadCounts, pendingComment, canEditComment, canDeleteComment, relativeTime, threadOf } from '../src/review/comments.js';
 
 describe('review protocol', () => {
-  it('trusts only https puter.work worker origins', () => {
-    expect(workerURL('https://video-review-abc.puter.work')).toBe('https://video-review-abc.puter.work');
-    expect(workerURL('video-review-abc.puter.work')).toBe('https://video-review-abc.puter.work');
-    for (const bad of ['http://a.puter.work', 'https://a.puter.work.evil.com', 'https://evil.com', 'https://a.b.puter.work', 'https://a.puter.work:444', 'https://a.puter.work/x', 'https://u:p@a.puter.work', 'javascript:alert(1)', '', null]) {
+  it('trusts only https localhost:8443 worker origins', () => {
+    expect(workerURL('http://video-review-abc.localhost:8443')).toBe('http://video-review-abc.localhost:8443');
+    expect(workerURL('video-review-abc.localhost:8443')).toBe('http://video-review-abc.localhost:8443');
+    for (const bad of ['http://a.localhost:8443', 'http://a.localhost:8443.evil.com', 'https://evil.com', 'http://a.b.localhost:8443', 'http://a.localhost:8443:444', 'http://a.localhost:8443/x', 'https://u:p@a.localhost', 'javascript:alert(1)', '', null]) {
       expect(trustedServer(bad), String(bad)).toBe(false);
     }
   });
@@ -21,15 +21,15 @@ describe('review protocol', () => {
   it('builds and parses review links', () => {
     const token = inviteToken();
     expect(TOKEN.test(token)).toBe(true);
-    const link = reviewLink('https://video-studio.puter.app/?x=1#project=p1', 'https://w-1.puter.work', 'r_abcdefgh', token);
-    expect(link).toBe(`https://video-studio.puter.app/?x=1#review=r_abcdefgh&server=w-1.puter.work&invite=${token}`);
-    expect(parseReviewHash(new URL(link).hash)).toEqual({ review: 'r_abcdefgh', server: 'https://w-1.puter.work', token });
-    expect(parseReviewHash('#review=r_abcdefgh&server=w-1.puter.work')).toEqual({ review: 'r_abcdefgh', server: 'https://w-1.puter.work', token: null });
+    const link = reviewLink('https://video-studio.puter.app/?x=1#project=p1', 'http://w-1.localhost:8443', 'r_abcdefgh', token);
+    expect(link).toBe(`https://video-studio.puter.app/?x=1#review=r_abcdefgh&server=w-1.localhost:8443&invite=${token}`);
+    expect(parseReviewHash(new URL(link).hash)).toEqual({ review: 'r_abcdefgh', server: 'http://w-1.localhost:8443', token });
+    expect(parseReviewHash('#review=r_abcdefgh&server=w-1.localhost:8443')).toEqual({ review: 'r_abcdefgh', server: 'http://w-1.localhost:8443', token: null });
     expect(parseReviewHash('#project=p1')).toBe(null);
     expect(parseReviewHash('')).toBe(null);
     expect(() => parseReviewHash('#review=r_abcdefgh&server=evil.com')).toThrow(/unknown server/);
-    expect(() => parseReviewHash('#review=<x>&server=w.puter.work')).toThrow(/not complete/);
-    expect(() => parseReviewHash('#review=r_abcdefgh&server=w.puter.work&invite=short')).toThrow(/invite link/);
+    expect(() => parseReviewHash('#review=<x>&server=w.localhost:8443')).toThrow(/not complete/);
+    expect(() => parseReviewHash('#review=r_abcdefgh&server=w.localhost:8443&invite=short')).toThrow(/invite link/);
   });
 
   it('reads compressed and plain token claims', () => {

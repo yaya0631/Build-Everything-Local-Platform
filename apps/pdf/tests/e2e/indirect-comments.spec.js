@@ -33,7 +33,7 @@ for (const [kind, label] of [
     test(`an imported ${label} with an indirect subtype and flags ${flags} can be edited and deleted through history and reopening`, async ({
       page,
     }) => {
-      await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+      await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
       await page.goto('/#library');
       const { doc, dict } = await commentPdf(kind);
       dict.set(PDFName.of('F'), PDFNumber.of(flags));

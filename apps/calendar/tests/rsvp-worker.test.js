@@ -13,7 +13,7 @@ const SECRET = 'test-admin-secret';
 const AUTH = { authorization: `Bearer ${SECRET}` };
 const HOUR = 3_600_000;
 const PAGE = 'https://app.test/rsvp.html';
-const WORKER_ORIGIN = 'https://test-worker.puter.work';
+const WORKER_ORIGIN = 'http://test-worker.localhost:8443';
 
 async function loadWorker(kv = makeKv()) {
   const source = RAW.replace('__RSVP_ADMIN_SECRET_HASH__', await sha256Hex(SECRET))
@@ -241,7 +241,7 @@ describe('rsvp worker: no HTML — human links redirect to the app page', () => 
     const res = await broken.call('GET', `/rsvp/${links['a@example.com']}`);
     expect(res.status).toBe(303);
     const loc = res.headers.get('location') || '';
-    expect(loc.startsWith('https://calendar.puter.com/rsvp.html#')).toBe(true);
+    expect(loc.startsWith('http://calendar.localhost:8443/rsvp.html#')).toBe(true);
   });
 
   it('an admin sync never clobbers a guest answer (per-guest response keys)', async () => {
@@ -428,7 +428,7 @@ describe('rsvp worker: JSON API (/api/rsvp)', () => {
   });
 
   it('serves the synced meeting link — held to the exact Puter Meetings shape', async () => {
-    const join = 'https://meetings.puter.com/#/m/abcd-efgh-ijkl';
+    const join = 'http://meetings.localhost:8443/#/m/abcd-efgh-ijkl';
     await sync(worker, {
       event: eventPayload({ meetingUrl: join }),
       guests: [{ email: 'a@example.com', name: 'Ada' }],
@@ -440,8 +440,8 @@ describe('rsvp worker: JSON API (/api/rsvp)', () => {
   it('drops a meeting link that is not a Puter Meetings room URL (imported foreign links stay off the page)', async () => {
     for (const bad of [
       'https://evil.example/#/m/abcd-efgh-ijkl',
-      'https://meetings.puter.com.evil.example/#/m/abcd-efgh-ijkl',
-      'https://meetings.puter.com/#/m/ABCD-EFGH-IJKL',
+      'http://meetings.localhost:8443.evil.example/#/m/abcd-efgh-ijkl',
+      'http://meetings.localhost:8443/#/m/ABCD-EFGH-IJKL',
       'javascript:alert(1)',
     ]) {
       await sync(worker, {

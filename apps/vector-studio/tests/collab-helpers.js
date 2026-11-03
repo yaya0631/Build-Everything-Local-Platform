@@ -8,7 +8,7 @@ import { VDocument } from '../src/model/document.js';
 export const alice = { uuid: '11111111-1111-4111-8111-111111111111', username: 'alice' };
 export const bob = { uuid: '22222222-2222-4222-8222-222222222222', username: 'bob' };
 export const cam = { uuid: '33333333-3333-4333-8333-333333333333', username: 'cam' };
-export const SERVER = 'https://vs-test.puter.work';
+export const SERVER = 'http://vs-test.localhost:8443';
 
 export function memoryPuter(owner = alice) {
   const data = new Map();

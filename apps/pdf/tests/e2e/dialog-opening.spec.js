@@ -36,7 +36,7 @@ async function openDialog(page, [section, action]) {
 }
 
 async function prepare(page) {
-  await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+  await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
   const doc = await PDFDocument.create();
   const sheet = doc.addPage([400, 500]);
   doc.addPage([400, 500]);

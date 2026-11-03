@@ -8,7 +8,7 @@ for (const inherited of [false, true])
     test(`Fill forms masks password fields (inherited=${inherited}, readOnly=${readOnly})`, async ({
       page,
     }) => {
-      await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+      await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
       await page.goto('/#library');
       const { doc } = await passwordFormPdf({ inherited, readOnly });
       const suffix = readOnly ? ' (read only)' : '';

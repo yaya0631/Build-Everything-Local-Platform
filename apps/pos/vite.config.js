@@ -1,8 +1,7 @@
 import { defineConfig } from 'vite';
-import puterLocalhost from '../../dev/puter-localhost.mjs';
 
 export default defineConfig({
-  plugins: [puterLocalhost('pos')],
+  plugins: [],
   base: './',
   build: {
     target: 'es2022',

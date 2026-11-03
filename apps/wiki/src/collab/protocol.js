@@ -98,7 +98,7 @@ export function shareLink(server, room, token, page = null, base = location.href
   return url.href;
 }
 
-export function parseLink(value, base = typeof location === 'undefined' ? 'https://localhost/' : location.href) {
+export function parseLink(value, base = typeof location === 'undefined' ? 'http://localhost/' : location.href) {
   const url = new URL(value, base);
   const p = new URLSearchParams(url.hash.slice(1));
   const room = p.get('space');

@@ -43,11 +43,11 @@ function loadWorker() {
       const form = new FormData();
       form.append('path', path);
       form.append('file', blob, 'f');
-      const res = await handler('POST', '/files')({ me, user, request: new Request('https://w.puter.work/files', { method: 'POST', body: form }) });
+      const res = await handler('POST', '/files')({ me, user, request: new Request('http://w.localhost:8443/files', { method: 'POST', body: form }) });
       return { status: res.status, body: await res.json() };
     },
     async download(user, query) {
-      return handler('GET', '/files')({ me, user, request: new Request(`https://w.puter.work/files?${new URLSearchParams(query)}`) });
+      return handler('GET', '/files')({ me, user, request: new Request(`http://w.localhost:8443/files?${new URLSearchParams(query)}`) });
     },
   };
 }

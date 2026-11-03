@@ -26,7 +26,7 @@ window.addEventListener('dragover', (e) => {
 window.addEventListener('drop', (e) => e.preventDefault());
 
 /** The worker origin from the link, or null if it isn't a Puter worker.
- *  The page will only ever call https://<something>.puter.work. */
+ *  The page will only ever call https://<something>.localhost:8443. */
 function readLink() {
   const params = new URLSearchParams(location.hash.replace(/^#/, '') || location.search.replace(/^\?/, ''));
   const w = params.get('w') || '';

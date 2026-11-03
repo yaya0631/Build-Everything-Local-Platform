@@ -1,7 +1,7 @@
 # Surveys
 
 An open-source alternative to SurveyMonkey, Google Forms and Typeform, built on
-[Puter](https://puter.com). Build a survey, share it with a link, and analyze
+[Puter](https://localhost:8443). Build a survey, share it with a link, and analyze
 the results as they come in. Surveys and responses live in your own Puter
 account. People answering a survey need no account at all.
 
@@ -96,12 +96,12 @@ No framework and no backend of its own: plain JavaScript, Vite, and Puter.js.
 
 A survey is answered by people without a Puter account, who cannot reach the
 creator's storage. So the first time you share a survey, the app deploys a
-small [serverless worker](https://docs.puter.com/Workers/) into your own
-account (`sv-<username>.puter.work`, source in
+small [serverless worker](http://localhost:8443/Workers/) into your own
+account (`sv-<username>.localhost:8443`, source in
 [`src/worker/collector.js`](src/worker/collector.js)). It serves published
 surveys and stores responses in your account's key-value store.
 
-- **Respondents** open `survey.puter.com/r/#<username>/<link id>`. The page
+- **Respondents** open `survey.localhost:8443/r/#<username>/<link id>`. The page
   ([`r/index.html`](r/index.html)) loads no SDK: it fetches the survey from
   the worker and posts answers back as CORS "simple" requests, so there is no
   preflight round trip. It is about 16 KB of gzipped JavaScript.

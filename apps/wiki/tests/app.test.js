@@ -162,11 +162,11 @@ describe('shared spaces at startup', () => {
     resetPrefs();
     location.hash = '';
     const kv = memoryKv();
-    await kv.set('wiki:rooms', [{ server: 'https://x.puter.work', room: 'room0000slow', title: 'Team space', role: 'editor' }]);
+    await kv.set('wiki:rooms', [{ server: 'http://x.localhost:8443', room: 'room0000slow', title: 'Team space', role: 'editor' }]);
     let release;
     const gate = new Promise((r) => (release = r));
     // A worker that answers only when released.
-    const collab = { request: async () => { await gate; throw Object.assign(new Error('gone'), { status: 404 }); }, deploy: async () => 'https://x.puter.work', events: null };
+    const collab = { request: async () => { await gate; throw Object.assign(new Error('gone'), { status: 404 }); }, deploy: async () => 'http://x.localhost:8443', events: null };
     const ws = new Workspace({ backend: memoryBackend(), kv, user: { username: 'sam', uuid: 'u1' }, collab });
     await ws.start();
     app = new App(document.getElementById('app'), { ws, user: ws.user, env: 'web', onSignOut: () => {} });

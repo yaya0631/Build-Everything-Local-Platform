@@ -104,7 +104,7 @@ describe('moving a workspace, from the nominee\'s side: the session named to the
   });
   const json = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
   const OLD = 'abcdef1234@teamchat-old';
-  const NEW_URL = 'https://teamchat-new.puter.work';
+  const NEW_URL = 'http://teamchat-new.localhost:8443';
   const HEADER = { format: 'teamchat-export', version: 1, workspace: { id: 'abcdef1234', name: 'Acme' }, channels: { c1: { name: 'general', def: true } }, members: {}, memberDocs: {} };
   const PAGE = { conv: 'c1', seq: 1, messages: [{ seq: 1, user: 'u', text: 'hi', ts: 1 }] };
 
@@ -186,7 +186,7 @@ describe('moving a workspace, from the nominee\'s side: the session named to the
       made.push(`${init?.method || 'GET'} ${new URL(url).pathname}`);
       return rt.dispatch(url, init, bob);
     } } };
-    const out = await settle(transferWorkspace(`${wsId}@teamchat-x`, 'https://teamchat-x.puter.work', { copy: null }, { profile: { name: 'Bob' } }));
+    const out = await settle(transferWorkspace(`${wsId}@teamchat-x`, 'http://teamchat-x.localhost:8443', { copy: null }, { profile: { name: 'Bob' } }));
     expect(out.ok).toBe(false);
     expect(out.e.code).toBe('transferring');
     expect(made.some((x) => x.endsWith('/export'))).toBe(false);
@@ -194,7 +194,7 @@ describe('moving a workspace, from the nominee\'s side: the session named to the
     expect((await rt.kv.get(KEYS.ws(wsId))).transferring.sid).toBe('other-tab-0001');
     // That tab gone quiet for half an hour, this one's next try takes the move over and completes it.
     await rt.kv.update(KEYS.ws(wsId), { 'transferring.at': Date.now() - 31 * 60_000 });
-    const moved = await transferWorkspace(`${wsId}@teamchat-x`, 'https://teamchat-x.puter.work', { copy: null }, { profile: { name: 'Bob' } });
+    const moved = await transferWorkspace(`${wsId}@teamchat-x`, 'http://teamchat-x.localhost:8443', { copy: null }, { profile: { name: 'Bob' } });
     expect(moved.mine).toBe(true);
     expect((await rt.kv.get(KEYS.ws(wsId))).movedTo).toBe(moved.ref);
   });
@@ -337,14 +337,14 @@ describe('importing a messages.json whose pages are damaged', () => {
     ];
     for (const archive of damaged) {
       const made = server();
-      const out = await importArchive('https://teamchat-new.puter.work', archive, { profile: { name: 'Bob' } }).then(() => null, (e) => e);
+      const out = await importArchive('http://teamchat-new.localhost:8443', archive, { profile: { name: 'Bob' } }).then(() => null, (e) => e);
       expect(out, JSON.stringify(archive)).toBeInstanceOf(Error);
       expect(out.message).toMatch(/^this messages\.json is damaged/);
       expect(made, JSON.stringify(archive)).toEqual([]);
     }
     // A sound archive still goes in whole: created, its page written, opened.
     const made = server();
-    const ref = await importArchive('https://teamchat-new.puter.work', { header: HEADER, pages: [{ conv: 'c1', seq: 1, messages: [{ seq: 1, user: 'u', text: 'hi', ts: 1 }] }], files: [] }, { profile: { name: 'Bob' } });
+    const ref = await importArchive('http://teamchat-new.localhost:8443', { header: HEADER, pages: [{ conv: 'c1', seq: 1, messages: [{ seq: 1, user: 'u', text: 'hi', ts: 1 }] }], files: [] }, { profile: { name: 'Bob' } });
     expect(ref).toBe('copy0000001@teamchat-new');
     expect(made).toEqual(['POST /api/workspaces/import', 'POST /api/ws/copy0000001/import', 'POST /api/ws/copy0000001/import/finish']);
   });

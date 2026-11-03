@@ -6,7 +6,7 @@ for (const view of ['editor', 'library'])
       test(`${view} initial ${stage} respects a newer ${newer}`, async ({ page }) => {
         const errors = [];
         page.on('pageerror', (error) => errors.push(error.message));
-        await page.route('https://js.puter.com/**', (route) =>
+        await page.route('**/sdk/puter.js', (route) =>
           route.fulfill({
             contentType: 'application/javascript',
             body: `

@@ -46,7 +46,7 @@
     <text x="72" y="336" font-size="58" font-weight="700" letter-spacing="-1.5">browser.</text>
     <text x="72" y="404" font-size="26" font-weight="500" fill="#5a6f65">Against the computer, a friend</text>
     <text x="72" y="440" font-size="26" font-weight="500" fill="#5a6f65">beside you, or a friend anywhere.</text>
-    <text x="72" y="524" font-size="23" font-weight="700" fill="#96590d">backgammon.puter.com</text>
+    <text x="72" y="524" font-size="23" font-weight="700" fill="#96590d">backgammon.localhost:8443</text>
   </g>
 
   <!-- A board, drawn to the app's own proportions. -->

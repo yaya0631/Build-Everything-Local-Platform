@@ -24,7 +24,7 @@ Google Workspace is the source of truth for who is active: someone deactivated o
 
    | Property               | Value                                                                                                                                          |
    | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-   | `WHITEBOARD_URL`       | The worker's address, such as `https://whiteboard-abc.puter.work`                                                                              |
+   | `WHITEBOARD_URL`       | The worker's address, such as `http://whiteboard-abc.localhost:8443`                                                                              |
    | `WHITEBOARD_SCIM_KEY`  | The API key                                                                                                                                    |
    | `USER_QUERY`           | Optional. An [Admin SDK user search](https://developers.google.com/admin-sdk/directory/v1/guides/search-users), such as `orgUnitPath='/Staff'` |
    | `GUEST_ORG_UNITS`      | Optional. Organizational units whose people are guests, comma separated, such as `/Contractors`                                                |

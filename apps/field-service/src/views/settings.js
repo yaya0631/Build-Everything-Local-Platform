@@ -639,7 +639,7 @@ function aboutSection() {
       h('div.row', h('img', { src: './icons/icon-192.png', alt: '', width: 48, height: 48, style: { borderRadius: '12px' } }), h('div', h('div', { style: { fontWeight: '700', fontSize: '16px' } }, 'Field Service'), h('div.subtle', 'Early alpha'))),
       h('p.muted', 'Free and open-source field service management, part of the Everything project. Built with vanilla JavaScript and Puter.'),
       h('div.notice.warning', icon('warning'), h('span', 'This app is in early development. Features may change and data could be lost, so keep backups and do not rely on it for real business records yet.')),
-      h('div.row', { style: { flexWrap: 'wrap' } }, h('a.btn', { href: REPO_URL, target: '_blank', rel: 'noopener noreferrer' }, icon('github', 16), 'Source code on GitHub'), h('a.btn.ghost', { href: 'https://developer.puter.com', target: '_blank', rel: 'noopener noreferrer' }, 'Powered by Puter', icon('external', 14))),
+      h('div.row', { style: { flexWrap: 'wrap' } }, h('a.btn', { href: REPO_URL, target: '_blank', rel: 'noopener noreferrer' }, icon('github', 16), 'Source code on GitHub'), h('a.btn.ghost', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener noreferrer' }, 'Powered by Puter', icon('external', 14))),
     ),
   );
 }

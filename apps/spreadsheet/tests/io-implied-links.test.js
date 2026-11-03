@@ -3,10 +3,10 @@ import * as XLSX from '../src/vendor/xlsx.mjs';
 import { Workbook } from '../src/core/workbook.js';
 import { workbookFromFile, workbookToXlsx } from '../src/core/io.js';
 
-// Text such as www.puter.com is a link by itself, saved with the address it implies as its
+// Text such as www.localhost:8443 is a link by itself, saved with the address it implies as its
 // target. Reading the file compared the text to that target and, finding them different,
 // wrapped the text in a HYPERLINK formula after every save.
-it.each(['www.puter.com', 'WWW.Puter.com/docs', 'someone@example.com', 'https://puter.com/x'])('keeps %s as plain text through a save', async (text) => {
+it.each(['www.localhost:8443', 'WWW.localhost:8443/docs', 'someone@example.com', 'http://localhost:8443/x'])('keeps %s as plain text through a save', async (text) => {
   const wb = new Workbook();
   const id = wb.activeSheetId;
   wb.setInput(id, 0, 0, text);
@@ -23,11 +23,11 @@ it('preserves a native link separately from text whose label differs from its ta
   const book = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(book, {
     '!ref': 'A1:B1',
-    A1: { t: 's', v: 'www.puter.com', l: { Target: 'https://example.com/elsewhere' } },
-    B1: { t: 's', v: 'Puter', l: { Target: 'https://puter.com' } },
+    A1: { t: 's', v: 'www.localhost:8443', l: { Target: 'https://example.com/elsewhere' } },
+    B1: { t: 's', v: 'Puter', l: { Target: 'http://localhost:8443' } },
   }, 'Links');
   const wb = await workbookFromFile(XLSX.write(book, { type: 'array', bookType: 'xlsx' }), 'links.xlsx');
   const id = wb.activeSheetId;
-  expect(wb.getCell(id, 0, 0)).toMatchObject({ v: 'www.puter.com', f: null, hyperlink: 'https://example.com/elsewhere' });
-  expect(wb.getCell(id, 0, 1)).toMatchObject({ v: 'Puter', f: null, hyperlink: 'https://puter.com' });
+  expect(wb.getCell(id, 0, 0)).toMatchObject({ v: 'www.localhost:8443', f: null, hyperlink: 'https://example.com/elsewhere' });
+  expect(wb.getCell(id, 0, 1)).toMatchObject({ v: 'Puter', f: null, hyperlink: 'http://localhost:8443' });
 });

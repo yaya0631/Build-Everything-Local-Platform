@@ -1,6 +1,6 @@
 # Tasks
 
-Personal and shared to-do lists on [Puter](https://puter.com): recurring
+Personal and shared to-do lists on [Puter](https://localhost:8443): recurring
 reminders, priorities, subtasks, and calendar integration. No framework,
 no backend of its own — just Puter.js and Vite.
 

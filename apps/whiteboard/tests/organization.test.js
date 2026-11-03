@@ -684,7 +684,7 @@ test("REST paths the API description does not list are not found, and unlisted m
     restRoute(
       org,
       boards,
-      new Request("https://w.puter.work" + path, {
+      new Request("http://w.localhost:8443" + path, {
         method,
         headers: { Authorization: `Bearer ${key}` },
       }),
@@ -725,7 +725,7 @@ test("REST API keys, scopes, audit export, reports, and OpenAPI", async () => {
     scopes: ["audit:read"],
   });
   const request = (path, method = "GET", token = key) =>
-    new Request("https://w.puter.work" + path, {
+    new Request("http://w.localhost:8443" + path, {
       method,
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     });
@@ -799,7 +799,7 @@ test("REST API keys, scopes, audit export, reports, and OpenAPI", async () => {
     if (scopes.length === 1) await assert.rejects(created, { status: 403 });
     else assert.equal((await created).status, 201);
   }
-  const spec = openAPI("https://w.puter.work");
+  const spec = openAPI("http://w.localhost:8443");
   assert.ok(spec.paths["/scim/v2/Users"]);
   // Every templated path declares its parameters, as OpenAPI 3.1 requires,
   // and operations describe their bodies and the statuses they answer.
@@ -856,7 +856,7 @@ test("SCIM provisioning links pending users by verified email and deactivates th
     restRoute(
       org,
       boards,
-      new Request("https://w.puter.work/scim/v2/" + path, {
+      new Request("http://w.localhost:8443/scim/v2/" + path, {
         method,
         headers: { Authorization: `Bearer ${key}` },
       }),
@@ -1015,7 +1015,7 @@ test("SCIM provisioning links pending users by verified email and deactivates th
   assert.equal(again.status, 201);
   assert.equal(
     again.headers.get("location"),
-    `https://w.puter.work/scim/v2/Users/${created.id}`,
+    `http://w.localhost:8443/scim/v2/Users/${created.id}`,
   );
   assert.equal((await org.user(editor.uuid)).status, "active");
   // Deleted accounts leave their groups.
@@ -1188,7 +1188,7 @@ test("removing a SCIM group member the worker does not know keeps the others", a
     const res = await restRoute(
       org,
       boards,
-      new Request("https://w.puter.work/scim/v2/" + path, {
+      new Request("http://w.localhost:8443/scim/v2/" + path, {
         method,
         headers: { Authorization: `Bearer ${key}` },
       }),
@@ -3019,7 +3019,7 @@ test("every ownership transfer goes only to an active member", async () => {
     restRoute(
       org,
       boards,
-      new Request("https://w.puter.work/v1/boards/" + room, {
+      new Request("http://w.localhost:8443/v1/boards/" + room, {
         method: "PATCH",
         headers: { Authorization: `Bearer ${key}` },
       }),
@@ -3080,7 +3080,7 @@ test("SCIM lookups and group changes read only the people involved", async () =>
     restRoute(
       org,
       boards,
-      new Request("https://w.puter.work/scim/v2/" + path, {
+      new Request("http://w.localhost:8443/scim/v2/" + path, {
         method,
         headers: { Authorization: `Bearer ${key}` },
       }),
@@ -3148,7 +3148,7 @@ test("SCIM changes reach webhooks and the default SIEM categories", async () => 
     restRoute(
       org,
       boards,
-      new Request("https://w.puter.work/scim/v2/" + path, {
+      new Request("http://w.localhost:8443/scim/v2/" + path, {
         method,
         headers: { Authorization: `Bearer ${key}` },
       }),
@@ -3186,7 +3186,7 @@ test("SCIM role and status changes are recorded and alerted as console changes a
     restRoute(
       org,
       boards,
-      new Request("https://w.puter.work/scim/v2/Users/" + editor.uuid, {
+      new Request("http://w.localhost:8443/scim/v2/Users/" + editor.uuid, {
         method: "PATCH",
         headers: { Authorization: `Bearer ${key}` },
       }),
@@ -3248,7 +3248,7 @@ test("SCIM creation and deletion of an existing account are recorded as console 
     const response = await restRoute(
       org,
       boards,
-      new Request("https://w.puter.work/scim/v2/" + path, {
+      new Request("http://w.localhost:8443/scim/v2/" + path, {
         method,
         headers: { Authorization: `Bearer ${key}` },
       }),
@@ -3306,7 +3306,7 @@ test("team changes record who was added and removed, from SCIM and the console",
     const response = await restRoute(
       org,
       boards,
-      new Request("https://w.puter.work/scim/v2/" + path, {
+      new Request("http://w.localhost:8443/scim/v2/" + path, {
         method,
         headers: { Authorization: `Bearer ${key}` },
       }),
@@ -4036,7 +4036,7 @@ test("the SIEM endpoint must be a public internet address", async () => {
   for (const url of [
     "https://169.254.169.254/latest/meta-data/",
     "https://10.0.0.5/in",
-    "https://localhost/in",
+    "http://localhost/in",
   ])
     await assert.rejects(
       call(owner, {
@@ -4066,7 +4066,7 @@ test("webhooks only go to public internet addresses", async () => {
     "https://10.0.0.5/",
     "https://[::1]/",
     "https://[fd00::1]/",
-    "https://localhost/",
+    "http://localhost/",
     "https://api.internal/",
     "https://0x7f.1/",
     // IPv6 addresses carrying a private IPv4 address.
@@ -4198,7 +4198,7 @@ test("a SCIM demotion when provisioning outlasts older invitations", async () =>
   await restRoute(
     org,
     boards,
-    new Request("https://w.puter.work/scim/v2/Users", {
+    new Request("http://w.localhost:8443/scim/v2/Users", {
       method: "POST",
       headers: { Authorization: `Bearer ${key}` },
     }),
@@ -4215,7 +4215,7 @@ test("a SCIM demotion when provisioning outlasts older invitations", async () =>
     restRoute(
       org,
       boards,
-      new Request("https://w.puter.work/scim/v2/" + path, {
+      new Request("http://w.localhost:8443/scim/v2/" + path, {
         method,
         headers: { Authorization: `Bearer ${key}` },
       }),
@@ -4252,7 +4252,7 @@ test("SCIM finds the account owner but never deactivates them", async () => {
     restRoute(
       org,
       boards,
-      new Request("https://w.puter.work/scim/v2/" + path, {
+      new Request("http://w.localhost:8443/scim/v2/" + path, {
         method,
         headers: { Authorization: `Bearer ${key}` },
       }),
@@ -4319,7 +4319,7 @@ test("only a SCIM key the account owner created changes an administrator's statu
     restRoute(
       org,
       boards,
-      new Request("https://w.puter.work/scim/v2/" + path, {
+      new Request("http://w.localhost:8443/scim/v2/" + path, {
         method,
         headers: { Authorization: `Bearer ${key}` },
       }),
@@ -4804,7 +4804,7 @@ test("the inactive users export lists everyone past the report's first 5,000", a
   const res = await restRoute(
     org,
     boards,
-    new Request("https://w.puter.work/v1/reports/users.csv", {
+    new Request("http://w.localhost:8443/v1/reports/users.csv", {
       headers: { Authorization: `Bearer ${key}` },
     }),
     "GET",
@@ -5062,7 +5062,7 @@ test("audit events an export missed reach the SIEM through organization and API 
   await restRequest(
     org,
     boards,
-    new Request("https://w.puter.work/v1/reports", {
+    new Request("http://w.localhost:8443/v1/reports", {
       headers: { Authorization: `Bearer ${key}` },
     }),
     "GET",
@@ -6154,7 +6154,7 @@ test("unarchiving a board through the API keeps it deleted", async () => {
     restRoute(
       org,
       boards,
-      new Request("https://w.puter.work/v1/boards/" + room, {
+      new Request("http://w.localhost:8443/v1/boards/" + room, {
         method: "PATCH",
         headers: { Authorization: `Bearer ${key}` },
       }),
@@ -6218,11 +6218,11 @@ test("switching to an unreachable organization keeps the current one", async () 
     },
     deploy: async () => {},
   });
-  await organization.use("https://fabrikam.puter.work");
-  await assert.rejects(organization.use("https://broken.puter.work"));
-  assert.equal(organization.server, "https://fabrikam.puter.work");
+  await organization.use("http://fabrikam.localhost:8443");
+  await assert.rejects(organization.use("http://broken.localhost:8443"));
+  assert.equal(organization.server, "http://fabrikam.localhost:8443");
   assert.equal(organization.info.name, "Fabrikam");
-  assert.equal(saved.get(ORG_KEY).server, "https://fabrikam.puter.work");
+  assert.equal(saved.get(ORG_KEY).server, "http://fabrikam.localhost:8443");
 });
 
 test("organization administrators on a board hear of mentions and replies", async () => {
@@ -6595,7 +6595,7 @@ test("a mention added to a reply reaches someone already told of the reply", asy
 test("notification mail and board channel posts link to the board in the app", async () => {
   const { boards, call, org, sent, fetched } = setup();
   const from = (origin) => {
-    org.request = new Request("https://fabrikam-wb.puter.work/api", {
+    org.request = new Request("http://fabrikam-wb.localhost:8443/api", {
       method: "POST",
       headers: { origin },
     });
@@ -6650,7 +6650,7 @@ test("notification mail and board channel posts link to the board in the app", a
   });
   await org.flush();
   // The link opens the discussion, not only the object it is pinned to.
-  const link = `https://whiteboard.fabrikam.test/#server=https%3A%2F%2Ffabrikam-wb.puter.work&board=${room}&object=${note.id}&thread=t1`;
+  const link = `https://whiteboard.fabrikam.test/#server=https%3A%2F%2Ffabrikam-wb.localhost:8443&board=${room}&object=${note.id}&thread=t1`;
   const mail = sent.find((m) => m.subject.includes("mentioned you"));
   assert.ok(mail.text.includes(`Open the board: ${link}`), mail.text);
   assert.ok(mail.text.includes(`Ouvrir le tableau : ${link}`), mail.text);
@@ -7111,7 +7111,7 @@ test("an address provisioned inactive deactivates an administrator only by the o
     restRoute(
       org,
       boards,
-      new Request("https://w.puter.work/scim/v2/Users", {
+      new Request("http://w.localhost:8443/scim/v2/Users", {
         method: "POST",
         headers: { Authorization: `Bearer ${key}` },
       }),
@@ -7148,7 +7148,7 @@ test("a SCIM patch with an operation that is not an object is refused as invalid
     restRoute(
       org,
       boards,
-      new Request("https://w.puter.work/scim/v2/" + path, {
+      new Request("http://w.localhost:8443/scim/v2/" + path, {
         method,
         headers: { Authorization: `Bearer ${key}` },
       }),
@@ -7186,7 +7186,7 @@ test("a SCIM role given on its own rather than in a list is read as one", async 
       await restRoute(
         org,
         boards,
-        new Request("https://w.puter.work/scim/v2/" + path, {
+        new Request("http://w.localhost:8443/scim/v2/" + path, {
           method,
           headers: { Authorization: `Bearer ${key}` },
         }),
@@ -7248,7 +7248,7 @@ test("only the owner's key turns a pending administrator on or off", async () =>
     restRoute(
       org,
       boards,
-      new Request("https://w.puter.work/scim/v2/" + path, {
+      new Request("http://w.localhost:8443/scim/v2/" + path, {
         method,
         headers: { Authorization: `Bearer ${key}` },
       }),
@@ -7517,7 +7517,7 @@ test("keys and invitations stop working when their administrator leaves", async 
     restRoute(
       org,
       boards,
-      new Request("https://w.puter.work/v1/users", {
+      new Request("http://w.localhost:8443/v1/users", {
         headers: { Authorization: `Bearer ${key}` },
       }),
       "GET",
@@ -7569,7 +7569,7 @@ test("webhooks stop receiving events when their administrator leaves", async () 
   const created = await restRoute(
     org,
     boards,
-    new Request("https://w.puter.work/v1/webhooks", {
+    new Request("http://w.localhost:8443/v1/webhooks", {
       method: "POST",
       headers: { Authorization: `Bearer ${key}` },
     }),
@@ -7756,7 +7756,7 @@ test("an invitation that fails to join keeps the organization already in use", a
       days: 1,
     });
     B.org.now = () => Date.now() + 3 * 86_400_000;
-    const servers = { "https://a.puter.work": A, "https://b.puter.work": B };
+    const servers = { "http://a.localhost:8443": A, "http://b.localhost:8443": B };
     const saved = new Map();
     const org = createOrganization({
       puter: () => ({
@@ -7769,7 +7769,7 @@ test("an invitation that fails to join keeps the organization already in use", a
       call: async (_p, server, input) => servers[server].call(editor, input),
       deploy: async () => {},
     });
-    await org.use("https://a.puter.work");
+    await org.use("http://a.localhost:8443");
     const home = createOrganizationHome({
       org,
       modal: (title, html, ready) => {
@@ -7785,7 +7785,7 @@ test("an invitation that fails to join keeps the organization already in use", a
       async openShared() {},
     });
     home.joinDialog(
-      organizationLink("https://b.puter.work", expired, "https://wb.test/"),
+      organizationLink("http://b.localhost:8443", expired, "https://wb.test/"),
     );
     const submit = async () => {
       document
@@ -7795,9 +7795,9 @@ test("an invitation that fails to join keeps the organization already in use", a
     };
     await submit();
     await submit();
-    assert.equal(org.server, "https://a.puter.work");
+    assert.equal(org.server, "http://a.localhost:8443");
     assert.equal(org.info.role, "member");
-    assert.deepEqual(saved.get(ORG_KEY), { server: "https://a.puter.work" });
+    assert.deepEqual(saved.get(ORG_KEY), { server: "http://a.localhost:8443" });
     assert.match(
       document.querySelector("#org-join-status").textContent,
       /expired or was revoked/,
@@ -7819,7 +7819,7 @@ test("organization names with dollar signs show as written before joining", asyn
       await import("../src/organization/home-ui.js");
     const { organizationLink } = await import("../src/organization/client.js");
     const org = {
-      server: "https://a.puter.work",
+      server: "http://a.localhost:8443",
       info: { name: "Old $' Co" },
       preview: async (server) => ({ server, info: { name: "New $$ $& Co" } }),
     };
@@ -7838,7 +7838,7 @@ test("organization names with dollar signs show as written before joining", asyn
       async openShared() {},
     });
     home.joinDialog(
-      organizationLink("https://b.puter.work", "token", "https://wb.test/"),
+      organizationLink("http://b.localhost:8443", "token", "https://wb.test/"),
     );
     document
       .querySelector("#org-join")
@@ -7846,7 +7846,7 @@ test("organization names with dollar signs show as written before joining", asyn
     await new Promise((r) => setTimeout(r, 50));
     assert.equal(
       document.querySelector("#org-join-status").textContent,
-      "Join New $$ $& Co at b.puter.work? This replaces Old $' Co as your organization.",
+      "Join New $$ $& Co at b.localhost:8443? This replaces Old $' Co as your organization.",
     );
   } finally {
     for (const key of keys) delete globalThis[key];
@@ -7868,14 +7868,14 @@ test("signing out forgets the organization on the page, not the account's choice
   });
   const changes = [];
   org.onChange(() => changes.push(org.server));
-  await org.use("https://a.puter.work");
+  await org.use("http://a.localhost:8443");
   assert.equal(org.isAdmin, true);
   org.reset();
   assert.equal(org.server, null);
   assert.equal(org.info, null);
   assert.equal(org.isAdmin, false);
-  assert.deepEqual(changes, ["https://a.puter.work", null]);
-  assert.deepEqual(saved.get(ORG_KEY), { server: "https://a.puter.work" });
+  assert.deepEqual(changes, ["http://a.localhost:8443", null]);
+  assert.deepEqual(saved.get(ORG_KEY), { server: "http://a.localhost:8443" });
 });
 
 test("guest invitations are not made when boards are for members only", async () => {
@@ -8797,7 +8797,7 @@ test("only the account owner moves the boards of an administrator or of the owne
     restRoute(
       org,
       boards,
-      new Request("https://w.puter.work/v1/boards/" + mine.room, {
+      new Request("http://w.localhost:8443/v1/boards/" + mine.room, {
         method: "PATCH",
         headers: { Authorization: `Bearer ${key}` },
       }),
@@ -9716,7 +9716,7 @@ test("the REST board directory searches content only when asked, and pages with 
       await restRoute(
         org,
         boards,
-        new Request("https://w.puter.work/v1/boards?" + query, {
+        new Request("http://w.localhost:8443/v1/boards?" + query, {
           headers: { Authorization: `Bearer ${key}` },
         }),
         "GET",
@@ -9735,7 +9735,7 @@ test("the REST board directory searches content only when asked, and pages with 
     [...first.boards, ...second.boards].map((b) => b.title),
     ["Plan", "Retro", "Roadmap"],
   );
-  const spec = openAPI("https://w.puter.work");
+  const spec = openAPI("http://w.localhost:8443");
   const names = spec.paths["/v1/boards"].get.parameters.map((p) => p.name);
   assert.ok(names.includes("after") && names.includes("content"));
 });

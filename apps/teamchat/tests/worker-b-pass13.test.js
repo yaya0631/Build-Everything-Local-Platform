@@ -385,8 +385,8 @@ describe('moving a workspace: the freeze', () => {
     // Nominated again, frozen, completed: the copy is moved, and nothing of the freeze is left.
     expect((await as(alice).post(`/api/ws/${wsId}/transfer`, { to: USERS.carol.uuid })).ok).toBe(true);
     expect((await begin(USERS.carol, wsId)).ok).toBe(true);
-    const done = await as(USERS.carol).post(`/api/ws/${wsId}/transfer/complete`, { to: 'newcopy123@other.puter.work' });
-    expect(done.data).toMatchObject({ ok: true, movedTo: 'newcopy123@other.puter.work' });
+    const done = await as(USERS.carol).post(`/api/ws/${wsId}/transfer/complete`, { to: 'newcopy123@other.localhost' });
+    expect(done.data).toMatchObject({ ok: true, movedTo: 'newcopy123@other.localhost' });
     doc = await wsDoc(wsId);
     expect(doc.transferring).toBeUndefined();
     expect(doc.transferTo).toBeUndefined();
@@ -400,13 +400,13 @@ describe('moving a workspace: the freeze', () => {
     const design = (await as(alice).post(`/api/ws/${wsId}/channels`, { name: 'design' })).data.channel;
     const code = (await as(alice).post(`/api/ws/${wsId}/channels/${design.id}/connect/invites`, {})).data.code;
     // Globex's admin (dave) accepts once before the move begins: a live connection with its secret.
-    const accepted = await as(USERS.dave).post('/api/connect/accept', { code, partner: { ref: 'globex0001@globex.puter.work', name: 'Globex' } });
+    const accepted = await as(USERS.dave).post('/api/connect/accept', { code, partner: { ref: 'globex0001@globex.localhost', name: 'Globex' } });
     expect(accepted.ok).toBe(true);
     const { conn, secret } = accepted.data;
     await as(alice).post(`/api/ws/${wsId}/transfer`, { to: USERS.carol.uuid });
     expect((await begin(USERS.carol, wsId)).ok).toBe(true);
     // Another partner accepting the share now is told to wait, and nothing is written.
-    const late = await as(USERS.dave).post('/api/connect/accept', { code, partner: { ref: 'initech001@initech.puter.work', name: 'Initech' } });
+    const late = await as(USERS.dave).post('/api/connect/accept', { code, partner: { ref: 'initech001@initech.localhost', name: 'Initech' } });
     expect(late.status).toBe(423);
     expect(late.data.code).toBe('transferring');
     expect(Object.keys((await wsDoc(wsId)).channels[design.id].connections)).toEqual([conn]);

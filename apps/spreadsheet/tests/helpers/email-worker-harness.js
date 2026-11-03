@@ -41,7 +41,7 @@ export function loadEmailWorker({ outcome = null, caller = { uuid: 'u-1', userna
   async function call(method, route, { json, asUser = user } = {}) {
     const found = routes.find(([m, p]) => m === method && p === route);
     if (!found) return { status: 404, data: null };
-    const request = new Request(`https://spreadsheet-email.puter.work${route}`, {
+    const request = new Request(`http://spreadsheet-email.localhost:8443${route}`, {
       method, headers: { 'content-type': 'application/json' }, ...(json !== undefined ? { body: JSON.stringify(json) } : {}),
     });
     const ctx = { request, me, ...(asUser ? { user: asUser } : {}) };

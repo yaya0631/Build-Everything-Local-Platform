@@ -8,7 +8,7 @@ for (const inherited of [false, true])
     test(`deleting a page retains checkbox option names (inherited=${inherited}, selected=${selected})`, async ({
       page,
     }) => {
-      await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+      await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
       await page.goto('/#library');
       const { doc, field } = await checkboxDeletionPdf({ inherited, indirect: true, selected });
       const name = field.getName();

@@ -9,7 +9,7 @@ const settled = (page) => expect(page.locator('.editor')).toHaveAttribute('aria-
 test.skip(({ isMobile }) => isMobile, 'desktop workspace');
 
 test('comment tools place text boxes, callouts, and shapes from the keyboard', async ({ page }) => {
-  await page.route('https://js.puter.com/**', (route) => route.abort());
+  await page.route('**/sdk/puter.js', (route) => route.abort());
   const doc = await PDFDocument.create();
   doc.addPage([400, 500]);
   await page.goto('/#library');

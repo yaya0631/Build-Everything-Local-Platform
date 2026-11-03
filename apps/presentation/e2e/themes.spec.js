@@ -14,7 +14,7 @@ test.use({ storageState: { cookies: [], origins: [] } });
 const mod = process.platform === "darwin" ? "Meta" : "Control";
 
 async function start(page, path = "/") {
-  await page.route("https://js.puter.com/v2/", (r) =>
+  await page.route("**/sdk/puter.js", (r) =>
     r.fulfill({
       contentType: "application/javascript",
       body: 'window.puter={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',

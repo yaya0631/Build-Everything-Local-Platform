@@ -114,7 +114,7 @@ circle Android may crop it to.
 
 Everything works signed out; the whole game runs from localStorage. Signing in
 carries your times and your unfinished puzzle between devices, using
-[`puter.kv`](https://docs.puter.com/KV/) under two keys. Records are merged field
+[`puter.kv`](http://localhost:8443/KV/) under two keys. Records are merged field
 by field so neither device's progress is dropped; a saved game cannot be merged
 that way, so the newer of the two wins. A read that failed is never treated as an
 empty store, which is the mistake that would let a flaky connection wipe a

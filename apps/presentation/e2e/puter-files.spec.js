@@ -171,7 +171,7 @@ async function mockDrive(
   page,
   { env = "app", seed = {}, launch = null, path = "/" } = {},
 ) {
-  await page.route("https://js.puter.com/v2/", (route) =>
+  await page.route("**/sdk/puter.js", (route) =>
     route.fulfill({
       contentType: "application/javascript",
       body: `(${installPuter})(${JSON.stringify({ env, seed, launch })});`,

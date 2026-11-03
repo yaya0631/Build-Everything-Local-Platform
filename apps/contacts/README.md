@@ -1,8 +1,8 @@
 # Contacts
 
-A clean, fast, private address book that lives in your [Puter](https://puter.com) cloud. Store contacts, search instantly, and sync across every device — no servers to run, no ads, and your data stays in your own account.
+A clean, fast, private address book that lives in your [Puter](https://localhost:8443) cloud. Store contacts, search instantly, and sync across every device — no servers to run, no ads, and your data stays in your own account.
 
-**Live demo:** https://contacts.puter.com
+**Live demo:** http://contacts.localhost:8443
 **Source:** https://github.com/HeyPuter/contacts
 
 Tags: `puter` `puter-app` `puter-auth` `puter-kv` `puter-ai`
@@ -14,11 +14,11 @@ Tags: `puter` `puter-app` `puter-auth` `puter-kv` `puter-ai`
 - **Instant search** across every field, with A–Z sections and sort by first/last name, recently updated, or recently added.
 - **Favorites & tags** for quick filtering.
 - **Smart add (AI)** — paste an email signature or business card and Puter AI extracts a structured contact for you to review.
-- **Right-click context menus** using Puter's native [`puter.ui.contextMenu()`](https://docs.puter.com/UI/contextMenu/) inside the Puter desktop, with a matching fallback menu on the open web.
+- **Right-click context menus** using Puter's native [`puter.ui.contextMenu()`](http://localhost:8443/UI/contextMenu/) inside the Puter desktop, with a matching fallback menu on the open web.
 - **Import / export** standard `.vcf` (vCard 3.0) files — interoperable with Google and Apple Contacts. **Drop a `.vcf` anywhere on the app** to import it, from your desktop or from Puter's own file manager.
-- **A contacts API for other Puter apps** — an allowlisted app (today: Calendar, which may only read, and AI) can search your address book over an [`AppConnection`](https://docs.puter.com/Objects/AppConnection/), so it can suggest people instead of asking you to retype them. See [App-to-app API](#app-to-app-api).
+- **A contacts API for other Puter apps** — an allowlisted app (today: Calendar, which may only read, and AI) can search your address book over an [`AppConnection`](http://localhost:8443/Objects/AppConnection/), so it can suggest people instead of asking you to retype them. See [App-to-app API](#app-to-app-api).
 - **An MCP server**, on that same connection — the address book as tools an AI agent can call ([Model Context Protocol](https://modelcontextprotocol.io)), so an assistant app can find, add and edit people for you. See [MCP](#mcp).
-- **Calendar, both ways** — inside the Puter desktop, add a contact's birthday to your [Calendar](https://calendar.puter.com) as a yearly all-day event, and see what's coming up with whoever you're looking at. See [Calendar integration](#calendar-integration).
+- **Calendar, both ways** — inside the Puter desktop, add a contact's birthday to your [Calendar](http://calendar.localhost:8443) as a yearly all-day event, and see what's coming up with whoever you're looking at. See [Calendar integration](#calendar-integration).
 - **Light & dark themes** that follow your system preference and remember your choice.
 - **Keyboard shortcuts** — `/` to search, `n` for a new contact, `↑`/`↓` to move through the list.
 - **SEO & social** meta tags, PWA manifest, and a generated social card.
@@ -34,7 +34,7 @@ Puter.js is the only cloud/AI backend — there is no other server.
 | Smart-add extraction | `puter.ai.chat` |
 | Native context menus & window title | `puter.ui` |
 | Files dropped from the Puter desktop | `puter.ui.onItemsOpened()` |
-| App-to-app API and MCP | `puter.ui.parentApp()` + [`AppConnection`](https://docs.puter.com/Objects/AppConnection/) |
+| App-to-app API and MCP | `puter.ui.parentApp()` + [`AppConnection`](http://localhost:8443/Objects/AppConnection/) |
 | Reading & writing the user's calendar | `puter.ui.launchApp` + the same `AppConnection` |
 
 Contacts are stored under per-user, per-app keys (`contact:<id>`), so each user only ever sees their own data and there is nothing to provision.
@@ -242,7 +242,7 @@ npm run build      # run tests, then build to dist/
 npm run preview    # preview the production build
 ```
 
-Puter.js itself is loaded from the CDN (`https://js.puter.com/v2/`) in `index.html`, so there is nothing to install for the cloud features.
+Puter.js itself is loaded from the CDN (`/sdk/puter.js`) in `index.html`, so there is nothing to install for the cloud features.
 
 ### Regenerating icons
 

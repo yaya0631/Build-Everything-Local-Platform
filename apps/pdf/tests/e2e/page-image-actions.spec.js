@@ -13,7 +13,7 @@ async function menu(page, name) {
 }
 
 async function openPdf(page) {
-  await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+  await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   const font = await doc.embedFont(StandardFonts.Helvetica);

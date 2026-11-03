@@ -46,7 +46,7 @@ async function withConsole(request, verify, role = "owner") {
     org: {
       isAdmin: true,
       info: { role },
-      server: "https://whiteboard-abc.puter.work",
+      server: "http://whiteboard-abc.localhost:8443",
       request: (op, data) =>
         Promise.resolve(request(op, data) ?? responses[op]),
     },

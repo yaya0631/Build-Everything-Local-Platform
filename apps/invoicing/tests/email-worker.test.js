@@ -10,7 +10,7 @@ const RAW = readFileSync(
 );
 
 const CALLER = { uuid: 'user-uuid-1', username: 'aurora', puter: { authToken: 'caller-token' } };
-const VIEW = 'https://inv-abc123.puter.site/k7f2m9qz4x.html';
+const VIEW = 'http://inv-abc123.localhost:8443/k7f2m9qz4x.html';
 const PAY = 'https://paypal.me/aurora/1200.00USD';
 
 /**
@@ -267,10 +267,10 @@ describe('email worker: the message', () => {
 
   it('refuses a view link that is not a share page this app publishes', async () => {
     for (const url of [
-      'http://inv-abc.puter.site/k7f2m9qz4x.html',
+      'http://inv-abc.localhost:8443/k7f2m9qz4x.html',
       'https://evil.example/k7f2m9qz4x.html',
-      'https://inv-abc.puter.site/../secret.html',
-      'https://inv-abc.puter.site/k7f2m9qz4x.html?next=https://evil.example',
+      'http://inv-abc.localhost:8443/../secret.html',
+      'http://inv-abc.localhost:8443/k7f2m9qz4x.html?next=https://evil.example',
     ]) {
       const html = await htmlOf(payload({
         document: { ...payload().document, viewUrl: url, payUrl: '' },

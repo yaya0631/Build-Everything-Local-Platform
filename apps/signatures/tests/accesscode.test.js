@@ -275,7 +275,7 @@ describe('the request email mentions a code without carrying it', () => {
         doc: { id: 'd1', title: 'NDA', ownerName: 'Alex', ownerEmail: 'alex@example.com', pageCount: 1 },
         recipients: [{
           email: 'ava@example.com', name: 'Ava', version: 'abcdef12', codeRequired: true,
-          signUrl: `https://w.puter.work/sign/${'a'.repeat(40)}`,
+          signUrl: `http://w.localhost:8443/sign/${'a'.repeat(40)}`,
         }],
         kind: 'request',
       },

@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://backgammon.puter.com/sitemap.xml
+Sitemap: http://backgammon.localhost:8443/sitemap.xml

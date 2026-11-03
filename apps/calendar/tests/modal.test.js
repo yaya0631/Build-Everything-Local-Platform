@@ -1063,7 +1063,7 @@ describe('event modal — view mode links', () => {
       color: 'blue',
       reminders: [],
       location: 'https://meet.example.com/room-1',
-      description: 'Notes: www.example.com/agenda. Ask nj@puter.com. <b>not html</b>',
+      description: 'Notes: www.example.com/agenda. Ask nj@localhost:8443. <b>not html</b>',
     });
 
     const card = document.querySelector('.modal--view');
@@ -1071,7 +1071,7 @@ describe('event modal — view mode links', () => {
     expect(links.map((a) => a.getAttribute('href'))).toEqual([
       'https://meet.example.com/room-1',
       'https://www.example.com/agenda',
-      'mailto:nj@puter.com',
+      'mailto:nj@localhost:8443',
     ]);
     expect(links.every((a) => a.target === '_blank' && a.rel === 'noopener noreferrer')).toBe(true);
     // Angle-bracket text stays inert text, and punctuation stays outside links.
@@ -1099,14 +1099,14 @@ describe('event modal — guests & RSVP', () => {
     reminders: [],
     organizer: { email: 'jane@corp.com', name: 'Jane Boss' },
     guests: [
-      { email: 'nj@puter.com', status: 'needs-action' },
+      { email: 'nj@localhost:8443', status: 'needs-action' },
       { email: 'jane@corp.com', name: 'Jane Boss', status: 'accepted' },
     ],
   });
 
   beforeEach(() => {
     store = makeStore();
-    modal = createEventModal({ store, user: { email: 'NJ@puter.com' } });
+    modal = createEventModal({ store, user: { email: 'NJ@localhost:8443' } });
   });
   afterEach(() => {
     modal.close();
@@ -1138,10 +1138,10 @@ describe('event modal — guests & RSVP', () => {
     fire($('form.modal'), 'submit');
     expect(saved).toBeTruthy();
     expect(saved.guests).toEqual([
-      { email: 'nj@puter.com', status: 'accepted' },
+      { email: 'nj@localhost:8443', status: 'accepted' },
       { email: 'ada@x.com', status: 'needs-action' },
     ]);
-    expect(saved.organizer).toEqual({ email: 'nj@puter.com' });
+    expect(saved.organizer).toEqual({ email: 'nj@localhost:8443' });
   });
 
   it('auto-adds me as Organizer on the first guest, but not after I remove myself', async () => {
@@ -1157,15 +1157,15 @@ describe('event modal — guests & RSVP', () => {
     await tick(); // the self-add is chained behind the email lookup
     const rows = [...document.querySelectorAll('.guests__row')];
     expect(rows.length).toBe(2);
-    expect(rows[0].textContent).toContain('nj@puter.com');
+    expect(rows[0].textContent).toContain('nj@localhost:8443');
     expect(rows[0].textContent).toContain('Organizer');
 
     // Taking myself off sticks: later adds (and the save) must not re-add me.
-    $('[aria-label="Remove nj@puter.com"]').click();
+    $('[aria-label="Remove nj@localhost:8443"]').click();
     input.value = 'bob@x.com';
     input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
     await tick();
-    expect($('.guests').textContent).not.toContain('nj@puter.com');
+    expect($('.guests').textContent).not.toContain('nj@localhost:8443');
 
     $('input[aria-label="Event title"]').value = 'Sans moi';
     fire($('form.modal'), 'submit');
@@ -1174,14 +1174,14 @@ describe('event modal — guests & RSVP', () => {
       { email: 'ada@x.com', status: 'needs-action' },
       { email: 'bob@x.com', status: 'needs-action' },
     ]);
-    expect(saved.organizer).toEqual({ email: 'nj@puter.com' }); // still the host
+    expect(saved.organizer).toEqual({ email: 'nj@localhost:8443' }); // still the host
   });
 
   it('editor removes a guest row', () => {
     modal.openEdit(invite());
-    expect($('.guests').textContent).toContain('nj@puter.com');
-    $('[aria-label="Remove nj@puter.com"]').click();
-    expect($('.guests').textContent).not.toContain('nj@puter.com');
+    expect($('.guests').textContent).toContain('nj@localhost:8443');
+    $('[aria-label="Remove nj@localhost:8443"]').click();
+    expect($('.guests').textContent).not.toContain('nj@localhost:8443');
   });
 
   it('card lists guests with a summary and tags the organizer', () => {
@@ -1198,7 +1198,7 @@ describe('event modal — guests & RSVP', () => {
     store.rsvpEvent = async (id, status, email) => {
       rsvp = { id, status, email };
       return { ...invite(), guests: [
-        { email: 'nj@puter.com', status },
+        { email: 'nj@localhost:8443', status },
         { email: 'jane@corp.com', name: 'Jane Boss', status: 'accepted' },
       ], declined: status === 'declined' };
     };
@@ -1209,7 +1209,7 @@ describe('event modal — guests & RSVP', () => {
 
     chips[0].click();
     await tick();
-    expect(rsvp).toEqual({ id: 'inv1', status: 'accepted', email: 'nj@puter.com' });
+    expect(rsvp).toEqual({ id: 'inv1', status: 'accepted', email: 'nj@localhost:8443' });
     const refreshed = [...document.querySelectorAll('.view__going button')];
     expect(refreshed[0].getAttribute('aria-pressed')).toBe('true');
     expect(modal.isOpen()).toBe(true);
@@ -1221,9 +1221,9 @@ describe('event modal — guests & RSVP', () => {
     // replay reads as the dialog collapsing and reopening (visible flicker).
     const hosted = {
       ...invite(),
-      organizer: { email: 'nj@puter.com' },
+      organizer: { email: 'nj@localhost:8443' },
       guests: [
-        { email: 'nj@puter.com', status: 'accepted' },
+        { email: 'nj@localhost:8443', status: 'accepted' },
         { email: 'ada@x.com', status: 'needs-action' },
       ],
     };
@@ -1233,17 +1233,17 @@ describe('event modal — guests & RSVP', () => {
         ? {
             ...hosted,
             guests: [
-              { email: 'nj@puter.com', status: 'accepted' },
+              { email: 'nj@localhost:8443', status: 'accepted' },
               { email: 'ada@x.com', status: 'accepted' },
             ],
           }
         : null;
     modal = createEventModal({
       store,
-      user: { email: 'nj@puter.com' },
+      user: { email: 'nj@localhost:8443' },
       rsvp: {
         isHosted: () => true,
-        linkableGuests: (ev) => ev.guests.filter((g) => g.email !== 'nj@puter.com'),
+        linkableGuests: (ev) => ev.guests.filter((g) => g.email !== 'nj@localhost:8443'),
         linksFor: () => null,
         refreshEvent: () => {},
         onUpdate: (cb) => {
@@ -1266,13 +1266,13 @@ describe('event modal — guests & RSVP', () => {
 
   it('shows no chips on my own event with guests, and no Restore when chips show', () => {
     // Own event: organizer is me → no Going? chips.
-    modal.openView({ ...invite(), organizer: { email: 'nj@puter.com' } });
+    modal.openView({ ...invite(), organizer: { email: 'nj@localhost:8443' } });
     expect($('.view__going')).toBeNull();
     modal.close();
 
     // Declined invite: chips appear INSTEAD of the Restore button.
     modal.openView({ ...invite(), declined: true,
-      guests: [{ email: 'nj@puter.com', status: 'declined' }] });
+      guests: [{ email: 'nj@localhost:8443', status: 'declined' }] });
     expect($('.view__going')).toBeTruthy();
     expect([...document.querySelectorAll('.modal--view button')].some((b) => b.textContent.includes('Restore'))).toBe(false);
   });
@@ -1285,16 +1285,16 @@ describe('event modal — guests & RSVP', () => {
     };
     modal.openNew({ start });
     const input = $('input[aria-label="Add guest by email"]');
-    for (const email of ['nj@puter.com', 'ada@x.com']) {
+    for (const email of ['nj@localhost:8443', 'ada@x.com']) {
       input.value = email;
       input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
     }
     $('input[aria-label="Event title"]').value = 'Standup';
     fire($('form.modal'), 'submit');
     await tick();
-    expect(saved.organizer).toEqual({ email: 'nj@puter.com' });
+    expect(saved.organizer).toEqual({ email: 'nj@localhost:8443' });
     expect(saved.guests).toEqual([
-      { email: 'nj@puter.com', status: 'accepted' },
+      { email: 'nj@localhost:8443', status: 'accepted' },
       { email: 'ada@x.com', status: 'needs-action' },
     ]);
   });
@@ -1309,19 +1309,19 @@ describe('event modal — guests & RSVP', () => {
     fire($('form.modal'), 'submit');
     await tick();
     expect(saved.organizer).toEqual({ email: 'jane@corp.com', name: 'Jane Boss' });
-    expect(saved.guests.find((g) => g.email === 'nj@puter.com').status).toBe('needs-action');
+    expect(saved.guests.find((g) => g.email === 'nj@localhost:8443').status).toBe('needs-action');
   });
 
   it('a series occurrence RSVPs against the master id', async () => {
     let rsvp = null;
     store.rsvpEvent = async (id, status, email) => {
       rsvp = { id, status, email };
-      return { ...invite(), id: 'master1', guests: [{ email: 'nj@puter.com', status }] };
+      return { ...invite(), id: 'master1', guests: [{ email: 'nj@localhost:8443', status }] };
     };
     modal.openView({ ...invite(), id: 'master1::999', seriesId: 'master1', recurrenceId: 999 });
     [...document.querySelectorAll('.view__going button')][2].click();
     await tick();
-    expect(rsvp).toEqual({ id: 'master1', status: 'tentative', email: 'nj@puter.com' });
+    expect(rsvp).toEqual({ id: 'master1', status: 'tentative', email: 'nj@localhost:8443' });
   });
 });
 
@@ -1343,7 +1343,7 @@ describe('event modal — email permission (Puter withholds user.email from apps
     reminders: [],
     organizer: { email: 'jane@corp.com', name: 'Jane Boss' },
     guests: [
-      { email: 'nj@puter.com', status: 'needs-action' },
+      { email: 'nj@localhost:8443', status: 'needs-action' },
       { email: 'jane@corp.com', name: 'Jane Boss', status: 'accepted' },
     ],
   });
@@ -1362,7 +1362,7 @@ describe('event modal — email permission (Puter withholds user.email from apps
 
   it('asks once for the email and stamps me as organizer on save', async () => {
     let calls = 0;
-    modal = make(async () => (calls++, 'NJ@puter.com '));
+    modal = make(async () => (calls++, 'NJ@localhost:8443 '));
     let saved = null;
     store.saveEvent = async (e) => {
       saved = e;
@@ -1376,10 +1376,10 @@ describe('event modal — email permission (Puter withholds user.email from apps
     fire($('form.modal'), 'submit');
     await tick();
     expect(saved).toBeTruthy();
-    expect(saved.organizer).toEqual({ email: 'nj@puter.com' }); // trimmed + lowercased
+    expect(saved.organizer).toEqual({ email: 'nj@localhost:8443' }); // trimmed + lowercased
     // Once the email resolves I join my own guest list, ahead of the invitee.
     expect(saved.guests).toEqual([
-      { email: 'nj@puter.com', status: 'accepted' },
+      { email: 'nj@localhost:8443', status: 'accepted' },
       { email: 'ada@x.com', status: 'needs-action' },
     ]);
     // Adding the guest triggered the request; the save reused the same one.
@@ -1431,7 +1431,7 @@ describe('event modal — email permission (Puter withholds user.email from apps
     modal.openNew({ start: start + 2 * H });
     $('input[aria-label="Event title"]').value = 'Second';
 
-    resolveEmail('nj@puter.com');
+    resolveEmail('nj@localhost:8443');
     await tick();
     expect(saved).toHaveLength(0); // the parked save died with its editor
     expect($('form.modal')).toBeTruthy(); // and did not yank the new one shut
@@ -1454,7 +1454,7 @@ describe('event modal — email permission (Puter withholds user.email from apps
     // While parked, the user nudges the start time. Text fields were already
     // read live after the await; times must be too — not a mixed snapshot.
     $('input[aria-label="Start time"]').value = '15:30';
-    resolveEmail('nj@puter.com');
+    resolveEmail('nj@localhost:8443');
     await tick();
     expect(saved).toHaveLength(1);
     const d = new Date(saved[0].start);
@@ -1462,7 +1462,7 @@ describe('event modal — email permission (Puter withholds user.email from apps
   });
 
   it('an invite card grows Going? chips once the email permission resolves', async () => {
-    modal = make(async () => 'nj@puter.com');
+    modal = make(async () => 'nj@localhost:8443');
     modal.openView(invite());
     expect($('.view__going')).toBeNull(); // email still unknown at first paint
     await tick();
@@ -1472,7 +1472,7 @@ describe('event modal — email permission (Puter withholds user.email from apps
 
   it('does not ask when the card cannot be an invite (no organizer)', async () => {
     let calls = 0;
-    modal = make(async () => (calls++, 'nj@puter.com'));
+    modal = make(async () => (calls++, 'nj@localhost:8443'));
     modal.openView({ ...invite(), organizer: null });
     await tick();
     expect(calls).toBe(0);

@@ -1,6 +1,6 @@
 /**
  * Everything Local — Drop-in client SDK (`window.puter`).
- * Replaces js.puter.com locally with zero external network calls, zero popups,
+ * Replaces the hosted Puter SDK locally with zero external network calls, zero popups,
  * and full support for Section 4 APIs + puter.peer (RTCPeerConnection + WS signaling).
  */
 (function () {

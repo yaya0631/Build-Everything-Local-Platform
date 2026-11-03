@@ -12,7 +12,7 @@ const hub = new MemoryHub(Y.encodeStateAsUpdate(createSharedDoc(editorState({ se
 const joined = [];
 let release;
 // The file was shared before: its room is remembered.
-vi.mock('../src/collab/room-memory.js', async (importOriginal) => ({ ...await importOriginal(), rememberedRoom: async () => ({ server: 'https://documents-abc.puter.work', room: 'room1' }) }));
+vi.mock('../src/collab/room-memory.js', async (importOriginal) => ({ ...await importOriginal(), rememberedRoom: async () => ({ server: 'http://documents-abc.localhost:8443', room: 'room1' }) }));
 vi.mock('../src/collab/live.js', async (importOriginal) => ({
   ...await importOriginal(),
   // Joining the owner's room takes a few round trips; the test decides when they end.
@@ -21,7 +21,7 @@ vi.mock('../src/collab/live.js', async (importOriginal) => ({
     const client = new CollabClient({ transport: hub.connect('owner'), user: { id: 'u0', name: 'Ada' }, room: 'room1', sendDelay: 0 });
     await client.connect();
     joined.push(client);
-    return { client, link: { server: 'https://documents-abc.puter.work', room: 'room1' } };
+    return { client, link: { server: 'http://documents-abc.localhost:8443', room: 'room1' } };
   },
 }));
 const { createCollaboration } = await import('../src/views/collab.js');

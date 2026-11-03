@@ -9,7 +9,7 @@ import { writeAgendaCache, readAgendaCache, addDays } from '../src/lib/agenda.js
  * Calendar, when.
  */
 
-const MEET = 'https://meetings.puter.com/#/m/abcd-efgh-ijkl';
+const MEET = 'http://meetings.localhost:8443/#/m/abcd-efgh-ijkl';
 const NOW = new Date(2031, 7, 26, 9, 0, 0, 0).getTime(); // Tue 26 Aug 2031, 09:00
 const at = (day, h = 9, m = 0) => new Date(2031, 7, day, h, m, 0, 0).getTime();
 

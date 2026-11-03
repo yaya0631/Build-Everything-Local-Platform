@@ -9,7 +9,7 @@
  * - Other cross-origin requests (Puter's API) are never touched, and
  *   neither is the team worker source, which owners deploy from here.
  */
-const SDK = 'https://js.puter.com/v2/';
+const SDK = '/sdk/puter.js';
 // Filled in by the build (vite.config.js): this build's files, so the app
 // opens offline after a single visit, and a cache per build, so the files
 // of earlier builds are dropped.

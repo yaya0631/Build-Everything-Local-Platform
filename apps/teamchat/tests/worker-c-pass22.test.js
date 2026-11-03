@@ -201,7 +201,7 @@ describe('an import whose opening request is answered but whose answer is lost',
       await rt.dispatch(url, init, alice); // the worker opens the copy...
       throw new TypeError('Failed to fetch'); // ...and the answer never arrives
     });
-    const ref = await importArchive('https://teamchat-new.puter.work', archive, { profile: { name: 'Alice' } });
+    const ref = await importArchive('http://teamchat-new.localhost:8443', archive, { profile: { name: 'Alice' } });
     expect([finishes, ref]).toEqual([1, 'copylost001@teamchat-new']);
     const doc = await rt.kv.get(KEYS.ws('copylost001'));
     expect(doc).toBeTruthy();
@@ -213,7 +213,7 @@ describe('an import whose opening request is answered but whose answer is lost',
   it('still takes down a copy whose opening never reached the worker', async () => {
     const archive = await exported();
     globalThis.puter = bridge(async () => { throw new TypeError('Failed to fetch'); });
-    await expect(importArchive('https://teamchat-new.puter.work', archive, { profile: { name: 'Alice' } })).rejects.toMatchObject({ code: 'network' });
+    await expect(importArchive('http://teamchat-new.localhost:8443', archive, { profile: { name: 'Alice' } })).rejects.toMatchObject({ code: 'network' });
     expect(await rt.kv.get(KEYS.ws('copylost001'))).toBeFalsy();
   });
 });
@@ -262,7 +262,7 @@ describe('an import whose page or file request loses its answer', () => {
       }
       return res;
     };
-    const ref = await importArchive('https://teamchat-new.puter.work', renamed, { from: `${wsId}@teamchat-old`, fromRef: `${wsId}@teamchat-old`, profile: { name: 'Alice' }, pause: 1 });
+    const ref = await importArchive('http://teamchat-new.localhost:8443', renamed, { from: `${wsId}@teamchat-old`, fromRef: `${wsId}@teamchat-old`, profile: { name: 'Alice' }, pause: 1 });
     expect(ref).toBe('copyretry01@teamchat-new');
     expect(Object.keys(lost).length).toBeGreaterThanOrEqual(2);
     const doc = await rt.kv.get(KEYS.ws('copyretry01'));
@@ -283,7 +283,7 @@ describe('an import whose page or file request loses its answer', () => {
       if (isPage(new URL(url).pathname)) { pages++; throw new TypeError('Failed to fetch'); }
       return rt.dispatch(url, init, alice);
     } } };
-    await expect(importArchive('https://teamchat-new.puter.work', archive, { profile: { name: 'Alice' }, pause: 1 })).rejects.toMatchObject({ code: 'network' });
+    await expect(importArchive('http://teamchat-new.localhost:8443', archive, { profile: { name: 'Alice' }, pause: 1 })).rejects.toMatchObject({ code: 'network' });
     expect(pages).toBe(3);
     expect(await rt.kv.get(KEYS.ws('copyretry01'))).toBeFalsy();
     // A page the worker refuses (a direct message none of the copy's members are in is passed over; a channel refused stops the import) is answered as before, at once.
@@ -292,7 +292,7 @@ describe('an import whose page or file request loses its answer', () => {
       if (isPage(new URL(url).pathname)) { asked++; return new Response(JSON.stringify({ code: 'invalid', message: 'Bad conversation id' }), { status: 400, headers: { 'Content-Type': 'application/json' } }); }
       return rt.dispatch(url, init, alice);
     } } };
-    await expect(importArchive('https://teamchat-new.puter.work', archive, { profile: { name: 'Alice' }, pause: 1 })).rejects.toMatchObject({ code: 'invalid' });
+    await expect(importArchive('http://teamchat-new.localhost:8443', archive, { profile: { name: 'Alice' }, pause: 1 })).rejects.toMatchObject({ code: 'invalid' });
     expect(asked).toBe(1);
   });
 });
@@ -321,7 +321,7 @@ describe('an import whose creating request loses its answer', () => {
       return res;
     } } };
     const made = [];
-    const ref = await importArchive('https://teamchat-new.puter.work', archive, { profile: { name: 'Alice' }, pause: 1, onCreated: (r) => made.push(r) });
+    const ref = await importArchive('http://teamchat-new.localhost:8443', archive, { profile: { name: 'Alice' }, pause: 1, onCreated: (r) => made.push(r) });
     expect([ref, created, made]).toEqual(['copystub001@teamchat-new', 1, ['copystub001@teamchat-new']]);
     const doc = await rt.kv.get(KEYS.ws('copystub001'));
     expect(doc.importing).toBeUndefined();
@@ -339,7 +339,7 @@ describe('an import whose creating request loses its answer', () => {
       if (isCreate(new URL(url).pathname) && attempts++ === 0) throw new TypeError('Failed to fetch'); // never arrived
       return rt.dispatch(url, init, alice);
     } } };
-    const ref = await importArchive('https://teamchat-new.puter.work', archive, { profile: { name: 'Alice' }, pause: 1 });
+    const ref = await importArchive('http://teamchat-new.localhost:8443', archive, { profile: { name: 'Alice' }, pause: 1 });
     expect([ref, attempts]).toEqual(['copystub002@teamchat-new', 2]);
     expect((await rt.kv.get(KEYS.ws('copystub002'))).importing).toBeUndefined();
     let refused = 0;
@@ -347,7 +347,7 @@ describe('an import whose creating request loses its answer', () => {
       if (isCreate(new URL(url).pathname)) { refused++; return new Response(JSON.stringify({ code: 'invalid', message: 'That is not a Teamchat export' }), { status: 400, headers: { 'Content-Type': 'application/json' } }); }
       return rt.dispatch(url, init, alice);
     } } };
-    await expect(importArchive('https://teamchat-new.puter.work', await exported('copystub003'), { profile: { name: 'Alice' }, pause: 1 })).rejects.toMatchObject({ code: 'invalid' });
+    await expect(importArchive('http://teamchat-new.localhost:8443', await exported('copystub003'), { profile: { name: 'Alice' }, pause: 1 })).rejects.toMatchObject({ code: 'invalid' });
     expect(refused).toBe(1);
   });
 });

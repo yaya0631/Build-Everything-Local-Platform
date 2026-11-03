@@ -994,7 +994,7 @@ export function createStore(backend, { now = () => new Date().toISOString(), sna
       // and a public URL, so only a name this app would have minted may
       // come back from a backup — the same rule attachment names follow.
       if (settings.calendarFeed && !isFeedFile(settings.calendarFeed.file)) delete settings.calendarFeed;
-      // The publish subdomain is rendered as "https://<subdomain>.puter.site"
+      // The publish subdomain is rendered as "https://<subdomain>.localhost:8443"
       // links; a value that cannot be a real subdomain must not survive.
       if (settings.publishSite && !/^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$/i.test(String(settings.publishSite.subdomain ?? ''))) {
         delete settings.publishSite;

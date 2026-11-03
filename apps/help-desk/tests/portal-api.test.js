@@ -78,7 +78,7 @@ describe('PortalApi', () => {
     api.signedIn = () => false;
     await api.info();
     await api.submit({ email: 'a@b.co' });
-    expect(calls[0].url).toBe('https://hd-abc.puter.work/p/desk1234');
+    expect(calls[0].url).toBe('http://hd-abc.localhost:8443/p/desk1234');
     expect(calls[1].init.method).toBe('POST');
     expect(JSON.parse(calls[1].init.body).email).toBe('a@b.co');
     await expect(api.request(9, 'bad')).rejects.toMatchObject({ status: 403, code: 'forbidden' });

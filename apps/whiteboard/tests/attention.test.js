@@ -31,7 +31,7 @@ test("camera traffic coalesces movement, renews idle views, and expires lost par
   env.service.now = () => Date.now();
   const s = new CollaborationSession({
     puter: env.sdk(owner),
-    server: "https://whiteboard-test.puter.work",
+    server: "http://whiteboard-test.localhost:8443",
     room,
     user: owner,
     store,
@@ -108,7 +108,7 @@ test("a follower sends whom it follows and the slide, not each move of the follo
     sent = [];
   const s = new CollaborationSession({
     puter: env.sdk(owner),
-    server: "https://whiteboard-test.puter.work",
+    server: "http://whiteboard-test.localhost:8443",
     room: "room",
     user: owner,
     store: memoryStore(),
@@ -248,7 +248,7 @@ test("live camera and attention packets enforce age, ordering and editor authori
     activity = [];
   const s = new CollaborationSession({
     puter: env.sdk(owner),
-    server: "https://whiteboard-test.puter.work",
+    server: "http://whiteboard-test.localhost:8443",
     room: "room",
     user: owner,
     store: memoryStore(),
@@ -388,7 +388,7 @@ test("a drag held still keeps its live position shown, and a large one still sen
     sent = [];
   const s = new CollaborationSession({
     puter: env.sdk(owner),
-    server: "https://whiteboard-test.puter.work",
+    server: "http://whiteboard-test.localhost:8443",
     room: "room",
     user: owner,
     store: memoryStore(),

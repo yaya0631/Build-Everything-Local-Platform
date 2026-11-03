@@ -14,7 +14,7 @@ const dependencies = [
   'regenerator-runtime',
 ];
 const texts = [
-  'PDF Editor: third-party notices\n\nThese licenses apply to their respective dependencies, not to the application as a whole.\nPuter.js is loaded from https://js.puter.com/v2/ and is subject to Puter terms.\n',
+  'PDF Editor: third-party notices\n\nThese licenses apply to their respective dependencies, not to the application as a whole.\nPuter.js is loaded from /sdk/puter.js and is subject to Puter terms.\n',
 ];
 for (const name of dependencies) {
   const dir = `node_modules/${name}`;

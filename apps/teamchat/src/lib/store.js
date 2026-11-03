@@ -806,7 +806,7 @@ class Store extends EventTarget {
 
   /**
    * The user's own worker is reached by the URL Puter reported when it was
-   * created, which may sit outside puter.work; references to it must keep
+   * created, which may sit outside localhost:8443; references to it must keep
    * resolving (see refs.js: hosts named only by a link never do).
    */
   _trustOwnWorker() {

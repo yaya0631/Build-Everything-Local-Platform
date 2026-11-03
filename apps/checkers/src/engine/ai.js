@@ -1,16 +1,3 @@
-/**
- * Computer opponent: negamax with alpha-beta pruning over the checkers
- * engine's whole-turn move list.
- *
- * Two things are easier here than in chess. Checkers branches about eight
- * ways rather than thirty-five, so the same budget searches far deeper; and
- * quiescence is exact rather than heuristic, because capture is mandatory —
- * a position is quiet precisely when the side to move has no jump.
- *
- * Difficulty combines depth with a randomness window: the engine picks
- * uniformly among root moves scoring within `window` of the best, so lower
- * levels play plausible-but-imperfect checkers.
- */
 
 import { colorOf, isKing } from './checkers.js';
 import { squareToRowCol } from './geometry.js';

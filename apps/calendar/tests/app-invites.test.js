@@ -59,8 +59,8 @@ async function mount({ series = false, guests = true, booking = false, otherGues
     isHosted: (ev) => ev.organizer?.email === HOST.email,
     linkableGuests: (ev) => ev.guests.filter((g) => g.email !== HOST.email),
     linksFor: () => ({
-      'ada@example.com': 'https://cal-rsvp-test.puter.work/rsvp/' + 'a'.repeat(40),
-      'bob@example.com': 'https://cal-rsvp-test.puter.work/rsvp/' + 'b'.repeat(40),
+      'ada@example.com': 'http://cal-rsvp-test.localhost:8443/rsvp/' + 'a'.repeat(40),
+      'bob@example.com': 'http://cal-rsvp-test.localhost:8443/rsvp/' + 'b'.repeat(40),
     }),
     onUpdate: (cb) => { listeners.add(cb); return () => listeners.delete(cb); },
   };
@@ -303,7 +303,7 @@ describe('notifications for this and following events', () => {
     expect(body.ics).toContain('METHOD:CANCEL');
     expect(body.ics).toContain('STATUS:CANCELLED');
     expect(body.ics).toContain('RANGE=THISANDFUTURE');
-    expect(body.ics).toContain(`UID:${w.item.seriesId}@calendar.puter.com`);
+    expect(body.ics).toContain(`UID:${w.item.seriesId}@calendar.localhost`);
   });
 
   it.each(['card', 'context menu'])('Undo before confirming a trim from the %s sends nothing', async (entry) => {
@@ -354,7 +354,7 @@ describe('notifications for this and following events', () => {
     expect(old.ics).toContain('SUMMARY:Standup');
     expect(tail.kind).toBe('invite');
     expect(tail.ics).toContain('SUMMARY:Future standup');
-    expect(tail.ics).toContain(`UID:${tail.event.id}@calendar.puter.com`);
+    expect(tail.ics).toContain(`UID:${tail.event.id}@calendar.localhost`);
     expect(w.store.getEvent(tail.event.id).start).toBe(w.item.recurrenceId);
     expect(w.invites.planFor({ id: tail.event.id }).pending).toHaveLength(0);
   });

@@ -55,7 +55,7 @@ Every value stays small (a few KB at most). A change number taken but never writ
 
 ## Authentication
 
-Nobody sends a Puter session to a worker, not even its owner. The app writes a small file with this device's public key to the person's own drive and makes a read-only access token for that one file (`puter.fs.getReadURL`, kept in their app KV for a day because minting is rate limited). Each request carries that token and a signature over the worker origin, the file path and the SHA-256 of the body. The worker stats the file with the token (Puter checks expiry and revocation; the file must be unshared and owned by the caller) and takes the caller's username from the file's owner. Session and app tokens are refused. Worker addresses outside `https://<name>.puter.work` are refused before anything is sent.
+Nobody sends a Puter session to a worker, not even its owner. The app writes a small file with this device's public key to the person's own drive and makes a read-only access token for that one file (`puter.fs.getReadURL`, kept in their app KV for a day because minting is rate limited). Each request carries that token and a signature over the worker origin, the file path and the SHA-256 of the body. The worker stats the file with the token (Puter checks expiry and revocation; the file must be unshared and owned by the caller) and takes the caller's username from the file's owner. Session and app tokens are refused. Worker addresses outside `https://<name>.localhost:8443` are refused before anything is sent.
 
 ## How the video reaches reviewers
 

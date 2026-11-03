@@ -158,7 +158,7 @@ describe('assistant panel', () => {
 
   beforeEach(() => {
     vi.stubGlobal('requestAnimationFrame', (fn) => setTimeout(fn, 0));
-    vi.stubGlobal('plausible', vi.fn());
+    vi.stubGlobal('__everythingAnalytics', vi.fn());
     vi.spyOn(P, 'canAI').mockReturnValue(true);
     localStorage.clear();
     document.body.innerHTML = '';
@@ -226,7 +226,7 @@ describe('assistant panel', () => {
     expect(reply.querySelector('.ai-step').textContent).toContain('Write 1 cell to Sheet1!A3');
     expect(reply.querySelector('.cell-ref').textContent).toBe('A3');
     expect(reply.getAttribute('aria-busy')).toBeNull();
-    expect(plausible.mock.calls).toEqual([['AI Interaction', { props: { feature: 'assistant', changed: true } }]]);
+    expect(__everythingAnalytics.mock.calls).toEqual([['AI Interaction', { props: { feature: 'assistant', changed: true } }]]);
     expect(P.aiChatStream.mock.calls[0][1].model).toBe('claude-opus-5-5');
     const undo = reply.querySelector('.ai-undo');
     expect(undo.disabled).toBe(false);
@@ -297,7 +297,7 @@ describe('assistant panel', () => {
     expect(P.aiChatStream.mock.calls[0][1].maxTokens).toBe(32000);
     const reply = panel.el.querySelector('.ai-assistant');
     expect(reply.querySelector('.ai-stopped').textContent).toBe('The reply reached its length limit and was cut off. Say "continue" for the rest.');
-    expect(plausible).not.toHaveBeenCalled();
+    expect(__everythingAnalytics).not.toHaveBeenCalled();
   });
 
   it('shows it is still working when its text pauses before a tool call', async () => {
@@ -731,18 +731,18 @@ describe('assistant panel', () => {
     await send('hello');
     const alert = panel.el.querySelector('[role="alert"]');
     expect(alert.textContent).toContain('allowance');
-    expect(plausible).not.toHaveBeenCalled();
+    expect(__everythingAnalytics).not.toHaveBeenCalled();
     [...alert.querySelectorAll('button')].find((b) => b.textContent === 'Try again').click();
     for (let i = 0; i < 10; i++) await new Promise((r) => setTimeout(r, 0));
     expect(panel.el.querySelectorAll('.ai-assistant .ai-text')[0].textContent).toBe('Back.');
-    expect(plausible.mock.calls).toEqual([['AI Interaction', { props: { feature: 'assistant', changed: false } }]]);
+    expect(__everythingAnalytics.mock.calls).toEqual([['AI Interaction', { props: { feature: 'assistant', changed: false } }]]);
   });
 
   it('does not track an empty assistant reply as delivered value', async () => {
     vi.spyOn(P, 'aiChatStream').mockImplementation(() => stream([]));
     await send('hello');
     expect(panel.el.querySelector('.ai-text').textContent).toBe('I have nothing to add.');
-    expect(plausible).not.toHaveBeenCalled();
+    expect(__everythingAnalytics).not.toHaveBeenCalled();
   });
 
   it('does not track a reply the user stops, even after some text has arrived', async () => {
@@ -757,7 +757,7 @@ describe('assistant panel', () => {
     release();
     for (let i = 0; i < 10; i++) await new Promise(resolve => setTimeout(resolve, 0));
     expect(panel.el.querySelector('.ai-stopped').textContent).toBe('Stopped.');
-    expect(plausible).not.toHaveBeenCalled();
+    expect(__everythingAnalytics).not.toHaveBeenCalled();
   });
 
   it('takes back the way to try a failed reply again once another message is sent', async () => {

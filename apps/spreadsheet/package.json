@@ -13,8 +13,7 @@
     "template:thumbnails": "node dev/generate-template-thumbnails.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
-    "build:worker": "vite build --config vite.worker.config.js",
-    "deploy:email-worker": "puter worker deploy src/workers/email-worker.js spreadsheet-email"
+    "build:worker": "vite build --config vite.worker.config.js"
   },
   "repository": {
     "type": "git",

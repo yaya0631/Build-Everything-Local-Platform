@@ -8,7 +8,7 @@ for (const depth of [1, 2])
     test(`edits form fields below unnamed groups (${surface}, depth=${depth})`, async ({
       page,
     }) => {
-      await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+      await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
       await page.goto('/#library');
       const { doc, text } = await nestedFormPdf({ depth });
       const open = async (document) => {

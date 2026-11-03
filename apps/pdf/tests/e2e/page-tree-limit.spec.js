@@ -19,7 +19,7 @@ for (const encrypted of [false, true])
     test(`opening a PDF with ${kind} (encrypted=${encrypted}) keeps the existing workspace responsive`, async ({
       page,
     }) => {
-      await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+      await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
       await page.goto('/');
       await expect(page.locator('.page-caption')).toHaveText('Page 1 of 1');
       const bytes = await expandingPageTree(options.cycle ? 1 : 60, options);

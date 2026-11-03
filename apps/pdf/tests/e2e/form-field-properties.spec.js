@@ -37,7 +37,7 @@ async function retitle(page, target, dialogName, tooltip) {
 test.skip(({ isMobile }) => isMobile, 'desktop workspace');
 
 test.beforeEach(async ({ page }) => {
-  await page.route('https://js.puter.com/**', (route) =>
+  await page.route('**/sdk/puter.js', (route) =>
     route.fulfill({ contentType: 'application/javascript', body: PUTER_MOCK }),
   );
   await page.goto('/#library');

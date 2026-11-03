@@ -8,7 +8,7 @@ No frameworks — just vanilla JavaScript, HTML, and CSS, built with Vite.
 - **Player vs. Computer** with three difficulty levels (Easy / Medium / Hard)
 - **Pass & Play** — two players sharing one device
 - **Online play** — private peer-to-peer games over the
-  [Puter Peer API](https://docs.puter.com/Peer/) (WebRTC): create a game,
+  [Puter Peer API](http://localhost:8443/Peer/) (WebRTC): create a game,
   share the invite code or link, and play with resign and rematch support.
   The Puter SDK is loaded only when online mode is opened.
 - **Clocks** — Bullet, Blitz, and Rapid time controls with a Fischer

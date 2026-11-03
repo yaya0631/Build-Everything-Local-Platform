@@ -123,7 +123,7 @@ export function buildMat({
   result,
   date,
   control = null,
-  site = 'backgammon.puter.com',
+  site = 'backgammon.localhost:8443',
 }) {
   const lines = [
     `; [Site "${clean(site)}"]`,

@@ -6,7 +6,7 @@ import { readFile } from 'node:fs/promises';
 const ERROR =
   'This export would exceed the 100 MB PDF limit. Reduce file size before saving or downloading.';
 async function setup(page, limit) {
-  await page.route('https://js.puter.com/**', (route) =>
+  await page.route('**/sdk/puter.js', (route) =>
     route.fulfill({
       contentType: 'application/javascript',
       body: `window.exportWrites = 0; window.exportPickers = 0;

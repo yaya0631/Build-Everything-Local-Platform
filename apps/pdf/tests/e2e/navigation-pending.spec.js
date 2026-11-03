@@ -3,7 +3,7 @@ import { PDFDocument, degrees } from 'pdf-lib';
 import { readFile } from 'node:fs/promises';
 
 async function prepare(page) {
-  await page.route('https://js.puter.com/**', (route) => route.abort());
+  await page.route('**/sdk/puter.js', (route) => route.abort());
   const doc = await PDFDocument.create();
   for (const [index, size] of [
     [400, 500],

@@ -2,7 +2,7 @@
 
 A fast, friendly register for small shops. Product catalog, checkout, receipts,
 refunds, cash reconciliation, and sales reports, with all data stored in the
-user's own [Puter](https://puter.com) cloud. No server of your own, no payment
+user's own [Puter](https://localhost:8443) cloud. No server of your own, no payment
 processor required.
 
 Built with vanilla JavaScript and Vite. No frameworks.

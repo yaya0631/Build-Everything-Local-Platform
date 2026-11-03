@@ -5,7 +5,7 @@ import native from "../tests/data/geometry-arc-native.json" with { type: "json" 
 import { geometryArcFixture } from "../tests/geometry-arc-fixture.js";
 
 async function start(page) {
-  await page.route("https://js.puter.com/v2/", (r) =>
+  await page.route("**/sdk/puter.js", (r) =>
     r.fulfill({
       contentType: "application/javascript",
       body: 'window.puter={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',

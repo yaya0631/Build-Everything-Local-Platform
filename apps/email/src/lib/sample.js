@@ -30,7 +30,7 @@ const MESSAGES = [
     daysAgo: 0, hour: 9, minute: 24,
     subject: 'Welcome to your Puter mailbox',
     raw: (date, to) => join([
-      `From: Puter Team <hello@puter.com>`,
+      `From: Puter Team <hello@localhost:8443>`,
       `To: ${to}`,
       `Subject: Welcome to your Puter mailbox`,
       `Date: ${date.toUTCString()}`,
@@ -349,9 +349,9 @@ const MESSAGES = [
     daysAgo: 4, hour: 14, minute: 18,
     subject: 'Notes from the roadmap session',
     raw: (date, to) => join([
-      `From: Leo Tanaka <leo@puter.com>`,
+      `From: Leo Tanaka <leo@localhost:8443>`,
       `To: ${to}`,
-      `Cc: team@puter.com`,
+      `Cc: team@localhost:8443`,
       `Subject: Notes from the roadmap session`,
       `Date: ${date.toUTCString()}`,
       `Content-Type: text/plain; charset=utf-8`,
@@ -422,7 +422,7 @@ const MESSAGES = [
   },
 ];
 
-export const SAMPLE_ADDRESS = 'sample@puter.com';
+export const SAMPLE_ADDRESS = 'sample@localhost:8443';
 
 /** Build the in-memory mailbox. `now` is injectable for tests. */
 export function createSampleMailbox(now = new Date()) {

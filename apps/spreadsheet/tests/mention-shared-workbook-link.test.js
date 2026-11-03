@@ -14,7 +14,7 @@ import * as T from '../src/ui/toast.js';
 // of the shared workbook other than its owner were not written to at all.
 afterEach(() => { vi.restoreAllMocks(); });
 
-const SERVER = 'https://spreadsheet-abc.puter.work';
+const SERVER = 'http://spreadsheet-abc.localhost:8443';
 
 function setup({ owner = true, fileShares = [] } = {}) {
   const wb = new Workbook();
@@ -28,7 +28,7 @@ function setup({ owner = true, fileShares = [] } = {}) {
   vi.spyOn(T, 'toast').mockImplementation(() => {});
   const mailer = { available: () => true, sendMentions: vi.fn(async ({ recipients }) => ({ sent: recipients.length, failed: 0, results: recipients.map((r) => ({ email: r.email, status: 'sent' })) })) };
   const ask = vi.fn(async () => ({ action: 'share', mode: 'write' }));
-  const notifier = createMentionNotifier({ doc, wb, mailer, me: () => ({ username: 'demo' }), ask, location: { origin: 'https://spreadsheet.puter.com', pathname: '/' } });
+  const notifier = createMentionNotifier({ doc, wb, mailer, me: () => ({ username: 'demo' }), ask, location: { origin: 'http://spreadsheet.localhost:8443', pathname: '/' } });
   return { wb, notifier, ask, mailer, request };
 }
 
@@ -39,7 +39,7 @@ function posted(wb, text, people) {
   return { sheetId: id, r: 3, c: 1, item, people: mentionedPeople(item.mentions) };
 }
 
-const ROOM_LINK = `https://spreadsheet.puter.com/#/live/r1?server=${encodeURIComponent(SERVER)}&range=${encodeURIComponent('Sheet1!B4')}`;
+const ROOM_LINK = `http://spreadsheet.localhost:8443/#/live/r1?server=${encodeURIComponent(SERVER)}&range=${encodeURIComponent('Sheet1!B4')}`;
 
 it('links a mention in a shared workbook to the shared workbook, at the comment\'s cell', async () => {
   for (const owner of [true, false]) {

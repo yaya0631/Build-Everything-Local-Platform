@@ -1,6 +1,6 @@
 # Puter Meetings
 
-A Google Meet-style video meeting app built **entirely on [Puter.js](https://docs.puter.com)** — no backend servers, no frontend frameworks. Realtime communication runs over the **Puter Peer API** (WebRTC data channels with Puter-managed signaling and TURN relays), and audio/video flows peer-to-peer between participants.
+A Google Meet-style video meeting app built **entirely on [Puter.js](http://localhost:8443)** — no backend servers, no frontend frameworks. Realtime communication runs over the **Puter Peer API** (WebRTC data channels with Puter-managed signaling and TURN relays), and audio/video flows peer-to-peer between participants.
 
 ## Features
 
@@ -33,7 +33,7 @@ A Google Meet-style video meeting app built **entirely on [Puter.js](https://doc
   signed-in visitor clicks Join (see [Minting links from other apps](#minting-links-from-other-apps-stateless))
 - **Your meetings, on the home screen** — inside the Puter desktop the home
   screen lists the day's meetings from the
-  [Calendar](https://calendar.puter.com) app, Google Meet-style: a week strip
+  [Calendar](http://calendar.localhost:8443) app, Google Meet-style: a week strip
   to pick a day, what is still to come and what is over, a **Join** button on
   each, and the next meeting ahead when the day is empty — so nobody has to
   dig a link out of an email again (see
@@ -127,7 +127,7 @@ npm run build      # production build in dist/
    meeting's shareable code is a stable room code (`abc-defg-hij`), and one
    level of indirection maps it to whatever invite is live *right now*: the
    **room directory**, a Puter Worker (`worker/rooms.js`, deployed at
-   `puter-meetings-rooms.puter.work`) with the worker's own key-value store
+   `puter-meetings-rooms.localhost:8443`) with the worker's own key-value store
    behind it. A room is one record there — `GET /v1/rooms/:code` says what is
    running (a live entry, or nothing), `POST` claims or renews it, `POST
    …/end` releases it — written and read in one place, judged fresh by one
@@ -201,7 +201,7 @@ function mintMeetingLink() {
     const [byte] = crypto.getRandomValues(new Uint8Array(1));
     if (byte < limit) code += letters[byte % letters.length];
   }
-  return `https://meetings.puter.com/#/m/${code.slice(0, 4)}-${code.slice(4, 8)}-${code.slice(8)}`;
+  return `http://meetings.localhost:8443/#/m/${code.slice(0, 4)}-${code.slice(4, 8)}-${code.slice(8)}`;
 }
 ```
 
@@ -232,7 +232,7 @@ An empty day is never a dead end: it points at the next meeting anywhere
 ahead, and one click jumps there.
 
 The list comes from the Calendar app over its
-[app-to-app API](https://github.com/HeyPuter/calendar.puter.com#app-to-app-api)
+[app-to-app API](https://github.com/HeyPuter/calendar.localhost:8443#app-to-app-api)
 (`src/lib/calendar.js`): we launch the Calendar headless in service mode —
 `puter.ui.launchApp({ name: 'calendar', args: { service: 'calendar-api' },
 background: true })` — and ask it, over the `AppConnection` that comes back,

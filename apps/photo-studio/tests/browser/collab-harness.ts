@@ -206,7 +206,7 @@ export async function person(env: Env, peers: ReturnType<typeof relay>, context:
     throw new Error(`Unknown stand-in Puter call ${method}`);
   });
   const token = 'header.' + Buffer.from(JSON.stringify({ type: 'app-under-user', app_uid: 'app-photo', user_uid: user.uuid })).toString('base64') + '.signature';
-  await page.route('https://js.puter.com/**', (route) => route.fulfill({ contentType: 'application/javascript', body: `(${pagePuter.toString()})(${JSON.stringify(token)});` }));
+  await page.route('**/sdk/puter.js', (route) => route.fulfill({ contentType: 'application/javascript', body: `(${pagePuter.toString()})(${JSON.stringify(token)});` }));
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));

@@ -1449,7 +1449,7 @@ describe('booking worker: human links', () => {
     const loc = res.headers.get('location');
     expect(loc.startsWith('https://app.test/book.html#')).toBe(true);
     const params = new URLSearchParams(loc.split('#')[1]);
-    expect(params.get('w')).toBe('https://test-worker.puter.work');
+    expect(params.get('w')).toBe('http://test-worker.localhost:8443');
     expect(params.get('p')).toBe('abcd1234');
   });
 

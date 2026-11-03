@@ -9880,7 +9880,7 @@ router.post('/api/ws/:ws/transfer/complete', route(async ({ params, request, use
   // moved to itself, the copy sent everyone who opened it back to itself and
   // refused every write as moved, and only deleting it put that right. This
   // worker is named as the links in pushes name it, by the host the request
-  // came to, its puter.work name or its host, in lower case, which is how the
+  // came to, its localhost:8443 name or its host, in lower case, which is how the
   // app writes a reference's server (see refs.js serverKeyOf). The app never
   // asks for this; a request made another way is refused with the reason.
   const serverKey = (host) => String(host || '').toLowerCase().replace(/\.puter\.work$/, '');

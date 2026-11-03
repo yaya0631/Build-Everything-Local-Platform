@@ -50,7 +50,7 @@ describe('publishing', () => {
     const draws = [];
     subdomainFor('x', () => { draws.push(1); return Math.random(); });
     expect(draws).toHaveLength(12);
-    expect(siteUrl(sub)).toBe(`https://${sub}.puter.site`);
+    expect(siteUrl(sub)).toBe(`http://${sub}.localhost:8443`);
     expect(await publishDir('Documents/Q3 Report.docx')).toMatch(/^Documents\/\.published\/q3-report-[a-f0-9]{64}$/);
   });
 

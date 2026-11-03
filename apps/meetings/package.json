@@ -3,15 +3,14 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Puter Meetings \u2014 realtime video meetings built entirely on Puter.js and the Puter Peer API.",
+  "description": "Puter Meetings — realtime video meetings built entirely on Puter.js and the Puter Peer API.",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
     "icons": "./scripts/generate-icons.sh",
     "test": "vitest run",
-    "test:watch": "vitest",
-    "deploy:worker": "puter worker deploy worker/rooms.js puter-meetings-rooms"
+    "test:watch": "vitest"
   },
   "devDependencies": {
     "jsdom": "^26.1.0",

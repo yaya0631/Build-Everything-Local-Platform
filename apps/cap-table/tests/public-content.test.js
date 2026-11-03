@@ -22,8 +22,8 @@ describe('public documentation and guides', () => {
       expect(doc.querySelector('link[rel="canonical"]').getAttribute('href')).toBe(SITE_URL + path);
       expect(doc.querySelector('meta[property="og:url"]').content).toBe(SITE_URL + path);
       expect(doc.querySelector('meta[name="robots"]').content).toContain('index, follow');
-      expect(html).not.toContain('js.puter.com');
-      expect(html).not.toContain('puter.com/app/cap-table');
+      expect(html).not.toContain('js.localhost:8443');
+      expect(html).not.toContain('localhost:8443/app/cap-table');
       expect(html).not.toContain('—');
       expect(doc.querySelector('.lp-open').getAttribute('href')).toBe('/');
       const schema = JSON.parse(doc.querySelector('script[type="application/ld+json"]').textContent);
@@ -95,14 +95,10 @@ describe('public documentation and guides', () => {
     }
   });
 
-  it('includes the supplied analytics exactly once in each generated head', () => {
+  it('loads no external analytics in any generated head', () => {
     for (const path of [...publicPaths, '/404.html']) {
       const page = parse(renderPage(path));
-      const scripts = page.head.querySelectorAll('script[src^="https://plausible.io/"]');
-      expect(scripts).toHaveLength(1);
-      expect(scripts[0].getAttribute('src')).toBe('https://plausible.io/js/pa-Yvu1fK54xHfv07xrDKYeu.js');
-      expect(scripts[0].hasAttribute('async')).toBe(true);
-      expect(page.head.textContent.match(/plausible\.init\(\)/g)).toHaveLength(1);
+      expect(page.head.innerHTML).not.toMatch(/<script[^>]+src="https?:\/\//i);
     }
   });
 });

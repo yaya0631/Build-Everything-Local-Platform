@@ -20,7 +20,7 @@ it('links Puter\'s pages and every bundled license, each in a new tab', () => {
   openAbout();
   const links = [...document.querySelectorAll('.about-links a')];
   expect(links.map((a) => a.textContent)).toEqual(['Website', 'Privacy', 'Terms']);
-  expect(links.map((a) => a.getAttribute('href'))).toEqual(['https://puter.com', 'https://puter.com/privacy', 'https://puter.com/terms']);
+  expect(links.map((a) => a.getAttribute('href'))).toEqual(['http://localhost:8443', 'http://localhost:8443/privacy', 'http://localhost:8443/terms']);
   const credits = [...document.querySelectorAll('.about-credit')];
   expect(credits.map((a) => a.querySelector('.about-credit-name').textContent)).toEqual([
     'SheetJS Community Edition', 'xmldom', 'Apache POI', '.NET Runtime', 'Unicode Character Database',

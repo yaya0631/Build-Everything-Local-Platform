@@ -1,10 +1,10 @@
-# Checkers — port of chess.puter.com
+# Checkers — port of chess.localhost:8443
 
 Rebuild the single-file checkers game as a structural mirror of
-`chess.puter.com`: same architecture, same visual design, same feature set,
+`chess.localhost:8443`: same architecture, same visual design, same feature set,
 same deploy shape. Only the game is different.
 
-Target: **checkers.puter.com**.
+Target: **checkers.localhost:8443**.
 
 ## Ruleset
 
@@ -298,7 +298,7 @@ PDN (Portable Draughts Notation), the direct counterpart of PGN.
 - chain `23x14x5`
 - crowning is implicit, no suffix
 
-Tag roster: `Event`, `Site` (`checkers.puter.com`), `Date`, `Round`, `Black`,
+Tag roster: `Event`, `Site` (`checkers.localhost:8443`), `Date`, `Round`, `Black`,
 `White`, `Result`, `GameType`, `TimeControl`, and `Termination` when not normal.
 Note the ordering difference from PGN — in PDN **Black precedes White**, because
 Black moves first.

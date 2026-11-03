@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { installDom } from './helpers/dom.js';
 
-const REF = 'abc123def0@globex.puter.work';
+const REF = 'abc123def0@globex.localhost';
 const json = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
 
 let dom = null;

@@ -360,7 +360,7 @@ describe('the start of a conversation on an older page', () => {
 describe('a reply landing while its conversation is open', () => {
   const REPLY = [
     'From: Tom Beckett <tom@northgate.example>',
-    'To: sample@puter.com',
+    'To: sample@localhost:8443',
     'Subject: Re: Thursday walkthrough',
     'Date: Mon, 24 Aug 2026 08:15:00 GMT',
     'Message-ID: <walkthrough-4@northgate.example>',

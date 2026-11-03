@@ -2,7 +2,7 @@
 
 A CRM and sales pipeline for founders who do their own selling: leads,
 companies, deal stages, follow-ups, meeting history, and sales forecasts.
-Built with vanilla JavaScript on [Puter](https://developer.puter.com), so all
+Built with vanilla JavaScript on [Puter](http://localhost:8443), so all
 data lives in the signed-in user's own Puter cloud. No app server, no database
 to run.
 
@@ -140,7 +140,7 @@ to run.
 ## Stack
 
 - [Vite](https://vite.dev) for dev server and build
-- [Puter.js](https://docs.puter.com) for auth, key-value storage, files,
+- [Puter.js](http://localhost:8443) for auth, key-value storage, files,
   and (optionally) the built-in AI models
 - [Lucide](https://lucide.dev) for icons
 - [Vitest](https://vitest.dev) for tests

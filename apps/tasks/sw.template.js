@@ -14,7 +14,7 @@
 const VERSION = '__VERSION__';
 const ASSETS = __ASSETS__;
 const CACHE = `tasks-${VERSION}`;
-const SDK_HOST = 'js.puter.com';
+const SDK_HOST = 'js.localhost:8443';
 /* The SDK lives outside the versioned cache: it isn't part of a deploy,
    and keeping it in `CACHE` meant every update's activate step deleted
    the only copy — an update followed by an offline launch then booted

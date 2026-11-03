@@ -15,7 +15,7 @@ try {
   await mkdir(output, { recursive: true });
   const page = await browser.newPage({ viewport: { width: 1920, height: 1080 }, colorScheme: 'light', reducedMotion: 'reduce', locale: 'en-US', timezoneId: 'America/Vancouver' });
   page.setDefaultTimeout(10000);
-  await page.route('https://plausible.io/**', route => route.abort());
+  await page.route('**/*', route => route.abort());
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
   await page.goto(`${origin}/mock.html`);

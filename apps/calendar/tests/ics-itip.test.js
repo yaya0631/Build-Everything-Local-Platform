@@ -180,7 +180,7 @@ describe('toICS accepts a UID override', () => {
   it('a uid override replaces the synthesized UID', () => {
     const ics = toICS([ev], { method: 'REPLY', uid: 'organizer-assigned-uid@google.com' });
     expect(ics).toContain('UID:organizer-assigned-uid@google.com');
-    expect(ics).not.toContain('local-id@calendar.puter.com');
+    expect(ics).not.toContain('local-id@calendar.localhost');
   });
 
   it('a CRLF-bearing uid override cannot inject a new property line', () => {
@@ -193,14 +193,14 @@ describe('toICS accepts a UID override', () => {
 
   it('an override that sanitizes to nothing falls back to the default UID', () => {
     const ics = toICS([ev], { uid: '\r\n' });
-    expect(ics).toContain('UID:local-id@calendar.puter.com');
+    expect(ics).toContain('UID:local-id@calendar.localhost');
   });
 
   it('with no uid option, output is unchanged (default path)', () => {
     const withOpt = toICS([ev]);
     const withoutOpt = toICS([ev], { uid: '' });
     expect(withOpt).toBe(withoutOpt);
-    expect(withOpt).toContain('UID:local-id@calendar.puter.com');
+    expect(withOpt).toContain('UID:local-id@calendar.localhost');
   });
 
   it('a long override is capped at 255 characters', () => {

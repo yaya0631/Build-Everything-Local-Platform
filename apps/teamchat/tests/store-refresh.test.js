@@ -199,7 +199,7 @@ describe('a refresh of a workspace that moved, landing after its copy at the new
       const u = new URL(url);
       if (u.pathname !== '/api/ws/abc123def0') return json({ code: 'not_found' }, 404);
       // The old owner's worker: the read-only copy a transfer left behind, slow to answer.
-      if (u.host === 'teamchat-test.puter.work') {
+      if (u.host === 'teamchat-test.localhost:8443') {
         await slow;
         return json({
           workspace: { id: 'abc123def0', name: 'Test', movedTo: 'abc123def0@other-test', channels: {}, members: store.ws?.members || {} },
@@ -223,7 +223,7 @@ describe('a refresh of a workspace that moved, landing after its copy at the new
     store.ws = null;
     store.me = null;
     store.act = { c: {}, p: {}, w: 0, u: 0 };
-    store._applyBootstrap(await (await globalThis.puter.workers.exec('https://other-test.puter.work/api/ws/abc123def0')).json());
+    store._applyBootstrap(await (await globalThis.puter.workers.exec('http://other-test.localhost:8443/api/ws/abc123def0')).json());
     expect(store.ws.name).toBe('Test (new home)');
     release();
     await late;

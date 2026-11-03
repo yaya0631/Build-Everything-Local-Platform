@@ -38,7 +38,7 @@
       "description": "Free cap table software for startups to manage ownership, track equity and vesting, and model fundraising dilution.",
       "isAccessibleForFree": true,
       "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-      "publisher": { "@type": "Organization", "name": "Puter Technologies Inc.", "url": "https://puter.com" },
+      "publisher": { "@type": "Organization", "name": "Puter Technologies Inc.", "url": "http://localhost:8443" },
       "featureList": ["Cap table management", "Shareholder ownership tracking", "Stock options and RSU management", "Vesting schedules", "SAFE and convertible note modeling", "Funding round dilution modeling", "Exit waterfall scenarios", "CSV import and export"]
     }
   </script>
@@ -86,7 +86,7 @@
   </script>
   <!-- Navigation and public content work while the independent SDK loads.
        main.js waits for its load/error event before checking the session. -->
-  <script src="https://js.puter.com/v2/" async data-puter-sdk onload="this.dataset.loaded = 'true'" onerror="this.dataset.failed = 'true'"></script>
+  <script src="/sdk/puter.js" async data-puter-sdk onload="this.dataset.loaded = 'true'" onerror="this.dataset.failed = 'true'"></script>
   <script type="module" src="/src/main.js"></script>
 </head>
 <body>

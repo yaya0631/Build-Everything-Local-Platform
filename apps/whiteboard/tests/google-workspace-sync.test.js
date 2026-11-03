@@ -87,7 +87,7 @@ async function setup() {
       await restRoute(
         org,
         boards,
-        new Request("https://w.puter.work/scim/v2/" + path, {
+        new Request("http://w.localhost:8443/scim/v2/" + path, {
           headers: { Authorization: `Bearer ${key}` },
         }),
         "GET",
@@ -143,7 +143,7 @@ async function setup() {
           script: SCRIPT,
           directory,
           properties: {
-            WHITEBOARD_URL: "https://w.puter.work/",
+            WHITEBOARD_URL: "http://w.localhost:8443/",
             WHITEBOARD_SCIM_KEY: key,
             GUEST_ORG_UNITS: "/Contractors",
             GROUPS: "design@fabrikam.test",
@@ -281,7 +281,7 @@ test("the Google Workspace sync leaves people it did not provision alone and kee
   await restRoute(
     org,
     boards,
-    new Request("https://w.puter.work/scim/v2/Users", {
+    new Request("http://w.localhost:8443/scim/v2/Users", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${(await adminCall(org, boards, owner, { op: "apikeys.create", name: "Other", scopes: ["scim"] })).key}`,

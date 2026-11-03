@@ -8,7 +8,7 @@
 import { WikiService } from '../../worker/service.js';
 
 const KEY = 'wiki-dev-server';
-const SERVER = 'https://wiki-dev.puter.work';
+const SERVER = 'http://wiki-dev.localhost:8443';
 const OWNER = { uuid: '00000000-0000-4000-8000-000000000001', username: 'you' };
 
 function load() {

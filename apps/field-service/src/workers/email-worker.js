@@ -1,6 +1,6 @@
 /**
  * Emailing a quote or invoice to the client: the app's one shared,
- * app-owned Puter worker (deployed to https://field-service-email.puter.work;
+ * app-owned Puter worker (deployed to http://field-service-email.localhost:8443;
  * src/mailer.js is the calling side).
  *
  * It is deployed ONCE, by the app owner (npm run deploy:email-worker):

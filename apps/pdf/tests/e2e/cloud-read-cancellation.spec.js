@@ -12,7 +12,7 @@ for (const source of ['desktop', 'picker', 'row'])
       original.setTitle('Cloud original');
       original.addPage([300, 300]);
       const base64 = Buffer.from(await original.save()).toString('base64');
-      await page.route('https://js.puter.com/**', (route) =>
+      await page.route('**/sdk/puter.js', (route) =>
         route.fulfill({
           contentType: 'application/javascript',
           body: `

@@ -30,7 +30,7 @@ for (const phase of ['offscreen', 'dom'])
     }) => {
       const errors = [];
       page.on('pageerror', (error) => errors.push(error.message));
-      await page.route('https://js.puter.com/**', (route) =>
+      await page.route('**/sdk/puter.js', (route) =>
         route.fulfill({
           contentType: 'application/javascript',
           body: `window.puter={env:'web',auth:{isSignedIn:()=>true,getUser:async()=>({username:'test'})},fs:{readdir:async()=>[]},ui:{onLaunchedWithItems:()=>{},onItemsOpened:()=>{}}};`,

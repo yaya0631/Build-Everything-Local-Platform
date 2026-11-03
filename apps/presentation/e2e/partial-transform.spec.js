@@ -11,7 +11,7 @@ for (const kind of ["picture", "shape"])
     test(`${kind} with ${level} partial bounds uses native defaults through clipboard, undo and download`, async ({
       page,
     }) => {
-      await page.route("https://js.puter.com/v2/", (route) =>
+      await page.route("**/sdk/puter.js", (route) =>
         route.fulfill({
           contentType: "application/javascript",
           body: 'window.puter={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',

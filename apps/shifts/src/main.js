@@ -80,7 +80,7 @@ function authScreen({ puterAvailable }) {
         'p',
         { class: 'auth-footer' },
         'Free • No ads • Powered by ',
-        el('a', { href: 'https://developer.puter.com', target: '_blank', rel: 'noreferrer' }, 'Puter')
+        el('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noreferrer' }, 'Puter')
       )
     )
   );

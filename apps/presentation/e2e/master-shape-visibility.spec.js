@@ -10,7 +10,7 @@ test("master visibility survives canvas, slideshow, duplication and editable PPT
     original = P.getSlides(pres).map((s) => preview(pres, s)),
     errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
-  await page.route("https://js.puter.com/v2/", (route) =>
+  await page.route("**/sdk/puter.js", (route) =>
     route.fulfill({
       contentType: "application/javascript",
       body: 'window.puter={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',

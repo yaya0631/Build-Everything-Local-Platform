@@ -2,7 +2,7 @@
  * Wire protocol and access control for the Calendar app-to-app API.
  *
  * The Calendar exposes a small RPC surface to *other Puter apps* over an
- * AppConnection (https://docs.puter.com/Objects/AppConnection/). A caller
+ * AppConnection (http://localhost:8443/Objects/AppConnection/). A caller
  * launches us with `puter.ui.launchApp('calendar', { service: 'calendar-api' })`
  * and then talks to the returned connection with `postMessage`; we answer on the
  * connection we get back from `puter.ui.parentApp()`.
@@ -81,7 +81,7 @@ export const HAS_FIELDS = ['meeting', 'location', 'description', 'guests', 'remi
 
 /**
  * Which apps may call us, and what each may do. Keys are Puter app *names*
- * (as published, e.g. `contacts` for contacts.puter.com). A grant is one of:
+ * (as published, e.g. `contacts` for contacts.localhost:8443). A grant is one of:
  *
  *   '*'                           every method in METHODS, the whole calendar
  *   ['search', 'create', …]       exactly those methods, the whole calendar
@@ -112,7 +112,7 @@ export const HAS_FIELDS = ['meeting', 'location', 'description', 'guests', 'remi
  */
 export const ALLOWED_CALLERS = {
   contacts: ['ping', 'search', 'create', 'update', 'delete'],
-  // Puter Meetings (meetings.puter.com) lists the meetings on the calendar so
+  // Puter Meetings (meetings.localhost:8443) lists the meetings on the calendar so
   // the day's calls are one click away on its home screen. Read-only, and
   // only the events that carry a meeting link: it has no use for the rest.
   meetings: { methods: ['ping', 'list'], has: ['meeting'] },

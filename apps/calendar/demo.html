@@ -27,7 +27,7 @@
             isSignedIn: () => true,
             getUser: async () =>
               emailGranted
-                ? { uuid: 'demo-uuid', username: 'nj', email: 'nj@puter.com' }
+                ? { uuid: 'demo-uuid', username: 'nj', email: 'nj@localhost:8443' }
                 : { uuid: 'demo-uuid', username: 'nj' },
             signIn: async () => true,
             signOut: async () => {},
@@ -84,7 +84,7 @@
             organizer: { email: 'jane@corp.com', name: 'Jane Boss' },
             guests: [
               { email: 'jane@corp.com', name: 'Jane Boss', status: 'accepted' },
-              { email: 'nj@puter.com', status: 'needs-action' },
+              { email: 'nj@localhost:8443', status: 'needs-action' },
               { email: 'sam@corp.com', name: 'Sam', status: 'tentative' },
             ],
           });
@@ -97,7 +97,7 @@
             end: at(15, 0),
             allDay: false,
             color: 'green',
-            organizer: { email: 'nj@puter.com' },
+            organizer: { email: 'nj@localhost:8443' },
             guests: [
               { email: 'ada@x.com', name: 'Ada Lovelace', status: 'accepted' },
               { email: 'bob@x.com', status: 'needs-action' },
@@ -114,7 +114,7 @@
             color: 'violet',
             recurrence: { freq: 'weekly', interval: 1, byWeekday: [now.getDay()] },
             organizer: { email: 'jane@corp.com', name: 'Jane Boss' },
-            guests: [{ email: 'nj@puter.com', status: 'needs-action' }],
+            guests: [{ email: 'nj@localhost:8443', status: 'needs-action' }],
           });
 
           setOne('cal:demo-seeded', '1');

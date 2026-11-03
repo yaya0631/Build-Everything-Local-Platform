@@ -16,7 +16,7 @@ async function openPdf(page, doc) {
   await expect(page.locator('.editor')).toHaveAttribute('aria-busy', 'false');
 }
 async function prepare(page, rotation = 0) {
-  await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+  await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
   await page.goto('/#library');
   const doc = await PDFDocument.create(),
     sheet = doc.addPage([500, 500]);

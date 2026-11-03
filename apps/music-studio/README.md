@@ -1,6 +1,6 @@
 # Music Studio
 
-A pattern-based music production workstation for the browser, built on [Puter](https://puter.com). Program beats in the channel rack, write melodies and chords in the piano roll, arrange patterns, audio and automation in the playlist, and mix with studio effects. An open-source alternative to FL Studio.
+A pattern-based music production workstation for the browser, built on [Puter](https://localhost:8443). Program beats in the channel rack, write melodies and chords in the piano roll, arrange patterns, audio and automation in the playlist, and mix with studio effects. An open-source alternative to FL Studio.
 
 No framework: vanilla JavaScript modules built with Vite. The audio engine is written in Rust and compiled to WebAssembly. Puter.js is the only backend.
 
@@ -43,7 +43,7 @@ In development, `window.ms` is the app.
 ## Third-party
 
 - [Lucide](https://lucide.dev) icons (ISC), plus original glyphs in `src/ui/icons.js`.
-- [Puter.js](https://docs.puter.com) for sign-in and cloud files.
+- [Puter.js](http://localhost:8443) for sign-in and cloud files.
 
 ## License
 

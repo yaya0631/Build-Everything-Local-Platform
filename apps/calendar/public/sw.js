@@ -16,11 +16,11 @@
  *   - same-origin static assets → stale-while-revalidate. Vite content-hashes
  *     JS/CSS, so their URLs are immutable; serving cache-first with a background
  *     refresh is safe and instant.
- *   - js.puter.com (the SDK) → network-first with an opaque-cache fallback, so a
+ *   - js.localhost:8443 (the SDK) → network-first with an opaque-cache fallback, so a
  *     cold start can boot offline. A bad/partial cache self-heals on the next
  *     online load; worst case it degrades to the app's existing 8s SDK-load
  *     timeout, never a hard brick.
- *   - everything else cross-origin (api.puter.com, telemetry, …) → not
+ *   - everything else cross-origin (api.localhost:8443, telemetry, …) → not
  *     intercepted at all (straight to network, never cached).
  *
  * NOTE: skipWaiting()+clients.claim() is safe here specifically because the app
@@ -30,7 +30,7 @@
  * the current one in activate, or drop skipWaiting for activate-on-next-load.
  */
 const CACHE = 'cal-shell-v2';
-const SDK_ORIGIN = 'https://js.puter.com';
+const SDK_ORIGIN = self.location.origin;
 
 // Minimal, always-present shell. Hashed JS/CSS are cached lazily on first fetch
 // (their names change every build, so they can't be listed here). Precaching
@@ -217,7 +217,7 @@ self.addEventListener('fetch', (event) => {
   const sameOrigin = url.origin === self.location.origin;
   const isSdk = url.origin === SDK_ORIGIN;
 
-  // Ignore all other cross-origin requests (api.puter.com, telemetry, …).
+  // Ignore all other cross-origin requests (api.localhost:8443, telemetry, …).
   if (!sameOrigin && !isSdk) return;
 
   // Wrap every path so a handler bug can never block a request: on any

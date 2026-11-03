@@ -7,7 +7,7 @@ for (const fails of [false, true])
     test(`a form commit ${fails ? 'failure' : 'success'} preserves ${moved ? 'newer control focus' : 'field focus and caret'}`, async ({
       page,
     }) => {
-      await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+      await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
       await page.goto('/#library');
       const doc = await PDFDocument.create();
       const sheet = doc.addPage([400, 500]);

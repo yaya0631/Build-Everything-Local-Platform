@@ -6,7 +6,7 @@
  */
 
 /** The one shared, app-owned worker (deploy with npm run deploy:email-worker). */
-export const EMAIL_WORKER_URL = 'https://field-service-email.puter.work';
+export const EMAIL_WORKER_URL = 'http://field-service-email.localhost:8443';
 export const MAX_RECIPIENTS = 5;
 export const SEND_TIMEOUT_MS = 120_000;
 

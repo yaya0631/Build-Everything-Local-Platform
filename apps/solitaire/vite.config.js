@@ -1,8 +1,7 @@
 import { defineConfig } from 'vite';
-import puterLocalhost from '../../dev/puter-localhost.mjs';
 
 export default defineConfig({
-  plugins: [puterLocalhost('solitaire')],
+  plugins: [],
   base: './',
   build: { outDir: 'dist' },
   test: {

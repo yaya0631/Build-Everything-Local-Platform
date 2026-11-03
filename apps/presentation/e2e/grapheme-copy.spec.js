@@ -22,7 +22,7 @@ test("graphemes and their run formatting survive actual clipboard transfer, retu
     objects = page.locator(".object-hit"),
     errors = [];
   page.on("pageerror", (error) => errors.push(String(error)));
-  await page.route("https://js.puter.com/v2/", (route) =>
+  await page.route("**/sdk/puter.js", (route) =>
     route.fulfill({
       contentType: "application/javascript",
       body: 'window.puter={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',

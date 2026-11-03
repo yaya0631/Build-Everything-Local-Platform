@@ -20,7 +20,7 @@ export async function openAbout() {
       h('p', h('strong', 'Free and open source (MIT). '), 'Read the code, report issues and contribute on ', link(REPO_URL, 'GitHub'), '.'),
       h('p.about-alpha', 'This is an early alpha. Features will change and projects could be lost, so keep copies of important work (File > Save to your device).'),
       h('h3.dlg-section', 'Credits'),
-      h('ul.about-credits', h('li', link('https://lucide.dev', 'Lucide'), ' icons (ISC license)'), h('li', 'Cloud storage and sign-in by ', link('https://developer.puter.com', 'Puter'))),
+      h('ul.about-credits', h('li', link('https://lucide.dev', 'Lucide'), ' icons (ISC license)'), h('li', 'Cloud storage and sign-in by ', link('http://localhost:8443', 'Puter'))),
     ),
     buttons: [{ label: 'Close', value: true, primary: true }],
   });

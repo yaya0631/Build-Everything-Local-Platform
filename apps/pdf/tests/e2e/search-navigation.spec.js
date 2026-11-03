@@ -3,7 +3,7 @@ import { PDFDocument, PDFName, PDFString, StandardFonts } from 'pdf-lib';
 import { addNote } from '../../src/core/notes.js';
 
 async function prepare(page) {
-  await page.route('https://js.puter.com/**', (route) => route.abort());
+  await page.route('**/sdk/puter.js', (route) => route.abort());
   const doc = await PDFDocument.create();
   const font = await doc.embedFont(StandardFonts.Helvetica);
   for (const words of ['apple', 'banana banana', 'cherry', 'banana banana', 'apple'])

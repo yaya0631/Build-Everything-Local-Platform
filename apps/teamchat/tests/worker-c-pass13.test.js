@@ -258,7 +258,7 @@ describe('emailing invitations to a service that does not answer', () => {
 
   it('gives up after a minute with a word on what to do, rather than leaving the dialog sending for good; the signal it sends ends the request', async () => {
     vi.useFakeTimers();
-    globalThis.location = globalThis.location || { origin: 'https://puter.com', pathname: '/app/teamchat' };
+    globalThis.location = globalThis.location || { origin: 'http://localhost:8443', pathname: '/app/teamchat' };
     let signal = null;
     globalThis.puter = { workers: { exec: (url, init) => new Promise((resolve, reject) => {
       signal = init.signal;
@@ -469,7 +469,7 @@ describe('moving a workspace, from the nominee\'s side: the freeze', () => {
   });
   const json = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
   const OLD = 'abcdef1234@teamchat-old';
-  const NEW_URL = 'https://teamchat-new.puter.work';
+  const NEW_URL = 'http://teamchat-new.localhost:8443';
   const HEADER = { format: 'teamchat-export', version: 1, workspace: { id: 'abcdef1234', name: 'Acme' }, channels: { c1: { name: 'general', def: true } }, members: {}, memberDocs: {} };
   const PAGE = { conv: 'c1', seq: 1, messages: [{ seq: 1, user: 'u', text: 'hi', ts: 1 }] };
 
@@ -595,7 +595,7 @@ describe('moving a workspace, from the nominee\'s side: the freeze', () => {
       return res;
     } } };
     const state = { copy: null };
-    const moved = await transferWorkspace(oldRef, 'https://teamchat-x.puter.work', state, { profile: { name: 'Bob' } });
+    const moved = await transferWorkspace(oldRef, 'http://teamchat-x.localhost:8443', state, { profile: { name: 'Bob' } });
     expect(moved.mine).toBe(true);
     expect(during.post.status).toBe(423);
     expect(during.post.data.code).toBe('transferring');
@@ -618,7 +618,7 @@ describe('moving a workspace, from the nominee\'s side: the freeze', () => {
     expect((await as(alice).post(`/api/ws/${second.wsId}/transfer`, { to: bob.uuid })).ok).toBe(true);
     during = null;
     failImport = true;
-    const failed = await transferWorkspace(`${second.wsId}@teamchat-x`, 'https://teamchat-x.puter.work', { copy: null }, { profile: { name: 'Bob' } }).then(() => null, (e) => e);
+    const failed = await transferWorkspace(`${second.wsId}@teamchat-x`, 'http://teamchat-x.localhost:8443', { copy: null }, { profile: { name: 'Bob' } }).then(() => null, (e) => e);
     expect(failed?.message).toBe('the store failed');
     expect((await rt.kv.get(KEYS.ws(second.wsId))).transferring).toBeFalsy();
     expect((await as(carol).post(`/api/ws/${second.wsId}/conv/${second.general.id}/messages`, { text: 'writing again' })).ok).toBe(true);

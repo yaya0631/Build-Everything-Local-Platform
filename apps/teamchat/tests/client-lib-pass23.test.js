@@ -459,17 +459,17 @@ describe('a workspace opened by a link whose reference is spelled another way (c
     store.identity = { uuid: 'u-me', username: 'me' };
     store.user = structuredClone(doc);
     store.profile = { uuid: 'u-me', username: 'me', name: 'Me', prefs: {} };
-    await store.openWorkspace('abc123def0@TEAMCHAT-TEST.puter.work');
+    await store.openWorkspace('abc123def0@TEAMCHAT-TEST.localhost');
     expect(store.wsId).toBe(REF);
     await tick(40);
     expect(doc.workspaces.map((w) => w.ref)).toEqual([REF]);
     // One not on the list yet, opened by a link spelled the long way: listed once, under the one spelling.
-    await store.openWorkspace('fedcba9876@Teamchat-Test.puter.work');
+    await store.openWorkspace('fedcba9876@Teamchat-Test.localhost');
     expect(store.wsId).toBe('fedcba9876@teamchat-test');
     await until(() => doc.workspaces.length === 2);
     expect(doc.workspaces.map((w) => w.ref)).toEqual([REF, 'fedcba9876@teamchat-test']);
     // Forgotten by another spelling of it: the entry goes all the same.
-    await store.forgetWorkspace('fedcba9876@TEAMCHAT-TEST.puter.work');
+    await store.forgetWorkspace('fedcba9876@TEAMCHAT-TEST.localhost');
     expect(doc.workspaces.map((w) => w.ref)).toEqual([REF]);
     expect(store._forgotten.has('fedcba9876@teamchat-test')).toBe(true);
   });
@@ -499,16 +499,16 @@ describe('a link with a query appended after its route (a tracker\'s ?utm_source
 describe('a route naming a workspace by another spelling of its reference (capitals, the server\'s long name)', () => {
   it('parses to the one spelling the store, the switcher and every navigate() use, from the first route on', async () => {
     const { parseHash, parseAppLink, buildHash } = await import('../src/lib/router.js');
-    expect(parseHash('#/ws/abc123def0@TEAMCHAT-TEST.puter.work/c/c1').ws).toBe('abc123def0@teamchat-test');
+    expect(parseHash('#/ws/abc123def0@TEAMCHAT-TEST.localhost/c/c1').ws).toBe('abc123def0@teamchat-test');
     expect(parseHash('#/ws/abc123def0%40Teamchat-Test/c/c1/m/5')).toMatchObject({ ws: 'abc123def0@teamchat-test', conv: 'c1', message: 5 });
-    expect(parseAppLink('https://app.example/x/#/ws/abc123def0%40TEAMCHAT-TEST.puter.work/threads').ws).toBe('abc123def0@teamchat-test');
+    expect(parseAppLink('https://app.example/x/#/ws/abc123def0%40TEAMCHAT-TEST.localhost:8443/threads').ws).toBe('abc123def0@teamchat-test');
     // Building a route from the canonical id and parsing it back is the identity.
     expect(parseHash(buildHash({ ws: 'abc123def0@teamchat-test', conv: 'c1' })).ws).toBe('abc123def0@teamchat-test');
     // What is not a reference is carried as typed, for the workspace loader to refuse.
     expect(parseHash('#/ws/a@b@c/c/c1').ws).toBe('a@b@c');
     expect(parseHash('#/ws/abc123def0@evil.example/c/c1').ws).toBe('abc123def0@evil.example');
     // The server an invite or share link names is filed under its short name too.
-    expect(parseHash('#/join/TEAMCHAT-TEST.puter.work/ABCD-EFGH-JKLM')).toMatchObject({ name: 'join', server: 'teamchat-test', code: 'ABCD-EFGH-JKLM' });
+    expect(parseHash('#/join/TEAMCHAT-TEST.localhost:8443/ABCD-EFGH-JKLM')).toMatchObject({ name: 'join', server: 'teamchat-test', code: 'ABCD-EFGH-JKLM' });
     expect(parseHash('#/connect/Teamchat-Test/ABCD-EFGH-JKLM')).toMatchObject({ name: 'connect', server: 'teamchat-test' });
   });
 });

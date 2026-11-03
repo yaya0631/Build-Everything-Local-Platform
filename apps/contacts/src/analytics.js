@@ -1,6 +1,6 @@
-// Thin, fail-safe wrapper around Plausible custom events (the script is loaded
-// in index.html). Analytics is best-effort: if Plausible is blocked, offline,
-// or absent, tracking is a silent no-op so it can never break a user action.
+// Thin, fail-safe wrapper for local product events. Analytics is best-effort:
+// if no local sink is installed, tracking is a silent no-op so it can never
+// break a user action.
 //
 // We track only a small set of "value" moments — getting contacts in (added /
 // imported) and putting stored data to use (copied) — not general activity.
@@ -12,9 +12,8 @@
  */
 export function track(event, props) {
   try {
-    if (typeof window !== 'undefined' && typeof window.plausible === 'function') {
-      window.plausible(event, props ? { props } : undefined)
-    }
+    const sink = globalThis.__everythingAnalytics
+    if (typeof sink === 'function') sink(event, props ? { props } : undefined)
   } catch (_e) {
     /* analytics must never throw into a user action */
   }

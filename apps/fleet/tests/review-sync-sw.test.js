@@ -110,14 +110,14 @@ describe('service worker', () => {
       return new Response(`sdk from ${u}`);
     });
     await sw.install();
-    expect(sw.store.has('https://js.puter.com/v2/')).toBe(true);
-    const first = await sw.request('https://js.puter.com/v2/');
-    expect(await first.text()).toBe('sdk from https://js.puter.com/v2/');
+    expect(sw.store.has('/sdk/puter.js')).toBe(true);
+    const first = await sw.request('/sdk/puter.js');
+    expect(await first.text()).toBe('sdk from /sdk/puter.js');
     await tick();
     online = false;
-    const offline = await sw.request('https://js.puter.com/v2/');
-    expect(await offline?.text()).toBe('sdk from https://js.puter.com/v2/');
+    const offline = await sw.request('/sdk/puter.js');
+    expect(await offline?.text()).toBe('sdk from /sdk/puter.js');
     // Puter's API itself is never cached.
-    expect(await sw.request('https://api.puter.com/whoami')).toBe(null);
+    expect(await sw.request('http://127.0.0.1:8443/whoami')).toBe(null);
   });
 });

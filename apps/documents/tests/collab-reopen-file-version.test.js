@@ -10,14 +10,14 @@ import { MemoryHub } from '../src/collab/transports.js';
 
 let hub;
 // The file was shared before: its room is remembered.
-vi.mock('../src/collab/room-memory.js', async (importOriginal) => ({ ...await importOriginal(), rememberedRoom: async () => ({ server: 'https://documents-abc.puter.work', room: 'r1' }) }));
+vi.mock('../src/collab/room-memory.js', async (importOriginal) => ({ ...await importOriginal(), rememberedRoom: async () => ({ server: 'http://documents-abc.localhost:8443', room: 'r1' }) }));
 vi.mock('../src/collab/live.js', async (importOriginal) => ({
   ...await importOriginal(),
   // The owner reopening a document they shared: the room is the test's hub.
   reconnect: async () => {
     const client = new CollabClient({ transport: hub.connect('owner'), user: { id: 'u0', name: 'Ada' }, room: 'r1', sendDelay: 0 });
     await client.connect();
-    return { client, link: { server: 'https://documents-abc.puter.work', room: 'r1' } };
+    return { client, link: { server: 'http://documents-abc.localhost:8443', room: 'r1' } };
   },
 }));
 const { createCollaboration } = await import('../src/views/collab.js');

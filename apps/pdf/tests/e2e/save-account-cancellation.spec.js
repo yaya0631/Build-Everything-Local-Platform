@@ -11,7 +11,7 @@ for (const stage of ['write', 'export'])
       const encoded = (
         await readFile(new URL('../fixtures/security/owner-only.pdf', import.meta.url))
       ).toString('base64');
-      await page.route('https://js.puter.com/**', (route) =>
+      await page.route('**/sdk/puter.js', (route) =>
         route.fulfill({
           contentType: 'application/javascript',
           body: `window.account={username:'Alice'};window.writes=[];

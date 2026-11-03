@@ -90,7 +90,7 @@ export function settingsView() {
           canSignOut() && el('button.btn.btn-outline.btn-sm', { type: 'button', html: icon('logout', 14, 2.2), onclick: confirmSignOut }, 'Sign out'))),
 
       el('p.small.muted', { style: { textAlign: 'center', margin: '8px 0 24px' } }, 'Expenses stores everything in your own Puter account. Powered by ',
-        el('a', { href: 'https://developer.puter.com', target: '_blank', rel: 'noopener' }, 'Puter'), '.')
+        el('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Puter'), '.')
     );
   }
 

@@ -23,7 +23,7 @@ beforeEach(() => {
   document.body.innerHTML = '<div id="app"></div>';
   mocks.home.mockImplementation(() => ({ el: document.createElement('div'), destroy: vi.fn() }));
   mocks.editor.mockImplementation(({ doc }) => ({ el: document.createElement('div'), doc, destroy: vi.fn() }));
-  mocks.roomForFile.mockResolvedValue({ server: 'https://s.puter.work', room: 'r1' });
+  mocks.roomForFile.mockResolvedValue({ server: 'http://s.localhost:8443', room: 'r1' });
   handlers = [];
   const add = window.addEventListener.bind(window);
   vi.spyOn(window, 'addEventListener').mockImplementation((type, listener, options) => { handlers.push([type, listener, options]); add(type, listener, options); });

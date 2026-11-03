@@ -212,7 +212,7 @@ describe('firm team worker', () => {
 
   it('runs the app store unchanged through the worker backend', async () => {
     const w = loadWorker();
-    const backend = createWorkerBackend('https://legalfirm-abc.puter.work', { getPuter: () => ({ workers: { exec: w.exec(owner) } }) });
+    const backend = createWorkerBackend('http://legalfirm-abc.localhost:8443', { getPuter: () => ({ workers: { exec: w.exec(owner) } }) });
     const store = createStore({ backend, flushDelay: 0 });
     await store.init();
     store.put('matters', { description: 'Shared matter' });
@@ -332,29 +332,29 @@ describe('firm team worker', () => {
 
 describe('team links', () => {
   it('only trusts Puter worker hosts', () => {
-    expect(isTrustedWorkerUrl('https://legalfirm-x1.puter.work')).toBe(true);
-    expect(isTrustedWorkerUrl('http://legalfirm-x1.puter.work')).toBe(false);
+    expect(isTrustedWorkerUrl('http://legalfirm-x1.localhost:8443')).toBe(true);
+    expect(isTrustedWorkerUrl('http://legalfirm-x1.localhost:8443')).toBe(false);
     expect(isTrustedWorkerUrl('https://evil.example.com')).toBe(false);
-    expect(isTrustedWorkerUrl('https://a.puter.work/api')).toBe(false);
+    expect(isTrustedWorkerUrl('http://a.localhost:8443/api')).toBe(false);
   });
 
   it('parses invitation links strictly', () => {
-    expect(parseJoin({ w: 'legalfirm-abc123', t: 'AbCdEfGh1234' })).toEqual({ url: 'https://legalfirm-abc123.puter.work', token: 'AbCdEfGh1234' });
+    expect(parseJoin({ w: 'legalfirm-abc123', t: 'AbCdEfGh1234' })).toEqual({ url: 'http://legalfirm-abc123.localhost:8443', token: 'AbCdEfGh1234' });
     expect(parseJoin({ w: 'evil.com/x', t: 'AbCdEfGh1234' })).toBeNull();
     expect(parseJoin({ w: 'legalfirm-abc', t: 'short' })).toBeNull();
   });
 
   it('round-trips an invite link', () => {
-    globalThis.location = { href: 'https://legal.puter.com/?x=1#/settings' };
-    const link = inviteLink('https://legalfirm-abc.puter.work', 'AbCdEfGh1234');
-    expect(link).toBe('https://legal.puter.com/#/join?w=legalfirm-abc&t=AbCdEfGh1234');
+    globalThis.location = { href: 'http://legal.localhost:8443/?x=1#/settings' };
+    const link = inviteLink('http://legalfirm-abc.localhost:8443', 'AbCdEfGh1234');
+    expect(link).toBe('http://legal.localhost:8443/#/join?w=legalfirm-abc&t=AbCdEfGh1234');
     const q = Object.fromEntries(new URLSearchParams(link.split('?')[1]));
-    expect(parseJoin(q).url).toBe('https://legalfirm-abc.puter.work');
+    expect(parseJoin(q).url).toBe('http://legalfirm-abc.localhost:8443');
   });
 
   it('chooses the active firm', () => {
     expect(activeWorker({ current: 'own', own: {}, joined: [] })).toBeNull();
-    expect(activeWorker({ current: 'own', own: { url: 'https://o.puter.work' }, joined: [] })).toBe('https://o.puter.work');
-    expect(activeWorker({ current: 'https://j.puter.work', own: {}, joined: [{ url: 'https://j.puter.work' }] })).toBe('https://j.puter.work');
+    expect(activeWorker({ current: 'own', own: { url: 'http://o.localhost:8443' }, joined: [] })).toBe('http://o.localhost:8443');
+    expect(activeWorker({ current: 'http://j.localhost:8443', own: {}, joined: [{ url: 'http://j.localhost:8443' }] })).toBe('http://j.localhost:8443');
   });
 });

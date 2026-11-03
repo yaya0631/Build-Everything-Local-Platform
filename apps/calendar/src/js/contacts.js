@@ -3,7 +3,7 @@
  *
  * Inside the Puter desktop the calendar can talk to other apps: we launch
  * Contacts as a headless API server and talk to it over the AppConnection that
- * `puter.ui.launchApp` hands back (https://docs.puter.com/Objects/AppConnection/).
+ * `puter.ui.launchApp` hands back (http://localhost:8443/Objects/AppConnection/).
  * Contacts only answers apps on its own allowlist, so this works because the
  * desktop tells it — from the calling process, not from anything we could
  * claim — that the caller is `calendar`.

@@ -67,7 +67,7 @@ test("direct object addresses use public board identity, omit invitation/query c
     boardDestination("https://whiteboard.test/other/#local=x&object=y", base),
     null,
   );
-  b.shared = { server: "https://worker.puter.work", room: "room1" };
+  b.shared = { server: "http://worker.localhost:8443", room: "room1" };
   const shared = objectAddress(b, "node1", base);
   assert.deepEqual(boardDestination(shared, base), {
     server: b.shared.server,

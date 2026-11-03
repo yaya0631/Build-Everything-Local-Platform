@@ -1,7 +1,7 @@
 /**
  * Puter Meetings — the room directory.
  *
- * A Puter Worker (https://docs.puter.com/Workers/) that answers one
+ * A Puter Worker (http://localhost:8443/Workers/) that answers one
  * question for every meeting link: what is running behind this room code
  * right now? It is the single place a room's live invite is written and
  * read, backed by the worker's own key-value store (`me.puter.kv` — the

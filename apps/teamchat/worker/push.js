@@ -59,7 +59,7 @@ export async function vapidKeys() {
 }
 
 /** A VAPID Authorization header for `endpoint`, valid twelve hours. */
-export async function vapidAuth(endpoint, keys, subject = 'mailto:teamchat@puter.com') {
+export async function vapidAuth(endpoint, keys, subject = 'mailto:teamchat@localhost:8443') {
   const aud = new URL(endpoint).origin;
   const header = b64url(enc.encode(JSON.stringify({ typ: 'JWT', alg: 'ES256' })));
   const claims = b64url(enc.encode(JSON.stringify({ aud, exp: Math.floor(Date.now() / 1000) + 12 * 3600, sub: subject })));

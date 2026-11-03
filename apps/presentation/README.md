@@ -20,7 +20,7 @@ npm run test:e2e
 npm run build
 ```
 
-The production build is a static application in `dist/`. Serve it over HTTPS, including from Puter hosting. No application server, API key, environment variable, or database setup is required. The official Puter SDK loads from `https://js.puter.com/v2/`.
+The production build is a static application in `dist/`. Serve it over HTTPS, including from Puter hosting. No application server, API key, environment variable, or database setup is required. The official Puter SDK loads from `/sdk/puter.js`.
 
 ## App branding
 

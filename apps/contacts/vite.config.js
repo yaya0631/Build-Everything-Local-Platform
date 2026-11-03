@@ -1,10 +1,9 @@
 import { defineConfig } from 'vite'
 import { fileURLToPath } from 'node:url'
-import puterLocalhost from '../../dev/puter-localhost.mjs'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [puterLocalhost('contacts')],
+  plugins: [],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),

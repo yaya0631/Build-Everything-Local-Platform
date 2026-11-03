@@ -14,7 +14,7 @@
 
 const PREFIX = 'pos:outbox:v1';
 
-/** Far more than any plausible outage; a guard against unbounded growth. */
+/** Far more than any realistic outage; a guard against unbounded growth. */
 const MAX_ENTRIES = 500;
 
 /**

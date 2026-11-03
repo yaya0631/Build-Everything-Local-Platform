@@ -44,7 +44,7 @@ describe('a conversation whose every message was deleted, carried across by a mo
     expect(exported.data.header.memberDocs[bob.uuid].reads[dm]).toBe(3);
 
     globalThis.puter = bridgeTo(alice);
-    const ref = await importArchive('https://teamchat-new.puter.work', { header: exported.data.header, pages: exported.data.pages, files: exported.data.files }, { profile: { name: 'Alice' } });
+    const ref = await importArchive('http://teamchat-new.localhost:8443', { header: exported.data.header, pages: exported.data.pages, files: exported.data.files }, { profile: { name: 'Alice' } });
     const copy = ref.split('@')[0];
     expect((await rt.kv.get(KEYS.ws(copy))).importing).toBeUndefined();
     const conv = dmConvId([alice.uuid, bob.uuid], copy);
@@ -102,7 +102,7 @@ describe('files of a direct message that does not travel with a move', () => {
     const asked = [];
     globalThis.puter = { workers: { exec: async (url, init = {}) => {
       const u = new URL(url);
-      if (u.hostname === 'teamchat-old.puter.work') {
+      if (u.hostname === 'teamchat-old.localhost:8443') {
         asked.push(u.pathname);
         const m = /^\/api\/ws\/abcdef1234\/files\/(\w+)$/.exec(u.pathname);
         if (m) return new Response(new Blob(['hello'], { type: 'text/plain' }), { status: 200, headers: { 'Content-Type': 'text/plain' } });
@@ -110,7 +110,7 @@ describe('files of a direct message that does not travel with a move', () => {
       }
       return rt.dispatch(url, init, alice);
     } } };
-    const ref = await importArchive('https://teamchat-new.puter.work', { header, pages, files }, { from: 'abcdef1234@teamchat-old', fromRef: 'abcdef1234@teamchat-old', profile: { name: 'Alice' } });
+    const ref = await importArchive('http://teamchat-new.localhost:8443', { header, pages, files }, { from: 'abcdef1234@teamchat-old', fromRef: 'abcdef1234@teamchat-old', profile: { name: 'Alice' } });
     const copy = ref.split('@')[0];
     expect((await rt.kv.get(KEYS.ws(copy))).importing).toBeUndefined();
     // The direct message was refused (nobody in the copy is in it) and passed over; its file alone was not asked for, and is not here.
@@ -425,18 +425,18 @@ describe('what the new server said of the archive’s waiting messages', () => {
   it('reaches the caller of an import as the copy is made, and the caller of a move with its result', async () => {
     servers({ kept: 3, dropped: 2 });
     const told = [];
-    const ref = await importArchive('https://teamchat-new.puter.work', { header: HEADER, pages: [PAGE], files: [] }, { profile: { name: 'Bob' }, onCreated: (made, info) => told.push([made, info]) });
+    const ref = await importArchive('http://teamchat-new.localhost:8443', { header: HEADER, pages: [PAGE], files: [] }, { profile: { name: 'Bob' }, onCreated: (made, info) => told.push([made, info]) });
     expect(ref).toBe('copy0000001@teamchat-new');
     expect(told).toEqual([['copy0000001@teamchat-new', { scheduled: { kept: 3, dropped: 2 } }]]);
-    const moved = await transferWorkspace('abcdef1234@teamchat-old', 'https://teamchat-new.puter.work', { copy: null }, { profile: { name: 'Bob' } });
+    const moved = await transferWorkspace('abcdef1234@teamchat-old', 'http://teamchat-new.localhost:8443', { copy: null }, { profile: { name: 'Bob' } });
     expect(moved).toMatchObject({ ref: 'copy0000001@teamchat-new', mine: true, scheduled: { kept: 3, dropped: 2 } });
     // A server from before it said anything: nothing to say.
     servers(null);
     const quiet = [];
-    await importArchive('https://teamchat-new.puter.work', { header: HEADER, pages: [PAGE], files: [] }, { profile: { name: 'Bob' }, onCreated: (made, info) => quiet.push(info) });
+    await importArchive('http://teamchat-new.localhost:8443', { header: HEADER, pages: [PAGE], files: [] }, { profile: { name: 'Bob' }, onCreated: (made, info) => quiet.push(info) });
     expect(quiet).toEqual([{ scheduled: null }]);
     // And a move's result then carries no such field, as it never did.
-    expect(await transferWorkspace('abcdef1234@teamchat-old', 'https://teamchat-new.puter.work', { copy: null }, { profile: { name: 'Bob' } })).toEqual({ ref: 'copy0000001@teamchat-new', icon: null, mine: true });
+    expect(await transferWorkspace('abcdef1234@teamchat-old', 'http://teamchat-new.localhost:8443', { copy: null }, { profile: { name: 'Bob' } })).toEqual({ ref: 'copy0000001@teamchat-new', icon: null, mine: true });
   });
 
   it('is worded for the dialogs only when something was left behind', () => {
@@ -472,7 +472,7 @@ describe('a move whose original refused to close, and whose whole copy could not
   });
   const json = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
   const OLD = 'abcdef1234@teamchat-old';
-  const NEW_URL = 'https://teamchat-new.puter.work';
+  const NEW_URL = 'http://teamchat-new.localhost:8443';
   const HEADER = { format: 'teamchat-export', version: 1, workspace: { id: 'abcdef1234', name: 'Acme' }, channels: { c1: { name: 'general', def: true } }, members: {}, memberDocs: {} };
   const PAGE = { conv: 'c1', seq: 1, messages: [{ seq: 1, user: 'u', text: 'hi', ts: 1 }] };
   /** Two faked servers; `mode` is changed between tries. Each copy made gets the next id. Returns the calls made, in order. */

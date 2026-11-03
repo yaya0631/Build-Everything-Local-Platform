@@ -23,7 +23,7 @@ describe('joining a shared document', () => {
 
   it('leaves the room again when the document it holds cannot be read', async () => {
     vi.useFakeTimers();
-    const link = { local: false, server: 'https://owner-docs.puter.work', room: 'room1', token: undefined };
+    const link = { local: false, server: 'http://owner-docs.localhost:8443', room: 'room1', token: undefined };
     await expect(joinRoom(link, { id: 'u1', name: 'Bob' })).rejects.toThrow('could not be read');
     calls.length = 0;
     await vi.advanceTimersByTimeAsync(20000);

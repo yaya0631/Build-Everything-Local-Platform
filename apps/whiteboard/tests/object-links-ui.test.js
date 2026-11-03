@@ -103,7 +103,7 @@ test("5,000 linked objects have bounded badges, cached addresses and icons, and 
     );
     assert.equal(contentReads, 0, "Badges do not scan object text");
     assert.equal(badge.firstChild, icon);
-    a.s.board.shared = { server: "https://worker.puter.work", room: "room" };
+    a.s.board.shared = { server: "http://worker.localhost:8443", room: "room" };
     a.ui.render();
     assert.equal(
       new URLSearchParams(new URL(badge.href).hash.slice(1)).get("board"),

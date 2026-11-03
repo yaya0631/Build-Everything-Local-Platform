@@ -1,6 +1,6 @@
 # Hourly
 
-Timesheets and time tracking. Track billable hours by client, project, or task, stored in your own [Puter](https://developer.puter.com) account.
+Timesheets and time tracking. Track billable hours by client, project, or task, stored in your own [Puter](http://localhost:8443) account.
 
 ## Features
 
@@ -32,7 +32,7 @@ Timesheets and time tracking. Track billable hours by client, project, or task, 
 ## Stack
 
 - Vanilla JavaScript, no frameworks
-- [Puter.js](https://docs.puter.com) for auth, key-value settings, and per-month entry files
+- [Puter.js](http://localhost:8443) for auth, key-value settings, and per-month entry files
 - [Lucide](https://lucide.dev) icons
 - [Vite](https://vite.dev) for dev/build, [Vitest](https://vitest.dev) for tests
 

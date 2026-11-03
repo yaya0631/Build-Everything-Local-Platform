@@ -12,7 +12,7 @@ const { createIdbCache } = cacheModule;
 describe('snapshot cache', () => {
   it('removes every fleet a person had on this device when they sign out', async () => {
     const own = createIdbCache('user:u-1');
-    const joined = createIdbCache('user:u-1:team:https://fleet-abc.puter.work');
+    const joined = createIdbCache('user:u-1:team:http://fleet-abc.localhost:8443');
     const someoneElse = createIdbCache('user:u-2');
     await own.save({ v: 1, collections: { vehicles: [{ id: 'v1' }] } });
     await joined.save({ v: 1, collections: { vehicles: [{ id: 'v2' }] } });

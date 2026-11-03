@@ -26,7 +26,7 @@ function setup({ saveTo = 'Desktop/data.xlsx' } = {}) {
   vi.spyOn(T, 'toast').mockImplementation(() => {});
   const mailer = { available: () => true, sendMentions: vi.fn(async ({ recipients }) => ({ sent: recipients.length, failed: 0, results: recipients.map((r) => ({ email: r.email, status: 'sent' })) })) };
   const ask = vi.fn(async () => ({ action: 'share', mode: 'write' }));
-  const notifier = createMentionNotifier({ doc, wb, mailer, me: () => ({ username: 'demo' }), ask, location: { origin: 'https://spreadsheet.puter.com', pathname: '/' } });
+  const notifier = createMentionNotifier({ doc, wb, mailer, me: () => ({ username: 'demo' }), ask, location: { origin: 'http://spreadsheet.localhost:8443', pathname: '/' } });
   return { wb, doc, notifier, ask, mailer };
 }
 

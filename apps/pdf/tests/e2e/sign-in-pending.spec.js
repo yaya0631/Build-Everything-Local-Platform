@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 for (const outcome of ['success', 'failure', 'cancel'])
   test(`repeated sign-in requests share a pending ${outcome} and allow retry`, async ({ page }) => {
-    await page.route('https://js.puter.com/**', (route) =>
+    await page.route('**/sdk/puter.js', (route) =>
       route.fulfill({
         contentType: 'application/javascript',
         body: `window.signInCalls=0;window.puter={env:'web',auth:{
@@ -39,7 +39,7 @@ for (const outcome of ['success', 'failure', 'cancel'])
 
 for (const source of ['settings', 'library'])
   test(`a cloud open shares a sign-in started from ${source}`, async ({ page }) => {
-    await page.route('https://js.puter.com/**', (route) =>
+    await page.route('**/sdk/puter.js', (route) =>
       route.fulfill({
         contentType: 'application/javascript',
         body: `window.signInCalls=0;window.openPickers=0;window.puter={env:'web',auth:{

@@ -1,7 +1,7 @@
 # Expenses
 
 Receipt capture with AI OCR, expense reports, and reconciliation. Built with
-vanilla JavaScript (no frameworks), Vite, and [Puter.js](https://developer.puter.com)
+vanilla JavaScript (no frameworks), Vite, and [Puter.js](http://localhost:8443)
 as the only backend: your data lives in your own Puter account, not on anyone's server.
 
 ## Features
@@ -89,7 +89,7 @@ from the browser; there is no server to run.
 
 ---
 
-Powered by [Puter](https://developer.puter.com).
+Powered by [Puter](http://localhost:8443).
 
 ## License
 

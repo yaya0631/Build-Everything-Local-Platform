@@ -13,7 +13,7 @@ for (const kind of ['text', 'dropdown', 'list', 'widget-layout', 'rectangle', 'w
   test(`partial flatten keeps unsupported fields and saves other content (${kind})`, async ({
     page,
   }) => {
-    await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+    await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
     await page.goto('/#library');
     const bytes = await partialFlattenPdf(kind);
     const opening = page.waitForEvent('filechooser');

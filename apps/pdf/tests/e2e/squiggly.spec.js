@@ -11,7 +11,7 @@ const settled = (page) => expect(page.locator('.editor')).toHaveAttribute('aria-
 test('a squiggly underline from another editor can be selected, recolored, and deleted', async ({
   page,
 }) => {
-  await page.route('https://js.puter.com/**', (route) => route.abort());
+  await page.route('**/sdk/puter.js', (route) => route.abort());
   const doc = await PDFDocument.create();
   const sheet = doc.addPage([400, 500]);
   sheet.drawText('Spelling mistkae', {

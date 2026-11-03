@@ -50,7 +50,7 @@ for (const gradientRendering of ["svg", "css"])
   test(`two-stop nonlinear gradient colors in ${gradientRendering}`, async ({
     page,
   }) => {
-    await page.route("https://js.puter.com/v2/", (route) =>
+    await page.route("**/sdk/puter.js", (route) =>
       route.fulfill({
         contentType: "application/javascript",
         body: 'window.puter={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',
@@ -168,7 +168,7 @@ for (const gradientRendering of ["svg", "css"])
 test("gradient color transfer leaves outlines and opaque shape shadows intact", async ({
   page,
 }) => {
-  await page.route("https://js.puter.com/v2/", (route) =>
+  await page.route("**/sdk/puter.js", (route) =>
     route.fulfill({
       contentType: "application/javascript",
       body: 'window.puter={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',
@@ -271,7 +271,7 @@ test("nonlinear fills preserve custom geometry holes and their outlines", async 
   });
   P.setShapeStroke(shape, { color: "#10C030", widthEmu: 4 * 9525 });
   const bytes = Buffer.from(await P.savePresentation(p)).toString("base64");
-  await page.route("https://js.puter.com/v2/", (route) =>
+  await page.route("**/sdk/puter.js", (route) =>
     route.fulfill({
       contentType: "application/javascript",
       body: 'window.puter={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',

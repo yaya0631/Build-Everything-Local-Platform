@@ -61,7 +61,7 @@ import {
 } from './date-utils.js';
 
 /** The one shared, app-owned worker (see src/workers/email-worker.js). */
-export const EMAIL_WORKER_URL = 'https://calendar-email.puter.work';
+export const EMAIL_WORKER_URL = 'http://calendar-email.localhost:8443';
 
 const SENT_PREFIX = 'cal:invite:';
 

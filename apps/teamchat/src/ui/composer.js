@@ -689,7 +689,7 @@ export function createComposer({ placeholder = 'Message', onSend, onSendLater = 
     // An @ opens the list wherever the worker (and the renderer) read a
     // mention: at the start, or after anything but a letter, digit or
     // underscore, so "(@ana", "\"@ana" and "cc:@ana" complete as "@ana"
-    // does, and an address (nj@puter.com) opens nothing, as it mentions
+    // does, and an address (nj@localhost:8443) opens nothing, as it mentions
     // nobody. Only after whitespace, the list stayed shut on a name typed
     // in brackets that would then ring the person all the same.
     const m = /(^|[^a-z0-9_])@([a-z0-9_.-]*)$/i.exec(before);

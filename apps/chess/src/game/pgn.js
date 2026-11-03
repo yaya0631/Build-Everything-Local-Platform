@@ -80,7 +80,7 @@ export function buildPgn({
   control = null,
   termination = 'normal',
   event = 'Casual game',
-  site = 'chess.puter.com',
+  site = 'chess.localhost:8443',
 }) {
   const tags = [
     ['Event', event],

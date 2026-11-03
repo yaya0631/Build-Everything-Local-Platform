@@ -68,7 +68,7 @@ export async function deploy(puter, progress = () => {}, fetchBundle = defaultBu
     check();
     const deployed = await puter.workers.create(name, file.path);
     check();
-    config = { name, server: workerURL(deployed.url || `https://${name}.puter.work`), path: file.path, build };
+    config = { name, server: workerURL(deployed.url || `http://${name}.localhost:8443`), path: file.path, build };
     await puter.kv.set(WORKER_KEY, config);
   } else if (config.build !== build) {
     await puter.fs.write(config.path, source, { overwrite: true, dedupeName: false });

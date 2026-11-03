@@ -20,7 +20,7 @@ for (const kind of [
   test(`native template transfer retains ${kind} in browser rendering, return copy and app download`, async ({
     page,
   }) => {
-    await page.route("https://js.puter.com/v2/", (route) =>
+    await page.route("**/sdk/puter.js", (route) =>
       route.fulfill({
         contentType: "application/javascript",
         body: 'window.puter={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',

@@ -19,7 +19,7 @@ describe('meetings — stateless links', () => {
 
   it('wraps the code in the Meetings app URL', () => {
     const { code, url } = createMeetings().mintLink();
-    expect(url).toBe(`https://meetings.puter.com/#/m/${code}`);
+    expect(url).toBe(`http://meetings.localhost:8443/#/m/${code}`);
   });
 
   it('rejection-samples: every letter can appear, none from outside a–z', () => {
@@ -43,20 +43,20 @@ describe('meetings — stateless links', () => {
 
 describe('isMeetingUrl — the exact room-link shape', () => {
   it('accepts both live room-code forms, including what mintLink makes', () => {
-    expect(isMeetingUrl('https://meetings.puter.com/#/m/abcd-efgh-ijkl')).toBe(true); // open
-    expect(isMeetingUrl('https://meetings.puter.com/#/m/abc-defg-hij')).toBe(true); // classic
+    expect(isMeetingUrl('http://meetings.localhost:8443/#/m/abcd-efgh-ijkl')).toBe(true); // open
+    expect(isMeetingUrl('http://meetings.localhost:8443/#/m/abc-defg-hij')).toBe(true); // classic
     expect(isMeetingUrl(createMeetings().mintLink().url)).toBe(true);
   });
 
   it('rejects everything that is not exactly a Puter Meetings room link', () => {
     for (const bad of [
-      'https://meetings.puter.com.evil.example/#/m/abcd-efgh-ijkl', // host prefix trick
-      'http://meetings.puter.com/#/m/abcd-efgh-ijkl', //              not https
-      'https://meetings.puter.com/#/m/ABCD-EFGH-IJKL', //             not a room code
-      'https://meetings.puter.com/#/m/abcd-efgh-ijkl?x=1', //         trailing junk
-      'https://meetings.puter.com/#/m/', //                           no code
+      'http://meetings.localhost:8443.evil.example/#/m/abcd-efgh-ijkl', // host prefix trick
+      'http://meetings.localhost:8443/#/m/abcd-efgh-ijkl', //              not https
+      'http://meetings.localhost:8443/#/m/ABCD-EFGH-IJKL', //             not a room code
+      'http://meetings.localhost:8443/#/m/abcd-efgh-ijkl?x=1', //         trailing junk
+      'http://meetings.localhost:8443/#/m/', //                           no code
       'https://example.com/', //                                      foreign
-      `https://meetings.puter.com/#/m/${'a'.repeat(200)}`, //         over-long
+      `http://meetings.localhost:8443/#/m/${'a'.repeat(200)}`, //         over-long
       '',
       42,
       null,

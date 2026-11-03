@@ -24,7 +24,7 @@ describe('sign out', () => {
   it('removes the cached school data, unsent changes, files and profile picture of the person signing out', async () => {
     const snap = { v: 2, collections: { students: [{ id: 'k1', firstName: 'Ava', allergies: 'Peanuts' }] }, pending: { puts: [{ coll: 'students', id: 'k1' }], dels: [] } };
     await createIdbCache('user:u1').save(snap);
-    await createIdbCache('user:u1:team:https://school-a.puter.work').save(snap);
+    await createIdbCache('user:u1:team:http://school-a.localhost:8443').save(snap);
     await createIdbCache('user:u2').save(snap);
     await createIdbCache('user:u10').save(snap);
 
@@ -49,7 +49,7 @@ describe('sign out', () => {
       await platform.signOut('u1');
       expect(puterSignOut).toHaveBeenCalled();
       expect(await createIdbCache('user:u1').load()).toBeUndefined();
-      expect(await createIdbCache('user:u1:team:https://school-a.puter.work').load()).toBeUndefined();
+      expect(await createIdbCache('user:u1:team:http://school-a.localhost:8443').load()).toBeUndefined();
       expect(await createIdbCache('user:u2').load()).toBeTruthy();
       expect(await createIdbCache('user:u10').load()).toBeTruthy();
       const keys = await fileKeys();

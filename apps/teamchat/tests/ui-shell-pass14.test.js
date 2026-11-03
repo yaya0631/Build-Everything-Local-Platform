@@ -568,7 +568,7 @@ describe('the app opened without a network and without the Puter SDK', () => {
     document.body.append(app);
     // The page's own SDK tag, which failed to load.
     const tag = document.createElement('script');
-    tag.setAttribute('src', 'https://js.puter.com/v2/');
+    tag.setAttribute('src', '/sdk/puter.js');
     document.head.append(tag);
     dom.navigator.onLine = false;
     delete globalThis.puter;
@@ -579,14 +579,14 @@ describe('the app opened without a network and without the Puter SDK', () => {
     expect(Date.now() - t0).toBeLessThan(5500); // offline, the wait for a script that cannot load is short (it was six seconds)
     expect(document.querySelectorAll('.offline-banner').length).toBe(1);
     expect(document.querySelector('.offline-banner').textContent).toBe('You are offline.');
-    expect(document.querySelectorAll('script[src*="js.puter.com"]').length).toBe(1);
+    expect(document.querySelectorAll('script[src*="js.localhost:8443"]').length).toBe(1);
     // The network is back: the SDK is asked for afresh, since the browser does not retry the tag that failed.
     dom.navigator.onLine = true;
     window.dispatchEvent(new Event('online'));
     await dom.tick(5);
-    const tags = document.querySelectorAll('script[src*="js.puter.com"]');
+    const tags = document.querySelectorAll('script[src*="js.localhost:8443"]');
     expect(tags.length).toBe(2);
-    expect(tags[1].getAttribute('src')).toBe('https://js.puter.com/v2/');
+    expect(tags[1].getAttribute('src')).toBe('/sdk/puter.js');
     expect(app.querySelector('.auth-title')?.textContent).toBe('Could not reach Puter'); // still waiting for it
     // It loads: the app comes up in the page's place.
     globalThis.puter = { auth: { isSignedIn: async () => true, getUser: async () => ({ uuid: 'u-me', username: 'me' }) }, kv: { get: async () => null } };
@@ -596,7 +596,7 @@ describe('the app opened without a network and without the Puter SDK', () => {
     window.dispatchEvent(new Event('online'));
     await dom.tick(30);
     expect(app.querySelectorAll('.app-frame').length).toBe(1);
-    expect(document.querySelectorAll('script[src*="js.puter.com"]').length).toBe(2);
+    expect(document.querySelectorAll('script[src*="js.localhost:8443"]').length).toBe(2);
     quiet.mockRestore();
     delete globalThis.puter;
   }, 15_000);

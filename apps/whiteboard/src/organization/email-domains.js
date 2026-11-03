@@ -35,7 +35,7 @@ export const PUBLIC_EMAIL_DOMAINS = new Set([
   "qq.com",
   "163.com",
   "126.com",
-  "puter.com",
+  "localhost:8443",
   "hotmail.co.uk",
   "hotmail.fr",
   "live.co.uk",
@@ -73,8 +73,8 @@ const OPEN_SUFFIXES = new Set([
   "azurewebsites.net",
   "cloudfront.net",
   "amazonaws.com",
-  "puter.site",
-  "puter.work",
+  "localhost:8443",
+  "localhost:8443",
 ]);
 // Second-level domains that countries open to anyone, as co.uk, com.au,
 // or org.nz.

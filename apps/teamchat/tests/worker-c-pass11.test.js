@@ -159,7 +159,7 @@ describe('an import that stops short (the client side of an import or transfer)'
     };
     // The second page names a channel the archive has not got: the worker refuses it and the import stops there.
     const broken = { header, pages: [{ conv, seq: 2, messages: [msg(1), msg(2)] }, { conv: 'nochan0001', seq: 1, messages: [msg(1)] }], files: [] };
-    const stopped = await importArchive('https://teamchat-x.puter.work', broken, { profile: { name: 'A' } }).then(() => 'finished', (e) => e.code);
+    const stopped = await importArchive('http://teamchat-x.localhost:8443', broken, { profile: { name: 'A' } }).then(() => 'finished', (e) => e.code);
     expect(stopped).toBe('not_found');
     // The copy had been created under the archive's own id, with a page in; none of it remains.
     expect(await rt.kv.get(KEYS.ws('stopped001'))).toBeNull();
@@ -168,7 +168,7 @@ describe('an import that stops short (the client side of an import or transfer)'
     expect(await rt.kv.get(KEYS.seq(conv))).toBeNull();
     expect((await rt.kv.get(KEYS.user(alice.uuid))).workspaces).toEqual([]);
     // Tried again with a sound archive, the workspace is made under its own id and opened.
-    const ref = await importArchive('https://teamchat-x.puter.work', { ...broken, pages: [broken.pages[0]] }, { profile: { name: 'A' } });
+    const ref = await importArchive('http://teamchat-x.localhost:8443', { ...broken, pages: [broken.pages[0]] }, { profile: { name: 'A' } });
     expect(ref).toBe('stopped001@teamchat-x');
     const ws = (await as(alice).get('/api/ws/stopped001')).data.workspace;
     expect(ws.importing).toBe(false);
@@ -224,7 +224,7 @@ describe('accepting a transfer again after a failure (the client side)', () => {
     return calls;
   }
   const copies = async () => (await rt.kv.list('tc:ws:*')).filter((k) => /^tc:ws:[a-z0-9]+$/.test(k)).length;
-  const TARGET = 'https://teamchat-x.puter.work';
+  const TARGET = 'http://teamchat-x.localhost:8443';
 
   it('closes the original for the copy it already made when only the completion had failed', async () => {
     const { wsId, oldRef } = await nominated();
@@ -256,7 +256,7 @@ describe('accepting a transfer again after a failure (the client side)', () => {
     let loseAnswer = true;
     bobsApp(async (path, init) => {
       if (loseAnswer && path.endsWith('/transfer/complete')) {
-        await rt.dispatch(`https://teamchat-x.puter.work${path}`, init, bob); // it lands
+        await rt.dispatch(`http://teamchat-x.localhost:8443${path}`, init, bob); // it lands
         throw new TypeError('answer lost');
       }
     });
@@ -355,7 +355,7 @@ describe('the bytes the worker serves', () => {
 
 describe('a server address with its scheme in capitals', () => {
   it('names the same server as the lowercase one, wherever it is typed or pasted', () => {
-    expect(serverKeyOf('HTTPS://Teamchat-X7k2.puter.work/')).toBe('teamchat-x7k2');
+    expect(serverKeyOf('http://Teamchat-X7k2.localhost:8443/')).toBe('teamchat-x7k2');
     expect(serverKeyOf('Https://Api.Example.com/base')).toBe('api.example.com');
     expect(serverKeyOf('HTTP://localhost:5173')).toBe('localhost:5173');
     // Trusting it and parsing a reference to it agree with the key.
@@ -444,7 +444,7 @@ describe('the time a download gets', () => {
     vi.useFakeTimers();
     let signal = null;
     globalThis.puter = { workers: { exec: (url, init) => { signal = init.signal; return new Promise(() => {}); } } };
-    const pending = api.health('https://teamchat-x.puter.work');
+    const pending = api.health('http://teamchat-x.localhost:8443');
     await vi.advanceTimersByTimeAsync(19_000);
     expect(signal.aborted).toBe(false);
     await vi.advanceTimersByTimeAsync(2_000);

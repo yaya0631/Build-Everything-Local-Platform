@@ -32,7 +32,7 @@ if (puter && !puter.workers) {
     APIOrigin: 'https://api.puter.test',
     authToken: base.authToken || `h.${btoa(JSON.stringify({ type: 'app-under-user', user_uid: user.uuid }))}.s`,
     workers: {
-      async create(name) { return { url: `https://${name}.puter.work` }; },
+      async create(name) { return { url: `http://${name}.localhost:8443` }; },
       async exec(url, options = {}) {
         await new Promise((r) => setTimeout(r, 40 + Math.random() * 60)); // a network's latency
         if (url.endsWith('/health')) return Response.json({ ok: true, build: window.__collabBuild || 'dev' });

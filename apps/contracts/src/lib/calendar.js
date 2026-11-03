@@ -85,7 +85,7 @@ export async function publishFeed() {
   await writeFeedFile();
   const site = await puter.hosting.create(subdomain, FEED_DIR);
   const name = site?.subdomain || subdomain;
-  const url = `https://${name}.puter.site/${FEED_FILE}`;
+  const url = `http://${name}.localhost:8443/${FEED_FILE}`;
   await store.updateSettings({ feed: { subdomain: name, url, createdAt: Date.now() } });
   return url;
 }

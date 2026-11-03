@@ -111,5 +111,5 @@ Sources:
 - https://github.com/office-kit/pptx/blob/main/README.md
 - https://github.com/office-kit/pptx/blob/main/package.json
 - https://github.com/office-kit/pptx/blob/main/packages/preview/package.json
-- https://docs.puter.com/llms.txt
-- https://docs.puter.com/Utils/env/
+- http://localhost:8443/llms.txt
+- http://localhost:8443/Utils/env/

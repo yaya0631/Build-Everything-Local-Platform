@@ -277,7 +277,7 @@ describe('createMailReply: sendReply — worker fallback payload', () => {
     await mail.sendReply(fakeEvent(), 'declined');
     expect(p.workers.exec).toHaveBeenCalledTimes(1);
     const [url, init] = p.workers.exec.mock.calls[0];
-    expect(url).toBe('https://calendar-email.puter.work/replies');
+    expect(url).toBe('http://calendar-email.localhost:8443/replies');
     const body = JSON.parse(init.body);
     expect(body).toMatchObject({
       event: { id: 'evt-1', title: 'Team offsite', organizerEmail: 'alice@example.com', organizerName: 'Alice' },
@@ -338,7 +338,7 @@ describe('createMailReply: sendReply — .ics attendee/UID', () => {
     expect(attendeeLines).toHaveLength(1);
     expect(attendeeLines[0].toLowerCase()).toContain('nariman@example.com');
     expect(attendeeLines[0].toUpperCase()).toContain('PARTSTAT=DECLINED');
-    expect(ics).toContain('UID:evt-1@calendar.puter.com');
+    expect(ics).toContain('UID:evt-1@calendar.localhost');
   });
 });
 

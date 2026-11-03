@@ -22,7 +22,7 @@ import { expandOccurrences, isScheduledOccurrence } from './recurrence.js';
 const INV_PREFIX = 'cal:mail:inv:';
 const SENDERS_KEY = 'cal:mail:senders';
 const CORR_KEY = 'cal:mail:corr';
-const OWN_UID_SUFFIX = '@calendar.puter.com';
+const OWN_UID_SUFFIX = '@calendar.localhost';
 const DAY_MS = 86_400_000;
 
 const MAX_TRACKED = 60; // newest records kept in memory at all
@@ -382,7 +382,7 @@ export function createMailIntake({
    * created it, and only when it came from mail in the first place. Without
    * this, a UID is a write capability: anyone authenticated could overwrite
    * another sender's invitation, and — because our own exports use
-   * `<id>@calendar.puter.com` — could overwrite an event the USER hosts and
+   * `<id>@calendar.localhost` — could overwrite an event the USER hosts and
    * stamp `invite` on it, which silently takes it out of RSVP-link sync.
    */
   function mayUpdate(record, existing) {
@@ -582,7 +582,7 @@ export function createMailIntake({
 
   /**
    * Own-echo: a REQUEST whose UID resolves, via OUR OWN
-   * `@calendar.puter.com` suffix, to an event the user hosts is our own
+   * `@calendar.localhost` suffix, to an event the user hosts is our own
    * invitation coming back through a Puter mailbox — not a real inbound
    * invitation, from anyone. Deliberately narrower than `findHostedByUid`: it
    * only trusts the suffix's own id lookup, not the general invite.uid

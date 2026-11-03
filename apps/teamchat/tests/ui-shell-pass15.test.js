@@ -231,7 +231,7 @@ describe('the app opened without a network, the network back within the first se
     document.body.append(app);
     // The page's own SDK tag, which failed to load offline.
     const tag = document.createElement('script');
-    tag.setAttribute('src', 'https://js.puter.com/v2/');
+    tag.setAttribute('src', '/sdk/puter.js');
     document.head.append(tag);
     dom.navigator.onLine = false;
     delete globalThis.puter;
@@ -241,7 +241,7 @@ describe('the app opened without a network, the network back within the first se
     // it: the page is online by the time the wait fails, so no `online`
     // event follows the failure to bring the retry.
     dom.navigator.onLine = true;
-    await until(() => document.querySelectorAll('script[src*="js.puter.com"]').length === 2, 6000);
+    await until(() => document.querySelectorAll('script[src*="js.localhost:8443"]').length === 2, 6000);
     expect(app.querySelector('.auth-title')?.textContent).not.toBe('Could not reach Puter');
     // It loads: the app comes up, no reload asked of anyone.
     globalThis.puter = { auth: { isSignedIn: async () => true, getUser: async () => ({ uuid: 'u-me', username: 'me' }) }, kv: { get: async () => null } };

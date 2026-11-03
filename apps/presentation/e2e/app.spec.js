@@ -607,7 +607,7 @@ async function mockPuter(
     username = "test-user",
   } = {},
 ) {
-  await page.route("https://js.puter.com/v2/", (route) =>
+  await page.route("**/sdk/puter.js", (route) =>
     route.fulfill({
       contentType: "application/javascript",
       body: `(()=>{let signedIn=${signedIn};const files={};window.__writes=[];window.puter={env:${JSON.stringify(env)},auth:{isSignedIn:async()=>{if(${delayAuth})await new Promise(resolve=>window.__releaseAuth=resolve);return signedIn},getUser:async()=>({username:${JSON.stringify(username)},uuid:'test-user-id'}),signIn:async()=>{signedIn=true},signOut:async()=>{signedIn=false}},kv:new Proxy({},{get(){throw Error('KV is forbidden')}}),fs:{readdir:async()=>Object.values(files),write:async(path,blob,options)=>{if(${failWrite})throw Error('Cloud save failed. Your draft is still on this device.');const actual=path.startsWith('/')?path:'/test/'+path;window.__writes.push({path:actual,options,size:blob.size});files[actual]={path:actual,name:actual.split('/').pop(),modified:Date.now()/1000,bytes:blob};return files[actual];},read:async path=>files[path].bytes,rename:async(path,name)=>({path:path.slice(0,path.lastIndexOf('/')+1)+name}),delete:async path=>delete files[path]},ui:{onLaunchedWithItems:()=>{}}};})();`,
@@ -11292,11 +11292,11 @@ test("objects take links to web addresses or slides that work while presenting",
   await page.keyboard.press("Control+k");
   const dialog = page.getByRole("dialog", { name: "Add link" });
   await expect(dialog).toBeVisible();
-  await dialog.getByRole("textbox", { name: "Web address" }).fill("puter.com");
+  await dialog.getByRole("textbox", { name: "Web address" }).fill("localhost:8443");
   await dialog.getByRole("button", { name: "Done", exact: true }).click();
   await paneTab(page, "Size & Properties");
   await expect(panel(page).locator(".link-target")).toHaveText(
-    "https://puter.com",
+    "http://localhost:8443",
   );
   // The text now reads as a link on the slide.
   const svg = decodeURIComponent(
@@ -11305,7 +11305,7 @@ test("objects take links to web addresses or slides that work while presenting",
       "",
     ),
   );
-  expect(svg).toContain("puter.com");
+  expect(svg).toContain("localhost:8443");
   // A second object links to a slide.
   const close = page.getByRole("button", { name: "Close format panel" });
   if (await close.isVisible()) await close.click();
@@ -11322,8 +11322,8 @@ test("objects take links to web addresses or slides that work while presenting",
   await page.getByRole("button", { name: "Present", exact: true }).click();
   const presenter = page.getByRole("dialog", { name: "Presentation mode" });
   await expect(
-    presenter.getByRole("link", { name: "Open https://puter.com" }),
-  ).toHaveAttribute("href", "https://puter.com");
+    presenter.getByRole("link", { name: "Open http://localhost:8443" }),
+  ).toHaveAttribute("href", "http://localhost:8443");
   await presenter.getByRole("button", { name: "Go to slide 3" }).click();
   await expect(presenter.locator(".presenter-counter")).toHaveText("3 / 5");
   await page.keyboard.press("Escape");
@@ -14156,7 +14156,7 @@ test("the link dialog takes a bare address on Enter and one with a port", async 
   await expect(dialog).toHaveCount(0);
   await paneTab(page, "Size & Properties");
   await expect(panel(page).locator(".link-target")).toHaveText(
-    "https://localhost:3000/deck",
+    "http://localhost:3000/deck",
   );
 });
 
@@ -14774,7 +14774,7 @@ test("keyboard focus stays in the editor when the control under it is used up", 
   // to the panel.
   await title.click();
   await page.keyboard.press("Control+k");
-  await page.getByRole("textbox", { name: "Web address" }).fill("puter.com");
+  await page.getByRole("textbox", { name: "Web address" }).fill("localhost:8443");
   await page.getByRole("button", { name: "Done", exact: true }).click();
   await paneTab(page, "Size & Properties");
   const remove = panel(page).getByRole("button", { name: "Remove link" });
@@ -16921,12 +16921,12 @@ test("a web link followed while presenting withholds the referrer", async ({
   await page.locator('[data-object="1"]').click();
   await page.keyboard.press("Control+k");
   const dialog = page.getByRole("dialog", { name: "Add link" });
-  await dialog.getByRole("textbox", { name: "Web address" }).fill("puter.com");
+  await dialog.getByRole("textbox", { name: "Web address" }).fill("localhost:8443");
   await dialog.getByRole("button", { name: "Done", exact: true }).click();
   await page.getByRole("button", { name: "Present", exact: true }).click();
   const link = page
     .getByRole("dialog", { name: "Presentation mode" })
-    .getByRole("link", { name: "Open https://puter.com" });
+    .getByRole("link", { name: "Open http://localhost:8443" });
   await expect(link).toHaveAttribute("rel", "noopener noreferrer");
   await expect(link).toHaveAttribute("target", "_blank");
 });

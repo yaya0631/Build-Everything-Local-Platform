@@ -66,7 +66,7 @@ test("the shipped worker bundle deploys and exposes authenticated JSON routes", 
   puter.workers.create = async (name, path) => {
     deployments++;
     assert.equal(env.files.get(path), code);
-    return { url: `https://${name}.puter.work` };
+    return { url: `http://${name}.localhost:8443` };
   };
   puter.workers.exec = async (url, options) => {
     assert.ok(url.endsWith("/health"));
@@ -83,7 +83,7 @@ test("the shipped worker bundle deploys and exposes authenticated JSON routes", 
   assert.equal(deployments, 1, "Reuse the same deployed build");
   const post = (body, user, headers = {}) =>
     routes.get("POST /api")({
-      request: new Request("https://worker.puter.work/api", {
+      request: new Request("http://worker.localhost:8443/api", {
         method: "POST",
         headers: {
           ...(user ? { "puter-auth": env.sdk(user).authToken } : {}),
@@ -104,7 +104,7 @@ test("the shipped worker bundle deploys and exposes authenticated JSON routes", 
   initial.items = [item("note", 10, 10, { text: "Actual bundled code" })];
   const doc = new SharedDocument();
   doc.commit(initial);
-  const created = await call(puter, "https://worker.puter.work", {
+  const created = await call(puter, "http://worker.localhost:8443", {
     op: "create",
     room: initial.id,
     update: encode(doc.update()),

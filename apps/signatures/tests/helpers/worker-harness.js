@@ -1,6 +1,6 @@
 /**
  * Test harness for the workers in src/workers (pattern borrowed from
- * calendar.puter.com): instantiates one the way the Puter workers runtime
+ * calendar.localhost:8443): instantiates one the way the Puter workers runtime
  * would, a `router` global collecting routes and a `me` global exposing the
  * owner's own Puter resources, and lets tests call its routes as plain HTTP,
  * with or without a signed-in caller (`user`, which the runtime only
@@ -161,7 +161,7 @@ export function instantiateWorker(source, { kv = makeKv(), me = null } = {}) {
     } else if (body !== undefined) {
       init.body = body;
     }
-    const url = new URL(pathAndQuery, 'https://test-worker.puter.work');
+    const url = new URL(pathAndQuery, 'http://test-worker.localhost:8443');
     const match = matchRoute(routes, method, url.pathname);
     if (!match) return new ResponseShim('no route', { status: 404 });
     const request = new RequestShim(url.href, init);

@@ -17,7 +17,7 @@ async function setup(page) {
       });
     };
   });
-  await page.route('https://js.puter.com/**', (route) =>
+  await page.route('**/sdk/puter.js', (route) =>
     route.fulfill({
       contentType: 'application/javascript',
       body: `

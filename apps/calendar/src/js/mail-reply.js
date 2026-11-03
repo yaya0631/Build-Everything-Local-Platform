@@ -214,7 +214,7 @@ export function createMailReply({
   /** The UID the organizer filed this invitation under. A reply is matched to
    *  a meeting by UID, so a foreign organizer's own UID has to travel back
    *  verbatim — toICS takes it as an override (it otherwise synthesizes
-   *  `<id>@calendar.puter.com`, which no external calendar has ever seen). */
+   *  `<id>@calendar.localhost`, which no external calendar has ever seen). */
   function replyUid(event) {
     return (event.invite && typeof event.invite.uid === 'string' && event.invite.uid) || '';
   }

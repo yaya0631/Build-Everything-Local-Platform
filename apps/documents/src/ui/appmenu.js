@@ -132,7 +132,7 @@ export function openAbout() {
       el('p.modal-text', {}, 'A private word processor with an original canvas editor. Files are saved as .docx in your own Puter cloud.'),
       el('p.modal-text', {}, 'This version supports text and paragraph formatting, selection, undo, and DOCX downloads. Advanced document features are not supported yet.'),
       el('p.small.muted', {}, 'Built with vanilla JavaScript, Vite, Lucide icons, fflate, Noto Sans, and ',
-        el('a', { href: 'https://developer.puter.com', target: '_blank', rel: 'noopener' }, 'Puter'), '.'),
+        el('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Puter'), '.'),
       el('p.small.muted', {}, el('a', { href: `${import.meta.env.BASE_URL}licenses/THIRD_PARTY.txt`, target: '_blank', rel: 'noopener' }, 'Third-party licenses')),
       el('p.small.muted', { lang: 'ko' }, '본 제품은 한글과컴퓨터의 한글 문서 파일(.hwp) 공개 문서를 참고하여 개발하였습니다.')),
   });

@@ -4,7 +4,7 @@ for (const change of ['initial profile', 'late sign-out'])
   for (const focus of ['appearance', 'about', 'account'])
     test(`Settings follows ${change} while preserving ${focus}`, async ({ page }) => {
       const profile = change === 'initial profile';
-      await page.route('https://js.puter.com/**', (route) =>
+      await page.route('**/sdk/puter.js', (route) =>
         route.fulfill({
           contentType: 'application/javascript',
           body: `
@@ -87,7 +87,7 @@ for (const change of ['initial profile', 'late sign-out'])
     });
 
 test('a profile answer preserves the sign-out confirmation return target', async ({ page }) => {
-  await page.route('https://js.puter.com/**', (route) =>
+  await page.route('**/sdk/puter.js', (route) =>
     route.fulfill({
       contentType: 'application/javascript',
       body: `window.getUserCalls=0;window.puter={
@@ -126,7 +126,7 @@ test('a profile answer preserves the sign-out confirmation return target', async
 
 test('a late desktop session keeps focus on an available Settings control', async ({ page }) => {
   let deliverSdk;
-  await page.route('https://js.puter.com/**', async (route) => {
+  await page.route('**/sdk/puter.js', async (route) => {
     await new Promise((resolve) => {
       deliverSdk = resolve;
     });

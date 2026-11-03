@@ -21,7 +21,7 @@ import { normalizeEmail } from './util.js';
 import { isSignerTurn } from './model.js';
 
 /** The one shared, app-owned worker (see src/workers/email-worker.js). */
-export const EMAIL_WORKER_URL = 'https://signatures-email.puter.work';
+export const EMAIL_WORKER_URL = 'http://signatures-email.localhost:8443';
 
 /**
  * A short, SYNCHRONOUS digest of what one signer is sent. Deliberately not

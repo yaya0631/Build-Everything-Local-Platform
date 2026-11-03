@@ -24069,7 +24069,7 @@ Ink is saved as ordinary DrawingML so every reader shows it; nothing depends on 
   Pressure is baked into the outline's width, so all readers draw the same shape.
 - Every stroke's `wps:cNvPr` carries `a:extLst/a:ext uri="{3582A2A6-0F3C-4AC8-9E1A-D2DA59872D4E}"`
   (§20.1.2.2.15) with one `pdi:stroke` element in this app's namespace
-  `http://schemas.puter.com/documents/2026/ink` (tool, colour, nominal width, centre line as
+  `http://schemas.localhost:8443/documents/2026/ink` (tool, colour, nominal width, centre line as
   EMU/pressure triples). It has no rendering effect; readers that do not know it ignore it (the
   extension list is the schema's preservation mechanism; the content validates as lax wildcard
   content, so no `mc:Ignorable` is needed). The reader accepts this extension only in that exact

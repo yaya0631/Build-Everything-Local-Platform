@@ -10,7 +10,7 @@ async function goTo(page, number) {
   await expect(page.locator('.page-caption')).toHaveText(`Page ${number} of 3`);
 }
 async function prepare(page, kind, comments) {
-  await page.route('https://js.puter.com/**', (route) => route.abort());
+  await page.route('**/sdk/puter.js', (route) => route.abort());
   const doc = await PDFDocument.create();
   for (const words of ['apple', 'banana banana', 'cherry'])
     doc.addPage([400, 400]).drawText(words, { x: 40, y: 300, size: 18 });

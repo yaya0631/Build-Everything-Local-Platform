@@ -300,13 +300,13 @@ describe('an export or a move answered by the platform in place of the worker', 
       if (once && path.endsWith('/transfer/complete')) { once = false; return platform(429); }
     }, bob);
     const state = { copy: null };
-    await expect(transferWorkspace(oldRef, 'https://teamchat-x.puter.work', state, { profile: { name: 'Bob' } })).rejects.toMatchObject({ code: 'http_429' });
+    await expect(transferWorkspace(oldRef, 'http://teamchat-x.localhost:8443', state, { profile: { name: 'Bob' } })).rejects.toMatchObject({ code: 'http_429' });
     // The copy stands, remembered for the next try; the original is not yet closed.
     expect(state.copy?.ref).toMatch(/^[a-z0-9]{6,20}@teamchat-x$/);
     expect(await copies()).toBe(2);
     expect((await rt.kv.get(KEYS.ws(wsId))).movedTo).toBeUndefined();
     calls.length = 0;
-    const moved = await transferWorkspace(oldRef, 'https://teamchat-x.puter.work', state, { profile: { name: 'Bob' } });
+    const moved = await transferWorkspace(oldRef, 'http://teamchat-x.localhost:8443', state, { profile: { name: 'Bob' } });
     expect(moved).toEqual({ ref: state.copy.ref, icon: null, mine: true });
     expect(calls.filter((c) => c.includes('/import') || c.includes('/export'))).toEqual([]);
     expect(await copies()).toBe(2);
@@ -323,7 +323,7 @@ describe('what the app says when the platform answers in place of the server, or
   });
   const answering = (fn) => { globalThis.puter = { workers: { exec: fn } }; };
   const page = (status) => new Response(`<html><body>${status}</body></html>`, { status, headers: { 'Content-Type': 'text/html' } });
-  const URL_ = 'https://teamchat-x.puter.work';
+  const URL_ = 'http://teamchat-x.localhost:8443';
 
   it('names what happened and what to do, keeps the status in the code, and leaves the server\'s own words alone', async () => {
     answering(async () => page(502));

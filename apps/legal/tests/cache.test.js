@@ -51,7 +51,7 @@ describe('offline snapshot cache', () => {
 
   it('clears the snapshots of every firm on sign out', async () => {
     const own = createIdbCache('user:u1');
-    const joined = createIdbCache('user:u1:team:https://x.puter.work');
+    const joined = createIdbCache('user:u1:team:http://x.localhost:8443');
     await own.save({ v: 1 });
     await joined.save({ v: 1 });
     await own.clearAll();
@@ -61,7 +61,7 @@ describe('offline snapshot cache', () => {
 
   it('keeps the other firms’ snapshots when one firm’s copy is removed (leaving a firm)', async () => {
     const own = createIdbCache('user:u2');
-    const joined = createIdbCache('user:u2:team:https://y.puter.work');
+    const joined = createIdbCache('user:u2:team:http://y.localhost:8443');
     await own.save({ v: 1, n: 'own' });
     await joined.save({ v: 1, n: 'joined' });
     await joined.clear();

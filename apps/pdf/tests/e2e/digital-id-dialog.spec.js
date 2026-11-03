@@ -4,7 +4,7 @@ import { PDFDocument } from 'pdf-lib';
 test.skip(({ isMobile }) => isMobile, 'desktop workspace');
 
 test('pressing Enter twice creates one digital ID, not two', async ({ page }) => {
-  await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+  await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([400, 500]);
@@ -49,7 +49,7 @@ test('cancelling while a new digital ID is made neither downloads nor uses it', 
         window.releaseKey = () => resolve(generate(...args));
       });
   });
-  await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+  await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([400, 500]);

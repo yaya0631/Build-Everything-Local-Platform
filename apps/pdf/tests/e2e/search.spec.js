@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { PDFDocument, PDFName, StandardFonts } from 'pdf-lib';
 
 async function openSearchDocument(page, pages = ['apple apple', 'banana banana', 'apple banana']) {
-  await page.route('https://js.puter.com/**', (route) => route.abort());
+  await page.route('**/sdk/puter.js', (route) => route.abort());
   const doc = await PDFDocument.create();
   const font = await doc.embedFont(StandardFonts.Helvetica);
   for (const words of pages)
@@ -121,7 +121,7 @@ test('IME confirmation and cancellation belong to the search input composition',
 test('find matches supplementary-plane letters in either case without splitting their highlights', async ({
   page,
 }) => {
-  await page.route('https://js.puter.com/**', (route) => route.abort());
+  await page.route('**/sdk/puter.js', (route) => route.abort());
   const doc = await PDFDocument.create();
   const font = await doc.embedFont(StandardFonts.Helvetica);
   doc.addPage().drawText('A B end', { font, x: 40, y: 700, size: 18 });

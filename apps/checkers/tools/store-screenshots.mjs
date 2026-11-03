@@ -56,7 +56,7 @@ const PROMO = 'http://promo.local/';
  * A saved move is a whole turn's path — every square visited, PDN numbering
  * 1-32 — not a chess-style [from, to, promotion] tuple (see
  * src/game/persistence.js). Checkers has no "famous game" to transcribe the
- * way chess.puter.com's tool used Morphy's Opera Game, so these games are
+ * way chess.localhost:8443's tool used Morphy's Opera Game, so these games are
  * self-play: both sides played by the real engine's Medium search
  * (src/engine/ai.js) against a fixed seed, then cut at the ply that stages
  * the feature the shot is about. Every position below is one the engine

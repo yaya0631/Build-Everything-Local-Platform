@@ -48,5 +48,5 @@ export function homeEmpty() {
     el('div.onboard-choices', { style: { width: '100%', maxWidth: '420px', textAlign: 'left' } },
       choice({ icon: 'building', title: 'Create a workspace', sub: 'Start a space for your team', onClick: () => createWorkspaceDialog() }),
       choice({ icon: 'login', title: 'Join with an invite', sub: 'Paste a code or link', onClick: () => joinWorkspaceDialog() })),
-    el('p.auth-note', {}, 'Powered by ', el('a', { href: 'https://developer.puter.com', target: '_blank', rel: 'noopener' }, 'Puter')));
+    el('p.auth-note', {}, 'Powered by ', el('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Puter')));
 }

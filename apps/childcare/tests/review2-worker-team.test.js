@@ -20,7 +20,7 @@ function stubNetwork({ workerBuild, appBuild }) {
 afterEach(() => vi.unstubAllGlobals());
 
 describe('team: worker updates', () => {
-  const own = { url: 'https://childcare-abc.puter.work', path: '/director/childcare-team-worker.js' };
+  const own = { url: 'http://childcare-abc.localhost:8443', path: '/director/childcare-team-worker.js' };
 
   it('updates an older worker to the build shipped with the app', async () => {
     const writes = stubNetwork({ workerBuild: '2', appBuild: '3' });
@@ -46,7 +46,7 @@ describe('team: turning access on', () => {
     await store.init();
     backend.setFailing(true);
     store.put('students', { firstName: 'Ava' });
-    const create = vi.fn(async () => ({ url: 'https://childcare-x.puter.work' }));
+    const create = vi.fn(async () => ({ url: 'http://childcare-x.localhost:8443' }));
     vi.stubGlobal('fetch', async (url) => new Response(String(url).endsWith('/health') ? JSON.stringify({ ok: true, build: '3' }) : bundle('3')));
     vi.stubGlobal('puter', { fs: { write: async () => ({ path: '/d/childcare-team-worker.js' }) }, workers: { create }, kv: { list: async () => [] } });
     await expect(enableTeam({ store })).rejects.toThrow(/not saved yet/);

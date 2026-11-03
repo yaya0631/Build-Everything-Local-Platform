@@ -6,7 +6,7 @@ import { readFile } from 'node:fs/promises';
 const SHALOM = '<01020304>';
 
 async function openDocument(page, content) {
-  await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+  await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   const sheet = doc.addPage([500, 500]);

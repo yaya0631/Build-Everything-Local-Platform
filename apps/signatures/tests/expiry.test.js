@@ -381,7 +381,7 @@ describe('the request email states the deadline', () => {
         },
         recipients: [{
           email: 'ava@example.com', name: 'Ava', version: 'abcdef12',
-          signUrl: `https://w.puter.work/sign/${'a'.repeat(40)}`,
+          signUrl: `http://w.localhost:8443/sign/${'a'.repeat(40)}`,
         }],
         kind: 'request',
       },
@@ -415,7 +415,7 @@ describe('the request email states the deadline', () => {
         },
         recipients: [{
           email: 'ava@example.com', name: 'Ava', version: 'abcdef12',
-          signUrl: `https://w.puter.work/sign/${'a'.repeat(40)}`,
+          signUrl: `http://w.localhost:8443/sign/${'a'.repeat(40)}`,
         }],
         kind: 'request',
       },

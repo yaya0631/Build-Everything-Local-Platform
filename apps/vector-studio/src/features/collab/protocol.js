@@ -85,7 +85,7 @@ export async function verify(key, value, signature) {
   }
 }
 
-/** A collaboration server address: an https *.puter.work origin. */
+/** A collaboration server address: an https *.localhost:8443 origin. */
 export function workerURL(value) {
   const url = new URL(value);
   if (url.protocol !== 'https:' || !/^[a-z0-9-]+\.puter\.work$/.test(url.hostname) || url.port || url.username || url.password || url.pathname !== '/' || url.search || url.hash) {
@@ -95,14 +95,14 @@ export function workerURL(value) {
 }
 
 /** Link to a shared document; `invite` grants access to people who are not members yet. */
-export function shareLink(server, room, invite = null, base = typeof location !== 'undefined' ? location.href : 'https://vector-studio.puter.site/') {
+export function shareLink(server, room, invite = null, base = typeof location !== 'undefined' ? location.href : 'http://vector-studio.localhost:8443/') {
   const url = new URL(base);
   url.hash = new URLSearchParams({ server: new URL(workerURL(server)).hostname, doc: room, ...(invite ? { invite } : {}) }).toString();
   return url.href;
 }
 
 /** { server, room, invite } from a share link (or its hash), or null when it is not one. */
-export function parseShareLink(value, base = typeof location !== 'undefined' ? location.href : 'https://vector-studio.puter.site/') {
+export function parseShareLink(value, base = typeof location !== 'undefined' ? location.href : 'http://vector-studio.localhost:8443/') {
   try {
     const url = new URL(value, base);
     const p = new URLSearchParams(url.hash.slice(1));

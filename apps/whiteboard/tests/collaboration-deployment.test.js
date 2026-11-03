@@ -5,7 +5,7 @@ import { environment, owner, editor } from "./collaboration-helpers.js";
 import { createOrganization } from "../src/organization/client.js";
 
 const key = "whiteboard-collaboration-worker-v1";
-const server = "https://whiteboard-test.puter.work";
+const server = "http://whiteboard-test.localhost:8443";
 const source = "/* whiteboard-worker build=faceb00cfaceb00c at=200 */";
 const previous = {
   name: "whiteboard-test",
@@ -61,7 +61,7 @@ test("existing worker updates retain their URL and share one check across boards
 test("invitation servers and accounts without deployments cannot trigger worker writes", async (t) => {
   const { env, puter, counts } = await fixture(t);
   await refreshDeployment(env.sdk(editor), server);
-  await refreshDeployment(puter, "https://another-owner.puter.work");
+  await refreshDeployment(puter, "http://another-owner.localhost:8443");
   await puter.kv.del(key);
   await refreshDeployment(puter, server);
   assert.deepEqual(counts, { fetch: 0, write: 0, health: 0, create: 0 });

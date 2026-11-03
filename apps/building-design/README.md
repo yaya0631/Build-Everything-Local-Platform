@@ -8,7 +8,7 @@
 
 Building Design models a building as real elements on levels: walls with layered constructions, doors and windows that cut their own openings, floors, ceilings, roofs, columns, beams, stairs, railings, furniture and fixtures, and rooms that measure themselves. Every view is generated from the one model, so a change in a plan shows up in sections, elevations, 3D, schedules and sheets at once.
 
-It runs entirely in the browser, with [Puter](https://puter.com) for sign-in, cloud files and sharing. You can use it without an account: projects are kept in your browser and can be saved to your device.
+It runs entirely in the browser, with [Puter](https://localhost:8443) for sign-in, cloud files and sharing. You can use it without an account: projects are kept in your browser and can be saved to your device.
 
 ## Features
 

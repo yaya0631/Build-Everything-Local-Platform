@@ -262,7 +262,7 @@ describe('share dialog', () => {
   });
 
   it('builds links from the app address without Puter query parameters', () => {
-    expect(appBase('https://x.puter.site/index.html?puter.app_instance_id=1#project=p')).toBe('https://x.puter.site/index.html');
+    expect(appBase('http://x.localhost:8443/index.html?puter.app_instance_id=1#project=p')).toBe('http://x.localhost:8443/index.html');
   });
 });
 

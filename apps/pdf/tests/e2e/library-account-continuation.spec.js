@@ -5,7 +5,7 @@ for (const stage of ['read', 'buffer'])
     test(`Duplicate's pending ${stage} respects ${newer}`, async ({ page }) => {
       const errors = [];
       page.on('pageerror', (error) => errors.push(error.message));
-      await page.route('https://js.puter.com/**', (route) =>
+      await page.route('**/sdk/puter.js', (route) =>
         route.fulfill({
           contentType: 'application/javascript',
           body: `window.account={username:'Alice'};window.writes=[];window.libraryBuffers=0;
@@ -75,7 +75,7 @@ for (const signedOut of [false, true])
   test(`a duplicate read failure ${signedOut ? 'is retired after sign-out' : 'still reports a current error'}`, async ({
     page,
   }) => {
-    await page.route('https://js.puter.com/**', (route) =>
+    await page.route('**/sdk/puter.js', (route) =>
       route.fulfill({
         contentType: 'application/javascript',
         body: `window.puter={env:'web',auth:{isSignedIn:()=>true,getUser:async()=>({username:'Alice'}),signOut:async()=>{}},

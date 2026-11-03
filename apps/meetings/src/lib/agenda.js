@@ -110,7 +110,7 @@ const MEETINGS_LINK = /^https:\/\/meetings\.puter\.com\/#\/m\//;
  *
  * @param {object} raw an event from the Calendar API
  * @param {{ ownOrigin?: string }} [options] a second origin to treat as ours
- *   (a dev server, a mirror); production links always name meetings.puter.com
+ *   (a dev server, a mirror); production links always name meetings.localhost:8443
  */
 export function toMeeting(raw, { ownOrigin = '' } = {}) {
   if (!raw || typeof raw !== 'object') return null;

@@ -227,6 +227,6 @@ describe('sign worker', () => {
     const location = res.headers.get('location');
     expect(location).toContain('https://signatures.example/sign.html#');
     expect(location).toContain(`t=${links.s1}`);
-    expect(location).toContain(encodeURIComponent('https://test-worker.puter.work'));
+    expect(location).toContain(encodeURIComponent('http://test-worker.localhost:8443'));
   });
 });

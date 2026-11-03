@@ -9,7 +9,7 @@
  * directly (a one-shot script has no reason to carry the whole SDK).
  *
  *   PUTER_TOKEN=<token> PUTER_APP_UID=<app uid> npm run publish:mail-handler
- *   optional: PUTER_API_ORIGIN (default https://api.puter.com), --replace
+ *   optional: PUTER_API_ORIGIN (default http://127.0.0.1:8443), --replace
  *
  * REST contract (verified against backend/controllers/events/EventsController.ts
  * + EventsService.ts):
@@ -84,7 +84,7 @@ async function findExistingHash(origin, headers, appUid) {
 async function main() {
   const token = process.env.PUTER_TOKEN;
   const appUid = process.env.PUTER_APP_UID;
-  const origin = process.env.PUTER_API_ORIGIN || 'https://api.puter.com';
+  const origin = process.env.PUTER_API_ORIGIN || 'http://127.0.0.1:8443';
   const replace = process.argv.includes('--replace');
 
   if (!token) throw new PublishError('PUTER_TOKEN is required (a Puter auth token for the account that owns this app).');

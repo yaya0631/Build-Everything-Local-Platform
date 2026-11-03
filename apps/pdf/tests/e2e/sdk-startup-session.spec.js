@@ -5,7 +5,7 @@ async function mockSDK(page, stage) {
   const doc = await PDFDocument.create();
   doc.addPage([410, 500]);
   const encoded = Buffer.from(await doc.save()).toString('base64');
-  await page.route('https://js.puter.com/**', (route) =>
+  await page.route('**/sdk/puter.js', (route) =>
     route.fulfill({
       contentType: 'application/javascript',
       body: `window.account={username:'Alice',uuid:'alice'};window.writes=[];window.sessionReads=0;window.profileReads=0;

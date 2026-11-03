@@ -28,7 +28,7 @@ function accountWithoutWorker() {
     },
     fs: { write: async (path) => ({ path }) },
     workers: {
-      list: async () => account.created.map((name) => ({ name, url: `https://${name}.puter.work`, file_path: '/me/teamchat-worker.js' })),
+      list: async () => account.created.map((name) => ({ name, url: `http://${name}.localhost:8443`, file_path: '/me/teamchat-worker.js' })),
       create: async (name) => {
         await tick();
         account.createCalls++;
@@ -38,7 +38,7 @@ function accountWithoutWorker() {
           throw new TypeError('answer lost');
         }
         account.created.push(name);
-        return { url: `https://${name}.puter.work` };
+        return { url: `http://${name}.localhost:8443` };
       },
       exec: async () => json({ ok: true, build: 'abcabcabcabc' }),
     },
@@ -245,7 +245,7 @@ describe('an address that answers with a web page instead of a worker', () => {
     expect(await failure(api.health('https://cut.example.com'))).toMatchObject({ code: 'network', status: 0 });
     // A worker's real answer is untouched.
     answers(json({ ok: true, build: 'dev' }));
-    expect(await api.health('https://teamchat-x.puter.work')).toEqual({ ok: true, build: 'dev' });
+    expect(await api.health('http://teamchat-x.localhost:8443')).toEqual({ ok: true, build: 'dev' });
   });
 });
 
@@ -523,7 +523,7 @@ describe('a transfer whose completion the original refuses', () => {
     // The owner withdraws the nomination while bob's app is copying: the completion is refused for good.
     onComplete = async () => { expect((await as(alice).post(`/api/ws/${wsId}/transfer`, { cancel: true })).ok).toBe(true); onComplete = null; };
     const state = { copy: null };
-    const e = await transferWorkspace(oldRef, 'https://teamchat-x.puter.work', state, { profile: { name: 'Bob' } }).then(() => null, (err) => err);
+    const e = await transferWorkspace(oldRef, 'http://teamchat-x.localhost:8443', state, { profile: { name: 'Bob' } }).then(() => null, (err) => err);
     expect(e).toBeInstanceOf(ApiError);
     expect(e.status).toBe(403);
     expect(state.copy).toBeNull();
@@ -534,10 +534,10 @@ describe('a transfer whose completion the original refuses', () => {
     let drop = true;
     onComplete = async () => { if (drop) { drop = false; throw new TypeError('connection dropped'); } };
     const again = { copy: null };
-    expect(await transferWorkspace(oldRef, 'https://teamchat-x.puter.work', again, { profile: { name: 'Bob' } }).then(() => null, (err) => err.code)).toBe('network');
+    expect(await transferWorkspace(oldRef, 'http://teamchat-x.localhost:8443', again, { profile: { name: 'Bob' } }).then(() => null, (err) => err.code)).toBe('network');
     expect(again.copy?.ref).toMatch(/@teamchat-x$/);
     expect(await copies()).toBe(2);
-    const moved = await transferWorkspace(oldRef, 'https://teamchat-x.puter.work', again, { profile: { name: 'Bob' } });
+    const moved = await transferWorkspace(oldRef, 'http://teamchat-x.localhost:8443', again, { profile: { name: 'Bob' } });
     expect(moved).toEqual({ ref: again.copy.ref, icon: null, mine: true });
     expect((await rt.kv.get(KEYS.ws(wsId))).movedTo).toBe(again.copy.ref);
   });
@@ -577,19 +577,19 @@ describe('two tabs creating their first workspace at once', () => {
     store.identity = { uuid: 'me', username: 'me' };
     const [a, b] = await Promise.all([store.ensureOwnWorker(), store.ensureOwnWorker()]);
     expect(account.created).toHaveLength(1);
-    expect(a.url).toBe(`https://${account.created[0]}.puter.work`);
+    expect(a.url).toBe(`http://${account.created[0]}.localhost:8443`);
     expect(b.url).toBe(a.url);
     expect(account.saved.worker.url).toBe(a.url);
     expect(store.user.worker.url).toBe(a.url);
     // Another tab recorded a server while this one still knew of none: nothing is deployed, theirs is used and kept.
     const other = accountWithoutWorker();
-    other.saved.worker = { name: 'teamchat-other', url: 'https://teamchat-other.puter.work', path: '/me/teamchat-worker.js', build: 'x' };
+    other.saved.worker = { name: 'teamchat-other', url: 'http://teamchat-other.localhost:8443', path: '/me/teamchat-worker.js', build: 'x' };
     store.user = { v: 1, profile: {}, prefs: {}, workspaces: [], worker: null };
     const c = await store.ensureOwnWorker();
     expect(other.created).toHaveLength(0);
-    expect(c.url).toBe('https://teamchat-other.puter.work');
-    expect(store.user.worker.url).toBe('https://teamchat-other.puter.work');
-    expect(other.saved.worker.url).toBe('https://teamchat-other.puter.work');
+    expect(c.url).toBe('http://teamchat-other.localhost:8443');
+    expect(store.user.worker.url).toBe('http://teamchat-other.localhost:8443');
+    expect(other.saved.worker.url).toBe('http://teamchat-other.localhost:8443');
   });
 });
 
@@ -605,7 +605,7 @@ describe('a worker whose creation call failed after the worker was made', () => 
     const w = await deployOwnWorker();
     expect(made.createCalls).toBe(1);
     expect(made.created).toEqual([w.name]);
-    expect(w.url).toBe(`https://${w.name}.puter.work`);
+    expect(w.url).toBe(`http://${w.name}.localhost:8443`);
     expect(w.path).toBe('/me/teamchat-worker.js');
     expect(w.build).toBe('abcabcabcabc');
     // The call failed and nothing was made: another name is tried, and that one is the server.

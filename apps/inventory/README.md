@@ -1,8 +1,8 @@
 # Inventory
 
-Inventory management on [Puter](https://puter.com): products, per-location stock, barcodes, photos, purchase cost, low-stock alerts, supplier orders, history, reports, and CSV import/export.
+Inventory management on [Puter](https://localhost:8443): products, per-location stock, barcodes, photos, purchase cost, low-stock alerts, supplier orders, history, reports, and CSV import/export.
 
-Built with vanilla JavaScript (no frameworks), [Puter.js](https://docs.puter.com) for auth and storage, [Lucide](https://lucide.dev) icons, and [Vite](https://vite.dev).
+Built with vanilla JavaScript (no frameworks), [Puter.js](http://localhost:8443) for auth and storage, [Lucide](https://lucide.dev) icons, and [Vite](https://vite.dev).
 
 ## Features
 
@@ -71,8 +71,8 @@ in-flight commits together overdraw stock, or edit a concurrently deleted record
 loading stops with an explicit conflict and a download of the preserved operation
 data for review. That recovery file is diagnostic data, not an ordinary backup.
 
-The implementation uses the documented [KV list](https://docs.puter.com/KV/list/)
-and [KV set](https://docs.puter.com/KV/set/) APIs. It lists journal keys and fetches
+The implementation uses the documented [KV list](http://localhost:8443/KV/list/)
+and [KV set](http://localhost:8443/KV/set/) APIs. It lists journal keys and fetches
 only uncached immutable entries; materialized collections update incrementally.
 The journal currently retains prior operations, including after a logical erase,
 and its key listing grows with usage. Do not delete journal entries or deploy an

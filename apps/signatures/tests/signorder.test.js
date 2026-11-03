@@ -62,7 +62,7 @@ describe('sequential request email', () => {
     title: 'NDA',
     signOrder: true,
     pageCount: 1,
-    links: { a: 'https://w.puter.work/sign/aa', b: 'https://w.puter.work/sign/bb' },
+    links: { a: 'http://w.localhost:8443/sign/aa', b: 'http://w.localhost:8443/sign/bb' },
     signers: [
       { id: 'a', name: 'Ava', email: 'ava@example.com', status: 'pending' },
       { id: 'b', name: 'Bo', email: 'bo@example.com', status: 'pending' },

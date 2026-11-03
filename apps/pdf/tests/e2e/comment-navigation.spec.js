@@ -5,7 +5,7 @@ import { addNote, listNotes } from '../../src/core/notes.js';
 import { addHighlight, listHighlights } from '../../src/core/highlight.js';
 
 async function prepare(page, kind, draft = false) {
-  await page.route('https://js.puter.com/**', (route) => route.abort());
+  await page.route('**/sdk/puter.js', (route) => route.abort());
   const doc = await PDFDocument.create();
   for (let i = 0; i < 3; i++) doc.addPage([400, 500]);
   if (draft) addNote(doc, 0, { x: 40, y: 320, text: 'Draft' });

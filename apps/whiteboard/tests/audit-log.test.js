@@ -191,7 +191,7 @@ test("SCIM user and group reads record their authenticated API access once per r
     restRoute(
       org,
       service,
-      new Request(`https://audit.puter.work/scim/v2/${path}`, {
+      new Request(`http://audit.localhost:8443/scim/v2/${path}`, {
         headers: { Authorization: `Bearer ${token}` },
       }),
       "GET",

@@ -108,7 +108,7 @@ export function toICS(events, { now = Date.now(), method = '', tzid = '', sequen
 }
 
 function writeEvent(lines, ev, stamp, tzid, sequence, status, alarms, recurrenceId, recurrenceRange, uidOverride) {
-  const uid = uidOverride || `${ev.id}@calendar.puter.com`;
+  const uid = uidOverride || `${ev.id}@calendar.localhost`;
   if (recurrenceId != null) {
     const occ = Number.isFinite(recurrenceId) && materializeOccurrence(ev, recurrenceId);
     if (!occ) throw new Error('Cannot export this occurrence.');

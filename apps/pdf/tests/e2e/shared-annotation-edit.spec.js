@@ -55,7 +55,7 @@ for (const [kind, action] of Object.entries(actions))
     test(`editing shared ${kind} on page ${index + 1} stays local through export and history`, async ({
       page,
     }) => {
-      await page.route('https://js.puter.com/**', (route) => route.abort());
+      await page.route('**/sdk/puter.js', (route) => route.abort());
       const doc = await PDFDocument.create();
       doc.addPage([300, 300]);
       doc.addPage([300, 300]);
@@ -111,7 +111,7 @@ for (const target of ['unrelated highlight', 'reply highlight', 'reply note'])
   test(`switching from an unfinished shared note edit to a ${target} keeps the clicked annotation selected`, async ({
     page,
   }) => {
-    await page.route('https://js.puter.com/**', (route) => route.abort());
+    await page.route('**/sdk/puter.js', (route) => route.abort());
     const doc = await PDFDocument.create();
     doc.addPage([300, 300]);
     doc.addPage([300, 300]);

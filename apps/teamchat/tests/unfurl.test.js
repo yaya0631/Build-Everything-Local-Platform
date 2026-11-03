@@ -142,14 +142,14 @@ describe('url guards', () => {
   });
 
   it('passes over links into the app itself, whatever host serves it', () => {
-    const permalink = 'https://teamchat.puter.com/#/ws/nx9h0kshcl%40teamchat-cle4gwm/c/ch_a1/t/5';
+    const permalink = 'http://teamchat.localhost:8443/#/ws/nx9h0kshcl%40teamchat-cle4gwm/c/ch_a1/t/5';
     for (const app of [permalink, 'http://localhost:5173/#/ws/abc@teamchat-x/c/ch_1/m/3',
-      'https://teamchat.puter.com/#/join/teamchat-x/AAAA-BBBB-CCCC', 'https://teamchat.puter.com/#/connect/teamchat-x/AAAA-BBBB-CCCC']) {
+      'http://teamchat.localhost:8443/#/join/teamchat-x/AAAA-BBBB-CCCC', 'http://teamchat.localhost:8443/#/connect/teamchat-x/AAAA-BBBB-CCCC']) {
       expect(isAppLink(app), app).toBe(true);
       expect(firstUnfurlableLink(`from a thread: ${app}`), app).toBeNull();
     }
     // The app's front page, a fragment that is no route of the app's, or no fragment at all: a real preview.
-    for (const page of ['https://teamchat.puter.com/', 'https://teamchat.puter.com/#/', 'https://example.com/#/wsx', 'https://example.com/app#/workspace/1', 'https://docs.example.com/notes']) {
+    for (const page of ['http://teamchat.localhost:8443/', 'http://teamchat.localhost:8443/#/', 'https://example.com/#/wsx', 'https://example.com/app#/workspace/1', 'https://docs.example.com/notes']) {
       expect(isAppLink(page), page).toBe(false);
       expect(firstUnfurlableLink(`see ${page} ok`), page).toBe(page);
     }
@@ -260,7 +260,7 @@ describe('unfurl route', () => {
   it('never unfurls a link into the app itself, and previews the first external link beside one', async () => {
     const { wsId, general } = await workspaceWith(alice);
     // The issue's case: "Also send to #channel" appends a thread permalink; nothing is fetched for it.
-    const permalink = `https://teamchat.puter.com/#/ws/${wsId}%40teamchat-x7k2q9pw1a/c/${general.id}/t/5`;
+    const permalink = `http://teamchat.localhost:8443/#/ws/${wsId}%40teamchat-x7k2q9pw1a/c/${general.id}/t/5`;
     const m = (await post(alice, wsId, general.id, `replying here too\n\n> Also sent from a thread: ${permalink}`)).data.message;
     expect((await unfurl(alice, wsId, general.id, m.seq)).data).toEqual({ unfurl: null });
     expect(calls).toHaveLength(0);

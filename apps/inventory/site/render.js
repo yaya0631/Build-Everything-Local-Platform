@@ -56,7 +56,7 @@ function articleBody(article) {
     ${breadcrumbs(article.collection, article).html}
     <details class="site-mobile-navigation"><summary>Browse the library</summary><nav aria-label="Library navigation">${nav}</nav></details>
     <div class="site-article-grid"><aside class="site-sidebar"><nav aria-label="Library navigation">${nav}</nav><div class="site-sidebar-cta"><p>Try it with sample data.</p><a href="${APP_URL}">Open Inventory <span aria-hidden="true">↗</span></a></div></aside>
-    <article class="site-article"><header class="site-article-header"><p class="lp-eyebrow">${escapeHTML(article.category)}</p><h1>${escapeHTML(article.title)}</h1><p class="site-lead">${escapeHTML(article.description)}</p><div class="site-article-meta"><a href="https://puter.com">Puter</a><span aria-hidden="true">·</span><span>${article.collection === 'docs' ? 'Product documentation' : 'Concept guide'}</span><span aria-hidden="true">·</span><span>${readingTime(article)} min read</span></div></header>
+    <article class="site-article"><header class="site-article-header"><p class="lp-eyebrow">${escapeHTML(article.category)}</p><h1>${escapeHTML(article.title)}</h1><p class="site-lead">${escapeHTML(article.description)}</p><div class="site-article-meta"><a href="http://localhost:8443">Puter</a><span aria-hidden="true">·</span><span>${article.collection === 'docs' ? 'Product documentation' : 'Concept guide'}</span><span aria-hidden="true">·</span><span>${readingTime(article)} min read</span></div></header>
     <details class="site-mobile-toc"><summary>On this page</summary><nav aria-label="On this page">${toc}</nav></details>
     <div class="site-prose">${article.sections.map((s) => `<section aria-labelledby="${s.id}"><h2 id="${s.id}">${escapeHTML(s.title)}</h2>${s.html}</section>`).join('')}</div>
     <section class="site-related" aria-labelledby="related-title"><p class="lp-eyebrow">Keep exploring</p><h2 id="related-title">Continue reading</h2>${related.map((a) => `<a href="${articlePath(a)}"><span><small>${labelFor(a.collection)}</small>${escapeHTML(a.title)}</span><span aria-hidden="true">→</span></a>`).join('')}</section>
@@ -76,7 +76,7 @@ export function renderPage(path, { css = '/site/assets/styles.css', js = '/site/
     { '@type': article ? 'WebPage' : 'CollectionPage', '@id': url, url, name: title, description, isPartOf: { '@id': `${SITE_URL}/#website` }, inLanguage: 'en' },
     breadcrumbs(collection, article).schema,
   ];
-  if (article) graph.push({ '@type': collection === 'docs' ? 'TechArticle' : 'Article', '@id': `${url}#article`, headline: article.title, description, mainEntityOfPage: { '@id': url }, inLanguage: 'en', author: { '@type': 'Organization', name: 'Puter', url: 'https://puter.com' }, publisher: { '@type': 'Organization', name: 'Puter Technologies Inc.', url: 'https://puter.com', logo: { '@type': 'ImageObject', url: `${SITE_URL}/icon-512.png` } }, articleSection: labelFor(collection) });
+  if (article) graph.push({ '@type': collection === 'docs' ? 'TechArticle' : 'Article', '@id': `${url}#article`, headline: article.title, description, mainEntityOfPage: { '@id': url }, inLanguage: 'en', author: { '@type': 'Organization', name: 'Puter', url: 'http://localhost:8443' }, publisher: { '@type': 'Organization', name: 'Puter Technologies Inc.', url: 'http://localhost:8443', logo: { '@type': 'ImageObject', url: `${SITE_URL}/icon-512.png` } }, articleSection: labelFor(collection) });
   return `<!doctype html>
 <html lang="en"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <title>${escapeHTML(title)}</title><meta name="description" content="${escapeHTML(description)}" /><meta name="robots" content="${notFound ? 'noindex, follow' : 'index, follow, max-image-preview:large'}" />
@@ -85,12 +85,6 @@ ${notFound || !SITE_URL ? '' : `<link rel="canonical" href="${escapeHTML(url)}" 
 <meta name="twitter:card" content="summary" /><meta name="twitter:title" content="${escapeHTML(title)}" /><meta name="twitter:description" content="${escapeHTML(description)}" />
 <meta name="theme-color" content="#fdfdfd" /><link rel="icon" href="/favicon.ico" /><link rel="apple-touch-icon" href="/apple-touch-icon.png" /><link rel="stylesheet" href="${css}" />
 ${graph.length && SITE_URL ? `<script type="application/ld+json">${json({ '@context': 'https://schema.org', '@graph': graph })}</script>` : ''}
-<!-- Privacy-friendly analytics by Plausible -->
-<script async src="https://plausible.io/js/pa-2yMvoQPYNHnCQ4VVrJlNU.js"></script>
-<script>
-  window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
-  plausible.init()
-</script>
 <script>document.documentElement.classList.add('js');</script><script type="module" src="${js}"></script></head>
 <body class="site-body"><div class="landing site-public" id="landing-top"><a class="lp-skip" href="#site-main">Skip to content</a>${header}${notFound ? `<main id="site-main" class="site-not-found lp-wrap"><p class="lp-eyebrow">404 · Page not found</p><h1>Let’s find the right page.</h1><p>This address does not match a page in the library.</p><div class="lp-actions"><a class="lp-button" href="/docs/">Browse documentation</a><a class="lp-text-link" href="/guides/">Read the guides →</a></div></main>` : article ? articleBody(article) : hub(collection)}${footer}</div></body></html>`;
 }

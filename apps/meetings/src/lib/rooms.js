@@ -11,7 +11,7 @@ import { steadyInterval, steadyTimeout } from './timers.js';
  * to the ROOM DIRECTORY, and guests ask the directory where the meeting is.
  *
  * The directory is one Puter Worker with one key-value store behind it
- * (worker/rooms.js — `https://puter-meetings-rooms.puter.work`), so a room
+ * (worker/rooms.js — `http://puter-meetings-rooms.localhost:8443`), so a room
  * has exactly one record, written and read in one place, judged fresh by
  * one clock (the worker's). There is nothing to propagate, nothing to
  * cache, no copy that can lag another, and no account that has to own
@@ -105,7 +105,7 @@ export function isOpenRoomCode(input) {
 
 /** Where the room directory lives (worker/rooms.js). */
 export const ROOMS_ORIGIN =
-  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_ROOMS_ORIGIN) || 'https://puter-meetings-rooms.puter.work';
+  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_ROOMS_ORIGIN) || 'http://puter-meetings-rooms.localhost:8443';
 
 /** How often a host renews its lease. */
 export const HEARTBEAT_MS = 20_000;

@@ -5,7 +5,7 @@ for (const outcome of ['success', 'failure'])
     test(`repeated sign-out shares one pending ${outcome}${reopened ? ' across reopened Settings' : ''} and permits a later attempt`, async ({
       page,
     }) => {
-      await page.route('https://js.puter.com/**', (route) =>
+      await page.route('**/sdk/puter.js', (route) =>
         route.fulfill({
           contentType: 'application/javascript',
           body: `window.account={username:'Alice'};window.signOutCalls=0;

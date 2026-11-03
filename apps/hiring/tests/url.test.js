@@ -15,7 +15,7 @@ describe('safeHttpUrl', () => {
 
   it('recognizes host:port input as a host, not a scheme', () => {
     expect(safeHttpUrl('example.com:8080/path')).toBe('https://example.com:8080/path');
-    expect(safeHttpUrl('localhost:3000')).toBe('https://localhost:3000/');
+    expect(safeHttpUrl('localhost:3000')).toBe('http://localhost:3000/');
     expect(safeHttpUrl('1.2.3.4:8080')).toBe('https://1.2.3.4:8080/');
     // Real schemes are still detected and filtered.
     expect(safeHttpUrl('tel:123')).toBeNull();

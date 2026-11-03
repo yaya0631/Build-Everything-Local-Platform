@@ -17,7 +17,7 @@ describe('buildPdn', () => {
 
   it('carries the roster and the game type', () => {
     const pdn = buildPdn(base);
-    expect(pdn).toContain('[Site "checkers.puter.com"]');
+    expect(pdn).toContain('[Site "checkers.localhost:8443"]');
     expect(pdn).toContain('[Date "2026.08.13"]');
     expect(pdn).toContain('[Black "You"]');
     expect(pdn).toContain('[White "Computer (Medium)"]');

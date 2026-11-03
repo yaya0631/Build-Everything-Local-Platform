@@ -6,7 +6,7 @@ import {
   strokeJoinEdgeFixture,
 } from "../tests/stroke-join-fixture.js";
 async function start(page) {
-  await page.route("https://js.puter.com/v2/", (r) =>
+  await page.route("**/sdk/puter.js", (r) =>
     r.fulfill({
       contentType: "application/javascript",
       body: 'window.puter={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',

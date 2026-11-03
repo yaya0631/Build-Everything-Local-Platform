@@ -3,7 +3,7 @@
 An open-source alternative to Airtable. Records is a relational database
 that feels like a spreadsheet: tables of typed fields, records linked across
 tables, and views that show the same data as a grid, board, calendar,
-gallery, timeline, list or form. It runs on [Puter](https://puter.com) and
+gallery, timeline, list or form. It runs on [Puter](https://localhost:8443) and
 keeps everything in your own Puter cloud. No framework and no server of its
 own: vanilla JavaScript, Vite and Puter.js.
 

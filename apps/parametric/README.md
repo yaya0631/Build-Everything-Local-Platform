@@ -8,7 +8,7 @@
 
 Parametric models solid parts the way mechanical engineers expect: you draw constrained 2D sketches on planes or faces, turn them into 3D features (extrude, revolve, fillet, shell, pattern...), and every feature stays editable in a history tree. Change a dimension and the part rebuilds.
 
-It runs entirely in the browser. The geometry kernel is OpenCascade compiled to WebAssembly, running in a Web Worker so the interface never freezes. Storage, sign-in and settings use [Puter](https://puter.com); you can also work without an account, in which case parts are kept in your browser.
+It runs entirely in the browser. The geometry kernel is OpenCascade compiled to WebAssembly, running in a Web Worker so the interface never freezes. Storage, sign-in and settings use [Puter](https://localhost:8443); you can also work without an account, in which case parts are kept in your browser.
 
 ## Features
 

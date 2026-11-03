@@ -9,7 +9,7 @@ import { DEFAULT_SETTINGS } from '../src/js/store.js';
  */
 
 const HOST = 'host@example.com';
-const LINK = 'https://cal-rsvp-abc.puter.work/rsvp/' + 'a'.repeat(40);
+const LINK = 'http://cal-rsvp-abc.localhost:8443/rsvp/' + 'a'.repeat(40);
 
 const HOUR = 3_600_000;
 

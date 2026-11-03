@@ -9,7 +9,7 @@ for (const [kind, { label }] of Object.entries(MARKUP_KINDS))
       test(`${label} ${action} ${moved ? 'preserves newer focus' : 'restores editor focus'}`, async ({
         page,
       }) => {
-        await page.route('https://js.puter.com/**', (route) =>
+        await page.route('**/sdk/puter.js', (route) =>
           route.fulfill({
             body: `window.puter = {env:'web',auth:{isSignedIn:()=>true,getUser:async()=>({username:'test-user'})},fs:{readdir:async()=>[]},ui:{onLaunchedWithItems(){},onItemsOpened(){}}};`,
           }),

@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test('measuring a dense text selection batches browser layout work', async ({ page }) => {
-  await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+  await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
   await page.goto('/#library');
   await page.evaluate(async () => {
     const { selectedTextQuads } = await import('/src/text-selection.js');
@@ -60,7 +60,7 @@ test('measuring a dense text selection batches browser layout work', async ({ pa
 test('aligning dense selectable text batches styles without changing glyph widths', async ({
   page,
 }) => {
-  await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+  await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
   await page.goto('/#library');
   await page.evaluate(async () => {
     const { alignTextLayer } = await import('/src/text-selection.js');

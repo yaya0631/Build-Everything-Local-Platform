@@ -12,7 +12,7 @@ for (const [locale, size] of [
   test.describe(locale, () => {
     test.use({ locale });
     test(`a new blank PDF is ${size.width} by ${size.height} points`, async ({ page }) => {
-      await page.route('https://js.puter.com/**', (route) =>
+      await page.route('**/sdk/puter.js', (route) =>
         route.fulfill({ contentType: 'application/javascript', body: PUTER_MOCK }),
       );
       await page.goto('/');

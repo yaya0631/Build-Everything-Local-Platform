@@ -10,7 +10,7 @@
  *
  * Legacy values use the fixed "initial" revision until their first write.
  * Successor links stay permanently; superseded payloads can be removed.
- * Sources: https://docs.puter.com/KV/add/ and Puter's SystemKVStore.add,
+ * Sources: http://localhost:8443/KV/add/ and Puter's SystemKVStore.add,
  * which uses a single DynamoDB list_append update and returns the new list.
  *
  * A read costs one round trip per hop: the shortcut, then each revision's

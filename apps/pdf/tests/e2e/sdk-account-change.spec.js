@@ -11,7 +11,7 @@ async function mockSDK(page, { protectedPdf = false, initialListError = false } 
         ).readFile(new URL('../fixtures/security/owner-only.pdf', import.meta.url))
       ).toString('base64')
     : Buffer.from(await doc.save()).toString('base64');
-  await page.route('https://js.puter.com/**', (route) =>
+  await page.route('**/sdk/puter.js', (route) =>
     route.fulfill({
       contentType: 'application/javascript',
       body: `window.account={username:'Alice',uuid:'alice'};window.writes=[];window.listReads=0;window.profileReads=0;window.signInCalls=0;window.savePickers=0;

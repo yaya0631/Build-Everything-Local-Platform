@@ -50,7 +50,7 @@ describe('telling the people mentioned', () => {
       available: () => available,
       sendMentions: vi.fn(async ({ recipients }) => ({ sent: recipients.length, failed: 0, results: recipients.map((r) => ({ email: r.email, status: 'sent' })) })),
     };
-    const notifier = createMentionNotifier({ doc, wb, mailer, me: () => ME, ask, location: { origin: 'https://spreadsheet.puter.com', pathname: '/' } });
+    const notifier = createMentionNotifier({ doc, wb, mailer, me: () => ME, ask, location: { origin: 'http://spreadsheet.localhost:8443', pathname: '/' } });
     return { wb, doc, mailer, notifier, ask, toast };
   }
 
@@ -63,7 +63,7 @@ describe('telling the people mentioned', () => {
     expect(out.sent).toBe(2);
     const [req] = mailer.sendMentions.mock.calls[0];
     expect(req.recipients).toEqual([{ email: 'ana@puter.email', name: 'ana' }, { email: 'kim@example.org', name: 'kim@example.org' }]);
-    expect(req.link).toBe('https://spreadsheet.puter.com/#/file/uid-7?range=Sheet1!B4');
+    expect(req.link).toBe('http://spreadsheet.localhost:8443/#/file/uid-7?range=Sheet1!B4');
     expect(req.comment).toMatchObject({ text: '@ana and @kim@example.org please check', cell: 'Sheet1!B4' });
     expect(req.comment.id).toMatch(/^\{[0-9A-F-]+\}$/);
     expect(req.assigned).toBe(false);

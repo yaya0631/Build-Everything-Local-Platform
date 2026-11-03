@@ -174,7 +174,7 @@ export function parseConnectInput(input) {
   if (/#\/join\//.test(s)) return null;
   const at = s.lastIndexOf('@');
   if (at > 0) {
-    const key = serverKeyOf(s.slice(at + 1).trim()); // a URL, a puter.work host, or the bare name: one key
+    const key = serverKeyOf(s.slice(at + 1).trim()); // a URL, a localhost:8443 host, or the bare name: one key
     const code = normalizeInviteCode(s.slice(0, at));
     return code && isServerKey(key) ? { code, server: key } : null;
   }

@@ -30,7 +30,7 @@ beforeEach(() => {
   failSetRole = false;
   document.body.innerHTML = '';
   app.demo = false;
-  app.team = { url: 'https://childcare-abc.puter.work', role: 'owner', school: 'Acorn' };
+  app.team = { url: 'http://childcare-abc.localhost:8443', role: 'owner', school: 'Acorn' };
   const staff = { t1: { id: 't1', firstName: 'Tess', lastName: 'Ng' } };
   app.store = { get: (c, id) => (c === 'staff' ? staff[id] : null) || null, all: () => [], sync: () => {}, state: { settings: { school: {} } } };
 });

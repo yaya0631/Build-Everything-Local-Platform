@@ -33,7 +33,7 @@ function fakeCtx({ published = true, cached = records, synced = records } = {}) 
   let meta = { publishedAt: published ? 1 : 0, publishedVersion: 1, responses: 0 };
   const app = {
     client: {
-      peek: vi.fn(async () => (published ? { url: 'https://sv-x.puter.work' } : null)),
+      peek: vi.fn(async () => (published ? { url: 'http://sv-x.localhost:8443' } : null)),
       stats: vi.fn(async () => ({ surveys: { [survey.id]: synced.length } })),
     },
     repo: {

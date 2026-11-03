@@ -520,8 +520,8 @@ describe('more lookup, text, and information', () => {
   });
 
   it('HYPERLINK / SHEET / SHEETS / ISFORMULA / FORMULATEXT / ERROR.TYPE', () => {
-    expect(calc('HYPERLINK("https://puter.com","Puter")')).toBe('Puter');
-    expect(calc('HYPERLINK("https://puter.com")')).toBe('https://puter.com');
+    expect(calc('HYPERLINK("http://localhost:8443","Puter")')).toBe('Puter');
+    expect(calc('HYPERLINK("http://localhost:8443")')).toBe('http://localhost:8443');
     expect(calc('SHEET()')).toBe(1);
     expect(calc('SHEET("Sheet1")')).toBe(1);
     expect(calc('SHEET("Other")')).toEqual(E('#N/A'));
@@ -1033,10 +1033,10 @@ describe('information, text, and date extras', () => {
     expect(calc('ISREF(A1:B2)')).toBe(true);
     expect(calc('ISREF("A1")')).toBe(false);
     expect(calc('ISREF(1+1)')).toBe(false);
-    expect(calc('ISEMAIL("nj@puter.com")')).toBe(true);
+    expect(calc('ISEMAIL("nj@localhost:8443")')).toBe(true);
     expect(calc('ISEMAIL("not an email")')).toBe(false);
-    expect(calc('ISURL("https://puter.com/x")')).toBe(true);
-    expect(calc('ISURL("puter.com")')).toBe(true);
+    expect(calc('ISURL("http://localhost:8443/x")')).toBe(true);
+    expect(calc('ISURL("localhost:8443")')).toBe(true);
     expect(calc('ISURL("hello world")')).toBe(false);
     expect(calc('ISBETWEEN(5,1,10)')).toBe(true);
     expect(calc('ISBETWEEN(10,1,10,TRUE,FALSE)')).toBe(false);

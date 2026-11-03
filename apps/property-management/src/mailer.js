@@ -7,7 +7,7 @@
  */
 
 /** The one shared, app-owned worker (deploy with npm run deploy:email-worker). */
-export const EMAIL_WORKER_URL = 'https://property-management-email.puter.work';
+export const EMAIL_WORKER_URL = 'http://property-management-email.localhost:8443';
 
 /**
  * Recipients per request. The worker refuses more than this in one call, so

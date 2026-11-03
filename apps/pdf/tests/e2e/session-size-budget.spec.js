@@ -5,7 +5,7 @@ test('an oversized page duplication preserves the PDF without serializing the re
 }) => {
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
-  await page.route('https://js.puter.com/**', (route) => route.abort());
+  await page.route('**/sdk/puter.js', (route) => route.abort());
   await page.goto('/');
   await expect(page.locator('.editor')).toHaveAttribute('aria-busy', 'false');
   await page.evaluate(async () => {

@@ -10,7 +10,7 @@ for (const width of [320, 360, 390, 430, 768, 1280])
         page,
       }, testInfo) => {
         await page.setViewportSize({ width, height: 844 });
-        await page.route('https://js.puter.com/**', (route) =>
+        await page.route('**/sdk/puter.js', (route) =>
           route.fulfill({
             contentType: 'application/javascript',
             body: account === 'signed in' ? signedIn : '',

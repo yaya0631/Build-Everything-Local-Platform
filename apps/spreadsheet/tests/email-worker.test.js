@@ -3,7 +3,7 @@ import { loadEmailWorker } from './helpers/email-worker-harness.js';
 
 const XLSX_B64 = btoa('PK\x03\x04 a zip of a workbook');
 const PDF_B64 = btoa('%PDF-1.4\n%%EOF');
-const LINK = 'https://spreadsheet.puter.com/#/file/uid-123?range=Sheet1!B4';
+const LINK = 'http://spreadsheet.localhost:8443/#/file/uid-123?range=Sheet1!B4';
 
 const copy = (over = {}) => ({
   workbook: { name: 'Budget' },
@@ -142,14 +142,14 @@ describe('email worker: /links', () => {
 
   it('refuses links that are not the app’s own', async () => {
     const w = loadEmailWorker();
-    for (const link of ['http://spreadsheet.puter.com/#/file/x', 'https://evil.example/#/file/x', 'https://puter.com.evil.example/', 'javascript:alert(1)',
-      'https://spreadsheet.puter.com/#/settings', 'https://user:pw@spreadsheet.puter.com/']) {
+    for (const link of ['http://spreadsheet.localhost:8443/#/file/x', 'https://evil.example/#/file/x', 'http://localhost:8443.evil.example/', 'javascript:alert(1)',
+      'http://spreadsheet.localhost:8443/#/settings', 'https://user:pw@spreadsheet.localhost/']) {
       expect((await w.call('POST', '/links', { json: body({ link }) })).data.error).toBe('invalid_link');
     }
-    expect((await w.call('POST', '/links', { json: body({ link: 'https://puter.com/app/spreadsheet?file=abc' }) })).data.sent).toBe(1);
-    expect((await w.call('POST', '/links', { json: body({ link: "https://spreadsheet.puter.com/#/file/u1?range='Q3%20plan'!B4" }) })).data.sent).toBe(1);
+    expect((await w.call('POST', '/links', { json: body({ link: 'http://localhost:8443/app/spreadsheet?file=abc' }) })).data.sent).toBe(1);
+    expect((await w.call('POST', '/links', { json: body({ link: "http://spreadsheet.localhost:8443/#/file/u1?range='Q3%20plan'!B4" }) })).data.sent).toBe(1);
     // Markup in a link arrives percent-encoded, never as markup.
-    await w.call('POST', '/links', { json: body({ link: 'https://spreadsheet.puter.com/#/file/x"><script>' }) });
+    await w.call('POST', '/links', { json: body({ link: 'http://spreadsheet.localhost:8443/#/file/x"><script>' }) });
     expect(w.sent.at(-1).html).not.toContain('<script>');
   });
 });

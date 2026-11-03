@@ -270,7 +270,7 @@ export function settingsView({ navigate } = {}) {
         el('div.grow', {},
           el('div.title', {}, 'Signatures on GitHub'),
           el('div.sub', {}, 'Send documents for signature, powered by Puter'))),
-      el('a.settings-row', { href: 'https://puter.com', target: '_blank', rel: 'noopener' },
+      el('a.settings-row', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' },
         el('span', { html: icon('cloud', 19), style: { color: 'var(--ink-3)' } }),
         el('div.grow', {},
           el('div.title', {}, 'Puter'),

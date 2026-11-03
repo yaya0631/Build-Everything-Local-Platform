@@ -19,7 +19,7 @@ function fakePuter({ taken = [] } = {}) {
   const workers = {
     create: vi.fn(async (name, path) => {
       if (taken.includes(name)) throw new Error('name taken');
-      const url = `https://${name}.puter.work`;
+      const url = `http://${name}.localhost:8443`;
       deployed.set(url, { name, path, instance: instantiateWorker(files.get(path), { kv: workerKv }) });
       return { url };
     }),
@@ -83,7 +83,7 @@ describe('collector client', () => {
     expect(a).toBe(b);
     expect(p.workers.create).toHaveBeenCalledTimes(1);
     const cfg = await kv.get(WORKER_CFG_KEY);
-    expect(cfg).toMatchObject({ name: 'sv-ada', label: 'ada', url: 'https://sv-ada.puter.work', version: WORKER_VERSION });
+    expect(cfg).toMatchObject({ name: 'sv-ada', label: 'ada', url: 'http://sv-ada.localhost:8443', version: WORKER_VERSION });
     expect(cfg.secret).toMatch(/^[0-9a-f]{64}$/);
     // Only the hash is in the deployed source.
     expect(cfg.path).toMatch(/^collector-worker-[0-9a-f]{12}\.js$/);
@@ -153,7 +153,7 @@ describe('collector client', () => {
     };
     await client.publish(survey);
     await client.saveCollector({ id: 'col0000001', sid: survey.id, status: 'open' });
-    const res = await p.fetchFn('https://sv-ada.puter.work/api/c/col0000001/responses', {
+    const res = await p.fetchFn('http://sv-ada.localhost:8443/api/c/col0000001/responses', {
       method: 'POST',
       headers: { 'content-type': 'text/plain' },
       body: JSON.stringify({ answers: { q1: 9 } }),

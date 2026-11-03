@@ -1,29 +1,30 @@
 import { defineConfig } from 'vite';
 import { cpSync, mkdirSync } from 'node:fs';
-import { dirname } from 'node:path';
+import { createRequire } from 'node:module';
+import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import puterLocalhost from '../../dev/puter-localhost.mjs';
+const require = createRequire(import.meta.url);
+const pdfjsDir = dirname(require.resolve('pdfjs-dist/package.json'));
 let workerDevelopmentUrl;
 // On-device OCR (src/ocr-engine.js) loads tesseract.js's worker, its WebAssembly core and the
 // English model from ocr/ beside the app, never from a CDN. Only the LSTM cores are needed (the
 // engine runs LSTM-only); the worker picks one by the browser's SIMD support. The model is
 // tessdata_best_int (integer-quantized "best"), a good balance of size and accuracy.
 const ocrAssets = {
-  'worker.min.js': 'node_modules/tesseract.js/dist/worker.min.js',
+  'worker.min.js': require.resolve('tesseract.js/dist/worker.min.js'),
   'core/tesseract-core-relaxedsimd-lstm.wasm.js':
-    'node_modules/tesseract.js-core/tesseract-core-relaxedsimd-lstm.wasm.js',
+    require.resolve('tesseract.js-core/tesseract-core-relaxedsimd-lstm.wasm.js'),
   'core/tesseract-core-simd-lstm.wasm.js':
-    'node_modules/tesseract.js-core/tesseract-core-simd-lstm.wasm.js',
-  'core/tesseract-core-lstm.wasm.js': 'node_modules/tesseract.js-core/tesseract-core-lstm.wasm.js',
+    require.resolve('tesseract.js-core/tesseract-core-simd-lstm.wasm.js'),
+  'core/tesseract-core-lstm.wasm.js': require.resolve('tesseract.js-core/tesseract-core-lstm.wasm.js'),
   'lang/eng.traineddata.gz':
-    'node_modules/@tesseract.js-data/eng/4.0.0_best_int/eng.traineddata.gz',
-  'LICENSE-tesseract.js.md': 'node_modules/tesseract.js/LICENSE.md',
-  'LICENSE-tesseract.js-core.txt': 'node_modules/tesseract.js-core/LICENSE',
+    require.resolve('@tesseract.js-data/eng/4.0.0_best_int/eng.traineddata.gz'),
+  'LICENSE-tesseract.js.md': require.resolve('tesseract.js/LICENSE.md'),
+  'LICENSE-tesseract.js-core.txt': require.resolve('tesseract.js-core/LICENSE'),
 };
 export default defineConfig({
   base: './',
   plugins: [
-    puterLocalhost('pdf'),
     {
       // Keep the worker's module export: PDF.js imports WorkerMessageHandler on the main
       // thread when native workers are unavailable. Vite's ?worker bundles drop exports.
@@ -51,7 +52,7 @@ export default defineConfig({
       closeBundle() {
         for (const dir of ['cmaps', 'standard_fonts', 'wasm', 'iccs']) {
           mkdirSync(`dist/pdfjs/${dir}`, { recursive: true });
-          cpSync(`node_modules/pdfjs-dist/${dir}`, `dist/pdfjs/${dir}`, { recursive: true });
+          cpSync(join(pdfjsDir, dir), `dist/pdfjs/${dir}`, { recursive: true });
         }
         // Four of the standard fonts are Liberation Sans 1.07.4, licensed under the GPL v2 with
         // a font exception, so the build ships their corresponding source and license beside
@@ -64,7 +65,7 @@ export default defineConfig({
         server.middlewares.use('/pdfjs', async (req, res, next) => {
           const { createReadStream, existsSync } = await import('node:fs');
           const { resolve, sep } = await import('node:path');
-          const root = resolve('node_modules/pdfjs-dist');
+          const root = pdfjsDir;
           const path = resolve(root, '.' + (req.url || '').split('?')[0]);
           if (!path.startsWith(root + sep) || !existsSync(path)) return next();
           if (path.endsWith('.wasm')) res.setHeader('Content-Type', 'application/wasm');

@@ -11,7 +11,7 @@ for (const width of [390, 850])
         page,
       }) => {
         await page.setViewportSize({ width, height: 844 });
-        await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+        await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
         await page.goto('/#library');
         const doc = await PDFDocument.create();
         const sheet = doc.addPage([600, 800]);
@@ -88,7 +88,7 @@ for (const key of ['=', '2'])
     page,
   }) => {
     await page.setViewportSize({ width: 850, height: 844 });
-    await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+    await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
     await page.goto('/#library');
     const doc = await PDFDocument.create();
     doc.addPage([600, 800]).drawRectangle({ x: 100, y: 400, width: 80, height: 60 });

@@ -15,7 +15,7 @@
  *
  * Everything else the Calendar API offers is deliberately unused: an address
  * book has no business listing someone's whole calendar, and the grant we hold
- * says so (see calendar.puter.com/src/js/api/protocol.js).
+ * says so (see calendar.localhost:8443/src/js/api/protocol.js).
  *
  * The connection is opened lazily and closed again seconds after the last call.
  * Where there is no Puter desktop — the open web, or a user without the

@@ -1,6 +1,6 @@
 # Wiki
 
-Docs, notes and databases for you and your team, on [Puter](https://puter.com).
+Docs, notes and databases for you and your team, on [Puter](https://localhost:8443).
 Write with blocks, organize pages in a tree, track work in databases, and
 share pages with people who can view, comment or edit them in real time. No
 framework and no backend of its own: vanilla JavaScript, Vite and Puter.js.

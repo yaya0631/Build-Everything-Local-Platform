@@ -8,7 +8,7 @@ for (const format of ['png', 'jpeg'])
   }) => {
     const errors = [];
     page.on('pageerror', (error) => errors.push(error.message));
-    await page.route('https://js.puter.com/**', (route) => route.abort());
+    await page.route('**/sdk/puter.js', (route) => route.abort());
     await page.addInitScript(() => {
       window.pictureReads = [];
       const read = File.prototype.arrayBuffer;
@@ -74,7 +74,7 @@ test('an oversized encoded picture batch stops early and preserves the open PDF'
 }) => {
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
-  await page.route('https://js.puter.com/**', (route) => route.abort());
+  await page.route('**/sdk/puter.js', (route) => route.abort());
   await page.addInitScript(() => {
     window.pictureReads = [];
     const read = File.prototype.arrayBuffer;

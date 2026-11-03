@@ -6,7 +6,7 @@ import { UnsupportedDocumentError } from './errors.js';
  * drawing canvas's frame. Kept apart from the writer so the drawing reader can validate it cheaply.
  */
 export const INK_EXTENSION_URI = '{3582A2A6-0F3C-4AC8-9E1A-D2DA59872D4E}';
-export const INK_NS = 'http://schemas.puter.com/documents/2026/ink';
+export const INK_NS = 'http://schemas.localhost:8443/documents/2026/ink';
 const EMU_PER_PX = 9525;
 const TOOLS = ['pen', 'pencil', 'highlighter'];
 const fail = why => { throw new UnsupportedDocumentError(`ink extensions with ${why}`); };

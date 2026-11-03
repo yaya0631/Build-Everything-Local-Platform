@@ -32,11 +32,11 @@ function loadWorker() {
       const form = new FormData();
       form.append('path', path);
       form.append('file', blob, 'f');
-      const res = await handler('POST', '/files')({ me, user, request: request('https://w.puter.work/files', { method: 'POST', body: form }) });
+      const res = await handler('POST', '/files')({ me, user, request: request('http://w.localhost:8443/files', { method: 'POST', body: form }) });
       return { status: res.status, body: await res.json() };
     },
     async download(user, query) {
-      const res = await handler('GET', '/files')({ me, user, request: request(`https://w.puter.work/files?${new URLSearchParams(query)}`) });
+      const res = await handler('GET', '/files')({ me, user, request: request(`http://w.localhost:8443/files?${new URLSearchParams(query)}`) });
       return res;
     },
     async health() {
@@ -369,7 +369,7 @@ describe('the app on top of the worker', () => {
     await seed();
     await join(TEACHER, { role: 'staff' });
     await join(PARENT, { role: 'parent', guardianId: 'g1' });
-    const url = 'https://childcare-abc.puter.work';
+    const url = 'http://childcare-abc.localhost:8443';
     const mk = (user) => createStore({ backend: createWorkerBackend(url, { getPuter: () => ({ workers: { exec: w.exec(user) } }) }), flushDelay: 0 });
     const staff = mk(TEACHER);
     const family = mk(PARENT);
@@ -388,20 +388,20 @@ describe('the app on top of the worker', () => {
 });
 
 describe('team links', () => {
-  it('builds and parses invitation links, trusting only puter.work', () => {
-    globalThis.location ??= { href: 'https://childcare.puter.com/' };
-    const link = inviteLink('https://childcare-abc123.puter.work', 'TOKENtoken1234567890');
+  it('builds and parses invitation links, trusting only localhost:8443', () => {
+    globalThis.location ??= { href: 'http://childcare.localhost:8443/' };
+    const link = inviteLink('http://childcare-abc123.localhost:8443', 'TOKENtoken1234567890');
     expect(link).toMatch(/#\/join\?w=childcare-abc123&t=TOKENtoken1234567890$/);
     const q = Object.fromEntries(new URLSearchParams(link.split('?')[1]));
-    expect(parseJoin(q)).toEqual({ url: 'https://childcare-abc123.puter.work', token: 'TOKENtoken1234567890' });
+    expect(parseJoin(q)).toEqual({ url: 'http://childcare-abc123.localhost:8443', token: 'TOKENtoken1234567890' });
     expect(parseJoin({ w: 'evil.example.com/x', t: 'TOKENtoken1234567890' })).toBeNull();
     expect(isTrustedWorkerUrl('https://evil.example.com')).toBe(false);
-    expect(isTrustedWorkerUrl('http://a.puter.work')).toBe(false);
+    expect(isTrustedWorkerUrl('http://a.localhost:8443')).toBe(false);
   });
 
   it('picks the active workspace', () => {
     expect(activeWorker({ current: 'own', own: {}, joined: [] })).toBeNull();
-    expect(activeWorker({ current: 'own', own: { url: 'https://a.puter.work' }, joined: [] })).toBe('https://a.puter.work');
-    expect(activeWorker({ current: 'https://b.puter.work', own: {}, joined: [{ url: 'https://b.puter.work' }] })).toBe('https://b.puter.work');
+    expect(activeWorker({ current: 'own', own: { url: 'http://a.localhost:8443' }, joined: [] })).toBe('http://a.localhost:8443');
+    expect(activeWorker({ current: 'http://b.localhost:8443', own: {}, joined: [{ url: 'http://b.localhost:8443' }] })).toBe('http://b.localhost:8443');
   });
 });

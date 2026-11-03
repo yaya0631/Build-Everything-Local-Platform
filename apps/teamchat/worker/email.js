@@ -25,8 +25,8 @@
  *   - the caller supplies the PARTS of an invitation (server, code, names, a
  *     note), never a message. Subject, body, and above all the link are
  *     composed here: the one URL a mail carries is `app`/#/join/... or
- *     /#/connect/..., where `app` must pass appOrigin() below — puter.com,
- *     *.puter.site/work/com, or localhost — so the worker cannot be pointed
+ *     /#/connect/..., where `app` must pass appOrigin() below — localhost:8443,
+ *     *.localhost:8443/work/com, or localhost — so the worker cannot be pointed
  *     at a look-alike site. Names and the note are HTML-escaped.
  *   - recipients are capped per request (MAX_RECIPIENTS) and per user per
  *     day (DAILY_LIMIT).
@@ -50,7 +50,7 @@ const MAX_RECIPIENTS = 10; // per request
 const DAILY_LIMIT = 100; // per user per UTC day
 
 /** Where the app lives when the caller does not say (or says somewhere untrusted). */
-const DEFAULT_APP = 'https://puter.com/app/teamchat';
+const DEFAULT_APP = 'http://localhost:8443/app/teamchat';
 
 /* ---- Small utilities ------------------------------------------------------ */
 
@@ -151,7 +151,7 @@ function escapeHtml(v) {
 
 /**
  * The origin (plus optional path) the join link points at. Only places the
- * app actually lives are accepted — puter.com, a *.puter.site/work/com
+ * app actually lives are accepted — localhost:8443, a *.localhost:8443/work/com
  * subdomain, or localhost for development — anything else falls back to the
  * canonical app URL, so this worker cannot be made to mail out links to a
  * look-alike host.
@@ -162,8 +162,8 @@ function appOrigin(v) {
     const host = u.hostname.toLowerCase();
     const local = host === 'localhost' || host === '127.0.0.1';
     const ok = (u.protocol === 'https:' && (
-      host === 'puter.com'
-      || host.endsWith('.puter.site') || host.endsWith('.puter.work') || host.endsWith('.puter.com')
+      host === 'localhost:8443'
+      || host.endsWith('.localhost:8443') || host.endsWith('.localhost:8443') || host.endsWith('.localhost:8443')
     )) || (u.protocol === 'http:' && local);
     if (!ok) return DEFAULT_APP;
     if (!/^[A-Za-z0-9._~/-]*$/.test(u.pathname)) return DEFAULT_APP;

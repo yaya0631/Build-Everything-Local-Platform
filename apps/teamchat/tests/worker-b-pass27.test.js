@@ -17,11 +17,11 @@ beforeEach(async () => {
 describe('an old invite link to a workspace that has moved to another server', () => {
   it('sends a member carried across to the new copy, and tells someone new the invite is no longer valid', async () => {
     const { wsId, code } = await workspaceWith(alice, [bob]);
-    await rt.kv.update(KEYS.ws(wsId), { movedTo: `${wsId}@other.puter.work` });
+    await rt.kv.update(KEYS.ws(wsId), { movedTo: `${wsId}@other.localhost` });
     // Bob has a card on this copy, so he has one on the new copy too: sent on.
     const member = await as(bob).post('/api/join', { code });
     expect(member.ok).toBe(true);
-    expect(member.data).toEqual({ workspace: { id: wsId, name: 'Acme' }, movedTo: `${wsId}@other.puter.work` });
+    expect(member.data).toEqual({ workspace: { id: wsId, name: 'Acme' }, movedTo: `${wsId}@other.localhost` });
     // Carol was never here: the new copy has an invite of its own, and this
     // code opens nothing there. Answered as a dead code, not as a workspace
     // to follow; nothing written or counted for her.
@@ -37,7 +37,7 @@ describe('an old invite link to a workspace that has moved to another server', (
     const ch = (await as(alice).post(`/api/ws/${wsId}/channels`, { name: 'design' })).data.channel;
     const inv = await as(alice).post(`/api/ws/${wsId}/channels/${ch.id}/invites`, {});
     expect(inv.ok).toBe(true);
-    await rt.kv.update(KEYS.ws(wsId), { movedTo: `${wsId}@other.puter.work` });
+    await rt.kv.update(KEYS.ws(wsId), { movedTo: `${wsId}@other.localhost` });
     const guest = await as(dave).post('/api/join', { code: inv.data.code });
     expect(guest.status).toBe(404);
     expect(guest.data.code).toBe('invite_not_found');
@@ -47,7 +47,7 @@ describe('an old invite link to a workspace that has moved to another server', (
     const { wsId, code } = await workspaceWith(alice, [bob]);
     await rt.kv.update(KEYS.ws(wsId), {
       [`members.${carol.uuid}`]: { username: 'carol', name: 'Carol', role: 'external', org: { ref: 'p@x', name: 'Partner' }, exp: Date.now() + 3600_000, joinedAt: Date.now() },
-      movedTo: `${wsId}@other.puter.work`,
+      movedTo: `${wsId}@other.localhost`,
     });
     const r = await as(carol).post('/api/join', { code });
     expect(r.status).toBe(404);
@@ -223,7 +223,7 @@ describe('a webhook or bot token posting into a workspace being moved', () => {
     // moved copy carries no Retry-After (nothing to wait for).
     expect((await rt.dispatch(`https://teamchat-api.test/bot/${bot.data.token}/channels/${general.id}/messages`, { method: 'GET' }, null)).status).toBe(200);
     await rt.kv.remove(KEYS.ws(wsId), 'transferring');
-    await rt.kv.update(KEYS.ws(wsId), { movedTo: `${wsId}@other.puter.work` });
+    await rt.kv.update(KEYS.ws(wsId), { movedTo: `${wsId}@other.localhost` });
     const moved = await post(hook.data.url);
     expect(moved.status).toBe(423);
     expect((await moved.json()).code).toBe('moved');

@@ -14,7 +14,7 @@ vi.mock('../src/team.js', () => ({
   },
   inviteLink: () => '',
   leaveWorkspace: () => {},
-  enableTeam: async () => ({ own: { url: 'https://new.puter.work', name: 'fs-new' }, skipped: [] }),
+  enableTeam: async () => ({ own: { url: 'http://new.localhost:8443', name: 'fs-new' }, skipped: [] }),
   saveWorkspaces: async () => {
     throw new Error('KV unavailable');
   },

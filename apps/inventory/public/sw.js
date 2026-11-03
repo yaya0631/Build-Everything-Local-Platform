@@ -16,7 +16,7 @@
 const CACHE = 'inv-shell-v5';
 
 /** The one cross-origin URL worth caching: the Puter SDK bundle. */
-const SDK_URL = 'https://js.puter.com/v2/';
+const SDK_URL = '/sdk/puter.js';
 
 const PRECACHE = [
   './',

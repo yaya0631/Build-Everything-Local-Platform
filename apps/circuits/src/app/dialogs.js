@@ -402,7 +402,7 @@ export function aboutDialog(app) {
       h('p', h('strong', 'Circuits'), ' is a free, open-source app for schematic capture and printed circuit board layout. It is part of the Everything project and runs on Puter.'),
       h('p', 'Rendering uses WebGL2. Copper pours, design rule checks and autorouting run in a WebAssembly engine written in Rust, in a background worker so the editor stays responsive.'),
       h('p.muted', 'This is an early alpha. Check fabrication files carefully before ordering boards.'),
-      h('p', h('a', { href: 'https://github.com/heyputer/everything', target: '_blank', rel: 'noopener noreferrer' }, 'Source code on GitHub'), ' . ', h('a', { href: 'https://developer.puter.com', target: '_blank', rel: 'noopener noreferrer' }, 'Built on Puter')),
+      h('p', h('a', { href: 'https://github.com/heyputer/everything', target: '_blank', rel: 'noopener noreferrer' }, 'Source code on GitHub'), ' . ', h('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener noreferrer' }, 'Built on Puter')),
     ],
   });
 }

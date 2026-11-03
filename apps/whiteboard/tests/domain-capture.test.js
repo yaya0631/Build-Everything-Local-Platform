@@ -227,7 +227,7 @@ test("a verified guest is still offered to verify a work email while capture is 
     await import("../src/organization/home-ui.js");
   try {
     const org = {
-      server: "https://org.puter.work",
+      server: "http://org.localhost:8443",
       onChange() {},
       request: async () => ({}),
     };
@@ -479,7 +479,7 @@ test("the policy form names an email domain it cannot claim", async () => {
     const saved = [];
     const admin = createAdminConsole({
       org: {
-        server: "https://whiteboard-abc.puter.work",
+        server: "http://whiteboard-abc.localhost:8443",
         isAdmin: true,
         request: async (op, data) => {
           if (op === "org.policy.set") {
@@ -588,7 +588,7 @@ test("the verify dialog keeps a refusal on the field it concerns", async () => {
       dialog;
     const home = createOrganizationHome({
       org: {
-        server: "https://org.puter.work",
+        server: "http://org.localhost:8443",
         info: { role: "guest", user: null, policy: {} },
         onChange() {},
         request: async (op) => {

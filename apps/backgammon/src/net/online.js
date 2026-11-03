@@ -1,6 +1,6 @@
 /**
  * Online play over the Puter Peer API (WebRTC data channels with built-in
- * signaling — https://docs.puter.com/Peer/).
+ * signaling — http://localhost:8443/Peer/).
  *
  * The Puter SDK is loaded lazily, only when the user enters online mode, so
  * offline play never pays for it. An OnlineSession wraps one private
@@ -57,7 +57,7 @@
 
 import { deriveDice, hashNonce, isNonce, randomNonce } from '../engine/dice.js';
 
-const PUTER_SRC = 'https://js.puter.com/v2/';
+const PUTER_SRC = '/sdk/puter.js';
 // Bumped to 2 when the host began telling the guest whether the cube is in
 // play: a peer that did not know about the field would default to its own
 // setting, and the two would be playing different games. A mismatch ends the

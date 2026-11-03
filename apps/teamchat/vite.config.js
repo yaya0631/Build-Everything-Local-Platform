@@ -1,7 +1,6 @@
 import { defineConfig } from 'vite';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
-import puterLocalhost from '../../dev/puter-localhost.mjs';
 
 /**
  * Emit sw.js into the build with the list of everything to precache and a
@@ -32,7 +31,7 @@ function serviceWorkerPlugin() {
 
 export default defineConfig({
   base: './',
-  plugins: [puterLocalhost('teamchat'), serviceWorkerPlugin()],
+  plugins: [serviceWorkerPlugin()],
   build: {
     target: 'es2022',
     cssTarget: 'safari15',

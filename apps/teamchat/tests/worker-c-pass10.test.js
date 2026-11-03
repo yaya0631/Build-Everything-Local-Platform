@@ -192,13 +192,13 @@ describe('replaying an archive into a worker (the client side of an import or tr
       ],
       files: [],
     };
-    const ref = await importArchive('https://teamchat-x.puter.work', archive, { profile: { name: 'A' } });
+    const ref = await importArchive('http://teamchat-x.localhost:8443', archive, { profile: { name: 'A' } });
     expect(ref).toBe('copy000001@teamchat-x');
     expect(calls.map(([p, c]) => c || p)).toEqual(['/api/workspaces/import', 'chan000001', 'dm_externals', 'dm_externals_t1', 'chan000002', '/api/ws/copy000001/import/finish']);
     // A channel's page being refused is another matter: that stops the import
     // where it is, and the copy made so far is taken down with the failure.
     calls.length = 0;
-    const stopped = await importArchive('https://teamchat-x.puter.work', { ...archive, pages: [{ conv: 'nochan0001', seq: 1, messages: [msg(1)] }, archive.pages[0]] }, { profile: { name: 'A' } })
+    const stopped = await importArchive('http://teamchat-x.localhost:8443', { ...archive, pages: [{ conv: 'nochan0001', seq: 1, messages: [msg(1)] }, archive.pages[0]] }, { profile: { name: 'A' } })
       .then(() => 'finished', (e) => e.code);
     expect(stopped).toBe('not_found');
     expect(calls.map(([p, c]) => c || p)).toEqual(['/api/workspaces/import', 'nochan0001', '/api/ws/copy000001']);

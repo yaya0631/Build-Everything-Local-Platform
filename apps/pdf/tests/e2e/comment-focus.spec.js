@@ -13,7 +13,7 @@ for (const [kind, label] of [
       test(`${label} comment after ${pending} ${moved ? 'preserves newer focus' : 'focuses its editor'}`, async ({
         page,
       }) => {
-        await page.route('https://js.puter.com/**', (route) => route.abort());
+        await page.route('**/sdk/puter.js', (route) => route.abort());
         const doc = await PDFDocument.create();
         doc.addPage([400, 500]);
         doc.addPage([400, 500]);

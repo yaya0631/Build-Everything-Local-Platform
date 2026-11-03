@@ -4,7 +4,7 @@ for (const kind of ['position', 'width'])
   test(`text ${kind} uses release coordinates and recovers from lost pointer capture`, async ({
     page,
   }) => {
-    await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+    await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
     await page.goto('/#library');
     await page.evaluate(async (kind) => {
       const { textPositionControls } = await import('/src/text-position.js');

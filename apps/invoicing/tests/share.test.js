@@ -57,7 +57,7 @@ describe('publishDoc', () => {
 
     const url = await publishDoc(store, store.doc('D1'), null);
     const token = store.doc('D1').shareToken;
-    expect(url).toBe(`https://inv-test.puter.site/${token}.html`);
+    expect(url).toBe(`http://inv-test.localhost:8443/${token}.html`);
     expect(files.has(`invoicing-data/public/${token}.html`)).toBe(true);
 
     await unpublishDoc(store, store.doc('D1'));

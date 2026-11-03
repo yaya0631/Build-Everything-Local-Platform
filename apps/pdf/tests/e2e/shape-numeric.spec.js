@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { inspectPaths } from '../../src/core/path-edit.js';
 
 async function openShape(page, neighbor = false, kind = 'shape') {
-  await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+  await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   const sheet = doc.addPage([400, 400]);

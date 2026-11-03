@@ -42,8 +42,8 @@ function build() {
   set(budget, 'G2', '=SUM(Amounts)');
   set(budget, 'H1', '=SORT(B2:B3)');
   wb.addChart(budget.id, { type: 'pie', range: parseRange('A2:B3'), title: 'Spend', anchor: { r: 5, c: 4 }, dx: 3, dy: 2, w: 320, h: 200, seriesIn: 'auto', headers: false, legend: true, stacked: false });
-  set(budget, 'A8', '=HYPERLINK("https://puter.com","Puter")');
-  set(budget, 'A9', 'https://docs.puter.com');
+  set(budget, 'A8', '=HYPERLINK("http://localhost:8443","Puter")');
+  set(budget, 'A9', 'http://localhost:8443');
   wb.setRowHeight(budget.id, 0, 36);
   wb.activeSheetId = data.id;
   return wb;
@@ -71,10 +71,10 @@ describe('xlsx round trip', () => {
     expect(cell('H1').f).toBe('SORT(B2:B3)');
     expect(cell('H2')).toBeUndefined(); // spilled cells come back as spills, not values
     expect(back.getValue(budget.id, 1, 7)).toBe(1500);
-    expect(cell('A8').f).toBe('HYPERLINK("https://puter.com","Puter")');
-    expect(back.linkAt(budget.id, 7, 0)).toEqual({ url: 'https://puter.com', label: 'Puter' });
-    expect(cell('A9').v).toBe('https://docs.puter.com');
-    expect(back.linkAt(budget.id, 8, 0)?.url).toBe('https://docs.puter.com');
+    expect(cell('A8').f).toBe('HYPERLINK("http://localhost:8443","Puter")');
+    expect(back.linkAt(budget.id, 7, 0)).toEqual({ url: 'http://localhost:8443', label: 'Puter' });
+    expect(cell('A9').v).toBe('http://localhost:8443');
+    expect(back.linkAt(budget.id, 8, 0)?.url).toBe('http://localhost:8443');
     expect(show('B4')).toBe('$1,950.50');
     expect(show('C2')).toBe('12%');
     expect(show('D2')).toBe('2024-01-15');

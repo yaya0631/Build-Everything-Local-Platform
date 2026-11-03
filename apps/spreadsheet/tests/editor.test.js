@@ -684,7 +684,7 @@ describe('insert link dialog', () => {
     expect(view.el.querySelector('.name-box').value).toBe('Target');
   });
 
-  it.each([['me@example.com', 'mailto:me@example.com'], ['puter.com/docs', 'https://puter.com/docs']])('accepts %s as advertised', async (input, url) => {
+  it.each([['me@example.com', 'mailto:me@example.com'], ['localhost:8443/docs', 'http://localhost:8443/docs']])('accepts %s as advertised', async (input, url) => {
     const { doc } = setup();
     view.el.querySelector('[aria-label="Insert link"]').click();
     const field = document.querySelector('input[aria-label="Link"]');

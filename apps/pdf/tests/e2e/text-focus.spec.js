@@ -8,7 +8,7 @@ for (const action of ['keyboard', 'download', 'save', 'tool'])
       test(`text ${action} ${fails ? 'failure' : 'commit'} ${moved ? 'preserves newer focus' : 'restores expected focus'}`, async ({
         page,
       }) => {
-        await page.route('https://js.puter.com/**', (route) =>
+        await page.route('**/sdk/puter.js', (route) =>
           route.fulfill({
             body: `window.puter = {
             env:'web', auth:{isSignedIn:()=>true,getUser:async()=>({username:'test-user'})},

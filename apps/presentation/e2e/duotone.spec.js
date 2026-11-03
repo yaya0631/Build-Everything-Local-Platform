@@ -13,7 +13,7 @@ const pairs = [
 test("duotone pixels use sRGB luminance and preserve image transparency in pictures, shape fills and layouts", async ({
   page,
 }) => {
-  await page.route("https://js.puter.com/v2/", (r) =>
+  await page.route("**/sdk/puter.js", (r) =>
     r.fulfill({
       contentType: "application/javascript",
       body: 'window.puter={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',
@@ -96,7 +96,7 @@ test("duotone pixels use sRGB luminance and preserve image transparency in pictu
 test("duotone pictures retain colors and effects through clipboard and .pptx download", async ({
   page,
 }) => {
-  await page.route("https://js.puter.com/v2/", (r) =>
+  await page.route("**/sdk/puter.js", (r) =>
     r.fulfill({
       contentType: "application/javascript",
       body: 'window.puter={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',

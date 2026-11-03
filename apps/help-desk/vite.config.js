@@ -1,9 +1,8 @@
 import { defineConfig } from 'vite';
-import puterLocalhost from '../../dev/puter-localhost.mjs';
 
 export default defineConfig({
   base: './',
-  plugins: [puterLocalhost('help-desk')],
+  plugins: [],
   build: {
     target: 'es2022',
     cssTarget: 'safari15',

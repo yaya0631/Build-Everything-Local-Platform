@@ -161,9 +161,9 @@ const COMPANY = 'Puter Technologies Inc.';
 
 /** Puter's own pages, for the row of links under the description. */
 const ABOUT_LINKS = [
-  ['Website', 'https://puter.com'],
-  ['Privacy', 'https://puter.com/privacy'],
-  ['Terms', 'https://puter.com/terms'],
+  ['Website', 'http://localhost:8443'],
+  ['Privacy', 'http://localhost:8443/privacy'],
+  ['Terms', 'http://localhost:8443/terms'],
 ];
 
 /**

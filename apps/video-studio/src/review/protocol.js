@@ -121,7 +121,7 @@ export async function verify(jwk, value, signature) {
 }
 
 /**
- * The origin of a review worker. Only https://<name>.puter.work is trusted:
+ * The origin of a review worker. Only https://<name>.localhost:8443 is trusted:
  * a link that names any other host is refused before anything is sent to it.
  */
 export function workerURL(value) {

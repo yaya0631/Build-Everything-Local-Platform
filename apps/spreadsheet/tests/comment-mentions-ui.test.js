@@ -90,8 +90,8 @@ it('mentions, assigns, shares with and emails the people named in a new comment'
   expect(P.shareFile).toHaveBeenCalledWith('Spreadsheets/Budget.xlsx', 'kim@example.org', 'read');
   const bodies = exec.mock.calls.map(([url, init]) => [url, JSON.parse(init.body)]);
   expect(bodies.map(([url, b]) => [url, b.recipients.map((r) => r.email), !!b.assigned])).toEqual([
-    ['https://spreadsheet-email.puter.work/mentions', ['kim@example.org'], false],
-    ['https://spreadsheet-email.puter.work/mentions', ['ana@puter.email'], true],
+    ['http://spreadsheet-email.localhost:8443/mentions', ['kim@example.org'], false],
+    ['http://spreadsheet-email.localhost:8443/mentions', ['ana@puter.email'], true],
   ]);
   expect(bodies[0][1].link).toMatch(/#\/file\/uid-3\?range=Sheet1!B2$/);
   expect(bodies[0][1].comment.cell).toBe('Sheet1!B2');

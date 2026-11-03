@@ -1,9 +1,3 @@
-/**
- * Dev-only in-memory mock of the Puter SDK, used by /mock.html so the full
- * signed-in UI can be exercised without a Puter account. Not part of the
- * production build. The AI mock returns a plausible receipt after a short
- * delay; append ?env=app to the URL to simulate running inside Puter.
- */
 (() => {
   const kv = new Map();
   const files = new Map();

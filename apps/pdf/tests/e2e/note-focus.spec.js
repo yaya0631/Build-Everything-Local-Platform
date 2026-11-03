@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { addNote, listNotes } from '../../src/core/notes.js';
 
 async function prepare(page, text = 'Updated note') {
-  await page.route('https://js.puter.com/**', (route) =>
+  await page.route('**/sdk/puter.js', (route) =>
     route.fulfill({
       body: `window.puter = {
       env: 'web',

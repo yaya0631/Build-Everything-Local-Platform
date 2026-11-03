@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test.beforeEach(async ({ page }) => {
-  await page.route('https://js.puter.com/**', (r) =>
+  await page.route('**/sdk/puter.js', (r) =>
     r.fulfill({ contentType: 'application/javascript', body: 'window.puter={};' }),
   );
   await page.goto('/');

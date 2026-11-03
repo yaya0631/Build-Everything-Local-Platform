@@ -5,7 +5,7 @@ import path from 'node:path';
 
 /**
  * index.html carries one inline script that runs before anything else: it
- * recognises a booking share link — calendar.puter.com/#/<host>/<page> — and
+ * recognises a booking share link — calendar.localhost:8443/#/<host>/<page> — and
  * forwards the visitor to the guest page (public/book.html) with the route
  * intact, so a guest never downloads the calendar. These tests run that script
  * verbatim against a stand-in `location`.
@@ -36,7 +36,7 @@ describe('index.html: booking link route', () => {
     expect(SCRIPT).toBeTruthy();
     expect(SCRIPTS[0]).toBe(SCRIPT);
     expect(HTML.indexOf(SCRIPT)).toBeLessThan(HTML.indexOf('<script type="module"'));
-    expect(HTML.indexOf(SCRIPT)).toBeLessThan(HTML.indexOf('plausible'));
+    expect(HTML.indexOf(SCRIPT)).toBeLessThan(HTML.indexOf('</head>'));
   });
 
   it('forwards #/<host>/<page> to the sibling guest page, keeping the route', () => {
@@ -66,7 +66,7 @@ describe('index.html: booking link route', () => {
       '#/evil.example.com/intro-call',
       '#/nariman%2fx/intro-call',
       `#/${'n'.repeat(60)}/intro-call`,
-      '#w=https%3A%2F%2Fcal-nariman.puter.work&p=intro-call', // the worker's own redirect form
+      '#w=https%3A%2F%2Fcal-nariman.localhost:8443&p=intro-call', // the worker's own redirect form
       '#/nariman/intro-call?w=https://evil.example.com',
       '#today',
     ]) {
@@ -75,7 +75,7 @@ describe('index.html: booking link route', () => {
   });
 
   it('forwards a link pasted into a tab that already shows the calendar (hashchange)', () => {
-    // From calendar.puter.com/ to calendar.puter.com/#/nariman/intro-call is
+    // From calendar.localhost:8443/ to calendar.localhost:8443/#/nariman/intro-call is
     // a same-document navigation: no reload, so the load-time check never
     // re-runs. The listener has to do it.
     const location = { hash: '', replace: vi.fn() };

@@ -2,7 +2,7 @@
  *
  * Deliberately conservative: it ONLY touches same-origin GET requests for the
  * app's own static shell. Every cross-origin request — most importantly the
- * Puter SDK (js.puter.com) and all Puter API / KV / auth traffic — is left
+ * Puter SDK (js.localhost:8443) and all Puter API / KV / auth traffic — is left
  * entirely to the network, so this worker can never serve stale cloud data or
  * interfere with sign-in.
  *

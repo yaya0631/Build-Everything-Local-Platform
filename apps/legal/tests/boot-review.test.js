@@ -7,7 +7,7 @@ import path from 'node:path';
 const WORKER_SOURCE = fs.readFileSync(path.join(__dirname, '../public/worker/legal-team-worker.js'), 'utf8');
 const person = (uuid, username) => ({ puter: { auth: { getUser: async () => ({ uuid, username }) } } });
 const OWNER = person('owner-1', 'eleanor');
-const URL_ = 'https://legalfirm-abc.puter.work';
+const URL_ = 'http://legalfirm-abc.localhost:8443';
 const tick = (ms = 0) => new Promise((r) => setTimeout(r, ms));
 
 function memoryKV() {
@@ -160,7 +160,7 @@ describe('the join prompt', () => {
       puter: { auth: { isSignedIn: () => true, getUser: async () => ({ uuid: 'u-7', username: 'nadia' }) }, kv: memoryKV(), workers: { exec: w.exec(person('u-7', 'nadia')) } },
     });
     const text = dialogWith('Join a firm?')?.textContent || '';
-    expect(text).toContain('legalfirm-abc.puter.work');
+    expect(text).toContain('legalfirm-abc.localhost:8443');
     expect(text).toContain('your Puter sign-in');
     expect(text).toContain('your own firm');
   });

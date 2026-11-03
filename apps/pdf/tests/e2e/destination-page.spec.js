@@ -5,7 +5,7 @@ for (const named of [false, true])
   test(`out-of-range ${named ? 'named' : 'numeric'} destinations do not navigate to an unrelated page`, async ({
     page,
   }) => {
-    await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+    await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
     await page.goto('/#library');
     const doc = await PDFDocument.create();
     for (let i = 0; i < 3; i++) doc.addPage([200, 200]);

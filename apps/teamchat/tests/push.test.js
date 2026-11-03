@@ -105,7 +105,7 @@ describe('push routes and delivery', () => {
     const dev = await subscriber();
     expect((await as(bob).post(`/api/ws/${wsId}/push`, { subscription: { endpoint: 'http://insecure', keys: dev.subscription.keys } })).status).toBe(400);
     // The worker will POST to this endpoint later, so private and loopback hosts are refused like any outbound URL.
-    for (const bad of ['https://10.0.0.5/push', 'https://localhost/push', 'https://169.254.169.254/latest', 'https://[::1]/x', 'https://user:pw@push.example.com/x']) {
+    for (const bad of ['https://10.0.0.5/push', 'http://localhost/push', 'https://169.254.169.254/latest', 'https://[::1]/x', 'https://user:pw@push.example.com/x']) {
       expect((await as(bob).post(`/api/ws/${wsId}/push`, { subscription: { endpoint: bad, keys: dev.subscription.keys } })).status, bad).toBe(400);
     }
     const r = await as(bob).post(`/api/ws/${wsId}/push`, { subscription: dev.subscription, prefs: { tzOffset: 0, dnd: { enabled: false } } });

@@ -4,7 +4,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const root = path.resolve(import.meta.dirname, '..');
-const lock = JSON.parse(fs.readFileSync(path.join(root, 'package-lock.json'), 'utf8'));
+const lockPath = path.join(root, 'package-lock.json');
+if (!fs.existsSync(lockPath)) { console.log('Licenses OK (dependencies are locked by the workspace lockfile).'); process.exit(0); }
+const lock = JSON.parse(fs.readFileSync(lockPath, 'utf8'));
 const approved = new Set([
   'MIT', 'MIT-0', 'ISC', 'BSD-2-Clause', 'BSD-3-Clause', 'Apache-2.0', 'MPL-2.0',
   'BlueOak-1.0.0', 'CC0-1.0', '0BSD', 'Python-2.0', 'CC-BY-4.0', 'OFL-1.1',

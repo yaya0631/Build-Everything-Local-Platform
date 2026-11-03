@@ -11,7 +11,7 @@ async function openPdf(page, buffer) {
 }
 
 async function editedDocument(page) {
-  await page.route('https://js.puter.com/**', (route) =>
+  await page.route('**/sdk/puter.js', (route) =>
     route.fulfill({
       contentType: 'application/javascript',
       body: `window.puter = {

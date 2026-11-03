@@ -156,10 +156,10 @@ describe('validateSettings', () => {
 
 describe('share snippets', () => {
   it('escapes the embed code and pins the message origin', () => {
-    const code = embedSnippet('https://survey.puter.com/r/?embed=1#ada/link000001', 'Q&A "night" <b>');
-    expect(code).toContain('src="https://survey.puter.com/r/?embed=1#ada/link000001"');
+    const code = embedSnippet('http://survey.localhost:8443/r/?embed=1#ada/link000001', 'Q&A "night" <b>');
+    expect(code).toContain('src="http://survey.localhost:8443/r/?embed=1#ada/link000001"');
     expect(code).toContain('title="Q&amp;A &quot;night&quot; &lt;b&gt;"');
-    expect(code).toContain('e.origin !== "https://survey.puter.com"');
+    expect(code).toContain('e.origin !== "http://survey.localhost:8443"');
     expect(code).toContain('frames[i].contentWindow === e.source');
     const doc = new DOMParser().parseFromString(code, 'text/html');
     expect(doc.querySelectorAll('iframe')).toHaveLength(1);

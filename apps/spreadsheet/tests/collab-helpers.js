@@ -128,7 +128,7 @@ export function environment() {
       kv: { get: (key) => kv.get(prefix + key), set: (key, value) => kv.set(prefix + key, value) },
       fs: fsFor(user),
       workers: {
-        async create(name) { return { url: `https://${name}.puter.work` }; },
+        async create(name) { return { url: `http://${name}.localhost:8443` }; },
         async exec(url, options = {}) {
           if (env.offline || env.offlineUsers.has(user.uuid)) throw new Error('Network unavailable');
           if (url.endsWith('/health')) return Response.json({ ok: true, build: 'test' });
@@ -155,7 +155,7 @@ export function environment() {
   return Object.assign(env, { kv, workerPuter });
 }
 
-export const SERVER = 'https://spreadsheet-test.puter.work';
+export const SERVER = 'http://spreadsheet-test.localhost:8443';
 export const wait = (ms = 0) => new Promise((r) => setTimeout(r, ms));
 /** Wait until `check` holds (polling), failing after `timeout`. */
 export async function until(check, timeout = 4000, what = 'condition') {

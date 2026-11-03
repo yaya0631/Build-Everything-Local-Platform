@@ -6,7 +6,7 @@ import { bulletFontFixture } from "../tests/bullet-font-fixture.js";
 test("number and character bullet fonts survive clipboard transfer and PPTX download", async ({
   page,
 }) => {
-  await page.route("https://js.puter.com/v2/", (route) =>
+  await page.route("**/sdk/puter.js", (route) =>
     route.fulfill({
       contentType: "application/javascript",
       body: 'window.puter={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',

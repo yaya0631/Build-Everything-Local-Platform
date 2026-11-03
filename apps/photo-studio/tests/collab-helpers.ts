@@ -264,7 +264,7 @@ export function environment() {
       fs: fsFor(user),
       workers: {
         async create(name: string) {
-          return { url: `https://${name}.puter.work` };
+          return { url: `http://${name}.localhost:8443` };
         },
         async exec(url: string, options: { method?: string; headers?: Record<string, string>; body?: string }) {
           if (env.offline || env.offlineUsers.has(user.uuid)) throw new Error('Network unavailable');

@@ -23,7 +23,7 @@ const { rememberedRoom, rememberRoom, moveRoom, forgetRoom } = await import('../
 const { rememberDocumentRoot } = await import('../src/lib/document-paths.js');
 const { hash } = await import('../src/collab/protocol.js');
 
-const ROOM = { server: 'https://documents-abc.puter.work', room: 'room1' };
+const ROOM = { server: 'http://documents-abc.localhost:8443', room: 'room1' };
 
 describe('the room a shared file rejoins', () => {
   beforeEach(() => {

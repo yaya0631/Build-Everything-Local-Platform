@@ -49,6 +49,6 @@ describe('document details', () => {
     const opened = detailRows({ name: 'X', path: 'Documents/X.docx', size: 10 }, { now });
     expect(opened.find((r) => r.label === 'Last saved here').value).toBe('Unchanged since it was opened');
     expect(detailRows({ name: 'X', path: 'Documents/X.docx', saved: false }, { now }).find((r) => r.label === 'Last saved here').value).toBe('Not yet, this session');
-    expect(detailRows({ name: 'Y', path: 'Documents/Y.docx', publishedUrl: 'https://a.puter.site' }, { now }).at(-1).value).toBe('https://a.puter.site');
+    expect(detailRows({ name: 'Y', path: 'Documents/Y.docx', publishedUrl: 'http://a.localhost:8443' }, { now }).at(-1).value).toBe('http://a.localhost:8443');
   });
 });

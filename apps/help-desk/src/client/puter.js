@@ -1,5 +1,5 @@
 /**
- * Access to the Puter SDK (loaded from js.puter.com by index.html, or the
+ * Access to the Puter SDK (loaded from js.localhost:8443 by index.html, or the
  * offline stand-in in demo mode) and the signed-in user.
  */
 export function sdk() {

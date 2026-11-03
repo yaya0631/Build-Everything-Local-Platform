@@ -34,7 +34,7 @@ async function guest() {
   const engine = new FakeEngine();
   const doc = new Doc({ name: 'Plan' });
   doc.setSaving(false);
-  doc.collab = { client, link: { server: 'https://documents-abc.puter.work', room: 'r1' } };
+  doc.collab = { client, link: { server: 'http://documents-abc.localhost:8443', room: 'r1' } };
   doc.attach(async () => new Blob([engine.model.text]));
   const collab = createCollaboration({ editor: () => engine, pkg: () => ({ assets: {} }), doc, local: false, error: e => { throw e; }, user: () => ({ id: 'u1', name: 'Bob' }), documentName: () => 'Plan' });
   await collab.attach();

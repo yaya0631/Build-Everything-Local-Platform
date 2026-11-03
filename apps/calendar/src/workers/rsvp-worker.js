@@ -171,7 +171,7 @@ function mintMeetingUrl() {
     }
   }
   const code = `${out.slice(0, 4).join('')}-${out.slice(4, 8).join('')}-${out.slice(8, 12).join('')}`;
-  return `https://meetings.puter.com/#/m/${code}`;
+  return `http://meetings.localhost:8443/#/m/${code}`;
 }
 
 /**
@@ -255,7 +255,7 @@ function redirectToPage(ctx, token, saved) {
   // Belt and braces: if a botched deploy left PAGE_URL non-absolute (e.g. the
   // raw placeholder), a relative Location would resolve back onto this very
   // route and redirect-loop forever. Fall back to the production page.
-  const page = /^https?:\/\//i.test(PAGE_URL) ? PAGE_URL : 'https://calendar.puter.com/rsvp.html';
+  const page = /^https?:\/\//i.test(PAGE_URL) ? PAGE_URL : 'http://calendar.localhost:8443/rsvp.html';
   const params = new URLSearchParams({ w: new URL(ctx.request.url).origin, t: token });
   if (saved) params.set('s', '1');
   return new Response(null, {
@@ -1531,7 +1531,7 @@ function bookingIcs(cfg, booking) {
     'PRODID:-//Puter Calendar//Booking//EN',
     `METHOD:${method}`,
     'BEGIN:VEVENT',
-    `UID:${booking.id}@calendar.puter.com`,
+    `UID:${booking.id}@calendar.localhost`,
     `DTSTAMP:${bookIcsDate(Date.now())}`,
     `DTSTART:${bookIcsDate(booking.start)}`,
     `DTEND:${bookIcsDate(booking.end)}`,
@@ -1840,11 +1840,11 @@ async function bookReadBody(request) {
 /** Send the visitor to the app-hosted booking page (public/book.html), params
  *  in the fragment like the RSVP redirect — tokens never hit logs/referrers. */
 function bookPageUrl() {
-  const base = /^https?:\/\//i.test(PAGE_URL) ? PAGE_URL : 'https://calendar.puter.com/rsvp.html';
+  const base = /^https?:\/\//i.test(PAGE_URL) ? PAGE_URL : 'http://calendar.localhost:8443/rsvp.html';
   try {
     return new URL('book.html', base).toString();
   } catch {
-    return 'https://calendar.puter.com/book.html';
+    return 'http://calendar.localhost:8443/book.html';
   }
 }
 

@@ -5,7 +5,7 @@ import { addNote, listNotes } from '../../src/core/notes.js';
 import { clickAway } from './editing-helpers.js';
 
 async function prepare(page, kind, changed = true) {
-  await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+  await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([400, 500]);

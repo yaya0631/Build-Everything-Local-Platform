@@ -16,7 +16,7 @@ const HTML = readFileSync(
 );
 const SCRIPT = /<script>([\s\S]*?)<\/script>/.exec(HTML)[1];
 
-const WORKER = 'https://cal-rsvp-ab12cd34ef.puter.work';
+const WORKER = 'http://cal-rsvp-ab12cd34ef.localhost:8443';
 const PAGE_ID = 'abcd1234';
 const TOKEN = 'b'.repeat(40);
 const HOUR = 3_600_000;
@@ -99,7 +99,7 @@ async function openPicker(fetchFn) {
 }
 
 describe('book.html: guarding', () => {
-  it('refuses a non-puter.work worker origin without fetching anything', async () => {
+  it('refuses a non-localhost:8443 worker origin without fetching anything', async () => {
     const fetchFn = vi.fn();
     init({ root, hash: `#w=${encodeURIComponent('https://evil.example.com')}&p=${PAGE_ID}`, fetchFn });
     await tick();
@@ -131,20 +131,20 @@ describe('book.html: guarding', () => {
   });
 
   it('accepts the share-link route (#/<host>/<page>) and rebuilds the worker from it', async () => {
-    // index.html forwards calendar.puter.com/#/nariman/intro-call here with the
-    // route intact; the worker is `cal-<host>.puter.work`, by grammar alone.
+    // index.html forwards calendar.localhost:8443/#/nariman/intro-call here with the
+    // route intact; the worker is `cal-<host>.localhost:8443`, by grammar alone.
     const fetchFn = vi.fn(() => jsonRes({ error: 'not_found' }, 404));
     init({ root, hash: '#/nariman/intro-call', fetchFn });
     await tick();
     expect(fetchFn).toHaveBeenCalled();
-    expect(fetchFn.mock.calls[0][0]).toBe('https://cal-nariman.puter.work/api/book/intro-call');
+    expect(fetchFn.mock.calls[0][0]).toBe('http://cal-nariman.localhost:8443/api/book/intro-call');
   });
 
   it('the share-link route is case-insensitive — it gets read out and retyped', async () => {
     const fetchFn = vi.fn(() => jsonRes({ error: 'not_found' }, 404));
     init({ root, hash: '#/Nariman-A1B2/Intro-Call', fetchFn });
     await tick();
-    expect(fetchFn.mock.calls[0][0]).toBe('https://cal-nariman-a1b2.puter.work/api/book/intro-call');
+    expect(fetchFn.mock.calls[0][0]).toBe('http://cal-nariman-a1b2.localhost:8443/api/book/intro-call');
   });
 
   it('refuses a malformed share-link route without contacting anyone', async () => {
@@ -159,7 +159,7 @@ describe('book.html: guarding', () => {
       '#/nariman/intro call',
       '#/evil.example.com/intro-call',
       '#/nariman%2fx/intro-call',
-      '#/cal-nj.puter.work/intro-call',
+      '#/cal-nj.localhost:8443/intro-call',
       `#/${'n'.repeat(60)}/intro-call`, // one past the DNS label with its cal- prefix
       '#/nariman/intro-call?w=https://evil.example.com',
     ]) {
@@ -172,7 +172,7 @@ describe('book.html: guarding', () => {
   });
 
   it('renders the picker from the share-link route exactly as from the worker redirect', async () => {
-    // WORKER is cal-rsvp-ab12cd34ef.puter.work, so its label is rsvp-ab12cd34ef.
+    // WORKER is cal-rsvp-ab12cd34ef.localhost:8443, so its label is rsvp-ab12cd34ef.
     init({ root, hash: `#/rsvp-ab12cd34ef/${PAGE_ID}`, fetchFn: makeFetch() });
     await tick();
     await tick();
@@ -745,7 +745,7 @@ describe('book.html: managing a booking', () => {
 });
 
 describe('book.html: meeting links', () => {
-  const JOIN = 'https://meetings.puter.com/#/m/abcd-efgh-ijkl';
+  const JOIN = 'http://meetings.localhost:8443/#/m/abcd-efgh-ijkl';
 
   function bookedWith(meetingUrl, overrides = {}) {
     return makeFetch({
@@ -816,7 +816,7 @@ describe('book.html: meeting links', () => {
     );
     expect(ics).not.toContain('evil.example');
     expect(ics).not.toContain('ATTACH');
-    expect(ics).toContain('UID:booking@calendar.puter.com');
+    expect(ics).toContain('UID:booking@calendar.localhost');
   });
 
   it('says so when the worker hands back a booking the guest already had', async () => {

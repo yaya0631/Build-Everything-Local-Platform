@@ -22,7 +22,7 @@ for (const inherited of [false, true])
           window.dispatchEvent(new Event('afterprint'));
         };
       });
-      await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+      await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
       await page.goto('/#library');
       const { doc } = await passwordFormPdf({ inherited, readOnly });
       const opening = page.waitForEvent('filechooser');
@@ -94,7 +94,7 @@ for (const kind of ['unreadable neighbor', 'malformed widget', 'ordinary damaged
         return fillText.call(this, text, ...args);
       };
     });
-    await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+    await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
     await page.goto('/#library');
     const { doc, secret } = await passwordFormPdf();
     if (kind === 'ordinary damaged form') secret.disablePassword();

@@ -187,7 +187,7 @@ export function mountPortal(root, route) {
       h('span.spacer'),
       h('a', { href: `${location.pathname}${location.search}#/home` }, 'Agent sign in'),
       h('span.subtle', '·'),
-      h('span', 'Powered by ', h('a', { href: 'https://developer.puter.com', target: '_blank', rel: 'noopener' }, 'Puter'))));
+      h('span', 'Powered by ', h('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Puter'))));
     paintTheme();
   }
 

@@ -82,7 +82,7 @@ describe('a contact link copied whole into the invitation dialog', () => {
 });
 
 describe('bringing an owner\'s worker up to the shipped build', () => {
-  const worker = { url: 'https://teamchat-x.puter.work', path: '/me/teamchat-worker.js', name: 'teamchat-x' };
+  const worker = { url: 'http://teamchat-x.localhost:8443', path: '/me/teamchat-worker.js', name: 'teamchat-x' };
   const realFetch = globalThis.fetch;
   const realPuter = globalThis.puter;
   let writes;

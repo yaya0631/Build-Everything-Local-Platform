@@ -19,11 +19,9 @@
     <meta name="author" content="Puter" />
     <meta name="application-name" content="Contacts" />
     <meta name="robots" content="index, follow, max-image-preview:large" />
-    <link rel="canonical" href="https://contacts.puter.com/" />
+    <link rel="canonical" href="http://contacts.localhost:8443/" />
 
     <!-- Performance -->
-    <link rel="preconnect" href="https://js.puter.com" crossorigin />
-    <link rel="dns-prefetch" href="https://js.puter.com" />
 
     <!-- Icons & PWA -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -47,8 +45,8 @@
       property="og:description"
       content="A clean, fast, private address book that lives in your cloud. Store contacts, search instantly, and sync across every device. Free, no ads, powered by Puter."
     />
-    <meta property="og:url" content="https://contacts.puter.com/" />
-    <meta property="og:image" content="https://contacts.puter.com/social-graph.png" />
+    <meta property="og:url" content="http://contacts.localhost:8443/" />
+    <meta property="og:image" content="http://contacts.localhost:8443/social-graph.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="Contacts — a clean, private address book in the cloud." />
@@ -61,7 +59,7 @@
       name="twitter:description"
       content="A clean, fast, private address book that lives in your cloud. Free, no ads, powered by Puter."
     />
-    <meta name="twitter:image" content="https://contacts.puter.com/social-graph.png" />
+    <meta name="twitter:image" content="http://contacts.localhost:8443/social-graph.png" />
     <meta name="twitter:image:alt" content="Contacts — a clean, private address book in the cloud." />
 
     <!-- Structured data -->
@@ -70,14 +68,14 @@
         "@context": "https://schema.org",
         "@type": "WebApplication",
         "name": "Contacts",
-        "url": "https://contacts.puter.com/",
+        "url": "http://contacts.localhost:8443/",
         "description": "A clean, fast, private address book that lives in your cloud. Store contacts, search instantly, and sync across every device.",
         "applicationCategory": "BusinessApplication",
         "operatingSystem": "Any (web-based)",
         "browserRequirements": "Requires JavaScript and a modern web browser.",
         "isAccessibleForFree": true,
         "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-        "creator": { "@type": "Organization", "name": "Puter", "url": "https://puter.com/" }
+        "creator": { "@type": "Organization", "name": "Puter", "url": "http://localhost:8443/" }
       }
     </script>
 
@@ -102,7 +100,7 @@
     </script>
 
     <!-- Puter.js: the only cloud/AI backend this app uses. -->
-    <script src="https://js.puter.com/v2/"></script>
+    <script src="/sdk/puter.js"></script>
 
     <!-- When another Puter app launches Contacts as its headless contacts API
          (see src/api/protocol.js) there is nothing to show. The Puter desktop
@@ -125,22 +123,7 @@
       })()
     </script>
 
-    <!-- Privacy-friendly analytics by Plausible -->
-    <script async src="https://plausible.io/js/pa-P2qYwxML7xcGJkqsScQMv.js"></script>
-    <script>
-      window.plausible =
-        window.plausible ||
-        function () {
-          (plausible.q = plausible.q || []).push(arguments);
-        };
-      plausible.init =
-        plausible.init ||
-        function (i) {
-          plausible.o = i || {};
-        };
-      plausible.init();
-    </script>
-  </head>
+    </head>
   <body>
     <div id="app" aria-busy="true">
       <div class="boot-screen" role="status" aria-label="Loading">

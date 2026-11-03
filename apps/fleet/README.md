@@ -2,7 +2,7 @@
 
 Free, open-source fleet management for teams that run vehicles and equipment: delivery vans, pickups, trucks, trailers, forklifts, and EVs. An open-source alternative to Fleetio, Whip Around, and similar fleet maintenance software.
 
-Built with vanilla JavaScript, Vite, [Lucide](https://lucide.dev) icons, and [Puter.js](https://docs.puter.com) as the only backend. There is no framework and no server of its own.
+Built with vanilla JavaScript, Vite, [Lucide](https://lucide.dev) icons, and [Puter.js](http://localhost:8443) as the only backend. There is no framework and no server of its own.
 
 > **Early alpha.** Features may change and data could be lost. Please do not rely on it for real fleet records yet.
 
@@ -108,7 +108,7 @@ How sync works:
 
 ### Team access
 
-Puter KV and files are private to each account, so a shared fleet runs through a [Puter worker](https://docs.puter.com/Workers/) in the **owner's own account**. The worker source is `public/worker/fleet-team-worker.js`.
+Puter KV and files are private to each account, so a shared fleet runs through a [Puter worker](http://localhost:8443/Workers/) in the **owner's own account**. The worker source is `public/worker/fleet-team-worker.js`.
 
 - **Turning it on.** The app writes the worker to the owner's drive, deploys it with `puter.workers.create`, and copies the owner's records and files into it.
 - **Using it.** After that, everyone reads and writes through `puter.workers.exec`, which forwards each person's own session.

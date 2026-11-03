@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 for (const outcome of ['success', 'failure'])
   test(`a late library refresh ${outcome} cannot replace a newer listing`, async ({ page }) => {
-    await page.route('https://js.puter.com/**', (route) =>
+    await page.route('**/sdk/puter.js', (route) =>
       route.fulfill({
         contentType: 'application/javascript',
         body: `

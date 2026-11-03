@@ -7,7 +7,7 @@ import { memoryStorage } from './helpers/memory-storage.js';
 let view, doc;
 beforeEach(() => {
   vi.useFakeTimers();
-  vi.stubGlobal('plausible', vi.fn());
+  vi.stubGlobal('__everythingAnalytics', vi.fn());
   vi.stubGlobal('localStorage', memoryStorage());
   vi.stubGlobal('matchMedia', () => ({ matches: true, addEventListener() {}, removeEventListener() {} }));
   vi.stubGlobal('requestAnimationFrame', fn => setTimeout(fn, 0));
@@ -37,10 +37,10 @@ async function mount() {
 it('counts first data edits once per editor session, excluding opening and layout changes', async () => {
   const { wb, id } = await mount();
   wb.setColWidth(id, 0, 150);
-  expect(plausible).not.toHaveBeenCalled();
+  expect(__everythingAnalytics).not.toHaveBeenCalled();
   wb.setInput(id, 0, 0, 'Private edit');
   wb.setInput(id, 1, 0, 'Another private edit');
-  expect(plausible.mock.calls).toEqual([['Spreadsheet Edited']]);
+  expect(__everythingAnalytics.mock.calls).toEqual([['Spreadsheet Edited']]);
 });
 
 it('does not count typing that is cancelled or committing an unchanged value', async () => {
@@ -48,7 +48,7 @@ it('does not count typing that is cancelled or committing an unchanged value', a
   const key = name => document.activeElement.dispatchEvent(new KeyboardEvent('keydown', { key: name, bubbles: true, cancelable: true }));
   viewport.focus(); key('x'); key('Escape');
   viewport.focus(); key('F2'); key('Enter');
-  expect(plausible).not.toHaveBeenCalled();
+  expect(__everythingAnalytics).not.toHaveBeenCalled();
   viewport.focus(); key('x'); key('Enter');
-  expect(plausible.mock.calls).toEqual([['Spreadsheet Edited']]);
+  expect(__everythingAnalytics.mock.calls).toEqual([['Spreadsheet Edited']]);
 });

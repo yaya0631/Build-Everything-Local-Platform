@@ -177,7 +177,7 @@ export class Home {
     this.mobileStorage = h('div.home-mobile-storage', h('p.storage-where', ...where.map((n) => (typeof n === 'string' ? n : n.cloneNode(true)))), h('p.storage-usage'));
     this.content = h('div.home-content');
     this.mainEl = h('main#main.home-main', { tabindex: '-1' }, this.content, this.mobileStorage,
-      h('footer.home-footer', h('a', { href: 'https://developer.puter.com', target: '_blank', rel: 'noopener' }, 'Powered by Puter')),
+      h('footer.home-footer', h('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Powered by Puter')),
       this.importInput, this.bundleInput);
     this.dropHint = h('div.home-drop', { 'aria-hidden': 'true' }, h('div.home-drop-box', icon('import', 28), h('strong', 'Drop to start'), h('span', 'Media opens in a new project. Project files are added to your projects.')));
     const page = h('div.home', this.side, this.mainEl, this.dropHint);

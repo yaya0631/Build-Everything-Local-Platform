@@ -186,7 +186,7 @@ test("organization settings tabs render, save, and are accessible", async () => 
     },
   };
   const org = {
-    server: "https://whiteboard-abc.puter.work",
+    server: "http://whiteboard-abc.localhost:8443",
     isAdmin: true,
     request: async (op, data) => {
       calls.push([op, data]);
@@ -622,7 +622,7 @@ test("the unread badge counts the notifications the dialog lists and drops one o
     let dialog;
     const home = createOrganizationHome({
       org: {
-        server: "https://org.puter.work",
+        server: "http://org.localhost:8443",
         info: { name: "Fabrikam", role: "member", user: {} },
         onChange() {},
         request: async (op, input) => {
@@ -685,7 +685,7 @@ test("the unread badge stops at 99+ and Mark all as read asks until none are lef
     let dialog;
     const home = createOrganizationHome({
       org: {
-        server: "https://org.puter.work",
+        server: "http://org.localhost:8443",
         info: { name: "Fabrikam", role: "member", user: {} },
         onChange() {},
         request: async (op, input) => {
@@ -759,7 +759,7 @@ test("a notification opens the task or comment it is about", async () => {
     let dialog;
     const home = createOrganizationHome({
       org: {
-        server: "https://org.puter.work",
+        server: "http://org.localhost:8443",
         info: { name: "Fabrikam", role: "member", user: {} },
         onChange() {},
         request: async (op) => (op === "notifications.list" ? { items } : {}),
@@ -787,11 +787,11 @@ test("a notification opens the task or comment it is about", async () => {
     await settle();
     assert.deepEqual(opened, [
       [
-        "https://org.puter.work",
+        "http://org.localhost:8443",
         "r1",
         { thread: undefined, objectId: "task1" },
       ],
-      ["https://org.puter.work", "r1", { thread: "c1", objectId: undefined }],
+      ["http://org.localhost:8443", "r1", { thread: "c1", objectId: undefined }],
     ]);
   } finally {
     for (const key of keys) delete globalThis[key];
@@ -812,7 +812,7 @@ test("the email notification choice shows what is saved", async () => {
       offline = true;
     const home = createOrganizationHome({
       org: {
-        server: "https://org.puter.work",
+        server: "http://org.localhost:8443",
         info: {
           name: "Fabrikam",
           role: "member",
@@ -869,7 +869,7 @@ test("notifications are gathered from the servers of shared boards, not only the
   try {
     const { createOrganizationHome } =
       await import("../src/organization/home-ui.js");
-    const server = (n) => `https://w${n}.puter.work`;
+    const server = (n) => `https://w${n}.localhost:8443`;
     // Someone in no organization, invited to boards on twelve workers; the
     // second is unreachable.
     const kept = {
@@ -978,8 +978,8 @@ test("an organization member's notifications include those of boards shared from
   try {
     const { createOrganizationHome } =
       await import("../src/organization/home-ui.js");
-    const orgServer = "https://org.puter.work",
-      other = "https://friend.puter.work";
+    const orgServer = "http://org.localhost:8443",
+      other = "http://friend.localhost:8443";
     const asked = [];
     const home = createOrganizationHome({
       org: {
@@ -1037,7 +1037,7 @@ test("joining from a link confirms the organization before switching", async () 
       await import("../src/organization/home-ui.js");
     const used = [];
     const org = {
-      server: "https://acme.puter.work",
+      server: "http://acme.localhost:8443",
       info: { name: "ACME", role: "member", configured: true },
       isMember: true,
       onChange() {},
@@ -1060,7 +1060,7 @@ test("joining from a link confirms the organization before switching", async () 
       icon: () => "",
       async openShared() {},
     });
-    home.joinDialog("https://whiteboard.test/#org=https://evil.puter.work");
+    home.joinDialog("https://whiteboard.test/#org=http://evil.localhost:8443");
     const submit = () =>
       dialog
         .querySelector("#org-join")
@@ -1074,7 +1074,7 @@ test("joining from a link confirms the organization before switching", async () 
     );
     submit();
     await new Promise((resolve) => setTimeout(resolve, 10));
-    assert.deepEqual(used, ["https://evil.puter.work"]);
+    assert.deepEqual(used, ["http://evil.localhost:8443"]);
   } finally {
     for (const key of keys) delete globalThis[key];
     dom.window.close();
@@ -1095,7 +1095,7 @@ test("a space that cannot be created stays explained in its form", async () => {
       offline = true;
     const home = createOrganizationHome({
       org: {
-        server: "https://org.puter.work",
+        server: "http://org.localhost:8443",
         info: { role: "member" },
         isMember: true,
         onChange() {},
@@ -1159,7 +1159,7 @@ test("space, team, and new owner choices outside the console are listed by name"
     const named = (...names) => names.map((name, n) => ({ id: `i${n}`, name }));
     const spaces = named("Team 10", "écoles", "Team 2", "Archive");
     const teams = named("Sample team 11", "Sample team 3", "Sample team 1");
-    const server = "https://org.puter.work";
+    const server = "http://org.localhost:8443";
     const org = {
       server,
       info: { role: "member", configured: true },
@@ -1247,7 +1247,7 @@ test("a slow organization board search never overwrites a newer one", async () =
     const board = (room, title) => ({ room, title, visibility: "private" });
     const home = createOrganizationHome({
       org: {
-        server: "https://org.puter.work",
+        server: "http://org.localhost:8443",
         info: { role: "member" },
         isMember: true,
         onChange() {},
@@ -1295,7 +1295,7 @@ test("organization board counts group their digits", async () => {
       Array.from({ length: n }, (_, i) => ({ room: `r${i}`, title: `B ${i}` }));
     const home = createOrganizationHome({
       org: {
-        server: "https://org.puter.work",
+        server: "http://org.localhost:8443",
         info: { role: "member" },
         isMember: true,
         onChange() {},
@@ -1338,7 +1338,7 @@ test("the organization board directory asks for the boards after the last shown,
     const asked = [];
     const home = createOrganizationHome({
       org: {
-        server: "https://org.puter.work",
+        server: "http://org.localhost:8443",
         info: { role: "member" },
         isMember: true,
         onChange() {},
@@ -1392,7 +1392,7 @@ test("the organization board directory shows more boards past the first 200", as
     const asked = [];
     const home = createOrganizationHome({
       org: {
-        server: "https://org.puter.work",
+        server: "http://org.localhost:8443",
         info: { role: "member" },
         isMember: true,
         onChange() {},
@@ -1459,7 +1459,7 @@ test("an admin action that finishes after another tab opened changes nothing", a
     let release;
     const toasts = [];
     const org = {
-      server: "https://whiteboard-abc.puter.work",
+      server: "http://whiteboard-abc.localhost:8443",
       isAdmin: true,
       request: async (op, data) => {
         if (op === "org.audit" && data.cursor)
@@ -1526,7 +1526,7 @@ test("a failed admin action stays explained in the console instead of a fading n
     let offline = true;
     const toasts = [];
     const org = {
-      server: "https://whiteboard-abc.puter.work",
+      server: "http://whiteboard-abc.localhost:8443",
       isAdmin: true,
       request: async (op, data) => {
         if (op === "org.audit" && data.cursor) {
@@ -1605,7 +1605,7 @@ test("an invitation link created after another tab opened shows no error", async
     let release;
     const toasts = [];
     const org = {
-      server: "https://whiteboard-abc.puter.work",
+      server: "http://whiteboard-abc.localhost:8443",
       isAdmin: true,
       request: async (op) => {
         if (op === "org.invite")
@@ -1665,7 +1665,7 @@ test("the audit log date filters read Du and Au in French", async () => {
     setLanguage("fr");
     const admin = createAdminConsole({
       org: {
-        server: "https://whiteboard-abc.puter.work",
+        server: "http://whiteboard-abc.localhost:8443",
         isAdmin: true,
         request: async (op) =>
           op === "org.audit" ? { entries: [], cursor: null } : {},
@@ -1731,7 +1731,7 @@ test("the audit log reads on past empty pages to show the events a filter matche
     const asked = [];
     const downloads = [];
     const org = {
-      server: "https://whiteboard-abc.puter.work",
+      server: "http://whiteboard-abc.localhost:8443",
       isAdmin: true,
       request: async (op, data) => {
         if (op === "org.audit") {
@@ -1806,7 +1806,7 @@ test("the audit log export includes pages not loaded on screen", async () => {
     };
     const downloads = [];
     const org = {
-      server: "https://whiteboard-abc.puter.work",
+      server: "http://whiteboard-abc.localhost:8443",
       isAdmin: true,
       request: async (op, data) => {
         if (op === "org.audit") return pages[data.cursor || ""];
@@ -1923,7 +1923,7 @@ test("a change finishing after another tab opened keeps that tab open", async ()
     let release;
     const deleted = [];
     const org = {
-      server: "https://whiteboard-abc.puter.work",
+      server: "http://whiteboard-abc.localhost:8443",
       isAdmin: true,
       request: async (op, data) => {
         if (op === "teams.delete") {
@@ -2024,7 +2024,7 @@ test("policy numbers, key scopes, and webhook events from the server never becom
     };
     const admin = createAdminConsole({
       org: {
-        server: "https://whiteboard-abc.puter.work",
+        server: "http://whiteboard-abc.localhost:8443",
         isAdmin: true,
         request: async (op) => responses[op] || { ok: true, policy: {} },
         refresh: async () => {},
@@ -2071,7 +2071,7 @@ test("organization board cards count one object in the singular", async () => {
       await import("../src/organization/home-ui.js");
     const home = createOrganizationHome({
       org: {
-        server: "https://org.puter.work",
+        server: "http://org.localhost:8443",
         info: {
           role: "member",
           name: "Fabrikam",
@@ -2119,7 +2119,7 @@ test("numbers from the organization's server never become markup", async () => {
     const markup = '<img id="pwn" src="x">';
     const home = createOrganizationHome({
       org: {
-        server: "https://org.puter.work",
+        server: "http://org.localhost:8443",
         info: {
           role: "member",
           name: "Fabrikam",
@@ -2457,7 +2457,7 @@ test("closing an inline people form returns focus to its button", async () => {
     const { createAdminConsole } =
       await import("../src/organization/admin-ui.js");
     const org = {
-      server: "https://whiteboard-abc.puter.work",
+      server: "http://whiteboard-abc.localhost:8443",
       isAdmin: true,
       request: async (op, data) =>
         op === "org.users.list"
@@ -2555,7 +2555,7 @@ test("editing a team keeps its deactivated members", async () => {
       await import("../src/organization/admin-ui.js");
     const sent = [];
     const org = {
-      server: "https://whiteboard-abc.puter.work",
+      server: "http://whiteboard-abc.localhost:8443",
       isAdmin: true,
       request: async (op, data) => {
         if (op === "teams.update") sent.push(data);
@@ -2628,7 +2628,7 @@ test("people search finds roles and statuses as they are shown in French", async
       status,
     });
     const org = {
-      server: "https://whiteboard-abc.puter.work",
+      server: "http://whiteboard-abc.localhost:8443",
       isAdmin: true,
       request: async (op) =>
         op === "org.users.list"
@@ -2700,7 +2700,7 @@ test("administrators see that their changes were saved", async () => {
     const on = { enabled: true };
     const toasts = [];
     const org = {
-      server: "https://whiteboard-abc.puter.work",
+      server: "http://whiteboard-abc.localhost:8443",
       isAdmin: true,
       request: async (op) =>
         op === "org.policy.get"
@@ -2762,7 +2762,7 @@ test("organization boards hide archived boards until they are asked for", async 
     ];
     const home = createOrganizationHome({
       org: {
-        server: "https://org.puter.work",
+        server: "http://org.localhost:8443",
         info: { role: "member", user: { emailVerified: true } },
         isMember: true,
         onChange() {},
@@ -2830,7 +2830,7 @@ test("organization boards found by their content show the match and open on it",
     const opened = [];
     const home = createOrganizationHome({
       org: {
-        server: "https://org.puter.work",
+        server: "http://org.localhost:8443",
         info: { role: "member", user: { emailVerified: true } },
         isMember: true,
         onChange() {},
@@ -2898,8 +2898,8 @@ test("organization boards found by their content show the match and open on it",
     named.click();
     await settle();
     assert.deepEqual(opened, [
-      ["https://org.puter.work", "r2", { query: "Roadmap" }],
-      ["https://org.puter.work", "r1", {}],
+      ["http://org.localhost:8443", "r2", { query: "Roadmap" }],
+      ["http://org.localhost:8443", "r1", {}],
     ]);
   } finally {
     for (const key of keys) delete globalThis[key];
@@ -2922,7 +2922,7 @@ test("what is typed in the organization search while its lists reload is kept", 
     const release = () => pending.splice(0).forEach((resolve) => resolve());
     const home = createOrganizationHome({
       org: {
-        server: "https://org.puter.work",
+        server: "http://org.localhost:8443",
         info: { role: "member", user: { emailVerified: true } },
         isMember: true,
         onChange() {},
@@ -3015,7 +3015,7 @@ test("organization boards can include archived ones, find empty boards and links
     ];
     const home = createOrganizationHome({
       org: {
-        server: "https://org.puter.work",
+        server: "http://org.localhost:8443",
         info: { role: "member", user: { emailVerified: true } },
         isMember: true,
         onChange() {},
@@ -3096,7 +3096,7 @@ test("the sidebar and the boards asking for the spaces together ask once", async
     let gone = false;
     const home = createOrganizationHome({
       org: {
-        server: "https://org.puter.work",
+        server: "http://org.localhost:8443",
         info: { role: "member", user: { emailVerified: true }, name: "CDS" },
         isMember: true,
         onChange() {},
@@ -3149,7 +3149,7 @@ test("board filters agree with their French labels", async () => {
       await import("../src/organization/admin-ui.js");
     setLanguage("fr");
     const org = {
-      server: "https://org.puter.work",
+      server: "http://org.localhost:8443",
       info: { role: "admin", user: { emailVerified: true } },
       isMember: true,
       isAdmin: true,
@@ -3256,7 +3256,7 @@ test("the board directory shows how many boards matched and exports them all", a
     const requests = [],
       downloads = [];
     const org = {
-      server: "https://whiteboard-abc.puter.work",
+      server: "http://whiteboard-abc.localhost:8443",
       isAdmin: true,
       request: async (op, data) => {
         if (op === "org.boards") {
@@ -3332,7 +3332,7 @@ test("board activity and duplicate results are announced", async () => {
     ];
     const entry = { at: 1, category: "content", action: "board.edit" };
     const org = {
-      server: "https://whiteboard-abc.puter.work",
+      server: "http://whiteboard-abc.localhost:8443",
       isAdmin: true,
       request: async (op, data) =>
         op === "org.boards"
@@ -3486,7 +3486,7 @@ test("archiving a board from its settings makes it read-only at once", async () 
     const s = {
       role: "owner",
       readOnly: false,
-      server: "https://whiteboard-abc.puter.work",
+      server: "http://whiteboard-abc.localhost:8443",
       settings: {
         visibility: "private",
         orgRole: "editor",
@@ -3551,7 +3551,7 @@ test("saving board settings sends only what was changed in the dialog", async ()
     const sent = [];
     const s = {
       role: "facilitator",
-      server: "https://whiteboard-abc.puter.work",
+      server: "http://whiteboard-abc.localhost:8443",
       settings: { visibility: "link", orgRole: "editor", linkRole: "viewer" },
       sharing: {
         organization: true,
@@ -3619,7 +3619,7 @@ test("a saved Slack webhook is not sent again and the dialog shows it connected"
     const sent = [];
     const s = {
       role: "owner",
-      server: "https://whiteboard-abc.puter.work",
+      server: "http://whiteboard-abc.localhost:8443",
       settings: {
         visibility: "private",
         orgRole: "editor",
@@ -3703,7 +3703,7 @@ test("board settings announce the delete confirmation and keep an administrator'
       await import("../src/organization/board-access.js");
     const s = {
       role: "owner",
-      server: "https://whiteboard-abc.puter.work",
+      server: "http://whiteboard-abc.localhost:8443",
       settings: {
         visibility: "private",
         orgRole: "editor",
@@ -3782,7 +3782,7 @@ test("board settings do not open for a board left while they load", async () => 
         room,
         role: "owner",
         closed: false,
-        server: "https://whiteboard-abc.puter.work",
+        server: "http://whiteboard-abc.localhost:8443",
         settings: { visibility: "private", orgRole: "editor" },
         release,
         request: async (op) => {
@@ -3838,7 +3838,7 @@ test("board settings drop owner controls once ownership is transferred", async (
       await import("../src/organization/board-access.js");
     const s = {
       role: "owner",
-      server: "https://whiteboard-abc.puter.work",
+      server: "http://whiteboard-abc.localhost:8443",
       settings: {
         visibility: "private",
         orgRole: "editor",
@@ -3898,10 +3898,10 @@ test("guest invitations follow the policy of the board's own server", async () =
   try {
     const { createBoardAccess } =
       await import("../src/organization/board-access.js");
-    let server = "https://whiteboard-abc.puter.work";
+    let server = "http://whiteboard-abc.localhost:8443";
     const access = createBoardAccess({
       org: {
-        server: "https://whiteboard-abc.puter.work",
+        server: "http://whiteboard-abc.localhost:8443",
         info: { configured: true, role: "member" },
         policy: () => ({ guestAccess: true, externalSharing: "any" }),
         allows: () => true,
@@ -3914,7 +3914,7 @@ test("guest invitations follow the policy of the board's own server", async () =
     });
     assert.match(access.shareControls(), /id="share-members"/);
     // A board on someone's own server is not shared under this policy.
-    server = "https://whiteboard-other.puter.work";
+    server = "http://whiteboard-other.localhost:8443";
     assert.doesNotMatch(access.shareControls(), /id="share-members"/);
   } finally {
     for (const key of keys) delete globalThis[key];
@@ -3974,7 +3974,7 @@ test("board settings send where the board is filed only when changed there", asy
     const { createBoardAccess } =
       await import("../src/organization/board-access.js");
     const sent = [],
-      server = "https://whiteboard-abc.puter.work";
+      server = "http://whiteboard-abc.localhost:8443";
     const s = {
       role: "facilitator",
       server,
@@ -4399,7 +4399,7 @@ test("organization date filters refuse years the app cannot search", async () =>
       await import("../src/organization/home-ui.js");
     const sent = [];
     const org = {
-      server: "https://whiteboard-abc.puter.work",
+      server: "http://whiteboard-abc.localhost:8443",
       isAdmin: true,
       isMember: true,
       info: { name: "Fabrikam", role: "admin", user: { emailVerified: true } },
@@ -4495,7 +4495,7 @@ test("revoking invitation links stops showing the link created before", async ()
     const { createAdminConsole } =
       await import("../src/organization/admin-ui.js");
     const org = {
-      server: "https://whiteboard-abc.puter.work",
+      server: "http://whiteboard-abc.localhost:8443",
       isAdmin: true,
       refresh: async () => {},
       request: async (op) =>
@@ -4583,7 +4583,7 @@ test("a destructive button whose confirmed action fails asks for confirmation ag
       await import("../src/organization/admin-ui.js");
     let deletes = 0;
     const org = {
-      server: "https://whiteboard-abc.puter.work",
+      server: "http://whiteboard-abc.localhost:8443",
       isAdmin: true,
       request: async (op) => {
         if (op === "teams.delete") {
@@ -4647,7 +4647,7 @@ test("Open in the board directory keeps the console when the board cannot be ope
       await import("../src/organization/admin-ui.js");
     let fail = true;
     const org = {
-      server: "https://whiteboard-abc.puter.work",
+      server: "http://whiteboard-abc.localhost:8443",
       isAdmin: true,
       request: async (op) => {
         if (op === "org.boards")
@@ -4736,7 +4736,7 @@ test("deactivating a person takes a second choice of Deactivated", async () => {
       lastActive: Date.now(),
     };
     const org = {
-      server: "https://whiteboard-abc.puter.work",
+      server: "http://whiteboard-abc.localhost:8443",
       isAdmin: true,
       request: async (op, data) => {
         calls.push([op, data]);
@@ -4894,7 +4894,7 @@ test("the selected tab is brought into the phone tab row", async () => {
       await import("../src/organization/admin-ui.js");
     const admin = createAdminConsole({
       org: {
-        server: "https://whiteboard-abc.puter.work",
+        server: "http://whiteboard-abc.localhost:8443",
         isAdmin: true,
         request: async (op) =>
           op === "org.audit" ? { entries: [], cursor: null } : {},
@@ -4951,7 +4951,7 @@ test("an administrator cannot act on another administrator's row", async () => {
     });
     const admin = createAdminConsole({
       org: {
-        server: "https://whiteboard-abc.puter.work",
+        server: "http://whiteboard-abc.localhost:8443",
         isAdmin: true,
         info: { role: "admin" },
         request: async (op) =>
@@ -5012,7 +5012,7 @@ test("an emptied retention or guest expiry field is not saved as a default", asy
     const calls = [];
     const admin = createAdminConsole({
       org: {
-        server: "https://whiteboard-abc.puter.work",
+        server: "http://whiteboard-abc.localhost:8443",
         isAdmin: true,
         request: async (op, data) => {
           calls.push(op);
@@ -5077,7 +5077,7 @@ test("an action finishing after another action's reload still shows its outcome"
     const pending = {};
     const admin = createAdminConsole({
       org: {
-        server: "https://whiteboard-abc.puter.work",
+        server: "http://whiteboard-abc.localhost:8443",
         isAdmin: true,
         request: async (op, data) =>
           op === "org.users.list"
@@ -5149,7 +5149,7 @@ test("stored integration and SIEM secrets can be removed", async () => {
     };
     const admin = createAdminConsole({
       org: {
-        server: "https://whiteboard-abc.puter.work",
+        server: "http://whiteboard-abc.localhost:8443",
         isAdmin: true,
         request: async (op, data) => {
           if (op === "org.policy.set") saved.push(data.secrets);
@@ -5227,7 +5227,7 @@ test("Enter in the team member search does not save the team", async () => {
       await import("../src/organization/admin-ui.js");
     const admin = createAdminConsole({
       org: {
-        server: "https://whiteboard-abc.puter.work",
+        server: "http://whiteboard-abc.localhost:8443",
         isAdmin: true,
         request: async (op) =>
           op === "org.users.list"
@@ -5276,7 +5276,7 @@ test("a deleted team or space no longer narrows the board list", async () => {
     const sent = [];
     const admin = createAdminConsole({
       org: {
-        server: "https://whiteboard-abc.puter.work",
+        server: "http://whiteboard-abc.localhost:8443",
         isAdmin: true,
         request: async (op, data) => {
           if (op === "org.boards") sent.push(data);
@@ -5342,7 +5342,7 @@ test("after a row action the keyboard stays at that row in the list", async () =
     }));
     const admin = createAdminConsole({
       org: {
-        server: "https://whiteboard-abc.puter.work",
+        server: "http://whiteboard-abc.localhost:8443",
         isAdmin: true,
         request: async (op, data) => {
           if (op === "teams.delete")
@@ -5419,7 +5419,7 @@ test("people and teams are listed by name", async () => {
     }));
     const admin = createAdminConsole({
       org: {
-        server: "https://whiteboard-abc.puter.work",
+        server: "http://whiteboard-abc.localhost:8443",
         isAdmin: true,
         request: async (op) =>
           op === "org.users.list"
@@ -5471,7 +5471,7 @@ test("audit detail names read in French", async () => {
     setLanguage("fr");
     const admin = createAdminConsole({
       org: {
-        server: "https://whiteboard-abc.puter.work",
+        server: "http://whiteboard-abc.localhost:8443",
         isAdmin: true,
         request: async () => ({
           entries: [
@@ -5540,7 +5540,7 @@ test("policy settings that cannot take effect are shown unavailable", async () =
     const saved = [];
     const admin = createAdminConsole({
       org: {
-        server: "https://whiteboard-abc.puter.work",
+        server: "http://whiteboard-abc.localhost:8443",
         isAdmin: true,
         request: async (op, data) => {
           if (op === "org.policy.set") saved.push(data.policy);
@@ -5633,7 +5633,7 @@ test("settings typed but not saved survive a visit to another tab", async () => 
     let policy = normalizePolicy({ name: "Fabrikam" });
     const admin = createAdminConsole({
       org: {
-        server: "https://whiteboard-abc.puter.work",
+        server: "http://whiteboard-abc.localhost:8443",
         isAdmin: true,
         request: async (op, data) => {
           if (op === "org.policy.set")
@@ -5710,7 +5710,7 @@ test("closing the console with unsaved settings asks first", async () => {
     const { normalizePolicy } = await import("../worker/org.js");
     const admin = createAdminConsole({
       org: {
-        server: "https://whiteboard-abc.puter.work",
+        server: "http://whiteboard-abc.localhost:8443",
         isAdmin: true,
         request: async () => ({ policy: normalizePolicy({}), secrets: {} }),
         refresh: async () => {},
@@ -5780,7 +5780,7 @@ test("a setting changed while a save is on its way stays unsaved", async () => {
     let finish;
     const admin = createAdminConsole({
       org: {
-        server: "https://whiteboard-abc.puter.work",
+        server: "http://whiteboard-abc.localhost:8443",
         isAdmin: true,
         request: (op) =>
           op === "org.policy.set"
@@ -5834,7 +5834,7 @@ test("opening a board from settings with unsaved changes asks first", async () =
     const opened = [];
     const admin = createAdminConsole({
       org: {
-        server: "https://whiteboard-abc.puter.work",
+        server: "http://whiteboard-abc.localhost:8443",
         isAdmin: true,
         request: async (op) =>
           op === "org.boards"
@@ -5944,7 +5944,7 @@ test("administrators filter the board directory by owner", async () => {
     const sent = [];
     const admin = createAdminConsole({
       org: {
-        server: "https://whiteboard-abc.puter.work",
+        server: "http://whiteboard-abc.localhost:8443",
         isAdmin: true,
         request: async (op, data) => {
           if (op === "org.boards") sent.push(data);
@@ -6018,7 +6018,7 @@ async function withConsole(respond, tab, run, options = {}) {
     const calls = [];
     const downloads = [];
     const org = {
-      server: "https://whiteboard-abc.puter.work",
+      server: "http://whiteboard-abc.localhost:8443",
       isAdmin: true,
       request: async (op, data) => {
         calls.push([op, data]);
@@ -7088,7 +7088,7 @@ test("transferring a board's ownership takes a second press naming the new owner
     const sent = [];
     const s = {
       role: "owner",
-      server: "https://whiteboard-abc.puter.work",
+      server: "http://whiteboard-abc.localhost:8443",
       settings: {
         visibility: "private",
         orgRole: "editor",
@@ -7330,7 +7330,7 @@ test("a notification or organization board pressed twice opens its board once", 
     let dialog;
     const home = createOrganizationHome({
       org: {
-        server: "https://org.puter.work",
+        server: "http://org.localhost:8443",
         info: {
           name: "Fabrikam",
           role: "member",
@@ -7564,10 +7564,10 @@ test("a notification another server garbled does not hide the others", async () 
     const { createOrganizationHome } =
       await import("../src/organization/home-ui.js");
     const kept = {
-      "https://w1.puter.work": [
+      "http://w1.localhost:8443": [
         { id: "a", type: "mention", at: 30, board: "r1", thread: "c1" },
       ],
-      "https://w2.puter.work": [
+      "http://w2.localhost:8443": [
         null,
         {
           id: "b",
@@ -7708,7 +7708,7 @@ test("board settings say when Slack stopped taking the board's posts", async () 
     };
     const session = {
       role: "owner",
-      server: "https://whiteboard-abc.puter.work",
+      server: "http://whiteboard-abc.localhost:8443",
       settings,
       request: async (op) =>
         op === "settings.get"
@@ -7725,7 +7725,7 @@ test("board settings say when Slack stopped taking the board's posts", async () 
     let d;
     const access = createBoardAccess({
       org: {
-        server: "https://whiteboard-abc.puter.work",
+        server: "http://whiteboard-abc.localhost:8443",
         isMember: true,
         info: { configured: true },
         policy: () => ({ publicLinks: false }),

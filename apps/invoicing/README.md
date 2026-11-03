@@ -2,7 +2,7 @@
 
 Create quotes, invoices, recurring invoices, receipts, and payment links. Deliberately simpler than a full accounting app, and built to feed one: every payment you record can be exported straight into the [Personal Finance](https://github.com/HeyPuter/accountant) app.
 
-Everything is stored in the user's own [Puter](https://developer.puter.com) cloud. There is no server of ours, no database of ours, and no tracking.
+Everything is stored in the user's own [Puter](http://localhost:8443) cloud. There is no server of ours, no database of ours, and no tracking.
 
 ## Features
 
@@ -23,7 +23,7 @@ Everything is stored in the user's own [Puter](https://developer.puter.com) clou
 - **Clients**: each client has a page with their whole history, per-currency totals, optional billing defaults (currency, terms, tax rate, notes, tax note) that new documents start from, and a printable statement of account.
 - **Branding**: a logo and an accent color on every invoice, estimate, receipt, and statement. Logos are resized and embedded, so a shared page needs nothing from the internet.
 - **Payment links**: attach a PayPal.me handle or any custom checkout URL template, and each invoice carries a "pay online" link pre-filled with its balance.
-- **Public share pages**: publish an invoice or estimate as an unlisted page on a `*.puter.site` subdomain in the user's own account, with Pay and Download PDF buttons. Un-share deletes the page.
+- **Public share pages**: publish an invoice or estimate as an unlisted page on a `*.localhost:8443` subdomain in the user's own account, with Pay and Download PDF buttons. Un-share deletes the page.
 - **PDF and print**: documents, receipts, and statements save as real PDF files with selectable text — or print as the same clean paper.
 - **Personal Finance integration**: one click exports all payments as income rows in a CSV shaped for the accountant app's import wizard; refunds export as negative income.
 - **Backup and restore**: download the whole account as JSON, and put it back — validated before anything is written.
@@ -34,7 +34,7 @@ Everything is stored in the user's own [Puter](https://developer.puter.com) clou
 ## Stack
 
 - Vanilla JavaScript (no framework), [Vite](https://vitejs.dev) for dev/build, [Lucide](https://lucide.dev) for icons.
-- [Puter.js](https://docs.puter.com) for auth, key-value store, file storage, static hosting, and — through one shared worker — outbound email.
+- [Puter.js](http://localhost:8443) for auth, key-value store, file storage, static hosting, and — through one shared worker — outbound email.
 - [Vitest](https://vitest.dev) for unit tests over the pure logic (money math, statuses, schedules, reports, aging, message templates, backups, the PDF writer, CSV import and export, the offline snapshot, the email worker).
 - PDFs are written by a small generator in `src/lib/pdf.js` — no dependency, base-14 fonts, loaded only when someone asks for one.
 
@@ -66,7 +66,7 @@ sheet — so unlike an invitation service the worker cannot compose the whole
 message itself. It takes the subject and body as **text**, escapes them, and lays
 them out itself, so nothing can inject markup, an image, or a tracking pixel. The
 only clickable links in a sent message are the two it validates: the document's
-own share page (https, on the `*.puter.site` subdomain in your account, the exact
+own share page (https, on the `*.localhost:8443` subdomain in your account, the exact
 `<token>.html` shape the app publishes) and its pay-online link, which is always
 shown as its own URL so the recipient reads where it goes. Recipients are capped
 per message and per user per day, attachments are capped in count and size, and a
@@ -92,7 +92,7 @@ Users of the hosted app need nothing; this is for anyone running their own copy.
 npm install -g puter-cli          # if you don't have it
 puter login
 npm run deploy:email-worker       # puter worker deploy src/workers/email-worker.js invoicing-email
-curl https://invoicing-email.puter.work/health    # {"ok":true,"version":"6"}
+curl http://invoicing-email.localhost:8443/health    # {"ok":true,"version":"6"}
 ```
 
 `GET /whoami` is the self-test for "why am I getting a 401": call it through the

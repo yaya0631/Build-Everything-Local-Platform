@@ -1,9 +1,9 @@
 /** Value events contain only fixed action labels, never workbook data or AI messages. */
 export function trackEvent(name, props) {
   try {
-    if (typeof globalThis.plausible === 'function') {
-      if (props) globalThis.plausible(name, { props });
-      else globalThis.plausible(name);
+    if (typeof globalThis.__everythingAnalytics === 'function') {
+      if (props) globalThis.__everythingAnalytics(name, { props });
+      else globalThis.__everythingAnalytics(name);
     }
   } catch { /* Analytics must not interrupt editing, saving, exports or AI. */ }
 }

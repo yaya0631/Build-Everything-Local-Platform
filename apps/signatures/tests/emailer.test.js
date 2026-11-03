@@ -4,7 +4,7 @@ import { createEmailer, digest, describeResult, failureMessage } from '../src/li
 import { makeFakePuter } from './helpers/fake-puter.js';
 
 const PDF = new Uint8Array([0x25, 0x50, 0x44, 0x46]);
-const LINK = `https://doc-sign-abc12.puter.work/sign/${'a'.repeat(40)}`;
+const LINK = `http://doc-sign-abc12.localhost:8443/sign/${'a'.repeat(40)}`;
 
 describe('digest', () => {
   it('is stable for equal input and different for different input', () => {
@@ -77,7 +77,7 @@ describe('emailer', () => {
     const out = await emailer.send(doc, { kind: 'request' });
     expect(out.sent).toBe(1);
     const [url, init] = p.workers.exec.mock.calls[0];
-    expect(url).toContain('signatures-email.puter.work/send');
+    expect(url).toContain('signatures-email.localhost:8443/send');
     const body = JSON.parse(init.body);
     expect(body.doc.ownerName).toBe('Alex Rivera');
     expect(body.recipients).toHaveLength(1);

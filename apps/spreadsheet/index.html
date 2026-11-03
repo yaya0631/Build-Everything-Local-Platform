@@ -9,10 +9,10 @@
        (sources in dev/og/). -->
   <meta property="og:type" content="website" />
   <meta property="og:site_name" content="Puter" />
-  <meta property="og:url" content="https://spreadsheet.puter.com/" />
+  <meta property="og:url" content="http://spreadsheet.localhost:8443/" />
   <meta property="og:title" content="Spreadsheet" />
   <meta property="og:description" content="A fast, private AI spreadsheet. Formulas, formatting, and real .xlsx files saved to your own Puter cloud." />
-  <meta property="og:image" content="https://spreadsheet.puter.com/og/og-image-a.png" />
+  <meta property="og:image" content="http://spreadsheet.localhost:8443/og/og-image-a.png" />
   <meta property="og:image:type" content="image/png" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
@@ -20,7 +20,7 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Spreadsheet" />
   <meta name="twitter:description" content="A fast, private AI spreadsheet. Formulas, formatting, and real .xlsx files saved to your own Puter cloud." />
-  <meta name="twitter:image" content="https://spreadsheet.puter.com/og/og-image-a.png" />
+  <meta name="twitter:image" content="http://spreadsheet.localhost:8443/og/og-image-a.png" />
   <meta name="twitter:image:alt" content="Spreadsheet app icon on a green background. Fast, private, and AI powered. Real .xlsx files in your own cloud." />
   <meta name="theme-color" content="#356d49" media="(prefers-color-scheme: light)" />
   <meta name="theme-color" content="#28593a" media="(prefers-color-scheme: dark)" />
@@ -49,14 +49,7 @@
       } catch {}
     })();
   </script>
-  <!-- Privacy-friendly analytics by Plausible -->
-  <script async src="https://plausible.io/js/pa-MRQHafK7nSUP6VOpIrhR4.js"></script>
-  <script>
-    window.plausible = window.plausible || function () { (plausible.q = plausible.q || []).push(arguments); };
-    plausible.init = plausible.init || function (i) { plausible.o = i || {}; };
-    plausible.init();
-  </script>
-  <script src="https://js.puter.com/v2/" defer></script>
+  <script src="/sdk/puter.js" defer></script>
   <script type="module" src="/src/main.js"></script>
 </head>
 <body>

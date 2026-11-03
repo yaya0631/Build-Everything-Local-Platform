@@ -19,7 +19,7 @@ const SITE_DIR = 'hiring-public';
 /** The site's own address, or '' before the account has reserved one. */
 export function siteUrl(settings) {
   const subdomain = settings.publishSite?.subdomain;
-  return subdomain ? `https://${subdomain}.puter.site` : '';
+  return subdomain ? `http://${subdomain}.localhost:8443` : '';
 }
 
 /** The live public URL for a published job, or null. */
@@ -125,7 +125,7 @@ export async function publishJob(ctx, jobId, applyEmail) {
     }
   }
   await writeIndex(store);
-  return `https://${site.subdomain}.puter.site/${job.id}.html`;
+  return `http://${site.subdomain}.localhost:8443/${job.id}.html`;
 }
 
 /** Take a job's page down; tolerant of a page that never made it up. */

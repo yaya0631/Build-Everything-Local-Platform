@@ -51,7 +51,7 @@ for (const kind of ['print', 'images'])
           );
         };
       });
-      await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+      await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
       await page.goto('/');
       await expect(page.locator('.page-caption')).toHaveText('Page 1 of 1');
       await page.evaluate(() => {
@@ -111,7 +111,7 @@ test('print preparation can cancel a pending image decode and release its image 
       );
     };
   });
-  await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+  await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
   await page.goto('/');
   await expect(page.locator('.page-caption')).toHaveText('Page 1 of 1');
   const progress = await startOutput(page, 'print');
@@ -131,7 +131,7 @@ test('print preparation can cancel a pending image decode and release its image 
 
 for (const kind of ['print', 'images'])
   test(`${kind} preparation can stop while waiting for a PDF page`, async ({ page }) => {
-    await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+    await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
     await page.goto('/');
     await page.evaluate(async (kind) => {
       const { pageImage, printPages } = await import('/src/print.js');

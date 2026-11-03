@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import rawSource from '../src/workers/email-worker.js?raw';
 import { instantiateWorker, makeKv, sha256Hex } from './helpers/worker-harness.js';
 
-const LINK = `https://doc-sign-abc12.puter.work/sign/${'a'.repeat(40)}`;
+const LINK = `http://doc-sign-abc12.localhost:8443/sign/${'a'.repeat(40)}`;
 
 function makeCaller(sendImpl) {
   return {
@@ -76,7 +76,7 @@ describe('email worker', () => {
       json: request({
         recipients: [
           { email: 'ava@example.com', name: 'Ava', signUrl: LINK, version: 'abcd1234' },
-          { email: 'ava@example.com', name: 'Ava (witness)', signUrl: `https://doc-sign-abc12.puter.work/sign/${'b'.repeat(40)}`, version: 'beef5678' },
+          { email: 'ava@example.com', name: 'Ava (witness)', signUrl: `http://doc-sign-abc12.localhost:8443/sign/${'b'.repeat(40)}`, version: 'beef5678' },
         ],
       }),
       user,
@@ -107,7 +107,7 @@ describe('email worker', () => {
     expect(out.sent).toBe(1);
   });
 
-  it('never mails a link that is not a puter.work sign capability', async () => {
+  it('never mails a link that is not a localhost:8443 sign capability', async () => {
     const user = makeCaller();
     const evil = request();
     evil.recipients[0].signUrl = 'https://phish.example/sign/' + 'a'.repeat(40);

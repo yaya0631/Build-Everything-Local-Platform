@@ -6,7 +6,7 @@ for (const gradientRendering of ["svg", "css"])
   test(`gradient transparency preserves native color interpolation in ${gradientRendering}`, async ({
     page,
   }) => {
-    await page.route("https://js.puter.com/v2/", (route) =>
+    await page.route("**/sdk/puter.js", (route) =>
       route.fulfill({
         contentType: "application/javascript",
         body: 'window.puter={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',
@@ -94,7 +94,7 @@ for (const gradientRendering of ["svg", "css"])
 test("CSS and SVG gradient paints agree after transforms and effects", async ({
   page,
 }) => {
-  await page.route("https://js.puter.com/v2/", (route) =>
+  await page.route("**/sdk/puter.js", (route) =>
     route.fulfill({
       contentType: "application/javascript",
       body: 'window.puter={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',

@@ -105,16 +105,16 @@ function randomId() {
  *  Kept in step with the same test in rsvp-worker.js and public/book.html. */
 const PAGE_ID_RE = /^[a-z0-9][a-z0-9-]{2,30}[a-z0-9]$/;
 
-/** The worker a share link names, by label: `https://cal-nj.puter.work`
+/** The worker a share link names, by label: `http://cal-nj.localhost:8443`
  *  captures `nj`. Every worker this app has ever deployed is `cal-…` (see
  *  workerNameCandidates in rsvp-links.js), and the label is what travels in
- *  the link — index.html and public/book.html put `cal-` and `.puter.work`
+ *  the link — index.html and public/book.html put `cal-` and `.localhost:8443`
  *  back with this same grammar, so a link can only ever name a calendar
  *  worker. The label length keeps the DNS label at 63 with its prefix.
  *  Kept in step with the route test in index.html and public/book.html. */
 const FRIENDLY_WORKER_RE = /^https:\/\/cal-([a-z0-9][a-z0-9-]{0,58})\.puter\.work$/;
 
-const PRODUCTION_ORIGIN = 'https://calendar.puter.com';
+const PRODUCTION_ORIGIN = 'http://calendar.localhost:8443';
 
 /** Where the guest pages are served from: this app's own origin — book.html
  *  ships in public/ beside it — or production when there is no usable one
@@ -581,7 +581,7 @@ export function createBooking({
    * `<app origin>/#/<host>/<slug>` — the worker's label and the page's slug,
    * nothing else. index.html recognises the route and forwards the visitor
    * to the guest page (public/book.html) before the calendar itself loads,
-   * and that page rebuilds `https://cal-<host>.puter.work` from the same
+   * and that page rebuilds `https://cal-<host>.localhost:8443` from the same
    * grammar. The link is DERIVED, never registered: no directory to keep,
    * nothing central to go down, and nothing in the path but the host's own
    * worker. Both halves are fixed for life — a worker can't be renamed (so a
@@ -592,7 +592,7 @@ export function createBooking({
    * A worker whose origin the grammar can't carry (none this app deploys,
    * but the platform owns the URL it hands back) keeps the worker's own
    * redirect link, which works for any worker. That older form —
-   * `…puter.work/book/<slug>`, what every link was before this — stays valid
+   * `…localhost:8443/book/<slug>`, what every link was before this — stays valid
    * regardless: the worker still serves it.
    */
   function linkFor(id) {

@@ -1,5 +1,5 @@
 /**
- * The user's meetings, borrowed from the Calendar app (calendar.puter.com).
+ * The user's meetings, borrowed from the Calendar app (calendar.localhost:8443).
  *
  * The Calendar attaches Puter Meetings links to events; this is where those
  * links come back to us, so the home screen can show the day's meetings with
@@ -9,7 +9,7 @@
  * Calendar as a headless API server — no UI, `background: true` so the
  * desktop never puts a window on screen — and talk to it over the
  * AppConnection `puter.ui.launchApp` hands back
- * (https://docs.puter.com/Objects/AppConnection/). The Calendar only answers
+ * (http://localhost:8443/Objects/AppConnection/). The Calendar only answers
  * apps on its own allowlist, and it identifies the caller from what the
  * desktop stamps on the window it launched, not from anything we send: this
  * works because we really are `meetings`.
@@ -29,7 +29,7 @@
  */
 
 /* ---- The contract with the Calendar app ---------------------------------- */
-// Mirrored from calendar.puter.com/src/js/api/protocol.js — a published
+// Mirrored from calendar.localhost:8443/src/js/api/protocol.js — a published
 // contract between the two apps. Change them together and bump VERSION when
 // the shape changes.
 const CHANNEL = 'calendar-api';

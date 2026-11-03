@@ -67,8 +67,8 @@ recursive-path-order limitation and measurements below predate this update.
 
 ## API and backend evidence
 
-Reviewed official [readdir](https://docs.puter.com/FS/readdir/),
-[read](https://docs.puter.com/FS/read/), and [KV list](https://docs.puter.com/KV/list/),
+Reviewed official [readdir](http://localhost:8443/FS/readdir/),
+[read](http://localhost:8443/FS/read/), and [KV list](http://localhost:8443/KV/list/),
 plus local Puter checkout `abcd58f3d0eab0369b1dedcdd0b48863c3a9b1b0`:
 
 - SDK `FileSystem/operations/{readdir,read}.js`: cursor envelopes make one request;

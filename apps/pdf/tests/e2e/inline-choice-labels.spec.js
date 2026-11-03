@@ -21,7 +21,7 @@ async function download(page) {
   return PDFDocument.load(await readFile(await (await pending).path()));
 }
 async function prepare(page, options) {
-  await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+  await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
   await page.goto('/#library');
   const { doc } = await ambiguousChoicePdf(options);
   await open(page, doc);

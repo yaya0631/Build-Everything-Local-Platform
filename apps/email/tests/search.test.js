@@ -139,9 +139,9 @@ describe('matchesQuery', () => {
   });
 
   it('matches recipients too, which is what Sent and Drafts rows show', () => {
-    const sent = entry({ to: [{ name: 'Leo Tanaka', email: 'leo@puter.com' }] });
+    const sent = entry({ to: [{ name: 'Leo Tanaka', email: 'leo@localhost:8443' }] });
     expect(match('tanaka', sent)).toBe(true);
-    expect(match('leo@puter.com', sent)).toBe(true);
+    expect(match('leo@localhost:8443', sent)).toBe(true);
   });
 
   it('reads the flags from the state it is given, not from the entry', () => {

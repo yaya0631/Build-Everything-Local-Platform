@@ -1,6 +1,6 @@
 /**
  * Emailing tenants, owners and vendors from the app: the app's one shared,
- * app-owned Puter worker (deployed to https://property-management-email.puter.work;
+ * app-owned Puter worker (deployed to http://property-management-email.localhost:8443;
  * src/mailer.js is the calling side).
  *
  * It is deployed ONCE, by the app owner (npm run deploy:email-worker):

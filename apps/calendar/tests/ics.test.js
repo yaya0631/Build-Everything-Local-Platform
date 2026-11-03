@@ -97,7 +97,7 @@ describe('toICS / parseICS', () => {
       tzid: 'America/Los_Angeles', recurrenceId,
     });
     expect(ics.match(/BEGIN:VEVENT/g)).toHaveLength(1);
-    expect(ics).toContain('UID:series@calendar.puter.com');
+    expect(ics).toContain('UID:series@calendar.localhost');
     expect(ics).toContain(allDay
       ? 'RECURRENCE-ID;VALUE=DATE:20260720'
       : 'RECURRENCE-ID;TZID=America/Los_Angeles:20260720T090000');
@@ -894,7 +894,7 @@ describe('ORGANIZER / ATTENDEE round-trip', () => {
       'UID:abc123@google.com',
       'ORGANIZER;CN=Jane Boss:mailto:jane@corp.com',
       'ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=',
-      ' TRUE;CN=Nariman;X-NUM-GUESTS=0:mailto:nj@puter.com',
+      ' TRUE;CN=Nariman;X-NUM-GUESTS=0:mailto:nj@localhost:8443',
       'ATTENDEE;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=ACCEPTED;CN=Jane B',
       ' oss:mailto:jane@corp.com',
       'SUMMARY:Q3 kickoff',
@@ -905,7 +905,7 @@ describe('ORGANIZER / ATTENDEE round-trip', () => {
     expect(ev.title).toBe('Q3 kickoff');
     expect(ev.organizer).toEqual({ email: 'jane@corp.com', name: 'Jane Boss' });
     expect(ev.guests).toEqual([
-      { email: 'nj@puter.com', name: 'Nariman', status: 'needs-action' },
+      { email: 'nj@localhost:8443', name: 'Nariman', status: 'needs-action' },
       { email: 'jane@corp.com', name: 'Jane Boss', status: 'accepted' },
     ]);
   });

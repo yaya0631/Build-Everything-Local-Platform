@@ -113,7 +113,7 @@ export async function deploy(puter, progress = () => {}, expectedServer) {
     checkAccount();
     const deployed = await puter.workers.create(name, file.path);
     checkAccount();
-    config = { name, server: workerURL(deployed.url || `https://${name}.puter.work`), path: file.path, build, builtAt };
+    config = { name, server: workerURL(deployed.url || `http://${name}.localhost:8443`), path: file.path, build, builtAt };
     await puter.kv.set(WORKER_KEY, config);
   } else if (config.build !== build && !(config.builtAt > builtAt)) {
     await puter.fs.write(config.path, source, { overwrite: true, dedupeName: false });

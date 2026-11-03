@@ -1345,7 +1345,7 @@ function buildSettings() {
     ),
     el('p.small.muted', { style: { marginTop: '14px' } },
       'Point of Sale · Powered by ',
-      el('a', { href: 'https://developer.puter.com', target: '_blank', rel: 'noopener' }, 'Puter'))
+      el('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Puter'))
   );
 
   const node = el('div.view.settings', {},

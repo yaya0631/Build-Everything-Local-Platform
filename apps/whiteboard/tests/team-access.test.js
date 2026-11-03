@@ -127,7 +127,7 @@ test("team access ends when the person leaves the team, through the console or t
     restRoute(
       org,
       boards,
-      new Request(`https://w.puter.work/scim/v2/${path}`, {
+      new Request(`http://w.localhost:8443/scim/v2/${path}`, {
         method,
         headers: { Authorization: `Bearer ${key}` },
       }),
@@ -183,7 +183,7 @@ test("a group change naming many people renews the organization's access stamp o
     const response = await restRoute(
       org,
       boards,
-      new Request(`https://w.puter.work/scim/v2/Groups/${team.id}`, {
+      new Request(`http://w.localhost:8443/scim/v2/Groups/${team.id}`, {
         method: "PATCH",
         headers: { Authorization: `Bearer ${key}` },
       }),
@@ -354,7 +354,7 @@ test("the directory shows people the boards their team can open, and the REST AP
     restRoute(
       org,
       boards,
-      new Request("https://w.puter.work/v1/" + path, {
+      new Request("http://w.localhost:8443/v1/" + path, {
         method,
         headers: { Authorization: `Bearer ${key}` },
       }),
@@ -440,7 +440,7 @@ test("board settings offer a role for the team's members once the board has a te
     const sent = [];
     const s = {
       role: "owner",
-      server: "https://whiteboard-abc.puter.work",
+      server: "http://whiteboard-abc.localhost:8443",
       settings: {
         visibility: "private",
         orgRole: "editor",

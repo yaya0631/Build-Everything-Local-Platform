@@ -2,7 +2,7 @@
 
 Track laptops, tools, warranties, assignments, maintenance, and return dates in one place.
 
-Built with vanilla JavaScript (no UI framework), [Vite](https://vitejs.dev), [Lucide](https://lucide.dev) icons, and [Puter.js](https://docs.puter.com) as the only backend. Asset records live in the signed-in user's Puter key-value store and attachment files in their Puter cloud storage, so there is no server to run.
+Built with vanilla JavaScript (no UI framework), [Vite](https://vitejs.dev), [Lucide](https://lucide.dev) icons, and [Puter.js](http://localhost:8443) as the only backend. Asset records live in the signed-in user's Puter key-value store and attachment files in their Puter cloud storage, so there is no server to run.
 
 ## Features
 

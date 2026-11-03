@@ -3971,7 +3971,7 @@ export function settingsDialog({ section = null } = {}) {
     content.append(el('div.modal-actions', {}, el('button.btn', { type: 'button', onclick: () => modal.close() }, 'Done')));
   }
   content.append(el('p.small.muted', { style: { textAlign: 'center', marginTop: '14px' } }, 'Powered by ',
-    el('a', { href: 'https://developer.puter.com', target: '_blank', rel: 'noopener' }, 'Puter')));
+    el('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Puter')));
   const modal = openModal({ title: 'You', content });
   // Opened for one part of it (see section): that part comes into view, its
   // heading at the top of the dialog, and its first control takes the

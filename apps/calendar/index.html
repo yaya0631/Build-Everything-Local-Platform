@@ -4,12 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
-    <!-- Booking links read `calendar.puter.com/#/<host>/<page>` (see linkFor in
+    <!-- Booking links read `calendar.localhost:8443/#/<host>/<page>` (see linkFor in
          src/js/booking.js). They land on the app shell but belong to the guest
          booking page, public/book.html — no sign-in, no SDK, none of the app —
          so hand them over here, before anything else loads; `replace`, so Back
          never returns to a page that only ever forwarded. The grammar is
-         exact: the label of a `cal-<host>.puter.work` worker and a page slug —
+         exact: the label of a `cal-<host>.localhost:8443` worker and a page slug —
          lowercase letters, digits, hyphens, nothing else — so this can only
          ever forward to the sibling booking page, never anywhere a crafted
          link might point. Lowercased first: these links get read out and
@@ -52,7 +52,7 @@
     />
     <meta name="author" content="Puter" />
     <meta name="robots" content="index, follow" />
-    <link rel="canonical" href="https://calendar.puter.com/" />
+    <link rel="canonical" href="http://calendar.localhost:8443/" />
     <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#0e0f13" media="(prefers-color-scheme: dark)" />
 
@@ -100,8 +100,8 @@
       property="og:description"
       content="Month, week, day, and agenda views, recurring events, reminders, search, and iCalendar import/export. Your data stays in your own storage."
     />
-    <meta property="og:url" content="https://calendar.puter.com/" />
-    <meta property="og:image" content="https://calendar.puter.com/og-image.png" />
+    <meta property="og:url" content="http://calendar.localhost:8443/" />
+    <meta property="og:image" content="http://calendar.localhost:8443/og-image.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="The Calendar app showing a colorful month view." />
@@ -114,11 +114,11 @@
       name="twitter:description"
       content="Month, week, day, and agenda views, recurring events, reminders, search, and iCalendar import/export. Your data stays in your own storage."
     />
-    <meta name="twitter:image" content="https://calendar.puter.com/og-image.png" />
+    <meta name="twitter:image" content="http://calendar.localhost:8443/og-image.png" />
     <meta name="twitter:image:alt" content="The Calendar app showing a colorful month view." />
 
     <!-- Puter.js: the only backend dependency (auth, key-value storage, context menu). -->
-    <script src="https://js.puter.com/v2/"></script>
+    <script src="/sdk/puter.js"></script>
 
     <!-- When another Puter app launches the calendar as its headless API (see
          src/js/api/protocol.js) there is nothing to show. The Puter desktop
@@ -141,13 +141,7 @@
       })();
     </script>
 
-    <!-- Privacy-friendly analytics by Plausible -->
-    <script async src="https://plausible.io/js/pa-D4Hi1FqLc6MHkVYTGoUMl.js"></script>
-    <script>
-      window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
-      plausible.init()
-    </script>
-  </head>
+    </head>
   <body>
     <div id="app" aria-busy="true"></div>
     <script type="module" src="/src/main.js"></script>

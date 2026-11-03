@@ -7,7 +7,7 @@ for (const kind of ['header', 'number'])
   test(`an oversized ${kind} leaves the dialog open for correction without changing the PDF`, async ({
     page,
   }) => {
-    await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+    await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
     await page.goto('/#library');
     const doc = await PDFDocument.create();
     doc.addPage(kind === 'header' ? [612, 792] : [200, 200]);

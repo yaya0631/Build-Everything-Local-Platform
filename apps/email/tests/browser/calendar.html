@@ -18,14 +18,14 @@ const calendar = [
   'DTEND;TZID=America/Vancouver:20260921T110000',
   'LOCATION:Studio 2\\, Vancouver',
   'ORGANIZER;CN=Ana Petrova:mailto:ana@example.com',
-  'ATTENDEE;CN=Sam:mailto:sample@puter.com',
+  'ATTENDEE;CN=Sam:mailto:sample@localhost:8443',
   'ATTENDEE;CN=Mira Chen:mailto:mira@example.com',
   'DESCRIPTION:Review the latest designs and agree on next steps.\\nBring your feedback.',
   'X-GOOGLE-CONFERENCE:https://meet.google.com/abc-defg-hij',
   'END:VEVENT', 'END:VCALENDAR', '',
 ].join('\r\n');
 const raw = new TextEncoder().encode([
-  'From: Ana Petrova <ana@example.com>', 'To: sample@puter.com',
+  'From: Ana Petrova <ana@example.com>', 'To: sample@localhost:8443',
   'Subject: Invitation: Product design review', 'Date: Fri, 18 Sep 2026 17:00:00 +0000',
   'Message-ID: <review@example.com>', 'MIME-Version: 1.0',
   'Content-Type: multipart/mixed; boundary=mail', '', '--mail',

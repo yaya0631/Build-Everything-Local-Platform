@@ -428,7 +428,7 @@ export function writeObj(scene: ExportScene, opts: ObjWriteOptions = {}): ObjOut
   const A = transpose3(axis);
   const scale = opts.scale ?? 1;
   const conv = new Matrix4().set(A[0] * scale, A[1] * scale, A[2] * scale, 0, A[3] * scale, A[4] * scale, A[5] * scale, 0, A[6] * scale, A[7] * scale, A[8] * scale, 0, 0, 0, 0, 1);
-  const out: string[] = ['# Puter 3D OBJ File', '# https://puter.com'];
+  const out: string[] = ['# Puter 3D OBJ File', '# http://localhost:8443'];
   const useMats = opts.materials !== false;
   const mtlName = opts.mtlName ?? 'materials.mtl';
   if (useMats && scene.materials.size) out.push(`mtllib ${mtlName}`);

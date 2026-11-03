@@ -15,7 +15,7 @@ const HTML = readFileSync(
 );
 const SCRIPT = /<script>([\s\S]*?)<\/script>/.exec(HTML)[1];
 
-const WORKER = 'https://cal-rsvp-ab12cd34ef.puter.work';
+const WORKER = 'http://cal-rsvp-ab12cd34ef.localhost:8443';
 const TOKEN = 'a'.repeat(40);
 const HASH = `#w=${encodeURIComponent(WORKER)}&t=${TOKEN}`;
 
@@ -81,7 +81,7 @@ describe('rsvp.html page', () => {
   });
 
   it('renders the meeting link as a clickable Join row — exact room links only', async () => {
-    const join = 'https://meetings.puter.com/#/m/abcd-efgh-ijkl';
+    const join = 'http://meetings.localhost:8443/#/m/abcd-efgh-ijkl';
     init({ root, hash: HASH, fetchFn: vi.fn(() => jsonRes(invite({ meetingUrl: join }))) });
     await tick();
     const a = [...root.querySelectorAll('a')].find((n) => n.getAttribute('href') === join);
@@ -94,7 +94,7 @@ describe('rsvp.html page', () => {
     // the exact Puter Meetings shape renders nothing at all.
     for (const bad of [
       'https://evil.example/#/m/abcd-efgh-ijkl',
-      'https://meetings.puter.com/#/m/ABCD-EFGH-IJKL',
+      'http://meetings.localhost:8443/#/m/ABCD-EFGH-IJKL',
       'javascript:alert(1)',
     ]) {
       init({ root, hash: HASH, fetchFn: vi.fn(() => jsonRes(invite({ meetingUrl: bad }))) });
@@ -103,10 +103,10 @@ describe('rsvp.html page', () => {
     }
   });
 
-  it('refuses non-puter.work origins and malformed tokens without fetching', async () => {
+  it('refuses non-localhost:8443 origins and malformed tokens without fetching', async () => {
     for (const hash of [
       `#w=${encodeURIComponent('https://evil.example.com')}&t=${TOKEN}`,
-      `#w=${encodeURIComponent('http://x.puter.work')}&t=${TOKEN}`, // http, not https
+      `#w=${encodeURIComponent('http://x.localhost:8443')}&t=${TOKEN}`, // http, not https
       `#w=${encodeURIComponent(WORKER)}&t=not-a-token`,
       '#',
     ]) {

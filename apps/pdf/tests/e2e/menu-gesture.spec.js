@@ -7,7 +7,7 @@ for (const width of [1200, 390])
       test(`a held closing press stays closed (release outside=${releaseOutside})`, async ({
         page,
       }) => {
-        await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+        await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
         await page.goto('/');
         await expect(page.locator('.editor')).toHaveAttribute('aria-busy', 'false');
         const opener =
@@ -41,7 +41,7 @@ for (const width of [1200, 390])
 test.describe('menu panel keys', () => {
   test.use({ viewport: { width: 1200, height: 800 } });
   test('arrow keys from a menu panel itself start at its first or last item', async ({ page }) => {
-    await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+    await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
     await page.goto('/');
     await expect(page.locator('.editor')).toHaveAttribute('aria-busy', 'false');
     const opener = page.getByRole('menubar').getByRole('menuitem', { name: 'File', exact: true });
@@ -66,7 +66,7 @@ test.describe('menu panel keys', () => {
 test.describe('menus under dialogs', () => {
   test.use({ viewport: { width: 1200, height: 800 } });
   test('a dialog that opens over an open menu closes it and owns its keys', async ({ page }) => {
-    await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+    await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
     await page.goto('/');
     await expect(page.locator('.editor')).toHaveAttribute('aria-busy', 'false');
     const opener = page.getByRole('menubar').getByRole('menuitem', { name: 'View', exact: true });

@@ -218,7 +218,7 @@ describe('opening a conversation', () => {
 
     // The newest message is open: To the reader, Cc Tom.
     const lines = [...items()[2].querySelectorAll('.msg-to')].map((line) => line.textContent);
-    expect(lines).toEqual(['to sample@puter.com', 'cc Tom Beckett']);
+    expect(lines).toEqual(['to sample@localhost:8443', 'cc Tom Beckett']);
     // The header as it was written is a hover away.
     expect(items()[2].querySelectorAll('.msg-to')[1].title).toBe('cc: Tom Beckett <tom@northgate.example>');
     // Collapsed, a message shows its preview line instead.
@@ -547,7 +547,7 @@ describe('acting on a conversation', () => {
 describe('mail that arrives into a conversation already on screen', () => {
   const REPLY = [
     'From: Tom Beckett <tom@northgate.example>',
-    'To: sample@puter.com',
+    'To: sample@localhost:8443',
     'Subject: Re: Thursday walkthrough',
     'Date: Mon, 24 Aug 2026 08:15:00 GMT',
     'Message-ID: <walkthrough-4@northgate.example>',

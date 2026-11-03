@@ -27,7 +27,7 @@ export class PortalError extends Error {
 }
 
 export function serverOrigin(server) {
-  return `https://${server}.puter.work`;
+  return `http://${server}.localhost:8443`;
 }
 
 export class PortalApi {

@@ -12,7 +12,7 @@ async function menu(page, action) {
 
 for (const newer of ['document', 'protection'])
   test(`an authenticated protection request respects a newer ${newer}`, async ({ page }) => {
-    await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+    await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
     await page.goto('/#library');
     const choosing = page.waitForEvent('filechooser');
     await page.getByRole('button', { name: /Open a PDF/ }).click();

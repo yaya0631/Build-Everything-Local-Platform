@@ -6,7 +6,7 @@ vi.mock('../src/collab/api.js', async (importOriginal) => ({ ...await importOrig
 vi.mock('../src/collab/room-memory.js', async (importOriginal) => ({ ...await importOriginal(), rememberRoom: async (path, link) => { forgotten.push([path, link]); } }));
 const { reconnect } = await import('../src/collab/live.js');
 
-const saved = { server: 'https://documents-abc.puter.work', room: 'room1' };
+const saved = { server: 'http://documents-abc.localhost:8443', room: 'room1' };
 const user = { id: 'u0', name: 'Ada' };
 beforeEach(() => { forgotten.length = 0; });
 

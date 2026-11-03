@@ -234,7 +234,7 @@ export async function mount(container, ctx) {
       busy && busy.error
         ? h('div', { class: 'banner banner-error', role: 'alert' }, icon('alert'),
             h('span', { class: 'grow' }, busy.error,
-              /verify the email/i.test(busy.error) ? [' ', h('a', { href: 'https://puter.com', target: '_blank', rel: 'noopener' }, 'Open Puter')] : null))
+              /verify the email/i.test(busy.error) ? [' ', h('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Open Puter')] : null))
         : null,
       h(
         'button',

@@ -71,7 +71,7 @@ const fs = {
     const byteCount = params.has('ignoreRanges') ? undefined : options.byte_count;
     const { i, subject } = files.get(path);
     const references = i > 0 && i < threadSize ? 'References: <0@benchmark>\r\n' : '';
-    const head = `From: Alice <alice@example.com>\r\nTo: Benchmark <benchmark@puter.com>\r\nSubject: ${subject}\r\nMessage-ID: <${i}@benchmark>\r\n${references}Date: Thu, 17 Sep 2026 12:00:00 +0000\r\nContent-Type: ${large ? 'multipart/mixed; boundary=bench' : 'text/plain'}\r\n\r\n`;
+    const head = `From: Alice <alice@example.com>\r\nTo: Benchmark <benchmark@localhost:8443>\r\nSubject: ${subject}\r\nMessage-ID: <${i}@benchmark>\r\n${references}Date: Thu, 17 Sep 2026 12:00:00 +0000\r\nContent-Type: ${large ? 'multipart/mixed; boundary=bench' : 'text/plain'}\r\n\r\n`;
     const body = large ? '--bench\r\nContent-Type: text/plain\r\n\r\nHello benchmark\r\n--bench\r\nContent-Type: application/octet-stream\r\nContent-Disposition: attachment; filename=large.bin\r\nContent-Transfer-Encoding: base64\r\n\r\n' : 'Hello benchmark';
     const length = large ? 8 * 1024 * 1024 : 512;
     const raw = (head + body).padEnd(Math.min(length, byteCount || length), 'A');

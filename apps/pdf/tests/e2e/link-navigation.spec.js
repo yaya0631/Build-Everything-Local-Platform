@@ -11,7 +11,7 @@ async function openPdf(page, doc, name = 'links.pdf') {
   await expect(page.locator('.page-caption')).toHaveText(`Page 1 of ${doc.getPageCount()}`);
 }
 async function prepare(page, missing = false) {
-  await page.route('https://js.puter.com/**', (route) => route.abort());
+  await page.route('**/sdk/puter.js', (route) => route.abort());
   const doc = await PDFDocument.create();
   for (let i = 0; i < 3; i++) doc.addPage([400, 500]);
   doc.catalog.set(

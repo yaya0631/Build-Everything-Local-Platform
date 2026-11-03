@@ -8,7 +8,7 @@ for (const kind of ['header', 'number'])
     test(`a vertically clipped ${kind} at ${edge} can be corrected without changing the PDF`, async ({
       page,
     }) => {
-      await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+      await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
       await page.goto('/#library');
       const doc = await PDFDocument.create();
       doc.addPage([300, 30]);

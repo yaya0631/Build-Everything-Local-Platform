@@ -3,11 +3,10 @@ import { readFileSync } from 'node:fs';
 import { publicContentPlugin } from './site/plugin.js';
 import { SITE_URL } from './site/content.js';
 import { escapeHTML } from './site/render.js';
-import puterLocalhost from '../../dev/puter-localhost.mjs';
 
 export default defineConfig({
   appType: 'mpa',
-  plugins: [puterLocalhost('inventory'), {
+  plugins: [{
     name: 'static-public-landing',
     transformIndexHtml(html) {
       return html.replace('<!-- public-metadata -->', () => SITE_URL

@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 async function mount(page) {
-  await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+  await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
   await page.goto('/#library');
   await page.evaluate(async () => {
     const { createImageLayer } = await import('/src/image-layer.js');

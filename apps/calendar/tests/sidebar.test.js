@@ -42,7 +42,7 @@ function makeCtx({ events = [], tasks = [], settings = {}, actions = {}, booking
 function makeBooking(pages = [{ id: 'p1', title: 'Intro call', durationMin: 30, enabled: true }]) {
   return {
     getPages: () => pages,
-    linkFor: () => 'https://calendar.puter.com/#/x/intro',
+    linkFor: () => 'http://calendar.localhost:8443/#/x/intro',
   };
 }
 

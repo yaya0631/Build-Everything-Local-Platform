@@ -2,7 +2,7 @@
 
 Team messaging on Puter: workspaces, public and private channels, threads,
 direct messages, reactions, mentions, and file attachments. Vanilla
-JavaScript (no frameworks), Vite, and [Puter.js](https://developer.puter.com)
+JavaScript (no frameworks), Vite, and [Puter.js](http://localhost:8443)
 as the only backend.
 
 ## Features
@@ -334,7 +334,7 @@ as the only backend.
 
 A team chat app needs data that many users read and write. Puter's key-value
 store and filesystem are strictly per user, so Teamchat uses
-[Puter Serverless Workers](https://docs.puter.com/Workers/) as the shared
+[Puter Serverless Workers](http://localhost:8443/Workers/) as the shared
 backend, and it keeps Puter's user-scoped, user-pays model by giving **every
 workspace owner their own worker, in their own account**: the first time a
 user creates a workspace, the app copies the worker bundle it ships
@@ -351,10 +351,10 @@ worker runs in may create workspaces on it. Nothing about identity is trusted
 from request bodies.
 
 ```
-Alice's browser ──exec()──> Alice's worker (teamchat-x7k2q9pw1a.puter.work)
+Alice's browser ──exec()──> Alice's worker (teamchat-x7k2q9pw1a.localhost:8443)
 Bob's browser   ──exec()──>   me.puter.kv   Alice's workspaces, all data
                               me.puter.fs   attachments
-Bob's browser   ──exec()──> Bob's worker (teamchat-m3r8t2vq0z.puter.work)
+Bob's browser   ──exec()──> Bob's worker (teamchat-m3r8t2vq0z.localhost:8443)
                               ...           Bob's workspaces
 
 each browser ── puter.kv ──> the user's own account: profile, preferences,
@@ -362,7 +362,7 @@ each browser ── puter.kv ──> the user's own account: profile, preference
 ```
 
 A workspace is therefore addressed by **reference**, `{wsId}@{server}`, where
-`server` is the worker's puter.work name (`abc123def0@teamchat-x7k2q9pw1a`).
+`server` is the worker's localhost:8443 name (`abc123def0@teamchat-x7k2q9pw1a`).
 Routes, invite links (`#/join/teamchat-x7k2q9pw1a/XXXX-XXXX-XXXX`), and the
 user's workspace list all carry it, so a link alone is enough to find a
 workspace and no directory is needed anywhere.
@@ -441,14 +441,14 @@ worker on their next visit and refreshes its runtime along with the code.
 
 A single shared worker (the original design) still works: deploy the bundle
 yourself, open it with `PUT /api/server { open: true }`, and point the app at
-it with `?worker=https://my-teamchat.puter.work` or `VITE_WORKER_URL`. A
-`?worker=` link is honoured for `https` puter.work hosts only, since it is
+it with `?worker=http://my-teamchat.localhost:8443` or `VITE_WORKER_URL`. A
+`?worker=` link is honoured for `https` localhost:8443 hosts only, since it is
 remembered and given the user's session from then on; a host elsewhere is
 the operator's to set at build time.
 
 Because `puter.workers.exec()` attaches the caller's Puter session to
 whatever URL it is given, the app only ever calls hosts it has reason to
-trust: any `*.puter.work` worker (that is the design: members talk to the
+trust: any `*.localhost:8443` worker (that is the design: members talk to the
 workspace owner's worker) and the shared worker it was configured with. A
 route, invite link, or `movedTo` reference naming any other host is refused
 rather than followed (`src/lib/refs.js`).
@@ -844,7 +844,7 @@ next poll.
 A huddle is a call, and a worker cannot carry one: it runs only while it
 answers a request. So the audio and video of a huddle never touch the
 worker. They go directly between the browsers of the people in it over
-[Puter's Peer API](https://docs.puter.com/Peer/), which gives every
+[Puter's Peer API](http://localhost:8443/Peer/), which gives every
 participant a WebRTC connection with the signalling and TURN relays taken
 care of (the relays are metered to each person's own account, keeping the
 user-pays model). The worker keeps only the roster:
@@ -1063,7 +1063,7 @@ It is not a relay. The caller hands over the *parts* of an invitation —
 kind (`workspace`, `guest`, or `connect`), server, code, names, an optional
 note — never a message or a URL. Subject, both bodies, and the one link are
 composed in the worker; the link's origin must be somewhere the app actually
-lives (puter.com, `*.puter.site`/`work`/`com`, or localhost in development)
+lives (localhost:8443, `*.localhost:8443`/`work`/`com`, or localhost in development)
 or it falls back to the canonical app URL, names and the note are clamped
 and HTML-escaped, newlines cannot reach a subject, recipients are capped at
 10 per request and 100 per sender per UTC day (counted in the worker's own
@@ -1262,10 +1262,10 @@ puter login
 puter worker deploy public/worker/teamchat-worker.js my-teamchat
 ```
 
-Then, signed in as the deploying account, `PUT https://my-teamchat.puter.work/api/server`
+Then, signed in as the deploying account, `PUT http://my-teamchat.localhost:8443/api/server`
 with `{ "open": true }` (through `puter.workers.exec`), and build the app
-with `VITE_WORKER_URL=https://my-teamchat.puter.work` or open it once with
-`?worker=https://my-teamchat.puter.work` (remembered in localStorage;
+with `VITE_WORKER_URL=http://my-teamchat.localhost:8443` or open it once with
+`?worker=http://my-teamchat.localhost:8443` (remembered in localStorage;
 `?worker=` clears it). To ship changes, overwrite the same file; do not
 create a second worker, or callers end up split across two stores.
 
@@ -1285,7 +1285,7 @@ overwriting the file it runs will never change it.
 
 ---
 
-Powered by [Puter](https://developer.puter.com).
+Powered by [Puter](http://localhost:8443).
 
 ## License
 

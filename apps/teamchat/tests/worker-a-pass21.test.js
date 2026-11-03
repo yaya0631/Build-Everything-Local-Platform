@@ -141,14 +141,14 @@ describe('the number of workspaces one may be in on a server', () => {
     expect(full.data.message).toBe('You are in the maximum number of workspaces');
     // One of them moves to another server: the copy here is read-only from
     // now on, and not a workspace she is in any more.
-    const moved = await as(alice).post(`/api/ws/${ids[3]}/transfer/complete`, { to: `${ids[3]}@teamchat-elsewhere.puter.work` });
-    expect(moved.data).toMatchObject({ ok: true, movedTo: `${ids[3]}@teamchat-elsewhere.puter.work` });
+    const moved = await as(alice).post(`/api/ws/${ids[3]}/transfer/complete`, { to: `${ids[3]}@teamchat-elsewhere.localhost` });
+    expect(moved.data).toMatchObject({ ok: true, movedTo: `${ids[3]}@teamchat-elsewhere.localhost` });
     expect((await rt.kv.get(KEYS.ws(ids[3]))).members[alice.uuid]).toBeTruthy();
     const made = await as(alice).post('/api/workspaces', { name: 'One more' });
     expect(made.ok).toBe(true);
     // The moved copy is still listed, with where it went, for the app to follow.
     const me = await as(alice).get('/api/me');
-    expect(me.data.workspaces.find((w) => w.id === ids[3])?.movedTo).toBe(`${ids[3]}@teamchat-elsewhere.puter.work`);
+    expect(me.data.workspaces.find((w) => w.id === ids[3])?.movedTo).toBe(`${ids[3]}@teamchat-elsewhere.localhost`);
     expect(me.data.workspaces.length).toBe(21);
     // And the cap stands again once she is in twenty live ones.
     expect((await as(alice).post('/api/workspaces', { name: 'Yet another' })).status).toBe(400);

@@ -15,7 +15,7 @@ describe('the assistant running the Solver', () => {
 
   beforeEach(() => {
     vi.stubGlobal('requestAnimationFrame', (fn) => setTimeout(fn, 0));
-    vi.stubGlobal('plausible', vi.fn());
+    vi.stubGlobal('__everythingAnalytics', vi.fn());
     vi.spyOn(P, 'canAI').mockReturnValue(true);
     localStorage.clear();
     document.body.innerHTML = '';

@@ -154,7 +154,7 @@ function timed(res, ctx, startedAt) {
   return res;
 }
 
-/** The host this worker is reached at (teamchat-xxx.puter.work), learned from requests, for links in pushes. */
+/** The host this worker is reached at (teamchat-xxx.localhost:8443), learned from requests, for links in pushes. */
 export let workerHost = null;
 
 /**

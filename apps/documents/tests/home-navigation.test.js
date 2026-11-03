@@ -113,7 +113,7 @@ it('duplicates a document without joining the room of a shared one deleted elsew
   const original = { name: 'Plan.docx', path: 'Documents/Plan.docx' };
   P.listFiles.mockResolvedValue([original]);
   await view.reload();
-  await rememberRoom('Documents/Plan copy.docx', { server: 'https://documents-abc.puter.work', room: 'old' });
+  await rememberRoom('Documents/Plan copy.docx', { server: 'http://documents-abc.localhost:8443', room: 'old' });
   vi.spyOn(P, 'readFile').mockResolvedValue(new Blob(['plan']));
   vi.spyOn(P, 'createFile').mockResolvedValue('Documents/Plan copy.docx');
   view.el.querySelector('[aria-label="Options for Plan.docx"]').click();

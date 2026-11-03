@@ -27,7 +27,7 @@
  * complete (A-K) and the fourth at Q, with the missing King sitting alone in
  * the waste, tableau and stock both empty. Klondike ships no solver here to
  * replay a full game to that point the way the greedy player above reaches
- * a plausible mid-game, so the position itself is authored rather than
+ * a realistic mid-game, so the position itself is authored rather than
  * played -- but it still passes serialize.js's own round trip (52 distinct
  * cards, correct pile shapes), and the winning move and the entire cascade
  * are performed live in the real app: the tool clicks the waste card the
@@ -116,7 +116,7 @@
  * that account's KV store (this bit a previous task in this increment,
  * working against a real browser profile with a live session -- see
  * task-2-report.md). Each context here is a fresh, disposable Chromium
- * profile, and every one additionally routes js.puter.com to abort(), so
+ * profile, and every one additionally routes the hosted SDK to abort(), so
  * `puter` is never even defined and every codepath in
  * src/services/puter-sync.js short-circuits on puterAvailable() === false
  * with no network round trip at all.
@@ -354,11 +354,11 @@ for (const size of SIZES) {
       deviceScaleFactor: size.dsf,
     });
 
-    // Keep js.puter.com from ever loading -- see the file header. Aborting
+    // Keep the hosted SDK from ever loading -- see the file header. Aborting
     // the request (rather than, say, stubbing a fake `puter` global) means
     // `typeof puter` genuinely stays 'undefined', which is exactly the
     // condition puter-sync.js's puterAvailable() checks.
-    await context.route('https://js.puter.com/**', route => route.abort());
+    await context.route('**/sdk/puter.js', route => route.abort());
 
     await context.addInitScript(
       ([key, save]) => localStorage.setItem(key, JSON.stringify(save)),

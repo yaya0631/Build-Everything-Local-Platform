@@ -16,7 +16,7 @@ describe('linkify', () => {
     for (const text of [
       'see https://example.com now',
       'a.com, b.org and www.c.net!',
-      'mail nj@puter.com',
+      'mail nj@localhost:8443',
       'weird ) ( . text',
       'multi\nline https://example.com/x\nend',
     ]) {
@@ -35,7 +35,7 @@ describe('linkify', () => {
 
   it('links www hosts and bare hosts with a known TLD', () => {
     expect(hrefs('visit www.example.com')).toEqual(['https://www.example.com/']);
-    expect(hrefs('meetings.puter.com/abc-def-ghi')).toEqual(['https://meetings.puter.com/abc-def-ghi']);
+    expect(hrefs('meetings.localhost:8443/abc-def-ghi')).toEqual(['http://meetings.localhost:8443/abc-def-ghi']);
     expect(hrefs('sub.example.co.uk')).toEqual(['https://sub.example.co.uk/']);
     expect(hrefs('example.com:8080/path?q=1')).toEqual(['https://example.com:8080/path?q=1']);
   });
@@ -77,7 +77,7 @@ describe('linkify', () => {
   });
 
   it('does not link the host half of an email address', () => {
-    expect(links('mail nj@puter.com please')).toEqual([]);
+    expect(links('mail nj@localhost:8443 please')).toEqual([]);
   });
 
   it('never produces a non-http scheme', () => {
@@ -101,8 +101,8 @@ describe('linkify', () => {
   });
 
   it('refuses URLs that hide their real host', () => {
-    // Credentials: reads as puter.com, resolves to evil.test.
-    expect(links('https://puter.com@evil.test/login')).toEqual([]);
+    // Credentials: reads as localhost:8443, resolves to evil.test.
+    expect(links('http://localhost:8443@evil.test/login')).toEqual([]);
     expect(links('https://user:pw@evil.test/')).toEqual([]);
     // Bidi overrides can make link text render as a different host.
     expect(links('https://example.com/‮gnp.exe')).toEqual([]);

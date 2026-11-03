@@ -7,7 +7,7 @@
  *   remove(collection)      -> Promise<void>
  *
  * `createPuterBackend` is backed by the Puter.js cloud key-value store
- * (https://docs.puter.com) and is used in production. `createMemoryBackend`
+ * (http://localhost:8443) and is used in production. `createMemoryBackend`
  * is used for tests.
  */
 

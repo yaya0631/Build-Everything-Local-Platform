@@ -1,7 +1,6 @@
 import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { defineConfig } from 'vite';
-import puterLocalhost from '../../dev/puter-localhost.mjs';
 
 /**
  * Emit the service worker with its precache list and a version baked in.
@@ -54,7 +53,7 @@ export default defineConfig({
   build: {
     target: 'es2022',
   },
-  plugins: [puterLocalhost('assets'), serviceWorker()],
+  plugins: [serviceWorker()],
   test: {
     environment: 'node',
   },

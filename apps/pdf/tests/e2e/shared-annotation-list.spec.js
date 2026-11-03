@@ -5,7 +5,7 @@ import { addNote, listNotes } from '../../src/core/notes.js';
 
 const settled = (page) => expect(page.locator('.editor')).toHaveAttribute('aria-busy', 'false');
 async function openShared(page, populated) {
-  await page.route('https://js.puter.com/**', (route) => route.abort());
+  await page.route('**/sdk/puter.js', (route) => route.abort());
   const doc = await PDFDocument.create();
   doc.addPage([300, 300]);
   doc.addPage([300, 300]);

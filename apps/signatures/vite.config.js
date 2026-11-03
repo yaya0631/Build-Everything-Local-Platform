@@ -1,9 +1,8 @@
 import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
-import puterLocalhost from '../../dev/puter-localhost.mjs';
 
 export default defineConfig({
-  plugins: [puterLocalhost('signatures')],
+  plugins: [],
   base: './',
   build: {
     target: 'es2022',

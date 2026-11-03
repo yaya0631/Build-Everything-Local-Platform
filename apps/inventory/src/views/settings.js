@@ -409,7 +409,7 @@ function renderInto(root) {
     ),
     el('p.small.muted', { style: { margin: '18px 4px' } },
       'Inventory stores everything in your own Puter account. Powered by ',
-      el('a', { href: 'https://developer.puter.com', target: '_blank', rel: 'noopener' }, 'Puter'), '.')
+      el('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Puter'), '.')
   );
 }
 

@@ -8,7 +8,7 @@ for (const defaultOnly of [false, true])
     test(`Fill forms preserves untouched values (default=${defaultOnly}, edit=${editName})`, async ({
       page,
     }) => {
-      await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+      await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
       await page.goto('/#library');
       const doc = await formPreservationPdf({ defaultOnly });
       const pending = page.waitForEvent('filechooser');

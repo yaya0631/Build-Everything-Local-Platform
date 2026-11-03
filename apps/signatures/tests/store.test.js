@@ -50,7 +50,7 @@ describe('store', () => {
     const doc = await draft({
       signers: [{ id: 's1', name: 'Ava', email: 'ava@example.com', isMe: false }],
     });
-    await store.markSent(doc.id, { s1: 'https://w.puter.work/sign/aa' }, { channel: 'email' });
+    await store.markSent(doc.id, { s1: 'http://w.localhost:8443/sign/aa' }, { channel: 'email' });
     const sent = store.getDoc(doc.id);
     expect(sent.status).toBe('sent');
     expect(sent.sentAt).toBeTruthy();

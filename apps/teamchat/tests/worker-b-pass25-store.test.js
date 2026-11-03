@@ -82,12 +82,12 @@ describe('the words this workspace carries to the host of two channels shared wi
     const s = servers({ '/leave': () => json({ ok: true }) }, (p) => p.endsWith('/leave'));
     await store.leaveHosts();
     expect(s.calls.filter((c) => c.includes('/leave')).sort()).toEqual([
-      'POST teamchat-other.puter.work/api/ws/init00init/channels/och/leave',
-      'POST teamchat-test.puter.work/api/ws/host00host/channels/hch1/leave',
-      'POST teamchat-test.puter.work/api/ws/host00host/channels/hch2/leave',
+      'POST teamchat-other.localhost:8443/api/ws/init00init/channels/och/leave',
+      'POST teamchat-test.localhost:8443/api/ws/host00host/channels/hch1/leave',
+      'POST teamchat-test.localhost:8443/api/ws/host00host/channels/hch2/leave',
     ]);
     // Acme took one word at a time; Initech's went beside Acme's.
-    expect(s.most.get('teamchat-test.puter.work')).toBe(1);
+    expect(s.most.get('teamchat-test.localhost:8443')).toBe(1);
     expect(s.mostAnywhere()).toBe(2);
   });
 
@@ -101,17 +101,17 @@ describe('the words this workspace carries to the host of two channels shared wi
     }, (p) => p.endsWith('/api/connect/disconnect'));
     await store.disconnectHosts();
     expect(s.calls.filter((c) => c.includes('/api/connect/disconnect')).sort()).toEqual([
-      'POST teamchat-other.puter.work/api/connect/disconnect',
-      'POST teamchat-test.puter.work/api/connect/disconnect',
-      'POST teamchat-test.puter.work/api/connect/disconnect',
+      'POST teamchat-other.localhost:8443/api/connect/disconnect',
+      'POST teamchat-test.localhost:8443/api/connect/disconnect',
+      'POST teamchat-test.localhost:8443/api/connect/disconnect',
     ]);
-    expect(s.most.get('teamchat-test.puter.work')).toBe(1);
+    expect(s.most.get('teamchat-test.localhost:8443')).toBe(1);
     expect(s.mostAnywhere()).toBe(2);
   });
 
   it('revoke someone\'s seats there one after another when an admin removes them, a malformed word skipped and a host that fails swallowed', async () => {
     partnerOfTwo();
-    const s = servers({ '/api/connect/revoke': (init, u) => (u.host === 'teamchat-other.puter.work' ? json({ code: 'internal', message: 'nope' }, 500) : json({ ok: true })) }, (p) => p.endsWith('/api/connect/revoke'));
+    const s = servers({ '/api/connect/revoke': (init, u) => (u.host === 'teamchat-other.localhost:8443' ? json({ code: 'internal', message: 'nope' }, 500) : json({ ok: true })) }, (p) => p.endsWith('/api/connect/revoke'));
     await store.carryRevocations([
       { ref: HOST, ch: 'hch1', conn: 'conn000001', host: 'Acme', token: 'r.1' },
       { ref: 'not a ref', conn: 'cn_x', token: 'r.x' },
@@ -120,11 +120,11 @@ describe('the words this workspace carries to the host of two channels shared wi
       null,
     ]);
     expect(s.calls.sort()).toEqual([
-      'POST teamchat-other.puter.work/api/connect/revoke',
-      'POST teamchat-test.puter.work/api/connect/revoke',
-      'POST teamchat-test.puter.work/api/connect/revoke',
+      'POST teamchat-other.localhost:8443/api/connect/revoke',
+      'POST teamchat-test.localhost:8443/api/connect/revoke',
+      'POST teamchat-test.localhost:8443/api/connect/revoke',
     ]);
-    expect(s.most.get('teamchat-test.puter.work')).toBe(1);
+    expect(s.most.get('teamchat-test.localhost:8443')).toBe(1);
     expect(s.mostAnywhere()).toBe(2);
   });
 

@@ -124,7 +124,7 @@ export async function deploy(puter, progress = () => {}, expectedServer) {
     checkAccount();
     config = {
       name,
-      server: workerURL(deployed.url || `https://${name}.puter.work`),
+      server: workerURL(deployed.url || `http://${name}.localhost:8443`),
       path: file.path,
       build,
       builtAt,

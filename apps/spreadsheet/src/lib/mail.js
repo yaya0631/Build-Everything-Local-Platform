@@ -13,7 +13,7 @@ import { rangeToCsv } from '../core/io.js';
 import * as P from './puter.js';
 
 /** The one shared, app-owned worker (see src/workers/email-worker.js). */
-export const EMAIL_WORKER_URL = 'https://spreadsheet-email.puter.work';
+export const EMAIL_WORKER_URL = 'http://spreadsheet-email.localhost:8443';
 
 /** The worker's own limits, so the dialog can refuse before anything is sent. */
 export const MAX_RECIPIENTS = 20;

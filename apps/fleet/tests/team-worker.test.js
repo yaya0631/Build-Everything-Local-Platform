@@ -212,7 +212,7 @@ describe('team worker', () => {
 
   it('serves the app store through the worker backend for several people', async () => {
     await invite('driver', STRANGER);
-    const url = 'https://fleet-abc.puter.work';
+    const url = 'http://fleet-abc.localhost:8443';
     const mk = (user) => createStore({ backend: createWorkerBackend(url, { getPuter: () => ({ workers: { exec: w.exec(user) } }) }), flushDelay: 0 });
     const ownerStore = mk(OWNER);
     const driverStore = mk(STRANGER);
@@ -236,21 +236,21 @@ describe('team worker', () => {
 });
 
 describe('team links', () => {
-  it('builds and parses invitation links, trusting only puter.work', () => {
-    globalThis.location ??= { href: 'https://fleet.puter.com/' };
-    const link = inviteLink('https://fleet-abc123.puter.work', 'TOKENtoken1234567890');
+  it('builds and parses invitation links, trusting only localhost:8443', () => {
+    globalThis.location ??= { href: 'http://fleet.localhost:8443/' };
+    const link = inviteLink('http://fleet-abc123.localhost:8443', 'TOKENtoken1234567890');
     expect(link).toMatch(/#\/join\?w=fleet-abc123&t=TOKENtoken1234567890$/);
     const q = Object.fromEntries(new URLSearchParams(link.split('?')[1]));
-    expect(parseJoin(q)).toEqual({ url: 'https://fleet-abc123.puter.work', token: 'TOKENtoken1234567890' });
+    expect(parseJoin(q)).toEqual({ url: 'http://fleet-abc123.localhost:8443', token: 'TOKENtoken1234567890' });
     expect(parseJoin({ w: 'evil.example.com/x', t: 'TOKENtoken1234567890' })).toBeNull();
     expect(isTrustedWorkerUrl('https://evil.example.com')).toBe(false);
-    expect(isTrustedWorkerUrl('http://a.puter.work')).toBe(false);
+    expect(isTrustedWorkerUrl('http://a.localhost:8443')).toBe(false);
   });
 
   it('picks the active workspace', () => {
     expect(activeWorker({ current: 'own', own: {}, joined: [] })).toBeNull();
-    expect(activeWorker({ current: 'own', own: { url: 'https://a.puter.work' }, joined: [] })).toBe('https://a.puter.work');
-    expect(activeWorker({ current: 'https://b.puter.work', own: {}, joined: [{ url: 'https://b.puter.work' }] })).toBe('https://b.puter.work');
+    expect(activeWorker({ current: 'own', own: { url: 'http://a.localhost:8443' }, joined: [] })).toBe('http://a.localhost:8443');
+    expect(activeWorker({ current: 'http://b.localhost:8443', own: {}, joined: [{ url: 'http://b.localhost:8443' }] })).toBe('http://b.localhost:8443');
   });
 });
 

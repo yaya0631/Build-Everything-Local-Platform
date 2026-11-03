@@ -33,7 +33,7 @@ const makeFs = (tree, { failDays = [] } = {}) => ({
 
 const rawMessage = (over = {}) => [
   `From: ${over.from ?? 'Jane Doe <jane@example.com>'}`,
-  'To: you@puter.com',
+  'To: you@localhost:8443',
   ...(over.subject === undefined ? ['Subject: Hello'] : over.subject ? [`Subject: ${over.subject}`] : []),
   `Date: ${over.date ?? 'Mon, 17 Aug 2026 10:30:00 GMT'}`,
   `Content-Type: ${over.contentType ?? 'text/plain; charset=utf-8'}`,
@@ -284,7 +284,7 @@ describe('enrichMessage', () => {
   it('carries the headers the conversation view groups on', async () => {
     const raw = [
       'From: Jane Doe <jane@example.com>',
-      'To: you@puter.com',
+      'To: you@localhost:8443',
       'Subject: Re: Hello',
       'Date: Mon, 17 Aug 2026 10:30:00 GMT',
       'Message-ID: <two@example.com>',
@@ -345,7 +345,7 @@ describe('enrichMessage', () => {
       'Received: from relay.example by mx.puter.email',
       ...filler,
       'From: Ana Petrova <ana@example.com>',
-      'To: you@puter.com',
+      'To: you@localhost:8443',
       'Subject: Big headers',
       'Message-ID: <big@example.com>',
       'Date: Mon, 17 Aug 2026 10:30:00 GMT',
@@ -379,7 +379,7 @@ describe('enrichMessage', () => {
   });
 
   it('names a sender for a message with no From header', async () => {
-    const raw = ['To: you@puter.com', 'Subject: Hello', '', 'body'].join('\r\n');
+    const raw = ['To: you@localhost:8443', 'Subject: Hello', '', 'body'].join('\r\n');
     const fs = makeFs({ '2026-08-17': { 'a--x': raw } });
     const patch = await enrichMessage(fs, messageFor('a--x'));
     expect(patch.from).toEqual({ name: '(unknown sender)', email: '' });

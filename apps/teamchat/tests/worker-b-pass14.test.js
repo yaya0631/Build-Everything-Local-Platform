@@ -213,7 +213,7 @@ describe('a message deleted in the same instant it was pinned', () => {
     expect((await rt.kv.get(KEYS.block(conv, 0))).x[`s${m.seq}`].p).toBe(1);
     expect(wsOps() - before).toBeLessThan(8);
     // Moved for good: read-only from then on.
-    expect((await as(carol).post(`/api/ws/${wsId}/transfer/complete`, { to: 'newcopy123@other.puter.work' })).ok).toBe(true);
+    expect((await as(carol).post(`/api/ws/${wsId}/transfer/complete`, { to: 'newcopy123@other.localhost' })).ok).toBe(true);
     before = wsOps();
     pins = (await as(bob).get(`/api/ws/${wsId}/conv/${conv}/pins`)).data.pins;
     expect(pins.map((p) => [p.seq, p.message])).toEqual([[m.seq, null]]);
@@ -325,7 +325,7 @@ describe('a channel deleted while someone joins or leaves it, is added to it, or
     expect(Object.keys(exported.data.header.channels)).toEqual([general.id]);
     expect((await rt.kv.get(KEYS.ws(wsId))).channels.ghost00000).toEqual({ count: -1 });
     // Moved for good: still shown without it, still not written.
-    expect((await as(carol).post(`/api/ws/${wsId}/transfer/complete`, { to: 'newcopy123@other.puter.work' })).ok).toBe(true);
+    expect((await as(carol).post(`/api/ws/${wsId}/transfer/complete`, { to: 'newcopy123@other.localhost' })).ok).toBe(true);
     seen = (await as(bob).get(`/api/ws/${wsId}`)).data.workspace.channels;
     expect(Object.keys(seen)).toEqual([general.id]);
     expect((await rt.kv.get(KEYS.ws(wsId))).channels.ghost00000).toEqual({ count: -1 });
@@ -342,7 +342,7 @@ describe('someone from a connected workspace whose standing runs out while the h
     const { wsId, general } = await workspaceWith(alice, [bob, carol]);
     const design = (await as(alice).post(`/api/ws/${wsId}/channels`, { name: 'design' })).data.channel;
     const code = (await as(alice).post(`/api/ws/${wsId}/channels/${design.id}/connect/invites`, {})).data.code;
-    const { conn, secret } = (await as(dave).post('/api/connect/accept', { code, partner: { ref: 'globex0001@globex.puter.work', name: 'Globex' } })).data;
+    const { conn, secret } = (await as(dave).post('/api/connect/accept', { code, partner: { ref: 'globex0001@globex.localhost', name: 'Globex' } })).data;
     const join = async (user) => as(user).post('/api/connect/join', { conn, token: await signAttestation(secret, { conn, uuid: user.uuid, kind: 'join' }), profile: { name: user.username } });
     expect((await join(dave)).ok).toBe(true);
     return { wsId, general, design, conn, join };
@@ -376,7 +376,7 @@ describe('someone from a connected workspace whose standing runs out while the h
     expect((await join(carol)).status).toBe(423);
     expect((await rt.kv.get(KEYS.member(wsId, carol.uuid))).channels).not.toContain(design.id);
     // A moved copy still turns a renewal away, with the new address.
-    await as(bob).post(`/api/ws/${wsId}/transfer/complete`, { to: 'newcopy123@other.puter.work' });
+    await as(bob).post(`/api/ws/${wsId}/transfer/complete`, { to: 'newcopy123@other.localhost' });
     expect((await join(dave)).data.code).toBe('moved');
     expect((await as(alice).get(`/api/ws/${wsId}/conv/${general.id}/messages`)).ok).toBe(true);
   });
@@ -436,7 +436,7 @@ describe('a huddle going on when its workspace begins moving to another server',
     // Leaving is unchanged: the last one out ends it, with its line.
     expect((await as(carol).del(`/api/ws/${wsId}/conv/${general.id}/huddle?sid=s-carol`)).data.ended).toBe(false);
     // A copy that has moved takes no seat, heartbeat or not.
-    expect((await as(carol).post(`/api/ws/${wsId}/transfer/complete`, { to: 'newcopy123@other.puter.work' })).ok).toBe(true);
+    expect((await as(carol).post(`/api/ws/${wsId}/transfer/complete`, { to: 'newcopy123@other.localhost' })).ok).toBe(true);
     const gone = await seat(alice, general.id, { join: false });
     expect(gone.status).toBe(423);
     expect(gone.data.code).toBe('moved');
@@ -448,8 +448,8 @@ describe('completing a move with an address that names this very copy', () => {
     const { wsId, general } = await workspaceWith(alice, [bob, carol]);
     await as(alice).post(`/api/ws/${wsId}/members/${carol.uuid}/role`, { role: 'admin' });
     await as(alice).post(`/api/ws/${wsId}/transfer`, { to: carol.uuid });
-    // This worker answers at teamchat-api.test; its puter.work spelling names it too.
-    for (const to of [`${wsId}@teamchat-api.test`, `${wsId}@teamchat-api.test.puter.work`]) {
+    // This worker answers at teamchat-api.test; its localhost:8443 spelling names it too.
+    for (const to of [`${wsId}@teamchat-api.test`, `${wsId}@teamchat-api.test.localhost`]) {
       const res = await as(carol).post(`/api/ws/${wsId}/transfer/complete`, { to });
       expect(res.status).toBe(400);
       expect(res.data.code).toBe('invalid');

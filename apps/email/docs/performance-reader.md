@@ -79,8 +79,8 @@ cold inbox remained 62 requests/108 ms; a sparse page after history used 60 head
 reads and zero listings; abandoned-folder work made zero subsequent requests.
 These confirm the earlier work remains effective, not new savings from this change.
 
-API review reconfirmed the official [readdir contract](https://docs.puter.com/FS/readdir/)
-and [read contract](https://docs.puter.com/FS/read/). Local Puter source inspected
+API review reconfirmed the official [readdir contract](http://localhost:8443/FS/readdir/)
+and [read contract](http://localhost:8443/FS/read/). Local Puter source inspected
 at `0be3bc55c28b125ec42ec85fd4b0c5fa7478a3a9` still uses direct name/id seeks,
 recursive ascending-path seeks with depth filtering, per-entry SDK caching,
 and SDK `byte_count` query parameters. These costs support retaining the existing

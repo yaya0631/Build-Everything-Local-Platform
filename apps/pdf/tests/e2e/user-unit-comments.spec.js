@@ -11,7 +11,7 @@ test.skip(({ isMobile }) => isMobile, 'desktop workspace');
 // Letter paper in units of ten points, as large drawings set a UserUnit: comments placed with a
 // click have the sizes they have on any other page, not ten times those.
 test('comments clicked onto a page with large units have their usual size', async ({ page }) => {
-  await page.route('https://js.puter.com/**', (route) => route.abort());
+  await page.route('**/sdk/puter.js', (route) => route.abort());
   const doc = await PDFDocument.create();
   doc.addPage([61.2, 79.2]).node.set(PDFName.of('UserUnit'), PDFNumber.of(10));
   await page.goto('/#library');

@@ -5,7 +5,7 @@
  */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-vi.mock('../src/team.js', () => ({ call: async () => ({ token: 'TOKENtoken1234567890' }), inviteLink: () => 'https://childcare.puter.com/#/join?w=childcare-abc&t=TOKENtoken1234567890' }));
+vi.mock('../src/team.js', () => ({ call: async () => ({ token: 'TOKENtoken1234567890' }), inviteLink: () => 'http://childcare.localhost:8443/#/join?w=childcare-abc&t=TOKENtoken1234567890' }));
 
 const { app } = await import('../src/app.js');
 const { invite } = await import('../src/views/invite.js');
@@ -18,7 +18,7 @@ beforeEach(() => {
     this.open = true;
   };
   app.demo = false;
-  app.team = { url: 'https://childcare-abc.puter.work', role: 'owner' };
+  app.team = { url: 'http://childcare-abc.localhost:8443', role: 'owner' };
   app.store = { state: { settings: { school: { name: 'Acorn' } } } };
 });
 

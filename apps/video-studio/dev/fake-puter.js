@@ -5,7 +5,7 @@
  *   world.sdk(user)        what `puter` is in that person's browser tab: auth,
  *                          their app KV, their files (relative paths land in
  *                          /<user>/AppData/video-studio/), read links, workers
- *   workers.create(name)   records a worker owned by the caller at https://<name>.puter.work
+ *   workers.create(name)   records a worker owned by the caller at https://<name>.localhost:8443
  *   workers.exec(url)      runs the real worker code (worker/http.js) in this
  *                          page: me.puter is the owner's app (same KV and
  *                          files as the owner's app, as a worker deployed from
@@ -248,7 +248,7 @@ export function createWorld({ storage = memoryStorage(), now = () => Date.now(),
           await wait();
           if (await storage.get('workers', name)) throw puterError(`A worker named ${name} already exists`, 'conflict', 409);
           if (!(await storage.get('files', resolvePath(user, path)))) throw puterError('Worker file not found', 'subject_does_not_exist', 404);
-          const url = `https://${name}.puter.work`;
+          const url = `http://${name}.localhost:8443`;
           await storage.put('workers', name, { name, url, owner: user, path: resolvePath(user, path) });
           return { name, url };
         },

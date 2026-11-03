@@ -155,7 +155,7 @@ export function instantiateWorker(source, { kv = makeKv(), me = { puter: { kv } 
         init.headers['content-type'] = 'application/x-www-form-urlencoded';
       }
     }
-    const url = new URL(pathAndQuery, 'https://test-worker.puter.work');
+    const url = new URL(pathAndQuery, 'http://test-worker.localhost:8443');
     const match = matchRoute(routes, method, url.pathname);
     if (!match) return new ResponseShim('no route', { status: 404 });
     const request = new RequestShim(url.href, init);
@@ -198,7 +198,7 @@ export function makeFakePuter() {
     },
     workers: {
       create: vi.fn(async (name, filePath) => {
-        const url = `https://${name}.puter.work`;
+        const url = `http://${name}.localhost:8443`;
         const instance = instantiateWorker(files.get(filePath));
         workersByUrl.set(url, { name, filePath, instance });
         created.push(name);

@@ -223,7 +223,7 @@ export function buildShell({ onSignIn } = {}) {
           { href: REPO_URL, target: '_blank', rel: 'noopener noreferrer', 'aria-label': 'Source code on GitHub (opens in a new tab)', title: 'Source code on GitHub' },
           icon('github', 17),
         ),
-        h('span.powered.grow', 'Built on ', h('a', { href: 'https://developer.puter.com', target: '_blank', rel: 'noopener noreferrer' }, 'Puter')),
+        h('span.powered.grow', 'Built on ', h('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener noreferrer' }, 'Puter')),
         railToggle,
       ),
     ),

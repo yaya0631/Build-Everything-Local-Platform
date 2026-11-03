@@ -24,12 +24,6 @@
   <link rel="icon" type="image/png" sizes="16x16" href="./favicon-16x16.png" />
   <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
   <link rel="manifest" href="./manifest.json" />
-  <!-- Privacy-friendly analytics by Plausible -->
-  <script async src="https://plausible.io/js/pa-2yMvoQPYNHnCQ4VVrJlNU.js"></script>
-  <script>
-    window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
-    plausible.init()
-  </script>
   <script>
     // Apply saved theme before first paint to avoid a flash.
     (() => {
@@ -41,7 +35,7 @@
   </script>
   <!-- defer keeps the SDK ahead of the module script below (same in-order
        queue) without parser-blocking first paint of the boot splash. -->
-  <script src="https://js.puter.com/v2/" defer></script>
+  <script src="/sdk/puter.js" defer></script>
   <script type="module" src="/src/main.js"></script>
 </head>
 <body>

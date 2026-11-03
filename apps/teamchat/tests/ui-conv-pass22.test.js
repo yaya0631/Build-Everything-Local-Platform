@@ -82,7 +82,7 @@ describe('an address with a port, typed without a scheme', () => {
     const submit = () => form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
     const error = () => form.querySelector('.field-error');
     // A development server, an intranet host with a port, a host and port with a path: each means https, as "example.com" does.
-    for (const [typed, saved] of [['localhost:5173/admin', 'https://localhost:5173/admin'], ['grafana.internal:3000', 'https://grafana.internal:3000'], ['example.com:8443/docs?x=1', 'https://example.com:8443/docs?x=1']]) {
+    for (const [typed, saved] of [['localhost:5173/admin', 'http://localhost:5173/admin'], ['grafana.internal:3000', 'https://grafana.internal:3000'], ['example.com:8443/docs?x=1', 'https://example.com:8443/docs?x=1']]) {
       update.mockClear();
       d.type(labelInput, 'Dev');
       d.type(urlInput, typed);
@@ -122,7 +122,7 @@ describe('an address with a port, typed without a scheme', () => {
       await dom.tick(1);
       return box.textarea.value;
     };
-    expect(await add('localhost:5173/admin')).toBe('https://localhost:5173/admin');
+    expect(await add('localhost:5173/admin')).toBe('http://localhost:5173/admin');
     expect(await add('example.com:8080')).toBe('https://example.com:8080');
     // As typed, still: an address with a scheme of its own.
     expect(await add('mailto:ana@example.com')).toBe('mailto:ana@example.com');

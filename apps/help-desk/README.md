@@ -1,6 +1,6 @@
 # Help Desk
 
-An open-source help desk for answering customer requests as a team: a shared ticket inbox, a help center where customers find answers and send requests, macros, automations, service level targets and reports. It is an open-source alternative to Zendesk, Freshdesk and Intercom, and it runs on [Puter](https://puter.com), so every help desk's data lives in its owner's own Puter account.
+An open-source help desk for answering customer requests as a team: a shared ticket inbox, a help center where customers find answers and send requests, macros, automations, service level targets and reports. It is an open-source alternative to Zendesk, Freshdesk and Intercom, and it runs on [Puter](https://localhost:8443), so every help desk's data lives in its owner's own Puter account.
 
 > Help Desk is in early alpha. Expect changes, and do not rely on it for real customer support yet.
 

@@ -164,15 +164,14 @@ describe('MAX_STEP_MS', () => {
     const fastest = launchVelocity(() => 0.999999); // maxes both the dir and magnitude terms
     const worstCaseStepDisplacement = Math.abs(fastest.vx) * MAX_STEP_MS;
 
-    // Ground "plausible" in the app's own sizing rather than a made-up
     // number: a small phone viewport is the narrowest gap the cascade ever
     // bounces a card across (main{padding:12px} at that breakpoint, per
     // layout.css).
     const viewportWidth = 320;
     const { cardW } = computeSizes(viewportWidth - 24);
-    const narrowestPlausibleGap = viewportWidth - cardW;
+    const narrowestGap = viewportWidth - cardW;
 
-    expect(worstCaseStepDisplacement).toBeLessThan(narrowestPlausibleGap / 4);
+    expect(worstCaseStepDisplacement).toBeLessThan(narrowestGap / 4);
   });
 });
 

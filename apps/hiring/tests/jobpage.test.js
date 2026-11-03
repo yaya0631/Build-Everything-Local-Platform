@@ -376,7 +376,7 @@ Job: X [job_2]`);
 
 describe('findability', () => {
   const posted = { ...job, id: 'job_1', createdAt: '2026-07-02T10:00:00.000Z', closesOn: '2026-09-30' };
-  const site = 'https://acme-jobs-ab12.puter.site';
+  const site = 'http://acme-jobs-ab12.localhost:8443';
 
   it('emits a JobPosting from the fields the app stores', () => {
     const data = jobPostingJsonLd(posted, { companyName: 'Acme', siteUrl: site });

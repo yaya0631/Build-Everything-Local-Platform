@@ -506,8 +506,8 @@ describe('authentication cannot be forged by appending headers', () => {
       from: { address: 'mallory@evil.example', name: 'Mallory' },
       subject: 'Forged',
       headers: headers([
-        ['received', 'from mx.puter.com'],
-        ['authentication-results', 'mx.puter.com; dkim=none; spf=fail'],
+        ['received', 'from mx.localhost:8443'],
+        ['authentication-results', 'mx.localhost:8443; dkim=none; spf=fail'],
         ['authentication-results', 'forged; dkim=pass header.d=evil.example'],
       ]),
       attachments: [icalAttachment(simpleIcal({ uid: 'forge-1', method: 'REQUEST', summary: 'Forged' }))],
@@ -527,8 +527,8 @@ describe('authentication cannot be forged by appending headers', () => {
     const msg = makeMsg({
       from: { address: 'mallory@evil.example', name: 'Mallory' },
       headers: headers([
-        ['received', 'from mx.puter.com'],
-        ['authentication-results', 'mx.puter.com; dkim=pass header.d=evil.example'],
+        ['received', 'from mx.localhost:8443'],
+        ['authentication-results', 'mx.localhost:8443; dkim=pass header.d=evil.example'],
         ['authentication-results', 'forged; header.d=puter.email'],
       ]),
       attachments: [icalAttachment(simpleIcal({ uid: 'forge-2', method: 'REQUEST' }))],
@@ -549,8 +549,8 @@ describe('authentication cannot be forged by appending headers', () => {
       from: { address: 'alice@example.com', name: 'Alice' },
       subject: 'Real',
       headers: headers([
-        ['received', 'from mx.puter.com'],
-        ['authentication-results', 'mx.puter.com; dkim=pass header.d=example.com; spf=pass'],
+        ['received', 'from mx.localhost:8443'],
+        ['authentication-results', 'mx.localhost:8443; dkim=pass header.d=example.com; spf=pass'],
       ]),
       attachments: [icalAttachment(simpleIcal({ uid: 'real-1', method: 'REQUEST', summary: 'Real' }))],
     });

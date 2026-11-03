@@ -69,7 +69,6 @@ describe('reading a saved game', () => {
   it('refuses a time control id that could not be one', () => {
     expect(withSave({ time: 42 })).toBe(null);
     expect(withSave({ time: 'x'.repeat(17) })).toBe(null);
-    // Unknown-but-plausible ids get through here and are resolved (to an
     // untimed game) by the caller, so a future control never voids a save.
     expect(withSave({ time: '90+30' })).not.toBe(null);
   });

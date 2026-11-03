@@ -7,7 +7,7 @@ Play chess against the computer or a friend. No frameworks — just vanilla Java
 - **Player vs. Computer** with three difficulty levels (Easy / Medium / Hard)
 - **Pass & Play** — two players sharing one device
 - **Online play** — private peer-to-peer games over the
-  [Puter Peer API](https://docs.puter.com/Peer/) (WebRTC): create a game,
+  [Puter Peer API](http://localhost:8443/Peer/) (WebRTC): create a game,
   share the invite code or link, and play with resign and rematch support.
   The Puter SDK is loaded only when online mode is opened.
 - **Chess clocks** — Bullet, Blitz, and Rapid time controls with a Fischer
@@ -41,7 +41,6 @@ evaluation with a mop-up term for mating a lone king. A move that ends the game
 by threefold repetition or the fifty-move rule is scored as the draw it is, so
 the engine neither shuffles a won game away nor misses a draw it could claim.
 Difficulty combines search depth with a randomness window so lower levels play
-plausible-but-imperfect moves.
 
 ## Around the game
 

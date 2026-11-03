@@ -3,7 +3,7 @@ import { describe, it, expect, beforeAll, beforeEach, afterEach } from 'vitest';
 import { loadWorker, person, OWNER } from './review-team-helpers.js';
 import { app } from '../src/app.js';
 
-const URL_ = 'https://fleet-abc.puter.work';
+const URL_ = 'http://fleet-abc.localhost:8443';
 const SAM = person('user-2', 'sam');
 const ALEX = person('user-3', 'alex');
 const tick = () => new Promise((r) => setTimeout(r, 10));

@@ -21,7 +21,7 @@ const nativeFetch = window.fetch.bind(window)
 window.fetch = function (input, init) {
   try {
     const url = typeof input === 'string' ? input : (input && input.url) || ''
-    if (/\/\/([^/]*\.)?puter\.(com|local)/i.test(url) && !url.includes('js.puter.com')) {
+    if (/\/\/([^/]*\.)?puter\.(com|local)/i.test(url) && !url.includes('js.localhost:8443')) {
       init = Object.assign({}, init, { cache: 'no-store' })
     }
   } catch (_e) {

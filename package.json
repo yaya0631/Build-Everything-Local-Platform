@@ -1,27 +1,25 @@
 {
-  "name": "figma-make-app",
-  "private": true,
+  "name": "everything-local",
   "version": "1.0.0",
+  "private": true,
+  "description": "Everything Local — the Everything app suite running entirely on a local Node server.",
   "type": "module",
+  "workspaces": [
+    "platform",
+    "apps/*"
+  ],
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
-    "format": "oxfmt"
+    "dev": "node platform/server/index.js",
+    "build": "node platform/server/index.js --build",
+    "start": "node platform/server/index.js",
+    "test": "node --test platform/platform.test.js",
+    "postinstall": "patch-package --patch-dir apps/presentation/patches --error-on-fail"
   },
-  "dependencies": {
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+  "engines": {
+    "node": ">=22.13.0"
   },
   "devDependencies": {
-    "@types/node": "^22.0.0",
-    "@types/react": "^19.0.0",
-    "@types/react-dom": "^19.0.0",
-    "@vitejs/plugin-react": "^6.0.0",
-    "tailwindcss": "^4.0.0",
-    "@tailwindcss/vite": "^4.0.0",
-    "oxfmt": "^0.2.0",
-    "typescript": "^5.7.0",
-    "vite": "^8.0.5"
+    "fflate": "0.8.3",
+    "patch-package": "8.0.1"
   }
 }

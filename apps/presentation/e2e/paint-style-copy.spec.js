@@ -43,7 +43,7 @@ test("picture clipboard keeps inherited native paint in both directions through 
       layout:
         '<a:solidFill><a:srgbClr val="EFBD49"/></a:solidFill><a:ln w="180000"><a:solidFill><a:schemeClr val="accent1"/></a:solidFill><a:prstDash val="dash"/></a:ln><a:effectLst><a:glow rad="160000"><a:schemeClr val="accent1"/></a:glow></a:effectLst>',
     });
-  await page.route("https://js.puter.com/v2/", (route) =>
+  await page.route("**/sdk/puter.js", (route) =>
     route.fulfill({
       contentType: "application/javascript",
       body: 'window.puter={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',

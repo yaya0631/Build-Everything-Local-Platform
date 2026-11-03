@@ -96,7 +96,7 @@ test("inline URLs validate safe protocols and length; link ranges join adjacent 
     textLinkURL("example.com:8080/docs", true),
     "https://example.com:8080/docs",
   );
-  assert.equal(textLinkURL("localhost:5173", true), "https://localhost:5173/");
+  assert.equal(textLinkURL("localhost:5173", true), "http://localhost:5173/");
   for (const bad of ["javascript:alert(1)", "mailto:a@b.com", "data:,x"])
     assert.equal(textLinkURL(bad, true), null, bad);
   assert.equal(textLinkURL("HTTPS://EXAMPLE.COM"), "https://example.com/");

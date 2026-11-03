@@ -1,7 +1,7 @@
 # Calendar
 
 A modern, minimal calendar web app. Vanilla JavaScript (no framework), built with
-Vite, and backed entirely by **[Puter.js](https://developer.puter.com/)** for
+Vite, and backed entirely by **[Puter.js](http://localhost:8443/)** for
 authentication and storage — no server of your own to run, and every user's data
 lives in their own Puter storage.
 
@@ -64,7 +64,7 @@ lives in their own Puter storage.
   keyboard-navigable fallback for standalone web deployments.
 - **Guest suggestions from your address book** — inside the Puter desktop, typing a
   name into an event's guest field suggests people from the
-  [Contacts](https://contacts.puter.com) app, so you don't have to remember anyone's
+  [Contacts](http://contacts.localhost:8443) app, so you don't have to remember anyone's
   email address. See [Contacts integration](#contacts-integration).
 - **Emailed invitations with self-serve RSVP** — every guest gets a personal
   Yes / No / Maybe link; saving an event offers to mail it to them, with the event
@@ -78,7 +78,7 @@ lives in their own Puter storage.
   events, both sides get confirmation email, and either side can cancel with
   notice. See [Booking links](#booking-links).
 - **Meeting links (Google Meet-style)** — one click in the event editor puts a
-  [Puter Meetings](https://meetings.puter.com) video-call link on the event.
+  [Puter Meetings](http://meetings.localhost:8443) video-call link on the event.
   It shows as **Join meeting** on the details card, rides along in invitation
   emails and the attached `.ics`, and never expires — one link serves a whole
   recurring series. See [Meeting links](#meeting-links).
@@ -108,7 +108,7 @@ lives in their own Puter storage.
 Puter is the only backend. It is loaded from the CDN in `index.html`:
 
 ```html
-<script src="https://js.puter.com/v2/"></script>
+<script src="/sdk/puter.js"></script>
 ```
 
 | Concern | Puter API |
@@ -116,7 +116,7 @@ Puter is the only backend. It is loaded from the CDN in `index.html`:
 | Sign-in / sign-out / current user | `puter.auth` |
 | Event & settings storage | `puter.kv` (one key per event under `cal:evt:`, settings under `cal:settings`) |
 | Right-click menus | `puter.ui.contextMenu` (with a local fallback) |
-| Guest suggestions from Contacts | `puter.ui.launchApp` + [`AppConnection`](https://docs.puter.com/Objects/AppConnection/) |
+| Guest suggestions from Contacts | `puter.ui.launchApp` + [`AppConnection`](http://localhost:8443/Objects/AppConnection/) |
 | Serving the calendar to other apps | `puter.ui.parentApp()` + the same `AppConnection` |
 | Guest RSVP links + booking pages | `puter.workers.create` (a worker per user, in their own account) |
 | Emailing invitations | `puter.workers.exec` + `puter.email.sendTransactional` (billed to the sender) |
@@ -184,13 +184,13 @@ ignores the flag and shows a window, which Contacts then hides itself.
 ## Invitations &amp; RSVP
 
 A guest usually has no Puter account, so they cannot be handed a key to the host's
-`puter.kv`. Two serverless [Workers](https://docs.puter.com/Workers/) close that
+`puter.kv`. Two serverless [Workers](http://localhost:8443/Workers/) close that
 gap — deployed by different people, on purpose:
 
 | Worker | Source | Deployed | Runs in the account of |
 | --- | --- | --- | --- |
-| RSVP endpoint | `src/workers/rsvp-worker.js` | by the app, on the host's first event with guests | the **host** — `cal-<username>.puter.work`, one per user |
-| Email sender | `src/workers/email-worker.js` | by you, once, by hand | the **app owner** — `calendar-email.puter.work`, one for everyone |
+| RSVP endpoint | `src/workers/rsvp-worker.js` | by the app, on the host's first event with guests | the **host** — `cal-<username>.localhost:8443`, one per user |
+| Email sender | `src/workers/email-worker.js` | by you, once, by hand | the **app owner** — `calendar-email.localhost:8443`, one for everyone |
 
 **Answering.** The RSVP worker mints each guest an unguessable capability URL
 (`/rsvp/<token>`) and stores only its hash, so a leak of that worker's storage
@@ -201,7 +201,7 @@ an email. Answers are pulled back and merged into the host's calendar by
 `src/js/rsvp-links.js`.
 
 **Sending.** `src/js/invites.js` hands those links to the email worker through
-[`puter.workers.exec()`](https://docs.puter.com/Workers/exec/), which forwards the
+[`puter.workers.exec()`](http://localhost:8443/Workers/exec/), which forwards the
 signed-in user's Puter token. That token is what the worker bills: **the host pays
 for their own invitations**, never the app owner, even though the app owner's
 worker is what authorizes the send.
@@ -265,7 +265,7 @@ invitation. Updates for remaining guests are offered separately after this choic
 Because that worker is app-owned and reachable by any signed-in Puter user, it is
 not a relay: callers hand it an *event*, never a message. It composes the subject
 and body itself, escapes everything the host typed, and puts no clickable link in
-the mail except the guest's own `*.puter.work` RSVP URL (a cancellation carries no
+the mail except the guest's own `*.localhost:8443` RSVP URL (a cancellation carries no
 link at all) — with per-request and per-user-per-day recipient caps on top. Its
 storage holds only hashes: no address, event id, or title ever lands in the app
 owner's account.
@@ -273,13 +273,13 @@ owner's account.
 ### Deploying the email worker
 
 Invitations are the one feature that needs a deploy step of its own. With the
-[Puter CLI](https://docs.puter.com/cli/):
+[Puter CLI](http://localhost:8443/cli/):
 
 ```bash
 npm install -g @heyputer/cli
 puter login
 npm run deploy:email-worker   # puter worker deploy src/workers/email-worker.js calendar-email
-curl https://calendar-email.puter.work/health   # {"ok":true,"version":"11","runtime":"2.6.2+63f857ce3"}
+curl http://calendar-email.localhost:8443/health   # {"ok":true,"version":"11","runtime":"2.6.2+63f857ce3"}
 ```
 
 The version in `/health` is `WORKER_VERSION` from the source — bump it in any
@@ -317,11 +317,11 @@ up on the calendar: the message is read where it lands, its iCalendar attachment
 parsed, and the event added — or held back, depending on who sent it.
 
 **It runs while the calendar is closed.** `src/workers/mail-handler.js` is a
-published [events handler](https://docs.puter.com/Events/handlers/). The app
+published [events handler](http://localhost:8443/Events/handlers/). The app
 subscribes once, with `puter.events.onPersistent()`, to
 `fs:~/.mail/objects/**:add`, and Puter runs that handler in the app's events
 worker whenever mail arrives — no tab open, no polling. The handler reads the
-message with [`puter.email.get()`](https://docs.puter.com/Email/get/), which
+message with [`puter.email.get()`](http://localhost:8443/Email/get/), which
 parses it for us, keeps the calendar attachments, and writes a small record into
 the user's own key-value store. It never writes an event: every decision about
 the calendar is made in the app, where the contacts, the settings and the
@@ -387,7 +387,7 @@ did.
 **Answering by email.** An event that arrived by mail offers to send a real iTIP
 `REPLY` to its organizer when you press Yes, No or Maybe — and only when you then
 press **Send**. It goes out with
-[`puter.email.send()`](https://docs.puter.com/Email/) from your own
+[`puter.email.send()`](http://localhost:8443/Email/) from your own
 `<username>@puter.email` (which needs write access to `~/.mail`, asked for the
 first time you send one), carrying a `text/calendar; method=REPLY` attachment. It
 uses the UID the organizer assigned and answers as the address they invited,
@@ -398,7 +398,7 @@ the way it composes every other one.
 
 **Catching up.** `fs:` subjects keep no log, so anything that arrived while the
 subscription was suspended — or before you connected — is found with
-[`puter.email.list()`](https://docs.puter.com/Email/list/), newest first, down to
+[`puter.email.list()`](http://localhost:8443/Email/list/), newest first, down to
 the last message already seen. That same scan is what runs when the calendar
 cannot subscribe in the background at all: without an app identity, or without
 `events:background`, the feature keeps working while the calendar is open and
@@ -429,10 +429,10 @@ The sidebar's **Booking links** section is a Calendly-style scheduler: create a
 link ("30 minute meeting"), share it, and anyone — no Puter account — can book
 one of your free slots.
 
-**What the link looks like.** `https://calendar.puter.com/#/<username>/<slug>`
-— "Intro call" on nj's calendar is shared as `calendar.puter.com/#/nj/intro-call`.
+**What the link looks like.** `http://calendar.localhost:8443/#/<username>/<slug>`
+— "Intro call" on nj's calendar is shared as `calendar.localhost:8443/#/nj/intro-call`.
 The first segment names the per-user worker that serves the page
-(`cal-<username>.puter.work`, minus its prefix); the second is the page's slug,
+(`cal-<username>.localhost:8443`, minus its prefix); the second is the page's slug,
 made from its title. The link is derived, not registered: `index.html`
 recognises the route and hands the visitor to the guest page (`book.html`)
 before the calendar itself loads, and the guest page rebuilds the worker's
@@ -444,7 +444,7 @@ outlives the title it came from, because re-slugging a renamed page would break
 every link already sent. Worker names are global across Puter, so a host whose
 name is taken gets `<username>-<4 hex>`; pages created before slugs, and titles
 with no Latin letters to slug (Cyrillic, CJK, emoji), keep their random hex ids.
-The worker's own `https://cal-<username>.puter.work/book/<slug>` links — the form
+The worker's own `https://cal-<username>.localhost:8443/book/<slug>` links — the form
 every link took before this — still redirect to the same page.
 
 **What the host controls.** Each link is a page with a title, duration,
@@ -527,9 +527,9 @@ in the event's exported `.ics` as its `URL` property, which is where other
 calendars read a joinable link from.
 
 There is no API behind that click.
-[Puter Meetings](https://meetings.puter.com) publishes a stateless recipe for
+[Puter Meetings](http://meetings.localhost:8443) publishes a stateless recipe for
 other apps: an *open room code* is 12 crypto-random lowercase letters
-(`abcd-efgh-ijkl`) wrapped in `https://meetings.puter.com/#/m/<code>`, and
+(`abcd-efgh-ijkl`) wrapped in `http://meetings.localhost:8443/#/m/<code>`, and
 nothing is created anywhere until someone opens the link and starts the
 meeting (`src/js/meetings.js` is the entire client). That gives meeting links
 properties the calendar leans on:
@@ -754,7 +754,7 @@ front of the user before making it, and `delete` is there so that Undo works.
 
 A grant can also be *scoped* — the object form pins a `has` filter (the same
 names `list` and `search` accept) to everything the caller does. [Puter
-Meetings](https://meetings.puter.com) shows the day's video calls on its home
+Meetings](http://meetings.localhost:8443) shows the day's video calls on its home
 screen with a Join button, which takes `list`; nothing about that needs the
 dentist appointment, so its grant reaches only events that carry a meeting
 link. A scope is applied server-side from the caller's identity: reads return
@@ -854,7 +854,7 @@ npm test
 ## Deploying
 
 `npm run build` produces a static `dist/` you can host anywhere, including
-[Puter hosting](https://developer.puter.com/). The context menu automatically uses
+[Puter hosting](http://localhost:8443/). The context menu automatically uses
 Puter's native menu when the app runs inside the Puter GUI and the styled fallback
 everywhere else.
 

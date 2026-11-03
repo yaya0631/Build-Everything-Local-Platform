@@ -27,7 +27,7 @@ for (const dismiss of ['Escape', 'button'])
     test(`Settings ${dismiss} ${moved ? 'preserves newer focus' : 'restores its opener'}`, async ({
       page,
     }) => {
-      await page.route('https://js.puter.com/**', (route) => route.abort());
+      await page.route('**/sdk/puter.js', (route) => route.abort());
       await page.goto('/#library');
       const settings = page.getByRole('button', { name: 'Settings', exact: true });
       await settings.focus();
@@ -57,7 +57,7 @@ for (const accept of [false, true])
     test(`${accept ? 'accepting' : 'cancelling'} a rename ${moved ? 'preserves newer focus' : 'restores its opener'}`, async ({
       page,
     }) => {
-      await page.route('https://js.puter.com/**', (route) => route.abort());
+      await page.route('**/sdk/puter.js', (route) => route.abort());
       const doc = await PDFDocument.create();
       doc.addPage([400, 500]);
       await page.goto('/#library');

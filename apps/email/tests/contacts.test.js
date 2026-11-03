@@ -180,14 +180,14 @@ describe('the index as an address book', () => {
     const store = index();
     store.add({
       name: 'c--z',
-      from: { name: 'Leo Tanaka', email: 'leo@puter.com' },
+      from: { name: 'Leo Tanaka', email: 'leo@localhost:8443' },
       to: [{ name: '', email: 'me@puter.email' }, { name: 'Sam Okafor', email: 'sam@example.com' }],
       date: new Date(4_000_000 * 1000),
-      messageId: '<c@puter.com>',
+      messageId: '<c@localhost:8443>',
       references: [],
     });
     expect(store.addresses()).toEqual([
-      { name: 'Leo Tanaka', email: 'leo@puter.com', seconds: 4_000_000, written: false },
+      { name: 'Leo Tanaka', email: 'leo@localhost:8443', seconds: 4_000_000, written: false },
       { name: '', email: 'me@puter.email', seconds: 4_000_000, written: false },
       { name: 'Sam Okafor', email: 'sam@example.com', seconds: 4_000_000, written: false },
     ]);

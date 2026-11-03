@@ -380,7 +380,7 @@ describe('saving the profile card, or a status, while one workspace\'s server do
           const u = new URL(url);
           if (u.pathname === '/api/me' && init.method === 'PUT') {
             told.push(u.hostname);
-            if (u.hostname === 'teamchat-two.puter.work') return new Promise(() => {});
+            if (u.hostname === 'teamchat-two.localhost:8443') return new Promise(() => {});
             return json({ ok: true });
           }
           return json({ code: 'not_found', message: 'nope' }, 404);
@@ -403,7 +403,7 @@ describe('saving the profile card, or a status, while one workspace\'s server do
     expect(done).toBe(true);
     await saved;
     expect(store.profile.name).toBe('New name');
-    expect(told.sort()).toEqual(['teamchat-test.puter.work', 'teamchat-two.puter.work']);
+    expect(told.sort()).toEqual(['teamchat-test.localhost:8443', 'teamchat-two.localhost:8443']);
   });
 
   it('the same for a status', async () => {

@@ -99,7 +99,7 @@ describe('reminder messages', () => {
     const stage = reminderStage(doc, TODAY);
     const { subject, body } = buildMessage(doc, client, settings, {
       templateKey: stage,
-      link: 'https://x.puter.site/a.html',
+      link: 'http://x.localhost:8443/a.html',
       extra: reminderValues(doc, TODAY),
     });
     expect(stage).toBe('reminderLate');

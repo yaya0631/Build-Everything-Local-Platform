@@ -5,7 +5,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { updateOwnWorker, resetBundleCache } from '../src/lib/deploy.js';
 
-const worker = { url: 'https://teamchat-x.puter.work', path: '/me/teamchat-worker.js', name: 'teamchat-x' };
+const worker = { url: 'http://teamchat-x.localhost:8443', path: '/me/teamchat-worker.js', name: 'teamchat-x' };
 let writes;
 
 function ship(banner) {

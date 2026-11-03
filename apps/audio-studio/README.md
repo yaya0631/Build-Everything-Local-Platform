@@ -1,6 +1,6 @@
 # Audio Studio
 
-A waveform and multitrack audio editor for the browser, built on [Puter](https://puter.com). Record, edit, restore, mix and master audio with a docked panel workspace, studio effects and spectral editing. Audio is processed on your device; projects and exported files are stored in your own Puter cloud.
+A waveform and multitrack audio editor for the browser, built on [Puter](https://localhost:8443). Record, edit, restore, mix and master audio with a docked panel workspace, studio effects and spectral editing. Audio is processed on your device; projects and exported files are stored in your own Puter cloud.
 
 An open-source alternative to Adobe Audition. No framework: vanilla JavaScript modules built with Vite. Puter.js is the only backend.
 
@@ -43,7 +43,7 @@ In development, `window.as` is the app and `as.openDev(['name.wav'])` opens test
 ## Third-party
 
 - [Lucide](https://lucide.dev) icons (ISC), plus original glyphs in `src/ui/icons.js`.
-- [Puter.js](https://docs.puter.com) for sign-in, cloud files and AI features.
+- [Puter.js](http://localhost:8443) for sign-in, cloud files and AI features.
 
 ## License
 

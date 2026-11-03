@@ -65,12 +65,12 @@ describe('service worker after an update', () => {
     // What the previous build left behind.
     const old = await storage.api.open('fleet-previous');
     await old.put('./index.html', new Response('<!doctype html>old build'));
-    await old.put('https://js.puter.com/v2/', new Response('old sdk'));
+    await old.put('/sdk/puter.js', new Response('old sdk'));
 
     let online = true;
     const sw = loadWorker(async (u) => {
       if (!online) throw new TypeError('Failed to fetch');
-      if (u.startsWith('https://js.puter.com')) return new Response('new sdk');
+      if (u.startsWith('/sdk/')) return new Response('new sdk');
       return new Response('<!doctype html>new build', { headers: { 'content-type': 'text/html' } });
     }, storage);
     await sw.install();
@@ -81,6 +81,6 @@ describe('service worker after an update', () => {
 
     online = false;
     expect(await (await sw.request('/', { mode: 'navigate' })).text()).toBe('<!doctype html>new build');
-    expect(await (await sw.request('https://js.puter.com/v2/')).text()).toBe('new sdk');
+    expect(await (await sw.request('/sdk/puter.js')).text()).toBe('new sdk');
   });
 });

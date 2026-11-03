@@ -5,7 +5,7 @@ for (const action of ['Rename', 'Duplicate', 'Delete'])
     test(`${action} completion ${movedFocus ? 'preserves newer keyboard focus' : 'restores focus after refreshing the library'}`, async ({
       page,
     }) => {
-      await page.route('https://js.puter.com/**', (route) =>
+      await page.route('**/sdk/puter.js', (route) =>
         route.fulfill({
           contentType: 'application/javascript',
           body: `
@@ -65,7 +65,7 @@ for (const action of ['Rename', 'Duplicate', 'Delete'])
 test('a question dialog gives screen readers its message as well as its title', async ({
   page,
 }) => {
-  await page.route('https://js.puter.com/**', (route) =>
+  await page.route('**/sdk/puter.js', (route) =>
     route.fulfill({
       contentType: 'application/javascript',
       body: `window.puter = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username: 'test-user'}) }, fs: { readdir: async () => [{ name: 'report.pdf', path: 'PDF Editor/report.pdf' }] } };`,

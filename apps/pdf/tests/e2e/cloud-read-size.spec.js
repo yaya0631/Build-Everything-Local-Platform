@@ -9,7 +9,7 @@ for (const source of ['picker', 'desktop'])
       const doc = await PDFDocument.create();
       doc.addPage([200, 200]);
       const bytes = Buffer.from(await doc.save()).toString('base64');
-      await page.route('https://js.puter.com/**', (route) =>
+      await page.route('**/sdk/puter.js', (route) =>
         route.fulfill({
           contentType: 'application/javascript',
           body: `

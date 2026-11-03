@@ -1,6 +1,6 @@
 # Hiring · Applicant Tracking
 
-Job pages, candidate pipeline, interview scheduling, scorecards, offers, and onboarding: a complete, calm hiring workflow in one app. Built with vanilla JavaScript and [Puter.js](https://docs.puter.com); no frameworks.
+Job pages, candidate pipeline, interview scheduling, scorecards, offers, and onboarding: a complete, calm hiring workflow in one app. Built with vanilla JavaScript and [Puter.js](http://localhost:8443); no frameworks.
 
 ## Features
 

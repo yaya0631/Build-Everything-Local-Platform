@@ -2,7 +2,7 @@
 
 Build, send and test HTTP requests in your browser. API Client is an
 open-source alternative to Postman and Insomnia, built on
-[Puter](https://puter.com). It uses no framework and has no backend of its
+[Puter](https://localhost:8443). It uses no framework and has no backend of its
 own: it is vanilla JavaScript, built with Vite, with Puter.js for accounts,
 cloud storage and networking.
 

@@ -18,7 +18,7 @@ page.on(
   "console",
   (m) => m.type() === "error" && console.error("console:", m.text()),
 );
-await page.route("https://js.puter.com/v2/", (r) =>
+await page.route("**/sdk/puter.js", (r) =>
   r.fulfill({ contentType: "application/javascript", body: MOCK }),
 );
 await page.goto(url);

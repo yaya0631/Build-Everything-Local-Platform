@@ -6,7 +6,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { tick } from './helpers.js';
 
-const URL_A = 'https://childcare-abcdefghij.puter.work';
+const URL_A = 'http://childcare-abcdefghij.localhost:8443';
 const backends = [];
 let started = false;
 vi.mock('../src/ui/shell.js', () => ({ buildShell: () => ({ root: document.createElement('div'), main: document.createElement('main'), updateAccount() {} }) }));

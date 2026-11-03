@@ -107,7 +107,7 @@
 <script>
 /**
  * Standalone RSVP page. The guest lands here from a worker link
- * (…puter.work/rsvp/<token> redirects to /rsvp.html#w=<worker>&t=<token>);
+ * (…localhost:8443/rsvp/<token> redirects to /rsvp.html#w=<worker>&t=<token>);
  * everything below talks to the worker's JSON API (GET/POST /api/rsvp/<token>)
  * — the worker itself serves no HTML. Needs no Puter sign-in and no SDK.
  *
@@ -569,7 +569,7 @@
       mark.height = 18;
       link.append(mark);
       link.append(document.createTextNode('Puter Calendar'));
-      link.href = 'https://puter.com/app/calendar';
+      link.href = 'http://localhost:8443/app/calendar';
       link.rel = 'noopener';
       foot.append(link);
       root.append(foot);

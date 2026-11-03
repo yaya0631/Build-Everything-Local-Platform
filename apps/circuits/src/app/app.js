@@ -1013,7 +1013,7 @@ export class App extends Emitter {
       const e = msgs.filter((m) => m.severity === 'error').length, w = msgs.length - e;
       s.append(cell([h('span.sev-error', icon('error', 13), e), h('span.sev-warning', icon('warning', 13), w)], { onClick: () => this.setBottomDock(!this.bottomOpen), class: 'msg-count', 'aria-label': `${e} errors, ${w} warnings. Show messages` }));
     }
-    s.append(h('span.cell.powered.tablet-hide', 'Built on ', h('a', { href: 'https://developer.puter.com', target: '_blank', rel: 'noopener noreferrer' }, 'Puter')));
+    s.append(h('span.cell.powered.tablet-hide', 'Built on ', h('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener noreferrer' }, 'Puter')));
     s.append(cell([icon('panel-right', 14), 'Panels'], { onClick: (e) => openMenu([{ command: 'panel.projects' }, { command: 'panel.navigator' }, { command: 'panel.properties' }, { command: 'panel.components' }, { command: 'panel.layers' }, { command: 'panel.messages' }, { separator: true }, { command: 'window.resetLayout' }], { anchor: e.currentTarget, label: 'Panels' }) }));
   }
 

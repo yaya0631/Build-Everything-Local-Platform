@@ -12,7 +12,7 @@ import { memoryStorage } from '../src/lib/readstate.js';
 const settle = (ms = 300) => new Promise((resolve) => setTimeout(resolve, ms));
 const LATE = [
   'From: Ana Petrova <ana@example.com>',
-  'To: sample@puter.com',
+  'To: sample@localhost:8443',
   'Subject: Late arrival',
   'Date: Mon, 17 Aug 2026 10:30:00 GMT',
   'Content-Type: text/plain; charset=utf-8',

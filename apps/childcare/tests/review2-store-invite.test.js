@@ -7,7 +7,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { createMemoryBackend } from '../src/core/backend.js';
 import { tick } from './helpers.js';
 
-const URL_A = 'https://childcare-abcdefghij.puter.work';
+const URL_A = 'http://childcare-abcdefghij.localhost:8443';
 const calls = [];
 let membership = 'removed'; // the old membership no longer works
 

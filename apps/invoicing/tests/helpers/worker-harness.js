@@ -144,7 +144,7 @@ export function instantiateWorker(source, { kv = makeKv(), me = { puter: { kv } 
     } else if (body !== undefined) {
       init.body = body;
     }
-    const url = new URL(pathAndQuery, 'https://test-worker.puter.work');
+    const url = new URL(pathAndQuery, 'http://test-worker.localhost:8443');
     const match = matchRoute(routes, method, url.pathname);
     if (!match) return new ResponseShim('no route', { status: 404 });
     const request = new RequestShim(url.href, init);

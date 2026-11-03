@@ -628,7 +628,7 @@ export function settingsView() {
   root.append(group('About',
     el('p.about-text', {},
       `Hourly stores everything in your own Puter account. Amounts are shown in ${store.settings.currency}. `,
-      'Built with ', el('a', { href: 'https://developer.puter.com', target: '_blank', rel: 'noopener' }, 'Puter'), '.')
+      'Built with ', el('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Puter'), '.')
   ));
 
   function group(title, ...children) {

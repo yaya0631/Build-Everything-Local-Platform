@@ -1275,7 +1275,7 @@ test("Jira helpers link created issues, refresh statuses, and explain availabili
   );
   assert.equal(design.task.status, "blocked");
   validateBoard(structuredClone(b));
-  const session = { server: "https://org.puter.work", room: "r" };
+  const session = { server: "http://org.localhost:8443", room: "r" };
   const org = (allowed, server = session.server) => ({
     server,
     info: { configured: true, role: "member" },
@@ -1285,7 +1285,7 @@ test("Jira helpers link created issues, refresh statuses, and explain availabili
   assert.equal(jiraStatus(org(true), session).available, true);
   assert.match(jiraStatus(org(false), session).message, /not set up/);
   assert.match(
-    jiraStatus(org(true, "https://other.puter.work"), session).message,
+    jiraStatus(org(true, "http://other.localhost:8443"), session).message,
     /not on your organization's server/,
   );
   assert.match(
@@ -1668,7 +1668,7 @@ test("the task panel assigns shared board members and organization users with on
     let mutations = 0;
     const toasts = [];
     const session = {
-      server: "https://org.puter.work",
+      server: "http://org.localhost:8443",
       room: b.id,
       request: async (op) => {
         assert.equal(op, "members");
@@ -1825,7 +1825,7 @@ test("the task panel offers people who joined or left the board since it last op
     let members = [{ uuid: owner.uuid, username: "Alice", role: "owner" }];
     let requests = 0;
     const session = {
-      server: "https://org.puter.work",
+      server: "http://org.localhost:8443",
       room: b.id,
       request: async () => {
         requests++;
@@ -2588,7 +2588,7 @@ test("sending tasks to Jira twice at once creates the issues once", async () => 
     let requests = 0,
       release;
     const org = {
-      server: "https://org.puter.work",
+      server: "http://org.localhost:8443",
       info: { configured: true, role: "member" },
       allows: () => true,
       request: async (op) => {
@@ -2641,7 +2641,7 @@ test("task details and Jira leave out hidden content and respect facilitator loc
     const requests = [];
     const toasts = [];
     const org = {
-      server: "https://org.puter.work",
+      server: "http://org.localhost:8443",
       info: { configured: true, role: "member" },
       allows: () => true,
       request: async (op, input) => {
@@ -2751,7 +2751,7 @@ test("sending more than 50 tasks to Jira says how many are still waiting", async
     };
     const toasts = [];
     const org = {
-      server: "https://org.puter.work",
+      server: "http://org.localhost:8443",
       info: { configured: true, role: "member" },
       allows: () => true,
       request: async (op, { issues }) => ({
@@ -2794,7 +2794,7 @@ test("Jira issues created while the board closes or turns read-only are named, n
         readOnly = false;
       const toasts = [];
       const org = {
-        server: "https://org.puter.work",
+        server: "http://org.localhost:8443",
         info: { configured: true, role: "member" },
         allows: () => true,
         request: async () => {
@@ -2844,7 +2844,7 @@ test("Jira issues whose tasks were deleted or linked meanwhile are named, not re
     const { b, design, build, ship } = plan();
     const toasts = [];
     const org = {
-      server: "https://org.puter.work",
+      server: "http://org.localhost:8443",
       info: { configured: true, role: "member" },
       allows: () => true,
       request: async () => {
@@ -3115,7 +3115,7 @@ test("Jira status refresh checks every linked task, 100 at a time", async () => 
     );
     const sent = [];
     const org = {
-      server: "https://org.puter.work",
+      server: "http://org.localhost:8443",
       info: { configured: true, role: "member" },
       allows: () => true,
       request: async (op, input) => {
@@ -3538,7 +3538,7 @@ test("the Tasks dialog keeps refusals and Jira results on screen instead of a fa
     let d,
       fail = true;
     const org = {
-      server: "https://org.puter.work",
+      server: "http://org.localhost:8443",
       info: { configured: true, role: "member" },
       allows: () => true,
       request: async (op, { issues }) => {
@@ -4003,7 +4003,7 @@ for (const locale of ["en", "fr"])
         const original = structuredClone(b);
         let received;
         const session = {
-            server: "https://org.puter.work",
+            server: "http://org.localhost:8443",
             room: b.id,
             request: async () => ({ members: [] }),
           },
@@ -4100,9 +4100,9 @@ test("refreshing Jira status skips tasks a lock protects instead of stopping", a
     selection: () => new Set(),
     readOnly: () => false,
     locked: (ids) => hasLocked(b.items, ids),
-    session: () => ({ server: "https://org.puter.work", room: b.id }),
+    session: () => ({ server: "http://org.localhost:8443", room: b.id }),
     org: {
-      server: "https://org.puter.work",
+      server: "http://org.localhost:8443",
       info: { configured: true, role: "member" },
       allows: () => true,
       request: async (op, body) => {
@@ -4440,9 +4440,9 @@ test("refreshing Jira status names issues Jira no longer has, and Jira's reason 
     selection: () => new Set(),
     readOnly: () => false,
     locked: () => false,
-    session: () => ({ server: "https://org.puter.work", room: b.id }),
+    session: () => ({ server: "http://org.localhost:8443", room: b.id }),
     org: {
-      server: "https://org.puter.work",
+      server: "http://org.localhost:8443",
       info: { configured: true, role: "member" },
       allows: () => true,
       request: (op, body) => answer(body),

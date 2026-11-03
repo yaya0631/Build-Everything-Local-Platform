@@ -2,7 +2,6 @@ import { defineConfig } from "vite";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
-import puterLocalhost from "../../dev/puter-localhost.mjs";
 
 // Features opened on demand (the Miro migration, the administration console,
 // the PowerPoint, SVG and PDF writers, and the PDF reader) load as their own
@@ -50,7 +49,6 @@ export default defineConfig({
   // tmp/, which fails and disables dependency pre-bundling for the dev server.
   optimizeDeps: { entries: ["index.html"] },
   plugins: [
-    puterLocalhost("whiteboard"),
     {
       name: "whiteboard-pdfjs-wasm",
       configureServer(server) {

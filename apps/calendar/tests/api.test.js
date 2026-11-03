@@ -750,7 +750,7 @@ describe('api/protocol — scoped grants', () => {
 });
 
 describe('api/methods — `has` and scope', () => {
-  const MEET = 'https://meetings.puter.com/#/m/abcd-efgh-ijkl';
+  const MEET = 'http://meetings.localhost:8443/#/m/abcd-efgh-ijkl';
   let store;
   let kv;
 

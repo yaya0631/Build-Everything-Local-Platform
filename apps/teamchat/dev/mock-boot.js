@@ -197,7 +197,7 @@ window.puter = {
       if (all[name]) throw new Error(`A worker named ${name} already exists`);
       const drive = readJson(driveKey, {});
       if (!(drivePath(filePath) in drive)) throw new Error('Worker file not found');
-      all[name] = { name, url: `https://${name}.puter.work`, file_path: drivePath(filePath), owner: currentUser.uuid, created_at: new Date().toISOString() };
+      all[name] = { name, url: `http://${name}.localhost:8443`, file_path: drivePath(filePath), owner: currentUser.uuid, created_at: new Date().toISOString() };
       writeJson(WORKERS_KEY, all);
       return { name, url: all[name].url };
     },
@@ -221,7 +221,7 @@ window.puter = {
       // The app's one shared email worker (worker/email.js) lives outside the
       // per-owner workspace workers, so it is faked separately here: sends are
       // recorded, never delivered. Read them back with __mock.emails().
-      if (host === 'teamchat-email.puter.work') return mockEmailWorker(url, init);
+      if (host === 'teamchat-email.localhost:8443') return mockEmailWorker(url, init);
       if (!workerByHost(host)) return new Response('', { status: 404 });
       return serialize(async () => {
         // One worker module serves every fake host here, so its per-process

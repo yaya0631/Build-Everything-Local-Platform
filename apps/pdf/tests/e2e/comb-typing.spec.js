@@ -32,7 +32,7 @@ for (const [alignment, text, firstBox] of [
   test(`typing "${text}" in a comb field puts each character in its box (Q=${alignment})`, async ({
     page,
   }) => {
-    await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+    await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
     await page.goto('/#library');
     const doc = await PDFDocument.create();
     const field = doc.getForm().createTextField('Amount');

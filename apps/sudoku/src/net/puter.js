@@ -15,7 +15,7 @@
  *   * Nothing calls `signIn` on its own. The dialog appears when the player
  *     asks for it, never because the app wanted to check something.
  *
- * @see https://docs.puter.com/
+ * @see http://localhost:8443/
  */
 
 const KEY_STATS = 'sudoku:stats';
@@ -33,7 +33,7 @@ export function isAvailable() {
 /**
  * Where this copy of the app is running: 'app' inside a Puter app window,
  * 'gui' on the Puter desktop, 'web' on an ordinary web page.
- * @see https://docs.puter.com/Utils/env/
+ * @see http://localhost:8443/Utils/env/
  */
 export const environment = () => getPuter()?.env ?? 'web';
 

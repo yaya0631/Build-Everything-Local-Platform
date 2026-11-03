@@ -367,7 +367,7 @@ export function settingsView() {
   root.append(group('About',
     el('p.about-text', {},
       'Contract Manager stores everything in your own Puter cloud: nothing is sent anywhere else. Obligation extraction sends the text you give it to the AI; a scan with no text in it is sent as page images, and only once you have agreed to that. Built on ',
-      el('a', { href: 'https://developer.puter.com', target: '_blank', rel: 'noopener' }, 'Puter'),
+      el('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Puter'),
       '.')
   ));
 

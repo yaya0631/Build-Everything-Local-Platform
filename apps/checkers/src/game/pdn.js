@@ -96,7 +96,7 @@ export function buildPdn({
   control = null,
   termination = 'normal',
   event = 'Casual game',
-  site = 'checkers.puter.com',
+  site = 'checkers.localhost:8443',
 }) {
   const tags = [
     ['Event', event],

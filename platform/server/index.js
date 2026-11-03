@@ -5,6 +5,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { spawnSync } from 'node:child_process';
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
 import { DatabaseSync } from 'node:sqlite';
 import { initAuth, resolveUser, ensureUser, handleAuth } from './auth.js';
 import { initFs, createFsService, handleFs } from './fs.js';
@@ -387,23 +389,64 @@ export async function createPlatformServer(options = {}) {
   };
 }
 
-if (import.meta.url === `file://${process.argv[1]}` || process.argv[1]?.endsWith('server/index.js')) {
-  if (process.argv.includes('--build')) {
-    const viteBin = path.join(ROOT_DIR, 'node_modules/vite/bin/vite.js');
-    for (const app of fs.readdirSync(DEFAULT_APPS_DIR).sort()) {
-      const appDir = path.join(DEFAULT_APPS_DIR, app);
-      if (!fs.existsSync(path.join(appDir, 'package.json'))) continue;
-      if (app === 'assets' && !fs.existsSync(path.join(appDir, 'src'))) continue;
-      const pkg = JSON.parse(fs.readFileSync(path.join(appDir, 'package.json'), 'utf8'));
-      if (pkg.scripts?.['build:worker']) {
-        const cfgFile = fs.existsSync(path.join(appDir, 'vite.worker.config.ts')) ? 'vite.worker.config.ts' : 'vite.worker.config.js';
-        spawnSync(process.execPath, [viteBin, 'build', '--config', cfgFile], { cwd: appDir, stdio: 'inherit' });
-      }
-      const r = spawnSync(process.execPath, [viteBin, 'build'], { cwd: appDir, stdio: 'inherit' });
-      if (r.status !== 0) process.exit(r.status || 1);
+function viteBinFor(appDir) {
+  try {
+    const requireFromApp = createRequire(path.join(appDir, 'package.json'));
+    const pkgPath = requireFromApp.resolve('vite/package.json');
+    const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+    const bin = typeof pkg.bin === 'string' ? pkg.bin : pkg.bin?.vite;
+    if (bin) return path.resolve(path.dirname(pkgPath), bin);
+  } catch { /* fall through to the hoisted copy */ }
+  return path.join(ROOT_DIR, 'node_modules/vite/bin/vite.js');
+}
+
+function buildApp(app) {
+  const appDir = path.join(DEFAULT_APPS_DIR, app);
+  const pkg = JSON.parse(fs.readFileSync(path.join(appDir, 'package.json'), 'utf8'));
+  const viteBin = viteBinFor(appDir);
+  if (!fs.existsSync(viteBin)) throw new Error(`Vite is not installed for ${app}`);
+  if (pkg.scripts?.['build:worker']) {
+    const tsConfig = path.join(appDir, 'vite.worker.config.ts');
+    const cfgFile = fs.existsSync(tsConfig) ? 'vite.worker.config.ts' : 'vite.worker.config.js';
+    const worker = spawnSync(process.execPath, [viteBin, 'build', '--config', cfgFile], { cwd: appDir, stdio: 'inherit' });
+    if (worker.status !== 0) throw new Error(`${app}: worker build exited with ${worker.status}`);
+  }
+  const built = spawnSync(process.execPath, [viteBin, 'build'], { cwd: appDir, stdio: 'inherit' });
+  if (built.status !== 0) throw new Error(`${app}: build exited with ${built.status}`);
+}
+
+function buildApps({ onlyMissing = false, only = [] } = {}) {
+  const failures = [];
+  for (const app of fs.readdirSync(DEFAULT_APPS_DIR).sort()) {
+    const appDir = path.join(DEFAULT_APPS_DIR, app);
+    if (!fs.existsSync(path.join(appDir, 'package.json'))) continue;
+    if (app === 'assets' && !fs.existsSync(path.join(appDir, 'src'))) continue;
+    if (only.length && !only.includes(app)) continue;
+    if (onlyMissing && fs.existsSync(path.join(appDir, 'dist/index.html'))) continue;
+    console.log(`[build] ${app}`);
+    try {
+      buildApp(app);
+    } catch (error) {
+      failures.push(app);
+      console.error(`[build] ${error.message}`);
+    }
+  }
+  return failures;
+}
+
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  const appFlag = process.argv.indexOf('--build-app');
+  const requested = appFlag > -1 ? process.argv.slice(appFlag + 1).filter((arg) => !arg.startsWith('--')) : [];
+  if (process.argv.includes('--build') || requested.length) {
+    const failures = buildApps({ only: requested });
+    if (failures.length) {
+      console.error(`\n${failures.length} app(s) failed to build: ${failures.join(', ')}`);
+      process.exit(1);
     }
     process.exit(0);
   }
+  const missing = buildApps({ onlyMissing: true });
+  if (missing.length) console.error(`Serving with ${missing.length} app(s) unbuilt: ${missing.join(', ')}`);
   const started = await createPlatformServer();
   console.log(`Everything Local running at http://127.0.0.1:${started.port}/`);
 }

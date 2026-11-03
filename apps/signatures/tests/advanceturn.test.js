@@ -57,7 +57,7 @@ function ordered(over = {}) {
       { id: 'b', name: 'Bo', email: 'bo@example.com', status: 'pending' },
       { id: 'c', name: 'Cy', email: 'cy@example.com', status: 'pending' },
     ],
-    links: { a: 'https://w.puter.work/sign/aa', b: 'https://w.puter.work/sign/bb', c: 'https://w.puter.work/sign/cc' },
+    links: { a: 'http://w.localhost:8443/sign/aa', b: 'http://w.localhost:8443/sign/bb', c: 'http://w.localhost:8443/sign/cc' },
     emailed: {},
     audit: [],
     ...over,

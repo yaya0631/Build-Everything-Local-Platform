@@ -7,7 +7,7 @@ for (const action of ['Download', 'Save to Puter'])
     test(`${action} preserves keyboard focus after saving a form draft (move focus=${moveFocus})`, async ({
       page,
     }) => {
-      await page.route('https://js.puter.com/**', (route) =>
+      await page.route('**/sdk/puter.js', (route) =>
         route.fulfill({
           body: `window.puter = {
             env: 'web',

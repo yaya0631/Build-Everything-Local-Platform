@@ -201,7 +201,7 @@ describe('a request that times out on its way up', () => {
     expect(await said(api.upload('abcdef@srv', new File(['x'], 'big.bin', { type: 'application/octet-stream' })))).toBe('timeout: The upload took too long to finish; check your connection and try again');
     expect(await said(api.importFile('abcdef@srv', 'abcdefgh12345678', new Blob(['x']), 'x.bin', null))).toBe('timeout: The upload took too long to finish; check your connection and try again');
     expect(await said(api.importPage('abcdef@srv', { conv: 'c', seq: 1, messages: [{ seq: 1, text: 'y'.repeat(300 * 1024) }] }))).toBe('timeout: The upload took too long to finish; check your connection and try again');
-    expect(await said(api.health('https://srv.puter.work'))).toBe('timeout: The server took too long to answer');
+    expect(await said(api.health('http://srv.localhost:8443'))).toBe('timeout: The server took too long to answer');
     expect(await said(api.send('abcdef@srv', 'c', { text: 'hello' }))).toBe('timeout: The server took too long to answer');
   });
 });

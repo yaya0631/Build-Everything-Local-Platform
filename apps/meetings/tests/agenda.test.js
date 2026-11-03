@@ -37,7 +37,7 @@ import {
 const TUE = new Date(2031, 7, 26, 0, 0, 0, 0).getTime(); // Tue 26 Aug 2031
 const at = (day, h = 9, m = 0) => new Date(2031, 7, day, h, m, 0, 0).getTime();
 
-const MEET = 'https://meetings.puter.com/#/m/abcd-efgh-ijkl';
+const MEET = 'http://meetings.localhost:8443/#/m/abcd-efgh-ijkl';
 
 /** An event as the Calendar API returns one. */
 const event = (over = {}) => ({
@@ -96,7 +96,7 @@ describe('toMeeting', () => {
   });
 
   it('normalizes the code the way the app does, and accepts a classic room code', () => {
-    expect(toMeeting(event({ meeting: { url: 'https://meetings.puter.com/#/m/ABC-DEFG-HIJ' } })).code).toBe(
+    expect(toMeeting(event({ meeting: { url: 'http://meetings.localhost:8443/#/m/ABC-DEFG-HIJ' } })).code).toBe(
       'abc-defg-hij'
     );
   });

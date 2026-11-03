@@ -29,11 +29,11 @@ describe('review worker: deployment', () => {
     expect(await (await env.sdk.alice.fs.read(path)).text()).toContain('build=abc123 at=5');
   });
 
-  it('refuses servers outside puter.work before sending anything', async () => {
+  it('refuses servers outside localhost:8443 before sending anything', async () => {
     const env = await setup();
     const before = env.world.calls.length;
     await expect(call(env.sdk.bob, 'https://evil.example.com', { op: 'review.get', review: 'r_abcdef' })).rejects.toThrow(/unknown server/);
-    await expect(call(env.sdk.bob, 'http://x.puter.work', { op: 'review.get', review: 'r_abcdef' })).rejects.toThrow(/unknown server/);
+    await expect(call(env.sdk.bob, 'http://x.localhost:8443', { op: 'review.get', review: 'r_abcdef' })).rejects.toThrow(/unknown server/);
     expect(env.world.calls.length).toBe(before);
   });
 });
@@ -51,7 +51,7 @@ describe('review worker: authentication', () => {
     // The proof is bound to the body.
     expect((await exec(good, JSON.stringify({ op: 'review.get', review: 'r_other1' }))).status).toBe(401);
     // And to the worker.
-    const elsewhere = await authorize(env.sdk.alice, 'https://other-worker.puter.work', body);
+    const elsewhere = await authorize(env.sdk.alice, 'http://other-worker.localhost:8443', body);
     expect((await exec(elsewhere)).status).toBe(401);
     // A token without the proof header is refused.
     expect((await exec({ 'puter-auth': good['puter-auth'] })).status).toBe(401);

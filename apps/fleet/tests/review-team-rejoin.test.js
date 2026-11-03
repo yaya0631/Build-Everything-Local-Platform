@@ -18,7 +18,7 @@ beforeAll(() => {
 
 describe('opening a new invitation to a fleet already in the list', () => {
   it('uses the invitation, so someone removed meanwhile gets back in', async () => {
-    const URL_ = 'https://fleet-abc.puter.work';
+    const URL_ = 'http://fleet-abc.localhost:8443';
     const w = loadWorker();
     const SAM = person('user-2', 'sam');
     // Sam joined once, was removed while his app was closed, and now has a new link.

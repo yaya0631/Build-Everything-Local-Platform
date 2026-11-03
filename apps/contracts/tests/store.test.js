@@ -1123,7 +1123,7 @@ describe('Store CRUD (mocked Puter)', () => {
 
   /* --- the published calendar feed is a credential, not exportable data --- */
 
-  const FEED = { subdomain: 'cm-secret', url: 'https://cm-secret.puter.site/deadlines.ics', createdAt: 1 };
+  const FEED = { subdomain: 'cm-secret', url: 'http://cm-secret.localhost:8443/deadlines.ics', createdAt: 1 };
 
   it('keeps the feed link out of an export', async () => {
     await store.updateSettings({ feed: FEED, currency: 'EUR' });

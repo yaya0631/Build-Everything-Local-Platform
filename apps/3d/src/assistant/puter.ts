@@ -1,7 +1,7 @@
 // The Puter SDK, loaded the first time the assistant needs it (the rest of the
 // app works without Puter, offline included, so the page does not load it up front).
 
-const SDK_URL = 'https://js.puter.com/v2/';
+const SDK_URL = '/sdk/puter.js';
 
 interface PuterSDK {
   env?: string;

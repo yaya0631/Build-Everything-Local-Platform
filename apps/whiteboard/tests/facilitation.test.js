@@ -663,7 +663,7 @@ test("the agenda runner advances ordered frames, brings everyone, and starts the
   );
   const b = {
     ...newBoard("Agenda"),
-    shared: { server: "https://x.puter.work", room: "room" },
+    shared: { server: "http://x.localhost:8443", room: "room" },
     items: frames,
     workshop: {
       agenda: {
@@ -771,7 +771,7 @@ test("titles with dollar signs show and are announced as written", async () => {
   const title = "Q$$ plan $& $' $` done";
   const b = {
     ...newBoard("Agenda"),
-    shared: { server: "https://x.puter.work", room: "room" },
+    shared: { server: "http://x.localhost:8443", room: "room" },
     items: [
       item("frame", 0, 0, { id: "f0", text: title, order: 0, w: 500 }),
       ...notes(),
@@ -1140,7 +1140,7 @@ test("a device that missed the switch to anonymous input saves its note and reac
     remade = null;
   const session = new CollaborationSession({
     puter: env.sdk(editor),
-    server: "https://whiteboard-test.puter.work",
+    server: "http://whiteboard-test.localhost:8443",
     room,
     user: editor,
     store: memoryStore(),
@@ -3068,7 +3068,7 @@ test("built collaborators: private mode, a commenter's vote and reaction, and bo
     for (const [index, app] of apps.entries()) {
       await app.click('[data-action="join-shared"]');
       app.doc.querySelector("#join-link").value =
-        `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.puter.work&board=${initial.id}&invite=${index ? invites[index - 1].token : ""}`;
+        `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.localhost:8443&board=${initial.id}&invite=${index ? invites[index - 1].token : ""}`;
       app.doc
         .querySelector("#join-link")
         .closest("form")
@@ -4167,7 +4167,7 @@ test("a timer started by hand keeps running through agenda steps without a durat
   );
   const b = {
     ...newBoard("Agenda"),
-    shared: { server: "https://x.puter.work", room: "room" },
+    shared: { server: "http://x.localhost:8443", room: "room" },
     items: frames,
     workshop: {
       agenda: {
@@ -4232,7 +4232,7 @@ test("the agenda steps back from the step shown after frames are deleted", () =>
 test("a step inside a hidden section stays covered and the facilitator is told", () => {
   const b = {
     ...newBoard("Sections"),
-    shared: { server: "https://x.puter.work", room: "room" },
+    shared: { server: "http://x.localhost:8443", room: "room" },
     items: [
       item("frame", 0, 0, {
         id: "part",
@@ -4281,7 +4281,7 @@ test("a step inside a hidden section stays covered and the facilitator is told",
 test("going to an agenda step shows its staged or hidden frame to participants in the same save", () => {
   const b = {
     ...newBoard("Agenda"),
-    shared: { server: "https://x.puter.work", room: "room" },
+    shared: { server: "http://x.localhost:8443", room: "room" },
     items: ["Welcome", "Notes", "Ideas", "Vote"].map((text, n) =>
       item("frame", n * 900, 0, {
         id: `f${n}`,
@@ -4766,7 +4766,7 @@ test("saving the agenda keeps steps another facilitator changed meanwhile", () =
 test("an agenda step names its duration once, when its frame title already gives it", () => {
   const b = {
     ...newBoard("Agenda"),
-    shared: { server: "https://x.puter.work", room: "room" },
+    shared: { server: "http://x.localhost:8443", room: "room" },
     items: [
       item("frame", 0, 0, {
         id: "f0",
@@ -5377,7 +5377,7 @@ test("a vote for an object deleted afterwards can still be taken back", () => {
 test("participants and latecomers go to the current agenda step on their own view", () => {
   const b = {
     ...newBoard("Agenda"),
-    shared: { server: "https://x.puter.work", room: "room" },
+    shared: { server: "http://x.localhost:8443", room: "room" },
     items: ["Welcome", "Ideas", "Vote"].map((text, n) =>
       item("frame", n * 900, 0, {
         id: `f${n}`,
@@ -6073,7 +6073,7 @@ test("built collaborators: a participant's note over a hidden frame stays theirs
   try {
     await app.click('[data-action="join-shared"]');
     app.doc.querySelector("#join-link").value =
-      `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.puter.work&board=${initial.id}&invite=${invite.token}`;
+      `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.localhost:8443&board=${initial.id}&invite=${invite.token}`;
     app.doc
       .querySelector("#join-link")
       .closest("form")
@@ -6418,7 +6418,7 @@ test("built collaborators: adding a note to a frozen board says why it was not a
   try {
     await app.click('[data-action="join-shared"]');
     app.doc.querySelector("#join-link").value =
-      `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.puter.work&board=${initial.id}&invite=${invite.token}`;
+      `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.localhost:8443&board=${initial.id}&invite=${invite.token}`;
     app.doc
       .querySelector("#join-link")
       .closest("form")
@@ -6482,7 +6482,7 @@ test("built collaborators: a facilitator's selection does not show where hidden 
       apps.push(app);
       await app.click('[data-action="join-shared"]');
       app.doc.querySelector("#join-link").value =
-        `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.puter.work&board=${initial.id}&invite=${token}`;
+        `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.localhost:8443&board=${initial.id}&invite=${token}`;
       app.doc
         .querySelector("#join-link")
         .closest("form")
@@ -6560,7 +6560,7 @@ async function liveRoom(env, hub, initial) {
     apps.push(app);
     await app.click('[data-action="join-shared"]');
     app.doc.querySelector("#join-link").value =
-      `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.puter.work&board=${initial.id}&invite=${token}`;
+      `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.localhost:8443&board=${initial.id}&invite=${token}`;
     app.doc
       .querySelector("#join-link")
       .closest("form")
@@ -6813,7 +6813,7 @@ test("built app: a personal board suggests no one from the shared board left", a
   try {
     await app.click('[data-action="join-shared"]');
     app.doc.querySelector("#join-link").value =
-      `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.puter.work&board=${initial.id}&invite=${invite.token}`;
+      `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.localhost:8443&board=${initial.id}&invite=${invite.token}`;
     app.doc
       .querySelector("#join-link")
       .closest("form")
@@ -6921,7 +6921,7 @@ test("built collaborators: links, comment pins, and the frame list respect conte
   try {
     await app.click('[data-action="join-shared"]');
     app.doc.querySelector("#join-link").value =
-      `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.puter.work&board=${initial.id}&invite=${invite.token}&object=${key.id}`;
+      `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.localhost:8443&board=${initial.id}&invite=${invite.token}&object=${key.id}`;
     app.doc
       .querySelector("#join-link")
       .closest("form")
@@ -7019,7 +7019,7 @@ test("built viewer text link previews close when a facilitator hides their objec
   try {
     await app.click('[data-action="join-shared"]');
     app.doc.querySelector("#join-link").value =
-      `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.puter.work&board=${room}&invite=${token}`;
+      `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.localhost:8443&board=${room}&invite=${token}`;
     app.doc
       .querySelector("#join-link")
       .closest("form")
@@ -7100,7 +7100,7 @@ test("built collaborators: undo on a frozen board is refused and kept for later"
   try {
     await app.click('[data-action="join-shared"]');
     app.doc.querySelector("#join-link").value =
-      `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.puter.work&board=${initial.id}&invite=${invite.token}`;
+      `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.localhost:8443&board=${initial.id}&invite=${invite.token}`;
     app.doc
       .querySelector("#join-link")
       .closest("form")
@@ -7202,7 +7202,7 @@ test("built collaborators: undo that a locked board refuses changes nothing", as
   try {
     await app.click('[data-action="join-shared"]');
     app.doc.querySelector("#join-link").value =
-      `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.puter.work&board=${initial.id}&invite=${invite.token}`;
+      `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.localhost:8443&board=${initial.id}&invite=${invite.token}`;
     app.doc
       .querySelector("#join-link")
       .closest("form")
@@ -8725,7 +8725,7 @@ test("built participant outlines and object lists tag translated concealment pla
   try {
     await app.click('[data-action="join-shared"]');
     app.doc.querySelector("#join-link").value =
-      `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.puter.work&board=${initial.id}&invite=${invite.token}`;
+      `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.localhost:8443&board=${initial.id}&invite=${invite.token}`;
     app.doc
       .querySelector("#join-link")
       .closest("form")

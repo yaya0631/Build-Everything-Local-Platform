@@ -30,7 +30,7 @@ for (const [label, options] of [
     page,
   }) => {
     const { bytes, title, password } = await cryptObjectStream(options);
-    await page.route('https://js.puter.com/**', (route) => route.abort());
+    await page.route('**/sdk/puter.js', (route) => route.abort());
     await page.goto('/#library');
     const chooser = page.waitForEvent('filechooser');
     await page.getByRole('button', { name: /Open a PDF/ }).click();

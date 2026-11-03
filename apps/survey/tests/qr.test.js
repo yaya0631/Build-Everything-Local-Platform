@@ -19,11 +19,11 @@ describe('qr', () => {
     // Byte capacity at level M: version 1 = 14, 2 = 26, 4 = 62.
     expect(qrMatrix('short').length).toBe(21);
     expect(qrMatrix('https://example.com').length).toBe(25);
-    expect(qrMatrix(`https://survey.puter.com/r/#ada-lovelace/${'a'.repeat(10)}xyz`).length).toBe(33);
+    expect(qrMatrix(`http://survey.localhost:8443/r/#ada-lovelace/${'a'.repeat(10)}xyz`).length).toBe(33);
   });
 
   it('draws the three finder patterns', () => {
-    const m = qrMatrix('https://survey.puter.com/r/#ada/k3j4h5l6m7');
+    const m = qrMatrix('http://survey.localhost:8443/r/#ada/k3j4h5l6m7');
     const n = m.length;
     expect(finderAt(m, 0, 0)).toBe(true);
     expect(finderAt(m, 0, n - 7)).toBe(true);

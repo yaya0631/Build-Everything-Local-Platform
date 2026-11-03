@@ -9,7 +9,7 @@ for (const viewport of [
     test.use({ viewport });
     for (const action of ['numeric', 'button'])
       test(`${action} edits keep the focused property visible`, async ({ page }) => {
-        await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+        await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
         await page.goto('/#library');
         const doc = await PDFDocument.create();
         doc.addPage([400, 500]).drawRectangle({

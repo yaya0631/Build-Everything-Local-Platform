@@ -270,17 +270,17 @@
 <script>
 /**
  * Standalone booking page — the Calendly-style guest side. Visitors land here
- * from a host's share link — calendar.puter.com/#/<host>/<page>, which
+ * from a host's share link — calendar.localhost:8443/#/<host>/<page>, which
  * index.html forwards to /book.html#/<host>/<page>; the worker is
- * https://cal-<host>.puter.work, rebuilt below — or from the worker's own
- * redirects (…puter.work/book/<page> → /book.html#w=<worker>&p=<page>; a
+ * https://cal-<host>.localhost:8443, rebuilt below — or from the worker's own
+ * redirects (…localhost:8443/book/<page> → /book.html#w=<worker>&p=<page>; a
  * manage link redirects with t=<token>). Everything below talks to that
  * worker's JSON API; the worker itself serves no HTML. Needs no Puter sign-in
  * and no SDK.
  *
  * All data is rendered with textContent (never markup), POSTs are urlencoded
  * so they stay CORS "simple requests" (no preflight), and only https
- * *.puter.work origins with well-formed page ids / tokens are ever contacted.
+ * *.localhost:8443 origins with well-formed page ids / tokens are ever contacted.
  */
 (function () {
   'use strict';
@@ -448,7 +448,7 @@
     // for URLs) so a rogue worker's id can't smuggle CRLF-joined ICS lines.
     var uid = /^[0-9a-f]{8,64}$/.test(String(booking.id)) ? booking.id : 'booking';
     var lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Puter Calendar//Booking//EN',
-      'BEGIN:VEVENT', 'UID:' + uid + '@calendar.puter.com', 'DTSTAMP:' + dt(Date.now()),
+      'BEGIN:VEVENT', 'UID:' + uid + '@calendar.localhost', 'DTSTAMP:' + dt(Date.now()),
       'DTSTART:' + dt(booking.start), 'DTEND:' + dt(booking.end),
       'SUMMARY:' + esc(booking.title || 'Meeting')];
     if (booking.location) lines.push('LOCATION:' + esc(booking.location));
@@ -468,13 +468,13 @@
     // by its slug. Matched lowercased — these links get read out and retyped;
     // hostnames are case-insensitive and page ids are stored lowercase. The
     // grammar is exact, so the origin built from it can only ever be a
-    // `cal-…` worker on puter.work (the guard below re-checks it anyway).
+    // `cal-…` worker on localhost:8443 (the guard below re-checks it anyway).
     // Kept in step with the same test in index.html and src/js/booking.js.
     // The worker's own redirects arrive as #w=<worker>&p=<page> / &t=<token>
     // and are read exactly as before.
     var route = /^#\/([a-z0-9][a-z0-9-]{0,58})\/([a-z0-9][a-z0-9-]{2,30}[a-z0-9])$/.exec(hash.toLowerCase());
     var params = new URLSearchParams(route ? '' : hash.replace(/^#/, ''));
-    var worker = route ? 'https://cal-' + route[1] + '.puter.work' : (params.get('w') || '');
+    var worker = route ? 'https://cal-' + route[1] + '.localhost:8443' : (params.get('w') || '');
     var pageId = route ? route[2] : (params.get('p') || '');
     var token = route ? '' : (params.get('t') || '');
 
@@ -1407,7 +1407,7 @@
       markImg.height = 18;
       link.append(markImg);
       link.append(document.createTextNode('Puter Calendar'));
-      link.href = 'https://puter.com/app/calendar';
+      link.href = 'http://localhost:8443/app/calendar';
       link.rel = 'noopener';
       bar.append(link);
       root.append(bar);

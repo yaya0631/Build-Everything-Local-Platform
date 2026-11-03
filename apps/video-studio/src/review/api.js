@@ -88,7 +88,7 @@ export async function deploy(puter, { progress = () => {}, fetcher = (...a) => f
     sameAccount();
     const created = await puter.workers.create(name, file.path);
     sameAccount();
-    config = { name, server: workerURL(created?.url || `https://${name}.puter.work`), path: file.path, build, builtAt };
+    config = { name, server: workerURL(created?.url || `http://${name}.localhost:8443`), path: file.path, build, builtAt };
     await puter.kv.set(WORKER_KEY, config);
   } else if (config.build !== build && !(config.builtAt > builtAt)) {
     // Updates only move forward, so an old cached copy of the app never rolls a worker back.

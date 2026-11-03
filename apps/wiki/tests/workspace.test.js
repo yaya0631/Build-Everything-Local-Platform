@@ -21,7 +21,7 @@ function collabFor(env, user) {
   const request = env.requester(user);
   return {
     request: (_server, op, data) => request(op, data),
-    deploy: async () => 'https://wiki-test.puter.work',
+    deploy: async () => 'http://wiki-test.localhost:8443',
     refresh: async () => {},
     events: null,
   };

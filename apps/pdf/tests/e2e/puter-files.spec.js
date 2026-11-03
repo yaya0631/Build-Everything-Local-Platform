@@ -9,7 +9,7 @@ async function pdf(pages) {
 /** A Puter desktop with a small drive in memory, launched with `launch` (a path) or nothing. */
 async function desktop(page, { launch = '/test/Documents/report.pdf', token } = {}) {
   const bytes = await pdf(2);
-  await page.route('https://js.puter.com/**', (route) =>
+  await page.route('**/sdk/puter.js', (route) =>
     route.fulfill({
       contentType: 'application/javascript',
       body: `

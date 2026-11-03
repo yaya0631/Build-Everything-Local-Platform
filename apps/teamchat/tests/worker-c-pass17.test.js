@@ -234,7 +234,7 @@ describe('one archive imported twice in the same instant', () => {
     const header = { format: 'teamchat-export', version: 1, workspace: { id: 'abcdef1234', name: 'Acme' }, channels: { chan000001: { name: 'general', def: true } }, members: { [alice.uuid]: { username: 'alice', name: 'Alice', role: 'owner' } }, memberDocs: { [alice.uuid]: { channels: ['chan000001'] } } };
     const pages = Array.from({ length: 3 }, (_, i) => ({ conv: 'chan000001', seq: 3, from: 0, messages: [{ seq: i + 1, user: alice.uuid, text: `m${i + 1}`, ts: i + 1 }] }));
     globalThis.puter = { workers: { exec: async (url, init = {}) => rt.dispatch(url, init, alice) } };
-    const refs = await Promise.all([0, 1].map(() => importArchive('https://teamchat-new.puter.work', { header, pages, files: [] }, { profile: { name: 'Alice' } })));
+    const refs = await Promise.all([0, 1].map(() => importArchive('http://teamchat-new.localhost:8443', { header, pages, files: [] }, { profile: { name: 'Alice' } })));
     const ids = refs.map((r) => r.split('@')[0]);
     expect(ids[0]).not.toBe(ids[1]);
     for (const id of ids) {

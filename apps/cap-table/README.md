@@ -2,7 +2,7 @@
 
 Production URL: [cap-table.io](https://cap-table.io/). The canonical URL, social metadata, structured data, and sitemap use this HTTPS origin. The production build copies `robots.txt` from `public/` and generates `sitemap.xml` from the public page registry.
 
-Manage your company's ownership, equity, cap table, options, and fundraising in one place. A web app built on [Puter](https://puter.com): your data lives in your own Puter cloud, not on anyone's server.
+Manage your company's ownership, equity, cap table, options, and fundraising in one place. A web app built on [Puter](https://localhost:8443): your data lives in your own Puter cloud, not on anyone's server.
 
 ## Features
 
@@ -29,7 +29,7 @@ Manage your company's ownership, equity, cap table, options, and fundraising in 
 ## Stack
 
 - Vanilla JavaScript (no frameworks), [Vite](https://vitejs.dev) for dev/build, [Vitest](https://vitest.dev) for tests.
-- [Puter.js](https://docs.puter.com) for auth and storage (KV). No other backend.
+- [Puter.js](http://localhost:8443) for auth and storage (KV). No other backend.
 - [Lucide](https://lucide.dev) icons.
 
 ## Development
@@ -66,7 +66,7 @@ Documentation launch links currently return to `/`. The homepage keeps its exist
 
 Collections are read by key (never a `kv.list()` scan): settings, company (with its equity plans, valuations and splits), share classes, stakeholders, securities, round and exit scenarios, the hiring plan, a capped activity log, and the restore points. Every collection is namespaced by company, with a registry naming the account's companies. Writes are optimistic with rollback on failure and run one at a time within a session. A stale session's save is refused, including when two tabs or devices save simultaneously.
 
-`src/lib/kv.js` implements conditional publication using [Puter's atomic list append](https://docs.puter.com/KV/add/). A writer uploads an immutable revision, then appends its pointer to the previous revision's successor list; only the first pointer wins. The collection key is a shortcut, and readers follow successor links, so a delayed shortcut update cannot replace a newer save. Superseded payloads are removed; small successor links and deletion tombstones remain to protect against delayed writers. This adds storage requests per save, but needs no expiring lock or active browser to recover a published write; a session remembers the revision it last saw at each key, so the usual read is one round trip. Existing plain JSON values are read directly and upgraded on their first write. The SDK must support `kv.add`; there is no unsafe fallback. Reload older open sessions after updating the app.
+`src/lib/kv.js` implements conditional publication using [Puter's atomic list append](http://localhost:8443/KV/add/). A writer uploads an immutable revision, then appends its pointer to the previous revision's successor list; only the first pointer wins. The collection key is a shortcut, and readers follow successor links, so a delayed shortcut update cannot replace a newer save. Superseded payloads are removed; small successor links and deletion tombstones remain to protect against delayed writers. This adds storage requests per save, but needs no expiring lock or active browser to recover a published write; a session remembers the revision it last saw at each key, so the usual read is one round trip. Existing plain JSON values are read directly and upgraded on their first write. The SDK must support `kv.add`; there is no unsafe fallback. Reload older open sessions after updating the app.
 
 A commit spanning several collections still uses separate conditional publications. If one fails, memory is rolled back and its stored copies rewritten to match; a rewrite the connection refuses too is kept as owed, shown in the shell, and retried until it lands. Activity collisions merge their entries, and theme/settings choices retain their last-writer-wins behavior. A record whose holder is missing when a company loads is kept under a stand-in "Unknown holder" rather than dropped. A value over the platform's size limit is written across numbered part keys. See `src/lib/store.js`.
 

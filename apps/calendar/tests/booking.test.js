@@ -61,7 +61,7 @@ function makeWorld({ user = HOST, moduleOpts = {} } = {}) {
     syncDelayMs: 0,
     pullMinMs: 0,
     pollMs: 3_600_000,
-    pageOrigin: 'https://calendar.puter.com',
+    pageOrigin: 'http://calendar.localhost:8443',
     ...moduleOpts,
   });
   instances.push(booking);
@@ -235,7 +235,7 @@ describe('booking: share links and worker versions', () => {
     await world.store.load();
     world.kv.map.set('cal:rsvp:cfg', {
       name: 'cal-rsvp-old',
-      url: 'https://cal-rsvp-old.puter.work',
+      url: 'http://cal-rsvp-old.localhost:8443',
       secret: 's3cret',
       version: '6', // older than the booking-capable version
     });
@@ -275,7 +275,7 @@ describe('booking: share links and worker versions', () => {
       requestUser: async () => HOST,
       syncDelayMs: 0,
       pollMs: 3_600_000,
-      pageOrigin: 'https://calendar.puter.com',
+      pageOrigin: 'http://calendar.localhost:8443',
     });
     instances.push(booking);
     const seen = [];
@@ -284,9 +284,9 @@ describe('booking: share links and worker versions', () => {
     expect(booking.linkFor('intro-call')).toBe(null);
 
     seen.length = 0;
-    origin = 'https://cal-nariman.puter.work';
+    origin = 'http://cal-nariman.localhost:8443';
     for (const cb of rsvpCbs) cb(); // rsvp: "the worker is serveable now"
-    expect(seen).toEqual(['https://calendar.puter.com/#/nariman/intro-call']);
+    expect(seen).toEqual(['http://calendar.localhost:8443/#/nariman/intro-call']);
 
     // Every later rsvp update is about some event, not the worker — re-rendering
     // the whole sidebar for each of those would be pure churn.
@@ -336,7 +336,7 @@ describe('booking: share links and worker versions', () => {
       syncDelayMs: 0,
       pullMinMs: 0,
       pollMs: 3_600_000,
-      pageOrigin: 'https://calendar.puter.com',
+      pageOrigin: 'http://calendar.localhost:8443',
     });
     instances.push(booking);
     const seen = [];
@@ -384,15 +384,15 @@ describe('booking: share links and worker versions', () => {
   };
 
   it('share links are the app origin, the worker label and the page slug — derived, never registered', async () => {
-    const origin = { value: 'https://cal-nariman-a1b2.puter.work' }; // the plain name was taken
+    const origin = { value: 'http://cal-nariman-a1b2.localhost:8443' }; // the plain name was taken
     // A trailing slash on the origin must not read `…com//#/…`.
-    const booking = await linkWorld(PAGES, origin, { pageOrigin: 'https://calendar.puter.com/' });
+    const booking = await linkWorld(PAGES, origin, { pageOrigin: 'http://calendar.localhost:8443/' });
 
-    expect(booking.linkFor('intro-call')).toBe('https://calendar.puter.com/#/nariman-a1b2/intro-call');
-    expect(booking.linkFor('ab12cd34ef')).toBe('https://calendar.puter.com/#/nariman-a1b2/ab12cd34ef');
+    expect(booking.linkFor('intro-call')).toBe('http://calendar.localhost:8443/#/nariman-a1b2/intro-call');
+    expect(booking.linkFor('ab12cd34ef')).toBe('http://calendar.localhost:8443/#/nariman-a1b2/ab12cd34ef');
     // The oldest workers are `cal-rsvp-<hex>`: still `cal-`, still derivable.
-    origin.value = 'https://cal-rsvp-ab12cd34ef.puter.work';
-    expect(booking.linkFor('intro-call')).toBe('https://calendar.puter.com/#/rsvp-ab12cd34ef/intro-call');
+    origin.value = 'http://cal-rsvp-ab12cd34ef.localhost:8443';
+    expect(booking.linkFor('intro-call')).toBe('http://calendar.localhost:8443/#/rsvp-ab12cd34ef/intro-call');
     // No such page, no link; no worker, no link — the buttons stay "preparing".
     expect(booking.linkFor('discovery-call')).toBe(null);
     expect(booking.linkFor('')).toBe(null);
@@ -405,14 +405,14 @@ describe('booking: share links and worker versions', () => {
     // Rather than mint a link the guest page would refuse, fall back to the
     // form every worker serves — which is also what every pre-existing link is.
     const origin = { value: null };
-    const booking = await linkWorld(PAGES, origin, { pageOrigin: 'https://calendar.puter.com' });
+    const booking = await linkWorld(PAGES, origin, { pageOrigin: 'http://calendar.localhost:8443' });
     for (const url of [
-      'https://rsvp-legacy.puter.work',
-      'https://cal-Nariman.puter.work',
-      'https://cal-nariman.puter.work:8443',
-      'http://cal-nariman.puter.work',
-      'https://cal-nariman.puter.work.example.com',
-      'https://cal-.puter.work',
+      'http://rsvp-legacy.localhost:8443',
+      'http://cal-Nariman.localhost:8443',
+      'http://cal-nariman.localhost:8443:8443',
+      'http://cal-nariman.localhost:8443',
+      'http://cal-nariman.localhost:8443.example.com',
+      'http://cal-.localhost:8443',
     ]) {
       origin.value = url;
       expect(booking.linkFor('intro-call'), url).toBe(`${url}/book/intro-call`);
@@ -420,7 +420,7 @@ describe('booking: share links and worker versions', () => {
   });
 
   it("share links point at the app's own origin by default — book.html ships beside it", async () => {
-    const origin = { value: 'https://cal-nariman.puter.work' };
+    const origin = { value: 'http://cal-nariman.localhost:8443' };
     const booking = await linkWorld(PAGES, origin);
     expect(defaultPageOrigin()).toBe(window.location.origin);
     expect(booking.linkFor('intro-call')).toBe(`${window.location.origin}/#/nariman/intro-call`);
@@ -431,12 +431,12 @@ describe('booking: share links and worker versions', () => {
     await world.store.load();
     world.kv.map.set('cal:rsvp:cfg', {
       name: 'cal-rsvp-new',
-      url: 'https://cal-rsvp-new.puter.work',
+      url: 'http://cal-rsvp-new.localhost:8443',
       secret: 's3cret',
       version: '99',
     });
     await world.rsvp.start();
-    expect(world.rsvp.workerOrigin()).toBe('https://cal-rsvp-new.puter.work');
+    expect(world.rsvp.workerOrigin()).toBe('http://cal-rsvp-new.localhost:8443');
     // And the (version-gated) upgrade path never rewrites its source.
     await world.rsvp.whenIdle();
     expect(world.fakePuter.fs.write).not.toHaveBeenCalled();
@@ -460,7 +460,7 @@ describe('booking: pages and the worker', () => {
     // Both halves of the link read: the host's name fronts it, and the page's
     // own title is its last segment — on the app's origin, not the worker's.
     expect(page.id).toBe('coffee-chat');
-    expect(world.booking.linkFor(page.id)).toBe('https://calendar.puter.com/#/nariman/coffee-chat');
+    expect(world.booking.linkFor(page.id)).toBe('http://calendar.localhost:8443/#/nariman/coffee-chat');
 
     // The worker now serves the page to guests.
     const res = await workerOf(world).call('GET', `/api/book/${page.id}`);

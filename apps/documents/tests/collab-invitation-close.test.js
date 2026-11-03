@@ -13,7 +13,7 @@ const hub = new MemoryHub(Y.encodeStateAsUpdate(createSharedDoc(editorState({ se
 async function invitation() {
   const client = new CollabClient({ transport: hub.connect('editor'), user: { id: 'u1', name: 'Bob' }, room: 'room1', sendDelay: 0 });
   await client.connect();
-  const doc = { path: null, collab: { client, link: { server: 'https://documents-abc.puter.work', room: 'room1' } }, setSaving() {}, changed() {}, addEventListener() {}, removeEventListener() {} };
+  const doc = { path: null, collab: { client, link: { server: 'http://documents-abc.localhost:8443', room: 'room1' } }, setSaving() {}, changed() {}, addEventListener() {}, removeEventListener() {} };
   return { client, doc };
 }
 const collaboration = (doc, editor) => createCollaboration({ editor, pkg: () => ({ assets: {} }), doc, local: false, error: () => {}, user: () => ({ id: 'u1', name: 'Bob' }), documentName: () => 'Plan' });

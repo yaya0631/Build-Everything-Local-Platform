@@ -8,7 +8,7 @@ for (const source of ['settings', 'cloud open'])
       }) => {
         const errors = [];
         page.on('pageerror', (error) => errors.push(error.message));
-        await page.route('https://js.puter.com/**', (route) =>
+        await page.route('**/sdk/puter.js', (route) =>
           route.fulfill({
             contentType: 'application/javascript',
             body: `window.signInCalls=0;window.openPickers=0;window.mockAccount=null;
@@ -69,7 +69,7 @@ for (const action of ['save', 'save as'])
   test(`sign-out retires authentication for a pending ${action}`, async ({ page }) => {
     const errors = [];
     page.on('pageerror', (error) => errors.push(error.message));
-    await page.route('https://js.puter.com/**', (route) =>
+    await page.route('**/sdk/puter.js', (route) =>
       route.fulfill({
         contentType: 'application/javascript',
         body: `window.writes=0;window.savePickers=0;window.mockAccount=null;

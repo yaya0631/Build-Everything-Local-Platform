@@ -102,7 +102,7 @@ export function openSettings(app) {
           app.importMarkdown();
         } }, icon('fileUp', 15), 'Import Markdown files'),
     ),
-    h('section.settings-section', h('h3', 'About'), h('p.settings-hint', 'Wiki is part of the Everything project: free, open-source software built on Puter.'), h('a.settings-link', { href: 'https://developer.puter.com', target: '_blank', rel: 'noopener' }, 'Powered by Puter', icon('externalLink', 13))),
+    h('section.settings-section', h('h3', 'About'), h('p.settings-hint', 'Wiki is part of the Everything project: free, open-source software built on Puter.'), h('a.settings-link', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Powered by Puter', icon('externalLink', 13))),
   );
   const dlg = openDialog({ title: 'Settings', body, className: 'settings-dialog' });
 }

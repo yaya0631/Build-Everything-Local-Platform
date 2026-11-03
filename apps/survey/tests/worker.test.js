@@ -161,7 +161,7 @@ describe('collector worker', () => {
   });
 
   it('refuses a body declared too large without reading it', async () => {
-    const res = await w.worker.handle('https://sv-test.puter.work/api/c/link000001/responses', {
+    const res = await w.worker.handle('http://sv-test.localhost:8443/api/c/link000001/responses', {
       method: 'POST',
       headers: { 'content-length': String(10 * 1024 * 1024) },
       body: JSON.stringify({ answers: {} }),

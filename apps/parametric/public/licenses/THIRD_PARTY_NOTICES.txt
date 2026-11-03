@@ -44,5 +44,5 @@ engineering and the Parasolid XT Format Reference:
 SolidWorks is a trademark of Dassault Systemes; Parasolid is a trademark of
 Siemens. Parametric is not affiliated with either.
 
-Puter.js (loaded at runtime from https://js.puter.com/v2/) provides
+Puter.js (loaded at runtime from /sdk/puter.js) provides
 sign-in, cloud storage and settings. It is not bundled with the app.

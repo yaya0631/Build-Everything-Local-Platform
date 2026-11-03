@@ -11,7 +11,7 @@ for (const [label, format] of [
   ['Comment summary', 'summary'],
 ])
   test(`the comment ${format} includes a note still being edited`, async ({ page }) => {
-    await page.route('https://js.puter.com/**', (route) => route.abort());
+    await page.route('**/sdk/puter.js', (route) => route.abort());
     const doc = await PDFDocument.create();
     doc.addPage([400, 500]);
     addNote(doc, 0, { x: 100, y: 300, text: 'Before' });

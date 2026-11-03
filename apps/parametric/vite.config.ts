@@ -1,8 +1,7 @@
 import { defineConfig } from 'vitest/config';
-import puterLocalhost from '../../dev/puter-localhost.mjs';
 
 export default defineConfig({
-  plugins: [puterLocalhost('parametric')],
+  plugins: [],
   base: './',
   build: {
     target: 'es2022',

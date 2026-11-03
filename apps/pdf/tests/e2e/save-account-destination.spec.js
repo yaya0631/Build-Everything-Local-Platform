@@ -33,7 +33,7 @@ for (const source of ['opened PDF', 'saved PDF', 'folder save', 'pending write',
       doc.setTitle('Alice report');
       doc.addPage([410, 500]);
       const encoded = Buffer.from(await doc.save()).toString('base64');
-      await page.route('https://js.puter.com/**', (route) =>
+      await page.route('**/sdk/puter.js', (route) =>
         route.fulfill({
           contentType: 'application/javascript',
           body: `window.account={username:'Alice'};window.writes=[];
@@ -97,7 +97,7 @@ test('an encrypted save prepared for an ended account cannot start its cloud wri
   const encoded = (
     await readFile(new URL('../fixtures/security/owner-only.pdf', import.meta.url))
   ).toString('base64');
-  await page.route('https://js.puter.com/**', (route) =>
+  await page.route('**/sdk/puter.js', (route) =>
     route.fulfill({
       contentType: 'application/javascript',
       body: `

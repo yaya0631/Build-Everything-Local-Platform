@@ -1,5 +1,5 @@
 // A stand-in for the Puter SDK used by the browser tests. Loaded in place of
-// https://js.puter.com/v2/. State lives in localStorage so it survives
+// /sdk/puter.js. State lives in localStorage so it survives
 // reloads, and window.__puterConfig (set before load) picks the user and env.
 (() => {
   const cfg = Object.assign({ user: 'ada', env: 'web', signedIn: true }, window.__puterConfig || {});

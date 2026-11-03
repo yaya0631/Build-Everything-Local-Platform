@@ -1,6 +1,6 @@
 /**
  * Email delivery: the app's one shared, app-owned Puter worker (deployed to
- * https://signatures-email.puter.work; see src/lib/emailer.js for the
+ * http://signatures-email.localhost:8443; see src/lib/emailer.js for the
  * calling side).
  *
  * Unlike the sign worker (one per user, deployed into their own account) this
@@ -30,7 +30,7 @@
  *     carries no link at all, and exists as the fallback for when the user's
  *     sign worker cannot mail its own owner.
  *   - the only clickable destination is the signer's own capability URL
- *     (https://<worker>.puter.work/sign/<40 hex>, minted by that user's sign
+ *     (https://<worker>.localhost:8443/sign/<40 hex>, minted by that user's sign
  *     worker). Sender-supplied text is escaped and never linkified.
  *   - recipients are capped per request (MAX_RECIPIENTS) and per user per day
  *     (DAILY_LIMIT), and a message a signer already received is skipped
@@ -181,7 +181,7 @@ function escapeBlock(v) {
 
 /**
  * A signer's link, or '': the ONLY link this worker will put in a mail. It
- * must be a capability URL on the Puter workers domain: https, a *.puter.work
+ * must be a capability URL on the Puter workers domain: https, a *.localhost:8443
  * host, and the exact /sign/<40 hex> path the sign worker mints. Query and
  * fragment are dropped rather than trusted.
  */

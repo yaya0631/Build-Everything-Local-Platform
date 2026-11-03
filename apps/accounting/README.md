@@ -2,7 +2,7 @@
 
 Double-entry bookkeeping for small businesses. Send invoices, enter bills, categorize bank transactions, reconcile statements, and run the financial reports an accountant expects.
 
-Everything is stored in the user's own [Puter](https://developer.puter.com) account. There is no server of ours and no database of ours.
+Everything is stored in the user's own [Puter](http://localhost:8443) account. There is no server of ours and no database of ours.
 
 ## Features
 
@@ -26,7 +26,7 @@ Everything is stored in the user's own [Puter](https://developer.puter.com) acco
 ## Stack
 
 - Vanilla JavaScript modules, no framework. [Vite](https://vitejs.dev) for dev and build, [Lucide](https://lucide.dev) icons, [Vitest](https://vitest.dev) tests.
-- [Puter.js](https://docs.puter.com) for sign-in, the key-value store, and file storage.
+- [Puter.js](http://localhost:8443) for sign-in, the key-value store, and file storage.
 
 ### Performance
 

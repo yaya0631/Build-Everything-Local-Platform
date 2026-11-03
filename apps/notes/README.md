@@ -1,6 +1,6 @@
 # Notes
 
-A free-form digital notebook on [Puter](https://puter.com): notebooks,
+A free-form digital notebook on [Puter](https://localhost:8443): notebooks,
 sections and pages, note containers you can place anywhere on the page,
 tags, ink, tables, pictures, recordings and search. No framework and no
 backend of its own, just Puter.js and Vite.

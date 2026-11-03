@@ -274,7 +274,7 @@ describe('rsvp-links: guest answers round-trip', () => {
   });
 
   it('attaching a meeting link re-syncs, and the guest API serves a Join URL', async () => {
-    const join = 'https://meetings.puter.com/#/m/abcd-efgh-ijkl';
+    const join = 'http://meetings.localhost:8443/#/m/abcd-efgh-ijkl';
     // The link is IN the digest: attaching it alone must dirty the event.
     await world.store.saveEvent({ ...world.store.getEvent(ev.id), meeting: { url: join } });
     await settle(world.rsvp);
@@ -827,7 +827,7 @@ describe('rsvp-links: the worker is named for its host', () => {
     const world = makeWorld({ user: { ...HOST, username: 'nariman' } });
     world.kv.map.set('cal:rsvp:cfg', {
       name: 'cal-nariman',
-      url: 'https://cal-nariman.puter.work',
+      url: 'http://cal-nariman.localhost:8443',
       secret: 's3cret',
       version: RSVP_WORKER_VERSION,
     });
@@ -835,7 +835,7 @@ describe('rsvp-links: the worker is named for its host', () => {
     world.rsvp.onUpdate((eventId) => seen.push({ eventId, origin: world.rsvp.workerOrigin() }));
     await world.store.load();
     await world.rsvp.start();
-    expect(seen).toEqual([{ eventId: undefined, origin: 'https://cal-nariman.puter.work' }]);
+    expect(seen).toEqual([{ eventId: undefined, origin: 'http://cal-nariman.localhost:8443' }]);
   });
 
   it('announces the worker the moment a version upgrade verifies', async () => {
@@ -869,7 +869,7 @@ describe('rsvp-links: the worker is named for its host', () => {
 
     await rebooted.refreshEvent(world.store.getAllEvents()[0].id);
     await settle(rebooted);
-    expect(seen[0]).toBe('https://cal-nariman.puter.work');
+    expect(seen[0]).toBe('http://cal-nariman.localhost:8443');
   });
 
   it('deploys under the host name', async () => {
@@ -879,7 +879,7 @@ describe('rsvp-links: the worker is named for its host', () => {
     await hostEvent(world.store);
     await settle(world.rsvp);
     expect(world.fakePuter.created).toEqual(['cal-nariman']);
-    expect(world.rsvp.workerOrigin()).toBe('https://cal-nariman.puter.work');
+    expect(world.rsvp.workerOrigin()).toBe('http://cal-nariman.localhost:8443');
   });
 
   it('does not lose the host name to a one-off create failure', async () => {
@@ -900,7 +900,7 @@ describe('rsvp-links: the worker is named for its host', () => {
     await world.rsvp.start();
     await hostEvent(world.store);
     await settle(world.rsvp);
-    expect(world.rsvp.workerOrigin()).toBe('https://cal-nariman.puter.work');
+    expect(world.rsvp.workerOrigin()).toBe('http://cal-nariman.localhost:8443');
   });
 
   it('falls past a name someone else already holds rather than failing the deploy', async () => {

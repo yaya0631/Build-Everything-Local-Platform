@@ -77,7 +77,7 @@ export function scaleOrganization(sample) {
     env,
     isAdmin: true,
     info: { role: "owner" },
-    server: "https://sample.puter.work",
+    server: "http://sample.localhost:8443",
     async request(op, input = {}) {
       return adminCall(org, boards, sample.owner, { ...input, op });
     },

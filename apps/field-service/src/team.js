@@ -206,7 +206,7 @@ export async function enableTeam({ store, onProgress = () => {} }) {
     }
   }
   if (!dep) throw new Error(`Could not create the team server in your Puter account. ${lastErr?.message || ''}`.trim());
-  const url = normalizeWorkerUrl(dep.url || `https://${name}.puter.work`);
+  const url = normalizeWorkerUrl(dep.url || `http://${name}.localhost:8443`);
   // A setup that fails from here on removes the half-made server, so a
   // retry does not leave another one behind in the owner's account.
   const discard = async (err) => {
@@ -329,7 +329,7 @@ export function parseJoin(query) {
   const w = String(query?.w || '');
   const t = String(query?.t || '');
   if (!/^[a-z0-9-]{3,63}$/i.test(w) || !/^[A-Za-z0-9]{12,64}$/.test(t)) return null;
-  const url = `https://${w.toLowerCase()}.puter.work`;
+  const url = `http://${w.toLowerCase()}.localhost:8443`;
   return isTrustedWorkerUrl(url) ? { url, token: t } : null;
 }
 

@@ -39,7 +39,7 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   const { request } = event;
 
-  // Only same-origin GETs are ever cached. This is what keeps js.puter.com
+  // Only same-origin GETs are ever cached. This is what keeps js.localhost:8443
   // (auth/session-bearing, cross-origin) out of the cache entirely -- it is
   // never intercepted, let alone stored, so a signed-in session is never
   // served stale or offline from here.

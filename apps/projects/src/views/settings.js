@@ -269,7 +269,7 @@ export function settingsView() {
       row({ ic: 'board', title: 'Project Management', sub: 'Boards, timelines, and milestones. Your data lives in your own Puter cloud.' }),
       row({
         ic: 'cloud', title: 'Powered by Puter',
-        control: el('a.btn.btn-ghost.btn-sm', { href: 'https://developer.puter.com', target: '_blank', rel: 'noopener' }, 'Learn more'),
+        control: el('a.btn.btn-ghost.btn-sm', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Learn more'),
       })
     )
   );

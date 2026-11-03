@@ -21,7 +21,7 @@ for (const stage of ['read', 'buffer'])
         doc.addPage([310, 400]);
         doc.addPage([320, 400]);
         const encoded = Buffer.from(await doc.save()).toString('base64');
-        await page.route('https://js.puter.com/**', (route) =>
+        await page.route('**/sdk/puter.js', (route) =>
           route.fulfill({
             contentType: 'application/javascript',
             body: `window.account={username:'Alice'};window.cloudBuffers=0;
@@ -85,7 +85,7 @@ test('sign-out dismisses an account-bound password prompt and preserves a newer 
   const encoded = (
     await readFile(new URL('../fixtures/security/aes-256-r5.pdf', import.meta.url))
   ).toString('base64');
-  await page.route('https://js.puter.com/**', (route) =>
+  await page.route('**/sdk/puter.js', (route) =>
     route.fulfill({
       contentType: 'application/javascript',
       body: `window.account={username:'Alice'};window.puter={env:'web',auth:{

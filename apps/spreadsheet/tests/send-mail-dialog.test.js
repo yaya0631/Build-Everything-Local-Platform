@@ -106,7 +106,7 @@ describe('Send a link', () => {
     vi.spyOn(P, 'puterShareLink').mockResolvedValue(null);
     const d = doc();
     const mailer = { sendLink: vi.fn(async ({ recipients }) => results(recipients.map((r) => r.email))) };
-    openSendLinkDialog({ doc: d, mailer, location: { origin: 'https://spreadsheet.puter.com', pathname: '/' } });
+    openSendLinkDialog({ doc: d, mailer, location: { origin: 'http://spreadsheet.localhost:8443', pathname: '/' } });
     fill(document.querySelector('.send-to'), 'ana@example.com, kim@example.org');
     const mode = document.querySelector('.send-dialog select');
     mode.value = 'write';
@@ -116,7 +116,7 @@ describe('Send a link', () => {
     expect(P.shareFile.mock.calls).toEqual([['Spreadsheets/Supplies.xlsx', 'ana@example.com', 'write'], ['Spreadsheets/Supplies.xlsx', 'kim@example.org', 'write']]);
     expect(mailer.sendLink).toHaveBeenCalledWith({
       workbookName: 'Supplies', recipients: [{ email: 'ana@example.com', name: '' }, { email: 'kim@example.org', name: '' }],
-      link: 'https://spreadsheet.puter.com/#/file/uid-9', access: 'edit', message: 'Your turn',
+      link: 'http://spreadsheet.localhost:8443/#/file/uid-9', access: 'edit', message: 'Your turn',
     });
   });
 });

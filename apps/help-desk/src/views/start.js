@@ -17,7 +17,7 @@ function frame(root, ...content) {
         'Free and open source. ',
         h('a', { href: REPO_URL, target: '_blank', rel: 'noopener' }, 'Source code'),
         ' · Powered by ',
-        h('a', { href: 'https://developer.puter.com', target: '_blank', rel: 'noopener' }, 'Puter'))),
+        h('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Puter'))),
   );
   return card;
 }

@@ -1,6 +1,6 @@
 /**
  * Email from the spreadsheet: the app's one shared, app-owned Puter worker (deployed to
- * https://spreadsheet-email.puter.work; src/lib/mail.js is the calling side). Adapted from the Calendar
+ * http://spreadsheet-email.localhost:8443; src/lib/mail.js is the calling side). Adapted from the Calendar
  * app's invitation worker (src/calendar/src/workers/email-worker.js), whose sending arrangement it keeps.
  *
  * Outbound mail has to be authorized by a worker's own token, so the sending capability lives here, in a

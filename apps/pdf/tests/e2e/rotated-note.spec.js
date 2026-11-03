@@ -7,7 +7,7 @@ for (const rotation of [0, 90, 180, 270])
   test(`a note clicked onto a page turned ${rotation} degrees hangs from the click`, async ({
     page,
   }) => {
-    await page.route('https://js.puter.com/**', (route) => route.abort());
+    await page.route('**/sdk/puter.js', (route) => route.abort());
     const doc = await PDFDocument.create();
     doc.addPage([400, 500]).setRotation(degrees(rotation));
     await page.goto('/#library');

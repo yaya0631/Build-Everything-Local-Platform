@@ -249,7 +249,7 @@ const textBytes = (text) => new TextEncoder().encode(text).length;
 /** The size of a value as the KV store receives it. */
 const byteLength = (value) => textBytes(JSON.stringify(value));
 
-/* Puter takes at most 400 KB in one KV value (docs.puter.com/KV/set), and a
+/* Puter takes at most 400 KB in one KV value (docs.localhost:8443/KV/set), and a
    restore point is the one value that carries the whole dataset at once -
    every collection of a cap table whose collections each fit comfortably.
    Trimming the set cannot bring that under the limit, because the set is

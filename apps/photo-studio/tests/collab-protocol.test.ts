@@ -12,14 +12,14 @@ const alice = { id: 'u-alice', name: 'alice' },
 
 describe('collaboration protocol', () => {
   it('builds and parses invitation and review links in the URL hash only', () => {
-    const link = shareLink('https://photo.example/app?x=1', { server: 'https://photo-abc.puter.work', room: 'room1', token: 'a'.repeat(72), review: true });
+    const link = shareLink('https://photo.example/app?x=1', { server: 'http://photo-abc.localhost:8443', room: 'room1', token: 'a'.repeat(72), review: true });
     const url = new URL(link);
     expect(url.search).toBe('?x=1');
-    expect(parseLink(link)).toEqual({ server: 'https://photo-abc.puter.work', room: 'room1', token: 'a'.repeat(72), review: true });
+    expect(parseLink(link)).toEqual({ server: 'http://photo-abc.localhost:8443', room: 'room1', token: 'a'.repeat(72), review: true });
     expect(parseLink('https://photo.example/#other=1')).toBeNull();
     expect(() => parseLink('https://photo.example/#ps-room=r&ps-server=https://evil.example')).toThrow();
-    expect(() => workerURL('https://x.puter.work/path')).toThrow();
-    expect(() => parseLink('https://p/#ps-room=r&ps-server=https://a.puter.work&ps-invite=%3Cscript%3E')).toThrow();
+    expect(() => workerURL('http://x.localhost:8443/path')).toThrow();
+    expect(() => parseLink('https://p/#ps-room=r&ps-server=http://a.localhost:8443&ps-invite=%3Cscript%3E')).toThrow();
   });
 
   it('signs and verifies, and rejects tampering', async () => {

@@ -24,7 +24,6 @@ export const SLIDE_DRAG = 0.0025;     // per ms; exponential decay of vx while r
 // is a deliberate, visible edit to the module whose comments explain why the
 // cap exists, not an accidental one-line change to an unrelated file. See
 // cascade-physics.test.js for the invariant this depends on: even
-// launchVelocity()'s fastest possible card cannot cross a plausible board's
 // width in a single MAX_STEP_MS-length step.
 export const MAX_STEP_MS = 34;
 

@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 async function setup(page) {
-  await page.route('https://js.puter.com/**', (route) =>
+  await page.route('**/sdk/puter.js', (route) =>
     route.fulfill({
       contentType: 'application/javascript',
       body: `window.signOutCalls = 0; window.puter = {

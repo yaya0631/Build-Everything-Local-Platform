@@ -8,7 +8,7 @@ import { fakePuter, teamExec, boot, settle } from './review-sync-boot-helpers.js
 
 describe('removed from a fleet', () => {
   it('says so once and switches back once', async () => {
-    const url = 'https://fleet-abc.puter.work';
+    const url = 'http://fleet-abc.localhost:8443';
     const server = { role: 'member', calls: [], removed: true };
     const puter = fakePuter({ exec: teamExec(server) });
     puter.kv.data.set('fl1:workspaces', { current: url, own: {}, joined: [{ url, business: 'Acme', role: 'member' }] });

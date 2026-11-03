@@ -142,14 +142,14 @@ describe('request authentication', () => {
     const t = token(bob.uuid);
     expect(tokenClaims(t)).toMatchObject({ type: 'access-token', user_uid: bob.uuid });
     const input = { op: 'sync', room: 'r', since: 0 };
-    const signature = await sign(keys.privateKey, ['https://vs.puter.work', '/bob/AppData/id.json', await hash(JSON.stringify(input))]);
-    const request = (body = input, proof = { version: 1, path: '/bob/AppData/id.json', signature }) => ({ url: 'https://vs.puter.work/api', headers: new Map([['puter-auth', t], ['x-vector-studio-proof', JSON.stringify(proof)]]) });
+    const signature = await sign(keys.privateKey, ['http://vs.localhost:8443', '/bob/AppData/id.json', await hash(JSON.stringify(input))]);
+    const request = (body = input, proof = { version: 1, path: '/bob/AppData/id.json', signature }) => ({ url: 'http://vs.localhost:8443/api', headers: new Map([['puter-auth', t], ['x-vector-studio-proof', JSON.stringify(proof)]]) });
     expect(await authenticate(request(), puter, input)).toEqual({ uuid: bob.uuid, username: 'bob' });
     await fails(authenticate(request(), puter, { ...input, since: 5 }), 401);
     // A key file the caller does not own (Puter reports is_shared: null) proves nothing.
     const other = '/mallory/AppData/id.json';
     files.set(other, files.get('/bob/AppData/id.json'));
-    const otherSig = await sign(keys.privateKey, ['https://vs.puter.work', other, await hash(JSON.stringify(input))]);
+    const otherSig = await sign(keys.privateKey, ['http://vs.localhost:8443', other, await hash(JSON.stringify(input))]);
     const shared = { ...puter, fs: { ...puter.fs, stat: async () => ({ is_shared: null, owner: { username: 'mallory' }, size: 1 }) } };
     await fails(authenticate(request(input, { version: 1, path: other, signature: otherSig }), shared, input), 401);
   });
@@ -157,8 +157,8 @@ describe('request authentication', () => {
 
 describe('protocol helpers', () => {
   it('builds and parses share links', () => {
-    const link = shareLink('https://vs-abc.puter.work', 'room1', 'tok', 'https://app.example/vector/');
-    expect(parseShareLink(link, 'https://app.example/')).toEqual({ server: 'https://vs-abc.puter.work', room: 'room1', invite: 'tok' });
+    const link = shareLink('http://vs-abc.localhost:8443', 'room1', 'tok', 'https://app.example/vector/');
+    expect(parseShareLink(link, 'https://app.example/')).toEqual({ server: 'http://vs-abc.localhost:8443', room: 'room1', invite: 'tok' });
     expect(parseShareLink('https://app.example/#doc=x', 'https://app.example/')).toBe(null);
     expect(() => workerURL('https://evil.example.com')).toThrow();
   });

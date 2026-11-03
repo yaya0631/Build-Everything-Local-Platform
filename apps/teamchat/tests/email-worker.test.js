@@ -42,7 +42,7 @@ beforeEach(() => {
 
 const invite = (over = {}) => ({
   kind: "workspace",
-  server: "alice.puter.work",
+  server: "alice.localhost:8443",
   code: "ABCD-EFGH-JKLM",
   workspace: "Acme",
   inviter: "Alice A.",
@@ -132,7 +132,7 @@ describe("the shared email worker", () => {
     expect(mail.to).toBe("pat@example.com");
     expect(mail.subject).toBe("Alice A. invited you to Acme on Teamchat");
     const link =
-      "https://puter.com/app/teamchat#/join/alice.puter.work/ABCD-EFGH-JKLM";
+      "http://localhost:8443/app/teamchat#/join/alice.localhost:8443/ABCD-EFGH-JKLM";
     expect(mail.text).toContain(link);
     expect(mail.html).toContain(link);
     expect(mail.html).toContain("See you inside!");
@@ -147,12 +147,12 @@ describe("the shared email worker", () => {
   it("composes the guest and connect flavors around their own links", async () => {
     await post(invite({ kind: "guest", channel: "design" }));
     expect(sends[0].subject).toBe("Alice A. invited you to #design in Acme");
-    expect(sends[0].text).toContain("#/join/alice.puter.work/ABCD-EFGH-JKLM");
+    expect(sends[0].text).toContain("#/join/alice.localhost:8443/ABCD-EFGH-JKLM");
 
     await post(invite({ kind: "connect", channel: "design" }));
     expect(sends[1].subject).toContain("share the #design channel");
     expect(sends[1].text).toContain(
-      "#/connect/alice.puter.work/ABCD-EFGH-JKLM",
+      "#/connect/alice.localhost:8443/ABCD-EFGH-JKLM",
     );
 
     // Both flavors need the channel's name.
@@ -215,10 +215,10 @@ describe("the shared email worker", () => {
   });
 
   it("links only to places the app lives; anywhere else falls back to the canonical URL", async () => {
-    await post(invite({ app: "https://teamchat.puter.site/" }));
-    expect(sends[0].text).toContain("https://teamchat.puter.site#/join/");
+    await post(invite({ app: "http://teamchat.localhost:8443/" }));
+    expect(sends[0].text).toContain("http://teamchat.localhost:8443#/join/");
     await post(invite({ app: "https://teamchat-look-alike.example.com" }));
-    expect(sends[1].text).toContain("https://puter.com/app/teamchat#/join/");
+    expect(sends[1].text).toContain("http://localhost:8443/app/teamchat#/join/");
     await post(invite({ app: "http://localhost:5273/mock.html" }));
     expect(sends[2].text).toContain("http://localhost:5273/mock.html#/join/");
   });

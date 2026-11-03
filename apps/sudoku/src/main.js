@@ -988,7 +988,7 @@ function renderAccount() {
   el.accountName.textContent = state.accountName ?? 'Signed in';
   // Inside a Puter app the session belongs to the shell around us, so there is
   // no sign-out to offer: the button becomes a label saying who is signed in.
-  // https://docs.puter.com/Utils/env/
+  // http://localhost:8443/Utils/env/
   el.accountBtn.disabled = hosted;
   el.accountBtn.title = hosted
     ? `Signed in as ${state.accountName ?? 'your Puter account'}`

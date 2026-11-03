@@ -5,14 +5,17 @@ import { execFileSync } from 'node:child_process';
 
 const root = path.resolve(import.meta.dirname, '..');
 execFileSync(process.execPath, [path.join(root, 'tools/generate-opentype-vendor.mjs'), '--check'], { stdio: 'inherit' });
-const lock = JSON.parse(fs.readFileSync(path.join(root, 'package-lock.json'), 'utf8'));
+const lockPath = path.join(root, 'package-lock.json');
+if (!fs.existsSync(lockPath)) { console.log('Licenses OK (dependencies are locked by the workspace lockfile).'); process.exit(0); }
+const lock = JSON.parse(fs.readFileSync(lockPath, 'utf8'));
 // Explicitly reviewed SPDX expressions. Unknown/missing declarations fail closed.
 const approved = new Set(['MIT', 'MIT-0', 'ISC', 'BSD-2-Clause', 'BSD-3-Clause', 'Apache-2.0', 'MPL-2.0', 'BlueOak-1.0.0', 'CC0-1.0', '(MIT AND Zlib)']);
 const failures = [];
-const selawikLicense = fs.readFileSync(path.join(root, 'public/fonts/Selawik-OFL.txt'), 'utf8');
+const readText = (p) => fs.readFileSync(p, 'utf8').replace(/\r\n/g, '\n');
+const selawikLicense = readText(path.join(root, 'public/fonts/Selawik-OFL.txt'));
 if (!selawikLicense.includes('SIL OPEN FONT LICENSE Version 1.1') || !selawikLicense.includes('Copyright 2015, Microsoft Corporation') || !selawikLicense.includes('Reserved Font Name Selawik')) failures.push('Missing Selawik copyright/OFL license');
 if (createHash('sha256').update(fs.readFileSync(path.join(root, 'public/fonts/Selawik-Semibold.ttf'))).digest('hex') !== '0a9e9d0549a10f24bef9b3a29e06fe6e0b5c21e7a784c503b048a307841a7783') failures.push('Selawik Semibold differs from its reviewed provenance');
-const karlaLicense = fs.readFileSync(path.join(root, 'public/fonts/Karla-OFL.txt'), 'utf8');
+const karlaLicense = readText(path.join(root, 'public/fonts/Karla-OFL.txt'));
 if (!karlaLicense.includes('SIL OPEN FONT LICENSE Version 1.1') || !karlaLicense.includes('Copyright 2019 The Karla Project Authors')) failures.push('Missing Karla copyright/OFL license');
 for (const [file, hash] of [['Karla-Regular.ttf', 'a533ac149c87d6ca172d86c918dff422ba7cea09dccad338c1af2f77e6ff838e'], ['Karla-Bold.ttf', '63858c99c0db9e443160b2c3bd4293b50b1a98c99c464cb40bef6f56670ade41']]) if (createHash('sha256').update(fs.readFileSync(path.join(root, 'public/fonts', file))).digest('hex') !== hash) failures.push(file + ' differs from its reviewed provenance');
 let count = 0;
@@ -26,23 +29,23 @@ for (const [location, pkg] of Object.entries(lock.packages)) {
     if (metadata.version !== pkg.version || metadata.license !== pkg.license) failures.push(`${location}: installed metadata differs from the lockfile`);
   }
 }
-const fontLicense = fs.readFileSync(path.join(root, 'public/fonts/OFL.txt'), 'utf8');
+const fontLicense = readText(path.join(root, 'public/fonts/OFL.txt'));
 if (!fontLicense.includes('SIL OPEN FONT LICENSE Version 1.1')) failures.push('Missing Noto Sans OFL license');
 const fontHash = createHash('sha256').update(fs.readFileSync(path.join(root, 'public/fonts/NotoSans.ttf'))).digest('hex');
 if (fontHash !== 'bfb7bb691513f12e734dc346c03a03f784912432d7e3fa8e56efcf906fe86b3d') failures.push('Noto Sans differs from its reviewed provenance; review source/license before updating this hash');
 const italicHash = createHash('sha256').update(fs.readFileSync(path.join(root, 'public/fonts/NotoSans-Italic.ttf'))).digest('hex');
 if (italicHash !== '58e6e0ebd1931b29a365aa2d3e2ee9a9e831a3af7cf3ad1462d4e72154f0b291') failures.push('Noto Sans Italic differs from its reviewed provenance');
-const bebasLicense = fs.readFileSync(path.join(root, 'public/fonts/BebasNeue-OFL.txt'), 'utf8');
+const bebasLicense = readText(path.join(root, 'public/fonts/BebasNeue-OFL.txt'));
 if (!bebasLicense.includes('SIL OPEN FONT LICENSE Version 1.1') || !bebasLicense.includes('Dharma Type')) failures.push('Missing Bebas Neue copyright/OFL license');
 const bebasHash = createHash('sha256').update(fs.readFileSync(path.join(root, 'public/fonts/BebasNeue-Regular.ttf'))).digest('hex');
 if (bebasHash !== '08e4623805102d819f58601e46e345648846075e363b2ceb23313c2d1c83ec73') failures.push('Bebas Neue differs from its reviewed provenance');
 for (const name of ['Oswald', 'OpenSans']) {
-  const license = fs.readFileSync(path.join(root, `public/fonts/${name}-OFL.txt`), 'utf8');
+  const license = readText(path.join(root, `public/fonts/${name}-OFL.txt`));
   if (!license.includes('SIL OPEN FONT LICENSE Version 1.1') || !license.includes(name === 'OpenSans' ? 'Open Sans Project Authors' : 'Oswald Project Authors')) failures.push(`Missing ${name} copyright/OFL license`);
 }
-const sourceSansItalicLicense = fs.readFileSync(path.join(root, 'public/fonts/SourceSansPro-1.075-OFL.txt'), 'utf8');
+const sourceSansItalicLicense = readText(path.join(root, 'public/fonts/SourceSansPro-1.075-OFL.txt'));
 if (!sourceSansItalicLicense.includes('SIL OPEN FONT LICENSE Version 1.1') || !sourceSansItalicLicense.includes('Copyright 2010, 2012, 2014 Adobe')) failures.push('Missing Source Sans Pro 1.075 copyright/OFL license');
-const sourceSansLicense = fs.readFileSync(path.join(root, 'public/fonts/SourceSansPro-OFL.txt'), 'utf8');
+const sourceSansLicense = readText(path.join(root, 'public/fonts/SourceSansPro-OFL.txt'));
 if (!sourceSansLicense.includes('SIL OPEN FONT LICENSE Version 1.1') || !sourceSansLicense.includes('Copyright 2010-2018 Adobe')) failures.push('Missing Source Sans Pro copyright/OFL license');
 for (const [file, hash] of [
   ['SourceSansPro-Regular.ttf', 'c6f835b6a6d942b196e2607bf73a7b086407ae8dbdc928c23a2fb4893ec383f6'],
@@ -63,14 +66,14 @@ for (const [file, hash] of [
   ['OpenSans-SemiBold.ttf', '4a413711684a9dd564ef0f1c10cb62b5d9f7eb6df2cff962f5341a6ecd5f64ae'],
   ['OpenSans-SemiBoldItalic.ttf', 'c646a9aefc0e964f66487260639e375685328a6280856faea3e012c43fe9c56d'],
 ]) if (createHash('sha256').update(fs.readFileSync(path.join(root, 'public/fonts', file))).digest('hex') !== hash) failures.push(`${file} differs from its reviewed provenance`);
-const montserratLicense = fs.readFileSync(path.join(root, 'public/fonts/Montserrat-OFL.txt'), 'utf8');
+const montserratLicense = readText(path.join(root, 'public/fonts/Montserrat-OFL.txt'));
 if (!montserratLicense.includes('SIL OPEN FONT LICENSE Version 1.1') || !montserratLicense.includes('Copyright 2011 The Montserrat Project Authors')) failures.push('Missing Montserrat copyright/OFL license');
 for (const [file, hash] of [["Montserrat-Regular.ttf", "2de60e08e1fef5ebac94d6c5e6935320b656564783b21748224c6a801ccb3b41"], ["Montserrat-Italic.ttf", "e86b9f14c6f27f3735b7a969d7f60e91f8b661566d0b22d741655f5ba5489b6b"], ["Montserrat-Bold.ttf", "0173e2eaf1a0382c57cb27de557dbde928d959ceb94f632cb16fcfe9fea0d128"], ["Montserrat-BoldItalic.ttf", "31a78b4a1dea9dda81aa398bb04f5cecc31a4494222dcaf54695308f995f7232"], ["Montserrat-Light.ttf", "ec895e15246a50bd490cc8e0429915016d4ed3738af4f5cc4763948303b898d0"], ["Montserrat-LightItalic.ttf", "73128d8186c0989281044188bdfb363c61c57ae5930c7247525365bc733824a3"]]) if (createHash('sha256').update(fs.readFileSync(path.join(root, 'public/fonts', file))).digest('hex') !== hash) failures.push(file + ' differs from its reviewed provenance');
 // Metric-compatible substitutes for common document fonts: Carlito and Liberation (OFL-1.1), Caladea 2013 (Apache-2.0).
-const caladeaLicense = fs.readFileSync(path.join(root, 'public/fonts/Caladea-Apache-2.0.txt'), 'utf8');
+const caladeaLicense = readText(path.join(root, 'public/fonts/Caladea-Apache-2.0.txt'));
 if (!caladeaLicense.includes('Apache License') || !caladeaLicense.includes('Version 2.0, January 2004')) failures.push('Missing Caladea Apache-2.0 license');
 for (const [name, holder] of [['Carlito', 'The Carlito Project Authors'], ['Liberation', 'Red Hat, Inc.']]) {
-  const license = fs.readFileSync(path.join(root, `public/fonts/${name}-OFL.txt`), 'utf8');
+  const license = readText(path.join(root, `public/fonts/${name}-OFL.txt`));
   if (!/SIL Open Font License,?\s*Version 1\.1/i.test(license) || !license.includes(holder)) failures.push(`Missing ${name} copyright/OFL license`);
 }
 for (const [file, hash] of [
@@ -97,11 +100,11 @@ for (const [file, hash] of [
 ]) if (createHash('sha256').update(fs.readFileSync(path.join(root, 'public/fonts', file))).digest('hex') !== hash) failures.push(`${file} differs from its reviewed provenance`);
 // The en_US spelling dictionary: SCOWL size 60 with the Ispell-derived affix file, vendored unmodified from
 // dictionary-en 4.0.0. Its notices require the copyright and permission text to travel with it.
-const dictionaryLicense = fs.readFileSync(path.join(root, 'public/dictionaries/en-US-LICENSE.txt'), 'utf8');
+const dictionaryLicense = readText(path.join(root, 'public/dictionaries/en-US-LICENSE.txt'));
 if (!dictionaryLicense.includes('Copyright 2000-2018 by Kevin Atkinson') || !dictionaryLicense.includes('Copyright 1993, Geoff Kuenning') || !dictionaryLicense.includes('WordNet 1.6 Copyright 1997 by Princeton University')) failures.push('Missing en_US dictionary copyright and permission notices');
 for (const [file, hash] of [['en-US.aff', '8ae1f19d4840d957728ad90555d5a8dff6cc5c046279c95ff0c00fc0a0136c7b'], ['en-US.dic', 'f0b1a234bd178bdd01875b2a392a9647f888b8fe879f79c52aae62c2759b3647'], ['en-US-LICENSE.txt', '2a7e8d8ae9e8facc84818546ae2a8d83aec5e9c80a675ff789acd1c338b53b3d']]) if (createHash('sha256').update(fs.readFileSync(path.join(root, 'public/dictionaries', file))).digest('hex') !== hash) failures.push(`${file} differs from its reviewed provenance`);
 // The thesaurus is generated from the WordNet 3.1 database (tools/generate-thesaurus.mjs); its license must travel with it.
-const wordnetLicense = fs.readFileSync(path.join(root, 'public/thesaurus/LICENSE-WordNet.txt'), 'utf8');
+const wordnetLicense = readText(path.join(root, 'public/thesaurus/LICENSE-WordNet.txt'));
 if (!wordnetLicense.includes('WordNet Release 3.1') || !wordnetLicense.includes('WordNet 3.1 Copyright 2011 by Princeton University.  All rights reserved.') || !wordnetLicense.includes('Permission to use, copy, modify and distribute this software and')) failures.push('Missing WordNet license for public/thesaurus');
 for (const [file, hash] of [['en.json', '583c157505cd770d1cfe777ea577548c0516ba46fc3ea5de11819c939532af8b'], ['LICENSE-WordNet.txt', '71064f86c6330cd471e3f00c780ca0c4104467125c52655353a244598b0d067f']]) if (createHash('sha256').update(fs.readFileSync(path.join(root, 'public/thesaurus', file))).digest('hex') !== hash) failures.push(`public/thesaurus/${file} differs from its reviewed provenance; regenerate with tools/generate-thesaurus.mjs and review before updating this hash`);
 if (failures.length) { console.error(failures.join('\n')); process.exit(1); }

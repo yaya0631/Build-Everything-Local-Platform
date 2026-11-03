@@ -2,7 +2,7 @@
 
 Free, open-source legal practice management for solo lawyers and small firms. An open-source alternative to Clio, MyCase, and PracticePanther.
 
-Built with vanilla JavaScript, Vite, [Lucide](https://lucide.dev) icons, and [Puter.js](https://docs.puter.com) as the only backend. There is no framework and no server of its own.
+Built with vanilla JavaScript, Vite, [Lucide](https://lucide.dev) icons, and [Puter.js](http://localhost:8443) as the only backend. There is no framework and no server of its own.
 
 > **Early alpha.** Features may change and data could be lost. Please do not use it for real client matters, trust funds, or billing yet.
 
@@ -111,7 +111,7 @@ How sync works:
 
 ### Team sign-in
 
-Puter KV and files are private to each account, so a shared firm runs through a [Puter worker](https://docs.puter.com/Workers/) in the **owner's own account**. Its source is `public/worker/legal-team-worker.js`.
+Puter KV and files are private to each account, so a shared firm runs through a [Puter worker](http://localhost:8443/Workers/) in the **owner's own account**. Its source is `public/worker/legal-team-worker.js`.
 
 - **Turning it on:** when the owner turns on team sign-in, the app writes the worker to their drive and deploys it with `puter.workers.create`. It then copies the firm's records and document files into it.
 - **After that:** everyone, owner included, reads and writes through `puter.workers.exec`, which forwards each person's own session.

@@ -700,7 +700,7 @@ test("built editors join the same board, show participants, synchronize text and
   const updatedWorker = "/* whiteboard-worker build=faceb00cfaceb00c at=200 */";
   await ownerSDK.kv.set(workerKey, {
     name: "whiteboard-test",
-    server: "https://whiteboard-test.puter.work",
+    server: "http://whiteboard-test.localhost:8443",
     path: workerPath,
     build: "0000000000000000",
     builtAt: 100,
@@ -737,7 +737,7 @@ test("built editors join the same board, show participants, synchronize text and
   const join = async (app, token = "", objectId = "") => {
     await app.click('[data-action="join-shared"]');
     app.doc.querySelector("#join-link").value =
-      `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.puter.work&board=${initial.id}&invite=${token}${objectId ? `&object=${objectId}` : ""}`;
+      `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.localhost:8443&board=${initial.id}&invite=${token}${objectId ? `&object=${objectId}` : ""}`;
     app.doc
       .querySelector("#join-link")
       .closest("form")
@@ -2544,7 +2544,7 @@ test("commenters use the Comment tool and a comment-only selection toolbar", asy
       "Paste the link you were given to open the board.",
     );
     c.doc.querySelector("#join-link").value =
-      `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.puter.work&board=${initial.id}&invite=${token}`;
+      `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.localhost:8443&board=${initial.id}&invite=${token}`;
     c.doc
       .querySelector("#join-link")
       .closest("form")
@@ -2604,7 +2604,7 @@ test("joining from an invitation link the page opened with puts the keyboard on 
     role: "viewer",
   });
   const c = await setup(env.sdk(viewer), {
-    url: `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.puter.work&board=${initial.id}&invite=${token}`,
+    url: `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.localhost:8443&board=${initial.id}&invite=${token}`,
   });
   try {
     for (let n = 0; n < 200 && !c.doc.querySelector("#join-link"); n++)
@@ -2634,7 +2634,7 @@ test("failed sharing clears its progress status and leaves the personal board ed
   const build = "faceb00cfaceb00c";
   await puter.kv.set("whiteboard-collaboration-worker-v1", {
     name: "whiteboard-test",
-    server: "https://whiteboard-test.puter.work",
+    server: "http://whiteboard-test.localhost:8443",
     path: "whiteboard/whiteboard-worker.js",
     build,
     builtAt: 200,
@@ -2694,7 +2694,7 @@ test("an owner can update an existing worker even when joining it fails", async 
   const source = "/* whiteboard-worker build=faceb00cfaceb00c at=200 */";
   await puter.kv.set(key, {
     name: "whiteboard-test",
-    server: "https://whiteboard-test.puter.work",
+    server: "http://whiteboard-test.localhost:8443",
     path,
     build: "0000000000000000",
     builtAt: 100,
@@ -2712,7 +2712,7 @@ test("an owner can update an existing worker even when joining it fails", async 
     await app.click('[data-action="join-shared"]');
     const field = app.doc.querySelector("#join-link");
     field.value =
-      "https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.puter.work&board=existing-board";
+      "https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.localhost:8443&board=existing-board";
     field
       .closest("form")
       .dispatchEvent(
@@ -7622,7 +7622,7 @@ for (const language of ["en", "fr"])
     await adminCall(org, env.service, owner, { op: "org.setup", name: "CDS" });
     const sdk = env.sdk(owner);
     await sdk.kv.set("whiteboard-organization-v1", {
-      server: "https://whiteboard-test.puter.work",
+      server: "http://whiteboard-test.localhost:8443",
     });
     const exec = sdk.workers.exec;
     sdk.workers.exec = async (url, options) => {
@@ -7693,7 +7693,7 @@ test("the organization boards page keeps its own cards when the library is a lis
   await adminCall(org, env.service, owner, { op: "org.setup", name: "CDS" });
   const sdk = env.sdk(owner);
   await sdk.kv.set("whiteboard-organization-v1", {
-    server: "https://whiteboard-test.puter.work",
+    server: "http://whiteboard-test.localhost:8443",
   });
   const exec = sdk.workers.exec;
   sdk.workers.exec = async (url, options) => {
@@ -7751,7 +7751,7 @@ test("the organization's spaces are listed under its boards and open the boards 
     );
   const sdk = env.sdk(owner);
   await sdk.kv.set("whiteboard-organization-v1", {
-    server: "https://whiteboard-test.puter.work",
+    server: "http://whiteboard-test.localhost:8443",
   });
   const asked = [];
   const exec = sdk.workers.exec;
@@ -16044,7 +16044,7 @@ test("sharing adopts this device's comment identity and board JSON preserves dis
   await puter.fs.write("whiteboard/catalog.json", "[]");
   await puter.kv.set("whiteboard-collaboration-worker-v1", {
     name: "whiteboard-test",
-    server: "https://whiteboard-test.puter.work",
+    server: "http://whiteboard-test.localhost:8443",
     path: "whiteboard/whiteboard-worker.js",
     build,
     builtAt: 200,
@@ -18495,7 +18495,7 @@ test("built collaborators follow cameras, bring editors and viewers, protect dra
     for (const [index, app] of apps.entries()) {
       await app.click('[data-action="join-shared"]');
       app.doc.querySelector("#join-link").value =
-        `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.puter.work&board=${initial.id}&invite=${index ? invites[index - 1].token : ""}`;
+        `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.localhost:8443&board=${initial.id}&invite=${index ? invites[index - 1].token : ""}`;
       app.doc
         .querySelector("#join-link")
         .closest("form")
@@ -18751,7 +18751,7 @@ test("followers of a presentation see only the current slide, clipped to its fra
     for (const [index, app] of apps.entries()) {
       await app.click('[data-action="join-shared"]');
       app.doc.querySelector("#join-link").value =
-        `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.puter.work&board=${initial.id}&invite=${index ? invites[index - 1].token : ""}`;
+        `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.localhost:8443&board=${initial.id}&invite=${index ? invites[index - 1].token : ""}`;
       app.doc
         .querySelector("#join-link")
         .closest("form")
@@ -18929,7 +18929,7 @@ test("selections made or cleared with the keyboard reach the other participants"
     for (const [index, app] of apps.entries()) {
       await app.click('[data-action="join-shared"]');
       app.doc.querySelector("#join-link").value =
-        `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.puter.work&board=${initial.id}&invite=${index ? invite.token : ""}`;
+        `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.localhost:8443&board=${initial.id}&invite=${index ? invite.token : ""}`;
       app.doc
         .querySelector("#join-link")
         .closest("form")
@@ -19036,7 +19036,7 @@ test("a facilitator's drawing in a hidden frame is not shown live to participant
     for (const [index, app] of apps.entries()) {
       await app.click('[data-action="join-shared"]');
       app.doc.querySelector("#join-link").value =
-        `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.puter.work&board=${initial.id}&invite=${index ? invite.token : ""}`;
+        `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.localhost:8443&board=${initial.id}&invite=${index ? invite.token : ""}`;
       app.doc
         .querySelector("#join-link")
         .closest("form")
@@ -19183,7 +19183,7 @@ test("what a participant types in a private note is not sent to others live", as
     for (const [index, app] of apps.entries()) {
       await app.click('[data-action="join-shared"]');
       app.doc.querySelector("#join-link").value =
-        `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.puter.work&board=${initial.id}&invite=${index ? invite.token : ""}`;
+        `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.localhost:8443&board=${initial.id}&invite=${index ? invite.token : ""}`;
       app.doc
         .querySelector("#join-link")
         .closest("form")
@@ -19281,7 +19281,7 @@ test("an image the first render could not download shows once it arrives while j
   try {
     await app.click('[data-action="join-shared"]');
     app.doc.querySelector("#join-link").value =
-      `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.puter.work&board=${initial.id}&invite=${invite.token}`;
+      `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.localhost:8443&board=${initial.id}&invite=${invite.token}`;
     app.doc
       .querySelector("#join-link")
       .closest("form")
@@ -19336,7 +19336,7 @@ test("reconnecting a shared board through Share board keeps live cursors and fol
   try {
     await app.click('[data-action="join-shared"]');
     app.doc.querySelector("#join-link").value =
-      `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.puter.work&board=${initial.id}&invite=${invite.token}`;
+      `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.localhost:8443&board=${initial.id}&invite=${invite.token}`;
     app.doc
       .querySelector("#join-link")
       .closest("form")
@@ -19416,7 +19416,7 @@ test("going back while a shared board is still connecting leaves the library and
   try {
     await app.click('[data-action="join-shared"]');
     app.doc.querySelector("#join-link").value =
-      `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.puter.work&board=${initial.id}&invite=${invite.token}`;
+      `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.localhost:8443&board=${initial.id}&invite=${invite.token}`;
     app.doc
       .querySelector("#join-link")
       .closest("form")
@@ -19503,7 +19503,7 @@ for (const mode of ["left", "failed"])
     try {
       await app.click('[data-action="join-shared"]');
       app.doc.querySelector("#join-link").value =
-        `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.puter.work&board=${initial.id}&invite=${invite.token}`;
+        `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.localhost:8443&board=${initial.id}&invite=${invite.token}`;
       app.doc
         .querySelector("#join-link")
         .closest("form")
@@ -19783,7 +19783,7 @@ test("shared grid preferences stay private while snapped geometry propagates and
       apps.push(app);
       await app.click('[data-action="join-shared"]');
       app.doc.querySelector("#join-link").value =
-        `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.puter.work&board=${room}&invite=${index ? invites[index - 1].token : ""}`;
+        `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.localhost:8443&board=${room}&invite=${index ? invites[index - 1].token : ""}`;
       app.doc
         .querySelector("#join-link")
         .closest("form")
@@ -20120,7 +20120,7 @@ test("shared dimension preferences stay private and resize matching refreshes re
       apps.push(app);
       await app.click('[data-action="join-shared"]');
       app.doc.querySelector("#join-link").value =
-        `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.puter.work&board=${room}&invite=${n ? invites[n - 1].token : ""}`;
+        `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.localhost:8443&board=${room}&invite=${n ? invites[n - 1].token : ""}`;
       app.doc
         .querySelector("#join-link")
         .closest("form")
@@ -20443,7 +20443,7 @@ test("selection filters revalidate remote deletions and remain local for editors
       apps.push(app);
       await app.click('[data-action="join-shared"]');
       app.doc.querySelector("#join-link").value =
-        `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.puter.work&board=${room}&invite=${n ? invites[n - 1].token : ""}`;
+        `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.localhost:8443&board=${room}&invite=${n ? invites[n - 1].token : ""}`;
       app.doc
         .querySelector("#join-link")
         .closest("form")
@@ -20891,7 +20891,7 @@ test("active marquees refresh after shared geometry and lock changes while viewe
       apps.push(app);
       await app.click('[data-action="join-shared"]');
       app.doc.querySelector("#join-link").value =
-        `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.puter.work&board=${room}&invite=${n ? invites[n - 1].token : ""}`;
+        `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.localhost:8443&board=${room}&invite=${n ? invites[n - 1].token : ""}`;
       app.doc
         .querySelector("#join-link")
         .closest("form")
@@ -21834,7 +21834,7 @@ test("shared rotation previews, remote locks, concurrent text, undo and viewer r
       apps.push(app);
       await app.click('[data-action="join-shared"]');
       app.doc.querySelector("#join-link").value =
-        `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.puter.work&board=${room}&invite=${n ? invites[n - 1].token : ""}`;
+        `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.localhost:8443&board=${room}&invite=${n ? invites[n - 1].token : ""}`;
       app.doc
         .querySelector("#join-link")
         .closest("form")
@@ -22333,7 +22333,7 @@ test("shared group member movement preserves concurrent sibling edits and cancel
       apps.push(app);
       await app.click('[data-action="join-shared"]');
       app.doc.querySelector("#join-link").value =
-        `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.puter.work&board=${room}&invite=${n ? invites[n - 1].token : ""}`;
+        `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.localhost:8443&board=${room}&invite=${n ? invites[n - 1].token : ""}`;
       app.doc
         .querySelector("#join-link")
         .closest("form")
@@ -22818,7 +22818,7 @@ test("shared clear content updates an open text editor, preserves another author
       apps.push(app);
       await app.click('[data-action="join-shared"]');
       app.doc.querySelector("#join-link").value =
-        `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.puter.work&board=${room}&invite=${n ? invites[n - 1].token : ""}`;
+        `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.localhost:8443&board=${room}&invite=${n ? invites[n - 1].token : ""}`;
       app.doc
         .querySelector("#join-link")
         .closest("form")
@@ -23214,7 +23214,7 @@ test("shared image replacement propagates assets, preserves remote labels on und
       apps.push(app);
       await app.click('[data-action="join-shared"]');
       app.doc.querySelector("#join-link").value =
-        `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.puter.work&board=${room}&invite=${n ? invites[n - 1].token : ""}`;
+        `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.localhost:8443&board=${room}&invite=${n ? invites[n - 1].token : ""}`;
       app.doc
         .querySelector("#join-link")
         .closest("form")
@@ -23541,7 +23541,7 @@ test("undo on a shared board waits for an edit still on its way in", async () =>
     const { doc, w } = app;
     await app.click('[data-action="join-shared"]');
     doc.querySelector("#join-link").value =
-      `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.puter.work&board=${room}`;
+      `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.localhost:8443&board=${room}`;
     doc
       .querySelector("#join-link")
       .closest("form")
@@ -23756,7 +23756,7 @@ test("local undo cannot change a shared board that is not connected", async () =
   const build = "faceb00cfaceb00c";
   await puter.kv.set("whiteboard-collaboration-worker-v1", {
     name: "whiteboard-test",
-    server: "https://whiteboard-test.puter.work",
+    server: "http://whiteboard-test.localhost:8443",
     path: "whiteboard/whiteboard-worker.js",
     build,
     builtAt: 200,
@@ -24435,7 +24435,7 @@ async function sharedEditors(
       apps.push(app);
       await app.click('[data-action="join-shared"]');
       app.doc.querySelector("#join-link").value =
-        `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.puter.work&board=${room}&invite=${n ? invite.token : ""}`;
+        `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.localhost:8443&board=${room}&invite=${n ? invite.token : ""}`;
       app.doc
         .querySelector("#join-link")
         .closest("form")
@@ -26253,7 +26253,7 @@ test("a Puter drive write that fails after the shared room exists leaves the boa
   await puter.fs.write("whiteboard/catalog.json", "[]");
   await puter.kv.set("whiteboard-collaboration-worker-v1", {
     name: "whiteboard-test",
-    server: "https://whiteboard-test.puter.work",
+    server: "http://whiteboard-test.localhost:8443",
     path: "whiteboard/whiteboard-worker.js",
     build,
     builtAt: 200,
@@ -28025,7 +28025,7 @@ test("joining a shared board from the editor starts without the previous export 
     paletteQuery(app, "Join shared board");
     await app.click('[data-command="join-shared"]');
     doc.querySelector("#join-link").value =
-      `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.puter.work&board=${room}`;
+      `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.localhost:8443&board=${room}`;
     doc
       .querySelector("#join-link")
       .closest("form")
@@ -29310,7 +29310,7 @@ test("duplicating a shared board from the library keeps what its facilitator may
     try {
       await app.click('[data-action="join-shared"]');
       app.doc.querySelector("#join-link").value =
-        `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.puter.work&board=${initial.id}&invite=${invite}`;
+        `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.localhost:8443&board=${initial.id}&invite=${invite}`;
       app.doc
         .querySelector("#join-link")
         .closest("form")
@@ -29388,7 +29388,7 @@ test("saving reusable content leaves out what is hidden from the person", async 
   try {
     await app.click('[data-action="join-shared"]');
     app.doc.querySelector("#join-link").value =
-      `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.puter.work&board=${initial.id}&invite=${token}`;
+      `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.localhost:8443&board=${initial.id}&invite=${token}`;
     app.doc
       .querySelector("#join-link")
       .closest("form")
@@ -29475,7 +29475,7 @@ test("deleting or cutting a frame never removes content hidden from the person",
   try {
     await app.click('[data-action="join-shared"]');
     app.doc.querySelector("#join-link").value =
-      `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.puter.work&board=${initial.id}&invite=${token}`;
+      `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.localhost:8443&board=${initial.id}&invite=${token}`;
     app.doc
       .querySelector("#join-link")
       .closest("form")
@@ -29573,7 +29573,7 @@ test("a link naming a discussion opens it with the board, as notification links 
     );
     await a.click('[data-action="home"]');
     await shared.until(() => !a.doc.querySelector("#canvas"), "Library shown");
-    a.w.location.hash = `server=https%3A%2F%2Fwhiteboard-test.puter.work&board=${room}&thread=board-question`;
+    a.w.location.hash = `server=https%3A%2F%2Fwhiteboard-test.localhost:8443&board=${room}&thread=board-question`;
     await shared.until(
       () =>
         a.doc
@@ -29714,7 +29714,7 @@ test("shared sticky notes name who added them, in the outline and on request on 
 async function joinLink(app, id, token) {
   await app.click('[data-action="join-shared"]');
   app.doc.querySelector("#join-link").value =
-    `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.puter.work&board=${id}&invite=${token}`;
+    `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.localhost:8443&board=${id}&invite=${token}`;
   app.doc
     .querySelector("#join-link")
     .closest("form")
@@ -30339,7 +30339,7 @@ test("a shared board that cannot be joined leaves no empty board behind", async 
     const before = cards();
     await app.click('[data-action="join-shared"]');
     app.doc.querySelector("#join-link").value =
-      `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.puter.work&board=${initial.id}&invite=${token}`;
+      `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.localhost:8443&board=${initial.id}&invite=${token}`;
     app.doc
       .querySelector("#join-link")
       .closest("form")
@@ -30915,7 +30915,7 @@ test("sharing while a shared board is still connecting says so", async () => {
   try {
     await app.click('[data-action="join-shared"]');
     app.doc.querySelector("#join-link").value =
-      `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.puter.work&board=${initial.id}`;
+      `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.localhost:8443&board=${initial.id}`;
     app.doc
       .querySelector("#join-link")
       .closest("form")
@@ -31195,7 +31195,7 @@ test("a share whose files fail to upload leaves no shared copy behind", async ()
     build = "faceb00cfaceb00c";
   await puter.kv.set("whiteboard-collaboration-worker-v1", {
     name: "whiteboard-test",
-    server: "https://whiteboard-test.puter.work",
+    server: "http://whiteboard-test.localhost:8443",
     path: "whiteboard/whiteboard-worker.js",
     build,
     builtAt: 200,
@@ -32043,7 +32043,7 @@ test("a board reopened while it is being shared stays read-only until the shared
   await puter.fs.write("whiteboard/catalog.json", "[]");
   await puter.kv.set("whiteboard-collaboration-worker-v1", {
     name: "whiteboard-test",
-    server: "https://whiteboard-test.puter.work",
+    server: "http://whiteboard-test.localhost:8443",
     path: "whiteboard/whiteboard-worker.js",
     build,
     builtAt: 200,
@@ -32140,7 +32140,7 @@ test("an invitation link opened in a running tab joins with its invitation, even
     for (let n = 0; n < 20; n++) await app.tick();
     // Now another account, who received an invitation, opens its link.
     app.w.puter = env.sdk(collaborator);
-    app.w.location.hash = `server=https%3A%2F%2Fwhiteboard-test.puter.work&board=${room}&invite=${invite.token}`;
+    app.w.location.hash = `server=https%3A%2F%2Fwhiteboard-test.localhost:8443&board=${room}&invite=${invite.token}`;
     for (let n = 0; n < 40 && !app.doc.querySelector("#join-link"); n++)
       await app.tick();
     const link = app.doc.querySelector("#join-link");
@@ -32841,7 +32841,7 @@ test("closing Puter's sign-in window while joining says to sign in", async () =>
   try {
     await app.click('[data-action="join-shared"]');
     app.doc.querySelector("#join-link").value =
-      "https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.puter.work&board=room1&invite=tok";
+      "https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.localhost:8443&board=room1&invite=tok";
     app.doc
       .querySelector("#join-link")
       .closest("form")
@@ -32863,7 +32863,7 @@ test("pressing Share on another board while one is being shared says to wait", a
   await puter.fs.write("whiteboard/catalog.json", "[]");
   await puter.kv.set("whiteboard-collaboration-worker-v1", {
     name: "whiteboard-test",
-    server: "https://whiteboard-test.puter.work",
+    server: "http://whiteboard-test.localhost:8443",
     path: "whiteboard/whiteboard-worker.js",
     build,
     builtAt: 200,
@@ -34283,7 +34283,7 @@ test("authored feedback languages survive the built Help form, worker and Englis
   await adminCall(org, env.service, owner, { op: "org.setup", name: "CDS" });
   const sdk = env.sdk(owner);
   await sdk.kv.set("whiteboard-organization-v1", {
-    server: "https://whiteboard-test.puter.work",
+    server: "http://whiteboard-test.localhost:8443",
   });
   const exec = sdk.workers.exec;
   sdk.workers.exec = async (url, options) => {
@@ -34392,7 +34392,7 @@ test("organization library descriptions retain declarations through built comman
   await adminCall(org, env.service, owner, { op: "org.setup", name: "CDS" });
   const sdk = env.sdk(owner);
   await sdk.kv.set("whiteboard-organization-v1", {
-    server: "https://whiteboard-test.puter.work",
+    server: "http://whiteboard-test.localhost:8443",
   });
   const exec = sdk.workers.exec;
   sdk.workers.exec = async (url, options) => {
@@ -34514,7 +34514,7 @@ test("an organization template inserts into the open board beside its content", 
   await adminCall(org, env.service, owner, { op: "org.setup", name: "CDS" });
   const sdk = env.sdk(owner);
   await sdk.kv.set("whiteboard-organization-v1", {
-    server: "https://whiteboard-test.puter.work",
+    server: "http://whiteboard-test.localhost:8443",
   });
   const exec = sdk.workers.exec;
   sdk.workers.exec = async (url, options) => {
@@ -34606,7 +34606,7 @@ async function orgTemplateSync(title, synced) {
   await adminCall(org, env.service, owner, { op: "org.setup", name: "CDS" });
   const sdk = env.sdk(owner);
   await sdk.kv.set("whiteboard-organization-v1", {
-    server: "https://whiteboard-test.puter.work",
+    server: "http://whiteboard-test.localhost:8443",
   });
   const exec = sdk.workers.exec;
   sdk.workers.exec = async (url, options) => {
@@ -34706,7 +34706,7 @@ test("a notification without a usable time is listed without one instead of fail
   await adminCall(org, service, owner, { op: "org.setup", name: "CDS" });
   const sdk = env.sdk(owner);
   await sdk.kv.set("whiteboard-organization-v1", {
-    server: "https://whiteboard-test.puter.work",
+    server: "http://whiteboard-test.localhost:8443",
   });
   const exec = sdk.workers.exec;
   sdk.workers.exec = async (url, options) => {
@@ -34784,7 +34784,7 @@ test("notifications open from a board, asked only when opened, and the library c
   await adminCall(org, service, owner, { op: "org.setup", name: "CDS" });
   const sdk = env.sdk(owner);
   await sdk.kv.set("whiteboard-organization-v1", {
-    server: "https://whiteboard-test.puter.work",
+    server: "http://whiteboard-test.localhost:8443",
   });
   let listed = 0;
   const exec = sdk.workers.exec;
@@ -34939,7 +34939,7 @@ test("built notification dialogs retain captured comment and passage languages a
   assert.ok(notice);
   const sdk = env.sdk(owner);
   await sdk.kv.set("whiteboard-organization-v1", {
-    server: "https://whiteboard-test.puter.work",
+    server: "http://whiteboard-test.localhost:8443",
   });
   const exec = sdk.workers.exec;
   sdk.workers.exec = async (url, options) => {
@@ -35096,7 +35096,7 @@ test("built assignment notices retain normalized task declarations and translate
   ]);
   const sdk = env.sdk(owner);
   await sdk.kv.set("whiteboard-organization-v1", {
-    server: "https://whiteboard-test.puter.work",
+    server: "http://whiteboard-test.localhost:8443",
   });
   const exec = sdk.workers.exec;
   sdk.workers.exec = async (url, options) => {
@@ -42980,7 +42980,7 @@ test("viewers see no resize or connector endpoint handles", async () => {
   try {
     await app.click('[data-action="join-shared"]');
     app.doc.querySelector("#join-link").value =
-      `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.puter.work&board=${initial.id}&invite=${token}`;
+      `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.localhost:8443&board=${initial.id}&invite=${token}`;
     app.doc
       .querySelector("#join-link")
       .closest("form")
@@ -43380,7 +43380,7 @@ test("a stroke drawn as soon as a joined board reads saved is kept and reaches o
     try {
       await b.click('[data-action="join-shared"]');
       b.doc.querySelector("#join-link").value =
-        `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.puter.work&board=join-draw-at-once&invite=${invite.token}`;
+        `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.localhost:8443&board=join-draw-at-once&invite=${invite.token}`;
       b.doc
         .querySelector("#join-link")
         .closest("form")
@@ -47084,7 +47084,7 @@ for (const locale of ["en", "fr"])
       try {
         await app.click('[data-action="join-shared"]');
         app.doc.querySelector("#join-link").value =
-          `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.puter.work&board=${initial.id}&invite=${token}`;
+          `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.localhost:8443&board=${initial.id}&invite=${token}`;
         app.doc
           .querySelector("#join-link")
           .closest("form")
@@ -49564,7 +49564,7 @@ test("sharing a board with more images than a person may add a minute waits for 
   await puter.fs.write("whiteboard/catalog.json", "[]");
   await puter.kv.set("whiteboard-collaboration-worker-v1", {
     name: "whiteboard-test",
-    server: "https://whiteboard-test.puter.work",
+    server: "http://whiteboard-test.localhost:8443",
     path: "whiteboard/whiteboard-worker.js",
     build,
     builtAt: 200,
@@ -51748,7 +51748,7 @@ test("a shared board's images that have not downloaded are fetched or reported b
   try {
     await app.click('[data-action="join-shared"]');
     doc.querySelector("#join-link").value =
-      `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.puter.work&board=${initial.id}&invite=${invite.token}`;
+      `https://whiteboard.test/#server=https%3A%2F%2Fwhiteboard-test.localhost:8443&board=${initial.id}&invite=${invite.token}`;
     doc
       .querySelector("#join-link")
       .closest("form")

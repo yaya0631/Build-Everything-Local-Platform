@@ -12,7 +12,7 @@
  */
 
 const VERSION = 'pm-shell-v2';
-const SDK = 'https://js.puter.com/';
+const SDK = self.location.origin + '/sdk/';
 
 /**
  * Only the entry documents are known by name; assets are hashed. The two

@@ -711,7 +711,7 @@ export class App extends Emitter {
             body: h(
               'div.about',
               h('p', 'Vector Studio is a free, open-source vector illustration editor. Your files are stored in your own Puter cloud.'),
-              h('p', h('a', { href: 'https://developer.puter.com', target: '_blank', rel: 'noopener' }, 'Powered by Puter')),
+              h('p', h('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Powered by Puter')),
             ),
             buttons: [{ label: 'OK', value: true, primary: true }],
           }),

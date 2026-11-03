@@ -1,6 +1,6 @@
 // Puter.js calls the file features need beyond src/persistence/puter.ts
 // (multiple selection, directory picker, folder writes).
-// https://docs.puter.com/UI/showOpenFilePicker/ · /UI/showDirectoryPicker/ · /FS/write/
+// http://localhost:8443/UI/showOpenFilePicker/ · /UI/showDirectoryPicker/ · /FS/write/
 import { puter } from '../../persistence/puter';
 
 export interface CloudItem {

@@ -24,12 +24,12 @@ describe('header index trimming', () => {
     const index = createSearchIndex('u', memoryStorage());
     // Sent folder browsed: 200 messages to a colleague.
     for (let i = 0; i < 200; i++) {
-      index.add(msg(`s${i}`, 'me@puter.com', 'ana@corp.example', 1.79e9 + i), { outgoing: true });
+      index.add(msg(`s${i}`, 'me@localhost:8443', 'ana@corp.example', 1.79e9 + i), { outgoing: true });
     }
     // The inbox list read its newest page.
-    for (let i = 0; i < 60; i++) index.add(msg(`new${i}`, `n${i}@news.example`, 'me@puter.com', 1.79e9 + i));
+    for (let i = 0; i < 60; i++) index.add(msg(`new${i}`, `n${i}@news.example`, 'me@localhost:8443', 1.79e9 + i));
     // A search over the 4,500-message inbox reads the rest, newest to oldest.
-    for (let i = 0; i < 4500; i++) index.add(msg(`old${i}`, `o${i}@list.example`, 'me@puter.com', 1.7e9 - i));
+    for (let i = 0; i < 4500; i++) index.add(msg(`old${i}`, `o${i}@list.example`, 'me@localhost:8443', 1.7e9 - i));
     // The newest rows are what the list shows first after a reload.
     expect(index.has(names.get('new0'))).toBe(true);
     expect(index.has(names.get('new59'))).toBe(true);
@@ -41,9 +41,9 @@ describe('header index trimming', () => {
   it('keeps room for received mail however much was sent', () => {
     const index = createSearchIndex('u', memoryStorage(), { cap: 100 });
     for (let i = 0; i < 300; i++) {
-      index.add(msg(`sent${i}`, 'me@puter.com', 'ana@corp.example', 1.6e9 + i), { outgoing: true });
+      index.add(msg(`sent${i}`, 'me@localhost:8443', 'ana@corp.example', 1.6e9 + i), { outgoing: true });
     }
-    for (let i = 0; i < 40; i++) index.add(msg(`got${i}`, `g${i}@x.example`, 'me@puter.com', 1.5e9 + i));
+    for (let i = 0; i < 40; i++) index.add(msg(`got${i}`, `g${i}@x.example`, 'me@localhost:8443', 1.5e9 + i));
     expect(index.has(names.get('got39'))).toBe(true);
   });
 });

@@ -7,7 +7,7 @@ for (const kind of ['image', 'shape'])
       test(`arrow keys keep a ${kind} pointer ${action} active until ${ending}`, async ({
         page,
       }) => {
-        await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+        await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
         await page.goto('/#library');
         const doc = await PDFDocument.create();
         const sheet = doc.addPage([500, 600]);

@@ -45,7 +45,7 @@ async function exportWithProgress(page, item, { slidePictures = false } = {}) {
 }
 
 test('Export progress counts the pages being exported', async ({ page }) => {
-  await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+  await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
   await page.goto('/#library');
   await openPdf(page, 3);
   const texts = await exportWithProgress(page, 'Microsoft Word (.docx)…');

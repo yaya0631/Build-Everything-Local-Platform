@@ -68,7 +68,7 @@ describe('displayName / subtitle', () => {
 })
 
 describe('isValidEmail', () => {
-  it('accepts plausible addresses and rejects mistakes', () => {
+  it('accepts valid addresses and rejects mistakes', () => {
     expect(isValidEmail('a@b.com')).toBe(true)
     expect(isValidEmail('first.last@sub.example.co')).toBe(true)
     expect(isValidEmail('a@b')).toBe(false)

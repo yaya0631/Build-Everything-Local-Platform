@@ -6,7 +6,7 @@
  * Deployment follows the calendar app's RSVP worker, which has run this
  * pattern in production:
  *   - one worker per user, named after them (sv-<username>), so share links
- *     read well: survey.puter.com/r/#<username>/<collector id>;
+ *     read well: survey.localhost:8443/r/#<username>/<collector id>;
  *   - the admin secret lives only in the user's own KV (sv:worker); the
  *     deployed source carries just its SHA-256;
  *   - a deploy is finished only once the live worker answers /admin/ping
@@ -65,7 +65,7 @@ export function workerNameCandidates(username) {
 
 /** The share-link label for a worker name, and back. */
 export const labelOf = (name) => String(name).replace(/^sv-/, '');
-export const workerUrlFor = (label) => `https://sv-${label}.puter.work`;
+export const workerUrlFor = (label) => `https://sv-${label}.localhost:8443`;
 
 function deadline(ms) {
   if (typeof AbortSignal !== 'undefined' && typeof AbortSignal.timeout === 'function') return AbortSignal.timeout(ms);
@@ -212,7 +212,7 @@ export function createCollectorClient({
         }
       }
       if (!dep) continue;
-      const url = String((dep && dep.url) || `https://${name}.puter.work`).replace(/\/+$/, '');
+      const url = String((dep && dep.url) || `http://${name}.localhost:8443`).replace(/\/+$/, '');
       cfg = { name, label: labelOf(name), url, secret, path: sourcePath, version: null, createdAt: Date.now() };
       cfgSaved = false;
       await saveCfg().catch(() => {});

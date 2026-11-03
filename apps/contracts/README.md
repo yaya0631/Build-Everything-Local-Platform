@@ -1,6 +1,6 @@
 # Contract Manager
 
-Store agreements, track renewal dates, extract obligations, and connect documents to contacts. A fast, app-like PWA-style web app built entirely on [Puter](https://developer.puter.com): your data lives in your own Puter cloud, never on anyone's servers.
+Store agreements, track renewal dates, extract obligations, and connect documents to contacts. A fast, app-like PWA-style web app built entirely on [Puter](http://localhost:8443): your data lives in your own Puter cloud, never on anyone's servers.
 
 ## Features
 
@@ -21,7 +21,7 @@ Store agreements, track renewal dates, extract obligations, and connect document
 
 - Vanilla JavaScript (no framework), [Vite](https://vitejs.dev) for dev/build
 - [pdf.js](https://mozilla.github.io/pdf.js/) for reading and rendering PDFs, loaded lazily so it never sits in the boot path
-- [Puter.js](https://docs.puter.com) for auth, key-value settings, file storage, and AI
+- [Puter.js](http://localhost:8443) for auth, key-value settings, file storage, and AI
 - [Lucide](https://lucide.dev) icons
 - [Vitest](https://vitest.dev) for unit tests
 

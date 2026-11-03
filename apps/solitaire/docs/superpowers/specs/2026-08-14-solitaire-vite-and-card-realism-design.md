@@ -151,7 +151,7 @@ The icon is built from the app's own materials — the vendored deck's Ace of Sp
 ### Removals
 
 - **`findHint()` and `showHint()` are deleted**, along with the `.hint` CSS and `hintPulse` keyframes. Fully implemented but never wired to any button or key.
-- **The `js.puter.com` script tag moves from a dead `<head>` include to an actual dependency** of the stats and resume features.
+- **The `js.localhost:8443` script tag moves from a dead `<head>` include to an actual dependency** of the stats and resume features.
 
 ## Architecture
 

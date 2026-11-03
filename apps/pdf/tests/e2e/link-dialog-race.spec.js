@@ -9,7 +9,7 @@ for (const pending of ['name', 'index', 'draft'])
     test(`link editor awaiting ${pending} ${newer === 'none' ? 'opens normally' : `respects newer ${newer}`}`, async ({
       page,
     }) => {
-      await page.route('https://js.puter.com/**', (route) => route.abort());
+      await page.route('**/sdk/puter.js', (route) => route.abort());
       const doc = await PDFDocument.create();
       doc.addPage([400, 500]);
       doc.addPage([400, 500]);

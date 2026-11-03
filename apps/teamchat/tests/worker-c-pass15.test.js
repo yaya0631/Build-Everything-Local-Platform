@@ -51,7 +51,7 @@ describe('a file waiting with a scheduled message, carried across by a move', ()
       if (path === '/api/ws/copy0000001/import/finish') return json({ ok: true });
       return json({ code: 'not_found', message: 'No such endpoint' }, 404);
     } } };
-    const ref = await importArchive('https://teamchat-new.puter.work', archive(), { from: 'abcdef1234@teamchat-old', fromRef: 'abcdef1234@teamchat-old', profile: { name: 'Alice' } });
+    const ref = await importArchive('http://teamchat-new.localhost:8443', archive(), { from: 'abcdef1234@teamchat-old', fromRef: 'abcdef1234@teamchat-old', profile: { name: 'Alice' } });
     expect(ref).toBe('copy0000001@teamchat-new');
     expect(forms).toEqual([{ file: '<5 bytes>', id: FILE, name: 'plan.txt', owner: bob.uuid }]);
   });
@@ -60,13 +60,13 @@ describe('a file waiting with a scheduled message, carried across by a move', ()
     // The old server is faked (its export is the archive below); the copy is made on the real worker.
     globalThis.puter = { workers: { exec: async (url, init = {}) => {
       const u = new URL(url);
-      if (u.hostname === 'teamchat-old.puter.work') {
+      if (u.hostname === 'teamchat-old.localhost:8443') {
         if (u.pathname === `/api/ws/abcdef1234/files/${FILE}`) return new Response(new Blob(['hello'], { type: 'text/plain' }), { status: 200, headers: { 'Content-Type': 'text/plain' } });
         return json({ code: 'not_found', message: 'No such endpoint' }, 404);
       }
       return rt.dispatch(url, init, alice);
     } } };
-    const ref = await importArchive('https://teamchat-new.puter.work', archive(), { from: 'abcdef1234@teamchat-old', fromRef: 'abcdef1234@teamchat-old', profile: { name: 'Alice' } });
+    const ref = await importArchive('http://teamchat-new.localhost:8443', archive(), { from: 'abcdef1234@teamchat-old', fromRef: 'abcdef1234@teamchat-old', profile: { name: 'Alice' } });
     const copy = ref.split('@')[0];
     expect((await rt.kv.get(KEYS.ws(copy))).importing).toBeUndefined();
     const meta = await rt.kv.get(KEYS.file(FILE));
@@ -90,7 +90,7 @@ describe('a move whose failed copy could not be taken down', () => {
   });
   const json = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
   const OLD = 'abcdef1234@teamchat-old';
-  const NEW_URL = 'https://teamchat-new.puter.work';
+  const NEW_URL = 'http://teamchat-new.localhost:8443';
   const HEADER = { format: 'teamchat-export', version: 1, workspace: { id: 'abcdef1234', name: 'Acme' }, channels: { c1: { name: 'general', def: true } }, members: {}, memberDocs: {} };
   const PAGE = { conv: 'c1', seq: 1, messages: [{ seq: 1, user: 'u', text: 'hi', ts: 1 }] };
   /** Two faked servers; `mode` is changed between tries. Each copy made gets the next id. Returns the calls made, in order. */
@@ -419,7 +419,7 @@ describe('the files an export names for the queue', () => {
     const asked = [];
     globalThis.puter = { workers: { exec: async (url, init = {}) => {
       const u = new URL(url);
-      if (u.hostname === 'teamchat-old.puter.work') {
+      if (u.hostname === 'teamchat-old.localhost:8443') {
         const m = /\/files\/([a-z0-9]+)$/.exec(u.pathname);
         if (m) {
           asked.push(m[1]);
@@ -429,7 +429,7 @@ describe('the files an export names for the queue', () => {
       }
       return rt.dispatch(url, init, alice);
     } } };
-    const ref = await importArchive('https://teamchat-new.puter.work', { header: page.header, pages: page.pages, files: page.files }, { from: `${wsId}@teamchat-old`, fromRef: `${wsId}@teamchat-old`, profile: { name: 'Alice' } });
+    const ref = await importArchive('http://teamchat-new.localhost:8443', { header: page.header, pages: page.pages, files: page.files }, { from: `${wsId}@teamchat-old`, fromRef: `${wsId}@teamchat-old`, profile: { name: 'Alice' } });
     const copy = ref.split('@')[0];
     expect(copy).toBe(wsId);
     expect(asked).toEqual([mine]);

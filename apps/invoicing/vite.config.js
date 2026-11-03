@@ -1,5 +1,4 @@
 import { defineConfig } from 'vite';
-import puterLocalhost from '../../dev/puter-localhost.mjs';
 
 /**
  * The service worker, written from the bundle that was just built.
@@ -63,7 +62,7 @@ const SHELL = ${JSON.stringify(shell, null, 2)};
 /* The Puter SDK is loaded from its own origin. It is runtime-cached so an
    installed app has it offline, but nothing about the offline path may
    depend on it resolving: the app boots from its own local snapshot. */
-const SDK = 'https://js.puter.com/';
+const SDK = self.location.origin + '/sdk/';
 
 self.addEventListener('install', (event) => {
   event.waitUntil((async () => {
@@ -146,7 +145,7 @@ self.addEventListener('fetch', (event) => {
 
 export default defineConfig({
   base: './',
-  plugins: [puterLocalhost('invoicing'), serviceWorker()],
+  plugins: [serviceWorker()],
   build: {
     target: 'es2022',
     cssTarget: 'safari15',

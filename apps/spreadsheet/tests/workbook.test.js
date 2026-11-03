@@ -76,12 +76,12 @@ describe('spilled arrays', () => {
 
 describe('links', () => {
   it('recognizes HYPERLINK formulas and plain addresses', () => {
-    const b = book({ A1: '=HYPERLINK("https://puter.com","Puter")', A2: 'www.example.com', A3: 'me@example.com', A4: 'not a link', A5: '=HYPERLINK("puter.com/docs")' });
-    expect(b.wb.linkAt(b.id, 0, 0)).toEqual({ url: 'https://puter.com', label: 'Puter' });
+    const b = book({ A1: '=HYPERLINK("http://localhost:8443","Puter")', A2: 'www.example.com', A3: 'me@example.com', A4: 'not a link', A5: '=HYPERLINK("localhost:8443/docs")' });
+    expect(b.wb.linkAt(b.id, 0, 0)).toEqual({ url: 'http://localhost:8443', label: 'Puter' });
     expect(b.wb.linkAt(b.id, 1, 0)).toEqual({ url: 'https://www.example.com', label: 'www.example.com' });
     expect(b.wb.linkAt(b.id, 2, 0)).toEqual({ url: 'mailto:me@example.com', label: 'me@example.com' });
     expect(b.wb.linkAt(b.id, 3, 0)).toBeNull();
-    expect(b.wb.linkAt(b.id, 4, 0)).toEqual({ url: 'https://puter.com/docs', label: 'puter.com/docs' });
+    expect(b.wb.linkAt(b.id, 4, 0)).toEqual({ url: 'http://localhost:8443/docs', label: 'localhost:8443/docs' });
     expect(b.show('A1')).toBe('Puter');
   });
 
@@ -94,16 +94,16 @@ describe('links', () => {
 
   it('sets and removes links, keeping the text', () => {
     const b = book({ B2: 'Docs' });
-    b.wb.setLink(b.id, 1, 1, 'https://docs.puter.com', 'Docs');
-    expect(b.cell('B2')).toMatchObject({ v: 'Docs', f: null, hyperlink: 'https://docs.puter.com' });
+    b.wb.setLink(b.id, 1, 1, 'http://localhost:8443', 'Docs');
+    expect(b.cell('B2')).toMatchObject({ v: 'Docs', f: null, hyperlink: 'http://localhost:8443' });
     expect(b.show('B2')).toBe('Docs');
-    b.wb.setLink(b.id, 2, 1, 'https://puter.com', '');
-    expect(b.cell('B3')).toMatchObject({ v: 'https://puter.com', f: null, hyperlink: 'https://puter.com' });
-    expect(b.show('B3')).toBe('https://puter.com');
+    b.wb.setLink(b.id, 2, 1, 'http://localhost:8443', '');
+    expect(b.cell('B3')).toMatchObject({ v: 'http://localhost:8443', f: null, hyperlink: 'http://localhost:8443' });
+    expect(b.show('B3')).toBe('http://localhost:8443');
     b.wb.removeLink(b.id, 1, 1);
     expect(b.cell('B2')).toEqual({ v: 'Docs', f: null });
     b.wb.undo();
-    expect(b.wb.linkAt(b.id, 1, 1)?.url).toBe('https://docs.puter.com');
+    expect(b.wb.linkAt(b.id, 1, 1)?.url).toBe('http://localhost:8443');
   });
 });
 
@@ -1232,7 +1232,7 @@ describe('links inside the workbook', () => {
     expect(b.wb.resolveLink('#Totals')).toEqual({ sheetId: q1.id, range: { r1: 1, c1: 1, r2: 8, c2: 1 } });
     expect(b.wb.resolveLink('#B2', b.id)).toEqual({ sheetId: b.id, range: { r1: 1, c1: 1, r2: 1, c2: 1 } });
     expect(b.wb.resolveLink('#Nowhere!A1')).toBeNull();
-    expect(b.wb.resolveLink('https://puter.com')).toBeNull();
+    expect(b.wb.resolveLink('http://localhost:8443')).toBeNull();
     expect(b.wb.resolveLink('#')).toBeNull();
     expect(b.wb.internalLinkFor(q1.id, parseRange('A1:C3'))).toBe("#'Q1 Data'!A1:C3");
     expect(b.wb.internalLinkFor(b.id, parseRange('B3'))).toBe('#Sheet1!B3');

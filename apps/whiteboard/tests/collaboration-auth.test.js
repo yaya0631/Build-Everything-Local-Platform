@@ -6,7 +6,7 @@ import { authenticate } from "../worker/auth.js";
 import { hash, keyPair, sign } from "../src/collaboration/protocol.js";
 import { environment, owner, editor } from "./collaboration-helpers.js";
 
-const server = "https://invited.puter.work";
+const server = "http://invited.localhost:8443";
 const input = { op: "join", room: "board" };
 
 async function capture(puter, data = input, origin = server) {
@@ -116,7 +116,7 @@ test("an invited worker never receives the caller's app credential", async () =>
     delegated = options.headers["puter-auth"] || puter.authToken;
     return Response.json({ ok: true });
   };
-  await call(puter, "https://invited.puter.work", {
+  await call(puter, "http://invited.localhost:8443", {
     op: "join",
     room: "board",
   });
@@ -152,7 +152,7 @@ test("a captured credential cannot change rooms, operations, bodies, or destinat
     { ...input, token: "another-invitation" },
   ])
     await assert.rejects(authenticate(request, user, data), { status: 401 });
-  const forwarded = new Request("https://another-owner.puter.work/api", {
+  const forwarded = new Request("http://another-owner.localhost:8443/api", {
     method: "POST",
     headers: request.headers,
     body: JSON.stringify(input),
@@ -241,7 +241,7 @@ test("credentials are reused across boards and reloads, and renewed before expir
   const b = await capture(
     puter,
     { ...input, room: "another-board" },
-    "https://other.puter.work",
+    "http://other.localhost:8443",
   );
   const c = await capture(env.sdk(owner));
   assert.equal(env.credentials.size, 1);

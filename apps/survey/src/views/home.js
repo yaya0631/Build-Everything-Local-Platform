@@ -344,7 +344,7 @@ export async function mount(container, route, app) {
       folderRows.length ? folderRows : h('p', { class: 'side-hint' }, 'Group related surveys into folders.'),
       h('div', { class: 'side-foot' },
         h('a', { href: REPO_URL, target: '_blank', rel: 'noopener' }, githubMark(13), 'Open source on GitHub'),
-        h('a', { href: 'https://developer.puter.com', target: '_blank', rel: 'noopener' }, 'Powered by Puter')),
+        h('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Powered by Puter')),
     );
   }
 

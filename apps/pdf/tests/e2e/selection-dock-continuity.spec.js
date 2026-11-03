@@ -341,7 +341,7 @@ for (const kind of ['text', 'note'])
 
 async function openDocument(page, width = 850, mode = '2', markup = null) {
   await page.setViewportSize({ width, height: 800 });
-  await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+  await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   const sheet = doc.addPage([600, 800]);

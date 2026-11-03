@@ -273,7 +273,7 @@ function aboutSection() {
       h(
         'div.row.wrap',
         h('a.btn', { href: REPO_URL, target: '_blank', rel: 'noopener noreferrer' }, icon('github', 16), 'Source code on GitHub'),
-        h('a.btn.ghost', { href: 'https://developer.puter.com', target: '_blank', rel: 'noopener noreferrer' }, 'Powered by Puter', icon('external', 14)),
+        h('a.btn.ghost', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener noreferrer' }, 'Powered by Puter', icon('external', 14)),
       ),
       h('h3.about-sub', 'Open-source components'),
       h('ul.about-list', h('li', 'Lucide icons, ISC license')),

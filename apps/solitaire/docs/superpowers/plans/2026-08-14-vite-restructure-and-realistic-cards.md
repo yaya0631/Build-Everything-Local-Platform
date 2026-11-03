@@ -987,7 +987,7 @@ Changes from baseline: the inline `<style>` and `<script>` are gone, a `#sync` b
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Outlined" rel="stylesheet">
-<script src="https://js.puter.com/v2/"></script>
+<script src="/sdk/puter.js"></script>
 </head>
 <body>
 
@@ -1024,7 +1024,7 @@ Changes from baseline: the inline `<style>` and `<script>` are gone, a `#sync` b
 </div>
 
 <footer class="credit">
-  <a href="https://developer.puter.com" target="_blank" rel="noopener">Powered by Puter</a>
+  <a href="http://localhost:8443" target="_blank" rel="noopener">Powered by Puter</a>
 </footer>
 
 <script type="module" src="/src/main.js"></script>
@@ -2921,7 +2921,7 @@ Run: `npm run dev`.
 - Click Sync — the Puter dialog opens. Sign in. Button becomes "Synced".
 - Reload — it goes straight to "Synced" with no dialog.
 - Win a game, reload in another browser, sign in, and confirm the counts merged.
-- Block `js.puter.com` in devtools and reload: the game still plays, button stays "Sync", console has no unhandled rejections.
+- Block `js.localhost:8443` in devtools and reload: the game still plays, button stays "Sync", console has no unhandled rejections.
 
 - [ ] **Step 4: Commit**
 

@@ -8,7 +8,7 @@ for (const list of [false, true])
   test(`inherited ${list ? 'list' : 'dropdown'} choices save from the page and forms dialog`, async ({
     page,
   }) => {
-    await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+    await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
     await page.goto('/#library');
     const { doc } = await inheritedChoicePdf({ list, indirect: true, defaultOnly: true });
     const opening = page.waitForEvent('filechooser');

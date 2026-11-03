@@ -22,7 +22,7 @@ async function setup() {
     restRoute(
       org,
       boards,
-      new Request(`https://w.puter.work/scim/v2/${path}`, {
+      new Request(`http://w.localhost:8443/scim/v2/${path}`, {
         method,
         headers: { Authorization: `Bearer ${key}` },
       }),
@@ -367,7 +367,7 @@ test("the shipped SCIM worker applies mutations safely and returns SCIM errors",
   );
   const send = (path, method = "GET", body) =>
     routes.get(`${method} /scim/v2/*path`)({
-      request: new Request(`https://w.puter.work/scim/v2/${path}`, {
+      request: new Request(`http://w.localhost:8443/scim/v2/${path}`, {
         method,
         headers: {
           Authorization: `Bearer ${key}`,
@@ -1182,7 +1182,7 @@ test("SCIM mutation projections preserve Location and persisted resource data", 
     assert.equal(response.status, 201);
     assert.equal(
       response.headers.get("Location"),
-      `https://w.puter.work/scim/v2/${resource}/${created.id}`,
+      `http://w.localhost:8443/scim/v2/${resource}/${created.id}`,
     );
     assert.deepEqual(Object.keys(created).sort(), ["id", "schemas"]);
     const changed = await scim(
@@ -1535,7 +1535,7 @@ test("REST team changes add and remove members one at a time, and only people th
     const response = await restRoute(
       org,
       boards,
-      new Request("https://w.puter.work/v1/" + path, {
+      new Request("http://w.localhost:8443/v1/" + path, {
         method,
         headers: { Authorization: `Bearer ${key}` },
       }),
@@ -1615,7 +1615,7 @@ test("an API key the account owner made can deactivate an administrator through 
       restRoute(
         org,
         boards,
-        new Request(`https://w.puter.work/v1/users/${editor.uuid}`, {
+        new Request(`http://w.localhost:8443/v1/users/${editor.uuid}`, {
           method: "PATCH",
           headers: { Authorization: `Bearer ${key}` },
         }),
@@ -1741,7 +1741,7 @@ test("people from outside who only joined a board are not listed to the identity
   const response = await restRoute(
     org,
     boards,
-    new Request("https://w.puter.work/v1/users", {
+    new Request("http://w.localhost:8443/v1/users", {
       headers: { Authorization: `Bearer ${reader}` },
     }),
     "GET",

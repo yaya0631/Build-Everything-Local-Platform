@@ -131,7 +131,7 @@ describe('images from the web', () => {
 
   it.each([
     ['example.com:8443/a.png', 'https://example.com:8443/a.png'],
-    ['localhost:5173/photo.png', 'https://localhost:5173/photo.png'],
+    ['localhost:5173/photo.png', 'http://localhost:5173/photo.png'],
     ['example.com:8443?image=1', 'https://example.com:8443/?image=1'],
     ['example.com:443', 'https://example.com/'],
   ])('accepts a scheme-less image address with a port: %s', (input, expected) => {
@@ -149,7 +149,7 @@ describe('images from the web', () => {
       return new Response('image', { headers: { 'Content-Type': 'image/png' } });
     };
     const file = await fetchImageFromUrl('localhost:5173/photo.png', { fetchFn });
-    expect(fetched).toBe('https://localhost:5173/photo.png');
+    expect(fetched).toBe('http://localhost:5173/photo.png');
     expect(file.name).toBe('photo.png');
     expect(file.size).toBe(5);
   });

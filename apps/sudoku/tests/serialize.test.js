@@ -154,7 +154,7 @@ describe('decode refuses anything it cannot trust', () => {
     expect([...restored.eliminated].every((n) => n === 0)).toBe(true);
   });
 
-  it('repairs an implausible clock rather than refusing the save', () => {
+  it('repairs an invalid clock rather than refusing the save', () => {
     expect(decode({ ...good(), elapsedMs: -5 }).elapsedMs).toBe(0);
     expect(decode({ ...good(), elapsedMs: 'soon' }).elapsedMs).toBe(0);
     expect(decode({ ...good(), hintsUsed: -3 }).hintsUsed).toBe(0);

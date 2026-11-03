@@ -9,7 +9,7 @@ async function asUser(page, config) {
   await page.addInitScript((c) => {
     window.__puterConfig = c;
   }, config);
-  await page.route('https://js.puter.com/v2/', (route) => route.fulfill({ status: 200, contentType: 'application/javascript', body: fakePuter }));
+  await page.route('**/sdk/puter.js', (route) => route.fulfill({ status: 200, contentType: 'application/javascript', body: fakePuter }));
   await mockApi(page);
   await page.goto('/');
   await page.waitForSelector('.shell');

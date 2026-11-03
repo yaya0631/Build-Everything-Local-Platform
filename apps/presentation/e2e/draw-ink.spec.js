@@ -24,7 +24,7 @@ test.afterEach(({ page }) => {
 // The AI's answer to every question is `reply`; the prompts asked are kept
 // in window.__asked.
 async function start(page, { reply = null } = {}) {
-  await page.route("https://js.puter.com/v2/", (r) =>
+  await page.route("**/sdk/puter.js", (r) =>
     r.fulfill({
       contentType: "application/javascript",
       body: `window.__asked=[];window.puter={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}},ai:{chat:async(prompt,image,test,options)=>{window.__asked.push({prompt,image:String(image).slice(0,22),options});return {message:{content:${JSON.stringify(reply ?? "")}}};}}};`,

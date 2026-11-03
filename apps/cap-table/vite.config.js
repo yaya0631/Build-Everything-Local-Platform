@@ -1,11 +1,10 @@
 import { defineConfig } from 'vite';
 import { readFileSync } from 'node:fs';
 import { publicContentPlugin } from './site/plugin.js';
-import puterLocalhost from '../../dev/puter-localhost.mjs';
 
 export default defineConfig({
   appType: 'mpa',
-  plugins: [puterLocalhost('cap-table'), {
+  plugins: [{
     name: 'static-public-landing',
     transformIndexHtml(html) {
       // One source for the crawlable document and the mock/auth fallback.

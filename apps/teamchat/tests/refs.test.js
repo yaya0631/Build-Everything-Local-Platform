@@ -7,29 +7,29 @@ import { serverKeyOf, serverUrl, makeRef, parseRef, makeInviteToken, trustServer
 import { parseHash, buildHash, parseInviteInput, parseConnectInput } from '../src/lib/router.js';
 
 describe('server keys', () => {
-  it('shortens puter.work hosts and keeps others whole', () => {
-    expect(serverKeyOf('https://teamchat-x7k2q9pw1a.puter.work')).toBe('teamchat-x7k2q9pw1a');
-    expect(serverKeyOf('https://teamchat-x7k2q9pw1a.puter.work/')).toBe('teamchat-x7k2q9pw1a');
+  it('shortens localhost:8443 hosts and keeps others whole', () => {
+    expect(serverKeyOf('http://teamchat-x7k2q9pw1a.localhost:8443')).toBe('teamchat-x7k2q9pw1a');
+    expect(serverKeyOf('http://teamchat-x7k2q9pw1a.localhost:8443/')).toBe('teamchat-x7k2q9pw1a');
     expect(serverKeyOf('https://api.example.com/base')).toBe('api.example.com');
     expect(serverKeyOf('')).toBeNull();
   });
 
-  it('round-trips puter.work workers through serverUrl', () => {
-    expect(serverUrl(serverKeyOf('https://teamchat-abc.puter.work'))).toBe('https://teamchat-abc.puter.work');
-    expect(serverUrl('teamchat-abc.puter.work')).toBe('https://teamchat-abc.puter.work');
+  it('round-trips localhost:8443 workers through serverUrl', () => {
+    expect(serverUrl(serverKeyOf('http://teamchat-abc.localhost:8443'))).toBe('http://teamchat-abc.localhost:8443');
+    expect(serverUrl('teamchat-abc.localhost:8443')).toBe('http://teamchat-abc.localhost:8443');
     expect(serverUrl('')).toBeNull();
   });
 
-  it('files a reference to a puter.work host under the worker\'s short name', () => {
+  it('files a reference to a localhost:8443 host under the worker\'s short name', () => {
     // Typed the long way, a reference must compare equal to what the worker's
     // own answer is filed under, or the workspace would appear twice.
-    expect(parseRef('abc123def0@teamchat-abc.puter.work')).toEqual({ id: 'abc123def0', server: 'teamchat-abc', url: 'https://teamchat-abc.puter.work' });
-    expect(parseRef('abc123def0@Teamchat-ABC.puter.work').server).toBe(parseRef('abc123def0@teamchat-abc').server);
-    expect(parseInviteInput('ABCD-EFGH-JKLM@teamchat-abc.puter.work').server).toBe('teamchat-abc');
-    expect(parseConnectInput('ABCD-EFGH-JKLM@teamchat-abc.puter.work').server).toBe('teamchat-abc');
+    expect(parseRef('abc123def0@teamchat-abc.localhost')).toEqual({ id: 'abc123def0', server: 'teamchat-abc', url: 'http://teamchat-abc.localhost:8443' });
+    expect(parseRef('abc123def0@Teamchat-ABC.localhost').server).toBe(parseRef('abc123def0@teamchat-abc').server);
+    expect(parseInviteInput('ABCD-EFGH-JKLM@teamchat-abc.localhost').server).toBe('teamchat-abc');
+    expect(parseConnectInput('ABCD-EFGH-JKLM@teamchat-abc.localhost').server).toBe('teamchat-abc');
   });
 
-  it('only resolves a host outside puter.work once the app was told about it', () => {
+  it('only resolves a host outside localhost:8443 once the app was told about it', () => {
     // exec() attaches the user's Puter token to whatever URL it is given, so
     // a link must not be able to point the app at an arbitrary host.
     expect(isTrustedServer('teamchat-abc')).toBe(true);
@@ -41,9 +41,9 @@ describe('server keys', () => {
     expect(isTrustedServer('api.example.com')).toBe(true);
     expect(serverUrl('api.example.com')).toBe('https://api.example.com');
     expect(parseRef('abc123def0@API.example.com')).toEqual({ id: 'abc123def0', server: 'api.example.com', url: 'https://api.example.com' });
-    // Trusting a puter.work URL changes nothing: those always resolve.
-    expect(trustServer('https://teamchat-xyz.puter.work')).toBe('teamchat-xyz');
-    expect(serverUrl('teamchat-xyz')).toBe('https://teamchat-xyz.puter.work');
+    // Trusting a localhost:8443 URL changes nothing: those always resolve.
+    expect(trustServer('http://teamchat-xyz.localhost:8443')).toBe('teamchat-xyz');
+    expect(serverUrl('teamchat-xyz')).toBe('http://teamchat-xyz.localhost:8443');
   });
 });
 
@@ -51,7 +51,7 @@ describe('workspace refs', () => {
   it('parses id and server', () => {
     const ref = makeRef('abc123def0', 'teamchat-x7k2q9pw1a');
     expect(ref).toBe('abc123def0@teamchat-x7k2q9pw1a');
-    expect(parseRef(ref)).toEqual({ id: 'abc123def0', server: 'teamchat-x7k2q9pw1a', url: 'https://teamchat-x7k2q9pw1a.puter.work' });
+    expect(parseRef(ref)).toEqual({ id: 'abc123def0', server: 'teamchat-x7k2q9pw1a', url: 'http://teamchat-x7k2q9pw1a.localhost:8443' });
     expect(parseRef('abc123def0@teamchat-api.mock')).toBeNull(); // a host nobody configured
     trustServer('https://teamchat-api.mock');
     expect(parseRef('abc123def0@teamchat-api.mock').url).toBe('https://teamchat-api.mock');
@@ -97,7 +97,7 @@ describe('invites', () => {
       .toEqual({ code: 'ABCD-EFGH-JKLM', server: 'teamchat-abc' });
     expect(parseInviteInput(' abcd efgh jklm @ TEAMCHAT-ABC '))
       .toEqual({ code: 'ABCD-EFGH-JKLM', server: 'teamchat-abc' });
-    expect(parseInviteInput('ABCD-EFGH-JKLM@https://teamchat-abc.puter.work'))
+    expect(parseInviteInput('ABCD-EFGH-JKLM@http://teamchat-abc.localhost:8443'))
       .toEqual({ code: 'ABCD-EFGH-JKLM', server: 'teamchat-abc' });
     expect(parseInviteInput('ABCD-EFGH-JKLM')).toEqual({ code: 'ABCD-EFGH-JKLM', server: null });
     expect(parseInviteInput('https://app.example/#/join/ABCD-EFGH-JKLM')).toEqual({ code: 'ABCD-EFGH-JKLM', server: null });

@@ -86,7 +86,7 @@
         await delay(200);
         if (this._sites[subdomain]) throw new Error('Subdomain already exists');
         this._sites[subdomain] = { subdomain, root_dir: norm(dirPath) };
-        console.log(`[puter-mock] hosting ${subdomain}.puter.site -> ${dirPath}`);
+        console.log(`[puter-mock] hosting ${subdomain}.localhost:8443 -> ${dirPath}`);
         return this._sites[subdomain];
       },
       async update(subdomain, dirPath) { await delay(100); if (!this._sites[subdomain]) throw new Error('Subdomain does not exist'); this._sites[subdomain].root_dir = norm(dirPath); return this._sites[subdomain]; },

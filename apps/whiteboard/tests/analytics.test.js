@@ -5,16 +5,14 @@ import { track } from "../src/analytics.js";
 
 const read = (path) => readFileSync(new URL(path, import.meta.url), "utf8");
 
-test("the page loads Plausible and queues events until its script arrives", () => {
+test("the page loads no external analytics", () => {
   const html = read("../index.html");
-  assert.match(html, /plausible\.io\/js\/pa--UmNYuArwFIotGMhLBsCo\.js/);
-  assert.match(html, /window\.plausible\s*=\s*window\.plausible\s*\|\|/);
-  assert.match(html, /plausible\.init\(\)/);
+  assert.doesNotMatch(html, /<script[^>]+src="https?:\/\//i);
 });
 
-test("track forwards named events with properties, and is a no-op without Plausible", () => {
+test("track forwards named events with properties, and is a no-op without a sink", () => {
   const calls = [];
-  globalThis.window = { plausible: (...args) => calls.push(args) };
+  globalThis.__everythingAnalytics = (...args) => calls.push(args);
   try {
     track("Board exported", { format: "pdf", scope: "board" });
     track("Board shared");
@@ -22,16 +20,14 @@ test("track forwards named events with properties, and is a no-op without Plausi
       ["Board exported", { props: { format: "pdf", scope: "board" } }],
       ["Board shared", undefined],
     ]);
-    globalThis.window = {};
+    delete globalThis.__everythingAnalytics;
     assert.doesNotThrow(() => track("Board created", { template: "blank" }));
-    globalThis.window = {
-      plausible: () => {
-        throw Error("blocked");
-      },
+    globalThis.__everythingAnalytics = () => {
+      throw Error("blocked");
     };
     assert.doesNotThrow(() => track("Board created"));
   } finally {
-    delete globalThis.window;
+    delete globalThis.__everythingAnalytics;
   }
 });
 

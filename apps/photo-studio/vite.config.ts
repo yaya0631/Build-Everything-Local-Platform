@@ -1,8 +1,7 @@
 import { defineConfig } from "vite";
-import puterLocalhost from "../../dev/puter-localhost.mjs";
 
 export default defineConfig({
-  plugins: [puterLocalhost("photo-studio")],
+  plugins: [],
   // Prebundle lazy CJS entry points so first use does not reload an open editor.
   // PathKit remains loaded on demand at runtime, including in the worker.
   optimizeDeps: {

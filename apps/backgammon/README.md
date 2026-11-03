@@ -8,7 +8,7 @@ JavaScript, HTML, and CSS, built with Vite.
 - **Player vs. Computer** with three difficulty levels (Easy / Medium / Hard)
 - **Pass & Play** — two players sharing one device
 - **Online play** — private peer-to-peer games over the
-  [Puter Peer API](https://docs.puter.com/Peer/) (WebRTC): create a game,
+  [Puter Peer API](http://localhost:8443/Peer/) (WebRTC): create a game,
   share the invite code or link, and play with resign and rematch support.
   The Puter SDK is loaded only when online mode is opened. **The dice are
   agreed between the two players rather than thrown by either of them** — see
@@ -237,9 +237,9 @@ gradients in `tools/og-image.svg`.
 
 ## Analytics
 
-Privacy-friendly analytics by [Plausible](https://plausible.io) — no cookies,
+Privacy-friendly analytics by [Plausible]( — no cookies,
 no personal data, nothing that needs a consent banner. The script tag is in
-`index.html` and the plausible.io origin is allowed by the CSP in
+`index.html` and the localhost origin is allowed by the CSP in
 `customHttp.yml`; `src/analytics.js` swallows every call, so a blocked script,
 an offline visitor, or a self-hosted deploy with no analytics all play the
 same game.

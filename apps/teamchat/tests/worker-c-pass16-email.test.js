@@ -40,7 +40,7 @@ describe('an invitation whose names are cut short through an emoji', () => {
     const workspace = `${'W'.repeat(59)}\u{1F389} Inc`;
     const channel = `${'c'.repeat(39)}\u{1F680}x`;
     const note = `${'n'.repeat(399)}\u{1F44B}!`;
-    const res = await post({ kind: 'guest', server: 'alice.puter.work', code: 'ABCD-EFGH-JKLM', workspace, inviter, channel, note, emails: ['pat@example.com'] });
+    const res = await post({ kind: 'guest', server: 'alice.localhost:8443', code: 'ABCD-EFGH-JKLM', workspace, inviter, channel, note, emails: ['pat@example.com'] });
     expect(res.status).toBe(200);
     expect(sends).toHaveLength(1);
     const [mail] = sends;

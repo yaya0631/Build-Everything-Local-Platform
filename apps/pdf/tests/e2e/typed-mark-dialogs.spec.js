@@ -24,7 +24,7 @@ for (const kind of ['signature', 'stamp'])
   test(`equivalent Unicode spellings produce the same ${kind} in downloaded PDFs`, async ({
     page,
   }) => {
-    await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+    await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
     await page.goto('/#library');
     const doc = await PDFDocument.create();
     doc.addPage([400, 400]);
@@ -73,7 +73,7 @@ for (const kind of ['signature', 'stamp'])
 
 for (const kind of ['signature', 'stamp'])
   test(`invisible-only ${kind} text stays editable without changing the PDF`, async ({ page }) => {
-    await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+    await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
     await page.goto('/');
     await expect(page.locator('.page-caption')).toHaveText('Page 1 of 1');
     const dialog = await openDialog(page, kind);
@@ -100,7 +100,7 @@ for (const kind of ['signature', 'stamp'])
     test(`cancelled ${kind} preparation ignores a late ${fails ? 'failure' : 'success'}`, async ({
       page,
     }) => {
-      await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+      await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
       const font = kind === 'signature' ? 'GreatVibes-Regular.ttf' : 'NotoSans-Regular.ttf';
       let release;
       const ready = new Promise((resolve) => (release = resolve));
@@ -152,7 +152,7 @@ for (const kind of ['signature', 'stamp'])
     test(`failed ${kind} preparation ${moved ? 'preserves newer Cancel focus' : 'returns focus to editable text'}`, async ({
       page,
     }) => {
-      await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+      await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
       const font = kind === 'signature' ? 'GreatVibes-Regular.ttf' : 'NotoSans-Regular.ttf';
       let release;
       const ready = new Promise((resolve) => (release = resolve));

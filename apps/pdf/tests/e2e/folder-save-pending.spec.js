@@ -12,7 +12,7 @@ for (const change of ['rename', 'replace', 'newer save', 'none'])
   test(`a folder save prepared before document ${change} opens only a current picker`, async ({
     page,
   }) => {
-    await page.route('https://js.puter.com/**', (route) =>
+    await page.route('**/sdk/puter.js', (route) =>
       route.fulfill({
         body: `window.folderPickers = [];
           window.puter = {

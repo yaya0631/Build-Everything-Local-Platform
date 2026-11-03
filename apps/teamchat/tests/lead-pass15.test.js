@@ -2,7 +2,7 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 import { installDom } from './helpers/dom.js';
 import { readFileSync } from 'node:fs';
 
-const REF = 'abc123def0@globex.puter.work';
+const REF = 'abc123def0@globex.localhost';
 const json = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
 
 let dom = null;
@@ -165,21 +165,21 @@ describe('carrying a workspace\'s revocations to the hosts of its shared channel
       workers: {
         exec: async (url, init = {}) => {
           calls.push({ url, body: init.body ? JSON.parse(init.body) : null });
-          if (url.startsWith('https://down.puter.work')) return new Response('nope', { status: 500 });
+          if (url.startsWith('http://down.localhost:8443')) return new Response('nope', { status: 500 });
           return json({ ok: true });
         },
       },
     };
     const { store: s } = await import('../src/lib/store.js');
     await s.carryRevocations([
-      { ref: 'host000001@teamchat-host.puter.work', ch: 'c9', conn: 'cn_1', host: 'Host', token: 'tok-1' },
+      { ref: 'host000001@teamchat-host.localhost', ch: 'c9', conn: 'cn_1', host: 'Host', token: 'tok-1' },
       { ref: 'not a ref', conn: 'cn_2', token: 'tok-2' },
       { ref: 'gone000002@down', conn: 'cn_3', token: 'tok-3' },
       null,
     ]);
     expect(calls.map((c) => c.url)).toEqual([
-      'https://teamchat-host.puter.work/api/connect/revoke',
-      'https://down.puter.work/api/connect/revoke',
+      'http://teamchat-host.localhost:8443/api/connect/revoke',
+      'http://down.localhost:8443/api/connect/revoke',
     ]);
     expect(calls[0].body).toEqual({ conn: 'cn_1', token: 'tok-1' });
     await d.tick(1);

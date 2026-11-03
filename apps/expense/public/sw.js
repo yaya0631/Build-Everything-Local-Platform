@@ -18,7 +18,7 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   if (request.method !== 'GET') return;
   const url = new URL(request.url);
-  const isPuterSdk = url.origin === 'https://js.puter.com';
+  const isPuterSdk = url.origin === '/sdk/';
   if (!isPuterSdk && url.origin !== self.location.origin) return;
 
   if (request.mode === 'navigate') {

@@ -43,7 +43,7 @@ beforeEach(() => {
       if (pause) await pause;
       if (fail) throw new Error('Synthetic body failure');
     }
-    const raw = `From: Sender ${id} <sender${id}@example.com>\r\nTo: user@puter.com\r\nSubject: Discussion\r\nMessage-ID: <${id}@example.com>\r\nReferences: <root@example.com>\r\nContent-Type: text/plain\r\n\r\nMessage ${id}.`.padEnd(9000, ' ');
+    const raw = `From: Sender ${id} <sender${id}@example.com>\r\nTo: user@localhost:8443\r\nSubject: Discussion\r\nMessage-ID: <${id}@example.com>\r\nReferences: <root@example.com>\r\nContent-Type: text/plain\r\n\r\nMessage ${id}.`.padEnd(9000, ' ');
     return new Blob([options.byte_count ? raw.slice(0, options.byte_count) : raw]);
   };
 });

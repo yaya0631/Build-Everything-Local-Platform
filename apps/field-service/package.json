@@ -9,8 +9,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest",
-    "deploy:email-worker": "puter worker deploy src/workers/email-worker.js field-service-email"
+    "test:watch": "vitest"
   },
   "dependencies": {
     "lucide": "^0.545.0"

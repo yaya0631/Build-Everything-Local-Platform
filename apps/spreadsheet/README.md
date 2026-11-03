@@ -4,7 +4,7 @@
 
 An open-source alternative to Microsoft Excel: a fast, private spreadsheet app
 built with vanilla JavaScript (no frameworks),
-Vite, and [Puter.js](https://developer.puter.com) as the only backend. Files
+Vite, and [Puter.js](http://localhost:8443) as the only backend. Files
 are real `.xlsx` documents saved to your own Puter cloud, so they open in
 Excel, Numbers, or LibreOffice and never live on anyone else's server.
 
@@ -1193,7 +1193,7 @@ the browser; there is no server.
 
 ---
 
-Powered by [Puter](https://developer.puter.com).
+Powered by [Puter](http://localhost:8443).
 
 ## License
 

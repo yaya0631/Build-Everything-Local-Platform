@@ -342,7 +342,7 @@ if (import.meta.env.PROD && 'serviceWorker' in navigator) {
 
 - [ ] **Step 4: Fill in `index.html`'s head**
 
-Mirror `../checkers/index.html`: description, canonical, the full `og:*` and `twitter:*` sets, icon links, manifest link, light and dark `theme-color`, and a JSON-LD `WebApplication`/`VideoGame` block. Canonical host is `https://solitaire.puter.com/`. Keep the existing `js.puter.com` script tag and the "Powered by Puter" footer link.
+Mirror `../checkers/index.html`: description, canonical, the full `og:*` and `twitter:*` sets, icon links, manifest link, light and dark `theme-color`, and a JSON-LD `WebApplication`/`VideoGame` block. Canonical host is `http://solitaire.localhost:8443/`. Keep the existing `js.localhost:8443` script tag and the "Powered by Puter" footer link.
 
 - [ ] **Step 5: Render the social preview**
 

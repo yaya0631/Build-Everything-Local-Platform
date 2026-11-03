@@ -3,7 +3,7 @@
  *
  * The calendar's only backend is puter.kv, which guests (who may have no Puter
  * account at all) can't touch. So each calendar user gets their own serverless
- * worker (`https://cal-<username>.puter.work`, deployed here on first use from
+ * worker (`https://cal-<username>.localhost:8443`, deployed here on first use from
  * the template in src/workers/rsvp-worker.js) that runs under THEIR account and
  * serves per-guest capability URLs: unguessable tokenized links a guest opens
  * to answer Yes / No / Maybe — the industry-standard link-RSVP pattern.
@@ -162,7 +162,7 @@ function randomHex(bytes) {
  * Subdomain labels to try for this host's worker, best first.
  *
  * The name fronts every booking link the host hands out, so it leads with
- * theirs: `calendar.puter.com/#/nj/intro-call` (the label minus its `cal-`
+ * theirs: `calendar.localhost:8443/#/nj/intro-call` (the label minus its `cal-`
  * prefix — see linkFor in booking.js) rather than ten random digits. Worker
  * names are global across Puter and immutable once taken, hence the fallbacks
  * — a name someone else holds must cost a nicer URL, never the deploy. A
@@ -255,7 +255,7 @@ export function createRsvpLinks({
   // the worker at deploy; a version bump redeploys with the current origin.
   pageUrl = (typeof location !== 'undefined' && location.origin && location.origin !== 'null'
     ? location.origin
-    : 'https://calendar.puter.com') + '/rsvp.html',
+    : 'http://calendar.localhost:8443') + '/rsvp.html',
 }) {
   let cfg = null;
   let selfEmail = user && typeof user.email === 'string' ? user.email.trim().toLowerCase() : '';
@@ -524,7 +524,7 @@ export function createRsvpLinks({
           continue;
         }
       }
-      const url = String((dep && dep.url) || `https://${name}.puter.work`).replace(/\/+$/, '');
+      const url = String((dep && dep.url) || `http://${name}.localhost:8443`).replace(/\/+$/, '');
       // Persist BEFORE verifying, with a null version: the worker must never
       // be orphaned (a re-run would deploy a duplicate), and a null version
       // routes the next ensureWorker() into the self-healing upgrade branch.
@@ -1035,7 +1035,7 @@ export function createRsvpLinks({
      *  authenticated request to the per-user worker, deploying/upgrading it
      *  first when needed. POST when `body` is given, GET otherwise. */
     adminRequest: admin,
-    /** The deployed worker's origin (`https://cal-rsvp-….puter.work`), or null
+    /** The deployed worker's origin (`https://cal-rsvp-….localhost:8443`), or null
      *  until one exists ON A VERSION that serves the booking routes — booking
      *  share links are built on it, and handing one out while an older
      *  deployment is still being upgraded in place would 404 every guest. */

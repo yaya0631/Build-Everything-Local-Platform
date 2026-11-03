@@ -4,7 +4,7 @@
  *
  * kv/fs live in memory (a reload starts fresh). workers.create actually
  * instantiates src/workers/sign-worker.js in-page and window.fetch is patched
- * for *.puter.work, so the whole send flow (links, statuses, void) works.
+ * for *.localhost:8443, so the whole send flow (links, statuses, void) works.
  * The email worker is stubbed to always succeed.
  */
 
@@ -105,7 +105,7 @@ function instantiateWorker(source, me) {
   new Function('router', 'me', 'Response', `'use strict';\n${source}`)(router, me, ResponseShim);
   return {
     async call(method, pathAndQuery, init = {}) {
-      const url = new URL(pathAndQuery, 'https://mock.puter.work');
+      const url = new URL(pathAndQuery, 'http://mock.localhost:8443');
       const match = matchRoute(routes, method, url.pathname);
       if (!match) return new ResponseShim('no route', { status: 404 });
       const request = {
@@ -144,7 +144,7 @@ export function installMockPuter() {
     fs,
     workers: {
       create: async (name, filePath) => {
-        const origin = `https://${name}.puter.work`;
+        const origin = `http://${name}.localhost:8443`;
         const data = fs.files.get(filePath);
         const text = typeof data === 'string' ? data : new TextDecoder().decode(data);
         const me = { puter: { kv: makeKv(), fs } };
@@ -164,7 +164,7 @@ export function installMockPuter() {
     },
   };
 
-  // Route fetches to *.puter.work into the in-page workers.
+  // Route fetches to *.localhost:8443 into the in-page workers.
   const realFetch = window.fetch.bind(window);
   window.fetch = async (input, init = {}) => {
     const url = typeof input === 'string' ? input : input.url;
@@ -174,7 +174,7 @@ export function installMockPuter() {
     } catch {
       /* relative URL */
     }
-    if (origin && origin.endsWith('.puter.work')) {
+    if (origin && origin.endsWith('.localhost:8443')) {
       const record = workersByOrigin.get(origin);
       if (!record) return new ResponseShim('no worker', { status: 404 });
       const u = new URL(url);

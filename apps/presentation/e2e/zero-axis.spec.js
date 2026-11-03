@@ -6,7 +6,7 @@ import { zeroAxisFixture } from "../tests/zero-axis-fixture.js";
 test("zero-axis shape strokes paint in canvas and slideshow, move without changing size, and copy in both directions", async ({
   page,
 }) => {
-  await page.route("https://js.puter.com/v2/", (r) =>
+  await page.route("**/sdk/puter.js", (r) =>
     r.fulfill({
       contentType: "application/javascript",
       body: 'window.puter={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',

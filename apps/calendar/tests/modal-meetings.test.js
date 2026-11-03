@@ -20,7 +20,7 @@ function makeStore() {
   };
 }
 
-const LINK = { code: 'abcd-efgh-ijkl', url: 'https://meetings.puter.com/#/m/abcd-efgh-ijkl' };
+const LINK = { code: 'abcd-efgh-ijkl', url: 'http://meetings.localhost:8443/#/m/abcd-efgh-ijkl' };
 
 /** A stand-in for the meetings module: minting is local and synchronous. */
 function makeMeetings({ available = true, link = LINK } = {}) {

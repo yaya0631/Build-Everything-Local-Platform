@@ -121,7 +121,7 @@ describe('links', () => {
   it('accepts bare domains with ports and IPv6 web addresses without permitting other schemes', () => {
     for (const [typed, expected] of [
       ['example.com:8080/report?q=1#part', 'https://example.com:8080/report?q=1#part'],
-      ['LOCALHOST:8443/report', 'https://localhost:8443/report'],
+      ['LOCALHOST:8443/report', 'http://localhost:8443/report'],
       ['127.0.0.1:8080/report', 'https://127.0.0.1:8080/report'],
       ['[::1]:8080/report', 'https://[::1]:8080/report'],
       ['https://[2001:db8::1]/report', 'https://[2001:db8::1]/report'],

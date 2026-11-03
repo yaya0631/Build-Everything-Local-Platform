@@ -8,7 +8,7 @@ import { memoryStorage } from './helpers/memory-storage.js';
 
 let doc;
 beforeEach(() => {
-  vi.stubGlobal('plausible', vi.fn());
+  vi.stubGlobal('__everythingAnalytics', vi.fn());
   vi.stubGlobal('localStorage', memoryStorage());
   installMockPuter();
   window.puter = globalThis.puter;
@@ -21,15 +21,15 @@ afterEach(() => {
 });
 
 it('keeps app actions working when analytics is blocked, missing or throws', () => {
-  vi.stubGlobal('plausible', undefined);
+  vi.stubGlobal('__everythingAnalytics', undefined);
   expect(() => trackEvent('Spreadsheet Edited')).not.toThrow();
-  vi.stubGlobal('plausible', () => { throw new Error('blocked'); });
+  vi.stubGlobal('__everythingAnalytics', () => { throw new Error('blocked'); });
   expect(() => trackEvent('Spreadsheet Saved', { method: 'manual' })).not.toThrow();
 });
 
 it('queues custom events before the async script loads', () => {
   const queue = [];
-  vi.stubGlobal('plausible', (...args) => queue.push(args));
+  vi.stubGlobal('__everythingAnalytics', (...args) => queue.push(args));
   trackEvent('Spreadsheet Edited');
   trackEvent('Spreadsheet Saved', { method: 'auto' });
   expect(queue).toEqual([['Spreadsheet Edited'], ['Spreadsheet Saved', { props: { method: 'auto' } }]]);
@@ -38,7 +38,7 @@ it('queues custom events before the async script loads', () => {
 it('sends only a known format and export method, never a filename or arbitrary extension', () => {
   trackExport('Private payroll for jane@example.com.XLSX', 'browser');
   trackExport('Payroll.private-financial-information', 'puter');
-  expect(plausible.mock.calls).toEqual([
+  expect(__everythingAnalytics.mock.calls).toEqual([
     ['Spreadsheet Exported', { props: { format: 'xlsx', method: 'browser' } }],
     ['Spreadsheet Exported', { props: { format: 'other', method: 'puter' } }],
   ]);
@@ -50,7 +50,7 @@ it('tracks actual cloud saves and copies, skipping failed and unchanged saves', 
   const write = puter.fs.write;
   puter.fs.write = async () => { throw new Error('quota'); };
   await expect(doc.save()).rejects.toThrow('quota');
-  expect(plausible).not.toHaveBeenCalled();
+  expect(__everythingAnalytics).not.toHaveBeenCalled();
   puter.fs.write = write;
   expect(await doc.save()).toBe(true);
   expect(await doc.save()).toBe(true);
@@ -58,7 +58,7 @@ it('tracks actual cloud saves and copies, skipping failed and unchanged saves', 
   expect(await doc.save({ auto: true })).toBe(true);
   expect(await doc.saveAs('Private copy')).toBeNull();
   expect(await doc.saveAs('Private copy')).toBe('A file with that name already exists');
-  expect(plausible.mock.calls).toEqual([
+  expect(__everythingAnalytics.mock.calls).toEqual([
     ['Spreadsheet Saved', { props: { method: 'manual' } }],
     ['Spreadsheet Saved', { props: { method: 'auto' } }],
     ['Spreadsheet Saved', { props: { method: 'copy' } }],
@@ -73,7 +73,7 @@ it('counts no export for Puter\'s save dialog, which saves files rather than exp
   const blob = new Blob(['secret']);
   expect(await P.saveFileAs(blob, 'Private.xlsx')).toBeNull();
   expect(await P.saveFileAs(blob, 'Private.xlsx')).toMatchObject(saved);
-  expect(plausible).not.toHaveBeenCalled();
+  expect(__everythingAnalytics).not.toHaveBeenCalled();
 });
 
 it('tracks a browser export after starting the download', () => {
@@ -82,7 +82,7 @@ it('tracks a browser export after starting the download', () => {
   vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
   try {
     P.downloadBlob(new Blob(['secret']), 'Private.csv');
-    expect(plausible.mock.calls).toEqual([['Spreadsheet Exported', { props: { format: 'csv', method: 'browser' } }]]);
+    expect(__everythingAnalytics.mock.calls).toEqual([['Spreadsheet Exported', { props: { format: 'csv', method: 'browser' } }]]);
     vi.runAllTimers();
   } finally { vi.useRealTimers(); }
 });
@@ -94,7 +94,7 @@ it('tracks an AI answer without sending its prompt or reply, skipping failures a
   await expect(P.aiChat('Private prompt')).rejects.toThrow();
   await expect(P.aiChat('Private prompt')).rejects.toThrow();
   expect(await P.aiChat('Private prompt')).toBe('');
-  expect(plausible).not.toHaveBeenCalled();
+  expect(__everythingAnalytics).not.toHaveBeenCalled();
   expect(await P.aiChat('Private prompt', { feature: 'ask-data' })).toBe('Private answer');
-  expect(plausible.mock.calls).toEqual([['AI Interaction', { props: { feature: 'ask-data' } }]]);
+  expect(__everythingAnalytics.mock.calls).toEqual([['AI Interaction', { props: { feature: 'ask-data' } }]]);
 });

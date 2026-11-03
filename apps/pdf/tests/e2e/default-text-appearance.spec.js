@@ -36,7 +36,7 @@ for (const kind of ['text', 'multiline', 'password', 'comb'])
       test(`default ${kind} text survives ${action}, export and history (inherited=${inherited})`, async ({
         page,
       }) => {
-        await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+        await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
         await page.goto('/#library');
         const { doc, field, shown, defaultValue } = await defaultTextPdf({ kind, inherited });
         const original = await rendered(await doc.save());

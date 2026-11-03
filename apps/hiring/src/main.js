@@ -82,7 +82,7 @@ function authScreen({ puterAvailable }) {
         'p',
         { class: 'auth-footer' },
         'Free · No ads · Powered by ',
-        el('a', { href: 'https://developer.puter.com', target: '_blank', rel: 'noreferrer' }, 'Puter')
+        el('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noreferrer' }, 'Puter')
       )
     )
   );
@@ -111,7 +111,7 @@ async function bootSignedIn() {
     clearTimeout(splashTimer);
   }
   // Inside Puter itself the platform owns the session, so the app must not
-  // offer its own sign-out (https://docs.puter.com/Utils/env/).
+  // offer its own sign-out (http://localhost:8443/Utils/env/).
   const canSignOut = puter.env !== 'app';
   const ctx = startApp({
     store,

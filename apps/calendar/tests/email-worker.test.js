@@ -16,8 +16,8 @@ const CALLER = {
   puter: { authToken: 'caller-token' },
 };
 
-const LINK = 'https://cal-rsvp-abc123.puter.work/rsvp/' + 'a'.repeat(40);
-const LINK2 = 'https://cal-rsvp-abc123.puter.work/rsvp/' + 'b'.repeat(40);
+const LINK = 'http://cal-rsvp-abc123.localhost:8443/rsvp/' + 'a'.repeat(40);
+const LINK2 = 'http://cal-rsvp-abc123.localhost:8443/rsvp/' + 'b'.repeat(40);
 
 /**
  * A worker with a fake `puter.email` on both the owner (`me`) and the caller
@@ -252,7 +252,7 @@ describe('email worker: the message', () => {
     // guest's own RSVP link.
     expect(text).toContain('https://evil.example/free-money');
     for (const href of html.match(/href="([^"]*)"/g) || []) {
-      expect(href).toContain('cal-rsvp-abc123.puter.work/rsvp/');
+      expect(href).toContain('cal-rsvp-abc123.localhost:8443/rsvp/');
     }
   });
 
@@ -289,8 +289,8 @@ describe('email worker: the message', () => {
 
   it('includes the Puter Meetings join link, in text and as a real link', async () => {
     for (const join of [
-      'https://meetings.puter.com/#/m/abcd-efgh-ijkl', // open room code
-      'https://meetings.puter.com/#/m/abc-defg-hij', //   classic room code
+      'http://meetings.localhost:8443/#/m/abcd-efgh-ijkl', // open room code
+      'http://meetings.localhost:8443/#/m/abc-defg-hij', //   classic room code
     ]) {
       const world = loadWorker();
       await post(world, payload({ event: { ...payload().event, meetingUrl: join } }));
@@ -302,9 +302,9 @@ describe('email worker: the message', () => {
   it('drops a meeting link that is not a Puter Meetings room URL, and still sends', async () => {
     for (const bad of [
       'https://evil.example/#/m/abcd-efgh-ijkl', //                 wrong host
-      'https://meetings.puter.com.evil.example/#/m/abcd-efgh-ijkl', // host prefix trick
-      'https://meetings.puter.com/#/m/ABCD-EFGH-IJKL', //           not a room code
-      'https://meetings.puter.com/#/m/abcd-efgh-ijkl?x="<i>', //    trailing junk
+      'http://meetings.localhost:8443.evil.example/#/m/abcd-efgh-ijkl', // host prefix trick
+      'http://meetings.localhost:8443/#/m/ABCD-EFGH-IJKL', //           not a room code
+      'http://meetings.localhost:8443/#/m/abcd-efgh-ijkl?x="<i>', //    trailing junk
       'javascript:alert(1)', //                                     not even https
     ]) {
       const world = loadWorker(); // fresh, so the send isn't deduped away
@@ -570,7 +570,7 @@ describe('email worker: cancellations', () => {
       payload({
         kind: 'invite', // the route decides what this is, not the body
         ics,
-        event: { ...payload().event, meetingUrl: 'https://meetings.puter.com/#/m/abcd-efgh-ijkl' },
+        event: { ...payload().event, meetingUrl: 'http://meetings.localhost:8443/#/m/abcd-efgh-ijkl' },
       }),
     );
     expect(res.status).toBe(200);
@@ -717,7 +717,7 @@ describe('email worker: authorizing the send', () => {
 });
 
 describe('email worker: the attachment is read before it is attached', () => {
-  const MEETING = 'https://meetings.puter.com/#/m/abcd-efgh-ijkl';
+  const MEETING = 'http://meetings.localhost:8443/#/m/abcd-efgh-ijkl';
   // The event exactly as the app hands it to toICS — every shape the
   // validator has to see through: a folded CONFERENCE line, a quoted CN with
   // a colon in it, a mixed-case organizer address, text properties carrying
@@ -824,7 +824,7 @@ describe('email worker: the attachment is read before it is attached', () => {
       'X-ALT-DESC;FMTTYPE=text/html:<a href="https://evil.example">Join</a>',
       'url:https://evil.example/join', // case
       'UR\r\n L:https://evil.example/join', // folded across the property name
-      'URL:https://meetings.puter.com/#/m/abcd-efgh-ijkl', // the RIGHT shape, but not this event's
+      'URL:http://meetings.localhost:8443/#/m/abcd-efgh-ijkl', // the RIGHT shape, but not this event's
     ]) {
       await refused('/invites', payload({ ics: file(prop) }));
     }
@@ -842,7 +842,7 @@ describe('email worker: the attachment is read before it is attached', () => {
     // body already carries, escaped — and not a place a link is read from.
     const file =
       'BEGIN:VCALENDAR\r\nMETHOD:REQUEST\r\nBEGIN:VEVENT\r\n' +
-      'DESCRIPTION:See https://example.com/agenda\\nJoin: https://meetings.puter.com/#/m/abcd-efgh-ijkl\r\n' +
+      'DESCRIPTION:See https://example.com/agenda\\nJoin: http://meetings.localhost:8443/#/m/abcd-efgh-ijkl\r\n' +
       'LOCATION:https://maps.example/pier-39\r\nCOMMENT:mailto:someone@example.com\r\n' +
       'END:VEVENT\r\nEND:VCALENDAR\r\n';
     const world = loadWorker();

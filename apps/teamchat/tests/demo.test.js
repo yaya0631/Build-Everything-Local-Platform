@@ -20,7 +20,7 @@ beforeEach(async () => {
   store.user = {
     v: 1, profile: { name: 'Alice Demo' }, prefs: {},
     workspaces: [{ ref: 'existing01@teamchat-api', name: 'Existing workspace' }],
-    worker: { url: 'https://teamchat-api.puter.work' },
+    worker: { url: 'http://teamchat-api.localhost:8443' },
   };
   store._composeProfile();
   store._composeWorkspaces();

@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { PDFDocument, PDFName, degrees, rgb } from 'pdf-lib';
 
 async function openObjects(page, { rotation = 0, userUnit = 1 } = {}) {
-  await page.route('https://js.puter.com/**', (route) => route.fulfill({ body: '' }));
+  await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   const sheet = doc.addPage([500, 600]);

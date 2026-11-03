@@ -14,7 +14,7 @@ const MIME =
 const MOD = process.platform === "darwin" ? "Meta" : "Control";
 
 async function stub(page, { ai = null } = {}) {
-  await page.route("https://js.puter.com/v2/", (r) =>
+  await page.route("**/sdk/puter.js", (r) =>
     r.fulfill({
       contentType: "application/javascript",
       body:

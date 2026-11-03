@@ -23,7 +23,7 @@ npm run build
 npm run preview
 ```
 
-Deploy all of `dist/` to a static host, including `pdfjs/`, `fonts/`, and `THIRD_PARTY_NOTICES.txt`. `pdfjs/standard_fonts/` includes the Liberation Sans fonts (GPL v2 with a font exception); their corresponding source ships beside them in `pdfjs/standard_fonts/liberation-source/`, so deploy that directory too. Relative asset paths support deployment in a subdirectory. There is no server component, database, API secret, or environment configuration. The only backend integration is Puter.js, loaded from `https://js.puter.com/v2/`.
+Deploy all of `dist/` to a static host, including `pdfjs/`, `fonts/`, and `THIRD_PARTY_NOTICES.txt`. `pdfjs/standard_fonts/` includes the Liberation Sans fonts (GPL v2 with a font exception); their corresponding source ships beside them in `pdfjs/standard_fonts/liberation-source/`, so deploy that directory too. Relative asset paths support deployment in a subdirectory. There is no server component, database, API secret, or environment configuration. The only backend integration is Puter.js, loaded from `/sdk/puter.js`.
 
 GitHub Actions runs unit tests, a production build, and Chromium desktop/mobile, WebKit, and Firefox integration checks. The browser suite uses a deterministic Puter boundary mock, not a real cloud account; actual account sign-in, permissions, cloud file picker behavior, and storage quota must also be exercised in the target Puter app.
 

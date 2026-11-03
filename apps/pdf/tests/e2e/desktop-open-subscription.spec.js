@@ -10,7 +10,7 @@ async function pdf(pages, title) {
 }
 async function setup(page, { api = 'both', launch = true, held = false } = {}) {
   const bytes = await pdf(2, 'Initial file');
-  await page.route('https://js.puter.com/**', (route) =>
+  await page.route('**/sdk/puter.js', (route) =>
     route.fulfill({
       contentType: 'application/javascript',
       body: `

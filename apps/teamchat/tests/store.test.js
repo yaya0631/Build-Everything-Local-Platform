@@ -907,7 +907,7 @@ describe('shared channel links', () => {
     // the one spelling the app files it by (the same host as another entry
     // must group under one link, and be the entry itself to a repeated accept).
     calls.length = 0;
-    await expect(store.acceptConnect({ ...attempt, server: 'teamchat-test.puter.work', name: 'design-acme', host: { ws: 'host00host', ch: 'hch' } })).resolves.toMatchObject({ ref: WS });
+    await expect(store.acceptConnect({ ...attempt, server: 'teamchat-test.localhost:8443', name: 'design-acme', host: { ws: 'host00host', ch: 'hch' } })).resolves.toMatchObject({ ref: WS });
     expect(calls.filter((c) => c.includes('/api/connect/accept'))).toHaveLength(1);
     expect(recorded.at(-1).ref).toBe('other00000@teamchat-test');
     // Not an admin: settled before the host is called too.
@@ -918,7 +918,7 @@ describe('shared channel links', () => {
     // The host itself is no partner: refused before it is called, however the server is spelled.
     store.me.role = 'admin';
     await expect(store.acceptConnect({ ...attempt, name: 'free-name', host: { ws: 'abc123def0', ch: 'xch' } })).rejects.toMatchObject({ code: 'invalid' });
-    await expect(store.acceptConnect({ ...attempt, server: 'teamchat-test.puter.work', name: 'free-name', host: { ws: 'abc123def0', ch: 'xch' } })).rejects.toMatchObject({ code: 'invalid' });
+    await expect(store.acceptConnect({ ...attempt, server: 'teamchat-test.localhost:8443', name: 'free-name', host: { ws: 'abc123def0', ch: 'xch' } })).rejects.toMatchObject({ code: 'invalid' });
     expect(calls).toEqual([]);
   });
 

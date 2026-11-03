@@ -13,7 +13,7 @@ export async function makeWorker() {
   const call = async (method, path, { body, admin = false, raw } = {}) => {
     const headers = {};
     if (admin) headers.authorization = `Bearer ${SECRET}`;
-    const res = await worker.handle(`https://sv-test.puter.work${path}`, {
+    const res = await worker.handle(`http://sv-test.localhost:8443${path}`, {
       method,
       headers,
       body: raw !== undefined ? raw : body !== undefined ? JSON.stringify(body) : undefined,

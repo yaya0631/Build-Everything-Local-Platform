@@ -64,7 +64,7 @@ async function waitForBuild(url, build, { attempts = 20, delay = 1000 } = {}) {
 
 /**
  * Create the user's worker. Returns { name, url, path, build }. Tries a few
- * random names in case one is taken (names are global on puter.work).
+ * random names in case one is taken (names are global on localhost:8443).
  */
 export async function deployOwnWorker({ onProgress } = {}) {
   onProgress?.('Preparing your workspace server');
@@ -87,7 +87,7 @@ export async function deployOwnWorker({ onProgress } = {}) {
       dep = await ownWorkerNamed(name);
       if (!dep) continue;
     }
-    const url = String(dep?.url || `https://${name}.puter.work`).replace(/\/+$/, '');
+    const url = String(dep?.url || `http://${name}.localhost:8443`).replace(/\/+$/, '');
     onProgress?.('Waiting for the server to come up');
     await waitForBuild(url, build);
     return { name, url, path: dep?.file_path || path, build, createdAt: Date.now() };
@@ -118,7 +118,7 @@ export async function findOwnWorker() {
       .sort((a, b) => String(a.created_at || '').localeCompare(String(b.created_at || '')));
     const w = mine[0];
     if (!w) return null;
-    return { name: w.name, url: String(w.url || `https://${w.name}.puter.work`).replace(/\/+$/, ''), path: w.file_path || null, build: null };
+    return { name: w.name, url: String(w.url || `http://${w.name}.localhost:8443`).replace(/\/+$/, ''), path: w.file_path || null, build: null };
   } catch {
     return null;
   }

@@ -17,13 +17,13 @@ const ME = { username: 'demo' };
 function setup() {
   const wb = new Workbook();
   const members = [{ username: 'alice', role: 'owner' }, { username: 'demo', role: 'editor' }, { username: 'ana', role: 'editor' }];
-  const doc = { wb, name: 'Plan', path: null, uid: null, save: vi.fn(), collab: { room: 'r1', o: { server: 'https://spreadsheet-abc.puter.work' }, people: new Map(), request: vi.fn(async () => ({ members })) } };
+  const doc = { wb, name: 'Plan', path: null, uid: null, save: vi.fn(), collab: { room: 'r1', o: { server: 'http://spreadsheet-abc.localhost:8443' }, people: new Map(), request: vi.fn(async () => ({ members })) } };
   vi.spyOn(P, 'canShare').mockReturnValue(true);
   vi.spyOn(P, 'shareFile').mockResolvedValue({});
   const toast = vi.spyOn(T, 'toast').mockImplementation(() => {});
   const mailer = { available: () => true, sendMentions: vi.fn(async ({ recipients }) => ({ sent: recipients.length, failed: 0, results: recipients.map((r) => ({ email: r.email, status: 'sent' })) })) };
   const ask = vi.fn(async () => ({ action: 'share', mode: 'write' }));
-  const notifier = createMentionNotifier({ doc, wb, mailer, me: () => ME, ask, location: { origin: 'https://spreadsheet.puter.com', pathname: '/' } });
+  const notifier = createMentionNotifier({ doc, wb, mailer, me: () => ME, ask, location: { origin: 'http://spreadsheet.localhost:8443', pathname: '/' } });
   return { wb, doc, notifier, ask, toast, mailer };
 }
 

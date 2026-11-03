@@ -117,7 +117,7 @@ export function renderSettings(main, route) {
           el('dt', {}, 'Transactions'), el('dd', {}, String(stats.txns)),
           el('dt', {}, 'Ledger postings'), el('dd', {}, String(stats.postings)),
           el('dt', {}, 'Ledger balance check'), el('dd', {}, stats.imbalance === 0 ? 'Debits equal credits' : `Out of balance by ${formatMoney(stats.imbalance)}`),
-          el('dt', {}, 'Storage'), el('dd', {}, 'Your own Puter account. ', el('a', { href: 'https://developer.puter.com', target: '_blank', rel: 'noopener' }, 'Powered by Puter')))));
+          el('dt', {}, 'Storage'), el('dd', {}, 'Your own Puter account. ', el('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Powered by Puter')))));
   }
 
   swap(main, el('div.page.settings', {},

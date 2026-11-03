@@ -66,7 +66,7 @@ build, so a hand-written precache list would go stale the moment a new
 build shipped.
 
 - Only same-origin `GET` requests are ever touched. Cross-origin requests —
-  notably `js.puter.com` — are never intercepted or cached, so a signed-in
+  notably `js.localhost:8443` — are never intercepted or cached, so a signed-in
   session is never served stale or offline from here.
 - Navigations (loading `/`) try the network first and fall back to whatever
   shell was cached on a previous visit, so a cold offline launch still

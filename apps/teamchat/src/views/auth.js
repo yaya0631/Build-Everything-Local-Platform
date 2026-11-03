@@ -38,7 +38,7 @@ export function authView({ onSignedIn, pendingInvite = null }) {
       feature('cloud', 'Runs on Puter: no servers to run, sign in with one account')),
     cta,
     el('p.auth-note', {}, 'Free. No ads. Powered by ',
-      el('a', { href: 'https://developer.puter.com', target: '_blank', rel: 'noopener' }, 'Puter')));
+      el('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Puter')));
 
   function feature(ic, text) {
     return el('div.auth-feature', { html: icon(ic, 20, 1.8) }, el('span', {}, text));

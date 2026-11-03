@@ -10,7 +10,7 @@ for (const backend of ["default", "WebGL"] as const) {
       await page.addInitScript(() =>
         Object.defineProperty(navigator, "gpu", { value: undefined }),
       );
-    await page.route("https://js.puter.com/**", (r) =>
+    await page.route("**/sdk/puter.js", (r) =>
       r.fulfill({
         contentType: "application/javascript",
         body: "window.puter={};",

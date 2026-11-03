@@ -18,7 +18,7 @@ const settle = async () => { for (let i = 0; i < 10; i++) await new Promise((r) 
 
 beforeEach(() => {
   vi.stubGlobal('requestAnimationFrame', (fn) => setTimeout(fn, 0));
-  vi.stubGlobal('plausible', vi.fn());
+  vi.stubGlobal('__everythingAnalytics', vi.fn());
   vi.spyOn(P, 'canAI').mockReturnValue(true);
   localStorage.clear();
   document.body.innerHTML = '';

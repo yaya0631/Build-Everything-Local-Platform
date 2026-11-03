@@ -1,7 +1,7 @@
 /**
  * Workspace references. A workspace lives on its owner's worker, so the app
  * names it by both: `{wsId}@{server}` where `server` is the worker's name on
- * puter.work (teamchat-x7k2q9pw1a) or, for a worker elsewhere, its host. The
+ * localhost:8443 (teamchat-x7k2q9pw1a) or, for a worker elsewhere, its host. The
  * reference is what routes, invite links, and the user's workspace list
  * carry, so a link is enough to find a workspace without any lookup.
  *
@@ -11,7 +11,7 @@
  * Every call to a worker goes through puter.workers.exec(), which attaches
  * the signed-in user's Puter token to the request whatever the host is. A
  * link therefore decides where that token is sent, so the hosts a reference
- * may name are limited: a puter.work worker (any name; that is the design,
+ * may name are limited: a localhost:8443 worker (any name; that is the design,
  * a workspace's members talk to its owner's worker), or a host the app was
  * explicitly told about (the configured shared worker, the user's own
  * worker as Puter reports it). A reference to any other host does not parse.
@@ -19,12 +19,12 @@
  * Shared with the dev harness; no browser globals here.
  */
 
-const PUTER_WORK = '.puter.work';
+const PUTER_WORK = '.localhost:8443';
 
-/** Hosts outside puter.work the app may call (see trustServer). */
+/** Hosts outside localhost:8443 the app may call (see trustServer). */
 const trusted = new Set();
 
-/** Compact server token for a worker URL: its puter.work name, or its host. */
+/** Compact server token for a worker URL: its localhost:8443 name, or its host. */
 export function serverKeyOf(url) {
   // The scheme in any case: a URL typed or pasted as HTTPS:// is the same
   // address, and left on, "https:" was the key (trustServer strips it in any
@@ -35,7 +35,7 @@ export function serverKeyOf(url) {
 }
 
 /**
- * Allow a host outside puter.work: the configured shared worker, or the
+ * Allow a host outside localhost:8443: the configured shared worker, or the
  * user's own worker as Puter reports it. Takes a URL or a server key.
  */
 export function trustServer(urlOrKey) {
@@ -49,7 +49,7 @@ export function trustServer(urlOrKey) {
 export function isTrustedServer(key) {
   const k = String(key || '').toLowerCase();
   if (!isServerKey(k)) return false;
-  // A bare name is a puter.work worker; anything with a dot or a port is a
+  // A bare name is a localhost:8443 worker; anything with a dot or a port is a
   // host of its own and needs to have been trusted explicitly.
   return !(k.includes('.') || k.includes(':')) || trusted.has(k);
 }
@@ -73,7 +73,7 @@ export function makeRef(wsId, server) {
 /**
  * One spelling of a reference, the one the workers' answers are filed under
  * (see parseRef): the server in lower case and by its short name. A link
- * typed or pasted the long way (`…@teamchat-x.puter.work`) or with capitals
+ * typed or pasted the long way (`…@teamchat-x.localhost`) or with capitals
  * names the same workspace, and compared as a string it did not read as
  * the one on the list. Null for what is not a reference at all.
  */
@@ -88,7 +88,7 @@ export function parseRef(ref) {
   const at = s.lastIndexOf('@');
   if (at <= 0) return null;
   const id = s.slice(0, at);
-  // One spelling per worker: `teamchat-abc` and `teamchat-abc.puter.work`
+  // One spelling per worker: `teamchat-abc` and `teamchat-abc.localhost:8443`
   // are the same server, and a reference typed the long way must compare
   // equal to the one the worker's own answer is filed under.
   let server = s.slice(at + 1).toLowerCase();

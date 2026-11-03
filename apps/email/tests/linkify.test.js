@@ -75,15 +75,15 @@ describe('linkify: addresses', () => {
   });
 
   it('reads a mailto: URL as one link, not a scheme and an address', () => {
-    expect(links('mailto:leo@puter.com')).toEqual([
-      { email: 'leo@puter.com', label: 'mailto:leo@puter.com' },
+    expect(links('mailto:leo@localhost:8443')).toEqual([
+      { email: 'leo@localhost:8443', label: 'mailto:leo@localhost:8443' },
     ]);
   });
 
   it('drops the query off a mailto: while keeping the text', () => {
-    const [link] = links('mailto:leo@puter.com?subject=Hi');
-    expect(link.email).toBe('leo@puter.com');
-    expect(link.label).toBe('mailto:leo@puter.com?subject=Hi');
+    const [link] = links('mailto:leo@localhost:8443?subject=Hi');
+    expect(link.email).toBe('leo@localhost:8443');
+    expect(link.label).toBe('mailto:leo@localhost:8443?subject=Hi');
   });
 
   it('does not mistake a URL that contains an address for an address', () => {

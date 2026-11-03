@@ -17,7 +17,7 @@
  */
 
 /** The one shared, app-owned worker (see src/workers/email-worker.js). */
-export const EMAIL_WORKER_URL = 'https://invoicing-email.puter.work';
+export const EMAIL_WORKER_URL = 'http://invoicing-email.localhost:8443';
 
 /** What the worker accepts in one request; the sheet holds itself to these. */
 export const MAX_RECIPIENTS = 5;

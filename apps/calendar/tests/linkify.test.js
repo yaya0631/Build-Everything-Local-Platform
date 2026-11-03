@@ -32,8 +32,8 @@ describe('linkify', () => {
   });
 
   it('turns email addresses into mailto links', () => {
-    const a = render('ping nj@puter.com about this').querySelector('a');
-    expect(a.getAttribute('href')).toBe('mailto:nj@puter.com');
+    const a = render('ping nj@localhost:8443 about this').querySelector('a');
+    expect(a.getAttribute('href')).toBe('mailto:nj@localhost:8443');
   });
 
   it('keeps sentence punctuation out of the link', () => {

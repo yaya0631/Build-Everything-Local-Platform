@@ -29,7 +29,7 @@ export function authView({ onSignedIn }) {
     ),
     cta,
     el('p.auth-note', {}, 'Free', el('span.dot-sep'), 'No ads', el('span.dot-sep'), 'Powered by ',
-      el('a', { href: 'https://developer.puter.com', target: '_blank', rel: 'noopener' }, 'Puter'))
+      el('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Puter'))
   );
 
   function feature(ic, text) {

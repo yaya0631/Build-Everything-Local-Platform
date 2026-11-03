@@ -1,6 +1,6 @@
 # Whiteboard
 
-A personal space to think, sketch, and plan. Built with vanilla JavaScript, HTML Canvas 2D, CSS, and Vite. Puter.js is the only backend. Boards can stay personal or be shared for simultaneous editing. Usage is measured with [Plausible](https://plausible.io), which counts page views and five product events (board created, shared, joined, exported, and workshop activity started) without cookies, personal data, or board content.
+A personal space to think, sketch, and plan. Built with vanilla JavaScript, HTML Canvas 2D, CSS, and Vite. Puter.js is the only backend. Boards can stay personal or be shared for simultaneous editing. Usage is measured with [Plausible]( which counts page views and five product events (board created, shared, joined, exported, and workshop activity started) without cookies, personal data, or board content.
 
 ## Run
 
@@ -13,7 +13,7 @@ npm run dev
 
 Vite prints the local URL. Use `npm run build` to produce `dist/`, and `npm run preview` to preview the production build. Deploy `dist/` to any static HTTP host, including Puter hosting. No separately hosted server, secrets, or environment variables are needed. Sharing a personal board asks for confirmation first, since it stays shared, then automatically deploys an app-scoped Puter worker to the owner’s account. The build includes its worker bundle.
 
-The production app is hosted at [whiteboard.puter.com](https://whiteboard.puter.com/). `index.html` uses this address for its canonical URL, Open Graph metadata, social preview images, and structured data. `public/robots.txt` points crawlers to `public/sitemap.xml`, which lists the production homepage. Vite copies both files into `dist/` during the build.
+The production app is hosted at [whiteboard.localhost:8443](http://whiteboard.localhost:8443/). `index.html` uses this address for its canonical URL, Open Graph metadata, social preview images, and structured data. `public/robots.txt` points crawlers to `public/sitemap.xml`, which lists the production homepage. Vite copies both files into `dist/` during the build.
 
 ## Features
 
@@ -274,7 +274,7 @@ The icon’s blue (`#238cfd`) is the brand and browser theme color. Interface ac
 
 ## Dependencies and resources
 
-See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Fonts and icons are bundled locally. The only external runtime script is the official Puter.js SDK at `https://js.puter.com/v2/`. pdf.js (`pdfjs-dist`, legacy build) is bundled as a separate chunk with its worker and its WebAssembly image decoders for scanned pages, and is downloaded from the application's own host only when someone imports a PDF.
+See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Fonts and icons are bundled locally. The only external runtime script is the official Puter.js SDK at `/sdk/puter.js`. pdf.js (`pdfjs-dist`, legacy build) is bundled as a separate chunk with its worker and its WebAssembly image decoders for scanned pages, and is downloaded from the application's own host only when someone imports a PDF.
 
 ## License
 

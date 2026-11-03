@@ -510,7 +510,7 @@ describe('the page shown when the Puter script did not load', () => {
   it('says what failed and what to try (a content blocker as well as the connection), and keeps Try again', () => {
     // main.js starts the app as it loads, so its words are read from the file.
     const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
-    expect(main).toContain("showError('Could not reach Puter', 'The Puter script (js.puter.com) did not load. Check your connection or a content blocker, then try again.', () => location.reload())");
+    expect(main).toContain("showError('Could not reach Puter', 'The Puter script (js.localhost:8443) did not load. Check your connection or a content blocker, then try again.', () => location.reload())");
     expect(main).not.toContain('The Puter SDK failed to load');
   });
 });

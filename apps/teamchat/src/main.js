@@ -23,7 +23,7 @@ function showError(title, message, onRetry) {
     el('button.btn.btn-primary.auth-cta', { type: 'button', onclick: onRetry }, 'Try again')));
 }
 
-const SDK_URL = 'https://js.puter.com/v2/';
+const SDK_URL = '/sdk/puter.js';
 
 /**
  * Wait for the deferred Puter SDK script (it loads ahead of this module).
@@ -46,7 +46,7 @@ async function waitForPuter(ms = navigator.onLine === false ? 1000 : 6000) {
  * address the page names.
  */
 function loadSdk() {
-  const src = document.querySelector('script[src*="js.puter.com"]')?.getAttribute('src') || SDK_URL;
+  const src = document.querySelector('script[src*="js.localhost:8443"]')?.getAttribute('src') || SDK_URL;
   document.head.append(el('script', { src, async: true }));
 }
 
@@ -137,7 +137,7 @@ async function enter() {
       // content blocker stops it as surely as a lost connection does, so
       // "check your connection" alone sent a reader who was online looking
       // in the wrong place.
-      showError('Could not reach Puter', 'The Puter script (js.puter.com) did not load. Check your connection or a content blocker, then try again.', () => location.reload());
+      showError('Could not reach Puter', 'The Puter script (js.localhost:8443) did not load. Check your connection or a content blocker, then try again.', () => location.reload());
       return;
     }
     let signedIn = false;

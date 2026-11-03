@@ -2,7 +2,7 @@
 
 Free, open-source 2D drafting and design in the browser. An open-source alternative to AutoCAD, DraftSight and BricsCAD for precise technical drawings: draw, edit, dimension, hatch, organize with layers and blocks, and exchange DXF files.
 
-Built with vanilla JavaScript, WebGL2, Vite, [Lucide](https://lucide.dev) icons, and [Puter.js](https://docs.puter.com) as the only backend. There is no framework and no server of its own.
+Built with vanilla JavaScript, WebGL2, Vite, [Lucide](https://lucide.dev) icons, and [Puter.js](http://localhost:8443) as the only backend. There is no framework and no server of its own.
 
 > **Early alpha.** Features may change and drawings could be lost. Please do not rely on it for real projects yet, and keep copies of important work.
 
