@@ -59,7 +59,7 @@ export function serverUrl(key) {
   let k = String(key || '').toLowerCase();
   if (k.endsWith(PUTER_WORK)) k = k.slice(0, -PUTER_WORK.length);
   if (!k || !isTrustedServer(k)) return null;
-  return k.includes('.') || k.includes(':') ? `https://${k}` : `https://${k}${PUTER_WORK}`;
+  return k.includes('.') || k.includes(':') ? `http://${k}` : `http://${k}${PUTER_WORK}`;
 }
 
 export function isServerKey(key) {

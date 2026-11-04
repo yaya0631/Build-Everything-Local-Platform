@@ -222,7 +222,7 @@ export async function importArchive(targetUrl, archive, { from = null, fromRef =
   assertArchiveShape(archive);
   onProgress?.({ phase: 'create', label: 'Creating the workspace' });
   check?.();
-  const server = parseRef(`000000@${(targetUrl.replace(/^https?:\/\//, '').replace(/\/.*$/, '').replace(/\.puter\.work$/, ''))}`)?.server;
+  const server = parseRef(`000000@${(targetUrl.replace(/^https?:\/\//, '').replace(/\/.*$/, '').replace(/\.localhost:\d+$/, ''))}`)?.server;
   let made;
   try {
     made = await api.importCreate(targetUrl, archive.header, from, profile);

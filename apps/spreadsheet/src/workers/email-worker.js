@@ -147,9 +147,10 @@ function escapeBlock(v) {
 /** Origins a development harness adds (dev/email-mock.js runs this file in the page); none when deployed. */
 const DEV_ORIGINS = [];
 
-/** The Puter hosts a link in a mail may point at: the app's own pages and Puter itself. */
+/** The local hosts a link in a mail may point at. */
 function puterHost(hostname) {
-  return /^(?:[a-z0-9-]+\.)*(?:puter\.com|puter\.site|puter\.app)$/i.test(hostname);
+  return hostname === 'localhost' || hostname === '127.0.0.1'
+    || /^(?:[a-z0-9-]+\.)*(?:puter\.com|puter\.site|puter\.app|localhost)$/i.test(hostname);
 }
 
 /**
@@ -165,7 +166,8 @@ function workbookLink(value) {
   } catch {
     return '';
   }
-  const dev = DEV_ORIGINS.includes(url.origin);
+  const local = url.hostname === 'localhost' || url.hostname === '127.0.0.1' || /^(?:[a-z0-9-]+\.)+localhost$/i.test(url.hostname);
+  const dev = DEV_ORIGINS.includes(url.origin) || local;
   if (!dev && (url.protocol !== 'https:' || url.port || !puterHost(url.hostname))) return '';
   if (url.username || url.password) return '';
   const hash = url.hash;

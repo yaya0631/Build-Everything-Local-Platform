@@ -95,7 +95,7 @@ export function nextDayStart(dayStart) {
 /* ---- Meetings ------------------------------------------------------------- */
 
 /** A link into this app, wherever it is deployed from. */
-const MEETINGS_LINK = /^https:\/\/meetings\.puter\.com\/#\/m\//;
+const MEETINGS_LINK = /^http:\/\/meetings\.localhost(?::\d+)?\/#\/m\//;
 
 /**
  * An event as the panel shows it, from one as the Calendar API returns it

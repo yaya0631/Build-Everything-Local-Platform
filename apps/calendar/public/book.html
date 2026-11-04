@@ -421,7 +421,7 @@
   function meetingUrlOf(booking) {
     var v = booking && booking.meetingUrl;
     if (typeof v !== 'string' || v.length > 100) return '';
-    return /^https:\/\/meetings\.puter\.com\/#\/m\/(?:[a-z]{3}-[a-z]{4}-[a-z]{3}|[a-z]{4}-[a-z]{4}-[a-z]{4})$/.test(v)
+    return /^http:\/\/meetings\.localhost(?::\d+)?\/#\/m\/(?:[a-z]{3}-[a-z]{4}-[a-z]{3}|[a-z]{4}-[a-z]{4}-[a-z]{4})$/.test(v)
       ? v : '';
   }
 
@@ -474,13 +474,13 @@
     // and are read exactly as before.
     var route = /^#\/([a-z0-9][a-z0-9-]{0,58})\/([a-z0-9][a-z0-9-]{2,30}[a-z0-9])$/.exec(hash.toLowerCase());
     var params = new URLSearchParams(route ? '' : hash.replace(/^#/, ''));
-    var worker = route ? 'https://cal-' + route[1] + '.localhost:8443' : (params.get('w') || '');
+    var worker = route ? 'http://cal-' + route[1] + '.localhost:8443' : (params.get('w') || '');
     var pageId = route ? route[2] : (params.get('p') || '');
     var token = route ? '' : (params.get('t') || '');
 
-    // This page must never become a relay to arbitrary origins: only https
-    // Puter workers, and only well-formed ids/tokens, are ever contacted.
-    var workerOk = /^https:\/\/[a-z0-9][a-z0-9-]*\.puter\.work$/.test(worker);
+    // This page must never become a relay to arbitrary origins: only local
+    // workers, and only well-formed ids/tokens, are ever contacted.
+    var workerOk = /^http:\/\/[a-z0-9][a-z0-9-]*\.localhost(?::\d+)?$/.test(worker);
     if (!workerOk || (!PAGE_ID_RE.test(pageId) && !/^[0-9a-f]{40}$/.test(token))) {
       renderGone();
       return;

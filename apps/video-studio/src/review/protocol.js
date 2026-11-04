@@ -121,17 +121,17 @@ export async function verify(jwk, value, signature) {
 }
 
 /**
- * The origin of a review worker. Only https://<name>.localhost:8443 is trusted:
+ * The origin of a review worker. Only http://<name>.localhost:8443 is trusted:
  * a link that names any other host is refused before anything is sent to it.
  */
 export function workerURL(value) {
   let url;
   try {
-    url = new URL(String(value || '').includes('://') ? value : `https://${value}`);
+    url = new URL(String(value || '').includes('://') ? value : `http://${value}`);
   } catch {
     throw new Error('This review link points to an unknown server.');
   }
-  if (url.protocol !== 'https:' || !/^[a-z0-9-]{1,63}\.puter\.work$/.test(url.hostname) || url.port || url.username || url.password || (url.pathname !== '/' && url.pathname !== '') || url.search || url.hash) {
+  if (url.protocol !== 'http:' || !/^[a-z0-9-]{1,63}\.localhost$/.test(url.hostname) || url.username || url.password || (url.pathname !== '/' && url.pathname !== '') || url.search || url.hash) {
     throw new Error('This review link points to an unknown server.');
   }
   return url.origin;

@@ -42,7 +42,7 @@ const GROUP_LETTERS = 4; // abcd-efgh-ijkl
  */
 export function isMeetingUrl(value) {
   if (typeof value !== 'string' || value.length > 100) return false;
-  return /^https:\/\/meetings\.puter\.com\/#\/m\/(?:[a-z]{3}-[a-z]{4}-[a-z]{3}|[a-z]{4}-[a-z]{4}-[a-z]{4})$/.test(
+  return /^http:\/\/meetings\.localhost(?::\d+)?\/#\/m\/(?:[a-z]{3}-[a-z]{4}-[a-z]{3}|[a-z]{4}-[a-z]{4}-[a-z]{4})$/.test(
     value,
   );
 }

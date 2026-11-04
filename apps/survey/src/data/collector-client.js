@@ -65,7 +65,7 @@ export function workerNameCandidates(username) {
 
 /** The share-link label for a worker name, and back. */
 export const labelOf = (name) => String(name).replace(/^sv-/, '');
-export const workerUrlFor = (label) => `https://sv-${label}.localhost:8443`;
+export const workerUrlFor = (label) => `http://sv-${label}.localhost:8443`;
 
 function deadline(ms) {
   if (typeof AbortSignal !== 'undefined' && typeof AbortSignal.timeout === 'function') return AbortSignal.timeout(ms);

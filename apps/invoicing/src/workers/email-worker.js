@@ -227,10 +227,10 @@ function viewUrl(value) {
   } catch {
     return '';
   }
-  if (url.protocol !== 'https:') return '';
-  if (!/^[a-z0-9-]+\.puter\.site$/i.test(url.hostname)) return '';
+  if (url.protocol !== 'http:') return '';
+  if (!/^[a-z0-9-]+\.localhost$/i.test(url.hostname)) return '';
   if (!/^\/[a-z0-9]{6,64}\.html$/i.test(url.pathname)) return '';
-  return `https://${url.hostname.toLowerCase()}${url.pathname}`;
+  return `http://${url.host.toLowerCase()}${url.pathname}`;
 }
 
 /**

@@ -33,7 +33,7 @@ function lockDown() {
     "script-src 'self'",
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data:",
-    "connect-src 'self' https://*.localhost:8443",
+    "connect-src 'self' http://*.localhost:8443",
     "object-src 'none'",
     "base-uri 'none'",
     "form-action 'none'",
@@ -60,7 +60,7 @@ async function getFetch(label) {
     const { localWorkerFetch, LOCAL_WORKER_URL } = await import('../data/local-worker.js');
     return { fetchFn: localWorkerFetch(), base: LOCAL_WORKER_URL };
   }
-  return { fetchFn: (url, init) => fetch(url, init), base: `https://sv-${label}.localhost:8443` };
+  return { fetchFn: (url, init) => fetch(url, init), base: `http://sv-${label}.localhost:8443` };
 }
 
 function timeout(ms) {

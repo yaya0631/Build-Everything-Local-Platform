@@ -147,7 +147,7 @@ function newToken() {
  */
 function meetingLink(value) {
   if (typeof value !== 'string' || value.length > 100) return '';
-  return /^https:\/\/meetings\.puter\.com\/#\/m\/(?:[a-z]{3}-[a-z]{4}-[a-z]{3}|[a-z]{4}-[a-z]{4}-[a-z]{4})$/.test(value)
+  return /^http:\/\/meetings\.localhost(?::\d+)?\/#\/m\/(?:[a-z]{3}-[a-z]{4}-[a-z]{3}|[a-z]{4}-[a-z]{4}-[a-z]{4})$/.test(value)
     ? value
     : '';
 }

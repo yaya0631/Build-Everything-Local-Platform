@@ -29,11 +29,11 @@ export class TeamError extends Error {
   }
 }
 
-/** Only worker URLs on Puter's worker domain are trusted. */
+/** Only local worker URLs are trusted. */
 export function isTrustedWorkerUrl(url) {
   try {
     const u = new URL(url);
-    return u.protocol === 'https:' && /^[a-z0-9-]+\.puter\.work$/i.test(u.hostname) && (u.pathname === '/' || u.pathname === '');
+    return u.protocol === 'http:' && /^[a-z0-9-]+\.localhost$/i.test(u.hostname) && (u.pathname === '/' || u.pathname === '');
   } catch {
     return false;
   }
@@ -41,7 +41,7 @@ export function isTrustedWorkerUrl(url) {
 
 export function normalizeWorkerUrl(url) {
   const u = new URL(url);
-  return `https://${u.hostname.toLowerCase()}`;
+  return `http://${u.host}`;
 }
 
 /** One API call to a team worker. Throws TeamError with a readable message. */
@@ -334,7 +334,7 @@ export async function updateWorkerIfNeeded(own) {
 
 export function inviteLink(workerUrl, token) {
   const base = location.href.split('#')[0].split('?')[0];
-  const w = new URL(workerUrl).hostname.replace(/\.puter\.work$/i, '');
+  const w = new URL(workerUrl).hostname.replace(/\.localhost$/i, '');
   return `${base}#/join?w=${encodeURIComponent(w)}&t=${encodeURIComponent(token)}`;
 }
 

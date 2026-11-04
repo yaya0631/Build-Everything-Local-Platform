@@ -247,10 +247,10 @@ function rsvpUrl(value) {
   } catch {
     return '';
   }
-  if (url.protocol !== 'https:') return '';
-  if (!/^[a-z0-9-]+\.puter\.work$/i.test(url.hostname)) return '';
+  if (url.protocol !== 'http:') return '';
+  if (!/^[a-z0-9-]+\.localhost$/i.test(url.hostname)) return '';
   if (!/^\/rsvp\/[0-9a-f]{40}$/.test(url.pathname)) return '';
-  return `https://${url.hostname.toLowerCase()}${url.pathname}`;
+  return `http://${url.host.toLowerCase()}${url.pathname}`;
 }
 
 /**
@@ -262,7 +262,7 @@ function rsvpUrl(value) {
  */
 function meetingUrl(value) {
   if (typeof value !== 'string' || value.length > 100) return '';
-  return /^https:\/\/meetings\.puter\.com\/#\/m\/(?:[a-z]{3}-[a-z]{4}-[a-z]{3}|[a-z]{4}-[a-z]{4}-[a-z]{4})$/.test(value)
+  return /^http:\/\/meetings\.localhost(?::\d+)?\/#\/m\/(?:[a-z]{3}-[a-z]{4}-[a-z]{3}|[a-z]{4}-[a-z]{4}-[a-z]{4})$/.test(value)
     ? value
     : '';
 }

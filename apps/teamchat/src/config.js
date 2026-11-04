@@ -26,7 +26,7 @@ import { trustServer } from './lib/refs.js';
 function acceptableFromLink(url) {
   try {
     const u = new URL(url);
-    return u.protocol === 'https:' && u.hostname.endsWith('.localhost:8443');
+    return u.protocol === 'http:' && (u.hostname === 'localhost' || u.hostname.endsWith('.localhost'));
   } catch {
     return false;
   }

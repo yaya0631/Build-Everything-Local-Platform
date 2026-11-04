@@ -43,7 +43,7 @@ export function subdomainFor(name, random = secureRandom) {
 }
 
 export function siteUrl(subdomain) {
-  return `https://${subdomain}.${SITE_HOST}`;
+  return `http://${subdomain}.${SITE_HOST}`;
 }
 
 function legacyPublishDir(docPath) {

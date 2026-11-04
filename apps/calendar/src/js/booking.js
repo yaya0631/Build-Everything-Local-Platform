@@ -112,7 +112,7 @@ const PAGE_ID_RE = /^[a-z0-9][a-z0-9-]{2,30}[a-z0-9]$/;
  *  back with this same grammar, so a link can only ever name a calendar
  *  worker. The label length keeps the DNS label at 63 with its prefix.
  *  Kept in step with the route test in index.html and public/book.html. */
-const FRIENDLY_WORKER_RE = /^https:\/\/cal-([a-z0-9][a-z0-9-]{0,58})\.puter\.work$/;
+const FRIENDLY_WORKER_RE = /^http:\/\/cal-([a-z0-9][a-z0-9-]{0,58})\.localhost(?::\d+)?$/;
 
 const PRODUCTION_ORIGIN = 'http://calendar.localhost:8443';
 

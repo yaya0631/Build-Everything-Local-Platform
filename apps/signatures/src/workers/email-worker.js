@@ -193,10 +193,10 @@ function signUrl(value) {
   } catch {
     return '';
   }
-  if (url.protocol !== 'https:') return '';
-  if (!/^[a-z0-9-]+\.puter\.work$/i.test(url.hostname)) return '';
+  if (url.protocol !== 'http:') return '';
+  if (!/^[a-z0-9-]+\.localhost$/i.test(url.hostname)) return '';
   if (!/^\/sign\/[0-9a-f]{40}$/.test(url.pathname)) return '';
-  return `https://${url.hostname.toLowerCase()}${url.pathname}`;
+  return `http://${url.host.toLowerCase()}${url.pathname}`;
 }
 
 /** The send request, normalized, or { error } for a 400. */

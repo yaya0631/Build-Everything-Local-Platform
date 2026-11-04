@@ -106,9 +106,8 @@ export async function verify(key, value, signature) {
 export function workerURL(value) {
   const url = new URL(value);
   if (
-    url.protocol !== "https:" ||
-    !/^[a-z0-9-]+\.puter\.work$/.test(url.hostname) ||
-    url.port ||
+    url.protocol !== "http:" ||
+    !/^[a-z0-9-]+\.localhost$/.test(url.hostname) ||
     url.username ||
     url.password ||
     url.pathname !== "/" ||

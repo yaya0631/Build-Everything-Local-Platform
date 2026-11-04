@@ -140,9 +140,9 @@
     var token = params.get('t') || '';
     var justSaved = params.get('s') === '1';
 
-    // This page must never become a relay to arbitrary origins: only https
-    // Puter workers, and only well-formed tokens, are ever contacted.
-    if (!/^https:\/\/[a-z0-9][a-z0-9-]*\.puter\.work$/.test(worker) || !/^[0-9a-f]{40}$/.test(token)) {
+    // This page must never become a relay to arbitrary origins: only local
+    // workers, and only well-formed tokens, are ever contacted.
+    if (!/^http:\/\/[a-z0-9][a-z0-9-]*\.localhost(?::\d+)?$/.test(worker) || !/^[0-9a-f]{40}$/.test(token)) {
       renderGone();
       return;
     }
@@ -516,7 +516,7 @@
      *  before turning worker data into an href. */
     function joinRow(url) {
       if (typeof url !== 'string' || url.length > 100) return;
-      if (!/^https:\/\/meetings\.puter\.com\/#\/m\/(?:[a-z]{3}-[a-z]{4}-[a-z]{3}|[a-z]{4}-[a-z]{4}-[a-z]{4})$/.test(url)) return;
+      if (!/^http:\/\/meetings\.localhost(?::\d+)?\/#\/m\/(?:[a-z]{3}-[a-z]{4}-[a-z]{3}|[a-z]{4}-[a-z]{4}-[a-z]{4})$/.test(url)) return;
       var node = el('div', 'row');
       node.append(el('b', null, 'Join'));
       var a = el('a', null, url);

@@ -25,8 +25,8 @@ window.addEventListener('dragover', (e) => {
 });
 window.addEventListener('drop', (e) => e.preventDefault());
 
-/** The worker origin from the link, or null if it isn't a Puter worker.
- *  The page will only ever call https://<something>.localhost:8443. */
+/** The worker origin from the link, or null if it isn't a local worker.
+ *  The page will only ever call http://<something>.localhost:8443. */
 function readLink() {
   const params = new URLSearchParams(location.hash.replace(/^#/, '') || location.search.replace(/^\?/, ''));
   const w = params.get('w') || '';
@@ -34,8 +34,8 @@ function readLink() {
   let origin = null;
   try {
     const url = new URL(w);
-    if (url.protocol === 'https:' && /^[a-z0-9-]+\.puter\.work$/i.test(url.hostname)) {
-      origin = `https://${url.hostname.toLowerCase()}`;
+    if (url.protocol === 'http:' && /^[a-z0-9-]+\.localhost$/i.test(url.hostname)) {
+      origin = `http://${url.host.toLowerCase()}`;
     }
   } catch {
     origin = null;
