@@ -133,6 +133,9 @@ export async function createPlatformServer(options = {}) {
       ? fs.readdirSync(appsDir).filter((f) => fs.statSync(path.join(appsDir, f)).isDirectory())
       : ['chess', 'notes', 'spreadsheet', 'teamchat', 'video-studio', 'meetings']
   );
+  // `assets` is the upstream store-listing folder, not an app: keep its files
+  // for parity but never serve or build it.
+  appNames.delete('assets');
 
   const eventClients = new Set();
   const peerRooms = new Map();
