@@ -47,7 +47,7 @@ function makePuter(actor, info) {
       get: (k) => callHost(actor, 'kv', 'get', [k]),
       set: (k, v, exp) => callHost(actor, 'kv', 'set', [k, v, exp]),
       del: (k) => callHost(actor, 'kv', 'del', [k]),
-      remove: (k) => callHost(actor, 'kv', 'del', [k]),
+      remove: (k, ...paths) => callHost(actor, 'kv', 'remove', [k, ...paths]),
       list: (pat, ret) => callHost(actor, 'kv', 'list', [pat, ret]),
       incr: (k, amt) => callHost(actor, 'kv', 'incr', [k, amt]),
       add: (k, val) => callHost(actor, 'kv', 'add', [k, val]),

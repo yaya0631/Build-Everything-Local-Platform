@@ -269,6 +269,14 @@ test('Platform Conformance Suite (Section 4 + Security + Peer + Workers)', async
     const arr2 = await puter.kv.add('items', ['b']);
     assert.deepEqual(arr2, ['a', 'b']);
 
+    // Path-map forms used by the worker apps (teamchat counters and lists).
+    await puter.kv.set('doc', { counters: { a: 1 }, tags: { list: ['x'] } });
+    const doc1 = await puter.kv.incr('doc', { 'counters.a': 2, 'counters.b': 1 });
+    assert.equal(doc1.counters.a, 3);
+    assert.equal(doc1.counters.b, 1);
+    const doc2 = await puter.kv.add('doc', { 'tags.list': ['y'] });
+    assert.deepEqual(doc2.tags.list, ['x', 'y']);
+
     const keys = await puter.kv.list('note:*');
     assert.deepEqual(keys, ['note:1']);
     const pairs = await puter.kv.list('note:*', true);
@@ -306,6 +314,13 @@ test('Platform Conformance Suite (Section 4 + Security + Peer + Workers)', async
         await me.puter.email.sendTransactional({ to: 'team@localhost', subject: 'New msg', text: body.text });
         return new Response(JSON.stringify({ ok: true, count: list.length }), { status: 201, headers: { 'content-type': 'application/json' } });
       });
+      router.post('/paths', async () => {
+        await me.puter.kv.set('paths-doc', { counters: { a: 1 }, tags: { list: ['x'] }, members: { u1: { role: 'guest' } } });
+        const inc = await me.puter.kv.incr('paths-doc', { 'counters.a': 2, 'counters.b': 1 });
+        const added = await me.puter.kv.add('paths-doc', { 'tags.list': ['y'] });
+        const removed = await me.puter.kv.remove('paths-doc', 'members.u1', 'counters.b');
+        return { inc, added, removed };
+      });
       router.get('/hang', async () => {
         while (true) {}
       });
@@ -337,6 +352,17 @@ test('Platform Conformance Suite (Section 4 + Security + Peer + Workers)', async
     const stats2 = srv.ctx.workers.getPoolStats('teamchat-test');
     assert.equal(stats2.threadId, stats1.threadId);
     assert.equal(stats2.spawnCount, 1);
+
+    // Worker-side path maps and path removal, the shape teamchat relies on.
+    const resPaths = await bob.workers.exec('teamchat-test', { path: '/paths', method: 'POST' });
+    assert.equal(resPaths.status, 200);
+    const paths = await resPaths.json();
+    assert.equal(paths.inc.counters.a, 3);
+    assert.equal(paths.inc.counters.b, 1);
+    assert.deepEqual(paths.added.tags.list, ['x', 'y']);
+    assert.equal(paths.removed.counters.b, undefined);
+    assert.equal(paths.removed.members.u1, undefined);
+    assert.deepEqual(paths.removed.tags.list, ['x', 'y']);
 
     // Timeout test: synchronous infinite loop is terminated and thread respawns on next request
     const hangRes = await bob.workers.exec('teamchat-test', { path: '/hang', method: 'GET', timeoutMs: 250 });

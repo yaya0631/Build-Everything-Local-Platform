@@ -66,7 +66,7 @@ export function createMailService(ctx) {
 
     const record = {
       id,
-      from: `${user?.username || 'local'}@localhost`,
+      from: `${user?.username || 'local'}@${user?.username || 'local'}.localhost`,
       to: toList,
       subject,
       text,
@@ -95,7 +95,7 @@ export function createMailService(ctx) {
     ).all(user?.id || 1, limit);
     return rows.map((r) => ({
       id: r.id,
-      from: `${r.sender_username}@localhost`,
+      from: `${r.sender_username}@${r.sender_username}.localhost`,
       to: JSON.parse(r.recipients_json || '[]'),
       subject: r.subject,
       text: r.body_text,

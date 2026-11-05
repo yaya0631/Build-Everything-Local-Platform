@@ -26,6 +26,42 @@ function parsePathSegments(expr) {
   return segs;
 }
 
+/** The value at a dot/bracket path, or undefined when the path runs off the document. */
+function getPath(root, segs) {
+  let cur = root;
+  for (const seg of segs) {
+    if (cur === null || typeof cur !== 'object') return undefined;
+    cur = cur[seg];
+  }
+  return cur;
+}
+
+/** Write a value at a dot/bracket path, creating the objects the path names. */
+function setPath(root, segs, value) {
+  let cur = root;
+  for (let i = 0; i < segs.length - 1; i++) {
+    const seg = segs[i];
+    if (!cur[seg] || typeof cur[seg] !== 'object') cur[seg] = {};
+    cur = cur[seg];
+  }
+  cur[segs[segs.length - 1]] = value;
+}
+
+/** Delete a value at a dot/bracket path; returns whether the path existed. */
+function deletePath(root, segs) {
+  let cur = root;
+  for (let i = 0; i < segs.length - 1; i++) {
+    if (cur === null || typeof cur !== 'object') return false;
+    cur = cur[segs[i]];
+  }
+  if (cur === null || typeof cur !== 'object') return false;
+  return delete cur[segs[segs.length - 1]];
+}
+
+function objectRoot(current) {
+  return current && typeof current === 'object' && !Array.isArray(current) ? structuredClone(current) : {};
+}
+
 export function createKvService(ctx) {
   const { db } = ctx;
 
@@ -143,8 +179,21 @@ export function createKvService(ctx) {
 
     incr(ownerId, app, key, amount = 1) {
       const current = getOne(ownerId, app, key);
+      // Puter accepts a path map here as well as a number:
+      // incr(key, { 'counters.open': 1, 'counters.closed': -1 }).
+      if (amount && typeof amount === 'object' && !Array.isArray(amount)) {
+        const root = objectRoot(current);
+        for (const [pathExpr, delta] of Object.entries(amount)) {
+          const segs = parsePathSegments(pathExpr);
+          if (!segs.length) continue;
+          const base = Number(getPath(root, segs));
+          setPath(root, segs, (Number.isFinite(base) ? base : 0) + (Number(delta) || 0));
+        }
+        setOne(ownerId, app, key, root);
+        return root;
+      }
       const base = current === null || current === undefined ? 0 : Number(current) || 0;
-      const delta = amount === undefined ? 1 : Number(amount);
+      const delta = amount === undefined ? 1 : Number(amount) || 0;
       const next = base + delta;
       setOne(ownerId, app, key, next);
       return next;
@@ -152,6 +201,21 @@ export function createKvService(ctx) {
 
     add(ownerId, app, key, value) {
       const current = getOne(ownerId, app, key);
+      // Puter's add takes a path map: append to the array at each path.
+      if (value && typeof value === 'object' && !Array.isArray(value)) {
+        const root = objectRoot(current);
+        for (const [pathExpr, val] of Object.entries(value)) {
+          const segs = parsePathSegments(pathExpr);
+          if (!segs.length) continue;
+          const prev = getPath(root, segs);
+          const list = Array.isArray(prev) ? prev.slice() : (prev == null ? [] : [prev]);
+          const additions = Array.isArray(val) ? val : [val];
+          list.push(...additions);
+          setPath(root, segs, list);
+        }
+        setOne(ownerId, app, key, root);
+        return root;
+      }
       if (Array.isArray(current) || Array.isArray(value)) {
         const base = Array.isArray(current) ? current : (current == null ? [] : [current]);
         const additions = Array.isArray(value) ? value : [value];
@@ -169,19 +233,29 @@ export function createKvService(ctx) {
 
     update(ownerId, app, key, pathMap) {
       const current = getOne(ownerId, app, key);
-      const root = current && typeof current === 'object' && !Array.isArray(current) ? structuredClone(current) : {};
+      const root = objectRoot(current);
       if (pathMap && typeof pathMap === 'object') {
         for (const [pathExpr, val] of Object.entries(pathMap)) {
           const segs = parsePathSegments(pathExpr);
           if (!segs.length) continue;
-          let cur = root;
-          for (let i = 0; i < segs.length - 1; i++) {
-            const s = segs[i];
-            if (!cur[s] || typeof cur[s] !== 'object') cur[s] = {};
-            cur = cur[s];
-          }
-          cur[segs[segs.length - 1]] = val;
+          setPath(root, segs, val);
         }
+      }
+      setOne(ownerId, app, key, root);
+      return root;
+    },
+
+    remove(ownerId, app, key, ...paths) {
+      if (!paths.length) {
+        this.del(ownerId, app, key);
+        return true;
+      }
+      const current = getOne(ownerId, app, key);
+      if (!current || typeof current !== 'object') return current ?? null;
+      const root = structuredClone(current);
+      for (const pathExpr of paths) {
+        const segs = parsePathSegments(pathExpr);
+        if (segs.length) deletePath(root, segs);
       }
       setOne(ownerId, app, key, root);
       return root;

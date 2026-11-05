@@ -38,7 +38,7 @@ export function initAuth(db) {
       const uuid = `00000000-0000-4000-8000-${Buffer.from(name.padEnd(12, '0')).toString('hex').slice(0, 12)}`;
       const res = db.prepare(
         'INSERT INTO users (uuid, username, email, avatar_svg, created_at) VALUES (?, ?, ?, ?, ?)'
-      ).run(uuid, name, `${name}@localhost`, makeAvatarSvg(name), now);
+      ).run(uuid, name, `${name}@${name}.localhost`, makeAvatarSvg(name), now);
       db.prepare('INSERT OR IGNORE INTO sessions (token, user_id, created_at) VALUES (?, ?, ?)').run(
         `tok-${name}`,
         Number(res.lastInsertRowid),
@@ -53,7 +53,7 @@ export function ensureUser(db, username, email) {
   let row = db.prepare('SELECT * FROM users WHERE LOWER(username) = ?').get(clean);
   if (!row) {
     const uuid = crypto.randomUUID();
-    const addr = email || `${clean}@localhost`;
+    const addr = email || `${clean}@${clean}.localhost`;
     const now = Date.now();
     const info = db.prepare(
       'INSERT INTO users (uuid, username, email, avatar_svg, created_at) VALUES (?, ?, ?, ?, ?)'
