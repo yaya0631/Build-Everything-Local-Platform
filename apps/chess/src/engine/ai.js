@@ -1,3 +1,14 @@
+/**
+ * Computer opponent: negamax search with alpha-beta pruning, MVV-LVA move
+ * ordering, and an optional quiescence search, on top of a material +
+ * piece-square-table evaluation ("Simplified Evaluation Function" tables) with
+ * a mop-up term for mating a lone king. Moves that end the game by threefold
+ * repetition or the fifty-move rule are scored as the draw they are.
+ *
+ * Difficulty is a combination of search depth and a randomness window: the
+ * engine picks uniformly among root moves scoring within `window` centipawns
+ * of the best move, so lower levels play plausible-but-imperfect chess.
+ */
 
 import { WHITE, indexToSquare } from './chess.js';
 
