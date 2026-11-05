@@ -1,9 +1,11 @@
 # Everything Local
 
-The 51 apps from the open-source Everything suite, running entirely on one
-machine. A small Node server replaces the hosted backend: local accounts,
-files, key-value storage, workers, mail, hosting, peer signalling and an
-optional local AI adapter. Nothing is loaded from the internet at runtime.
+The open-source Everything suite, running entirely on one machine. Fifty apps
+are served from `apps/`; `apps/assets` is upstream's asset bundle, kept in its
+upstream layout but not built or listed. A small Node server replaces the
+hosted backend: local accounts, files, key-value storage, workers, mail,
+hosting, peer signalling and an optional local AI adapter. Nothing is loaded
+from the internet at runtime.
 
 ## Requirements
 
@@ -66,4 +68,5 @@ an adapter exists; the apps show their normal unavailable state.
 - `platform/sdk/puter.js` — the drop-in `window.puter` client
 - `platform/data/` — runtime state, created on first run (git-ignored)
 
-`apps/assets` is kept as upstream shipped it and is skipped by the build.
+`apps/assets` is kept in its upstream layout and is skipped by the build and
+the app list.
