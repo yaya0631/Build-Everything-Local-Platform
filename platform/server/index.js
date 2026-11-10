@@ -13,13 +13,14 @@ import { initFs, createFsService, handleFs } from './fs.js';
 import { initKv, createKvService, handleKv } from './kv.js';
 import { initMail, createMailService, handleMail } from './mail.js';
 import { initHosting, createHostingService, handleHosting } from './hosting.js';
-import { createAiService, handleAi } from './ai.js';
+import { initAi, createAiService, handleAi } from './ai.js';
 import { initWorkers, createWorkersService, handleWorkers } from './workers.js';
 
 const ROOT_DIR = path.resolve(import.meta.dirname, '../..');
 const DEFAULT_APPS_DIR = path.join(ROOT_DIR, 'apps');
 const DEFAULT_DATA_DIR = path.join(ROOT_DIR, 'platform/data');
 const SDK_FILE = path.join(ROOT_DIR, 'platform/sdk/puter.js');
+const SETTINGS_FILE = path.join(ROOT_DIR, 'platform/web/settings.html');
 
 const MIME = {
   '.html': 'text/html; charset=utf-8', '.js': 'application/javascript; charset=utf-8', '.mjs': 'application/javascript; charset=utf-8',
@@ -126,7 +127,7 @@ export async function createPlatformServer(options = {}) {
   fs.mkdirSync(dataDir, { recursive: true });
 
   const db = new DatabaseSync(path.join(dataDir, 'everything.sqlite'));
-  initAuth(db); initFs(db); initKv(db); initMail(db); initHosting(db); initWorkers(db);
+  initAuth(db); initFs(db); initKv(db); initMail(db); initHosting(db); initWorkers(db); initAi(db);
 
   const appNames = new Set(
     fs.existsSync(appsDir)
@@ -142,7 +143,7 @@ export async function createPlatformServer(options = {}) {
   const upgradedSockets = new Set();
 
   const ctx = {
-    db, dataDir, appsDir, appNames, port: options.port ?? Number(process.env.PORT || 8443), localAiUrl: options.localAiUrl,
+    db, dataDir, appsDir, appNames, port: options.port ?? Number(process.env.PORT || 8443),
     emitEvent(ev) {
       for (const c of eventClients) {
         if (c.ownerId !== ev.ownerId) continue;
@@ -201,6 +202,24 @@ export async function createPlatformServer(options = {}) {
     if (p === '/sdk/puter.js' || p === '/v2/' || p === '/v2') {
       res.writeHead(200, { 'Content-Type': 'application/javascript; charset=utf-8', 'Cache-Control': 'no-store' });
       res.end(fs.readFileSync(SDK_FILE, 'utf8'));
+      return;
+    }
+
+    // The settings page belongs to the platform origin, not to an app host.
+    if (p === '/settings' || p === '/settings/') {
+      if (subdomainOf(req.headers.host)) {
+        res.writeHead(302, { Location: `http://127.0.0.1:${ctx.port}/settings` });
+        res.end();
+        return;
+      }
+      res.writeHead(200, {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Cache-Control': 'no-store',
+        'X-Frame-Options': 'DENY',
+        'Referrer-Policy': 'no-referrer',
+        'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
+      });
+      res.end(fs.readFileSync(SETTINGS_FILE, 'utf8'));
       return;
     }
 
@@ -264,7 +283,7 @@ export async function createPlatformServer(options = {}) {
       if (serveStaticFile(res, path.join(distRoot, 'index.html'))) return;
     }
 
-    const listHtml = `<!doctype html><html><head><meta charset="utf-8"><title>Everything Local</title><script src="/sdk/puter.js"></script></head><body><h1>Everything Local</h1><ul>${[...appNames].sort().map((a) => `<li><a href="http://${a}.localhost:${ctx.port}/">${a}</a></li>`).join('')}</ul></body></html>`;
+    const listHtml = `<!doctype html><html><head><meta charset="utf-8"><title>Everything Local</title><script src="/sdk/puter.js"></script></head><body><h1>Everything Local</h1><p><a href="/settings">AI settings</a></p><ul>${[...appNames].sort().map((a) => `<li><a href="http://${a}.localhost:${ctx.port}/">${a}</a></li>`).join('')}</ul></body></html>`;
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(listHtml);
   });

@@ -559,6 +559,88 @@
     },
   };
 
+  /**
+   * Binary inputs (a File, Blob, ArrayBuffer or typed array) are read here and
+   * sent as a data URL, because JSON.stringify would turn them into "{}".
+   */
+  function encodePayloadValue(value) {
+    if (value === null || value === undefined) return value;
+    if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') return value;
+    if (typeof Blob !== 'undefined' && value instanceof Blob) {
+      // Browsers read Blobs with FileReader. Node-based test harnesses (and
+      // some webviews) have no FileReader, so fall back to arrayBuffer().
+      if (typeof FileReader === 'function') {
+        return new Promise(function (resolve, reject) {
+          var reader = new FileReader();
+          reader.onload = function () { resolve({ __blob: String(reader.result) }); };
+          reader.onerror = function () { reject(new Error('Could not read the file.')); };
+          reader.readAsDataURL(value);
+        });
+      }
+      return value.arrayBuffer().then(function (buffer) {
+        var bytes = new Uint8Array(buffer);
+        var bin = '';
+        for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+        var encoded = typeof btoa === 'function'
+          ? btoa(bin)
+          : (typeof Buffer !== 'undefined' ? Buffer.from(bytes).toString('base64') : '');
+        return { __blob: 'data:' + (value.type || 'application/octet-stream') + ';base64,' + encoded };
+      });
+    }
+    if (typeof ArrayBuffer !== 'undefined' && (value instanceof ArrayBuffer || ArrayBuffer.isView(value))) {
+      var bytes = value instanceof ArrayBuffer ? new Uint8Array(value) : new Uint8Array(value.buffer, value.byteOffset, value.byteLength);
+      var bin = '';
+      for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+      return { __blob: 'data:application/octet-stream;base64,' + btoa(bin) };
+    }
+    if (Array.isArray(value)) return Promise.all(value.map(encodePayloadValue));
+    if (typeof value === 'object') {
+      var out = {};
+      var keys = Object.keys(value);
+      return Promise.all(keys.map(function (k) { return encodePayloadValue(value[k]); }))
+        .then(function (vals) {
+          keys.forEach(function (k, i) { out[k] = vals[i]; });
+          return out;
+        });
+    }
+    return value;
+  }
+
+  /** Flatten { __blob: dataUrl } markers into the plain data URL the server wants. */
+  function unwrapBlobs(value) {
+    if (value && typeof value === 'object' && typeof value.__blob === 'string') return value.__blob;
+    if (Array.isArray(value)) return value.map(unwrapBlobs);
+    if (value && typeof value === 'object') {
+      var out = {};
+      Object.keys(value).forEach(function (k) { out[k] = unwrapBlobs(value[k]); });
+      return out;
+    }
+    return value;
+  }
+
+  function aiPost(subPath, payload) {
+    return encodePayloadValue(payload)
+      .then(function (encoded) { return apiRequest('POST', subPath, unwrapBlobs(encoded)); });
+  }
+
+  /** A picture result the way the apps read it: a data URL on .src and .currentSrc. */
+  function imageResult(data) {
+    var src = (data && (data.src || data.url)) || '';
+    if (typeof Image === 'undefined') return { src: src, currentSrc: src };
+    var img = new Image();
+    img.src = src;
+    return img;
+  }
+
+  /** A speech result the way the apps read it: an audio element with .src. */
+  function audioResult(data) {
+    var src = (data && (data.src || data.url)) || '';
+    if (typeof Audio === 'undefined') return { src: src, currentSrc: src };
+    var audio = new Audio();
+    audio.src = src;
+    return audio;
+  }
+
   puter.ai = {
     listModels: function () {
       return apiRequest('GET', '/ai/models');
@@ -625,11 +707,43 @@
         };
       });
     },
-    txt2img: function (prompt, options) { return apiRequest('POST', '/ai/txt2img', { prompt: prompt, options: options || {} }); },
-    txt2vid: function (prompt, options) { return apiRequest('POST', '/ai/txt2vid', { prompt: prompt, options: options || {} }); },
-    speech2txt: function (audio, options) { return apiRequest('POST', '/ai/speech2txt', { audio: audio, options: options || {} }); },
-    txt2speech: function (text, options) { return apiRequest('POST', '/ai/txt2speech', { text: text, options: options || {} }); },
-    img2txt: function (image, options) { return apiRequest('POST', '/ai/img2txt', { image: image, options: options || {} }); },
+    txt2img: function (prompt, options) {
+      var o = options || {};
+      return aiPost('/ai/txt2img', {
+        prompt: String(prompt ?? ''),
+        model: o.model,
+        size: o.size,
+        input_image: o.input_image,
+        options: o,
+      }).then(imageResult);
+    },
+    txt2vid: function (prompt, options) {
+      return aiPost('/ai/txt2vid', { prompt: String(prompt ?? ''), options: options || {} });
+    },
+    speech2txt: function (audio, options) {
+      // Some call sites pass (file, true) as a test-mode shorthand.
+      var o = options && typeof options === 'object' ? options : (options === true ? { test_mode: true } : {});
+      return aiPost('/ai/speech2txt', {
+        audio: audio,
+        model: o.model,
+        language: o.language,
+        options: o,
+      });
+    },
+    txt2speech: function (text, options) {
+      var o = options || {};
+      return aiPost('/ai/txt2speech', {
+        text: String(text ?? ''),
+        model: o.model,
+        voice: o.voice,
+        options: o,
+      }).then(audioResult);
+    },
+    img2txt: function (image, options) {
+      var o = options || {};
+      return aiPost('/ai/img2txt', { image: image, model: o.model, prompt: o.prompt, options: o })
+        .then(function (d) { return (d && (d.text ?? d)) || ''; });
+    },
   };
 
   function wsUrl(subPath) {

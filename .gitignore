@@ -16,6 +16,9 @@ apps/teamchat/public/worker/
 # Local runtime state: accounts, KV, files, mail and hosted sites.
 platform/data/
 
+# Local agent tooling state
+.perch/
+
 # OS noise
 .DS_Store
 Thumbs.db

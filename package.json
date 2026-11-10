@@ -12,7 +12,7 @@
     "dev": "node platform/server/index.js",
     "build": "node platform/server/index.js --build",
     "start": "node platform/server/index.js",
-    "test": "node --test platform/platform.test.js",
+    "test": "node --test --test-force-exit platform/platform.test.js",
     "postinstall": "patch-package --patch-dir apps/presentation/patches --error-on-fail"
   },
   "engines": {

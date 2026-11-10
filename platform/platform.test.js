@@ -1,4 +1,4 @@
-import test from 'node:test';
+﻿import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -65,6 +65,27 @@ function makeMockRTC() {
     async addIceCandidate() {}
     close() { this.connectionState = 'closed'; }
   };
+}
+
+/** Direct HTTP call to the platform API, for the endpoints the SDK does not wrap. */
+async function api(port, subPath, { method = 'GET', body, user = 'local', origin } = {}) {
+  const res = await fetch(`http://127.0.0.1:${port}/api${subPath}?app=test`, {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer tok-${user}`,
+      ...(origin ? { Origin: origin } : {}),
+    },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+  const data = await res.json().catch(() => null);
+  if (!res.ok) {
+    const err = new Error((data && data.message) || `HTTP ${res.status}`);
+    err.code = data && data.code;
+    err.status = res.status;
+    throw err;
+  }
+  return data;
 }
 
 function createSdkClient(port, { app = 'notes', user = null, rtcClass = null } = {}) {
@@ -450,40 +471,116 @@ test('Platform Conformance Suite (Section 4 + Security + Peer + Workers)', async
     assert.equal(await puter.exit(), undefined);
   });
 
-  await t.test('9. puter.ai (chat non-streaming + streaming with local mock, graceful degradation for unconfigured engines)', async () => {
-    // Start a mock local Ollama server
+  await t.test('9. puter.ai (provider config, chat + streaming, image/speech/OCR, graceful degradation)', async () => {
+    // One mock that speaks all three wire protocols the adapters support.
+    const seen = { auth: [], paths: [] };
     const mockAi = http.createServer(async (req, res) => {
-      if (req.url === '/api/tags') {
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ models: [{ name: 'local-llama' }] }));
-        return;
-      }
+      seen.paths.push(req.url);
+      seen.auth.push(req.headers.authorization || req.headers['x-api-key'] || '');
+      const send = (code, obj, type = 'application/json') => {
+        res.writeHead(code, { 'Content-Type': type });
+        res.end(typeof obj === 'string' ? obj : JSON.stringify(obj));
+      };
+
+      if (req.url === '/api/tags') return send(200, { models: [{ name: 'local-llama' }] });
+      if (req.url === '/v1/models') return send(200, { data: [{ id: 'remote-model' }] });
+
+      let body = '';
+      for await (const c of req) body += c;
+
       if (req.url === '/v1/chat/completions') {
-        let body = '';
-        for await (const c of req) body += c;
         const parsed = JSON.parse(body);
         if (parsed.stream) {
           res.writeHead(200, { 'Content-Type': 'text/event-stream' });
           res.write('data: ' + JSON.stringify({ choices: [{ delta: { content: 'Hello ' } }] }) + '\n\n');
           res.write('data: ' + JSON.stringify({ choices: [{ delta: { content: 'world' } }] }) + '\n\n');
           res.write('data: [DONE]\n\n');
-          res.end();
-        } else {
-          res.writeHead(200, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ choices: [{ message: { role: 'assistant', content: 'Local reply' }, finish_reason: 'stop' }] }));
+          return res.end();
         }
+        // Vision requests carry image parts; echo back what we saw.
+        const parts = parsed.messages?.[0]?.content;
+        if (Array.isArray(parts)) {
+          const hasImage = parts.some((p) => p.type === 'image_url' && String(p.image_url.url).startsWith('data:image/'));
+          return send(200, { choices: [{ message: { role: 'assistant', content: hasImage ? 'OCR TEXT' : 'no image' } }] });
+        }
+        return send(200, { choices: [{ message: { role: 'assistant', content: 'Remote reply' }, finish_reason: 'stop' }] });
       }
+      if (req.url === '/v1/images/generations') {
+        return send(200, { data: [{ b64_json: Buffer.from('PNGDATA').toString('base64') }] });
+      }
+      if (req.url === '/v1/audio/speech') {
+        res.writeHead(200, { 'Content-Type': 'audio/mpeg' });
+        return res.end(Buffer.from('MP3DATA'));
+      }
+      if (req.url === '/v1/audio/transcriptions') {
+        return send(200, { text: 'transcribed words' });
+      }
+      if (req.url === '/v1/messages') {
+        const parsed = JSON.parse(body);
+        if (parsed.stream) {
+          res.writeHead(200, { 'Content-Type': 'text/event-stream' });
+          res.write('data: ' + JSON.stringify({ type: 'content_block_delta', delta: { type: 'text_delta', text: 'Anthropic ' } }) + '\n\n');
+          res.write('data: ' + JSON.stringify({ type: 'content_block_delta', delta: { type: 'text_delta', text: 'reply' } }) + '\n\n');
+          return res.end();
+        }
+        return send(200, { content: [{ type: 'text', text: 'Anthropic reply' }], stop_reason: 'end_turn' });
+      }
+      if (req.url === '/api/chat') {
+        const parsed = JSON.parse(body);
+        if (parsed.stream) {
+          res.writeHead(200, { 'Content-Type': 'application/x-ndjson' });
+          res.write(JSON.stringify({ message: { content: 'Ollama ' } }) + '\n');
+          res.write(JSON.stringify({ message: { content: 'native' } }) + '\n');
+          return res.end();
+        }
+        return send(200, { message: { role: 'assistant', content: 'Ollama reply' } });
+      }
+      return send(404, { error: 'not found' });
     });
     await new Promise((r) => mockAi.listen(0, '127.0.0.1', r));
-    const aiPort = mockAi.address().port;
-    srv.ctx.localAiUrl = `http://127.0.0.1:${aiPort}`;
+    const aiBase = `http://127.0.0.1:${mockAi.address().port}`;
 
     const { puter } = createSdkClient(port, { app: 'video-studio' });
-    const models = await puter.ai.listModels();
-    assert.equal(models[0].id, 'local-llama');
 
-    const chatReply = await puter.ai.chat('Say hi');
-    assert.equal(String(chatReply), 'Local reply');
+    // Nothing configured: every capability fails cleanly. There is no implicit
+    // provider, because keys and endpoints only come from the settings page.
+    assert.deepEqual(await puter.ai.listModels(), []);
+    for (const method of ['chat', 'txt2img', 'txt2vid', 'speech2txt', 'txt2speech', 'img2txt']) {
+      await assert.rejects(() => puter.ai[method]('test'), (err) => err.code === 'local_ai_unavailable');
+    }
+
+    // A saved Ollama provider serves chat and its model catalogue.
+    const ollama = await api(port, '/ai/providers', {
+      method: 'POST',
+      body: { name: 'Mock Ollama', kind: 'ollama', base_url: aiBase, default_model: 'local-llama', capabilities: ['chat'] },
+    });
+    assert.ok(ollama.id);
+    const localModels = await puter.ai.listModels();
+    assert.equal(localModels[0].id, 'local-llama');
+    assert.equal(String(await puter.ai.chat('Say hi')), 'Ollama reply');
+
+    // App origins cannot rewrite provider records or keys.
+    await assert.rejects(
+      () => api(port, '/ai/providers', { method: 'POST', origin: 'http://notes.localhost:8443', body: { name: 'Nope', kind: 'ollama', base_url: aiBase } }),
+      (err) => err.status === 403
+    );
+
+    // A configured OpenAI-compatible provider serves every capability.
+    const saved = await api(port, '/ai/providers', {
+      method: 'POST',
+      body: { name: 'Mock OpenAI', kind: 'openai', base_url: `${aiBase}/v1`, api_key: 'sk-test', default_model: 'remote-model' },
+    });
+    assert.ok(saved.id);
+    assert.equal(saved.has_key, true);
+    assert.equal(saved.api_key, undefined, 'the key must never be sent back to the browser');
+
+    const listed = await api(port, '/ai/providers');
+    assert.equal(listed.length, 2);
+    assert.equal(listed[0].api_key, undefined);
+
+    await api(port, '/ai/routes', { method: 'POST', body: { routes: { chat: saved.id } } });
+    assert.equal(String(await puter.ai.chat('Say hi')), 'Remote reply');
+    assert.ok(seen.auth.includes('Bearer sk-test'), 'the provider key must be sent upstream');
 
     const stream = await puter.ai.chat('Stream hi', { stream: true });
     let collected = '';
@@ -492,9 +589,46 @@ test('Platform Conformance Suite (Section 4 + Security + Peer + Workers)', async
     }
     assert.equal(collected, 'Hello world');
 
-    await new Promise((r) => mockAi.close(r));
-    srv.ctx.localAiUrl = 'http://127.0.0.1:1';
+    const img = await puter.ai.txt2img('a cat');
+    assert.ok(String(img.src).startsWith('data:image/png;base64,'), 'txt2img resolves an image with a data URL src');
 
+    const speech = await puter.ai.txt2speech('hello there', { voice: 'alloy' });
+    assert.ok(String(speech.src).startsWith('data:audio/mpeg;base64,'), 'txt2speech resolves audio with a data URL src');
+
+    const transcript = await puter.ai.speech2txt(new Blob([Buffer.from('RIFF')], { type: 'audio/wav' }));
+    assert.equal(transcript.text, 'transcribed words', 'a Blob must reach the provider, not serialize to {}');
+
+    const ocr = await puter.ai.img2txt(new Blob([Buffer.from('PNG')], { type: 'image/png' }));
+    assert.equal(ocr, 'OCR TEXT', 'a Blob image must reach the vision provider');
+
+    // Anthropic protocol.
+    const anthropic = await api(port, '/ai/providers', {
+      method: 'POST',
+      body: { name: 'Mock Anthropic', kind: 'anthropic', base_url: aiBase, api_key: 'ak-test', default_model: 'claude-test' },
+    });
+    await api(port, '/ai/routes', { method: 'POST', body: { routes: { chat: anthropic.id } } });
+    assert.equal(String(await puter.ai.chat('hi')), 'Anthropic reply');
+    assert.ok(seen.auth.includes('ak-test'), 'the Anthropic key goes in x-api-key');
+
+    // An unreachable routed provider falls back to a healthy one, then surfaces
+    // `local_ai_unavailable` once no healthy provider is left.
+    await api(port, '/ai/providers', {
+      method: 'POST',
+      body: { id: anthropic.id, name: 'Mock Anthropic', kind: 'anthropic', base_url: 'http://127.0.0.1:1', default_model: 'claude-test' },
+    });
+    assert.equal(String(await puter.ai.chat('hi')), 'Ollama reply');
+    await api(port, '/ai/providers/delete', { method: 'POST', body: { id: ollama.id } });
+    await api(port, '/ai/providers/delete', { method: 'POST', body: { id: saved.id } });
+    await assert.rejects(() => puter.ai.chat('hi'), (err) => err.code === 'local_ai_unavailable');
+
+    // Deleting a provider clears its route.
+    await api(port, '/ai/providers/delete', { method: 'POST', body: { id: anthropic.id } });
+    assert.deepEqual(await api(port, '/ai/routes'), {});
+
+    await api(port, '/ai/providers/delete', { method: 'POST', body: { id: ollama.id } });
+    await api(port, '/ai/providers/delete', { method: 'POST', body: { id: saved.id } });
+    assert.deepEqual(await api(port, '/ai/providers'), []);
+    await new Promise((r) => mockAi.close(r));
     for (const method of ['chat', 'txt2img', 'txt2vid', 'speech2txt', 'txt2speech', 'img2txt']) {
       await assert.rejects(() => puter.ai[method]('test'), (err) => err.code === 'local_ai_unavailable');
     }
@@ -586,3 +720,4 @@ test('Platform Conformance Suite (Section 4 + Security + Peer + Workers)', async
     await new Promise((r) => echoServer.close(r));
   });
 });
+
