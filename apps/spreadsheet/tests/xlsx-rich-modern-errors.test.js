@@ -13,7 +13,7 @@ const bytes = z => X.CFB.write(z, { type: 'array', fileType: 'zip' });
 const read = z => readXlsxRichValues(X.read(bytes(z), { type: 'array', bookFiles: true }));
 async function native(w) {
   const z = X.CFB.read(new Uint8Array(await (await workbookToXlsx(w)).arrayBuffer()), { type: 'array' });
-  set(z, '/xl/workbook.xml', xml(z, '/xl/workbook.xml').replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  set(z, '/xl/workbook.xml', xml(z, '/xl/workbook.xml').replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   return z;
 }
 

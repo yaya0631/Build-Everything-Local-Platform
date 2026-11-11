@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { inspectPaths } from '../../src/core/path-edit.js';
 
 async function openDrawing(page) {
-  await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
+  await page.route('**/sdk/everything.js', (route) => route.fulfill({ body: '' }));
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([400, 400]);

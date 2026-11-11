@@ -16,7 +16,7 @@ import { topLayer, confirmDialog } from './ui/dialog.js';
 import { store, COLLECTIONS } from './lib/store.js';
 import { Sync } from './lib/sync.js';
 import { openCache } from './lib/idb.js';
-import { whenReady, currentUser, profilePicture, isPuterApp } from './lib/puter.js';
+import { whenReady, currentUser, profilePicture, isEverythingApp } from './lib/everything.js';
 import { setMoneyDefaults } from './lib/money.js';
 import { setDateStyle } from './lib/dates.js';
 import { loadSample } from './lib/sample.js';
@@ -212,7 +212,7 @@ const channel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('
 // ------------------------------------------------------------------ boot
 
 async function signOut() {
-  if (isPuterApp()) return;
+  if (isEverythingApp()) return;
   if (sync?.pending) {
     toast('Saving your last changes first');
     try { await sync.flush(); } catch {}
@@ -223,7 +223,7 @@ async function signOut() {
   if (unsent) {
     const ok = await confirmDialog({
       title: 'Some changes are not saved yet',
-      message: `${unsent === 1 ? '1 change' : `${unsent} changes`} could not be saved to your Puter account, perhaps because you are offline. Signing out now deletes ${unsent === 1 ? 'it' : 'them'} from this device. Stay signed in and ${unsent === 1 ? 'it is' : 'they are'} saved when the connection returns.`,
+      message: `${unsent === 1 ? '1 change' : `${unsent} changes`} could not be saved to your Everything account, perhaps because you are offline. Signing out now deletes ${unsent === 1 ? 'it' : 'them'} from this device. Stay signed in and ${unsent === 1 ? 'it is' : 'they are'} saved when the connection returns.`,
       confirmLabel: 'Sign out and discard',
       cancelLabel: 'Stay signed in',
       danger: true,
@@ -231,7 +231,7 @@ async function signOut() {
     if (!ok) return;
   }
   try { await sync?.reset(); } catch {}
-  window.puter?.auth.signOut();
+  window.everything?.auth.signOut();
   try { localStorage.removeItem(LAST_USER); } catch {}
   location.hash = '';
   location.reload();
@@ -242,22 +242,22 @@ async function boot() {
     const t = localStorage.getItem('bookkeeping:theme');
     applyTheme(t === 'light' || t === 'dark' ? t : 'system');
   } catch {}
-  root.replaceChildren(bootView('Connecting to Puter'));
-  let puter = null;
+  root.replaceChildren(bootView('Connecting to Everything'));
+  let everything = null;
   try {
-    puter = await whenReady();
+    everything = await whenReady();
   } catch (err) {
     // No SDK (no connection, and no cached copy): open the books from this
     // device if they were opened here before. Edits wait in the outbox.
-    if (!(await bootOffline())) root.replaceChildren(errorView({ title: 'Could not reach Puter', message: err.message, onRetry: () => location.reload() }));
+    if (!(await bootOffline())) root.replaceChildren(errorView({ title: 'Could not reach Everything', message: err.message, onRetry: () => location.reload() }));
     return;
   }
-  if (!puter.auth.isSignedIn()) {
+  if (!everything.auth.isSignedIn()) {
     if (!navigator.onLine && (await bootOffline())) return;
     root.replaceChildren(authView({
       onSignIn: async () => {
         try {
-          await puter.auth.signIn();
+          await everything.auth.signIn();
           boot();
         } catch {
           root.replaceChildren(authView({ onSignIn: () => location.reload(), error: 'Sign-in did not finish. Try again.' }));
@@ -269,7 +269,7 @@ async function boot() {
   user = await currentUser();
   if (!user && (await bootOffline())) return;
   try { localStorage.setItem(LAST_USER, JSON.stringify({ username: user?.username, uuid: user?.uuid })); } catch {}
-  await openBooks(puter.kv);
+  await openBooks(everything.kv);
 }
 
 const LAST_USER = 'bookkeeping:lastUser';
@@ -322,7 +322,7 @@ async function openBooks(kv, { offline = false } = {}) {
       // Said once per record; the status pill keeps showing "Not saved".
       const fresh = detail.keys.filter((k) => !refusedShown.has(k));
       for (const k of fresh) refusedShown.add(k);
-      if (fresh.length) toast(`${fresh.length === 1 ? 'A change' : `${fresh.length} changes`} could not be saved to your Puter account (${detail.error?.message || 'refused'}). ${fresh.length === 1 ? 'It is' : 'They are'} kept on this device and will be retried.`);
+      if (fresh.length) toast(`${fresh.length === 1 ? 'A change' : `${fresh.length} changes`} could not be saved to your Everything account (${detail.error?.message || 'refused'}). ${fresh.length === 1 ? 'It is' : 'They are'} kept on this device and will be retried.`);
     }
   });
   store.on(() => queueRefresh());

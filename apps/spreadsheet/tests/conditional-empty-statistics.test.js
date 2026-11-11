@@ -22,7 +22,7 @@ const check=(w,type,c=2)=>{
 };
 async function save(w,privateData=false){
  const zip=X.CFB.read(new Uint8Array(await(await workbookToXlsx(w)).arrayBuffer()),{type:'array'});
- if(!privateData){const p=X.CFB.find(zip,'/xl/workbook.xml');p.content=new TextEncoder().encode(new TextDecoder().decode(p.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,''));p.size=p.content.length;}
+ if(!privateData){const p=X.CFB.find(zip,'/xl/workbook.xml');p.content=new TextEncoder().encode(new TextDecoder().decode(p.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,''));p.size=p.content.length;}
  return workbookFromFile(X.CFB.write(zip,{type:'array',fileType:'zip'}),'empty-source.xlsx');
 }
 it.each(types)('%s resolves independent bounds without any numeric statistics',async type=>{

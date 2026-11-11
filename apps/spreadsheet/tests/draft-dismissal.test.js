@@ -3,10 +3,10 @@ import { draftKey, saveDraft, loadDraft } from '../src/lib/drafts.js';
 import { Doc } from '../src/lib/doc.js';
 import { Workbook } from '../src/core/workbook.js';
 import { memoryStorage } from './helpers/memory-storage.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 
-beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); installMockPuter(); });
-afterEach(() => { delete globalThis.puter; });
+beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); installMockEverything(); });
+afterEach(() => { delete globalThis.everything; });
 
 // The recovery prompt can be dismissed to decide later. The draft it offers
 // lives under the document's own key, so the next edit's draft must not
@@ -14,7 +14,7 @@ afterEach(() => { delete globalThis.puter; });
 it('keeps a recoverable draft intact while it awaits a decision', async () => {
   const path = 'Spreadsheets/Plan.xlsx';
   const precious = new Workbook();
-  precious.setInput(precious.activeSheetId, 0, 0, 'EDITS THAT NEVER REACHED PUTER');
+  precious.setInput(precious.activeSheetId, 0, 0, 'EDITS THAT NEVER REACHED EVERYTHING');
   const key = draftKey(path);
   expect(saveDraft(key, precious, 'Plan', 'rev-1')).toBe(true);
 
@@ -23,13 +23,13 @@ it('keeps a recoverable draft intact while it awaits a decision', async () => {
   expect(doc.recoverable).not.toBeNull();
   doc.wb.setInput(doc.wb.activeSheetId, 5, 5, 'new edit');
   expect(doc.writeDraft()).toBe(true); // drafted beside the offered one, not over it
-  expect(loadDraft(key).workbook.sheets[0].cells['0,0'].v).toBe('EDITS THAT NEVER REACHED PUTER');
+  expect(loadDraft(key).workbook.sheets[0].cells['0,0'].v).toBe('EDITS THAT NEVER REACHED EVERYTHING');
   expect(await doc.save()).toBe(true);
-  expect(loadDraft(key).workbook.sheets[0].cells['0,0'].v).toBe('EDITS THAT NEVER REACHED PUTER');
+  expect(loadDraft(key).workbook.sheets[0].cells['0,0'].v).toBe('EDITS THAT NEVER REACHED EVERYTHING');
 
   // Restoring later still finds those edits; afterwards drafting resumes as usual.
   expect(doc.restoreDraft()).toBe(true);
-  expect(doc.wb.getValue(doc.wb.activeSheetId, 0, 0)).toBe('EDITS THAT NEVER REACHED PUTER');
+  expect(doc.wb.getValue(doc.wb.activeSheetId, 0, 0)).toBe('EDITS THAT NEVER REACHED EVERYTHING');
   doc.wb.setInput(doc.wb.activeSheetId, 1, 1, 'after');
   expect(doc.writeDraft()).toBe(true);
   expect(loadDraft(key).workbook.sheets[0].cells['1,1'].v).toBe('after');

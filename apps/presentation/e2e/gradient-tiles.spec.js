@@ -6,10 +6,10 @@ for (const gradientRendering of ["svg", "css"])
   test(`reflected gradient tiles preserve multi-stop alpha in ${gradientRendering}`, async ({
     page,
   }) => {
-    await page.route("**/sdk/puter.js", (route) =>
+    await page.route("**/sdk/everything.js", (route) =>
       route.fulfill({
         contentType: "application/javascript",
-        body: 'window.puter={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',
+        body: 'window.everything={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',
       }),
     );
     await page.goto("/");

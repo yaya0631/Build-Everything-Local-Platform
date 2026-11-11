@@ -8,7 +8,7 @@ import {
   type Location, EXT, IMPORT_EXTS, clearRecovery, download, isSolidWorksFile, isStepFile, listParts, loadText, locationLabel, newLocation,
   pickCloudFile, pickCloudSave, pickDeviceFile, readRecovery, saveText, safeName, writeRecovery, type FileEntry, deletePart, renameCloud,
 } from '../platform/files';
-import { cloudAvailable, puter, signIn, storageError } from '../platform/puter';
+import { cloudAvailable, everything, signIn, storageError } from '../platform/everything';
 import { h } from '../ui/dom';
 import { icon } from '../ui/icons';
 import { confirmDialog, promptDialog, showDialog, toast } from '../ui/overlay';
@@ -80,7 +80,7 @@ export class FileOps {
     const name = await promptDialog('Save As', 'Part name', app.store.doc.name, (v) => (v.trim() ? null : 'Enter a name'));
     if (name == null) return;
     app.store.change('Rename part', (doc) => { doc.name = safeName(name); });
-    if (cloudAvailable() && puter()?.ui?.showSaveFilePicker) {
+    if (cloudAvailable() && everything()?.ui?.showSaveFilePicker) {
       const loc = await pickCloudSave(serializeDocument(app.store.doc), app.store.doc.name).catch(() => null);
       if (loc) {
         app.location = loc;
@@ -131,7 +131,7 @@ export class FileOps {
     let chosen: FileEntry | null = null;
     let close: ((v: string | null) => void) | null = null;
     const done = (e: FileEntry) => { chosen = e; close?.('open'); };
-    if (!entries.length) list.append(h('p', {}, cloudAvailable() ? 'No saved parts yet.' : 'No parts saved in this browser yet. Sign in to Puter to keep parts in your cloud storage.'));
+    if (!entries.length) list.append(h('p', {}, cloudAvailable() ? 'No saved parts yet.' : 'No parts saved in this browser yet. Sign in to Everything to keep parts in your cloud storage.'));
     for (const e of entries) {
       const b = h('button', { class: 'file-item', type: 'button', role: 'listitem' },
         e.location.type === 'cloud' ? iconCloud() : iconDevice(),
@@ -139,7 +139,7 @@ export class FileOps {
       b.addEventListener('click', () => done(e));
       b.addEventListener('contextmenu', async (ev) => {
         ev.preventDefault();
-        if (await confirmDialog('Delete part', `Delete "${e.name}"? ${e.location.type === 'cloud' ? 'It will be moved to your Puter Trash.' : 'This cannot be undone.'}`, 'Delete', true)) {
+        if (await confirmDialog('Delete part', `Delete "${e.name}"? ${e.location.type === 'cloud' ? 'It will be moved to your Everything Trash.' : 'This cannot be undone.'}`, 'Delete', true)) {
           await deletePart(e.location).catch((err) => toast({ kind: 'error', message: storageError(err) }));
           b.remove();
         }
@@ -166,7 +166,7 @@ export class FileOps {
       });
     }
     const buttons: { label: string; value: string; primary?: boolean; left?: boolean }[] = [{ label: 'From device...', value: 'device', left: true }];
-    if (cloudAvailable() && puter()?.ui?.showOpenFilePicker) buttons.push({ label: 'Browse Puter...', value: 'browse', left: true });
+    if (cloudAvailable() && everything()?.ui?.showOpenFilePicker) buttons.push({ label: 'Browse Everything...', value: 'browse', left: true });
     buttons.push({ label: 'Cancel', value: 'cancel' });
     const v = await showDialog({ title: 'Open', body: [body, h('p', { class: 'field-label' }, 'Right-click one of your parts to delete it.')], buttons, wide: true, onReady: (c) => { close = c; } });
     if (v === 'open' && chosen) {
@@ -347,15 +347,15 @@ export class FileOps {
     return false;
   }
 
-  /** Files opened from the Puter desktop (double-click / Open With). */
+  /** Files opened from the Everything desktop (double-click / Open With). */
   handleLaunchItems() {
-    const ui = puter()?.ui;
+    const ui = everything()?.ui;
     if (!ui?.onLaunchedWithItems) return;
     ui.onLaunchedWithItems(async (items) => {
       const it = items?.[0];
       if (!it) return;
       try {
-        const blob = it.read ? await it.read() : await puter()!.fs.read(it.path);
+        const blob = it.read ? await it.read() : await everything()!.fs.read(it.path);
         if (isSolidWorksFile(it.name)) await this.openSolidWorks(new Uint8Array(await blob.arrayBuffer()), it.name);
         else if (isStepFile(it.name)) await this.importStepText(await blob.text(), it.name);
         else this.openText(await blob.text(), { type: 'cloud', path: it.path }, it.name.replace(/\.[^.]+$/, ''));
@@ -376,10 +376,10 @@ const iconDevice = () => h('span', { 'aria-hidden': 'true', style: { color: 'var
 
 let nudged = false;
 function maybeNudgeSignIn() {
-  if (nudged || !puter()) return;
+  if (nudged || !everything()) return;
   nudged = true;
   toast({
-    message: 'Saved in this browser only. Sign in to Puter to keep your parts in the cloud and open them anywhere.',
+    message: 'Saved in this browser only. Sign in to Everything to keep your parts in the cloud and open them anywhere.',
     actions: [{ label: 'Sign in', primary: true, run: () => void signIn().catch((e) => toast({ kind: 'error', message: (e as Error).message })) }],
     timeout: 9000,
   });

@@ -8,7 +8,7 @@ describe('signing out', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.stubGlobal('matchMedia', () => ({ matches: true }));
-    vi.stubGlobal('puter', { auth: { signOut: vi.fn() } });
+    vi.stubGlobal('everything', { auth: { signOut: vi.fn() } });
     vi.stubGlobal('location', { hash: '#/new', reload: vi.fn() });
     document.body.innerHTML = '<div id="app"></div>';
   });
@@ -31,15 +31,15 @@ describe('signing out', () => {
   it('waits for the actual save and SDK sign-out instead of a fixed delay', async () => {
     let saved, signedOut;
     saving(new Promise((resolve) => { saved = resolve; }));
-    puter.auth.signOut.mockReturnValue(new Promise((resolve) => { signedOut = resolve; }));
+    everything.auth.signOut.mockReturnValue(new Promise((resolve) => { signedOut = resolve; }));
     const done = confirmSignOut();
     confirm();
     await vi.advanceTimersByTimeAsync(1000);
-    expect(puter.auth.signOut).not.toHaveBeenCalled();
+    expect(everything.auth.signOut).not.toHaveBeenCalled();
     expect(location.reload).not.toHaveBeenCalled();
     saved(true);
     await vi.advanceTimersByTimeAsync(0);
-    expect(puter.auth.signOut).toHaveBeenCalledTimes(1);
+    expect(everything.auth.signOut).toHaveBeenCalledTimes(1);
     expect(location.reload).not.toHaveBeenCalled();
     signedOut();
     await done;
@@ -55,7 +55,7 @@ describe('signing out', () => {
     await vi.advanceTimersByTimeAsync(0);
     settle();
     await done;
-    expect(puter.auth.signOut).not.toHaveBeenCalled();
+    expect(everything.auth.signOut).not.toHaveBeenCalled();
     expect(location.reload).not.toHaveBeenCalled();
     expect(location.hash).toBe('#/new');
   });
@@ -68,6 +68,6 @@ describe('signing out', () => {
     document.querySelector('.modal-panel .btn-ghost').click();
     await done;
     expect(save).not.toHaveBeenCalled();
-    expect(puter.auth.signOut).not.toHaveBeenCalled();
+    expect(everything.auth.signOut).not.toHaveBeenCalled();
   });
 });

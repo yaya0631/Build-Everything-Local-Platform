@@ -1,6 +1,6 @@
 /**
  * The header avatar upgrades from the letter to the account's public profile
- * picture (via puter.auth.getProfilePicture) — and everything around it keeps
+ * picture (via everything.auth.getProfilePicture) — and everything around it keeps
  * working exactly as before: the button still toggles the account popover
  * even though clicks now land on an <img> inside it, and accounts without a
  * profile keep the letter with no errors.
@@ -69,7 +69,7 @@ describe('app — header avatar profile picture', () => {
   });
 
   it('upgrades the letter to the profile picture when the account has one', async () => {
-    vi.stubGlobal('puter', {
+    vi.stubGlobal('everything', {
       auth: { getProfilePicture: vi.fn().mockResolvedValue(PIC) },
     });
     app = createApp(root, { store: makeStore(), user: { username: 'alice', uuid: 'u1' } });
@@ -79,11 +79,11 @@ describe('app — header avatar profile picture', () => {
     await vi.waitFor(() => expect(btn.querySelector('img.avatar__img')).toBeTruthy());
     expect(btn.querySelector('img').src).toBe(PIC);
     expect(btn.getAttribute('aria-label')).toBe('Account and settings');
-    expect(puter.auth.getProfilePicture).toHaveBeenCalledWith('alice');
+    expect(everything.auth.getProfilePicture).toHaveBeenCalledWith('alice');
   });
 
   it('keeps the letter untouched for an account with no profile picture', async () => {
-    vi.stubGlobal('puter', {
+    vi.stubGlobal('everything', {
       auth: { getProfilePicture: vi.fn().mockResolvedValue(null) },
     });
     app = createApp(root, { store: makeStore(), user: { username: 'alice', uuid: 'u1' } });
@@ -94,14 +94,14 @@ describe('app — header avatar profile picture', () => {
     expect(btn.textContent).toBe('A');
   });
 
-  it('still renders the letter when the Puter SDK is absent entirely', async () => {
+  it('still renders the letter when the Everything SDK is absent entirely', async () => {
     app = createApp(root, { store: makeStore(), user: { username: 'bob' } });
     await new Promise((r) => setTimeout(r, 0));
     expect(root.querySelector('button.avatar').textContent).toBe('B');
   });
 
   it('the avatar still toggles the popover closed when the pointer lands on the image', async () => {
-    vi.stubGlobal('puter', {
+    vi.stubGlobal('everything', {
       auth: { getProfilePicture: vi.fn().mockResolvedValue(PIC) },
     });
     app = createApp(root, { store: makeStore(), user: { username: 'alice', uuid: 'u1' } });

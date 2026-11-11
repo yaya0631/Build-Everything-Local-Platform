@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { JSDOM } from 'jsdom';
 import { historyView } from '../src/views/history.js';
 import { store } from '../src/lib/store.js';
-import { puterBackend, deferred } from './helpers/puter-kv.js';
+import { everythingBackend, deferred } from './helpers/everything-kv.js';
 import { downloadFile } from '../src/lib/util.js';
 
 vi.mock('../src/lib/util.js', async (original) => ({ ...await original(), downloadFile: vi.fn() }));
@@ -12,7 +12,7 @@ beforeEach(async () => {
   for (const name of ['window', 'document', 'location', 'Node', 'Element', 'HTMLElement', 'requestAnimationFrame']) {
     vi.stubGlobal(name, dom.window[name]);
   }
-  puterBackend().install();
+  everythingBackend().install();
   await store.init();
   await store.addStakeholder({ name: '<script>unsafe()</script>', kind: 'founder' });
 });

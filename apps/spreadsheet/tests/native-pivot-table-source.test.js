@@ -31,7 +31,7 @@ it.each(['Expenses', 'ORDERS', 'Cost_x0041_'])('renames native table sources ato
   for (let i = 0; i < 2; i++) {
     const zip = X.CFB.read(new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()), { type: 'array' });
     const part = X.CFB.find(zip, '/xl/workbook.xml');
-    X.CFB.utils.cfb_add(zip, '/xl/workbook.xml', new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')));
+    X.CFB.utils.cfb_add(zip, '/xl/workbook.xml', new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')));
     wb = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }));
     expect(sourceName(wb.nativePivots.caches[0])).toBe(name);
     expect(wb.tableByName(name)).toBeTruthy();

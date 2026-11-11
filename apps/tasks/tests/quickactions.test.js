@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 
 let quickRescheduleActions;
 
 beforeAll(async () => {
-  installMockPuter(); // the module pulls in the store singleton
+  installMockEverything(); // the module pulls in the store singleton
   ({ quickRescheduleActions } = await import('../src/ui/quickactions.js'));
 });
 

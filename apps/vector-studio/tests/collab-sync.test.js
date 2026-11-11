@@ -263,7 +263,7 @@ describe('collaboration sync', () => {
     await settle(a, b);
     expect(a.doc.get(L).children.filter((c) => c === 'once')).toHaveLength(1);
     expect(b.session.pending).toHaveLength(0);
-    const seqs = [...net.puter.kv.data.keys()].filter((k) => k.includes(':log:'));
+    const seqs = [...net.everything.kv.data.keys()].filter((k) => k.includes(':log:'));
     expect(seqs).toHaveLength(1);
   });
 
@@ -278,7 +278,7 @@ describe('collaboration sync', () => {
       a.session.pending.forEach((p) => (p.sent = true));
     }
     await settle(a);
-    const cp = await net.puter.kv.get(`vs:${room}:cp`);
+    const cp = await net.everything.kv.get(`vs:${room}:cp`);
     expect(cp.seq).toBeGreaterThanOrEqual(200);
     const { token } = await net.service.call(alice, { op: 'invite', room, role: 'viewer' });
     const c = await joinClient(net, cam, room, { invite: token });

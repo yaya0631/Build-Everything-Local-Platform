@@ -45,7 +45,7 @@ function textWithMentions(item) {
   const { text } = item;
   if (item.mentions?.length) {
     return mentionRuns(text, item.mentions).map((run) => (run.mention
-      ? el('span.cmt-mention', { title: run.mention.email || (run.mention.user ? `Puter user ${run.mention.user}` : run.mention.name) }, run.text)
+      ? el('span.cmt-mention', { title: run.mention.email || (run.mention.user ? `Everything user ${run.mention.user}` : run.mention.name) }, run.text)
       : run.text));
   }
   // A comment without stored mentions (an older file's) still shows its @words set off.
@@ -178,7 +178,7 @@ export function createComments(ctx, host) {
     });
     if (thread.assignee) {
       const who = thread.assignee;
-      box.append(el('div.cmt-assigned', { title: who.email || (who.user ? `Puter user ${who.user}` : who.name) },
+      box.append(el('div.cmt-assigned', { title: who.email || (who.user ? `Everything user ${who.user}` : who.name) },
         el('span', { html: icon('user', 14) }), el('span', {}, thread.done ? `Done · was assigned to ${who.name}` : `Assigned to ${who.name}`)));
     }
     box.append(...items);

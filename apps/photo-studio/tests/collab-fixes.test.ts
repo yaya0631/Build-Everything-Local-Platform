@@ -137,7 +137,7 @@ describe('invitation links and existing members', () => {
 });
 
 describe('comment author names', () => {
-  it('must be the committer’s own Puter username', async () => {
+  it('must be the committer’s own Everything username', async () => {
     const env = environment();
     const { room, a } = await share(env);
     await connect(env, commenter, room, { token: await invite(env, room, 'commenter') });

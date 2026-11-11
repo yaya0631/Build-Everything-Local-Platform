@@ -5,7 +5,7 @@ import { closeAllModals } from '../src/ui/modal.js';
 import { Doc } from '../src/lib/doc.js';
 import { listVersions } from '../src/lib/versions.js';
 import { memoryStorage } from './helpers/memory-storage.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 
 vi.mock('../src/ui/toast.js', () => ({ toast: vi.fn() }));
 
@@ -21,10 +21,10 @@ beforeAll(async () => { await Doc.blank().toXlsxBlob(); });
 beforeEach(() => {
   Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true });
   vi.stubGlobal('matchMedia', () => ({ matches: true }));
-  installMockPuter();
+  installMockEverything();
   document.body.innerHTML = '<div id="app"></div>';
 });
-afterEach(() => { closeAllModals(); vi.restoreAllMocks(); vi.unstubAllGlobals(); delete globalThis.puter; document.body.replaceChildren(); });
+afterEach(() => { closeAllModals(); vi.restoreAllMocks(); vi.unstubAllGlobals(); delete globalThis.everything; document.body.replaceChildren(); });
 
 const settle = async (n = 6) => { for (let i = 0; i < n; i++) await new Promise((r) => setTimeout(r, 0)); };
 const press = (label) => {

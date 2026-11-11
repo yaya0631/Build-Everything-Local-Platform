@@ -42,8 +42,8 @@ describe('prompts', () => {
 describe('AI access', () => {
   it('reports why generating cannot run', () => {
     expect(aiStatus({}).reason).toBe('unavailable');
-    expect(aiStatus({ puter: { ai: { chat() {} } }, user: null }).reason).toBe('signedOut');
-    expect(aiStatus({ puter: { ai: { chat() {} } }, user: { username: 'a' } }).ok).toBe(true);
+    expect(aiStatus({ everything: { ai: { chat() {} } }, user: null }).reason).toBe('signedOut');
+    expect(aiStatus({ everything: { ai: { chat() {} } }, user: { username: 'a' } }).ok).toBe(true);
     expect(aiStatus({ generativeAI: fakeAI() }).ok).toBe(true);
     vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
     const st = aiStatus({ generativeAI: fakeAI() });
@@ -52,9 +52,9 @@ describe('AI access', () => {
     expect(st.message).toMatch(/offline/);
   });
 
-  it('wraps puter.ai and asks to sign in when signed out', async () => {
+  it('wraps everything.ai and asks to sign in when signed out', async () => {
     const ai = { chat: vi.fn(async () => 'hi'), txt2img: vi.fn(async () => ({ src: 'x' })) };
-    const app = { puter: { ai }, user: null, onSignIn: vi.fn(async () => (app.user = { username: 'me' })), dialogs: { confirm: vi.fn(async () => true) } };
+    const app = { everything: { ai }, user: null, onSignIn: vi.fn(async () => (app.user = { username: 'me' })), dialogs: { confirm: vi.fn(async () => true) } };
     const client = await requireAI(app);
     expect(app.dialogs.confirm).toHaveBeenCalled();
     expect(app.onSignIn).toHaveBeenCalled();
@@ -62,7 +62,7 @@ describe('AI access', () => {
     expect(ai.chat).toHaveBeenCalledWith('q', 'data:image/png;base64,AA');
     await aiClient(app).chat('only');
     expect(ai.chat).toHaveBeenLastCalledWith('only');
-    // Declining the sign-in resolves to null; no Puter at all is an error with a message.
+    // Declining the sign-in resolves to null; no Everything at all is an error with a message.
     app.user = null;
     app.dialogs.confirm = vi.fn(async () => false);
     expect(await requireAI(app)).toBe(null);

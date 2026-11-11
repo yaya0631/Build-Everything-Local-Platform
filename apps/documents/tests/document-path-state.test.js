@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
-import * as P from '../src/lib/puter.js';
+import * as P from '../src/lib/everything.js';
 import { Doc } from '../src/lib/doc.js';
 import { homeView } from '../src/views/home.js';
 import { toggleStar, isStarred, forgetStar } from '../src/lib/starred.js';
@@ -12,7 +12,7 @@ const relative = 'Documents/Report.docx', absolute = `${root}/Report.docx`;
 let view;
 beforeEach(() => {
   vi.useFakeTimers(); localStorage.clear();
-  vi.stubGlobal('puter', { fs: {
+  vi.stubGlobal('everything', { fs: {
     stat: vi.fn(async () => ({ path: root })),
     readdir: vi.fn(async () => [{ path: absolute, name: 'Report.docx', size: 12 }]),
     read: vi.fn(async () => new Blob(['document'])),
@@ -36,7 +36,7 @@ const expectState = (path) => {
 
 it.each([relative, absolute].flatMap((stored) => [relative, absolute].map((listed) => ({ stored, listed }))))('retains local state across listing spellings (stored: $stored, listed: $listed)', async ({ stored, listed }) => {
   remember(stored);
-  puter.fs.readdir.mockResolvedValue([{ name: 'Report.docx', path: listed, size: 12 }]);
+  everything.fs.readdir.mockResolvedValue([{ name: 'Report.docx', path: listed, size: 12 }]);
   view = homeView({ openPath: vi.fn(), newDoc: vi.fn(), importFile: vi.fn() });
   document.body.append(view.el); await vi.advanceTimersByTimeAsync(0);
   expect(view.el.querySelector('.file-star-btn').getAttribute('aria-pressed')).toBe('true');
@@ -50,7 +50,7 @@ it.each([relative, absolute].flatMap((stored) => [relative, absolute].map((liste
   expect(recallPosition(relative)).toBeNull();
 });
 
-it('shares local state immediately after Puter creates a relative-path document', async () => {
+it('shares local state immediately after Everything creates a relative-path document', async () => {
   const path = await P.createFile(relative, new Blob(['new']));
   expect(path).toBe(relative);
   remember(path); expectState(absolute);
@@ -85,7 +85,7 @@ it('preserves explicit canonical goals and the most recent reading position when
 });
 
 it('does not block document opening when the folder identity cannot be read', async () => {
-  puter.fs.stat.mockRejectedValue(new Error('Folder unavailable'));
+  everything.fs.stat.mockRejectedValue(new Error('Folder unavailable'));
   remember(relative);
   const doc = await Doc.fromPath(absolute);
   expect(doc.path).toBe(absolute);
@@ -96,11 +96,11 @@ it('does not block document opening when the folder identity cannot be read', as
 });
 
 it('reuses a verified folder lookup while refreshing each opened file’s conflict metadata', async () => {
-  const folderLookups = () => puter.fs.stat.mock.calls.filter(([path]) => path === P.FOLDER);
+  const folderLookups = () => everything.fs.stat.mock.calls.filter(([path]) => path === P.FOLDER);
   await Promise.all([Doc.fromPath(absolute), Doc.fromPath(`${root}/Other.docx`)]);
   expect(folderLookups()).toHaveLength(1);
   await Doc.fromPath(relative);
   expect(folderLookups()).toHaveLength(1);
-  expect(puter.fs.stat.mock.calls.filter(([path]) => path !== P.FOLDER))
+  expect(everything.fs.stat.mock.calls.filter(([path]) => path !== P.FOLDER))
     .toEqual([[absolute], [`${root}/Other.docx`], [relative]]);
 });

@@ -1,7 +1,7 @@
 /**
  * Document attachments: the paper behind the records. A signed SPA behind a
  * certificate, the option agreement behind a grant, the 409A report behind a
- * valuation - stored as files in the user's own Puter cloud via puter.fs,
+ * valuation - stored as files in the user's own Everything cloud via everything.fs,
  * with the record keeping only the path and a display name.
  */
 
@@ -62,7 +62,7 @@ export async function openAttachmentFile(att) {
     else toast('Allow pop-ups to view attachments', { icon: 'alert' });
   }
   try {
-    const stored = await puter.fs.read(att.path);
+    const stored = await everything.fs.read(att.path);
     // Re-wrapped rather than passed through, so the type the browser sees is
     // the one vetted above and not the one the file carried in with.
     const blob = new Blob([await stored.arrayBuffer()],
@@ -168,7 +168,7 @@ export function attachmentsSection({ getAttachments, upload, remove }) {
             onclick: async () => {
               const ok = await confirmDialog({
                 title: `Remove ${a.name}?`,
-                message: 'The file is deleted from your Puter cloud along with the reference, unless another company or a restore point still names it.',
+                message: 'The file is deleted from your Everything cloud along with the reference, unless another company or a restore point still names it.',
                 confirmLabel: 'Remove',
               });
               if (!ok) return;
@@ -230,7 +230,7 @@ export function attachmentChoiceDialog({ title, count, message = null }) {
       onClose: () => settle(null),
       content: el('div', {},
         el('p.confirm-message', {}, message
-          || `This record carries ${count} attachment${count === 1 ? '' : 's'} in your Puter cloud. Undo restores the record, but never a deleted file.`),
+          || `This record carries ${count} attachment${count === 1 ? '' : 's'} in your Everything cloud. Undo restores the record, but never a deleted file.`),
         /* Wrapping and right-aligned: three labelled buttons want about 380px
            and a phone sheet gives 280, so they stack rather than being cut
            off - the same rule the CSV wizard's template pair follows. */

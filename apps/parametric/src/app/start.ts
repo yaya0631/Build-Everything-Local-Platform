@@ -3,7 +3,7 @@
 import { UNIT_SYSTEMS } from '../model/units';
 import type { UnitSystem } from '../model/types';
 import { locationLabel, recentParts } from '../platform/files';
-import { canSignOut, cloudAvailable, env, getProfilePicture, getUser, isSignedIn, puter, signIn, signOut } from '../platform/puter';
+import { canSignOut, cloudAvailable, env, getProfilePicture, getUser, isSignedIn, everything, signIn, signOut } from '../platform/everything';
 import { getThemeChoice, setThemeChoice } from '../platform/theme';
 import { h } from '../ui/dom';
 import { icon } from '../ui/icons';
@@ -61,7 +61,7 @@ export class StartScreen {
       h('div', { class: 'sub' }, 'Feature-based 3D part modeling in your browser.'),
       h('div', { class: 'start-actions' },
         action('new', 'New part', 'Start from a blank part', () => { this.hide(); app.settings.defaultUnits = units; app.newDocument('Part1'); }),
-        action('open', 'Open', cloudAvailable() ? 'Open a part from your Puter cloud or this browser' : 'Open a part saved in this browser', () => { this.hide(); void this.files.open(); }),
+        action('open', 'Open', cloudAvailable() ? 'Open a part from your Everything cloud or this browser' : 'Open a part saved in this browser', () => { this.hide(); void this.files.open(); }),
         action('upload', 'Open from device', 'Open a part file, or a STEP or SolidWorks file', () => { this.hide(); void this.files.openFromDevice(); }),
       ),
       h('div', { class: 'row' }, h('label', { class: 'field-label' }, 'Units for new parts'), unitSel),
@@ -73,7 +73,7 @@ export class StartScreen {
       }))) : null,
       h('div', { class: 'start-section' }, h('h2', {}, 'Examples'), examples),
       h('div', { class: 'start-foot' },
-        !isSignedIn() && env() !== 'app' && puter() ? h('button', { class: 'btn small', type: 'button', onclick: () => void doSignIn(app) }, icon('signIn', 14), 'Sign in to save to the cloud') : null,
+        !isSignedIn() && env() !== 'app' && everything() ? h('button', { class: 'btn small', type: 'button', onclick: () => void doSignIn(app) }, icon('signIn', 14), 'Sign in to save to the cloud') : null,
         h('span', {}, 'You can use Parametric without an account; parts are then saved in this browser.'),
         h('a', { href: REPO_URL, target: '_blank', rel: 'noopener noreferrer' }, 'Open source on GitHub')),
     );
@@ -97,7 +97,7 @@ export async function doSignIn(app: App) {
   try {
     const ok = await signIn();
     if (ok) {
-      toast({ kind: 'success', message: 'Signed in. Your parts will now be saved to your Puter cloud.' });
+      toast({ kind: 'success', message: 'Signed in. Your parts will now be saved to your Everything cloud.' });
       await refreshAccount(app);
       app.loadRemoteSettings();
     }
@@ -130,7 +130,7 @@ export function bindAccountMenu(app: App) {
     const theme = getThemeChoice();
     const items: MenuItem[] = [];
     if (signedIn) items.push({ group: user?.username ? `Signed in as ${user.username}` : 'Signed in' });
-    else if (puter()) items.push({ label: 'Sign in with Puter', icon: 'signIn', run: () => void doSignIn(app) });
+    else if (everything()) items.push({ label: 'Sign in with Everything', icon: 'signIn', run: () => void doSignIn(app) });
     else items.push({ group: 'Cloud storage is unavailable offline' });
     items.push(
       { separator: true },

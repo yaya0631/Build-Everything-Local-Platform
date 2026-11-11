@@ -1,7 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { openApp, objectNames, expectNoErrors } from './helpers';
 
-/** Stands in for Puter AI: replays one reply per request (window.__assistantChat is honoured in dev builds). */
+/** Stands in for Everything AI: replays one reply per request (window.__assistantChat is honoured in dev builds). */
 async function scriptModel(page: Page, replies: unknown[][]) {
   await page.evaluate((r) => {
     const w = window as unknown as { __assistantChat: unknown; __requests: unknown[] };

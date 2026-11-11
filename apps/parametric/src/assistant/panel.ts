@@ -4,8 +4,8 @@
 
 import type { App } from '../app/app';
 import { appHost } from '../app/assistant-host';
-import { type ChatFn, puterChat } from '../platform/ai';
-import { cloudAvailable, env, puter, signIn } from '../platform/puter';
+import { type ChatFn, everythingChat } from '../platform/ai';
+import { cloudAvailable, env, everything, signIn } from '../platform/everything';
 import { h } from '../ui/dom';
 import { icon } from '../ui/icons';
 import { toast } from '../ui/overlay';
@@ -25,7 +25,7 @@ export const ASSISTANT_MODELS: { id: string; label: string }[] = [
 ];
 const SETTINGS_KEY = 'parametric:assistant';
 
-/** Development builds and browser tests may stand in for Puter AI with window.__assistantChat. */
+/** Development builds and browser tests may stand in for Everything AI with window.__assistantChat. */
 const devChat = (): ChatFn | null => (import.meta.env.DEV ? (window as unknown as { __assistantChat?: ChatFn }).__assistantChat ?? null : null);
 
 function loadModel(): string {
@@ -132,7 +132,7 @@ export class AssistantPanel {
   private model = loadModel();
   private renderQueued = false;
   private turn: Turn | null = null;
-  /** Set by tests and the dev mock to answer without Puter. */
+  /** Set by tests and the dev mock to answer without Everything. */
   chat: ChatFn | null = null;
   /** Files waiting to go with the next message. */
   private pending: PendingFile[] = [];
@@ -146,7 +146,7 @@ export class AssistantPanel {
   constructor(private app: App) {
     this.host = appHost(app);
     this.agent = createAgent({
-      chat: (m, o) => (this.chat ?? devChat() ?? puterChat)(m, o),
+      chat: (m, o) => (this.chat ?? devChat() ?? everythingChat)(m, o),
       tools: toolSpecs,
       runTool: (name, args) => runTool(this.host, name, args),
       system: SYSTEM_PROMPT,
@@ -193,7 +193,7 @@ export class AssistantPanel {
       h('div', { class: 'as-bar' }, modelSel, newChat),
       this.log,
       h('div', { class: 'as-bottom' }, this.status, composer,
-        h('div', { class: 'as-note' }, 'Sends your messages and a description of the part to Puter AI. Check designs before relying on them.')));
+        h('div', { class: 'as-note' }, 'Sends your messages and a description of the part to Everything AI. Check designs before relying on them.')));
     this.bindDrop();
     this.renderEmpty();
     app.store.on((reason) => { if (reason === 'load' && !this.agent.busy && !this.agent.messages.length) this.renderEmpty(); });
@@ -243,20 +243,20 @@ export class AssistantPanel {
     if (!on) this.status.textContent = '';
   }
 
-  /** Whether Puter AI can be used; otherwise explains why in the conversation. */
+  /** Whether Everything AI can be used; otherwise explains why in the conversation. */
   private ready(): boolean {
     if (this.chat || devChat()) return true;
-    const sdk = puter() as unknown as { ai?: unknown } | null;
+    const sdk = everything() as unknown as { ai?: unknown } | null;
     if (!sdk?.ai) {
-      this.notice('The assistant needs Puter, which is not available right now. Check your connection and reload the page.');
+      this.notice('The assistant needs Everything, which is not available right now. Check your connection and reload the page.');
       return false;
     }
     if (env() !== 'app' && !cloudAvailable()) {
-      const btn = h('button', { class: 'btn small primary', type: 'button' }, 'Sign in to Puter');
+      const btn = h('button', { class: 'btn small primary', type: 'button' }, 'Sign in to Everything');
       btn.addEventListener('click', () => {
         void signIn().then((ok) => { if (ok) { btn.closest('.as-msg')?.remove(); void this.submit(); } }).catch((e) => toast({ kind: 'error', message: (e as Error).message }));
       });
-      this.notice('Sign in to your Puter account to use the assistant (it runs on Puter AI).', btn);
+      this.notice('Sign in to your Everything account to use the assistant (it runs on Everything AI).', btn);
       return false;
     }
     return true;

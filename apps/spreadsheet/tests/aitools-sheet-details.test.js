@@ -93,7 +93,7 @@ describe('AI tools: what the model sees besides values', () => {
     wb.setNote(id, 1, 1, 'note');
     wb.setFilterRange(id, { r1: 0, c1: 0, r2: 3, c2: 2 });
     wb.defineName('Totals', 'Sheet1!$B$2:$B$4');
-    wb.names = [...wb.names, { name: '_PuterPivot_Area', ref: 'Sheet1!$A$1', hidden: true, sheet: 'Sheet1' }];
+    wb.names = [...wb.names, { name: '_EverythingPivot_Area', ref: 'Sheet1!$A$1', hidden: true, sheet: 'Sheet1' }];
     const info = JSON.parse(run('get_workbook_info', {}).content);
     const s = info.sheets[0];
     expect(s.charts[0].id).toBe(wb.sheet(id).charts[0].id);

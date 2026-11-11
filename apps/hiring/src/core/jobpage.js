@@ -1,6 +1,6 @@
 /**
  * The public job page: a single self-contained HTML document published to
- * the user's own Puter site. Pure string generation so it is fully
+ * the user's own Everything site. Pure string generation so it is fully
  * testable; every job field is user-entered and therefore escaped.
  */
 
@@ -500,7 +500,7 @@ ${descriptionHtml(job.description) || '<p>Get in touch to hear more about this r
 ${closes ? `<p class="closes" data-when-open>Applications close on ${escapeHtml(closes)}.</p>` : ''}
 ${applyEmail ? applyFormHtml(job, applyEmail, Boolean(closes)) : ''}
 ${closes ? `<p class="closes" data-when-closed hidden>Applications for this role closed on ${escapeHtml(closes)}.</p>` : ''}
-<footer>Published with Hiring on Puter.</footer>
+<footer>Published with Hiring on Everything.</footer>
 ${closes ? closesScript(job.closesOn) : ''}
 </main>
 </body>
@@ -583,7 +583,7 @@ ul.jobs li[hidden], ul.jobs[hidden] { display:none; }
 <h1>Open roles</h1>
 ${items ? `<ul class="jobs">\n${items}\n</ul>` : ''}
 <p class="meta" data-empty${items ? ' hidden' : ''}>No open roles right now. Check back soon.</p>
-<footer>Published with Hiring on Puter.</footer>
+<footer>Published with Hiring on Everything.</footer>
 ${closing ? indexClosesScript() : ''}
 </main>
 </body>

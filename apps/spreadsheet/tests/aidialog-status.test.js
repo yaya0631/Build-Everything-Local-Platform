@@ -3,7 +3,7 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { Workbook } from '../src/core/workbook.js';
 import { openAiDialog } from '../src/ui/aidialog.js';
 import { closeAllModals } from '../src/ui/modal.js';
-import * as P from '../src/lib/puter.js';
+import * as P from '../src/lib/everything.js';
 
 vi.mock('../src/ui/toast.js', () => ({ toast: vi.fn() }));
 
@@ -44,7 +44,7 @@ it('announces the wait and the failure, marks the button busy, and clears a stal
   panel.querySelector('form').requestSubmit();
   expect(button.getAttribute('aria-busy')).toBe('true');
   expect(button.disabled).toBe(true);
-  expect(status.textContent).toBe('Asking Puter AI…');
+  expect(status.textContent).toBe('Asking Everything AI…');
   fail(new Error('boom'));
   await vi.advanceTimersByTimeAsync(0);
   expect(button.hasAttribute('aria-busy')).toBe(false);

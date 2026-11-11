@@ -187,7 +187,7 @@ export async function importProjectBundle(library, file, { onProgress } = {}) {
   return { project, missing };
 }
 
-/** Save a Blob as a download (browser) — the caller decides on Puter saving. */
+/** Save a Blob as a download (browser) — the caller decides on Everything saving. */
 export function downloadBlob(blob, fileName) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');

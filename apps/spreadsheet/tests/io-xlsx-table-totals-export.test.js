@@ -19,7 +19,7 @@ async function exported(wb) {
   const table = parser.parseFromString(text('/xl/tables/table1.xml'), 'application/xml');
   const columns = [...table.querySelectorAll('tableColumn')];
   const part = X.CFB.find(zip, '/xl/workbook.xml');
-  part.content = new TextEncoder().encode(text('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  part.content = new TextEncoder().encode(text('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   part.size = part.content.length;
   return { table, columns, reopen: () => workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'native.xlsx') };
 }

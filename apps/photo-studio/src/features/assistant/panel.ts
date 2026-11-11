@@ -60,7 +60,7 @@ const STATUS_ICON: Record<Step['status'], [string, string]> = {
 };
 function badges(s: Step) {
   const out: string[] = [];
-  if (AI_COMMANDS.has(s.action)) out.push('<span class="ast-tag ai" title="Opens prefilled; uses Puter AI credits when you press Generate">AI credits</span>');
+  if (AI_COMMANDS.has(s.action)) out.push('<span class="ast-tag ai" title="Opens prefilled; uses Everything AI credits when you press Generate">AI credits</span>');
   else if (s.input === 'dialog') out.push('<span class="ast-tag" title="Opens its dialog during the run so you can choose settings">Asks for settings</span>');
   return out.join('');
 }

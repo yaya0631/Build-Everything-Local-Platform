@@ -49,7 +49,7 @@ test("while one AI request runs the other actions are disabled, and the photo pi
       canEdit: () => true,
       toast() {},
       refresh() {},
-      puter: () => null,
+      everything: () => null,
       fileInput: () => pickers++,
     });
     ai.open();

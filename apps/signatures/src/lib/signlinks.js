@@ -1,7 +1,7 @@
 /**
- * Sign links: self-serve signing over a per-user Puter worker.
+ * Sign links: self-serve signing over a per-user Everything worker.
  *
- * The app's only backend is Puter, which signers (who may have no Puter
+ * The app's only backend is Everything, which signers (who may have no Everything
  * account at all) can't touch. So each user gets their own serverless worker
  * (`https://doc-sign-….localhost:8443`, deployed here on first send from the
  * template in src/workers/sign-worker.js) that runs under THEIR account and
@@ -36,7 +36,7 @@ const PULL_MIN_MS = 45_000;
 
 export function createSignLinks({
   store,
-  getPuter = () => (typeof puter !== 'undefined' ? puter : null),
+  getEverything = () => (typeof everything !== 'undefined' ? everything : null),
   fetchFn = (...args) => fetch(...args),
   verifyAttempts = 6,
   verifyDelayMs = 3000,
@@ -57,10 +57,10 @@ export function createSignLinks({
   let lastPullAt = 0;
   let chain = Promise.resolve(); // serializes every network pass
 
-  const kv = () => getPuter().kv;
+  const kv = () => getEverything().kv;
 
   function available() {
-    const p = getPuter();
+    const p = getEverything();
     return Boolean(p && p.workers && typeof p.workers.create === 'function');
   }
 
@@ -128,8 +128,8 @@ export function createSignLinks({
       return cfg;
     }
 
-    const p = getPuter();
-    if (!p || !p.workers || !p.fs) throw new Error('signlinks: Puter workers are unavailable');
+    const p = getEverything();
+    if (!p || !p.workers || !p.fs) throw new Error('signlinks: Everything workers are unavailable');
     if (Date.now() < verifyBlockedUntil) {
       throw new Error('signlinks: worker deploy pending (cooling down after a failed verify)');
     }

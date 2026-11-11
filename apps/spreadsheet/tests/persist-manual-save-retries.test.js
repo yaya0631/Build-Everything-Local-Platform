@@ -1,13 +1,13 @@
 import { afterEach, beforeAll, beforeEach, expect, it, vi } from 'vitest';
 import { Doc } from '../src/lib/doc.js';
 import { memoryStorage } from './helpers/memory-storage.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 
 let mock;
 // SheetJS is loaded on first use with a real dynamic import; warm it up so no test waits on it.
 beforeAll(async () => { await Doc.blank().toXlsxBlob(); });
-beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); mock = installMockPuter(); vi.useFakeTimers(); });
-afterEach(() => { vi.useRealTimers(); delete globalThis.puter; });
+beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); mock = installMockEverything(); vi.useFakeTimers(); });
+afterEach(() => { vi.useRealTimers(); delete globalThis.everything; });
 
 async function openDocument() {
   const doc = Doc.blank();
@@ -19,10 +19,10 @@ async function openDocument() {
 
 /** Writes to the document's file fail (a full drive, an outage) while `failing` is set; the attempts are counted. */
 function failWrites(doc) {
-  const write = puter.fs.write;
+  const write = everything.fs.write;
   const state = { failing: true, attempts: 0 };
-  puter.fs.write = async (path, ...rest) => {
-    if (!state.failing || path !== doc.path) return write.call(puter.fs, path, ...rest); // the history's snapshots are not the file
+  everything.fs.write = async (path, ...rest) => {
+    if (!state.failing || path !== doc.path) return write.call(everything.fs, path, ...rest); // the history's snapshots are not the file
     state.attempts++;
     throw new Error('Storage quota exceeded');
   };
@@ -76,13 +76,13 @@ it('asks again later when a save forced over a missing file fails, instead of fa
 it('does not try again when the failed save had nothing pending, or without a session', async () => {
   // A clean book saved by hand for the first time: nothing is pending once that fails.
   const doc = Doc.blank();
-  const write = puter.fs.write;
+  const write = everything.fs.write;
   let attempts = 0;
-  puter.fs.write = async () => { attempts++; throw new Error('Storage quota exceeded'); };
+  everything.fs.write = async () => { attempts++; throw new Error('Storage quota exceeded'); };
   try {
     await expect(doc.save()).rejects.toThrow('Storage quota exceeded');
     expect(attempts).toBe(1);
     await vi.advanceTimersByTimeAsync(10 * 60_000);
     expect(attempts).toBe(1);
-  } finally { puter.fs.write = write; doc.destroy(); }
+  } finally { everything.fs.write = write; doc.destroy(); }
 });

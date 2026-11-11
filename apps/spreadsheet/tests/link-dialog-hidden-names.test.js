@@ -6,8 +6,8 @@ import { closeAllModals } from '../src/ui/modal.js';
 import { buildPivot } from '../src/core/pivot.js';
 import { insertPivotSheet } from '../src/ui/pivotdialog.js';
 
-// A pivot table built from the PivotTable dialog keeps its definition as hidden names (_PuterPivot_Source and
-// _PuterPivot_Area, references), as Solver keeps its model. Insert Link listed every name that is a reference,
+// A pivot table built from the PivotTable dialog keeps its definition as hidden names (_EverythingPivot_Source and
+// _EverythingPivot_Area, references), as Solver keeps its model. Insert Link listed every name that is a reference,
 // hidden or not, so each pivot table put its workings among the named ranges a link can go to, where Excel lists
 // only the names the Name Manager shows.
 let view;

@@ -4,10 +4,10 @@ import { PDFDocument, PDFHexString, PDFName, PDFNumber, PDFString } from 'pdf-li
 import { readFile } from 'node:fs/promises';
 import { addNote, listNotes } from '../../src/core/notes.js';
 
-const PUTER_MOCK = `window.puter = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async () => ({}) }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
-async function mockPuter(page) {
-  await page.route('**/sdk/puter.js', (route) =>
-    route.fulfill({ contentType: 'application/javascript', body: PUTER_MOCK }),
+const EVERYTHING_MOCK = `window.everything = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async () => ({}) }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
+async function mockEverything(page) {
+  await page.route('**/sdk/everything.js', (route) =>
+    route.fulfill({ contentType: 'application/javascript', body: EVERYTHING_MOCK }),
   );
 }
 async function openPdf(page, doc, name = 'test.pdf') {
@@ -30,7 +30,7 @@ test('the Note tool leaves a sticky note that can be read, edited, recolored, an
   page,
   isMobile,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([400, 400]);
@@ -81,7 +81,7 @@ test('the Note tool leaves a sticky note that can be read, edited, recolored, an
 test('empty or unchanged notes close without an edit and Escape cancels a draft', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([400, 400]);
@@ -115,7 +115,7 @@ test('empty or unchanged notes close without an edit and Escape cancels a draft'
 test('notes from other editors show an icon, open with their author, and stay editable', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   const pdfPage = doc.addPage([400, 400]);
@@ -159,7 +159,7 @@ test('notes from other editors show an icon, open with their author, and stay ed
 test('content-locked notes can be read, recolored, and removed without editing their text', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([400, 400]);
@@ -197,7 +197,7 @@ test('content-locked notes can be read, recolored, and removed without editing t
 test('a note with locked properties still permits text edits, export, undo and redo', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([400, 400]);
@@ -239,7 +239,7 @@ test('a note with locked properties still permits text edits, export, undo and r
 
 for (const flags of [64, 128 | 512]) {
   test(`notes with flags ${flags} remain fully read-only`, async ({ page }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     const doc = await PDFDocument.create();
     doc.addPage([400, 400]);
@@ -265,7 +265,7 @@ for (const flags of [0, 512]) {
     test(`an imported ${kind} note with flags ${flags} can change color without rewriting text`, async ({
       page,
     }) => {
-      await mockPuter(page);
+      await mockEverything(page);
       await page.goto('/#library');
       const doc = await PDFDocument.create();
       doc.addPage([400, 400]);
@@ -299,7 +299,7 @@ for (const flags of [0, 512]) {
 test('editing custom note text preserves its icon, size, and popup through export and history', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([400, 400]);
@@ -354,7 +354,7 @@ test('editing custom note text preserves its icon, size, and popup through expor
 test('recoloring a translucent note preserves its appearance opacity through export and history', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([400, 400]);
@@ -407,7 +407,7 @@ test('recoloring a translucent note preserves its appearance opacity through exp
 test('recoloring an imported note preserves note and popup bounds through export and history', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([400, 400]);

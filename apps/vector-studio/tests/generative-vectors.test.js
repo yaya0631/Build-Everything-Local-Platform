@@ -138,7 +138,7 @@ describe('Generate Vectors', () => {
   it('explains what is needed when signed out or offline', async () => {
     const app = await bootAppWithFeatures();
     app.newDocument();
-    app.puter = { ai: { chat: vi.fn(), txt2img: vi.fn() } };
+    app.everything = { ai: { chat: vi.fn(), txt2img: vi.fn() } };
     app.onSignIn = vi.fn();
     openPanel(app);
     const p = panelOf(app);
@@ -158,7 +158,7 @@ describe('Generate Vectors', () => {
     p.promptBox.value = 'a cat';
     await p.generate();
     expect(p.status.textContent).toMatch(/offline/);
-    expect(app.puter.ai.txt2img).not.toHaveBeenCalled();
+    expect(app.everything.ai.txt2img).not.toHaveBeenCalled();
   });
 
   it('reports service errors in the panel', async () => {

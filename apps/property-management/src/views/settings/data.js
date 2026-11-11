@@ -126,7 +126,7 @@ export function dataSection() {
       h('div.card-head', h('h2.grow', 'Your data')),
       h(
         'div.card-body.stack',
-        h('p.muted', app.demo ? 'This is a demo. Nothing is saved to the cloud.' : 'Your records are stored in your own Puter account and kept on this device so the app opens instantly and works offline.'),
+        h('p.muted', app.demo ? 'This is a demo. Nothing is saved to the cloud.' : 'Your records are stored in your own Everything account and kept on this device so the app opens instantly and works offline.'),
         total
           ? h(
               'dl.kv.data-counts',

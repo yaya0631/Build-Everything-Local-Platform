@@ -85,7 +85,7 @@ it('retains imported families in cells, chart text, native XLSX and external HTM
     expect(chart).toContain('typeface="Gadugi"');
     expect(chart).toContain('typeface="Book Antiqua"');
     const part = X.CFB.find(zip, '/xl/workbook.xml');
-    part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+    part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
     part.size = part.content.length;
     wb = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'external.xlsx');
   }
@@ -119,7 +119,7 @@ it('keeps unlisted fonts in native differential table styles', async () => {
   const array = await new Promise(resolve => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.readAsArrayBuffer(blob); });
   const zip = X.CFB.read(new Uint8Array(array), { type: 'array' });
   const part = X.CFB.find(zip, '/xl/workbook.xml');
-  part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   part.size = part.content.length;
   const back = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'external.xlsx');
   expect(back.activeSheet.tables[0].customStyle.headerRow.font).toBe('font:Book Antiqua');

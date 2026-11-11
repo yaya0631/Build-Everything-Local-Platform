@@ -8,9 +8,9 @@
  *   remove(path)                         (missing is not an error)
  *   list(dir) -> [{ name, isDir, modified, size }]
  *
- * puterBackend keeps them in the app's Puter appdata folder (relative paths
+ * everythingBackend keeps them in the app's Everything appdata folder (relative paths
  * resolve there), opfsBackend in this browser's origin private file system,
- * memoryBackend in memory (tests and last-resort fallback). puter.kv is
+ * memoryBackend in memory (tests and last-resort fallback). everything.kv is
  * never used for content.
  */
 
@@ -20,20 +20,20 @@ export function isMissing(err) {
   return code === 'subject_does_not_exist' || code === 'not_found' || code === 'dest_does_not_exist' || err?.status === 404 || err?.name === 'NotFoundError' || /does not exist|not found|no such/i.test(msg);
 }
 
-export function puterBackend(puter, root) {
+export function everythingBackend(everything, root) {
   const p = (path) => (root ? `${root}/${path}` : path);
   const backend = {
-    kind: 'puter',
+    kind: 'everything',
     async readBlob(path) {
       try {
-        return await puter.fs.read(p(path));
+        return await everything.fs.read(p(path));
       } catch (err) {
         if (isMissing(err)) return null;
         throw err;
       }
     },
     async writeBlob(path, blob) {
-      await puter.fs.write(p(path), blob, { overwrite: true, createMissingParents: true });
+      await everything.fs.write(p(path), blob, { overwrite: true, createMissingParents: true });
     },
     async readJSON(path) {
       const blob = await backend.readBlob(path);
@@ -42,18 +42,18 @@ export function puterBackend(puter, root) {
       return text ? JSON.parse(text) : null;
     },
     async writeJSON(path, value) {
-      await puter.fs.write(p(path), JSON.stringify(value), { overwrite: true, createMissingParents: true });
+      await everything.fs.write(p(path), JSON.stringify(value), { overwrite: true, createMissingParents: true });
     },
     async remove(path) {
       try {
-        await puter.fs.delete(p(path), { recursive: true });
+        await everything.fs.delete(p(path), { recursive: true });
       } catch (err) {
         if (!isMissing(err)) throw err;
       }
     },
     async list(dir) {
       try {
-        const items = await puter.fs.readdir(p(dir));
+        const items = await everything.fs.readdir(p(dir));
         return items.map((it) => ({ name: it.name, isDir: Boolean(it.is_dir ?? it.isDir), modified: toMs(it.modified), size: it.size || 0 }));
       } catch (err) {
         if (isMissing(err)) return [];
@@ -64,7 +64,7 @@ export function puterBackend(puter, root) {
   return backend;
 }
 
-/** Puter timestamps are Unix seconds; normalize to ms. */
+/** Everything timestamps are Unix seconds; normalize to ms. */
 export function toMs(t) {
   const n = Number(t);
   if (!Number.isFinite(n) || n <= 0) return 0;

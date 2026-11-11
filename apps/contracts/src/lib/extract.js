@@ -100,11 +100,11 @@ function sanitize(list) {
 }
 
 /**
- * Ask Puter AI for the obligations in `text`.
+ * Ask Everything AI for the obligations in `text`.
  * Throws on transport errors; resolves [] when the model finds none.
  */
 export async function extractObligations(text) {
-  const response = await puter.ai.chat(buildExtractionPrompt(text));
+  const response = await everything.ai.chat(buildExtractionPrompt(text));
   const content = typeof response === 'string' ? response : response?.message?.content;
   // Some providers return content as an array of blocks.
   const flat = Array.isArray(content)

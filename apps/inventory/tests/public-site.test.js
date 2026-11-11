@@ -48,7 +48,7 @@ describe('public library', () => {
         expect(existsSync(new URL('../public/' + name.replace(/^\.?\//, ''), import.meta.url)), name).toBe(true);
       }
       if (path !== '/') {
-        expect(document.querySelector('script[src*="puter"]')).toBeNull();
+        expect(document.querySelector('script[src*="everything"]')).toBeNull();
         expect(document.querySelector('link[rel="canonical"]').href).toBe('https://inventory.zone' + path);
         expect(document.querySelector('meta[name="description"]').content.length).toBeGreaterThan(30);
       }

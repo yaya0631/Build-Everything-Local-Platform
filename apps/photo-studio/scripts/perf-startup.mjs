@@ -23,7 +23,7 @@ const results = [];
 for (let i = 0; i < runs; i++) {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   const page = await context.newPage();
-  await page.route("**/sdk/puter.js", (r) => r.fulfill({ contentType: "application/javascript", body: 'window.puter={env:"app"};' }));
+  await page.route("**/sdk/everything.js", (r) => r.fulfill({ contentType: "application/javascript", body: 'window.everything={env:"app"};' }));
   const cdp = await context.newCDPSession(page);
   await cdp.send("Emulation.setCPUThrottlingRate", { rate: 4 });
   if (network) {

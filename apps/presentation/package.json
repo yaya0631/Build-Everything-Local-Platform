@@ -4,7 +4,7 @@
   "private": true,
   "license": "AGPL-3.0-only",
   "type": "module",
-  "description": "A clean, accessible presentation editor with real PPTX files and Puter cloud storage.",
+  "description": "A clean, accessible presentation editor with real PPTX files and Everything cloud storage.",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",
@@ -34,7 +34,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/HeyPuter/presentation.git"
+    "url": "git+https://github.com/yaya0631/Build-Everything-Local-Platform"
   },
   "engines": {
     "node": ">=22.18.0"

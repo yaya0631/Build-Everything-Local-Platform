@@ -1,24 +1,24 @@
 /**
- * The open document: where it lives on Puter, its display name, and whether
+ * The open document: where it lives on Everything, its display name, and whether
  * what is on screen matches what is on disk. The editing engine owns the
  * content; it hands us an `exporter` (async () => Blob) once it is ready, and
  * tells us about every edit through `changed()`.
  *
  * Edits autosave after a short pause. A document that has never been saved
  * gets a file in the app folder the first time it changes, so nothing typed
- * is ever only in memory for long. Inside the Puter desktop it waits for the
- * first Save instead, which asks where the file goes (Puter's Save dialog,
+ * is ever only in memory for long. Inside the Everything desktop it waits for the
+ * first Save instead, which asks where the file goes (Everything's Save dialog,
  * which writes it); autosaves and retries never ask. Files opened from
- * outside the app folder (the Puter file picker, "Open with") save back to
+ * outside the app folder (the Everything file picker, "Open with") save back to
  * where they came from.
  *
- * Without a Puter session there is nowhere to write: autosaves wait, and an
+ * Without an Everything session there is nowhere to write: autosaves wait, and an
  * explicit save fails with SIGN_IN_TO_SAVE so the view can ask for a sign-in.
  *
  * status: 'saved' | 'unsaved' | 'saving' | 'error' | 'offline'
  */
 
-import * as P from './puter.js';
+import * as P from './everything.js';
 import { session } from './session.js';
 import { snapshotIfDue, saveVersion, renameVersions, deleteVersions } from './versions.js';
 import { movePublication, unpublishAt } from './publish.js';
@@ -31,7 +31,7 @@ export const AUTOSAVE_MS = 1500;
 export const MAX_AUTOSAVE_MS = 30000;
 export const RETRY_MS = 8000;
 export const UNTITLED = 'Untitled document';
-export const SIGN_IN_TO_SAVE = 'Sign in to Puter to save this document';
+export const SIGN_IN_TO_SAVE = 'Sign in to Everything to save this document';
 /** Markdown, HTML, and plain text are read and converted on the main thread; a novel is about a megabyte. */
 export const MAX_TEXT_IMPORT_BYTES = 20 * 1024 * 1024;
 /** Version snapshots after saves; tests switch them off. */
@@ -58,7 +58,7 @@ export function needsUnloadWarning(doc) {
 }
 
 /**
- * A file Puter's Save dialog wrote under a name without ".docx" ("Notes", "Plan v1.2") gets it, as a word
+ * A file Everything's Save dialog wrote under a name without ".docx" ("Notes", "Plan v1.2") gets it, as a word
  * processor's Save adds it. When that name is taken the file keeps the name the user gave it.
  */
 async function withDocxExtension(item) {
@@ -132,7 +132,7 @@ export class Doc extends EventTarget {
 
   /** Editable .docx target; other extensions are saved as a fresh .docx. */
   get isDocxPath() {
-    // A file the user named in Puter's Save dialog is the document's own, whatever its name ends with.
+    // A file the user named in Everything's Save dialog is the document's own, whatever its name ends with.
     return !!this.path && (/\.docx$/i.test(this.path) || this.path === this._placedAs);
   }
 
@@ -286,7 +286,7 @@ export class Doc extends EventTarget {
       if (auto) return false;
       throw new Error(SIGN_IN_TO_SAVE);
     }
-    // A new file inside the Puter desktop goes where the user puts it. Only Save asks; an autosave or a retry
+    // A new file inside the Everything desktop goes where the user puts it. Only Save asks; an autosave or a retry
     // writes nothing until then, since a dialog nobody asked for would come up in the middle of the typing.
     if (this._needsPlace()) return auto ? false : !!await this._placeFile(this.fileName, { copy: !!this.path, first: true });
     // The save that held the file may have planned another for these edits: this is it.
@@ -546,7 +546,7 @@ export class Doc extends EventTarget {
   }
 
   /**
-   * Whether saving has to make a new file through Puter's Save dialog: inside the Puter desktop, a document
+   * Whether saving has to make a new file through Everything's Save dialog: inside the Everything desktop, a document
    * with no file of its own, or a template or other non-docx source whose edits go to a fresh .docx.
    */
   _needsPlace() {
@@ -559,7 +559,7 @@ export class Doc extends EventTarget {
   }
 
   /**
-   * Whether Puter's Save dialog is open for this document, so a save waiting on it is waiting on the user. Not the
+   * Whether Everything's Save dialog is open for this document, so a save waiting on it is waiting on the user. Not the
    * export before it, nor the writes after it: a connection that stalls there is a save taking too long.
    */
   get choosingPlace() {
@@ -567,7 +567,7 @@ export class Doc extends EventTarget {
   }
 
   /**
-   * Puter's Save dialog for the document as it stands, suggesting `suggestedName`. The desktop writes the file,
+   * Everything's Save dialog for the document as it stands, suggesting `suggestedName`. The desktop writes the file,
    * and the document lives there from then on, as after a first save (`first`: a version snapshot is due) or
    * Save a copy (`copy`: the file it was opened from stays as it was). Resolves the file, or null when the user
    * cancels and nothing changes.
@@ -596,7 +596,7 @@ export class Doc extends EventTarget {
         throw e;
       }
       if (!item || this._deleted) return null;
-      // Puter's dialog keeps the name as typed. Without the extension ("Notes") the file would count as a source to
+      // Everything's dialog keeps the name as typed. Without the extension ("Notes") the file would count as a source to
       // copy from, as a template does: nothing would autosave to it, and every Save would ask again.
       if (!/\.docx$/i.test(item.path)) item = await withDocxExtension(item);
       // The dialog answers with a path from the home folder (~/Desktop/Report.docx) and no time stamp. The file
@@ -632,7 +632,7 @@ export class Doc extends EventTarget {
   }
 
   /**
-   * Save a copy where the user chooses (Puter's Save dialog, suggesting "<name> copy.docx") and switch to it.
+   * Save a copy where the user chooses (Everything's Save dialog, suggesting "<name> copy.docx") and switch to it.
    * Resolves null when saved, '' when the user cancelled (there is nothing to say), or why it failed.
    */
   async saveCopy({ stillWanted = () => true } = {}) {
@@ -645,7 +645,7 @@ export class Doc extends EventTarget {
     }
   }
 
-  /** Save a copy under a new name in the app folder and switch to it. Without Puter's Save dialog, Save a copy asks for the name alone. */
+  /** Save a copy under a new name in the app folder and switch to it. Without Everything's Save dialog, Save a copy asks for the name alone. */
   async saveAs(newName, { stillWanted = () => true } = {}) {
     return this._withFileLock(() => this._saveAs(newName, stillWanted));
   }

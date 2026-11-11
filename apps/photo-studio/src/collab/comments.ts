@@ -132,7 +132,7 @@ export const isRegion = (a: CommentAnchor) => !!a.width && !!a.height;
 /**
  * Checks a change of the threads by one person, as the worker does for every
  * commit: new threads and messages must be theirs, under their authenticated
- * Puter username; only an author may edit or remove their message; resolving
+ * Everything username; only an author may edit or remove their message; resolving
  * is recorded in the resolver's own name; nothing is removed outright, and
  * limits hold. Owners may remove (soft delete) anyone's thread or message.
  * Returns a reason when the change is refused.

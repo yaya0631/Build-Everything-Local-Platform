@@ -1,5 +1,5 @@
 /**
- * Fakes of the parts of puter.kv and puter.fs the app and the worker use,
+ * Fakes of the parts of everything.kv and everything.fs the app and the worker use,
  * following the documented semantics: prefix list with pagination and
  * optional values, batch set, and incr with a path map that returns the
  * whole object.

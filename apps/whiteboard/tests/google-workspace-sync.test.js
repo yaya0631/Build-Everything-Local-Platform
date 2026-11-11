@@ -322,7 +322,7 @@ test("the Google Workspace sync leaves people it did not provision alone and kee
 
 async function verifyEmail(org, boards, identity, email) {
   const sent = [];
-  org.puter.email = {
+  org.everything.email = {
     async sendTransactional(message) {
       sent.push(message);
       return { failed: [] };

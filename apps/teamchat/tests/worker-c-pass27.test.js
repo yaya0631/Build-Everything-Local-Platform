@@ -231,10 +231,10 @@ describe('a video attachment asked for with a Range header', () => {
 });
 
 describe('an SVG attachment drawn in a message', () => {
-  const realPuter = globalThis.puter;
+  const realEverything = globalThis.everything;
   afterEach(() => {
     clearAttachmentCache();
-    globalThis.puter = realPuter;
+    globalThis.everything = realEverything;
   });
 
   it('is drawn from a data: URL and never from an object URL of the app\'s origin; every other picture keeps its object URL', async () => {
@@ -243,7 +243,7 @@ describe('an SVG attachment drawn in a message', () => {
     // a document whose scripts run there. The app's own open-in-tab keeps
     // SVGs out (canOpenInTab), but the browser's menu did not.
     const svg = '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(document.domain)</script></svg>';
-    globalThis.puter = { workers: { exec: async (url) => {
+    globalThis.everything = { workers: { exec: async (url) => {
       if (String(url).endsWith('/files/svg0000001')) return new Response(svg, { headers: { 'Content-Type': 'image/svg+xml' } });
       if (String(url).endsWith('/files/png0000001')) return new Response(new Uint8Array([137, 80, 78, 71]), { headers: { 'Content-Type': 'image/png' } });
       return new Response(JSON.stringify({ error: 'not_found' }), { status: 404, headers: { 'Content-Type': 'application/json' } });

@@ -20,14 +20,14 @@ function showError(title, message, onRetry) {
 }
 
 async function start() {
-  if (typeof puter === 'undefined') {
-    showError('Could not reach Puter', 'The Puter SDK failed to load. Check your connection and try again.', () => location.reload());
+  if (typeof everything === 'undefined') {
+    showError('Could not reach Everything', 'The Everything SDK failed to load. Check your connection and try again.', () => location.reload());
     return;
   }
 
   let signedIn = false;
   try {
-    signedIn = await Promise.resolve(puter.auth.isSignedIn());
+    signedIn = await Promise.resolve(everything.auth.isSignedIn());
   } catch {
     signedIn = false;
   }
@@ -44,7 +44,7 @@ async function boot() {
     await store.init();
   } catch (err) {
     console.error(err);
-    showError('Could not load your data', 'Something went wrong talking to your Puter cloud. Check your connection and try again.', () => location.reload());
+    showError('Could not load your data', 'Something went wrong talking to your Everything cloud. Check your connection and try again.', () => location.reload());
     return;
   }
 
@@ -61,7 +61,7 @@ async function boot() {
 
   // Saves are debounced, so a close inside that window still has to land —
   // but it no longer needs to interrupt anyone: flushAll() writes the local
-  // mirror first, and whatever does not reach Puter goes out from there on
+  // mirror first, and whatever does not reach Everything goes out from there on
   // the next visit.
   window.addEventListener('beforeunload', () => {
     if (store.dirty) store.flushAll();
@@ -69,7 +69,7 @@ async function boot() {
 }
 
 /**
- * The shell — this app's HTML, JS, CSS and the Puter SDK — is cached so the
+ * The shell — this app's HTML, JS, CSS and the Everything SDK — is cached so the
  * app can start with no connection. Data never is (see public/sw.js).
  * Registered after load so it never competes with the first paint, and only
  * in a real build: in dev it would sit between Vite and the browser.

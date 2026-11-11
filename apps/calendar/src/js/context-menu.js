@@ -1,10 +1,10 @@
 /**
  * Context menu.
  *
- * Per project requirement, this uses Puter's native context-menu API
- * (`puter.ui.contextMenu`) whenever the app is running inside the Puter GUI,
+ * Per project requirement, this uses Everything's native context-menu API
+ * (`everything.ui.contextMenu`) whenever the app is running inside the Everything GUI,
  * where that API is supported. When the app is served as a standalone website
- * (dev server or generic hosting) Puter's UI bridge isn't present, so we render
+ * (dev server or generic hosting) Everything's UI bridge isn't present, so we render
  * a styled, keyboard-accessible menu that mirrors the same item contract:
  *
  *   items: Array<'-' | {
@@ -19,13 +19,13 @@ import { el } from './dom.js';
 
 let activeMenu = null;
 
-function isPuterGui() {
+function isEverythingGui() {
   try {
     return (
-      typeof puter !== 'undefined' &&
-      puter.ui &&
-      typeof puter.ui.contextMenu === 'function' &&
-      (puter.env === 'app' || puter.env === 'gui')
+      typeof everything !== 'undefined' &&
+      everything.ui &&
+      typeof everything.ui.contextMenu === 'function' &&
+      (everything.env === 'app' || everything.env === 'gui')
     );
   } catch {
     return false;
@@ -72,8 +72,8 @@ export function openContextMenu(evt, items) {
   const usable = items.filter(Boolean);
   if (!usable.length) return;
 
-  // Native Puter menu (positions itself at the cursor).
-  if (isPuterGui()) {
+  // Native Everything menu (positions itself at the cursor).
+  if (isEverythingGui()) {
     const mapped = usable.map((it) =>
       it === '-'
         ? '-'
@@ -84,7 +84,7 @@ export function openContextMenu(evt, items) {
           },
     );
     try {
-      puter.ui.contextMenu({ items: mapped });
+      everything.ui.contextMenu({ items: mapped });
       return;
     } catch {
       /* fall through to the local renderer */

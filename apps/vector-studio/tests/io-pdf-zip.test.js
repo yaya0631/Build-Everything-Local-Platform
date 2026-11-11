@@ -260,13 +260,13 @@ describe('helpers', () => {
   });
 });
 
-describe('delivering exports to Puter', () => {
-  it('treats a cancelled Puter picker as cancelled instead of waiting forever', async () => {
+describe('delivering exports to Everything', () => {
+  it('treats a cancelled Everything picker as cancelled instead of waiting forever', async () => {
     const { deliverFiles } = await import('../src/features/io/deliver.js');
     const never = new Promise(() => {});
     never.undefinedOnCancel = Promise.resolve(undefined);
-    const app = { user: { username: 'u' }, puter: { ui: { showSaveFilePicker: () => never } } };
-    const r = await deliverFiles(app, [{ name: 'a.svg', blob: new Blob(['x']) }], { dest: 'puter' });
+    const app = { user: { username: 'u' }, everything: { ui: { showSaveFilePicker: () => never } } };
+    const r = await deliverFiles(app, [{ name: 'a.svg', blob: new Blob(['x']) }], { dest: 'everything' });
     expect(r).toBe(null);
   });
 });

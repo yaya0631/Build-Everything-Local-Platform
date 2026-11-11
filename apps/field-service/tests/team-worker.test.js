@@ -65,14 +65,14 @@ function fakeFS() {
   };
 }
 
-const person = (uuid, username) => ({ puter: { auth: { getUser: async () => ({ uuid, username }) } } });
+const person = (uuid, username) => ({ everything: { auth: { getUser: async () => ({ uuid, username }) } } });
 
 function loadWorker({ kv = fakeKV() } = {}) {
   const routes = [];
   const router = { get: (p, fn) => routes.push(['GET', p, fn]), post: (p, fn) => routes.push(['POST', p, fn]) };
   new Function('router', SOURCE)(router);
   const fsys = fakeFS();
-  const me = { puter: { kv, fs: fsys, auth: { getUser: async () => ({ uuid: 'owner-1', username: 'olivia' }) } } };
+  const me = { everything: { kv, fs: fsys, auth: { getUser: async () => ({ uuid: 'owner-1', username: 'olivia' }) } } };
   const handler = (method, path) => routes.find(([m, p]) => m === method && p === path)?.[2];
   return {
     kv,
@@ -85,7 +85,7 @@ function loadWorker({ kv = fakeKV() } = {}) {
     async health() {
       return (await handler('GET', '/health')({ me })).json();
     },
-    /** A puter.workers.exec stand-in for the app-side client. */
+    /** An everything.workers.exec stand-in for the app-side client. */
     exec(user) {
       return async (url, init) => {
         const res = await handler('POST', '/api')({ me, user, request: { json: async () => JSON.parse(init.body), headers: new Headers() } });
@@ -111,7 +111,7 @@ describe('team worker', () => {
 
   it('refuses callers without a session', async () => {
     expect((await w.api(null, { op: 'meta' })).status).toBe(401);
-    expect((await w.api({ puter: { auth: { getUser: async () => { throw new Error('expired'); } } } }, { op: 'meta' })).status).toBe(401);
+    expect((await w.api({ everything: { auth: { getUser: async () => { throw new Error('expired'); } } } }, { op: 'meta' })).status).toBe(401);
   });
 
   it('lets the owner read and write records with the app key layout', async () => {
@@ -190,12 +190,12 @@ describe('team worker', () => {
     const inv = (await w.api(OWNER, { op: 'invite', role: 'member' })).body;
     // A freshly started copy of the worker whose lookup of its owner fails.
     const cold = loadWorker({ kv: w.kv });
-    const getUser = cold.me.puter.auth.getUser;
-    cold.me.puter.auth.getUser = async () => {
+    const getUser = cold.me.everything.auth.getUser;
+    cold.me.everything.auth.getUser = async () => {
       throw new Error('auth service unavailable');
     };
     expect((await cold.api(STRANGER, { op: 'join', token: inv.token })).status).toBe(503);
-    cold.me.puter.auth.getUser = getUser;
+    cold.me.everything.auth.getUser = getUser;
     expect((await cold.api(STRANGER, { op: 'join', token: inv.token })).body).toMatchObject({ ok: true, role: 'member' });
   });
 
@@ -223,7 +223,7 @@ describe('team worker', () => {
     const inv = (await w.api(OWNER, { op: 'invite', role: 'member' })).body;
     await w.api(STRANGER, { op: 'join', token: inv.token });
     const url = 'http://fieldsvc-abc.localhost:8443';
-    const mk = (user) => createStore({ backend: createWorkerBackend(url, { getPuter: () => ({ workers: { exec: w.exec(user) } }) }), flushDelay: 0 });
+    const mk = (user) => createStore({ backend: createWorkerBackend(url, { getEverything: () => ({ workers: { exec: w.exec(user) } }) }), flushDelay: 0 });
     const ownerStore = mk(OWNER);
     const memberStore = mk(STRANGER);
     await ownerStore.init();
@@ -244,7 +244,7 @@ describe('switching to team sign-in from another device', () => {
   it('brings over changes the team does not have, without overwriting newer team edits', async () => {
     const w = loadWorker();
     const url = 'http://fieldsvc-abc.localhost:8443';
-    const teamBackend = createWorkerBackend(url, { getPuter: () => ({ workers: { exec: w.exec(OWNER) } }) });
+    const teamBackend = createWorkerBackend(url, { getEverything: () => ({ workers: { exec: w.exec(OWNER) } }) });
     // What the team server got when team sign-in was turned on.
     await teamBackend.putRecords('clients', [
       { id: 'a', firstName: 'Ann', updatedAt: '2026-10-12T09:00:00.000Z' },
@@ -292,7 +292,7 @@ describe('team worker hardening', () => {
     for (const op of ['constructor', 'toString', '__proto__', 'hasOwnProperty']) {
       const res = await w.api(OWNER, { op });
       expect(res.status, op).toBe(400);
-      expect(JSON.stringify(res.body)).not.toMatch(/authToken|puter/);
+      expect(JSON.stringify(res.body)).not.toMatch(/authToken|everything/);
     }
   });
 
@@ -320,13 +320,13 @@ describe('worker updates', () => {
       json: async () => ({ ok: true, build: deployed }),
       text: async () => `// field-service-team-worker build=${bundled}\n`,
     });
-    globalThis.puter = { fs: { write: async (path) => writes.push(path) } };
+    globalThis.everything = { fs: { write: async (path) => writes.push(path) } };
     try {
       const updated = await updateWorkerIfNeeded({ url: 'http://fieldsvc-abc.localhost:8443', path: 'field-service-team/worker.js' });
       return { updated, writes: writes.length };
     } finally {
       globalThis.fetch = realFetch;
-      delete globalThis.puter;
+      delete globalThis.everything;
     }
   }
 
@@ -341,7 +341,7 @@ describe('worker updates', () => {
 });
 
 describe('business list', () => {
-  it("uses this device's copy when Puter can't be read, and never guesses", async () => {
+  it("uses this device's copy when Everything can't be read, and never guesses", async () => {
     const mem = new Map();
     globalThis.localStorage = { getItem: (k) => mem.get(k) ?? null, setItem: (k, v) => mem.set(k, String(v)) };
     app.user = { uuid: 'owner-1', username: 'olivia' };
@@ -363,7 +363,7 @@ describe('business list', () => {
     const reload = vi.fn();
     const realLocation = globalThis.location;
     globalThis.location = { hash: '#/clients', reload };
-    globalThis.puter = { kv: { async set() { throw new Error('network'); } } };
+    globalThis.everything = { kv: { async set() { throw new Error('network'); } } };
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     app.workspaces = { current: 'own', own: {}, joined: [{ url: 'http://fieldsvc-abc.localhost:8443' }] };
     try {
@@ -374,7 +374,7 @@ describe('business list', () => {
     } finally {
       warn.mockRestore();
       globalThis.location = realLocation;
-      delete globalThis.puter;
+      delete globalThis.everything;
       app.workspaces = null;
     }
   });
@@ -384,7 +384,7 @@ describe('turning on team sign-in', () => {
   it("copies the business as it is now, including another device's latest changes", async () => {
     const realFetch = globalThis.fetch;
     globalThis.fetch = async () => ({ ok: true, text: async () => '// field-service-team-worker build=3\n', json: async () => ({ ok: true, build: '3' }) });
-    globalThis.puter = {
+    globalThis.everything = {
       fs: { write: async () => ({ path: 'field-service-team-worker.js' }) },
       workers: { create: async (name) => ({ success: true, url: `http://${name}.localhost:8443` }), delete: async () => {}, exec: w.exec(OWNER) },
     };
@@ -404,7 +404,7 @@ describe('turning on team sign-in', () => {
       expect(copied.map((r) => r.phone)).toEqual(['555-0100']);
     } finally {
       globalThis.fetch = realFetch;
-      delete globalThis.puter;
+      delete globalThis.everything;
     }
   });
 
@@ -417,7 +417,7 @@ describe('turning on team sign-in', () => {
       text: async () => '// field-service-team-worker build=3\n',
       json: async () => ({ ok: false }),
     });
-    globalThis.puter = {
+    globalThis.everything = {
       fs: { write: async () => ({ path: 'field-service-team-worker.js' }) },
       workers: { create: async (name) => ({ success: true, url: `http://${name}.localhost:8443` }), delete: async (name) => deleted.push(name) },
     };
@@ -431,7 +431,7 @@ describe('turning on team sign-in', () => {
       expect(deleted[0]).toMatch(/^fieldsvc-/);
     } finally {
       globalThis.fetch = realFetch;
-      delete globalThis.puter;
+      delete globalThis.everything;
       vi.useRealTimers();
     }
   });

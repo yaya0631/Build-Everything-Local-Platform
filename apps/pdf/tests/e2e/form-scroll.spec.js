@@ -8,7 +8,7 @@ for (const multiline of [false, true])
       page,
     }) => {
       await page.setViewportSize({ width: 1000, height: 800 });
-      await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
+      await page.route('**/sdk/everything.js', (route) => route.fulfill({ body: '' }));
       await page.goto('/#library');
       const doc = await PDFDocument.create();
       const sheet = doc.addPage([600, 800]);

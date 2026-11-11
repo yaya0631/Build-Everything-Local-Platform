@@ -1,15 +1,15 @@
 // Test harness for shared documents in the browser: the room worker service
-// and Puter (KV, files, restricted tokens, worker requests, change events and
-// peer links) run in the test process; each page gets a stand-in Puter.js
-// that forwards to it. Only these tests load it (it replaces the Puter.js
+// and Everything (KV, files, restricted tokens, worker requests, change events and
+// peer links) run in the test process; each page gets a stand-in Everything.js
+// that forwards to it. Only these tests load it (it replaces the Everything.js
 // script through request routing); production never sees it.
 import type { BrowserContext, Page } from '@playwright/test';
 import { environment, type User } from '../collab-helpers';
 
 export type Env = ReturnType<typeof environment>;
 
-/** The page side of the stand-in Puter.js (serialized into the page). */
-export function pagePuter(authToken: string) {
+/** The page side of the stand-in Everything.js (serialized into the page). */
+export function pageEverything(authToken: string) {
   const call = (method: string, ...args: unknown[]) => (window as unknown as { __collab(m: string, a: unknown[]): Promise<unknown> }).__collab(method, args);
   class T extends EventTarget {
     emit(type: string, props: Record<string, unknown> = {}) {
@@ -73,9 +73,9 @@ export function pagePuter(authToken: string) {
     }
   };
   const never = () => new Promise(() => {});
-  w.puter = {
+  w.everything = {
     env: 'web',
-    APIOrigin: 'https://api.puter.test',
+    APIOrigin: 'https://api.everything.test',
     authToken,
     auth: { isSignedIn: () => true, signIn: async () => true, signOut() {}, getUser: () => call('auth.getUser') },
     kv: { get: (k: string) => call('kv.get', k), set: (k: string, v: unknown) => call('kv.set', k, v) },
@@ -203,10 +203,10 @@ export async function person(env: Env, peers: ReturnType<typeof relay>, context:
       case 'peer.close':
         return peers.close(a);
     }
-    throw new Error(`Unknown stand-in Puter call ${method}`);
+    throw new Error(`Unknown stand-in Everything call ${method}`);
   });
   const token = 'header.' + Buffer.from(JSON.stringify({ type: 'app-under-user', app_uid: 'app-photo', user_uid: user.uuid })).toString('base64') + '.signature';
-  await page.route('**/sdk/puter.js', (route) => route.fulfill({ contentType: 'application/javascript', body: `(${pagePuter.toString()})(${JSON.stringify(token)});` }));
+  await page.route('**/sdk/everything.js', (route) => route.fulfill({ contentType: 'application/javascript', body: `(${pageEverything.toString()})(${JSON.stringify(token)});` }));
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
   page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));

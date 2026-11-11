@@ -1,6 +1,6 @@
 /**
  * The ticket screen in jsdom: drafts, field edits, shortcuts and submits,
- * over the real app, backend and replica on the dev mock of the Puter SDK.
+ * over the real app, backend and replica on the dev mock of the Everything SDK.
  */
 import { describe, it, expect, beforeAll, afterAll, afterEach } from 'vitest';
 import axe from 'axe-core';
@@ -35,11 +35,11 @@ function typeInto(el, text) {
 
 beforeAll(async () => {
   localStorage.clear();
-  await import('../dev/mock-puter.js');
+  await import('../dev/mock-everything.js');
   ({ app } = await import('../src/app.js'));
   const { mountShell } = await import('../src/views/shell.js');
   const { installShortcuts } = await import('../src/ui/shortcuts.js');
-  const { currentUser } = await import('../src/client/puter.js');
+  const { currentUser } = await import('../src/client/everything.js');
   installShortcuts();
   document.body.append(root);
   app.user = await currentUser();
@@ -364,9 +364,9 @@ describe('ticket screen', () => {
 
   it('waits for the writing assistant before submitting', async () => {
     const t = tickets[1];
-    const chat = window.puter.ai.chat;
+    const chat = window.everything.ai.chat;
     let answer;
-    window.puter.ai.chat = () => new Promise((r) => { answer = r; });
+    window.everything.ai.chat = () => new Promise((r) => { answer = r; });
     try {
       await go(`#/tickets/${t.id}`);
       typeInto(await until(() => root.querySelector('.editor-content')), 'thx will fix');
@@ -386,7 +386,7 @@ describe('ticket screen', () => {
       await until(() => !root.querySelector('.submit-main').disabled);
       expect(root.querySelector('.editor-content').textContent).toContain('Thanks, we will fix it.');
     } finally {
-      window.puter.ai.chat = chat;
+      window.everything.ai.chat = chat;
       delete app.updateTicket;
     }
   });

@@ -45,7 +45,7 @@ describe('unparenthesized reference unions', () => {
     expect(wb.getValue(id,6,1)).toBe(21);
     const bytes = new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer());
     const zip=X.CFB.read(bytes,{type:'array'}), part=X.CFB.find(zip,'/xl/workbook.xml');
-    part.content=new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,''));part.size=part.content.length;
+    part.content=new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,''));part.size=part.content.length;
     const restored=await workbookFromFile(X.CFB.write(zip,{type:'array',fileType:'zip'}),'union.xlsx'), sheet=restored.sheets[0];
     expect(restored.getValue(sheet.id,6,1)).toBe(21);
     expect(chartData(restored,sheet.id,sheet.charts[0]).series[0].values).toEqual([7,11,3]);

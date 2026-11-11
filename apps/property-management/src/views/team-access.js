@@ -1,4 +1,4 @@
-/** Settings > Team: let teammates sign in with their own Puter accounts. */
+/** Settings > Team: let teammates sign in with their own Everything accounts. */
 import { h } from '../ui/dom.js';
 import { icon } from '../ui/icons.js';
 import { app } from '../app.js';
@@ -15,7 +15,7 @@ export function teamAccessCard() {
   const head = (extra) => h('div.card-head', h('h2.grow#team-access-title', 'Team sign-in'), extra || null);
 
   if (app.demo) {
-    card.append(head(), h('div.card-body', h('p.muted', 'In your own account, you can invite your team to sign in with their own Puter accounts and work on the same properties, leases and books. This is not available in the demo.')));
+    card.append(head(), h('div.card-body', h('p.muted', 'In your own account, you can invite your team to sign in with their own Everything accounts and work on the same properties, leases and books. This is not available in the demo.')));
     return card;
   }
 
@@ -27,7 +27,7 @@ export function teamAccessCard() {
       const ok = await confirmDialog({
         title: 'Turn on team sign-in?',
         message:
-          'A small server (a Puter worker) is created in your own Puter account to share this business with people you invite. Your data is copied to it and stays in your account. This may take a minute.',
+          'A small server (an Everything worker) is created in your own Everything account to share this business with people you invite. Your data is copied to it and stays in your account. This may take a minute.',
         confirmLabel: 'Turn on',
       });
       if (!ok) return;
@@ -43,7 +43,7 @@ export function teamAccessCard() {
         await app.store.flush();
         const { own, skipped } = await team.enableTeam({ store: app.store, onProgress: (text) => (progress.textContent = text) });
         const ws = { ...app.workspaces, own, current: 'own' };
-        await team.saveWorkspaces(globalThis.puter.kv, ws);
+        await team.saveWorkspaces(globalThis.everything.kv, ws);
         progress.textContent = skipped.length ? `Done. ${skipped.length} file${skipped.length === 1 ? ' was' : 's were'} too large to copy: ${skipped.slice(0, 3).join(', ')}${skipped.length > 3 ? '...' : ''}. Reloading...` : 'Done. Reloading...';
         setTimeout(() => {
           location.hash = '#/settings/team';
@@ -61,9 +61,9 @@ export function teamAccessCard() {
       head(),
       h(
         'div.card-body.stack',
-        h('p', 'Invite your property managers, leasing agents and bookkeepers to sign in with their own Puter accounts. Everyone sees the same properties, tenants and accounts, and changes sync between devices.'),
+        h('p', 'Invite your property managers, leasing agents and bookkeepers to sign in with their own Everything accounts. Everyone sees the same properties, tenants and accounts, and changes sync between devices.'),
         h('ul.welcome-points', [
-          ['shield', 'Your data stays in your Puter account. You can remove anyone at any time.'],
+          ['shield', 'Your data stays in your Everything account. You can remove anyone at any time.'],
           ['users', 'Admins can invite people and manage the team. Team members can do everything else.'],
         ].map(([ic, text]) => h('li', icon(ic), h('span', text)))),
         h('div.row', btn),
@@ -76,7 +76,7 @@ export function teamAccessCard() {
   const manage = t.role === 'owner' || t.role === 'admin';
   const body = h('div.card-body.stack');
   card.append(head(h('span.pill.success', 'On')), body);
-  body.append(h('p.muted', t.role === 'owner' ? 'People you invite sign in with their own Puter account and work in this business.' : `You are signed in to ${t.business || 'this business'} as ${ROLE_LABEL[t.role] === 'Admin' ? 'an admin' : 'a team member'}.`));
+  body.append(h('p.muted', t.role === 'owner' ? 'People you invite sign in with their own Everything account and work in this business.' : `You are signed in to ${t.business || 'this business'} as ${ROLE_LABEL[t.role] === 'Admin' ? 'an admin' : 'a team member'}.`));
 
   if (!manage) {
     body.append(
@@ -217,7 +217,7 @@ function inviteDialog(onDone) {
     title: 'Invite someone',
     body: h(
       'div.stack',
-      h('p.muted', 'Create a link and send it to the person you want to invite. It works once, for 7 days. They sign in with their own Puter account to join.'),
+      h('p.muted', 'Create a link and send it to the person you want to invite. It works once, for 7 days. They sign in with their own Everything account to join.'),
       h('div.form-grid', field('Who is it for?', label, { hint: 'Only you see this' }), field('Role', role)),
       out,
     ),

@@ -4,7 +4,7 @@ import { writeFile } from 'node:fs/promises';
 import { createMailFS } from '../benchmarks/range-transport.js';
 
 // Real loopback HTTP, synthetic data and the source-inspected /read contract.
-// This is not a measurement of a deployed Puter service or its S3/Dynamo cost.
+// This is not a measurement of a deployed Everything service or its S3/Dynamo cost.
 const data = Buffer.alloc(8 * 1024 * 1024, 65);
 let bytes = 0;
 const server = http.createServer((req, res) => {

@@ -123,7 +123,7 @@ export function stakeholdersView({ navigate }) {
         count: attachments.length,
         message: `${cascade} ${attachments.length === 1
           ? '1 attachment sits'
-          : `${attachments.length} attachments sit`} behind those records in your Puter cloud. `
+          : `${attachments.length} attachments sit`} behind those records in your Everything cloud. `
           + 'Undo restores the records, but never a deleted file.',
       });
       if (!choice) return;

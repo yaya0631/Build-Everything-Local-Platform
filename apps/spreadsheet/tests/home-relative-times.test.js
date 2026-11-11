@@ -2,7 +2,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { homeView } from '../src/views/home.js';
 import { relativeTime } from '../src/ui/dom.js';
-import * as P from '../src/lib/puter.js';
+import * as P from '../src/lib/everything.js';
 
 vi.mock('../src/lib/session.js', () => ({ session: { settings: {}, username: 'Test user', signedOut: false, addEventListener() {}, removeEventListener() {} } }));
 vi.mock('../src/lib/recent.js', () => ({ refreshRecent: async () => [], recentFiles: () => [], forgetRecent() {} }));

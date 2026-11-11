@@ -17,7 +17,7 @@ describe('app shell', () => {
     expect(await a11y(root)).toEqual([]);
   });
 
-  it('offers sign out on the web but not inside the Puter desktop', async () => {
+  it('offers sign out on the web but not inside the Everything desktop', async () => {
     const web = await mountApp({ env: 'web' });
     click(web.root.querySelector('.account-btn'));
     await tick();
@@ -40,7 +40,7 @@ describe('app shell', () => {
 
   it('links to the source code', async () => {
     const { root } = await mountApp();
-    expect(root.querySelector('a.repo-link').href).toBe('https://github.com/HeyPuter/everything');
+    expect(root.querySelector('a.repo-link').href).toBe('https://github.com/yaya0631/Build-Everything-Local-Platform');
   });
 
   it('creates, lists and trashes bases from home', async () => {

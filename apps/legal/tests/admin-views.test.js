@@ -182,7 +182,7 @@ describe('onboarding', () => {
     const { setUpFirm } = await import('../src/views/onboarding.js');
     setUpFirm({ firmName: 'Lovelace Law', currency: 'GBP', name: 'Ada Lovelace', role: 'lawyer', rateCents: 30000 });
     const [u] = app.store.all('users');
-    expect(u).toMatchObject({ name: 'Ada Lovelace', puterUsername: 'ada', rateCents: 30000 });
+    expect(u).toMatchObject({ name: 'Ada Lovelace', everythingUsername: 'ada', rateCents: 30000 });
     expect(
       app.store
         .all('accounts')

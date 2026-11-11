@@ -2,7 +2,7 @@
  * Meeting code & link helpers.
  *
  * A meeting is identified by a persistent room code (see lib/rooms.js) or,
- * for legacy one-time links, by the host's raw Puter Peer invite code. We
+ * for legacy one-time links, by the host's raw Everything Peer invite code. We
  * treat the code as an opaque string and wrap it in shareable URLs of the
  * form:
  *

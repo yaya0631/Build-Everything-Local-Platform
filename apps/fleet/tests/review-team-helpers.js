@@ -29,7 +29,7 @@ export function fakeKV() {
     async expire() {
       return true;
     },
-    // Atomic, like Puter KV: no await between the read and the write.
+    // Atomic, like Everything KV: no await between the read and the write.
     async incr(k, paths = 1) {
       if (typeof paths === 'number') {
         const n = (Number(data.get(k)) || 0) + paths;
@@ -67,14 +67,14 @@ export function fakeFS() {
   };
 }
 
-export const person = (uuid, username) => ({ puter: { auth: { getUser: async () => ({ uuid, username }) } } });
+export const person = (uuid, username) => ({ everything: { auth: { getUser: async () => ({ uuid, username }) } } });
 
 export function loadWorker({ ownerGetUser = async () => ({ uuid: 'owner-1', username: 'olivia' }), kv = fakeKV() } = {}) {
   const routes = [];
   const router = { get: (p, fn) => routes.push(['GET', p, fn]), post: (p, fn) => routes.push(['POST', p, fn]) };
   new Function('router', SOURCE)(router);
   const fsys = fakeFS();
-  const me = { puter: { kv, fs: fsys, auth: { getUser: (...a) => ownerGetUser(...a) } } };
+  const me = { everything: { kv, fs: fsys, auth: { getUser: (...a) => ownerGetUser(...a) } } };
   const handler = (method, path) => routes.find(([m, p]) => m === method && p === path)?.[2];
   return {
     kv,

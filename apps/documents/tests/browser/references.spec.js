@@ -396,12 +396,12 @@ test('Smart Lookup says plainly why it has no answer, once', async ({ page }) =>
   await openEditor(page);
   await page.keyboard.type('The aphelion of an orbit is far.');
   await expect.poll(() => engineText(page)).toBe('The aphelion of an orbit is far.');
-  // Puter's SDK rejects with its own error object, not an Error: the pane explained it and a toast said "[object Object]".
-  await page.evaluate(() => { puter.ai.chat = async () => { throw { success: false, error: { code: 'insufficient_funds', message: 'Insufficient funds' } }; }; const m = window.__docs.current.view.engine.model, at = m.text.indexOf('aphelion'); m.select(at + 2); });
+  // Everything's SDK rejects with its own error object, not an Error: the pane explained it and a toast said "[object Object]".
+  await page.evaluate(() => { everything.ai.chat = async () => { throw { success: false, error: { code: 'insufficient_funds', message: 'Insufficient funds' } }; }; const m = window.__docs.current.view.engine.model, at = m.text.indexOf('aphelion'); m.select(at + 2); });
   await onTab(page, 'references');
   await ribbon(page).getByRole('button', { name: 'Smart Lookup', exact: true }).click();
   const pane = page.getByRole('complementary', { name: 'Smart Lookup' });
-  await expect(pane.getByRole('status')).toHaveText('Your Puter AI allowance has run out for now.');
+  await expect(pane.getByRole('status')).toHaveText('Your Everything AI allowance has run out for now.');
   await page.waitForTimeout(300);
   await expect(page.locator('.toast')).toHaveCount(0);
 });

@@ -10,7 +10,7 @@
  *   bumpVersions(names)        -> { [collection]: version } (whole map)
  *   nextNumber(kind, atLeast)  -> integer, atomically increasing, >= atLeast
  *
- * Puter KV is backed by DynamoDB, so the layout follows its best practice:
+ * Everything KV is backed by DynamoDB, so the layout follows its best practice:
  * one small item per record (a write touches only what changed), and a
  * collection loads with a single paged prefix query rather than a scan.
  *
@@ -24,10 +24,10 @@ export const PREFIX = 'lg1:';
 const recordKey = (name, id) => `${PREFIX}r:${name}:${id}`;
 const BATCH = 100;
 
-export function createPuterBackend(puter) {
-  const kv = puter.kv;
+export function createEverythingBackend(everything) {
+  const kv = everything.kv;
   return {
-    kind: 'puter',
+    kind: 'everything',
     async loadMeta() {
       return (await kv.get(`${PREFIX}meta`)) || {};
     },

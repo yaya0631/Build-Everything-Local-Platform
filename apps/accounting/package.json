@@ -1,7 +1,7 @@
 {
   "name": "bookkeeping",
   "version": "1.0.0",
-  "description": "Double-entry bookkeeping on Puter: invoices, bills, banking, reconciliation, and financial reports",
+  "description": "Double-entry bookkeeping on Everything: invoices, bills, banking, reconciliation, and financial reports",
   "type": "module",
   "private": true,
   "license": "MIT",

@@ -6,7 +6,7 @@ import { addShapeAnnotation, listAnnotations } from '../../src/core/annotations.
 const settled = (page) => expect(page.locator('.editor')).toHaveAttribute('aria-busy', 'false');
 
 async function openWithRectangle(page, flags = null, pages = 1) {
-  await page.route('**/sdk/puter.js', (route) => route.abort());
+  await page.route('**/sdk/everything.js', (route) => route.abort());
   const doc = await PDFDocument.create();
   for (let i = 0; i < pages; i++) doc.addPage([400, 500]);
   addShapeAnnotation(doc, 0, { kind: 'square', rect: { x: 100, y: 300, width: 80, height: 60 } });

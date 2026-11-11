@@ -1,5 +1,5 @@
 /**
- * Pictures from a description through Puter AI (puter.ai.txt2img). The SDK
+ * Pictures from a description through Everything AI (everything.ai.txt2img). The SDK
  * answers with an <img>; its source (a data URL or a web address) is read
  * into a Blob, cropped to the chosen frame shape and imported as media.
  */
@@ -41,12 +41,12 @@ export function aspectForSize(width, height) {
 }
 
 /**
- * The picture models the AI assistant offers (from Puter's catalog); every
+ * The picture models the AI assistant offers (from Everything's catalog); every
  * one can also change a picture it is given (input_image). 'default' sends
- * no model and lets Puter choose (GPT Image 2). options go with each request.
+ * no model and lets Everything choose (GPT Image 2). options go with each request.
  */
 export const IMAGE_MODELS = [
-  { id: 'default', label: 'GPT Image 2', hint: "Puter's default", model: null },
+  { id: 'default', label: 'GPT Image 2', hint: "Everything's default", model: null },
   { id: 'gpt-image-2.5', label: 'GPT Image 2.5', hint: 'Newest from OpenAI', model: 'gpt-image-2.5-sunburst', options: { quality: 'medium' } },
   { id: 'gemini-3-pro', label: 'Gemini 3 Pro Image', hint: 'Detailed, good with text', model: 'gemini-3-pro-image' },
   { id: 'nano-banana-2.1', label: 'Nano Banana 2.1', hint: 'Fast, strong at edits', model: 'gemini-nano-banana-2.1' },
@@ -61,7 +61,7 @@ export function imageModelOptions(id) {
   return m.model ? { model: m.model, ...m.options } : {};
 }
 
-/** Options for puter.ai.txt2img. */
+/** Options for everything.ai.txt2img. */
 export function txt2imgOptions(aspectId, { testMode = false, model = DEFAULT_IMAGE_MODEL } = {}) {
   const a = IMAGE_ASPECTS.find((x) => x.id === aspectId) || IMAGE_ASPECTS[0];
   return { ratio: { w: a.w, h: a.h }, ...imageModelOptions(model), ...(testMode ? { test_mode: true } : {}) };
@@ -71,7 +71,7 @@ export function txt2imgOptions(aspectId, { testMode = false, model = DEFAULT_IMA
 export function imageErrorMessage(err) {
   const code = String(err?.code || err?.error?.code || '');
   if (code === 'moderation_flagged') return 'The request was declined by the content filter. Try a different description.';
-  if (code === 'insufficient_funds') return 'Your Puter balance is too low to create a picture.';
+  if (code === 'insufficient_funds') return 'Your Everything balance is too low to create a picture.';
   if (code === 'network_error' || code === 'request_timeout' || err instanceof TypeError) return 'The AI service could not be reached. Check your connection and try again.';
   return errorMessage(err, "Couldn't create the picture. Try again.");
 }
@@ -145,10 +145,10 @@ export async function cropToAspect(blob, w, h) {
 export async function generateImage(text, { aspect = '16:9', style = 'none', model = DEFAULT_IMAGE_MODEL, testMode = false } = {}) {
   const prompt = buildPrompt(text, style);
   if (!prompt) throw new Error('Describe the picture first.');
-  if (typeof puter === 'undefined' || !puter.ai?.txt2img) throw new Error('Picture generation needs Puter.');
+  if (typeof everything === 'undefined' || !everything.ai?.txt2img) throw new Error('Picture generation needs Everything.');
   let result;
   try {
-    result = await puter.ai.txt2img(prompt, txt2imgOptions(aspect, { testMode, model }));
+    result = await everything.ai.txt2img(prompt, txt2imgOptions(aspect, { testMode, model }));
   } catch (err) {
     throw new Error(imageErrorMessage(err));
   }

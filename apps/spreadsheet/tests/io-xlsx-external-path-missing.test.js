@@ -54,7 +54,7 @@ async function pivotFile() {
   const path = '/xl/pivotCache/pivotCacheDefinition1.xml', rels = '/xl/pivotCache/_rels/pivotCacheDefinition1.xml.rels';
   set(path, get(path).replace('<worksheetSource ', '<worksheetSource r:id="template" '));
   set(rels, get(rels).replace('</Relationships>', '<Relationship Id="template" Type="http://schemas.microsoft.com/office/2006/relationships/xlExternalLinkPath/xlPathMissing" Target="Expenses.xltx" TargetMode="External"/></Relationships>'));
-  set('/xl/workbook.xml', get('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  set('/xl/workbook.xml', get('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   return X.CFB.write(zip, { type: 'array', fileType: 'zip' });
 }
 

@@ -3,7 +3,7 @@ import signSource from '../src/workers/sign-worker.js?raw';
 import emailSource from '../src/workers/email-worker.js?raw';
 import { SIGN_WORKER_VERSION } from '../src/lib/signlinks.js';
 import { instantiateWorker, makeKv, sha256Hex } from './helpers/worker-harness.js';
-import { makeFs, makeFakePuter } from './helpers/fake-puter.js';
+import { makeFs, makeFakeEverything } from './helpers/fake-everything.js';
 import { createStore } from '../src/lib/store.js';
 import {
   isExpired, expiresInWords, reminderDue, deriveStatus, DAY_MS, PRE_EXPIRY_DAYS, DOC_STATUSES,
@@ -153,8 +153,8 @@ describe('the store side of a deadline', () => {
   let store;
 
   beforeEach(async () => {
-    const p = makeFakePuter();
-    store = createStore({ getPuter: () => p });
+    const p = makeFakeEverything();
+    store = createStore({ getEverything: () => p });
     await store.init();
   });
 
@@ -247,7 +247,7 @@ describe('the worker enforces the deadline itself', () => {
       .replace('__SIGN_PAGE_URL__', 'https://signatures.example/sign.html');
     const fs = makeFs();
     await fs.write('signatures-data/d1/original.pdf', PDF);
-    worker = instantiateWorker(source, { me: { puter: { kv: makeKv(), fs } } });
+    worker = instantiateWorker(source, { me: { everything: { kv: makeKv(), fs } } });
     token = await sync(Date.now() + 60_000);
   });
 
@@ -327,12 +327,12 @@ describe('the worker enforces the deadline itself', () => {
  */
 describe('the deadline chosen while sending', () => {
   it('reaches the worker in the same pass that mints the links', async () => {
-    const p = makeFakePuter();
-    const store = createStore({ getPuter: () => p });
+    const p = makeFakeEverything();
+    const store = createStore({ getEverything: () => p });
     await store.init();
     const links = createSignLinks({
       store,
-      getPuter: () => p,
+      getEverything: () => p,
       fetchFn: p.fetchTo,
       verifyAttempts: 2,
       verifyDelayMs: 1,
@@ -367,13 +367,13 @@ describe('the request email states the deadline', () => {
   it('says when to sign by, in the sender\'s own clock', async () => {
     const sent = [];
     const worker = instantiateWorker(emailSource, {
-      me: { puter: { kv: makeKv(), email: { send: async (m) => (sent.push(m), {}) }, authToken: 't' } },
+      me: { everything: { kv: makeKv(), email: { send: async (m) => (sent.push(m), {}) }, authToken: 't' } },
     });
     // The end of 12 September in Los Angeles is the morning of the 13th in
     // UTC; the mail has to say the 12th, or a signer there has until a day
     // the link is already dead.
     await worker.call('POST', '/send', {
-      user: { uuid: 'u-1', puter: { authToken: 'c' } },
+      user: { uuid: 'u-1', everything: { authToken: 'c' } },
       json: {
         doc: {
           id: 'd1', title: 'NDA', ownerName: 'Alex', ownerEmail: 'alex@example.com', pageCount: 1,
@@ -391,7 +391,7 @@ describe('the request email states the deadline', () => {
     // East of Greenwich the same instant reads with a plus.
     sent.length = 0;
     await worker.call('POST', '/send', {
-      user: { uuid: 'u-1', puter: { authToken: 'c' } },
+      user: { uuid: 'u-1', everything: { authToken: 'c' } },
       json: {
         doc: { id: 'd2', title: 'NDA', pageCount: 1, expiresAt: Date.parse('2026-09-12T15:29:59Z'), tzOffset: 330 },
         recipients: [{ email: 'ava@example.com', version: 'abcdef12' }],
@@ -404,10 +404,10 @@ describe('the request email states the deadline', () => {
   it('falls back to the UTC date when the app does not say what clock the sender is on', async () => {
     const sent = [];
     const worker = instantiateWorker(emailSource, {
-      me: { puter: { kv: makeKv(), email: { send: async (m) => (sent.push(m), {}) }, authToken: 't' } },
+      me: { everything: { kv: makeKv(), email: { send: async (m) => (sent.push(m), {}) }, authToken: 't' } },
     });
     await worker.call('POST', '/send', {
-      user: { uuid: 'u-1', puter: { authToken: 'c' } },
+      user: { uuid: 'u-1', everything: { authToken: 'c' } },
       json: {
         doc: {
           id: 'd1', title: 'NDA', ownerName: 'Alex', ownerEmail: 'alex@example.com', pageCount: 1,

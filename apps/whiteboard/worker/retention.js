@@ -170,17 +170,17 @@ export async function destroyBoard(org, room, budget = Infinity) {
       // Each membership has an entry in its person's board index.
       if (key.startsWith(member))
         await org.kv.del(`org:ub:${key.slice(member.length)}:${room}`);
-      // Live event handles are revoked with Puter, not only forgotten, so
+      // Live event handles are revoked with Everything, not only forgotten, so
       // they stop working and stop counting toward the account's quota.
       if (key.startsWith(handles)) {
         const handle = await org.kv.get(key);
         if (handle)
           await org
             .fetcher(
-              `${org.puter.APIOrigin}/events/kv-handles/${encodeURIComponent(handle)}`,
+              `${org.everything.APIOrigin}/events/kv-handles/${encodeURIComponent(handle)}`,
               {
                 method: "DELETE",
-                headers: { Authorization: `Bearer ${org.puter.authToken}` },
+                headers: { Authorization: `Bearer ${org.everything.authToken}` },
                 signal: AbortSignal.timeout(5000),
               },
             )
@@ -209,7 +209,7 @@ export async function destroyBoard(org, room, budget = Infinity) {
   await org.kv.del("org:boardslack:" + room);
   await org.kv.del("org:slackstatus:board:" + room);
   try {
-    await org.puter.fs.delete(`whiteboard/shared/${room}`, {
+    await org.everything.fs.delete(`whiteboard/shared/${room}`, {
       recursive: true,
     });
   } catch {

@@ -1,9 +1,9 @@
-/** Local document data belongs to a Puter account, not to the browser origin. */
+/** Local document data belongs to an Everything account, not to the browser origin. */
 const anonymousScope = () => `session:${Array.from(crypto.getRandomValues(new Uint32Array(4)), (n) => n.toString(16).padStart(8, '0')).join('')}`;
 let scope = anonymousScope();
 
 export function setStorageUser(user) {
-  // Puter UUIDs survive username changes. A failed identity lookup must not
+  // Everything UUIDs survive username changes. A failed identity lookup must not
   // fall back to a shared namespace or retain the previous account's data.
   scope = typeof user?.uuid === 'string' && user.uuid
     ? `uuid:${user.uuid}`

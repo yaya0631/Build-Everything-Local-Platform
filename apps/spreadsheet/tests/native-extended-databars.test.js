@@ -106,7 +106,7 @@ it('round-trips native extended rules, direction, colors and formulas without pr
   expect(sheet).toContain('uri="{78C0D931-6437-407d-A8EE-F0AAD7539E65}"');
   expect(sheet).toContain('rightToLeft="1"');expect(sheet).toContain('minLength="10" maxLength="90"');
   expect(sheet).toContain('<x14:dataBar minLength="0" maxLength="100"');expect(sheet.match(/<x14:cfRule /g)).toHaveLength(1);
-  part.content=new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,''));part.size=part.content.length;
+  part.content=new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,''));part.size=part.content.length;
   wb=await workbookFromFile(X.CFB.write(zip,{type:'array',fileType:'zip'}),'bars.xlsx');
   expect(wb.activeSheet.rules).toHaveLength(1);expect(wb.activeSheet.rightToLeft).toBe(true);expect(paint(wb,3)).toEqual(original);
  }

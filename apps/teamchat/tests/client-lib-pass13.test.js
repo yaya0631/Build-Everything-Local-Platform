@@ -258,7 +258,7 @@ const tick = (ms = 2) => new Promise((r) => setTimeout(r, ms));
 /** Route each call by the end of its path; a handler gets the query and the request init, and may answer later. */
 function worker(routes) {
   const calls = [];
-  globalThis.puter = {
+  globalThis.everything = {
     workers: {
       exec: async (url, init = {}) => {
         const u = new URL(url);
@@ -302,7 +302,7 @@ function resetStore() {
   store.offline = false;
   for (const t of store._readTimers.values()) clearTimeout(t);
   store._readTimers.clear();
-  delete globalThis.puter;
+  delete globalThis.everything;
 }
 
 describe('a permalink read as words whose words carry the marker characters', () => {

@@ -8,7 +8,7 @@
 
 Parametric models solid parts the way mechanical engineers expect: you draw constrained 2D sketches on planes or faces, turn them into 3D features (extrude, revolve, fillet, shell, pattern...), and every feature stays editable in a history tree. Change a dimension and the part rebuilds.
 
-It runs entirely in the browser. The geometry kernel is OpenCascade compiled to WebAssembly, running in a Web Worker so the interface never freezes. Storage, sign-in and settings use [Puter](https://localhost:8443); you can also work without an account, in which case parts are kept in your browser.
+It runs entirely in the browser. The geometry kernel is OpenCascade compiled to WebAssembly, running in a Web Worker so the interface never freezes. Storage, sign-in and settings use [Everything](https://localhost:8443); you can also work without an account, in which case parts are kept in your browser.
 
 ## Features
 
@@ -35,7 +35,7 @@ It runs entirely in the browser. The geometry kernel is OpenCascade compiled to 
 - An AI design assistant in the right sidebar (Ctrl+J, or the sparkle button). Describe a part or a change ("a 100 × 60 × 8 mm plate with four M5 holes and rounded corners", "make the wall 3 mm", "fillet the top edges") and it builds it with the same features you use: sketches with exact geometry, relations and dimensions, extrudes, revolves, holes, fillets, chamfers, shells, patterns, mirrors, planes, lofts, sweeps and drafts, global variables and equations.
 - It reads the part precisely (feature parameters, sketch entities, faces and edges by name, measurements, mass properties), checks every change by rebuilding, undoes steps that would break a feature, and looks at the model to verify its work.
 - Attach files to a message (paperclip, paste or drop): photos and sketches of a part, dimensioned drawings and datasheets as images or PDFs, DXF outlines or CSV tables. It reads sizes and geometry from them.
-- Everything it changes in one message is a single undo step. It runs on Puter AI (Claude models; pick one at the top of the panel).
+- Everything it changes in one message is a single undo step. It runs on Everything AI (Claude models; pick one at the top of the panel).
 
 **Drawings**
 - A 2D drawing sheet for each part (Drawing tab in the status bar): front, top, right, left, back, bottom and isometric views projected from the solid, with hidden lines and overall dimensions.
@@ -47,8 +47,8 @@ It runs entirely in the browser. The geometry kernel is OpenCascade compiled to 
 - Global variables and equations: type `=Width/2` in any dimension or feature value.
 - Material and appearance, mass properties (mass, volume, area, center of mass, inertia), measure, section view.
 - Display styles (shaded with edges, shaded, hidden lines removed or visible, wireframe), standard views, perspective.
-- Save to your Puter cloud or this browser, crash recovery of unsaved work, export STEP and STL, download the part file.
-- Share parts saved in your Puter cloud with other Puter users, with view or edit access. Parts shared with you appear under **Shared with me** in the Open dialog.
+- Save to your Everything cloud or this browser, crash recovery of unsaved work, export STEP and STL, download the part file.
+- Share parts saved in your Everything cloud with other Everything users, with view or edit access. Parts shared with you appear under **Shared with me** in the Open dialog.
 - Undo and redo for everything, including sketch edits.
 - Light, dark and system themes. Works with mouse, trackpad, touch and keyboard, from phones to large desktop screens.
 
@@ -65,7 +65,7 @@ Navigation: middle or right drag rotates, Ctrl + middle drag or Shift + right dr
 
 ```sh
 npm install
-npm run dev        # http://parametric.puter.localhost:5581/
+npm run dev        # http://parametric.localhost:8443/
 npm test           # unit and kernel tests (Vitest)
 npm run test:e2e   # browser tests (Playwright, software WebGL)
 npm run build      # type check, license check, production build in dist/
@@ -82,8 +82,8 @@ npm run build      # type check, license check, production build in dist/
 | Renderer | `src/render` | WebGL2: shaded meshes with per-face state in a data texture, screen-space thick edges, GPU picking with depth (asynchronous readback for hover), section clipping, render on demand. |
 | Interface | `src/app`, `src/ui` | No framework. CommandManager, design tree, PropertyManager panels, sketch editor, dialogs. |
 | SolidWorks import | `src/formats/sldprt` | Reads the SolidWorks container (2015+ chunk format and the older OLE2), decodes the embedded Parasolid transmit and writes it as exact STEP for the kernel. Runs in the geometry worker. |
-| Assistant | `src/assistant` | Tool-calling agent on Puter AI. Tools work on the document through a host interface (the app, or the kernel in Node for tests); each change rebuilds and is checked, failing steps are reverted, and a message's changes are squashed into one undo step. |
-| Platform | `src/platform` | Puter.js access, files (Puter or browser storage), theme. |
+| Assistant | `src/assistant` | Tool-calling agent on Everything AI. Tools work on the document through a host interface (the app, or the kernel in Node for tests); each change rebuilds and is checked, failing steps are reverted, and a message's changes are squashed into one undo step. |
+| Platform | `src/platform` | Everything.js access, files (Everything or browser storage), theme. |
 
 Settings are kept in a single key-value entry; part files are stored as files, never in the key-value store.
 

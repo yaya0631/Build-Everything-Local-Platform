@@ -152,7 +152,7 @@ export function mountShell(appRoot) {
   }
 
   /* Sidebar (desktop) */
-  const username = store.user?.username || 'Puter user';
+  const username = store.user?.username || 'Everything user';
   const sidebarNav = el('div', { style: { display: 'contents' } });
   const sidebar = el('nav.sidebar', { 'aria-label': 'Main navigation' },
     el('div.brand', {},
@@ -179,8 +179,8 @@ export function mountShell(appRoot) {
     el('div.sidebar-user', {},
       el('span.avatar', {}, username.charAt(0).toUpperCase()),
       el('span.name', { title: username }, username),
-      // Inside Puter's desktop the platform owns the session - no sign-out.
-      puter.env !== 'app' && el('button.icon-btn', {
+      // Inside Everything's desktop the platform owns the session - no sign-out.
+      everything.env !== 'app' && el('button.icon-btn', {
         html: icon('logout', 18, 2),
         'aria-label': 'Sign out',
         title: 'Sign out',

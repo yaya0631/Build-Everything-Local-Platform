@@ -4,12 +4,12 @@ import { Workbook, MAX_FORMULA_LENGTH } from '../src/core/workbook.js';
 import { Doc } from '../src/lib/doc.js';
 import { workbookToXlsx } from '../src/core/io.js';
 import { memoryStorage } from './helpers/memory-storage.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 
 const request = 'SUM(MAP("https://example.test/data",IMPORTDATA))';
 const longFormula = '1+'.repeat(4000) + request;
 let doc;
-afterEach(() => { doc?.destroy(); doc = null; delete globalThis.puter; });
+afterEach(() => { doc?.destroy(); doc = null; delete globalThis.everything; });
 
 it('finds outside requests anywhere in a valid long operator chain', () => {
   for (const formula of [longFormula, request + '+1'.repeat(4000), '1+'.repeat(2000) + request + '+1'.repeat(2000)]) {
@@ -26,7 +26,7 @@ it('keeps long harmless formulas and inline pictures trusted', () => {
 
 it('opens a file with a long request formula blocked until the user allows it', async () => {
   Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true });
-  const mock = installMockPuter();
+  const mock = installMockEverything();
   const source = new Workbook();
   source.setInput(source.activeSheetId, 0, 0, `=${longFormula}`);
   expect(source.getCell(source.activeSheetId, 0, 0).f).toBe(longFormula);

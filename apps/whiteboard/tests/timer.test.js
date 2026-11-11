@@ -157,7 +157,7 @@ test("worker clock synchronization tolerates device skew and timer updates enfor
     seed = new SharedDocument();
   seed.commit(b);
   const session = new CollaborationSession({
-    puter: env.sdk(owner),
+    everything: env.sdk(owner),
     server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: owner,

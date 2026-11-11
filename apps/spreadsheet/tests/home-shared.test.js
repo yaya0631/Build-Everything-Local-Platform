@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { homeView } from '../src/views/home.js';
-import * as P from '../src/lib/puter.js';
+import * as P from '../src/lib/everything.js';
 import { closeMenu } from '../src/ui/menu.js';
 import { closeAllModals } from '../src/ui/modal.js';
 
@@ -57,7 +57,7 @@ it('leaves a share after asking', async () => {
 });
 
 it('offers Share in a file’s menu where the host can share', async () => {
-  vi.stubGlobal('puter', { fs: { share() {}, getShares: async () => [] } });
+  vi.stubGlobal('everything', { fs: { share() {}, getShares: async () => [] } });
   const view = homeView({});
   document.body.append(view.el);
   await vi.advanceTimersByTimeAsync(0);

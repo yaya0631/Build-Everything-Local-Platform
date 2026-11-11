@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Mail</title>
-<script src="/sdk/puter.js"></script>
+<script src="/sdk/everything.js"></script>
 <style>
     :root {
         color-scheme: light dark;
@@ -354,7 +354,7 @@ const decodeBody = (body, headers) => {
 };
 
 // Walk the MIME tree for the first text/plain part. HTML-only messages are
-// flattened to text rather than rendered: this page holds the Puter auth
+// flattened to text rather than rendered: this page holds the Everything auth
 // token, and mail bodies are attacker-supplied.
 const extractText = (body, headers, depth = 0) => {
     const { type, attrs } = parseContentType(headers.get('content-type') || 'text/plain');
@@ -457,7 +457,7 @@ const pumpEnrich = () => {
 
 const enrich = async (message) => {
     try {
-        const blob = await puter.fs.read(message.path, { byte_count: HEADER_BYTES });
+        const blob = await everything.fs.read(message.path, { byte_count: HEADER_BYTES });
         const headers = parseHeaders(splitMessage(await blob.text()).head);
         message.from = decodeWords(headers.get('from') || '(unknown sender)');
         const date = new Date(headers.get('date') || '');
@@ -483,7 +483,7 @@ const openMessage = async (message, row) => {
 
     let raw;
     try {
-        raw = await (await puter.fs.read(message.path)).text();
+        raw = await (await everything.fs.read(message.path)).text();
     } catch (e) {
         reader.replaceChildren(el('div', { className: 'center' }, [
             el('p', { textContent: `Could not read this message: ${e?.message ?? e}` }),
@@ -520,7 +520,7 @@ const loadBatch = async () => {
         const day = pendingDays.shift();
         let files;
         try {
-            files = await puter.fs.readdir(`${objectsPath}/${day}`);
+            files = await everything.fs.readdir(`${objectsPath}/${day}`);
         } catch {
             continue;
         }
@@ -545,7 +545,7 @@ const loadInbox = async () => {
 
     let days = [];
     try {
-        days = await puter.fs.readdir(objectsPath);
+        days = await everything.fs.readdir(objectsPath);
     } catch {
         // No `objects` folder yet — the mailbox exists but nothing has landed.
         days = [];
@@ -575,13 +575,13 @@ const loadInbox = async () => {
 // -- permission -------------------------------------------------------------
 
 const requestPermission = (permission) =>
-    puter.perms?.request
-        ? puter.perms.request(permission)
-        : puter.ui.requestPermission({ permission });
+    everything.perms?.request
+        ? everything.perms.request(permission)
+        : everything.ui.requestPermission({ permission });
 
 const canRead = async (path) => {
     try {
-        await puter.fs.stat(path);
+        await everything.fs.stat(path);
         return true;
     } catch {
         return false;
@@ -589,17 +589,17 @@ const canRead = async (path) => {
 };
 
 const start = async () => {
-    if (!puter.auth.isSignedIn()) {
-        const button = el('button', { className: 'primary', textContent: 'Sign in to Puter' });
+    if (!everything.auth.isSignedIn()) {
+        const button = el('button', { className: 'primary', textContent: 'Sign in to Everything' });
         button.onclick = async () => {
-            await puter.auth.signIn();
+            await everything.auth.signIn();
             start();
         };
         showGate(el('p', { textContent: 'Sign in to read your mail.' }), button);
         return;
     }
 
-    const { username } = await puter.auth.whoami();
+    const { username } = await everything.auth.whoami();
     const mailPath = `/${username}/${MAIL_DIR}`;
     objectsPath = `${mailPath}/objects`;
 

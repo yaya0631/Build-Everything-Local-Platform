@@ -10,10 +10,10 @@ import {
 import { buildSecurityPlan, SECURITY_FIELDS, autoMatch, SECURITY_TEMPLATE } from '../src/lib/csvimport.js';
 import { sampleDataset } from '../src/lib/sample.js';
 
-/** A live Store against an in-memory Puter KV stub - see store.test.js. */
+/** A live Store against an in-memory Everything KV stub - see store.test.js. */
 function makeStore() {
   const kv = new Map();
-  globalThis.puter = {
+  globalThis.everything = {
     kv: {
       get: async (k) => (kv.has(k) ? kv.get(k) : null),
       set: async (k, v) => { kv.set(k, v); return true; },
@@ -167,13 +167,13 @@ describe('plans: two plans hold independent reserves and grants', () => {
     const holder = await a.addStakeholder({ name: 'Grace', kind: 'employee' });
     await a.addClass({ name: 'Common Stock', kind: 'common' });
     const key = (field) => `captable:${a.activeCompanyId}:${field}:v1`;
-    await puter.kv.set(key('company'), JSON.stringify({ name: 'Legacy', poolAuthorized: 10_000, poolHistory: [{ date: '2024-01-01', before: 0, after: 10_000, seq: 1 }] }));
-    await puter.kv.set(key('securities'), JSON.stringify([{ id: 'o1', kind: 'option', label: 'OPT-1', stakeholderId: holder.id, quantity: 5_000, strike: 1, date: '2025-06-01', vestingMonths: 0, exercised: 0, createdAt: 1 }]));
+    await everything.kv.set(key('company'), JSON.stringify({ name: 'Legacy', poolAuthorized: 10_000, poolHistory: [{ date: '2024-01-01', before: 0, after: 10_000, seq: 1 }] }));
+    await everything.kv.set(key('securities'), JSON.stringify([{ id: 'o1', kind: 'option', label: 'OPT-1', stakeholderId: holder.id, quantity: 5_000, strike: 1, date: '2025-06-01', vestingMonths: 0, exercised: 0, createdAt: 1 }]));
     const b = new Store();
     await b.init();
     expect(b.security('o1').planId).toBe(LEGACY_PLAN_ID);
     await b.addPlan({ name: '2025 Plan', adopted: '2025-01-01', reserve: 20_000 });
-    expect(JSON.parse(await puter.kv.get(key('securities')))[0].planId).toBe(LEGACY_PLAN_ID);
+    expect(JSON.parse(await everything.kv.get(key('securities')))[0].planId).toBe(LEGACY_PLAN_ID);
     const c = new Store();
     await c.init();
     expect(c.security('o1').planId).toBe(LEGACY_PLAN_ID);

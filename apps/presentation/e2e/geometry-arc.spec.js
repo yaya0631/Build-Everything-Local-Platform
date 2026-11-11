@@ -5,10 +5,10 @@ import native from "../tests/data/geometry-arc-native.json" with { type: "json" 
 import { geometryArcFixture } from "../tests/geometry-arc-fixture.js";
 
 async function start(page) {
-  await page.route("**/sdk/puter.js", (r) =>
+  await page.route("**/sdk/everything.js", (r) =>
     r.fulfill({
       contentType: "application/javascript",
-      body: 'window.puter={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',
+      body: 'window.everything={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',
     }),
   );
   await page.goto("/#/home");

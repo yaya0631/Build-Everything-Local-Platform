@@ -64,15 +64,15 @@ function registerServiceWorker() {
  * a reload to get the real SDK.
  */
 function installOfflineShim() {
-  const offline = async () => { throw new Error('Offline: Puter SDK not loaded'); };
-  window.puter = {
+  const offline = async () => { throw new Error('Offline: Everything SDK not loaded'); };
+  window.everything = {
     env: 'web',
     offlineShim: true,
     kv: { get: offline, set: offline, del: offline },
     fs: { write: offline, read: offline, delete: offline, getReadURL: offline },
     auth: { isSignedIn: async () => true, getUser: offline, signOut: () => {} },
   };
-  store.cloud = window.puter;
+  store.cloud = window.everything;
   window.addEventListener('online', () => {
     toast('Back online', {
       icon: 'cloud',
@@ -108,12 +108,12 @@ async function start() {
     return;
   }
 
-  if (typeof puter === 'undefined') {
+  if (typeof everything === 'undefined') {
     // A device that has synced before can still work from its mirror.
     let hasMirror = false;
     try { hasMirror = !!localStorage.getItem('tasks:mirror:v1'); } catch {}
     if (!hasMirror) {
-      showError('Could not reach Puter', 'The Puter SDK failed to load. Check your connection and try again.', () => location.reload());
+      showError('Could not reach Everything', 'The Everything SDK failed to load. Check your connection and try again.', () => location.reload());
       return;
     }
     installOfflineShim();
@@ -121,7 +121,7 @@ async function start() {
 
   let signedIn = false;
   try {
-    signedIn = await Promise.resolve(puter.auth.isSignedIn());
+    signedIn = await Promise.resolve(everything.auth.isSignedIn());
   } catch {
     signedIn = false;
   }
@@ -141,7 +141,7 @@ async function boot() {
     if (!navigator.onLine) {
       showError('You are offline', 'This device has no local copy of your tasks yet. Connect once and they will be available offline from then on.', () => location.reload());
     } else {
-      showError('Could not load your tasks', 'Something went wrong talking to your Puter cloud.', () => location.reload());
+      showError('Could not load your tasks', 'Something went wrong talking to your Everything cloud.', () => location.reload());
     }
     return;
   }

@@ -4,7 +4,7 @@ import { closeMenu } from '../src/ui/menu.js';
 import { closeAllModals } from '../src/ui/modal.js';
 import { editorView } from '../src/views/editor.js';
 import { Doc } from '../src/lib/doc.js';
-import * as P from '../src/lib/puter.js';
+import * as P from '../src/lib/everything.js';
 
 // File > Share… on a new spreadsheet nobody had typed in said "Save the spreadsheet first": the flush it
 // ran has nothing to write for a book that never changed, so the file the dialog shares was never made.
@@ -23,7 +23,7 @@ beforeEach(() => {
   vi.stubGlobal('matchMedia', () => ({ matches: true, addEventListener() {}, removeEventListener() {} }));
   vi.stubGlobal('requestAnimationFrame', (fn) => setTimeout(fn, 0));
   vi.stubGlobal('cancelAnimationFrame', clearTimeout);
-  vi.stubGlobal('puter', { fs: { share() {}, getShares: async () => [] } });
+  vi.stubGlobal('everything', { fs: { share() {}, getShares: async () => [] } });
   Element.prototype.scrollIntoView = () => {};
   Element.prototype.scrollTo = () => {};
   Object.defineProperty(HTMLElement.prototype, 'clientWidth', { configurable: true, get: () => 800 });

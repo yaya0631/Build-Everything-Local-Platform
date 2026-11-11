@@ -129,7 +129,7 @@ export function syncHistoryDialog(app) {
   for (const e of log) list.append(h('li', h('div.file-item', icon('history', 16), h('span.file-name', e.comment || 'Synchronized'), h('span.file-meta', `${e.by} · ${ago(e.at)}`))));
   return openDialog({
     title: 'Synchronization History',
-    body: log.length ? list : h('p.dialog-text', 'Nobody has synchronized this project yet. Save a project to Puter and share it to work on it together.'),
+    body: log.length ? list : h('p.dialog-text', 'Nobody has synchronized this project yet. Save a project to Everything and share it to work on it together.'),
     size: 'md',
     actions: [{ label: 'Close', primary: true, value: true }],
   });

@@ -16,7 +16,7 @@ const zipOf=async wb=>X.CFB.read(new Uint8Array(await(await workbookToXlsx(wb)).
 const xml=(zip,path='/xl/worksheets/sheet1.xml')=>new TextDecoder().decode(X.CFB.find(zip,path).content);
 const edit=(zip,fn,path='/xl/worksheets/sheet1.xml')=>{const p=X.CFB.find(zip,path);p.content=new TextEncoder().encode(fn(xml(zip,path)));p.size=p.content.length;};
 const reopen=zip=>workbookFromFile(X.CFB.write(zip,{type:'array',fileType:'zip'}),'icons.xlsx');
-const removePrivate=zip=>edit(zip,s=>s.replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,''),'/xl/workbook.xml');
+const removePrivate=zip=>edit(zip,s=>s.replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,''),'/xl/workbook.xml');
 function match(app,native,r,c=2,set='arrows'){
  const a=look(app,r,c),b=look(native,r,c);
  if(!a?.icon){expect(b?.icon).toBeUndefined();return;}

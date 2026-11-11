@@ -64,14 +64,14 @@ describe('a failed upload', () => {
       if (path.endsWith('-t.jpg')) throw new Error('Network error');
       return write(path, blob);
     };
-    globalThis.puter = { fs };
+    globalThis.everything = { fs };
     try {
       const { saveFile } = await import('../src/files.js');
       const photo = new File([new Uint8Array(3_000_000)], 'park.jpg', { type: 'image/jpeg' });
       await expect(saveFile(photo, { area: 'media', owner: '2026-10' })).rejects.toThrow('Network error');
       expect([...fs.files.keys()]).toEqual([]);
     } finally {
-      delete globalThis.puter;
+      delete globalThis.everything;
     }
   });
 });

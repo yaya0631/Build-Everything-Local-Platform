@@ -103,21 +103,21 @@ describe('service worker', () => {
     }
   });
 
-  it('keeps a copy of the Puter SDK so a signed-in start works offline', async () => {
+  it('keeps a copy of the Everything SDK so a signed-in start works offline', async () => {
     let online = true;
     const sw = loadWorker(async (u) => {
       if (!online) throw new TypeError('Failed to fetch');
       return new Response(`sdk from ${u}`);
     });
     await sw.install();
-    expect(sw.store.has('/sdk/puter.js')).toBe(true);
-    const first = await sw.request('/sdk/puter.js');
-    expect(await first.text()).toBe('sdk from /sdk/puter.js');
+    expect(sw.store.has('/sdk/everything.js')).toBe(true);
+    const first = await sw.request('/sdk/everything.js');
+    expect(await first.text()).toBe('sdk from /sdk/everything.js');
     await tick();
     online = false;
-    const offline = await sw.request('/sdk/puter.js');
-    expect(await offline?.text()).toBe('sdk from /sdk/puter.js');
-    // Puter's API itself is never cached.
+    const offline = await sw.request('/sdk/everything.js');
+    expect(await offline?.text()).toBe('sdk from /sdk/everything.js');
+    // Everything's API itself is never cached.
     expect(await sw.request('http://127.0.0.1:8443/whoami')).toBe(null);
   });
 });

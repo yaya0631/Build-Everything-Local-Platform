@@ -105,9 +105,9 @@ function makeRecord(overrides = {}) {
   };
 }
 
-function makeIntake({ kv, store, contacts = null, user = { username: 'nariman', email: 'nariman@example.com' }, toast = vi.fn(), blocked = () => false, getPuter = () => null } = {}) {
+function makeIntake({ kv, store, contacts = null, user = { username: 'nariman', email: 'nariman@example.com' }, toast = vi.fn(), blocked = () => false, getEverything = () => null } = {}) {
   const mailbox = { available: () => true, onChange: () => () => {} };
-  return createMailIntake({ kv, store, mailbox, contacts, user, toast, blocked, getPuter });
+  return createMailIntake({ kv, store, mailbox, contacts, user, toast, blocked, getEverything });
 }
 
 // A record whose sender fails authentication (dkim/spf fail, not internal) —
@@ -189,17 +189,17 @@ describe('trust policy: authenticated + known gate auto-add', () => {
     expect(intake.getPending()).toHaveLength(1);
   });
 
-  it('an internal @puter.email sender is authenticated but NOT automatically known — hidden by default', async () => {
+  it('an internal @everything.email sender is authenticated but NOT automatically known — hidden by default', async () => {
     const { kv, store } = await setup();
     kv.map.set(recordKey(), makeRecord({
-      from: { email: 'stranger@puter.email', name: '' },
-      ical: requestIcal({ uid: 'u4', organizer: 'stranger@puter.email' }),
+      from: { email: 'stranger@everything.email', name: '' },
+      ical: requestIcal({ uid: 'u4', organizer: 'stranger@everything.email' }),
       auth: { internal: true, dkim: 'none', dkimAligned: false, spf: 'none', received: false },
     }));
     const intake = makeIntake({ kv, store });
     await intake.pump();
     expect(store.getAllEvents()).toHaveLength(0);
-    expect(intake.getPending()).toHaveLength(0); // unknown — hidden, "Puter user" alone isn't known
+    expect(intake.getPending()).toHaveLength(0); // unknown — hidden, "Everything user" alone isn't known
 
     await store.saveSettings({ mailInvitesShowUnknown: true });
     const pending = intake.getPending();
@@ -595,7 +595,7 @@ describe('onDetected — new arrivals while the app is open', () => {
       user: { username: 'nariman', email: 'nariman@example.com' },
       toast: vi.fn(),
       blocked: () => false,
-      getPuter: () => null,
+      getEverything: () => null,
       onDetected,
     });
 
@@ -628,7 +628,7 @@ describe('onDetected — new arrivals while the app is open', () => {
       user: { username: 'nariman', email: 'nariman@example.com' },
       toast: vi.fn(),
       blocked: () => false,
-      getPuter: () => null,
+      getEverything: () => null,
       onDetected: () => {
         throw new Error('listener bug');
       },
@@ -799,7 +799,7 @@ describe('recurring invitations', () => {
       'BEGIN:VEVENT', `UID:${uid}`, 'DTSTAMP:20260810T000000Z', `SEQUENCE:${sequence}`,
       `DTSTART:${localStamp(seriesStart)}`, `DTEND:${localStamp(new Date(seriesStart.getTime() + 1_800_000))}`,
       'RRULE:FREQ=WEEKLY;BYDAY=MO', ...(exdate ? [`EXDATE:${localStamp(exdate)}`] : []),
-      'ORGANIZER:mailto:alice@example.com', 'ATTENDEE;PARTSTAT=NEEDS-ACTION:mailto:nariman@puter.email',
+      'ORGANIZER:mailto:alice@example.com', 'ATTENDEE;PARTSTAT=NEEDS-ACTION:mailto:nariman@everything.email',
       'SUMMARY:Weekly sync', 'END:VEVENT',
     ];
     return crlf(['BEGIN:VCALENDAR', 'VERSION:2.0', 'METHOD:REQUEST', ...(exception || []), ...master, 'END:VCALENDAR']);
@@ -929,7 +929,7 @@ describe('a UID is not a licence to overwrite', () => {
 
   // Own-echo rule: this exact shape — a REQUEST addressed via our own
   // UID suffix to an event the user hosts — is now recognized as our own
-  // invitation reflected back through a Puter mailbox, and dropped silently
+  // invitation reflected back through an Everything mailbox, and dropped silently
   // rather than trayed as "Add as new" (superseding the old conflict-tray
   // behavior for this specific case; a UID clash with another MAIL-sourced
   // event, tested above, is unaffected).
@@ -1062,24 +1062,24 @@ describe('a failed Add keeps the invitation', () => {
 describe('sent-folder correspondents index (cal:mail:corr)', () => {
   it('never runs on the boot pump, runs on the next one, and marks a previously-emailed address as known', async () => {
     const { kv, store } = await setup();
-    const fakePuter = {
+    const fakeEverything = {
       email: {
         list: vi.fn(async () => ({ items: [{ id: 'aaaaaaaa-aaaa-7aaa-8aaa-aaaaaaaaaaaa', size: 500 }] })),
         get: vi.fn(async () => ({ to: [{ address: 'dana@example.com' }], cc: [], bcc: [] })),
       },
     };
-    const intake = makeIntake({ kv, store, getPuter: () => fakePuter });
+    const intake = makeIntake({ kv, store, getEverything: () => fakeEverything });
 
     await intake.start(); // the boot pump
-    expect(fakePuter.email.list).not.toHaveBeenCalled();
+    expect(fakeEverything.email.list).not.toHaveBeenCalled();
 
     await intake.pump(); // second pump — now it runs
-    expect(fakePuter.email.list).toHaveBeenCalledTimes(1);
-    expect(fakePuter.email.get).toHaveBeenCalledTimes(1);
+    expect(fakeEverything.email.list).toHaveBeenCalledTimes(1);
+    expect(fakeEverything.email.get).toHaveBeenCalledTimes(1);
     expect(kv.map.get('cal:mail:corr').addresses).toContain('dana@example.com');
 
     await intake.pump(); // third pump — at most once per session
-    expect(fakePuter.email.list).toHaveBeenCalledTimes(1);
+    expect(fakeEverything.email.list).toHaveBeenCalledTimes(1);
 
     // Dana now emails an invitation of her own; correspondence alone makes
     // her known, even with no contacts entry and no prior calendar history.
@@ -1093,7 +1093,7 @@ describe('sent-folder correspondents index (cal:mail:corr)', () => {
 
   it('skips a message over 256 KB without fetching it, but still advances past it', async () => {
     const { kv, store } = await setup();
-    const fakePuter = {
+    const fakeEverything = {
       email: {
         list: vi.fn(async () => ({
           items: [
@@ -1104,12 +1104,12 @@ describe('sent-folder correspondents index (cal:mail:corr)', () => {
         get: vi.fn(async () => ({ to: [{ address: 'small@example.com' }], cc: [], bcc: [] })),
       },
     };
-    const intake = makeIntake({ kv, store, getPuter: () => fakePuter });
+    const intake = makeIntake({ kv, store, getEverything: () => fakeEverything });
     await intake.start();
     await intake.pump();
 
-    expect(fakePuter.email.get).toHaveBeenCalledTimes(1);
-    expect(fakePuter.email.get).toHaveBeenCalledWith({ id: 'dddddddd-dddd-7ddd-8ddd-dddddddddd01', folder: 'sent' });
+    expect(fakeEverything.email.get).toHaveBeenCalledTimes(1);
+    expect(fakeEverything.email.get).toHaveBeenCalledWith({ id: 'dddddddd-dddd-7ddd-8ddd-dddddddddd01', folder: 'sent' });
     const stored = kv.map.get('cal:mail:corr');
     expect(stored.addresses).toEqual(['small@example.com']);
     // The watermark still advances past the oversized (skipped) message.
@@ -1120,13 +1120,13 @@ describe('sent-folder correspondents index (cal:mail:corr)', () => {
     const { kv, store } = await setup();
     const many = Array.from({ length: 500 }, (_, i) => `old${i}@example.com`);
     kv.map.set('cal:mail:corr', { v: 1, at: Date.now() - 2 * DAY_MS, watermark: '', addresses: many });
-    const fakePuter = {
+    const fakeEverything = {
       email: {
         list: vi.fn(async () => ({ items: [{ id: 'eeeeeeee-eeee-7eee-8eee-eeeeeeeeeeee', size: 10 }] })),
         get: vi.fn(async () => ({ to: [{ address: 'newcomer@example.com' }], cc: [], bcc: [] })),
       },
     };
-    const intake = makeIntake({ kv, store, getPuter: () => fakePuter });
+    const intake = makeIntake({ kv, store, getEverything: () => fakeEverything });
     await intake.start();
     await intake.pump();
     const stored = kv.map.get('cal:mail:corr');
@@ -1137,20 +1137,20 @@ describe('sent-folder correspondents index (cal:mail:corr)', () => {
   it('a rejected list() leaves the existing index untouched and never breaks the pump', async () => {
     const { kv, store } = await setup();
     kv.map.set('cal:mail:corr', { v: 1, at: Date.now() - 2 * DAY_MS, watermark: 'w', addresses: ['keep@example.com'] });
-    const fakePuter = { email: { list: vi.fn(async () => { throw new Error('network down'); }), get: vi.fn() } };
+    const fakeEverything = { email: { list: vi.fn(async () => { throw new Error('network down'); }), get: vi.fn() } };
     kv.map.set(recordKey(), makeRecord({ ical: requestIcal({ uid: 'still-works' }) }));
-    const intake = makeIntake({ kv, store, getPuter: () => fakePuter, contacts: KNOWS_EVERYONE });
+    const intake = makeIntake({ kv, store, getEverything: () => fakeEverything, contacts: KNOWS_EVERYONE });
     await intake.start();
     await intake.pump();
     expect(kv.map.get('cal:mail:corr').addresses).toEqual(['keep@example.com']);
-    expect(fakePuter.email.get).not.toHaveBeenCalled();
+    expect(fakeEverything.email.get).not.toHaveBeenCalled();
     // The record pump itself is unaffected by the index refresh failing.
     expect(store.getAllEvents().some((e) => e.invite && e.invite.uid === 'still-works')).toBe(true);
   });
 
   it('one bad get() does not abort the rest of the pass', async () => {
     const { kv, store } = await setup();
-    const fakePuter = {
+    const fakeEverything = {
       email: {
         list: vi.fn(async () => ({
           items: [
@@ -1164,7 +1164,7 @@ describe('sent-folder correspondents index (cal:mail:corr)', () => {
         }),
       },
     };
-    const intake = makeIntake({ kv, store, getPuter: () => fakePuter });
+    const intake = makeIntake({ kv, store, getEverything: () => fakeEverything });
     await intake.start();
     await intake.pump();
     expect(kv.map.get('cal:mail:corr').addresses).toContain('ok@example.com');
@@ -1172,7 +1172,7 @@ describe('sent-folder correspondents index (cal:mail:corr)', () => {
 });
 
 describe('the events socket only opens once the mailbox is connected', () => {
-  function makeIntakeWithPuter({ kv, store, mode, onLocal }) {
+  function makeIntakeWithEverything({ kv, store, mode, onLocal }) {
     let listener = null;
     const mailbox = {
       available: () => true,
@@ -1189,7 +1189,7 @@ describe('the events socket only opens once the mailbox is connected', () => {
       user: { username: 'nariman', email: 'nariman@example.com' },
       toast: vi.fn(),
       blocked: () => false,
-      getPuter: () => ({ appID: 'app-1', events: { onLocal } }),
+      getEverything: () => ({ appID: 'app-1', events: { onLocal } }),
     });
     return { intake, fire: () => listener && listener(), setMode: (m) => (mode = m) };
   }
@@ -1197,7 +1197,7 @@ describe('the events socket only opens once the mailbox is connected', () => {
   it('subscribes to nothing while the mailbox is off', async () => {
     const { kv, store } = await setup();
     const onLocal = vi.fn(() => ({ off: vi.fn() }));
-    const { intake } = makeIntakeWithPuter({ kv, store, mode: 'off', onLocal });
+    const { intake } = makeIntakeWithEverything({ kv, store, mode: 'off', onLocal });
     await intake.start();
     expect(onLocal).not.toHaveBeenCalled();
   });
@@ -1205,7 +1205,7 @@ describe('the events socket only opens once the mailbox is connected', () => {
   it('does not subscribe in foreground mode either', async () => {
     const { kv, store } = await setup();
     const onLocal = vi.fn(() => ({ off: vi.fn() }));
-    const { intake } = makeIntakeWithPuter({ kv, store, mode: 'foreground', onLocal });
+    const { intake } = makeIntakeWithEverything({ kv, store, mode: 'foreground', onLocal });
     await intake.start();
     expect(onLocal).not.toHaveBeenCalled();
   });
@@ -1214,7 +1214,7 @@ describe('the events socket only opens once the mailbox is connected', () => {
     const { kv, store } = await setup();
     const off = vi.fn();
     const onLocal = vi.fn(() => ({ off }));
-    const { intake, fire, setMode } = makeIntakeWithPuter({ kv, store, mode: 'background', onLocal });
+    const { intake, fire, setMode } = makeIntakeWithEverything({ kv, store, mode: 'background', onLocal });
     await intake.start();
     expect(onLocal).toHaveBeenCalledTimes(1);
     expect(onLocal.mock.calls[0][0]).toBe('kv:app-1:cal:mail:tick');
@@ -1231,7 +1231,7 @@ describe('the events socket only opens once the mailbox is connected', () => {
   it('subscribes later, when connecting happens after start()', async () => {
     const { kv, store } = await setup();
     const onLocal = vi.fn(() => ({ off: vi.fn() }));
-    const { intake, fire, setMode } = makeIntakeWithPuter({ kv, store, mode: 'off', onLocal });
+    const { intake, fire, setMode } = makeIntakeWithEverything({ kv, store, mode: 'off', onLocal });
     await intake.start();
     expect(onLocal).not.toHaveBeenCalled();
     setMode('background');

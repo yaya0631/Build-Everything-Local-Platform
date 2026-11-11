@@ -13,13 +13,13 @@ test('a document imported under the name of a shared one deleted elsewhere does 
   await page.getByRole('button', { name: 'Share', exact: true }).first().click();
   await page.getByRole('menuitem', { name: 'Copy Link' }).click();
   await expect(page.locator('.cl-avatar')).toHaveCount(1, { timeout: 15000 });
-  await expect(page.locator('.canvas-save-status')).toHaveAttribute('aria-label', 'Saved to Puter', { timeout: 15000 });
+  await expect(page.locator('.canvas-save-status')).toHaveAttribute('aria-label', 'Saved to Everything', { timeout: 15000 });
   const path = await page.evaluate(() => window.__docs.current.view.doc.path);
   expect(path).toBe('Documents/Untitled document.docx');
   await page.evaluate(() => { location.hash = '#/home'; });
   await expect(page.getByRole('heading', { name: 'Your documents' })).toBeVisible();
-  // Deleted outside the app (the Puter desktop), so the app never forgot its room.
-  await page.evaluate(p => window.puter.fs.delete(p), path);
+  // Deleted outside the app (the Everything desktop), so the app never forgot its room.
+  await page.evaluate(p => window.everything.fs.delete(p), path);
   const bytes = readFileSync(new URL('../fixtures/aligned-tab-tails/source.docx', import.meta.url));
   await page.locator('input[type="file"]').first().setInputFiles([
     { name: 'Untitled document.docx', mimeType: DOCX, buffer: bytes },

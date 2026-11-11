@@ -49,7 +49,7 @@ export function commandEntries({
   frames = [],
   // Whether sticky notes on a shared board show who added them.
   authorsShown = false,
-  // Whether Puter can show its dialog for feedback to the app's makers.
+  // Whether Everything can show its dialog for feedback to the app's makers.
   feedback = false,
 }) {
   const entries = [];
@@ -847,7 +847,7 @@ export function commandEntries({
     );
     add(
       "cloud-save",
-      "Save to Puter",
+      "Save to Everything",
       "Board",
       "save backup cloud sauvegarder nuage",
       "Ctrl/Cmd+S",

@@ -21,20 +21,20 @@ export function authView({ onSignedIn, signal }) {
   view.addEventListener('click', async (event) => {
     const button = event.target.closest('[data-sign-in]');
     if (!button || pending) return;
-    if (!globalThis.puter?.auth?.signIn) {
-      status.textContent = 'Couldn’t connect to Puter. Check your connection, then reload this page to sign in.';
+    if (!globalThis.everything?.auth?.signIn) {
+      status.textContent = 'Couldn’t connect to Everything. Check your connection, then reload this page to sign in.';
       status.focus();
       return;
     }
     pending = true;
     buttons.forEach((cta) => { cta.disabled = true; });
-    status.textContent = 'Finish signing in in the Puter window…';
+    status.textContent = 'Finish signing in in the Everything window…';
     try {
-      await puter.auth.signIn();
+      await everything.auth.signIn();
       disposeNavigation();
       await onSignedIn();
     } catch {
-      status.textContent = 'Sign-in wasn’t completed. Please try again and allow the Puter sign-in window if prompted.';
+      status.textContent = 'Sign-in wasn’t completed. Please try again and allow the Everything sign-in window if prompted.';
       status.focus();
     } finally {
       pending = false;

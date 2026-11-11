@@ -1,18 +1,18 @@
 /**
  * Per-session state that is not part of any document: whether anyone is
- * signed in to Puter, who, and the theme preference. Views subscribe to
+ * signed in to Everything, who, and the theme preference. Views subscribe to
  * 'change' to re-render the pieces that show these. The theme lives in
  * localStorage so the pre-paint script in index.html can apply it before the
  * first frame.
  *
- * Nobody has to sign in to write. The editor runs in the browser; Puter is
+ * Nobody has to sign in to write. The editor runs in the browser; Everything is
  * where documents are saved, so a sign-in is asked for at the first action
  * that needs the cloud (saving, opening a file, listing the documents). Until
  * init() has asked the SDK, the state is 'unknown' and nothing is gated.
  */
 
 import { applyTheme, currentTheme } from '../ui/theme.js';
-import * as P from './puter.js';
+import * as P from './everything.js';
 
 class Session extends EventTarget {
   constructor() {
@@ -48,13 +48,13 @@ class Session extends EventTarget {
     return this.state === 'in';
   }
 
-  /** Known to have no Puter session: cloud actions ask for a sign-in first. */
+  /** Known to have no Everything session: cloud actions ask for a sign-in first. */
   get signedOut() {
     return this.state === 'out';
   }
 
   /**
-   * Open Puter's sign-in dialog. Resolves true once signed in, false when the
+   * Open Everything's sign-in dialog. Resolves true once signed in, false when the
    * dialog was dismissed. Concurrent callers share one dialog.
    */
   signIn() {
@@ -71,7 +71,7 @@ class Session extends EventTarget {
 
   /** The name to show and to sign comments with. */
   get username() {
-    return this.user?.username || (this.state === 'out' ? 'Guest' : 'Puter user');
+    return this.user?.username || (this.state === 'out' ? 'Guest' : 'Everything user');
   }
 
   get accountId() {

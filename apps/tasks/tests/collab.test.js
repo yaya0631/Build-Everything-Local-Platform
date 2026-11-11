@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, beforeAll } from 'vitest';
-import { installMockPuter, createMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything, createMockEverything } from './helpers/mock-everything.js';
 
 let Store;
 let collab;
@@ -7,22 +7,22 @@ let alice, bob; // isolated mock accounts
 let A, B;       // their stores
 
 beforeAll(async () => {
-  installMockPuter(); // browser globals + cross-account fetch mock
+  installMockEverything(); // browser globals + cross-account fetch mock
   ({ Store } = await import('../src/lib/store.js'));
   collab = await import('../src/lib/collab.js');
 });
 
 beforeEach(async () => {
-  alice = createMockPuter({ username: 'alice' });
-  bob = createMockPuter({ username: 'bob' });
+  alice = createMockEverything({ username: 'alice' });
+  bob = createMockEverything({ username: 'bob' });
   localStorage.clear();
   A = new Store();
-  A.cloud = alice.puter;
+  A.cloud = alice.everything;
   A.deviceId = 'dev-A';
   await A.init();
   localStorage.clear(); // the mirror is per-browser; don't leak A's into B
   B = new Store();
-  B.cloud = bob.puter;
+  B.cloud = bob.everything;
   B.deviceId = 'dev-B';
   await B.init();
   localStorage.clear();
@@ -358,12 +358,12 @@ describe('membership changes', () => {
 
   it('a failed enableCollab leaves no half-built collab state behind', async () => {
     const list = await A.addList({ name: 'Flaky network' });
-    const orig = alice.puter.fs.getReadURL;
-    alice.puter.fs.getReadURL = async () => { throw new Error('network down'); };
+    const orig = alice.everything.fs.getReadURL;
+    alice.everything.fs.getReadURL = async () => { throw new Error('network down'); };
     await expect(A.enableCollab(list.id)).rejects.toThrow();
     expect(A.listById(list.id).collab).toBeNull();
 
-    alice.puter.fs.getReadURL = orig;
+    alice.everything.fs.getReadURL = orig;
     const { invite } = await A.enableCollab(list.id);
     expect(invite).toContain('#/join?m=');
   });
@@ -403,7 +403,7 @@ describe('membership changes', () => {
     const manifest = JSON.parse(bob.fileMap.get(collab.manifestPath(decoy.id)));
     manifest.listId = priv.id;
     bob.fileMap.set(collab.manifestPath(priv.id), JSON.stringify(manifest));
-    const evilUrl = await bob.puter.fs.getReadURL(collab.manifestPath(priv.id), 3600);
+    const evilUrl = await bob.everything.fs.getReadURL(collab.manifestPath(priv.id), 3600);
 
     await expect(A.joinCollab(evilUrl)).rejects.toThrow(/does not match/i);
     // Nothing adopted, nothing published, no read URL handed out.
@@ -420,10 +420,10 @@ describe('membership changes', () => {
     expect(B.tasks.some((t) => t.title === 'before the export')).toBe(true);
 
     // Carol was never invited; she imports Bob's export file.
-    const carol = createMockPuter({ username: 'carol' });
+    const carol = createMockEverything({ username: 'carol' });
     localStorage.clear();
     const C = new Store();
-    C.cloud = carol.puter;
+    C.cloud = carol.everything;
     C.deviceId = 'dev-C';
     await C.init();
     await C.importAll(JSON.parse(JSON.stringify(B.exportAll())));
@@ -459,7 +459,7 @@ describe('membership changes', () => {
     const manifest = JSON.parse(alice.fileMap.get(collab.manifestPath(list.id)));
     manifest.owner = { id: 'bob', name: 'bob', replicaUrl: 'https://x.test/r.json', addedAt: Date.now() };
     bob.fileMap.set(collab.manifestPath(list.id), JSON.stringify(manifest));
-    const evilUrl = await bob.puter.fs.getReadURL(collab.manifestPath(list.id), 3600);
+    const evilUrl = await bob.everything.fs.getReadURL(collab.manifestPath(list.id), 3600);
 
     await expect(A.joinCollab(evilUrl)).rejects.toThrow();
     expect(A.listById(list.id).collab.role).toBe('owner');
@@ -481,7 +481,7 @@ describe('membership changes', () => {
     await B.syncCollab();
 
     const B2 = new Store();
-    B2.cloud = bob.puter;
+    B2.cloud = bob.everything;
     B2.deviceId = 'dev-B2';
     await B2.init();
     B2.deletedTasks.push({ id: t.id, at: staleAt, listId: list.id });
@@ -523,20 +523,20 @@ describe('membership changes', () => {
     // is working from membership that is already out of date.
     await A.updateList(list.id, { name: 'Renamed' });
 
-    const origRead = alice.puter.fs.read;
+    const origRead = alice.everything.fs.read;
     let approved = null;
-    alice.puter.fs.read = async (path, ...rest) => {
+    alice.everything.fs.read = async (path, ...rest) => {
       if (path === collab.manifestPath(list.id) && !approved) {
         approved = A.approveMember(list.id, carol);
         await approved;
       }
-      return origRead.call(alice.puter.fs, path, ...rest);
+      return origRead.call(alice.everything.fs, path, ...rest);
     };
     try {
       await A.syncCollab();
       await approved;
     } finally {
-      alice.puter.fs.read = origRead;
+      alice.everything.fs.read = origRead;
     }
 
     const { members } = await A.collabMembers(list.id);

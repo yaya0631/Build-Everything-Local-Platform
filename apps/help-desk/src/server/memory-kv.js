@@ -1,5 +1,5 @@
 /**
- * An in-memory stand-in for the Puter key-value API, faithful to the parts
+ * An in-memory stand-in for the Everything key-value API, faithful to the parts
  * the help desk uses: batch get and set, path updates, counters, prefix
  * listings with pages, and expiry. Used by the tests and the offline demo.
  */

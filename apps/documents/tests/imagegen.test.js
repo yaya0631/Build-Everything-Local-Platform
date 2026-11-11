@@ -91,11 +91,11 @@ describe('image from a description', () => {
 
 describe('a picture that could not be made', () => {
   it('is explained in plain words, whatever shape the SDK rejected with', () => {
-    // Puter's SDK rejects with its own { error: { code, message } } object, not an Error: "[object Object]" before.
+    // Everything's SDK rejects with its own { error: { code, message } } object, not an Error: "[object Object]" before.
     const sdkError = { success: false, error: { code: 'insufficient_funds', message: 'Insufficient funds' } };
-    expect(generationError(sdkError).message).toBe('Your Puter AI allowance has run out for now.');
+    expect(generationError(sdkError).message).toBe('Your Everything AI allowance has run out for now.');
     expect(generationError(sdkError).cause).toBe(sdkError);
-    expect(generationError({ error: { code: 'unauthorized' } }).message).toBe('Sign in to Puter to generate pictures.');
+    expect(generationError({ error: { code: 'unauthorized' } }).message).toBe('Sign in to Everything to generate pictures.');
     expect(generationError(new TypeError('Failed to fetch')).message).toBe('The AI service could not be reached. Check your connection.');
     expect(generationError({ error: { message: 'Your request was rejected by the safety system.' } }).message).toMatch(/Try describing it differently/);
     for (const other of [new Error('Request failed with status code 500'), 'oops', undefined, {}]) expect(generationError(other).message).toBe('The picture could not be generated. Try again in a moment.');

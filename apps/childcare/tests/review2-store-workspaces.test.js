@@ -17,7 +17,7 @@ vi.mock('../src/ui/toast.js', () => ({ toast: vi.fn() }));
 vi.mock('../src/views/onboarding.js', () => ({ maybeOnboard: vi.fn() }));
 vi.mock('../src/core/backend.js', async (importOriginal) => {
   const real = await importOriginal();
-  return { ...real, createPuterBackend: () => (backends.push('own'), real.createMemoryBackend()) };
+  return { ...real, createEverythingBackend: () => (backends.push('own'), real.createMemoryBackend()) };
 });
 vi.mock('../src/team.js', async (importOriginal) => {
   const real = await importOriginal();
@@ -51,11 +51,11 @@ describe('workspace list', () => {
 
     document.body.innerHTML = '<div id="app"></div>';
     history.replaceState(null, '', '/#/');
-    globalThis.puter = { auth: { isSignedIn: () => true, getUser: async () => ({ username: 'teacher', uuid: 'u9' }), getProfilePicture: async () => null }, kv };
+    globalThis.everything = { auth: { isSignedIn: () => true, getUser: async () => ({ username: 'teacher', uuid: 'u9' }), getProfilePicture: async () => null }, kv };
     await import('../src/main.js');
     for (let i = 0; i < 40 && !started; i++) await tick(5);
     expect(backends).toEqual([URL_A]);
     expect(app.team?.url).toBe(URL_A);
-    delete globalThis.puter;
+    delete globalThis.everything;
   });
 });

@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { importMailbox } from '../src/client/mailbox.js';
 
-// A mailbox listing is newest first and paged, like puter.email.list.
+// A mailbox listing is newest first and paged, like everything.email.list.
 function fakeMailbox(count, { failGet = () => false } = {}) {
   const now = Date.now();
   const msgs = Array.from({ length: count }, (_, i) => ({ id: `m${i}`, date: new Date(now - (count - i) * 60000).toISOString(), subject: `s${i}` })).reverse();
-  window.puter = {
+  window.everything = {
     auth: { getUser: async () => ({ uuid: 'u', username: 'owner' }) },
     email: {
       list: async ({ limit, cursor }) => {
@@ -33,7 +33,7 @@ function fakeDesk(ref, imported) {
 
 describe('mailbox import', () => {
   beforeEach(() => localStorage.clear());
-  afterEach(() => { delete window.puter; });
+  afterEach(() => { delete window.everything; });
 
   it('imports a backlog larger than one run without losing older mail', async () => {
     fakeMailbox(150);

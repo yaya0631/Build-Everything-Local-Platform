@@ -1,5 +1,5 @@
-// Live peer links between the people in a shared document, over Puter's
-// WebRTC peer service (puter.peer.serve / connect). Every link proves its
+// Live peer links between the people in a shared document, over Everything's
+// WebRTC peer service (everything.peer.serve / connect). Every link proves its
 // identity with a ticket the room's worker signed and a challenge signed with
 // the session's own key, bound to the connection's transport certificates;
 // every packet is signed by its sender. Rooms of up to eight sessions form a
@@ -19,7 +19,7 @@ export type Ticket = {
 };
 export type PeerPacket = { ticket: Ticket; signature: string; body: { v: number; seq: number; kind: string; data: unknown }; proof: string };
 
-/** The parts of a peer connection this module uses (Puter's or a test fake). */
+/** The parts of a peer connection this module uses (Everything's or a test fake). */
 export interface PeerConnection extends EventTarget {
   connected?: boolean;
   send(data: string): void;

@@ -227,7 +227,7 @@ export const TUTORIAL_STEPS: Record<string, Tutorial['steps']> = {
     },
     {
       title: 'Keep the editable project',
-      text: 'Save the project with File → Save (to Puter) or File → Download Project to keep a .photo file on this device. Opening it later brings back every layer.',
+      text: 'Save the project with File → Save (to Everything) or File → Download Project to keep a .photo file on this device. Opening it later brings back every layer.',
       anchor: { menu: 'File' },
       commands: ['file.download-project', 'file.save', 'file.save-as', 'file.save-copy'],
     },

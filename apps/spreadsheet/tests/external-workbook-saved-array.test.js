@@ -9,7 +9,7 @@ async function imported(dynamic = false) {
     sheets: [{ name: 'Report', cells: { '1,1': { f, ...(!dynamic ? { array: { rows: 2, cols: 2 } } : {}) } } }] });
   const zip = X.CFB.read(new Uint8Array(await (await workbookToXlsx(original)).arrayBuffer()), { type: 'array' });
   const get = path => new TextDecoder().decode(X.CFB.find(zip, path).content);
-  X.CFB.utils.cfb_add(zip, '/xl/workbook.xml', new TextEncoder().encode(get('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')));
+  X.CFB.utils.cfb_add(zip, '/xl/workbook.xml', new TextEncoder().encode(get('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')));
   const sheet = get('/xl/worksheets/sheet1.xml').replace(/<sheetData>[\s\S]*?<\/sheetData>/,
     `<sheetData><row r="2"><c r="B2"${dynamic ? ' cm="1"' : ''}><f t="array" ref="B2:C3">${f}</f><v>11</v></c><c r="C2"><v>12</v></c></row><row r="3"><c r="B3"><v>21</v></c><c r="C3"><v>22</v></c></row></sheetData>`);
   X.CFB.utils.cfb_add(zip, '/xl/worksheets/sheet1.xml', new TextEncoder().encode(sheet));
@@ -59,7 +59,7 @@ it.each([false, true])('retains array extent and each native cached value withou
     const zip = X.CFB.read(new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()), { type: 'array' });
     const get = path => new TextDecoder().decode(X.CFB.find(zip, path).content);
     expect(get('/xl/worksheets/sheet1.xml')).toMatch(/<f[^>]*ref="B2:C3"/);
-    X.CFB.utils.cfb_add(zip, '/xl/workbook.xml', new TextEncoder().encode(get('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')));
+    X.CFB.utils.cfb_add(zip, '/xl/workbook.xml', new TextEncoder().encode(get('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')));
     wb = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }));
     expect(values(wb)).toEqual([[11, 12], [21, 22]]);
     expect(wb.getCell(wb.activeSheetId, 1, 1).array).toEqual(dynamic ? undefined : { rows: 2, cols: 2 });

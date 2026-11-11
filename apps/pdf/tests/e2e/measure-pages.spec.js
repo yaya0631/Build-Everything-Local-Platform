@@ -9,7 +9,7 @@ test.skip(({ isMobile }) => isMobile, 'desktop workspace');
 
 // Corners clicked on one page are not carried to the next: an area measured there is its own.
 test('an area measured after turning the page uses only that page’s corners', async ({ page }) => {
-  await page.route('**/sdk/puter.js', (route) => route.abort());
+  await page.route('**/sdk/everything.js', (route) => route.abort());
   const doc = await PDFDocument.create();
   doc.addPage([612, 792]);
   doc.addPage([612, 792]);

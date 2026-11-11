@@ -1,11 +1,11 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { Doc } from '../src/lib/doc.js';
-import * as P from '../src/lib/puter.js';
+import * as P from '../src/lib/everything.js';
 import { homeView } from '../src/views/home.js';
 import { closeMenu } from '../src/ui/menu.js';
 import { toast } from '../src/ui/toast.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 import { memoryStorage } from './helpers/memory-storage.js';
 
 // Renaming, saving a copy, or renaming, duplicating or deleting from the list while offline told the user only
@@ -19,19 +19,19 @@ vi.mock('../src/ui/modal.js', () => ({ promptDialog: vi.fn(), confirmDialog: vi.
 let online;
 beforeEach(() => {
   Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true });
-  installMockPuter();
+  installMockEverything();
   online = true;
   vi.spyOn(navigator, 'onLine', 'get').mockImplementation(() => online);
   vi.spyOn(console, 'error').mockImplementation(() => {});
 });
-afterEach(() => { closeMenu(); vi.restoreAllMocks(); delete globalThis.puter; document.body.replaceChildren(); });
+afterEach(() => { closeMenu(); vi.restoreAllMocks(); delete globalThis.everything; document.body.replaceChildren(); });
 
 it('words a failure to connect, and keeps the service’s own message', () => {
   expect(P.unreachable(new TypeError('Failed to fetch'))).toBe(true);
   expect(P.unreachable(new TypeError('Load failed'))).toBe(true);
   expect(P.unreachable(new TypeError('NetworkError when attempting to fetch resource.'))).toBe(true);
   expect(P.unreachable(new Error('A file with that name already exists'))).toBe(false);
-  expect(P.failureText(new TypeError('Failed to fetch'), 'Could not rename')).toBe('Could not rename: Puter could not be reached. Check your connection, then try again');
+  expect(P.failureText(new TypeError('Failed to fetch'), 'Could not rename')).toBe('Could not rename: Everything could not be reached. Check your connection, then try again');
   expect(P.failureText({ error: { message: 'Storage capacity limit reached' } }, 'Could not rename')).toBe('Storage capacity limit reached');
   expect(P.failureText(null, 'Could not rename')).toBe('Could not rename');
   online = false;
@@ -41,7 +41,7 @@ it('words a failure to connect, and keeps the service’s own message', () => {
 it('says a rename or a copy failed for being offline', async () => {
   const doc = new Doc({ name: 'Plan', path: 'Spreadsheets/Plan.xlsx' });
   online = false;
-  puter.fs.stat = async () => { throw new TypeError('Failed to fetch'); };
+  everything.fs.stat = async () => { throw new TypeError('Failed to fetch'); };
   await expect(doc.rename('Budget')).resolves.toBe('Could not rename the file: you are offline. Connect to the internet, then try again');
   await expect(doc.saveAs('Copy')).resolves.toBe('Could not save a copy: you are offline. Connect to the internet, then try again');
   doc.destroy();

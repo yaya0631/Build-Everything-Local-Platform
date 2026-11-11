@@ -159,16 +159,16 @@ describe('a copy of a workspace with shared channels', () => {
 });
 
 describe('replaying an archive into a worker (the client side of an import or transfer)', () => {
-  const hadPuter = Object.hasOwn(globalThis, 'puter') ? globalThis.puter : undefined;
+  const hadEverything = Object.hasOwn(globalThis, 'everything') ? globalThis.everything : undefined;
   afterEach(() => {
-    if (hadPuter === undefined) delete globalThis.puter;
-    else globalThis.puter = hadPuter;
+    if (hadEverything === undefined) delete globalThis.everything;
+    else globalThis.everything = hadEverything;
   });
 
   it('goes on past a direct message the copy left out (one between people who did not travel), and still opens the workspace', async () => {
     const calls = [];
     const json = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
-    globalThis.puter = { workers: { exec: async (url, init) => {
+    globalThis.everything = { workers: { exec: async (url, init) => {
       const path = new URL(url).pathname;
       const body = init.body ? JSON.parse(init.body) : null;
       calls.push([path, body?.conv || null]);

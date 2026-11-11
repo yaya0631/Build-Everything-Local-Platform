@@ -81,7 +81,7 @@ describe('app shell', () => {
     expect(childrenOf(space.tree).map((p) => p.title)).toContain('Notes');
   });
 
-  it('offers sign-out on the web but not inside the Puter desktop', async () => {
+  it('offers sign-out on the web but not inside the Everything desktop', async () => {
     await mount({ env: 'web' });
     app.openAccountMenu(document.querySelector('.ws-button'));
     expect([...document.querySelectorAll('.menu-item')].map((m) => m.textContent)).toContain('Sign out');

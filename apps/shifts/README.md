@@ -2,7 +2,7 @@
 
 Shift scheduling for small teams: employee availability, shift assignments, swap requests, and attendance in a single, lightweight web app.
 
-Built with vanilla JavaScript (no UI framework), [Vite](https://vitejs.dev), [Lucide](https://lucide.dev) icons, and [Puter.js](http://localhost:8443) as the only backend. All data lives in the signed-in user's own Puter cloud key-value store; there is no server to run.
+Built with vanilla JavaScript (no UI framework), [Vite](https://vitejs.dev), [Lucide](https://lucide.dev) icons, and [Everything.js](http://localhost:8443) as the only backend. All data lives in the signed-in user's own Everything cloud key-value store; there is no server to run.
 
 ## Features
 
@@ -17,9 +17,9 @@ Built with vanilla JavaScript (no UI framework), [Vite](https://vitejs.dev), [Lu
 - **Swaps**: request → review → approve/decline. Approval atomically reassigns the shift; requests are validated against conflicts, availability, time off, and hour limits, and history is kept.
 - **Attendance and payroll**: per-shift present/late/absent with clock-in/out times (overnight clock-outs handled), lateness computed from the schedule, weekly summary stats, and CSV timesheet export with pay-period presets and per-employee totals. One tap clocks somebody in or out from today's Attendance list or the dashboard, stamping the real minute; a late arrival sets the status itself (with an optional grace period), a manual change always stands, and shifts in progress show a ticking "on now" indicator.
 - **Reports**: any date range (with the pay-period presets the timesheet export offers) as small tables: hours per employee scheduled against worked, pay per employee, cost per role, attendance and lateness, coverage gaps and open shifts nobody took. Each figure sits beside the same period before it, each table exports as CSV, and the whole page prints. Archived and former employees appear whenever they worked in the range.
-- **Share and print**: publish a read-only weekly snapshot to a public link via Puter hosting (update or revoke any time), and print the week grid with a dedicated landscape print stylesheet.
+- **Share and print**: publish a read-only weekly snapshot to a public link via Everything hosting (update or revoke any time), and print the week grid with a dedicated landscape print stylesheet.
 - **CSV import**: bring a team or a rota in from a spreadsheet, in the same dialog as backups but kept clearly apart from the destructive restore. Columns are auto-detected and shown for confirmation, a preview lists what each row would create and what is wrong with the rows that would not work, unknown assignee names become new people or open shifts, and new role labels join the managed list. Additive, one undo, plus a "paste a list of names" shortcut for getting the team in fast.
-- **Restore points**: a rolling set of ten automatic snapshots of the whole dataset, kept as files in the user's own Puter storage: one on the first change of a day, and one immediately before anything replaces the data wholesale (backup restore, sample-data load, sample-data wipe). The Backup and restore dialog lists them with their date, why they were taken, and what they hold; restoring goes through the same preview and confirmation as a file import and takes a snapshot first, so it is itself reversible. There is a manual "Snapshot now", and snapshots skip while offline rather than filling the write queue.
+- **Restore points**: a rolling set of ten automatic snapshots of the whole dataset, kept as files in the user's own Everything storage: one on the first change of a day, and one immediately before anything replaces the data wholesale (backup restore, sample-data load, sample-data wipe). The Backup and restore dialog lists them with their date, why they were taken, and what they hold; restoring goes through the same preview and confirmation as a file import and takes a snapshot first, so it is itself reversible. There is a manual "Snapshot now", and snapshots skip while offline rather than filling the write queue.
 - **Offline**: a per-user local mirror serves reads when the network is down, writes queue and sync when connectivity returns, and a service worker keeps the installed PWA opening offline.
 - **Theming**: light, dark, and system (default), no flash on load.
 - **Onboarding**: a first-run welcome modal offers a guided start (add your first employee), sample data, or skip. Sample data (team, shifts, swaps, attendance) installs with a persistent banner and can be wiped with one tap to start fresh.
@@ -34,7 +34,7 @@ npm run build      # production build to dist/
 npm run preview    # serve the production build
 ```
 
-The app must be served over HTTP (Puter.js requirement); any static host works for the `dist/` output.
+The app must be served over HTTP (Everything.js requirement); any static host works for the `dist/` output.
 
 ## Architecture
 
@@ -42,7 +42,7 @@ The app must be served over HTTP (Puter.js requirement); any static host works f
 src/
   lib/        time, DOM, id, and icon helpers (pure, tested)
   core/       business logic + data layer
-    backend.js     storage adapters: Puter KV (production) / in-memory (tests)
+    backend.js     storage adapters: Everything KV (production) / in-memory (tests)
     store.js       state container: actions, persistence, subscriptions
     scheduling.js  validation, conflicts, availability, weekly hours
     swaps.js       swap request lifecycle and evaluation
@@ -56,7 +56,7 @@ src/
 tests/        Vitest suites for lib/ and core/
 ```
 
-Each collection (employees, shifts, availability, swaps, attendance) is persisted as a JSON document under a namespaced key (`shifts.v1:*`) in Puter KV. The store keeps everything in memory, persists the affected collections after each action, and notifies subscribers, which re-render the active view.
+Each collection (employees, shifts, availability, swaps, attendance) is persisted as a JSON document under a namespaced key (`shifts.v1:*`) in Everything KV. The store keeps everything in memory, persists the affected collections after each action, and notifies subscribers, which re-render the active view.
 
 ## License
 

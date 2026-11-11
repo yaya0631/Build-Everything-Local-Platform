@@ -4,10 +4,10 @@ import { LINK_RECOVERY_BUDGET_MS, LINK_DROP_MS } from '../src/net/rtc.js';
 import * as P from '../src/lib/protocol.js';
 
 /* ------------------------------------------------------------------ *
- * The in-memory Puter peer mock from session.test.js, plus a fake      *
+ * The in-memory Everything peer mock from session.test.js, plus a fake      *
  * RTCPeerConnection whose connectionState the test can drive.          *
  *                                                                      *
- * What these tests model: puter.peer watches the transport itself. It   *
+ * What these tests model: everything.peer watches the transport itself. It   *
  * restarts ICE when a path fails and, only once that has not worked,   *
  * closes the connection with a reason. So a dead transport reaches the *
  * session as a `close`, not as a silently-open link.                   *
@@ -83,7 +83,7 @@ class MockConn extends MockEventTarget {
     this.peerconnection = new FakeRTCPeerConnection();
   }
 
-  /** Mirrors puter.peer: transport state becomes a link-health signal. */
+  /** Mirrors everything.peer: transport state becomes a link-health signal. */
   #watchTransport(pc) {
     pc?.addEventListener?.('connectionstatechange', () => {
       const state = { connected: 'connected', disconnected: 'unstable', failed: 'recovering' }[
@@ -148,7 +148,7 @@ class MockConn extends MockEventTarget {
 
   configure() {}
 
-  /** puter.peer gave up rescuing this link and closed it from our side. */
+  /** everything.peer gave up rescuing this link and closed it from our side. */
   giveUp(reason = 'could not restore the connection') {
     if (this.closed) return;
     this.closed = true;
@@ -185,14 +185,14 @@ class MockServer extends MockEventTarget {
   }
 }
 
-function installMockPuter() {
+function installMockEverything() {
   const registry = new Map();
   const pairs = [];
   // The host's self-probe dials its own invite every so often, whoever is
   // connected. Every session here is signed in, so a dial carrying an
   // anonToken is a probe — kept apart from the links the tests count.
   const probes = [];
-  const puter = {
+  const everything = {
     peer: {
       _pairs: pairs,
       _probes: probes,
@@ -205,7 +205,7 @@ function installMockPuter() {
         return server;
       },
       connect: async (inviteCode, opts) => {
-        if (puter.peer._offline) throw new Error('network unreachable');
+        if (everything.peer._offline) throw new Error('network unreachable');
         const server = registry.get(inviteCode);
         if (!server || server.closed) throw new Error('no such meeting');
         const [dialer, listener] = MockConn.pair();
@@ -220,7 +220,7 @@ function installMockPuter() {
       },
     },
   };
-  return puter;
+  return everything;
 }
 
 function fakeMedia() {
@@ -252,7 +252,7 @@ function streamTracks(stream) {
 
 /**
  * Kill the path under a link: nothing gets through any more, on either
- * side, and puter.peer gives the link up once its ICE restarts go
+ * side, and everything.peer gives the link up once its ICE restarts go
  * unanswered — which reaches the session as a close.
  */
 function killTransport(pair, { sides = ['dialer', 'listener'], giveUp = true } = {}) {
@@ -276,7 +276,7 @@ const settle = () => vi.advanceTimersByTimeAsync(100);
 /* ------------------------------------------------------------------ */
 
 let savedWindow;
-let puter;
+let everything;
 const sessions = [];
 
 beforeAll(() => {
@@ -289,8 +289,8 @@ afterAll(() => {
 
 beforeEach(() => {
   vi.useFakeTimers({ toFake: ['Date', 'setTimeout', 'clearTimeout', 'setInterval', 'clearInterval'] });
-  puter = installMockPuter();
-  globalThis.window = { puter };
+  everything = installMockEverything();
+  globalThis.window = { everything };
 });
 
 afterEach(() => {
@@ -313,7 +313,7 @@ function makeSession(name) {
 }
 
 /** A remote camera stream of `from` lands on `pc` (the far end has announced its id already). */
-/** A camera stream arrives on a link, under the name puter.peer gives it. */
+/** A camera stream arrives on a link, under the name everything.peer gives it. */
 function arriveCamera(conn, from) {
   const stream = { id: from._media.stream.id, getTracks: () => [] };
   conn.dispatch('media', { name: 'camera', stream, track: {} });
@@ -333,7 +333,7 @@ async function twoPartyCall() {
   const joined = guest.join(code);
   await until(() => host.roster.size === 2 && guest.roster.size === 2);
   await joined;
-  const link = puter.peer._pairs[0];
+  const link = everything.peer._pairs[0];
   bringUp(link);
   await settle();
   return { host, guest, code, link };
@@ -345,11 +345,11 @@ describe('a two-person call whose link dies under it', () => {
     const hostEvents = record(host, ['peer-left', 'peer-joined', 'peer-link']);
     const guestEvents = record(guest, ['peer-left', 'peer-joined', 'peer-link', 'host-migrating', 'host-changed']);
 
-    // Both browsers report the transport gone; neither puter connection closes.
+    // Both browsers report the transport gone; neither everything connection closes.
     killTransport(link);
 
-    await until(() => puter.peer._pairs.length === 2 && !guest.roster.get(host.selfId)?.reconnecting);
-    const fresh = puter.peer._pairs[1];
+    await until(() => everything.peer._pairs.length === 2 && !guest.roster.get(host.selfId)?.reconnecting);
+    const fresh = everything.peer._pairs[1];
     bringUp(fresh);
     await settle();
 
@@ -400,7 +400,7 @@ describe('a two-person call whose link dies under it', () => {
     expect(guest.getStream(host.selfId)).toBe(stream);
     expect(removed).toEqual([]);
 
-    await until(() => puter.peer._pairs.length === 2 && !guest.roster.get(host.selfId)?.reconnecting);
+    await until(() => everything.peer._pairs.length === 2 && !guest.roster.get(host.selfId)?.reconnecting);
     expect(removed).toEqual(['camera']);
     expect(guest.getStream(host.selfId)).not.toBe(stream);
   });
@@ -414,7 +414,7 @@ describe('a two-person call whose link dies under it', () => {
     // nothing (the loss is one-sided, or slower to show up there).
     killTransport(link, { sides: ['dialer'] });
 
-    await until(() => puter.peer._pairs.length === 2 && !guest.roster.get(host.selfId)?.reconnecting);
+    await until(() => everything.peer._pairs.length === 2 && !guest.roster.get(host.selfId)?.reconnecting);
     expect(guestEvents.map((e) => e.state)).toEqual(['lost', 'connected']);
     // The host never had a reason to call the link lost, and never treated
     // the fresh HELLO as anyone leaving or joining.
@@ -429,7 +429,7 @@ describe('a two-person call whose link dies under it', () => {
     const guestEvents = record(guest, ['peer-link']);
 
     // 'disconnected' is transient — ICE heals it or escalates to 'failed',
-    // and puter.peer is the one watching, so the session never reacts.
+    // and everything.peer is the one watching, so the session never reacts.
     link.dialer.peerconnection.setConnectionState('disconnected');
     link.listener.peerconnection.setConnectionState('disconnected');
     await vi.advanceTimersByTimeAsync(5_000);
@@ -437,17 +437,17 @@ describe('a two-person call whose link dies under it', () => {
     link.listener.peerconnection.setConnectionState('connected');
     await vi.advanceTimersByTimeAsync(LINK_RECOVERY_BUDGET_MS);
 
-    expect(puter.peer._pairs.length).toBe(1);
+    expect(everything.peer._pairs.length).toBe(1);
     expect(guestEvents).toEqual([]);
     expect(host.roster.get(guest.selfId).reconnecting).toBe(false);
     expect(guest.roster.get(host.selfId).reconnecting).toBe(false);
   });
 
-  it('rebuilds a link puter.peer could not rescue', async () => {
+  it('rebuilds a link everything.peer could not rescue', async () => {
     const { guest, host, link } = await twoPartyCall();
     killTransport(link);
 
-    await until(() => puter.peer._pairs.length === 2 && !guest.roster.get(host.selfId)?.reconnecting);
+    await until(() => everything.peer._pairs.length === 2 && !guest.roster.get(host.selfId)?.reconnecting);
     expect(guest.roster.size).toBe(2);
     expect(host.roster.size).toBe(2);
   });
@@ -469,7 +469,7 @@ describe('a two-person call whose link dies under it', () => {
     // The guest may be meeting under a successor now: this host must not
     // release the room on its way out.
     expect(host.mayContinueElsewhere).toBe(true);
-    expect(puter.peer._pairs.length).toBe(1); // nobody dialed
+    expect(everything.peer._pairs.length).toBe(1); // nobody dialed
   });
 
   it('keeps a guest who dials back in before the deadline', async () => {
@@ -480,7 +480,7 @@ describe('a two-person call whose link dies under it', () => {
     link.listener.peerconnection.setConnectionState('failed');
     link.listener.giveUp();
     link.dialer.peerconnection.setConnectionState('failed');
-    puter.peer._offline = true;
+    everything.peer._offline = true;
     // The guest's side spends its recovery budget before it dials, and is
     // then off the network for part of the redial window...
     await vi.advanceTimersByTimeAsync(LINK_RECOVERY_BUDGET_MS);
@@ -488,15 +488,15 @@ describe('a two-person call whose link dies under it', () => {
     await vi.advanceTimersByTimeAsync(8_000);
     expect(host.roster.get(guest.selfId).reconnecting).toBe(true);
     // ...and when it is back, the signaller is slow to put it through.
-    puter.peer._offline = false;
-    const realConnect = puter.peer.connect;
-    puter.peer.connect = async (invite) => {
+    everything.peer._offline = false;
+    const realConnect = everything.peer.connect;
+    everything.peer.connect = async (invite) => {
       await new Promise((resolve) => setTimeout(resolve, 3_000));
       return realConnect(invite);
     };
 
-    await until(() => puter.peer._pairs.length === 2 && !guest.roster.get(host.selfId)?.reconnecting, { max: 20_000 });
-    bringUp(puter.peer._pairs[1]);
+    await until(() => everything.peer._pairs.length === 2 && !guest.roster.get(host.selfId)?.reconnecting, { max: 20_000 });
+    bringUp(everything.peer._pairs[1]);
     await settle();
     // The host was still waiting: the same two people, no leave, no join.
     expect(hostEvents).toEqual([]);
@@ -508,10 +508,10 @@ describe('a two-person call whose link dies under it', () => {
     const { host, guest, link } = await twoPartyCall();
 
     // The guest's network is gone. The host's browser notices the silence
-    // and reports the link unstable, then failed; puter.peer is still
+    // and reports the link unstable, then failed; everything.peer is still
     // trying to rescue it.
     link.dialer.transportDead = link.listener.transportDead = true;
-    puter.peer._offline = true;
+    everything.peer._offline = true;
     link.listener.peerconnection.setConnectionState('disconnected');
     await vi.advanceTimersByTimeAsync(10_000);
     link.listener.peerconnection.setConnectionState('failed');
@@ -529,16 +529,16 @@ describe('a two-person call whose link dies under it', () => {
 
     // The guest's machine is off the network for a while — a Wi‑Fi switch,
     // a laptop waking up. Every dial fails at once until it is back.
-    puter.peer._offline = true;
+    everything.peer._offline = true;
     killTransport(link);
     await vi.advanceTimersByTimeAsync(12_000);
     expect(guest.roster.size).toBe(2);
     expect(guest.isHost).toBe(false);
     expect(guest.roster.get(host.selfId).reconnecting).toBe(true);
-    puter.peer._offline = false;
+    everything.peer._offline = false;
 
-    await until(() => puter.peer._pairs.length === 2 && !guest.roster.get(host.selfId)?.reconnecting);
-    bringUp(puter.peer._pairs[1]);
+    await until(() => everything.peer._pairs.length === 2 && !guest.roster.get(host.selfId)?.reconnecting);
+    bringUp(everything.peer._pairs[1]);
     await settle();
 
     expect(guest.isHost).toBe(false);
@@ -551,7 +551,7 @@ describe('a two-person call whose link dies under it', () => {
 
   it('gives the host up once the redial window has passed with the network still down', async () => {
     const { host, guest, link } = await twoPartyCall();
-    puter.peer._offline = true;
+    everything.peer._offline = true;
     killTransport(link, { sides: ['dialer'] });
     await until(() => guest.isHost, { max: 90_000 });
     expect(guest.roster.size).toBe(1);
@@ -564,7 +564,7 @@ describe('a two-person call whose link dies under it', () => {
 
     // The host's server is unreachable now (its machine dropped off the
     // network), though its connection to us never said so.
-    puter.peer._registry.get(code).closed = true;
+    everything.peer._registry.get(code).closed = true;
     killTransport(link, { sides: ['dialer'] });
 
     await until(() => guest.isHost);
@@ -588,20 +588,20 @@ describe('a guest<->guest link that dies under a three-person call', () => {
     await until(() => [host, g1, g2].every((s) => s.roster.size === 3));
     await j2;
     // host<->g1, host<->g2, then the direct g1<->g2 link.
-    await until(() => puter.peer._pairs.length === 3);
+    await until(() => everything.peer._pairs.length === 3);
     await until(() => g1.connectedPeerIds().includes(g2.selfId) && g2.connectedPeerIds().includes(g1.selfId));
-    for (const pair of puter.peer._pairs) bringUp(pair);
+    for (const pair of everything.peer._pairs) bringUp(pair);
     await settle();
 
-    const direct = puter.peer._pairs[2];
+    const direct = everything.peer._pairs[2];
     const events1 = record(g1, ['peer-left', 'peer-joined', 'peer-link']);
     const events2 = record(g2, ['peer-left', 'peer-joined', 'peer-link']);
     const hostEvents = record(host, ['peer-left', 'peer-joined']);
 
     killTransport(direct);
 
-    await until(() => puter.peer._pairs.length === 4);
-    const fresh = puter.peer._pairs[3];
+    await until(() => everything.peer._pairs.length === 4);
+    const fresh = everything.peer._pairs[3];
     bringUp(fresh);
     await until(() => g1.connectedPeerIds().includes(g2.selfId) && g2.connectedPeerIds().includes(g1.selfId));
     await until(() => !g1.roster.get(g2.selfId).reconnecting && !g2.roster.get(g1.selfId).reconnecting);
@@ -637,20 +637,20 @@ describe('a guest whose whole network blips in a three-person call', () => {
     const j2 = high.join(code);
     await until(() => [host, low, high].every((s) => s.roster.size === 3));
     await j2;
-    await until(() => puter.peer._pairs.length === 3);
+    await until(() => everything.peer._pairs.length === 3);
     await until(() => low.connectedPeerIds().includes(high.selfId) && high.connectedPeerIds().includes(low.selfId));
-    for (const pair of puter.peer._pairs) bringUp(pair);
+    for (const pair of everything.peer._pairs) bringUp(pair);
     await settle();
     // host<->low, host<->high, then the direct low<->high link (served by low).
-    return { host, low, high, code, hostHigh: puter.peer._pairs[1], direct: puter.peer._pairs[2] };
+    return { host, low, high, code, hostHigh: everything.peer._pairs[1], direct: everything.peer._pairs[2] };
   }
 
   /** Both of the guest's links die, and they cannot dial anyone for a while. */
   async function blip(pairs, ms) {
-    puter.peer._offline = true;
+    everything.peer._offline = true;
     for (const pair of pairs) killTransport(pair);
     await vi.advanceTimersByTimeAsync(ms);
-    puter.peer._offline = false;
+    everything.peer._offline = false;
   }
 
   async function reconnected(low, high, host) {
@@ -659,7 +659,7 @@ describe('a guest whose whole network blips in a three-person call', () => {
       () => low.connectedPeerIds().includes(high.selfId) && high.connectedPeerIds().includes(low.selfId),
       { max: 60_000 }
     );
-    for (const pair of puter.peer._pairs) if (!pair.dialer.closed) bringUp(pair);
+    for (const pair of everything.peer._pairs) if (!pair.dialer.closed) bringUp(pair);
     await until(() => !low.roster.get(high.selfId).reconnecting && !high.roster.get(low.selfId).reconnecting);
   }
 
@@ -702,7 +702,7 @@ describe('a guest whose whole network blips in a three-person call', () => {
 
   it('gets both links back when it is the serving guest that blipped', async () => {
     const { host, low, high, direct } = await threePartyCall();
-    const hostLow = puter.peer._pairs[0];
+    const hostLow = everything.peer._pairs[0];
     await blip([hostLow, direct], 6_000);
     await until(() => !low.roster.get(host.selfId)?.reconnecting, { max: 60_000 });
     await reconnected(low, high, host);
@@ -713,13 +713,13 @@ describe('a guest whose whole network blips in a three-person call', () => {
     const { host, low, high, hostHigh, direct } = await threePartyCall();
     expect(low.roster.get(high.selfId).mic).toBe(true);
 
-    puter.peer._offline = true;
+    everything.peer._offline = true;
     killTransport(hostHigh);
     killTransport(direct);
     await vi.advanceTimersByTimeAsync(3_000);
     // Muted and raised a hand while nothing could get through.
     high.setHand(true);
-    puter.peer._offline = false;
+    everything.peer._offline = false;
     await reconnected(low, high, host);
 
     expect(low.roster.get(high.selfId).hand).toBe(true);
@@ -730,7 +730,7 @@ describe('a guest whose whole network blips in a three-person call', () => {
     const { host, low, high, hostHigh, direct } = await threePartyCall();
     const highEvents = record(high, ['peer-left']);
 
-    puter.peer._offline = true;
+    everything.peer._offline = true;
     killTransport(hostHigh);
     killTransport(direct);
     await vi.advanceTimersByTimeAsync(3_000);
@@ -739,7 +739,7 @@ describe('a guest whose whole network blips in a three-person call', () => {
     await settle();
     expect(host.roster.size).toBe(2);
     expect(high.roster.size).toBe(3);
-    puter.peer._offline = false;
+    everything.peer._offline = false;
 
     await until(() => !high.roster.get(host.selfId)?.reconnecting, { max: 60_000 });
     await settle();
@@ -750,7 +750,7 @@ describe('a guest whose whole network blips in a three-person call', () => {
 
   it('takes the state the others changed while it was out of reach from the WELCOME', async () => {
     const { host, low, high, hostHigh, direct } = await threePartyCall();
-    puter.peer._offline = true;
+    everything.peer._offline = true;
     killTransport(hostHigh);
     killTransport(direct);
     await vi.advanceTimersByTimeAsync(3_000);
@@ -758,7 +758,7 @@ describe('a guest whose whole network blips in a three-person call', () => {
     await settle();
     expect(host.roster.get(low.selfId).hand).toBe(true);
     expect(high.roster.get(low.selfId).hand).toBe(false);
-    puter.peer._offline = false;
+    everything.peer._offline = false;
 
     await reconnected(low, high, host);
     expect(high.roster.get(low.selfId).hand).toBe(true);
@@ -766,23 +766,23 @@ describe('a guest whose whole network blips in a three-person call', () => {
 
   it('tries a direct link again when an attempt comes to nothing, while the peer is still in the meeting', async () => {
     const { low, high, direct } = await threePartyCall();
-    const before = puter.peer._pairs.length;
+    const before = everything.peer._pairs.length;
 
     // The direct link dies while the far end cannot connect to anything;
     // the invite the serving side sends goes unanswered until it times out.
-    puter.peer._offline = true;
+    everything.peer._offline = true;
     killTransport(direct);
     await until(() => !low.connectedPeerIds().includes(high.selfId));
     await vi.advanceTimersByTimeAsync(20_000 + 100); // DIRECT_LINK_TIMEOUT_MS
     expect(low.connectedPeerIds().includes(high.selfId)).toBe(false);
-    puter.peer._offline = false;
+    everything.peer._offline = false;
 
     // The serving side comes back for another go rather than giving up.
     await until(() => low.connectedPeerIds().includes(high.selfId) && high.connectedPeerIds().includes(low.selfId), {
       max: 60_000,
     });
-    expect(puter.peer._pairs.length).toBeGreaterThan(before);
-    for (const pair of puter.peer._pairs) if (!pair.dialer.closed) bringUp(pair);
+    expect(everything.peer._pairs.length).toBeGreaterThan(before);
+    for (const pair of everything.peer._pairs) if (!pair.dialer.closed) bringUp(pair);
     await until(() => !low.roster.get(high.selfId).reconnecting && !high.roster.get(low.selfId).reconnecting);
   });
 });
@@ -790,7 +790,7 @@ describe('a guest whose whole network blips in a three-person call', () => {
 describe('a HELLO for an id already in the meeting', () => {
   /** Someone dials the room afresh and introduces themselves as `victim`. */
   async function rogueHello(code, victim, { token = '' } = {}) {
-    const rogue = await puter.peer.connect(code);
+    const rogue = await everything.peer.connect(code);
     await settle();
     rogue.send(P.encode(P.makeHello(P.makeIdentity({ id: victim.selfId, name: 'Someone else', mic: true, cam: true }), token)));
     await settle();
@@ -816,7 +816,7 @@ describe('a HELLO for an id already in the meeting', () => {
 
     // Whereas the guest itself still gets back in after a loss (its HELLO carries the secret).
     killTransport(link);
-    await until(() => puter.peer._pairs.length === 4 && !guest.roster.get(host.selfId)?.reconnecting);
+    await until(() => everything.peer._pairs.length === 4 && !guest.roster.get(host.selfId)?.reconnecting);
     expect(host.roster.size).toBe(2);
     expect(hostEvents.filter((e) => e.type !== 'peer-link')).toEqual([]);
   });
@@ -836,7 +836,7 @@ describe('a HELLO for an id already in the meeting', () => {
     await until(() => [host, low, high].every((s) => s.roster.size === 3));
     await j2;
     await until(() => low.connectedPeerIds().includes(high.selfId) && high.connectedPeerIds().includes(low.selfId));
-    for (const pair of puter.peer._pairs) bringUp(pair);
+    for (const pair of everything.peer._pairs) bringUp(pair);
     await settle();
 
     // The host leaves; Low takes over and High's direct link to Low becomes its host link.
@@ -855,11 +855,11 @@ describe('a HELLO for an id already in the meeting', () => {
     expect(lowEvents).toEqual([]);
 
     // High itself can still come back to Low after a loss.
-    const promoted = puter.peer._pairs.find((p) => !p.dialer.closed && p.inviteCode !== code && p.inviteCode !== low.code);
+    const promoted = everything.peer._pairs.find((p) => !p.dialer.closed && p.inviteCode !== code && p.inviteCode !== low.code);
     expect(promoted).toBeTruthy();
-    const before = puter.peer._pairs.length;
+    const before = everything.peer._pairs.length;
     killTransport(promoted);
-    await until(() => puter.peer._pairs.length > before && !high.roster.get(low.selfId)?.reconnecting, { max: 60_000 });
+    await until(() => everything.peer._pairs.length > before && !high.roster.get(low.selfId)?.reconnecting, { max: 60_000 });
     expect(low.roster.size).toBe(2);
     expect(high.roster.size).toBe(2);
     expect(lowEvents).toEqual([]);
@@ -890,29 +890,29 @@ describe('a survivor with no link to the host that takes over', () => {
       await j;
     }
     await until(() => [a, b, c].every((s) => s.connectedPeerIds().length === 3), { max: 30_000 });
-    for (const pair of puter.peer._pairs) bringUp(pair);
+    for (const pair of everything.peer._pairs) bringUp(pair);
     await settle();
 
     // Servers stood up from here on cannot be reached, so the A<->C link
     // A re-serves never forms again; the room A serves later is let through.
-    const realServe = puter.peer.serve;
-    const realConnect = puter.peer.connect;
+    const realServe = everything.peer.serve;
+    const realConnect = everything.peer.connect;
     const unreachable = new Set();
     const servers = [];
     let blockNewServers = true;
-    puter.peer.serve = async () => {
+    everything.peer.serve = async () => {
       const server = await realServe();
       servers.push(server);
       if (blockNewServers) unreachable.add(server.inviteCode);
       return server;
     };
-    puter.peer.connect = async (invite) => {
+    everything.peer.connect = async (invite) => {
       if (unreachable.has(invite)) throw new Error('unreachable');
       return realConnect(invite);
     };
 
     // host<->A, host<->B, A<->B, host<->C, A<->C, B<->C — checked, not assumed.
-    const ac = puter.peer._pairs[4];
+    const ac = everything.peer._pairs[4];
     killTransport(ac);
     expect(c.connectedPeerIds().includes(a.selfId)).toBe(false);
     expect(b.connectedPeerIds().sort()).toEqual([a.selfId, c.selfId, host.selfId].sort());
@@ -958,13 +958,13 @@ describe('a survivor with no link to the host that takes over', () => {
     const cEvents = record(c, ['peer-left', 'peer-joined']);
     // A's room comes up fine, but C cannot get to it.
     const served = servers.length;
-    puter.peer.serve = (function (inner) {
+    everything.peer.serve = (function (inner) {
       return async () => {
         const server = await inner();
         if (servers.length > served) unreachable.add(server.inviteCode);
         return server;
       };
-    })(puter.peer.serve);
+    })(everything.peer.serve);
 
     host.leave();
     await until(() => a.isHost && a.code !== null, { max: 20_000 });
@@ -980,13 +980,13 @@ describe('a survivor with no link to the host that takes over', () => {
   it('is given up by the new host if it never reaches its room, rather than listed as a ghost for good', async () => {
     const { host, a, c, servers, unreachable } = await meshMissingAC();
     const served = servers.length;
-    puter.peer.serve = (function (inner) {
+    everything.peer.serve = (function (inner) {
       return async () => {
         const server = await inner();
         if (servers.length > served) unreachable.add(server.inviteCode);
         return server;
       };
-    })(puter.peer.serve);
+    })(everything.peer.serve);
 
     const aEvents = record(a, ['peer-left', 'peer-link']);
 
@@ -1016,7 +1016,7 @@ describe('chat sent while a link is being rebuilt', () => {
     guest.on('chat', (m) => atGuest.push(m));
 
     // The guest is off the network for a while, so nothing can be rebuilt yet.
-    puter.peer._offline = true;
+    everything.peer._offline = true;
     killTransport(link);
     await until(() => guest.roster.get(host.selfId).reconnecting);
     // Typed while nothing could get through; the guest sees it in its own
@@ -1026,9 +1026,9 @@ describe('chat sent while a link is being rebuilt', () => {
     await vi.advanceTimersByTimeAsync(5_000);
     expect(atGuest.map((m) => m.text)).toEqual(['are you there?']);
     expect(atHost).toEqual([]);
-    puter.peer._offline = false;
+    everything.peer._offline = false;
 
-    await until(() => puter.peer._pairs.length === 2 && !guest.roster.get(host.selfId)?.reconnecting);
+    await until(() => everything.peer._pairs.length === 2 && !guest.roster.get(host.selfId)?.reconnecting);
     await settle();
     expect(atHost).toEqual(['are you there?']);
   });
@@ -1048,14 +1048,14 @@ describe('chat sent while a link is being rebuilt', () => {
     await until(() => [host, low, high].every((s) => s.roster.size === 3));
     await j2;
     await until(() => low.connectedPeerIds().includes(high.selfId) && high.connectedPeerIds().includes(low.selfId));
-    for (const pair of puter.peer._pairs) bringUp(pair);
+    for (const pair of everything.peer._pairs) bringUp(pair);
     await settle();
-    const hostHigh = puter.peer._pairs[1];
-    const direct = puter.peer._pairs[2];
+    const hostHigh = everything.peer._pairs[1];
+    const direct = everything.peer._pairs[2];
     const atHigh = [];
     high.on('chat', (m) => atHigh.push(`${m.name}: ${m.text}`));
 
-    puter.peer._offline = true;
+    everything.peer._offline = true;
     killTransport(hostHigh);
     killTransport(direct);
     await until(() => host.roster.get(high.selfId).reconnecting && low.roster.get(high.selfId).reconnecting);
@@ -1063,7 +1063,7 @@ describe('chat sent while a link is being rebuilt', () => {
     low.sendChat('I am');
     await settle();
     expect(atHigh).toEqual([]);
-    puter.peer._offline = false;
+    everything.peer._offline = false;
 
     await until(() => !high.roster.get(host.selfId)?.reconnecting, { max: 60_000 });
     await settle();
@@ -1085,7 +1085,7 @@ describe('chat sent while a link is being rebuilt', () => {
     await until(() => [host, low, high].every((s) => s.roster.size === 3));
     await j2;
     await until(() => low.connectedPeerIds().includes(high.selfId) && high.connectedPeerIds().includes(low.selfId));
-    for (const pair of puter.peer._pairs) bringUp(pair);
+    for (const pair of everything.peer._pairs) bringUp(pair);
     await settle();
     const heard = { low: [], high: [] };
     low.on('chat', (m) => heard.low.push(`${m.name}: ${m.text}`));
@@ -1093,17 +1093,17 @@ describe('chat sent while a link is being rebuilt', () => {
 
     // The host drops off the network. Its links still read open for a while
     // and take what is sent on them — into a transport that is gone.
-    const hostLinks = puter.peer._pairs.filter((pair) => pair.inviteCode === code);
+    const hostLinks = everything.peer._pairs.filter((pair) => pair.inviteCode === code);
     expect(hostLinks).toHaveLength(2);
     for (const pair of hostLinks) pair.dialer.transportDead = pair.listener.transportDead = true;
-    puter.peer._registry.delete(code); // nothing reaches its invite either
+    everything.peer._registry.delete(code); // nothing reaches its invite either
     low.sendChat('anyone?');
     high.sendChat('hello?');
     await settle();
     expect(heard.low).toEqual(['Low: anyone?']);
     expect(heard.high).toEqual(['High: hello?']);
 
-    // The browsers notice, puter.peer gives the links up, and the guests
+    // The browsers notice, everything.peer gives the links up, and the guests
     // elect a successor.
     for (const pair of hostLinks) pair.dialer.peerconnection.setConnectionState('disconnected');
     await vi.advanceTimersByTimeAsync(10_000);

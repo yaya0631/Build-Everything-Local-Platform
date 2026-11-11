@@ -2,7 +2,7 @@
  * The help desk's domain vocabulary, shared by the worker and the app:
  * ticket statuses, priorities, types, channels and roles, plus the
  * normalizers that turn untrusted input into well-formed records. Everything
- * here is pure so it runs the same in a browser, a Puter worker and tests.
+ * here is pure so it runs the same in a browser, an Everything worker and tests.
  */
 
 export const STATUSES = ['new', 'open', 'pending', 'hold', 'solved', 'closed'];

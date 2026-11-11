@@ -1,5 +1,5 @@
 /**
- * The collaboration service behind shared spaces. It runs in a Puter worker
+ * The collaboration service behind shared spaces. It runs in an Everything worker
  * on the account of the person who shared the space, so the shared pages
  * live in their storage and count against their quota. The design follows
  * the Whiteboard app's worker (src/whiteboard/worker/service.js), cut down
@@ -91,7 +91,7 @@ const id = (value, pattern = ID) => {
 };
 
 /**
- * The worker's app id, from its own token. Puter's tokens may carry it
+ * The worker's app id, from its own token. Everything's tokens may carry it
  * packed (16 bytes in base64); event subjects need the app-<uuid> form.
  * Same approach as the Whiteboard worker.
  */
@@ -211,17 +211,17 @@ export function checkComments(before, after, user, role) {
 }
 
 export class WikiService {
-  constructor(puter, { now = Date.now, fetcher = fetch } = {}) {
-    this.puter = puter;
-    this.kv = puter.kv;
+  constructor(everything, { now = Date.now, fetcher = fetch } = {}) {
+    this.everything = everything;
+    this.kv = everything.kv;
     this.now = now;
     this.fetcher = fetcher;
   }
 
   async accountOwner() {
-    if (!ACCOUNT_OWNER || ACCOUNT_OWNER.token !== this.puter.authToken) {
-      const user = await this.puter.auth.getUser();
-      ACCOUNT_OWNER = { token: this.puter.authToken, uuid: user.uuid, username: user.username };
+    if (!ACCOUNT_OWNER || ACCOUNT_OWNER.token !== this.everything.authToken) {
+      const user = await this.everything.auth.getUser();
+      ACCOUNT_OWNER = { token: this.everything.authToken, uuid: user.uuid, username: user.username };
     }
     return ACCOUNT_OWNER;
   }
@@ -244,11 +244,11 @@ export class WikiService {
   }
 
   async readFile(path) {
-    return (await this.puter.fs.read(path)).text();
+    return (await this.everything.fs.read(path)).text();
   }
 
   async writeFile(path, text) {
-    await this.puter.fs.write(path, text, { overwrite: true, dedupeName: false, createMissingParents: true });
+    await this.everything.fs.write(path, text, { overwrite: true, dedupeName: false, createMissingParents: true });
   }
 
   async recordBytes(value) {
@@ -339,7 +339,7 @@ export class WikiService {
       for (const row of old) {
         if (row.value?.at < cutoff) {
           await this.kv.del(row.key).catch(() => {});
-          if (row.value.path) await this.puter.fs.delete(row.value.path).catch(() => {});
+          if (row.value.path) await this.everything.fs.delete(row.value.path).catch(() => {});
         }
       }
     }
@@ -347,7 +347,7 @@ export class WikiService {
     if (prev?.path && prev.path !== path) {
       const history = (await this.kv.get(`wk:${room}:cps:${doc}`)) || [];
       history.unshift({ at: prev.at, path: prev.path });
-      for (const dropped of history.splice(HISTORY_KEPT)) await this.puter.fs.delete(dropped.path).catch(() => {});
+      for (const dropped of history.splice(HISTORY_KEPT)) await this.everything.fs.delete(dropped.path).catch(() => {});
       await this.kv.set(`wk:${room}:cps:${doc}`, history);
     }
   }
@@ -413,7 +413,7 @@ export class WikiService {
 
   /** `consented` comes from the account's browser once it lets this app hand space signals to other people. */
   async events(room, user, { consented = false } = {}) {
-    const app = appUid(this.puter.authToken);
+    const app = appUid(this.everything.authToken);
     if (!app) return null;
     if (user.uuid === (await this.accountOwner()).uuid) {
       if (consented) await this.kv.del(EVENTS_OFF).catch(() => {});
@@ -430,9 +430,9 @@ export class WikiService {
     if (off || held) return null;
     let code = 'network';
     try {
-      const res = await this.fetcher(`${this.puter.APIOrigin}/events/kv-handles`, {
+      const res = await this.fetcher(`${this.everything.APIOrigin}/events/kv-handles`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${this.puter.authToken}` },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${this.everything.authToken}` },
         body: JSON.stringify({ granteeUid: user.uuid, prefix: `wk:${room}:ev:` }),
         signal: AbortSignal.timeout(3000),
       });
@@ -455,9 +455,9 @@ export class WikiService {
     for (const row of await this.list(`wk:${room}:presence:`)) if (row.value?.uuid === target) await this.kv.del(row.key);
     const handle = await this.kv.get(`wk:${room}:handle:${target}`);
     if (!handle) return;
-    const res = await this.fetcher(`${this.puter.APIOrigin}/events/kv-handles/${encodeURIComponent(handle)}`, {
+    const res = await this.fetcher(`${this.everything.APIOrigin}/events/kv-handles/${encodeURIComponent(handle)}`, {
       method: 'DELETE',
-      headers: { Authorization: `Bearer ${this.puter.authToken}` },
+      headers: { Authorization: `Bearer ${this.everything.authToken}` },
       signal: AbortSignal.timeout(5000),
     }).catch(() => null);
     if (res && (res.ok || res.status === 404)) await this.kv.del(`wk:${room}:handle:${target}`);
@@ -527,7 +527,7 @@ export class WikiService {
         title: meta.title || '',
         icon: meta.icon || null,
         events: await this.events(room, user),
-        app: appUid(this.puter.authToken),
+        app: appUid(this.everything.authToken),
         ownerUuid: meta.owner,
         settings: canManage(role) ? this.settings(meta) : null,
         serverTime: this.now(),
@@ -630,10 +630,10 @@ export class WikiService {
         for (const doc of [page, `${page}.c`]) {
           for (const row of await this.list(`${prefix}log:${doc}:`).catch(() => [])) {
             await this.kv.del(row.key).catch(() => {});
-            if (row.value?.path) await this.puter.fs.delete(row.value.path).catch(() => {});
+            if (row.value?.path) await this.everything.fs.delete(row.value.path).catch(() => {});
           }
           const [cp, history] = await this.kv.get([`${prefix}cp:${doc}`, `${prefix}cps:${doc}`]);
-          for (const v of [cp, ...(history || [])]) if (v?.path) await this.puter.fs.delete(v.path).catch(() => {});
+          for (const v of [cp, ...(history || [])]) if (v?.path) await this.everything.fs.delete(v.path).catch(() => {});
           await this.kv.del(`${prefix}cp:${doc}`).catch(() => {});
           await this.kv.del(`${prefix}cps:${doc}`).catch(() => {});
           DOCS.delete(`${room}|${doc}`);
@@ -707,7 +707,7 @@ export class WikiService {
       const m = typeof data === 'string' && data.length <= ASSET_CHARS ? /^data:(image\/(png|jpeg|gif|webp|svg\+xml|avif)|application\/octet-stream);base64,([A-Za-z0-9+/=]*)$/.exec(data) : null;
       if (!m || (await hash(decode(m[3]))) !== asset) fail(400, 'Invalid image.');
       const path = `wiki/shared/${room}/assets/${asset}.txt`;
-      const exists = await this.puter.fs.stat(path).then(() => true, () => false);
+      const exists = await this.everything.fs.stat(path).then(() => true, () => false);
       if (!exists) {
         const used = `${prefix}assetbytes`;
         if ((await this.kv.incr(used, data.length)) > ASSET_BYTES) {

@@ -4,7 +4,7 @@ import { createRsvpLinks } from '../src/js/rsvp-links.js';
 import { createBooking } from '../src/js/booking.js';
 import { createOfflineKv } from '../src/js/offline-store.js';
 import { startOfDay } from '../src/js/date-utils.js';
-import { makeKv, makeFakePuter, bridgeFetch } from './helpers/worker-harness.js';
+import { makeKv, makeFakeEverything, bridgeFetch } from './helpers/worker-harness.js';
 
 /**
  * The booking module across more than one window of the same account — a
@@ -24,14 +24,14 @@ async function settle(booking) {
   }
 }
 
-function device(kv, fakePuter, { now = () => Date.now(), orphanGraceMs } = {}) {
+function device(kv, fakeEverything, { now = () => Date.now(), orphanGraceMs } = {}) {
   const store = createStore(kv);
   const rsvp = createRsvpLinks({
     kv,
     store,
     user: HOST,
-    getPuter: () => fakePuter,
-    fetchFn: vi.fn(bridgeFetch(fakePuter)),
+    getEverything: () => fakeEverything,
+    fetchFn: vi.fn(bridgeFetch(fakeEverything)),
     blocked: () => false,
     requestUser: async () => HOST,
     syncDelayMs: 0,
@@ -55,9 +55,9 @@ function device(kv, fakePuter, { now = () => Date.now(), orphanGraceMs } = {}) {
   return { store, rsvp, booking, toast };
 }
 
-function workerOf(cloud, fakePuter) {
+function workerOf(cloud, fakeEverything) {
   const origin = cloud.map.get('cal:rsvp:cfg').url;
-  return fakePuter.workersByUrl.get(origin).instance;
+  return fakeEverything.workersByUrl.get(origin).instance;
 }
 async function guestBook(w, pageId, start, email) {
   const res = await w.call('POST', `/api/book/${pageId}`, {
@@ -82,31 +82,31 @@ afterEach(() => {
   while (devices.length) devices.pop().stop();
 });
 
-function workerBusy(cloud, fakePuter) {
-  return workerOf(cloud, fakePuter).kv.map.get('bookw:cfg').busy;
+function workerBusy(cloud, fakeEverything) {
+  return workerOf(cloud, fakeEverything).kv.map.get('bookw:cfg').busy;
 }
 
 describe('booking across two windows of one account', () => {
   it('a window that fell behind publishes busy time from the cloud, not its stale calendar', async () => {
     const cloud = makeKv();
-    const fakePuter = makeFakePuter();
-    const A = device(cloud, fakePuter);
+    const fakeEverything = makeFakeEverything();
+    const A = device(cloud, fakeEverything);
     await A.store.load();
     await A.booking.start();
     const page = await A.booking.savePage({ title: 'Intro call' });
     await settle(A.booking);
     // A second window, opened once the account already has a booking link.
-    const B = device(cloud, fakePuter);
+    const B = device(cloud, fakeEverything);
     await B.store.load(); // B's calendar is read here and, on its own, never again
     await B.booking.start();
     await settle(B.booking);
-    expect(workerBusy(cloud, fakePuter)).toEqual([]);
+    expect(workerBusy(cloud, fakeEverything)).toEqual([]);
 
     // A puts a real meeting on the calendar tomorrow 10–11 and pushes it as busy.
     const tomorrow10 = startOfDay(new Date(Date.now() + DAY)).getTime() + 10 * HOUR;
     await A.store.saveEvent({ title: 'Real meeting', start: tomorrow10, end: tomorrow10 + HOUR });
     await settle(A.booking);
-    expect(workerBusy(cloud, fakePuter)).toEqual([[tomorrow10, tomorrow10 + HOUR]]);
+    expect(workerBusy(cloud, fakeEverything)).toEqual([[tomorrow10, tomorrow10 + HOUR]]);
 
     // A renames the page — any page edit, or the day rolling over, will do.
     await A.booking.savePage({ id: page.id, title: 'Discovery call' });
@@ -117,14 +117,14 @@ describe('booking across two windows of one account', () => {
     // differs, and it pushes. That push must carry A's meeting.
     await B.booking.refresh();
     await settle(B.booking);
-    expect(workerBusy(cloud, fakePuter)).toEqual([[tomorrow10, tomorrow10 + HOUR]]);
+    expect(workerBusy(cloud, fakeEverything)).toEqual([[tomorrow10, tomorrow10 + HOUR]]);
   });
 
   it("adopts a booking's event another window created instead of writing a fresh one over it", async () => {
     const cloud = makeKv();
-    const fakePuter = makeFakePuter();
-    const A = device(cloud, fakePuter);
-    const B = device(cloud, fakePuter);
+    const fakeEverything = makeFakeEverything();
+    const A = device(cloud, fakeEverything);
+    const B = device(cloud, fakeEverything);
     await A.store.load();
     await B.store.load();
     await A.booking.start();
@@ -132,7 +132,7 @@ describe('booking across two windows of one account', () => {
     await settle(A.booking);
     await B.booking.start();
     await settle(B.booking);
-    const w = workerOf(cloud, fakePuter);
+    const w = workerOf(cloud, fakeEverything);
     const [s1] = await slots(w, page.id);
     const X = (await guestBook(w, page.id, s1, 'x@example.com')).booking;
 
@@ -154,13 +154,13 @@ describe('booking across two windows of one account', () => {
 describe('booking over the offline kv wrapper', () => {
   it('the orphan net does not cancel on a cloud look the snapshot answered', async () => {
     const cloud = makeKv();
-    const fakePuter = makeFakePuter();
+    const fakeEverything = makeFakeEverything();
     let offset = 0;
     // Device A is the real app shape: the store over the offline wrapper.
     const wrapped = createOfflineKv(cloud);
     wrapped.ensureUser('u1');
-    const A = device(wrapped, fakePuter, { now: () => Date.now() + offset });
-    const B = device(cloud, fakePuter); // the host's other window
+    const A = device(wrapped, fakeEverything, { now: () => Date.now() + offset });
+    const B = device(cloud, fakeEverything); // the host's other window
     await A.store.load(); // writes the local snapshot
     await B.store.load();
     await A.booking.start();
@@ -168,7 +168,7 @@ describe('booking over the offline kv wrapper', () => {
     await settle(A.booking);
     await B.booking.start();
     await settle(B.booking);
-    const w = workerOf(cloud, fakePuter);
+    const w = workerOf(cloud, fakeEverything);
     const [s1, s2] = await slots(w, page.id);
 
     // Y is applied by A; X only by B, so A's calendar never learns of X's event.
@@ -186,7 +186,7 @@ describe('booking over the offline kv wrapper', () => {
     // to look into.
     await A.booking.cancelBooking(Y.id);
 
-    // puter.kv now fails from A (a 429, a blip) while the worker stays
+    // everything.kv now fails from A (a 429, a blip) while the worker stays
     // reachable. Nothing sets isBlocked(), so passes run; the wrapper answers
     // every list from the snapshot, which cannot contain X's event.
     cloud.list.mockImplementation(async () => {
@@ -206,13 +206,13 @@ describe('booking over the offline kv wrapper', () => {
 
   it("loadState treats a snapshot-answered read as failed, so a first-session device can't resurrect a deleted booking", async () => {
     const cloud = makeKv();
-    const fakePuter = makeFakePuter();
-    const B = device(cloud, fakePuter);
+    const fakeEverything = makeFakeEverything();
+    const B = device(cloud, fakeEverything);
     await B.store.load();
     await B.booking.start();
     const page = await B.booking.savePage({ title: 'Intro call', minNoticeMin: 0, maxAdvanceDays: 7 });
     await settle(B.booking);
-    const w = workerOf(cloud, fakePuter);
+    const w = workerOf(cloud, fakeEverything);
     const [s1] = await slots(w, page.id);
     const X = (await guestBook(w, page.id, s1, 'x@example.com')).booking;
     await B.booking.refresh();
@@ -226,7 +226,7 @@ describe('booking over the offline kv wrapper', () => {
     // booking" — which the pull would read as licence to create X's event.
     const wrapped = createOfflineKv(cloud);
     wrapped.ensureUser('u1');
-    const A = device(wrapped, fakePuter);
+    const A = device(wrapped, fakeEverything);
     await A.store.load();
     const realGet = cloud.get.getMockImplementation();
     let glitched = false;

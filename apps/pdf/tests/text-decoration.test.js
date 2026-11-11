@@ -102,7 +102,7 @@ for (const mixed of [false, true])
       await replaceTextGroup(resized.doc, 0, resized.groups[0], '');
       const deleted = await read(await resized.doc.save());
       expect(deleted.groups.map((g) => g.text)).toEqual(['Neighbor']);
-      expect(pageSource(deleted.doc.getPage(0))).not.toContain('/PuterTextDecoration');
+      expect(pageSource(deleted.doc.getPage(0))).not.toContain('/EverythingTextDecoration');
     });
 
 it('restyles unchanged split text instead of treating the font change as a no-op', async () => {
@@ -149,7 +149,7 @@ it('new decorated multiline text can be edited and deleted without leaving lines
   await replaceTextGroup(edited.doc, 0, edited.groups[0], '');
   const deleted = await read(await edited.doc.save());
   expect(deleted.groups).toHaveLength(0);
-  expect(pageSource(deleted.doc.getPage(0))).not.toContain('/PuterTextDecoration');
+  expect(pageSource(deleted.doc.getPage(0))).not.toContain('/EverythingTextDecoration');
 });
 
 it('bold changes retain italic fragments instead of flattening their slant', async () => {

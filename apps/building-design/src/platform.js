@@ -1,26 +1,26 @@
 ﻿/**
- * Everything that touches Puter directly for identity: environment, sign-in
+ * Everything that touches Everything directly for identity: environment, sign-in
  * state, user and profile picture. The app works without signing in; cloud
  * files and settings sync need an account.
  */
 const PIC_KEY = 'bd.profilePicture';
 
-export function puterAvailable() {
-  return typeof globalThis.puter !== 'undefined';
+export function everythingAvailable() {
+  return typeof globalThis.everything !== 'undefined';
 }
 
 let ready = null;
 
 /**
- * Resolves true once the Puter SDK has loaded (it loads asynchronously so a
+ * Resolves true once the Everything SDK has loaded (it loads asynchronously so a
  * slow network never blocks drawing), or false if it fails to load.
  */
-export function whenPuter(timeoutMs = 20000) {
-  if (puterAvailable()) return Promise.resolve(true);
+export function whenEverything(timeoutMs = 20000) {
+  if (everythingAvailable()) return Promise.resolve(true);
   if (ready) return ready;
   ready = new Promise((resolve) => {
-    const script = document.getElementById('puter-sdk');
-    const done = () => resolve(puterAvailable());
+    const script = document.getElementById('everything-sdk');
+    const done = () => resolve(everythingAvailable());
     if (!script) return done();
     script.addEventListener('load', done, { once: true });
     script.addEventListener('error', done, { once: true });
@@ -29,23 +29,23 @@ export function whenPuter(timeoutMs = 20000) {
   return ready;
 }
 
-export function puterEnv() {
+export function everythingEnv() {
   try {
-    return globalThis.puter?.env || 'web';
+    return globalThis.everything?.env || 'web';
   } catch {
     return 'web';
   }
 }
 
-/** Inside the Puter desktop the user is always signed in and cannot sign out. */
+/** Inside the Everything desktop the user is always signed in and cannot sign out. */
 export function canSignOut() {
-  return puterEnv() !== 'app';
+  return everythingEnv() !== 'app';
 }
 
 export async function isSignedIn() {
-  if (!puterAvailable()) return false;
+  if (!everythingAvailable()) return false;
   try {
-    return (await Promise.resolve(puter.auth.isSignedIn())) === true;
+    return (await Promise.resolve(everything.auth.isSignedIn())) === true;
   } catch {
     return false;
   }
@@ -53,12 +53,12 @@ export async function isSignedIn() {
 
 /** Must be called from a user gesture (opens a popup). */
 export async function signIn() {
-  await puter.auth.signIn();
+  await everything.auth.signIn();
 }
 
 export function signOut() {
   try {
-    puter.auth.signOut();
+    everything.auth.signOut();
   } catch {
     /* ignore */
   }
@@ -66,7 +66,7 @@ export function signOut() {
 
 export async function getUser() {
   try {
-    return await puter.auth.getUser();
+    return await everything.auth.getUser();
   } catch {
     return null;
   }
@@ -84,7 +84,7 @@ export function cachedProfilePicture(username) {
 
 export async function fetchProfilePicture(username) {
   try {
-    const url = await puter.auth.getProfilePicture?.();
+    const url = await everything.auth.getProfilePicture?.();
     if (typeof url === 'string' && url.startsWith('data:image/') && url.length < 2_000_000) {
       try {
         localStorage.setItem(PIC_KEY, JSON.stringify({ user: username, url }));

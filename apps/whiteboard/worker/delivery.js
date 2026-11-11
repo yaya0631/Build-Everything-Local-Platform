@@ -705,11 +705,11 @@ export async function testSlack(org, url) {
   );
 }
 // Sends through whichever method this runtime's SDK has: sendTransactional
-// now, send before it. Answers Puter's result ({ failed, suppressed }), or
+// now, send before it. Answers Everything's result ({ failed, suppressed }), or
 // null when the runtime cannot send mail at all.
 export async function mail(org, to, subject, body) {
   const recipients = (Array.isArray(to) ? to : [to]).filter(Boolean);
-  const email = org.puter.email;
+  const email = org.everything.email;
   const send =
     typeof email?.sendTransactional === "function"
       ? (message) => email.sendTransactional(message)
@@ -725,7 +725,7 @@ export async function mail(org, to, subject, body) {
     })) || {}
   );
 }
-// Whether Puter accepted a message for this address: a runtime without
+// Whether Everything accepted a message for this address: a runtime without
 // mail, or an address it reports as failed or suppressed, received nothing.
 export const delivered = (result, address) =>
   !!result &&

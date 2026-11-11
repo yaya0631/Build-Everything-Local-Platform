@@ -1,7 +1,7 @@
 /**
  * Performs the AI sidebar's tool calls (media/ai-tools.js) in the editor.
  * Edit calls go through the edit assistant's runner (one undo step each);
- * calls that make media wait on Puter AI, then import what came back and put
+ * calls that make media wait on Everything AI, then import what came back and put
  * it on the timeline in one synchronous undo step, so an edit the user makes
  * while a clip is being generated never folds into the assistant's step.
  *

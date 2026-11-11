@@ -3,11 +3,11 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { editorView } from '../src/views/editor.js';
 import { Doc } from '../src/lib/doc.js';
 import { closeAllModals } from '../src/ui/modal.js';
-import * as P from '../src/lib/puter.js';
+import * as P from '../src/lib/everything.js';
 import * as modal from '../src/ui/modal.js';
 import * as notifications from '../src/ui/toast.js';
 
-// Document details, Version history and Copy link wait on Puter before they
+// Document details, Version history and Copy link wait on Everything before they
 // open a dialog. Leaving the editor while they waited left the dialog to open
 // over the home screen, with the app inert behind it.
 function memoryStorage() {
@@ -63,7 +63,7 @@ it('does not open a file picked after the editor was left', async () => {
   const openPath = vi.fn();
   view = editorView({ doc, goHome: vi.fn(), openPath, newDoc: vi.fn(), templateDoc: vi.fn(), importFile: vi.fn() });
   document.querySelector('#app').append(view.el);
-  fileMenu('Open from Puter…');
+  fileMenu('Open from Everything…');
   await vi.advanceTimersByTimeAsync(1);
   expect(P.pickFile).toHaveBeenCalledOnce();
   leave();

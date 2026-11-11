@@ -14,7 +14,7 @@ function book(sqref='A1:A2 C1:C2',type='duplicateValues'){
 async function external(wb){
  const zip=X.CFB.read(new Uint8Array(await(await workbookToXlsx(wb)).arrayBuffer()),{type:'array'});
  const sheetXml=dec.decode(X.CFB.find(zip,'/xl/worksheets/sheet1.xml').content),part=X.CFB.find(zip,'/xl/workbook.xml');
- part.content=new TextEncoder().encode(dec.decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,''));part.size=part.content.length;
+ part.content=new TextEncoder().encode(dec.decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,''));part.size=part.content.length;
  return {wb:await workbookFromFile(X.CFB.write(zip,{type:'array',fileType:'zip'}),'native-duplicates.xlsx'),sheetXml};
 }
 const read=(wb,offset=0)=>[0,1].flatMap(r=>[0,2].map(c=>!!wb.conditionalStyle(wb.activeSheetId,r+offset,c,wb.getValue(wb.activeSheetId,r+offset,c))?.bg));
@@ -63,14 +63,14 @@ it.each(['dup','unique'])('exports long %s scopes as bounded live named function
  // paint cells keep their counting scope fixed, including relative user input.
  wb.addRule(id,{type,range:{r1:10,c1:0,r2:11,c2:0},duplicateRange:`(${Array.from({length:40},()=> 'A1:A2').join(',')})`,style:paint});
  wb.setInput(id,10,0,'a');wb.setInput(id,11,0,'absent');
- wb.defineName('_PuterCF1','42');wb.defineName('_PuterCF2','17',wb.activeSheet.name);
+ wb.defineName('_EverythingCF1','42');wb.defineName('_EverythingCF2','17',wb.activeSheet.name);
  const expected=type==='dup'?[true,false]:[false,false];
  const colors=()=>[10,11].map(r=>!!wb.conditionalStyle(id,r,0,wb.getValue(id,r,0))?.bg);
  let count;
  for(let pass=0;pass<2;pass++){
   expect(colors()).toEqual(expected);
   const back=await external(wb);
-  expect(back.sheetXml).toContain('_PuterCF');
+  expect(back.sheetXml).toContain('_EverythingCF');
   wb=back.wb;id=wb.activeSheetId;
   expect(colors()).toEqual(expected);
   const helpers=wb.names.filter(n=>n.hidden);
@@ -78,7 +78,7 @@ it.each(['dup','unique'])('exports long %s scopes as bounded live named function
   expect(helpers.every(n=>n.ref.startsWith('LAMBDA('))).toBe(true);
   if(count!=null)expect(helpers.length).toBe(count);
   count=helpers.length;
-  expect(wb.namedEntry('_PuterCF1').ref).toBe('42');
+  expect(wb.namedEntry('_EverythingCF1').ref).toBe('42');
  }
  wb.setInput(id,0,0,'different');expect(colors()).toEqual([false,false]);
  wb.undo();expect(colors()).toEqual(expected);

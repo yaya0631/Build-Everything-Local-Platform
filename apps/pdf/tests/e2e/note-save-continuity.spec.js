@@ -10,7 +10,7 @@ for (const action of ['apply', 'delete'])
         page,
       }) => {
         await page.setViewportSize({ width: 850, height: 800 });
-        await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
+        await page.route('**/sdk/everything.js', (route) => route.fulfill({ body: '' }));
         await page.goto('/#library');
         const doc = await PDFDocument.create();
         doc.addPage([600, 800]);

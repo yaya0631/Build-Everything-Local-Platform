@@ -5,7 +5,7 @@ import { editorView } from '../src/views/editor.js';
 import { Doc } from '../src/lib/doc.js';
 import { draftKey, loadDraft } from '../src/lib/drafts.js';
 import { closeAllModals } from '../src/ui/modal.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 
 // jsdom's Blob has no arrayBuffer(); reading a file back needs one.
 if (!Blob.prototype.arrayBuffer) {
@@ -29,7 +29,7 @@ beforeEach(() => {
   Object.defineProperty(HTMLElement.prototype, 'clientHeight', { configurable: true, get: () => 400 });
   vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({ measureText: (t) => ({ width: t.length * 7 }), font: '' });
   document.body.innerHTML = '<div id="app"></div>';
-  mock = installMockPuter();
+  mock = installMockEverything();
 });
 afterEach(() => {
   closeAllModals();
@@ -37,7 +37,7 @@ afterEach(() => {
   view = null;
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
-  delete globalThis.puter;
+  delete globalThis.everything;
   document.body.replaceChildren();
 });
 
@@ -114,7 +114,7 @@ it('asks again in the leave dialog when the overwrite fails, not in the dialog t
   const leaving = view.flush();
   await vi.waitFor(() => expect(dialogs()).toHaveLength(1));
   const [first] = dialogs();
-  puter.fs.write = async () => { throw new Error('Network request failed'); };
+  everything.fs.write = async () => { throw new Error('Network request failed'); };
   press('Overwrite with mine');
   await vi.waitFor(() => { expect(dialogs()).toHaveLength(1); expect(dialogs()[0]).not.toBe(first); });
   expect(dialogs()[0].querySelector('.modal-title').textContent).toBe('This file changed elsewhere');

@@ -16,7 +16,7 @@ import { relationshipPartPath, relativePartTarget } from './package-part-paths.j
 import { planMerge, MERGE_TYPES, fieldKeyword } from './merge-fields.js';
 import { xmlAttributeText } from './text-limits.js';
 
-export const MAIL_MERGE_NS = 'urn:puter-documents:mail-merge:1';
+export const MAIL_MERGE_NS = 'urn:everything-documents:mail-merge:1';
 const W = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
 const R = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships';
 const REL = 'http://schemas.openxmlformats.org/package/2006/relationships';

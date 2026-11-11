@@ -42,7 +42,7 @@ const openFolder = async (label) => {
 describe('inbox zero, then one failed check', () => {
   it('still notices new mail while another folder is open', async () => {
     mailbox = createSampleMailbox();
-    // Like Puter: an emptied objects folder is still a folder.
+    // Like Everything: an emptied objects folder is still a folder.
     const fs = {
       ...mailbox.fs,
       readdir: async (path, ...rest) => {

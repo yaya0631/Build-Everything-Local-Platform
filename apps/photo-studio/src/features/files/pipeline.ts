@@ -3,7 +3,7 @@
 import type { Editor } from '../../editor';
 import type { Layer, PhotoDocument } from '../../model/document';
 import { decodeIccProfile } from '../../model/psd-resources';
-import { download, preferredFileName } from '../../persistence/puter';
+import { download, preferredFileName } from '../../persistence/everything';
 import { emitAppEvent } from '../../app/app-events';
 import { documentProfile, floatTo16 } from './color';
 import { defaultSettings, encodeExport, exportFileName, formatInfo, prepareExport, type ExportContext, type ExportSettings, type SourceImage } from './encode';
@@ -101,7 +101,7 @@ export async function quickExport(e: Editor, format: ExportSettings['format'] = 
   let dir: string;
   if (where === 'beside') dir = docPath!.replace(/\/[^/]*$/, '') || '/';
   else {
-    // The Puter picker never settles when dismissed: do not hold the editor busy.
+    // The Everything picker never settles when dismissed: do not hold the editor busy.
     e.release();
     dir = (await pickCloudFolder()).path;
   }

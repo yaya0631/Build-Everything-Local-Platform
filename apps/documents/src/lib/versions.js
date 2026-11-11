@@ -2,7 +2,7 @@
  * Version history. Every document in the app folder gets a folder of
  * snapshots at `Documents/.versions/<name>/`, one .docx per version, named
  * by the moment it was taken. A document elsewhere on the drive (inside the
- * Puter desktop, Save puts a new one where the user chooses) keeps its
+ * Everything desktop, Save puts a new one where the user chooses) keeps its
  * snapshots at `Documents/.versions-by-id/<tag>/`, named after the file's id
  * on the drive, which stays the same through a rename or a move. A snapshot is written after a save when the
  * last one is older than VERSION_INTERVAL_MS (or there is none), and whenever
@@ -12,7 +12,7 @@
  * never fails the save.
  */
 
-import * as P from './puter.js';
+import * as P from './everything.js';
 import { documentRoot } from './document-paths.js';
 
 export const VERSION_INTERVAL_MS = 10 * 60 * 1000;
@@ -39,7 +39,7 @@ export function versionsFolder(path) {
 }
 
 /**
- * Puter listings return absolute paths; verify their app folder before sharing a history. A .docx elsewhere on
+ * Everything listings return absolute paths; verify their app folder before sharing a history. A .docx elsewhere on
  * the drive has a history by its id (`uid`, when known); without one it has none.
  */
 export async function resolveVersionsFolder(path, uid = null) {

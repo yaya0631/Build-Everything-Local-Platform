@@ -4,15 +4,15 @@
  * just a KV write on our side.
  *
  * Two ways to get the message out, tried in order:
- *   - primary: `puter.email.send(...)` — sent from the user's own
- *     `<username>@puter.email` address, needing the `.mail:write` ACL
+ *   - primary: `everything.email.send(...)` — sent from the user's own
+ *     `<username>@everything.email` address, needing the `.mail:write` ACL
  *     (requested lazily, on first 'forbidden').
  *   - fallback: the shared email worker's `/replies` route (same worker as
  *     invites.js, same anti-relay posture: the caller hands over an event and
  *     a PARTSTAT, the worker composes the message).
  *
  * `send()` resolves the server's JSON body regardless of HTTP status — it
- * never throws on a refusal, and it raises Puter's own upgrade dialog on a
+ * never throws on a refusal, and it raises Everything's own upgrade dialog on a
  * 402 itself. So every outcome here is read off that body, never a status
  * code: `delivered` naming the organizer is a send; `forbidden` gets one
  * permission request and one retry; `too_many_requests` is the user's own
@@ -91,10 +91,10 @@ function guestNameFor(event, email) {
  *  for the worker's /replies route. */
 function replyFailureMessage(status, data) {
   const code = (data && data.error) || '';
-  if (status === 401 || code === 'sign_in_required') return 'Sign in to Puter again to send your reply.';
+  if (status === 401 || code === 'sign_in_required') return 'Sign in to Everything again to send your reply.';
   if (status === 429 || code === 'daily_limit') return "You've reached today's email limit. Try again tomorrow.";
   if (status === 403 || code === 'attendee_mismatch') {
-    return 'Sign in to Puter again — this reply would not be sent from your account.';
+    return 'Sign in to Everything again — this reply would not be sent from your account.';
   }
   if (status === 404 || code === 'invalid_ics') return 'The email service needs an update before it can send your reply.';
   return 'Could not send the reply. Please try again.';
@@ -121,7 +121,7 @@ export function describeResult(out) {
 export function createMailReply({
   store,
   user,
-  getPuter = () => (typeof puter !== 'undefined' ? puter : null),
+  getEverything = () => (typeof everything !== 'undefined' ? everything : null),
   workerUrl = EMAIL_WORKER_URL,
   blocked = isBlocked,
   toast = defaultToast,
@@ -154,7 +154,7 @@ export function createMailReply({
   }
 
   function available() {
-    const p = getPuter();
+    const p = getEverything();
     if (!p) return false;
     const api = Boolean(p.email && typeof p.email.send === 'function');
     const worker = Boolean(p.workers && typeof p.workers.exec === 'function');
@@ -177,7 +177,7 @@ export function createMailReply({
     return list.some((addr) => normalizeEmail(addr) === email);
   }
 
-  /** Send once via `puter.email.send`, interpreting its resolved body — see
+  /** Send once via `everything.email.send`, interpreting its resolved body — see
    *  the module header for the full outcome matrix. `forbidden` retries once
    *  after requesting the write grant; everything unrecognized (including
    *  `subscription_required` and a `failed` entry naming an external-plan
@@ -249,12 +249,12 @@ export function createMailReply({
     // The address the REPLY answers as. Google and Outlook silently drop a
     // REPLY whose ATTENDEE isn't one they invited — so it must be the address
     // the original REQUEST used when we have it, not just whichever address
-    // happens to be on the account. From is unaffected: puter.email.send
-    // always sends from the account's own <username>@puter.email.
+    // happens to be on the account. From is unaffected: everything.email.send
+    // always sends from the account's own <username>@everything.email.
     const inviteAttendee = event.invite && typeof event.invite.attendee === 'string'
       ? normalizeEmail(event.invite.attendee)
       : '';
-    const attendeeEmail = inviteAttendee || self.email || `${self.username}@puter.email`;
+    const attendeeEmail = inviteAttendee || self.email || `${self.username}@everything.email`;
 
     const title = event.title || '(No title)';
     const when = describeWhen(event, { hour12: store.getSettings().hour12 !== false });
@@ -283,7 +283,7 @@ export function createMailReply({
       return announce({ ok: false, sent: false, reason: 'ics_failed', organizerEmail });
     }
 
-    const p = getPuter();
+    const p = getEverything();
     const subject = replySubject(status, title);
     const text = [`${attendeeName || attendeeEmail} ${STATUS_VERB[status]}`, '', title, ...(when ? [when] : [])].join('\n');
 

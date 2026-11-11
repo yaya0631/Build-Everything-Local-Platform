@@ -9,8 +9,8 @@ import { addDays, addMonths, todayISO, needsAttention } from '../src/lib/dates.j
 
 const TODAY = '2026-08-05';
 
-/** In-memory stand-in for the Puter SDK (kv + fs + auth). */
-function mockPuter() {
+/** In-memory stand-in for the Everything SDK (kv + fs + auth). */
+function mockEverything() {
   const kv = new Map();
   const files = new Map();
   return {
@@ -248,7 +248,7 @@ describe('recurring obligations', () => {
   });
 
   it('keeps advancing once the occurrence history starts falling off the front', async () => {
-    globalThis.puter = mockPuter();
+    globalThis.everything = mockEverything();
     const store = new Store();
     await store.init();
     const c = await store.addContract(contract({
@@ -386,7 +386,7 @@ describe('recurring obligations', () => {
   });
 
   it('reopens a finished series once an edit gives it room again', async () => {
-    globalThis.puter = mockPuter();
+    globalThis.everything = mockEverything();
     const store = new Store();
     await store.init();
     const c = await store.addContract(contract({
@@ -417,7 +417,7 @@ describe('recurring obligations', () => {
   });
 
   it('leaves a finished series finished when the edit gives it no room', async () => {
-    globalThis.puter = mockPuter();
+    globalThis.everything = mockEverything();
     const store = new Store();
     await store.init();
     const c = await store.addContract(contract({
@@ -541,7 +541,7 @@ describe('endedOn', () => {
   });
 
   it('agrees with what the store records when notice closes a contract out', async () => {
-    globalThis.puter = mockPuter();
+    globalThis.everything = mockEverything();
     const store = new Store();
     await store.init();
     const c = await store.addContract(contract({
@@ -556,11 +556,11 @@ describe('endedOn', () => {
   });
 });
 
-describe('Store CRUD (mocked Puter)', () => {
+describe('Store CRUD (mocked Everything)', () => {
   let store;
 
   beforeEach(async () => {
-    globalThis.puter = mockPuter();
+    globalThis.everything = mockEverything();
     store = new Store();
     await store.init();
   });
@@ -574,8 +574,8 @@ describe('Store CRUD (mocked Puter)', () => {
 
   it('normalizes a currency code that reached settings from storage', async () => {
     // Anything here ends up in Intl.NumberFormat, which throws on a non-code.
-    globalThis.puter = mockPuter();
-    await puter.kv.set('cm:settings:v1', { currency: '12', reportingCurrency: 'eur' });
+    globalThis.everything = mockEverything();
+    await everything.kv.set('cm:settings:v1', { currency: '12', reportingCurrency: 'eur' });
     const store2 = new Store();
     await store2.init();
     expect(store2.settings.currency).toBe('USD');
@@ -721,14 +721,14 @@ describe('Store CRUD (mocked Puter)', () => {
 
   it('cleans up the upload when the contract vanishes mid-flight', async () => {
     const c = await store.addContract(contract());
-    const write = puter.fs.write.bind(puter.fs);
-    puter.fs.write = async (path, data) => {
+    const write = everything.fs.write.bind(everything.fs);
+    everything.fs.write = async (path, data) => {
       await write(path, data);
       if (path.includes('/docs/')) await store.deleteContract(c.id);
     };
     const file = new File(['x'], 'x.txt', { type: 'text/plain' });
     await expect(store.attachDocument(c.id, file)).rejects.toThrow(`No contract ${c.id}`);
-    const orphans = [...puter._files.keys()].filter((k) => k.includes('/docs/'));
+    const orphans = [...everything._files.keys()].filter((k) => k.includes('/docs/'));
     expect(orphans).toEqual([]);
   });
 
@@ -791,7 +791,7 @@ describe('Store CRUD (mocked Puter)', () => {
   });
 
   it('rolls back an add when the write fails, so a retry cannot duplicate', async () => {
-    puter.fs.write = async () => { throw new Error('offline'); };
+    everything.fs.write = async () => { throw new Error('offline'); };
     await expect(store.addContract(contract({ title: 'Ghost' }))).rejects.toThrow('offline');
     expect(store.contracts).toHaveLength(0);
     await expect(store.addContact({ name: 'Ghost' })).rejects.toThrow('offline');
@@ -800,7 +800,7 @@ describe('Store CRUD (mocked Puter)', () => {
 
   it('rolls back an update when the write fails', async () => {
     const c = await store.addContract(contract({ title: 'Before' }));
-    puter.fs.write = async () => { throw new Error('offline'); };
+    everything.fs.write = async () => { throw new Error('offline'); };
     await expect(store.updateContract(c.id, { title: 'After' })).rejects.toThrow('offline');
     expect(store.contractById(c.id).title).toBe('Before');
   });
@@ -808,7 +808,7 @@ describe('Store CRUD (mocked Puter)', () => {
   it('restores a contract when its delete fails to persist', async () => {
     const a = await store.addContract(contract({ title: 'A' }));
     const b = await store.addContract(contract({ title: 'B' }));
-    puter.fs.write = async () => { throw new Error('offline'); };
+    everything.fs.write = async () => { throw new Error('offline'); };
     await expect(store.deleteContract(a.id)).rejects.toThrow('offline');
     expect(store.contracts.map((c) => c.title)).toEqual(['B', 'A']);
     expect(store.contractById(a.id)).not.toBeNull();
@@ -818,9 +818,9 @@ describe('Store CRUD (mocked Puter)', () => {
   it('never lets a later write carry a rolled-back edit into storage', async () => {
     const a = await store.addContract(contract({ title: 'A' }));
     const b = await store.addContract(contract({ title: 'B' }));
-    const write = puter.fs.write.bind(puter.fs);
+    const write = everything.fs.write.bind(everything.fs);
     let failNext = true;
-    puter.fs.write = async (path, data) => {
+    everything.fs.write = async (path, data) => {
       if (failNext && path.endsWith('contracts.json')) {
         failNext = false;
         throw new Error('offline');
@@ -839,7 +839,7 @@ describe('Store CRUD (mocked Puter)', () => {
     expect(store.contractById(b.id).title).toBe('B-edited');
     // What is on disk has to be what is on screen: the edit the user was told
     // did not save must not come back on the next boot.
-    const saved = JSON.parse(await (await puter.fs.read('contract-manager/contracts.json')).text());
+    const saved = JSON.parse(await (await everything.fs.read('contract-manager/contracts.json')).text());
     expect(saved.find((c) => c.id === a.id).title).toBe('A');
     expect(saved.find((c) => c.id === b.id).title).toBe('B-edited');
   });
@@ -847,7 +847,7 @@ describe('Store CRUD (mocked Puter)', () => {
   it('restores the contact and its links when a contact delete fails', async () => {
     const contact1 = await store.addContact({ name: 'Linked' });
     const c = await store.addContract(contract({ contactId: contact1.id }));
-    puter.fs.write = async () => { throw new Error('offline'); };
+    everything.fs.write = async () => { throw new Error('offline'); };
     await expect(store.deleteContact(contact1.id)).rejects.toThrow('offline');
     expect(store.contactById(contact1.id)).not.toBeNull();
     expect(store.contractById(c.id).contactId).toBe(contact1.id);
@@ -896,7 +896,7 @@ describe('Store CRUD (mocked Puter)', () => {
 
     await store.deleteContract(c.id);
     await store.purgeTrashEntry(store.trashEntries()[0]);
-    expect([...puter._files.keys()].filter((k) => k.includes('/docs/'))).toEqual([]);
+    expect([...everything._files.keys()].filter((k) => k.includes('/docs/'))).toEqual([]);
   });
 
   it('trashes a document without touching its file, and restores it in place', async () => {
@@ -921,7 +921,7 @@ describe('Store CRUD (mocked Puter)', () => {
     await store.deleteDocument(c.id, a.id);
     await store.purgeTrashEntry(store.trashEntries()[0]);
     expect(store.contractById(c.id).documents.map((d) => d.name)).toEqual(['b.txt']);
-    expect([...puter._files.keys()].filter((k) => k.includes('/docs/'))).toHaveLength(1);
+    expect([...everything._files.keys()].filter((k) => k.includes('/docs/'))).toHaveLength(1);
   });
 
   it('deletes an obligation with everything an undo needs', async () => {
@@ -962,9 +962,9 @@ describe('Store CRUD (mocked Puter)', () => {
     await store.deleteContract(fresh.id);
     // Backdate one deletion past the window, as if the app had been closed.
     const path = 'contract-manager/contracts.json';
-    const saved = JSON.parse(await (await puter.fs.read(path)).text());
+    const saved = JSON.parse(await (await everything.fs.read(path)).text());
     for (const c of saved) if (c.title === 'Old') c.deletedAt = Date.now() - 31 * 86400000;
-    await puter.fs.write(path, JSON.stringify(saved));
+    await everything.fs.write(path, JSON.stringify(saved));
 
     const store2 = new Store();
     await store2.init();
@@ -1089,7 +1089,7 @@ describe('Store CRUD (mocked Puter)', () => {
   });
 
   it('rolls back settings when the KV write fails', async () => {
-    puter.kv.set = async () => { throw new Error('offline'); };
+    everything.kv.set = async () => { throw new Error('offline'); };
     await expect(store.updateSettings({ currency: 'EUR' })).rejects.toThrow('offline');
     expect(store.settings.currency).toBe('USD');
   });
@@ -1099,7 +1099,7 @@ describe('Store CRUD (mocked Puter)', () => {
     await store.addContact({ name: 'Already here too' });
     await store.updateSettings({ currency: 'GBP' });
 
-    puter.fs.write = async () => { throw new Error('offline'); };
+    everything.fs.write = async () => { throw new Error('offline'); };
     await expect(store.importAll({
       settings: { currency: 'JPY' },
       contracts: [contract({ title: 'From the backup' })],

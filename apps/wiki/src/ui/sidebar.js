@@ -137,7 +137,7 @@ export class Sidebar {
       this.navItem('fileUp', 'Import', () => this.app.importMarkdown()),
       this.navItem('trash', 'Trash', (e) => this.app.openTrash(e.currentTarget)),
       this.navItem('settings', 'Settings', () => this.app.openSettings()),
-      h('a.powered', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Powered by Puter'),
+      h('a.powered', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Powered by Everything'),
     );
     const resizer = this.el.querySelector('.sidebar-resizer');
     this.el.replaceChildren(head, nav, h('div.sidebar-scroll', ...sections), foot);

@@ -6,7 +6,7 @@ import { childrenOf, getPage, allPages, isTrashed, addPage } from '../src/data/t
 import { listBlocks, insertBlocks } from '../src/data/page.js';
 import { listRows, listViews, listProps } from '../src/data/database.js';
 import { deltaText } from '../src/data/richtext.js';
-import { fakePuter, alice, bob } from './helpers/puter.js';
+import { fakeEverything, alice, bob } from './helpers/everything.js';
 
 const titles = (doc, parent = null) => childrenOf(doc, parent).map((p) => p.title);
 
@@ -115,7 +115,7 @@ describe('workspace', () => {
 describe('sharing through the workspace', () => {
   let env;
   beforeEach(() => {
-    env = fakePuter();
+    env = fakeEverything();
     env.forget();
   });
 
@@ -169,9 +169,9 @@ describe('sharing through the workspace', () => {
     shared.close();
   });
 
-  it('needs a Puter account to share', async () => {
+  it('needs an Everything account to share', async () => {
     const ws = await workspace();
     const page = await ws.createPage(ws.personal, { title: 'x' });
-    await expect(ws.sharePage(page)).rejects.toThrow(/Puter account/);
+    await expect(ws.sharePage(page)).rejects.toThrow(/Everything account/);
   });
 });

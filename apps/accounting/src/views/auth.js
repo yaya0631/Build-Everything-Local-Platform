@@ -21,12 +21,12 @@ export function authView({ onSignIn, error = null }) {
     el('div.auth-card', {},
       el('div.auth-mark', { html: appMark(56) }),
       el('h1.auth-title', {}, 'Accounting'),
-      el('p.auth-sub', {}, 'Invoices, bills, banking, reconciliation, and financial reports, in your own Puter cloud.'),
+      el('p.auth-sub', {}, 'Invoices, bills, banking, reconciliation, and financial reports, in your own Everything cloud.'),
       error ? el('p.field-error', { role: 'alert' }, error) : null,
       btn,
       el('ul.auth-points', {},
         ['Double-entry books that always balance', 'Profit and loss, balance sheet, cash flow, and aging', 'Your data stays in your account'].map((t) => el('li', {}, el('span', { html: icon('check', 16) }), t))),
-      el('p.auth-foot', {}, 'Powered by ', el('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Puter'))));
+      el('p.auth-foot', {}, 'Powered by ', el('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Everything'))));
 }
 
 export function errorView({ title, message, onRetry }) {

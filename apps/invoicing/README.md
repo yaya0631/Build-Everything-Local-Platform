@@ -1,8 +1,8 @@
 # Invoicing & Estimates
 
-Create quotes, invoices, recurring invoices, receipts, and payment links. Deliberately simpler than a full accounting app, and built to feed one: every payment you record can be exported straight into the [Personal Finance](https://github.com/HeyPuter/accountant) app.
+Create quotes, invoices, recurring invoices, receipts, and payment links. Deliberately simpler than a full accounting app, and built to feed one: every payment you record can be exported straight into the [Personal Finance](https://github.com/yaya0631/Build-Everything-Local-Platform) app.
 
-Everything is stored in the user's own [Puter](http://localhost:8443) cloud. There is no server of ours, no database of ours, and no tracking.
+Everything is stored in the user's own [Everything](http://localhost:8443) cloud. There is no server of ours, no database of ours, and no tracking.
 
 ## Features
 
@@ -34,7 +34,7 @@ Everything is stored in the user's own [Puter](http://localhost:8443) cloud. The
 ## Stack
 
 - Vanilla JavaScript (no framework), [Vite](https://vitejs.dev) for dev/build, [Lucide](https://lucide.dev) for icons.
-- [Puter.js](http://localhost:8443) for auth, key-value store, file storage, static hosting, and — through one shared worker — outbound email.
+- [Everything.js](http://localhost:8443) for auth, key-value store, file storage, static hosting, and — through one shared worker — outbound email.
 - [Vitest](https://vitest.dev) for unit tests over the pure logic (money math, statuses, schedules, reports, aging, message templates, backups, the PDF writer, CSV import and export, the offline snapshot, the email worker).
 - PDFs are written by a small generator in `src/lib/pdf.js` — no dependency, base-14 fonts, loaded only when someone asks for one.
 
@@ -47,12 +47,12 @@ Deleting is a flag, not a removal: `deletedAt` keeps a document in its year file
 ## Sending email
 
 The app has no server, and this feature does not give it one. Sending goes
-through a single Puter worker — `src/workers/email-worker.js` — deployed **once,
+through a single Everything worker — `src/workers/email-worker.js` — deployed **once,
 by the app owner**, because outbound mail has to be authorized by a worker's own
 token and that capability has to live somewhere the app controls.
 
 The cost does not live there. `src/lib/mailer.js` calls the worker with
-`puter.workers.exec()`, which forwards the signed-in user's own Puter token, and
+`everything.workers.exec()`, which forwards the signed-in user's own Everything token, and
 every message is sent with that token in hand: each send is **billed to, and
 rate-limited as, the person who pressed Send**, never the app owner. Nobody's
 mail passes through a server of ours, and nothing about a document is stored on
@@ -84,37 +84,35 @@ email app** hands the wording to `mailto:`, and **Copy message** puts it on the
 clipboard. Offline, those two are all the sheet offers, because they are the only
 two that can work.
 
-### Deploying the email worker
+### The email worker
 
-Users of the hosted app need nothing; this is for anyone running their own copy.
+The local server registers this worker automatically at startup as
+`invoicing-email`, using `src/workers/email-worker.js`. There is no deploy step:
 
-```sh
-npm install -g puter-cli          # if you don't have it
-puter login
-npm run deploy:email-worker       # puter worker deploy src/workers/email-worker.js invoicing-email
+```bash
 curl http://invoicing-email.localhost:8443/health    # {"ok":true,"version":"6"}
 ```
 
 `GET /whoami` is the self-test for "why am I getting a 401": call it through the
-app's own `puter.workers.exec()` and it reports what the worker can see of your
+app's own `everything.workers.exec()` and it reports what the worker can see of your
 session — names and presence only, never a token.
 
-Until it is deployed, the compose sheet still offers Send — the app cannot know
+Until it is registered, the compose sheet still offers Send — the app cannot know
 whether a worker is there without asking, and asking on every compose would cost
 a round trip to answer a question that is the same all day. Pressing it reports
 that the email service is unavailable and leaves the sheet open on the mail app
 and the clipboard; nothing is silently dropped. To run the worker under a name of
-your own, deploy it under that name and point `EMAIL_WORKER_URL` in
-`src/lib/mailer.js` at it.
+your own, register it under that name in `platform/server/index.js` and point
+`EMAIL_WORKER_URL` in `src/lib/mailer.js` at it.
 
 ## Development
 
 ```sh
 npm install
-npm run dev          # served with the real Puter SDK (requires sign-in)
+npm run dev          # served with the real Everything SDK (requires sign-in)
 ```
 
-Open `/mock.html` on the dev server to run against an in-memory mock of the Puter SDK instead: no account needed, and onboarding plus the sample dataset are exercised from scratch on every reload.
+Open `/mock.html` on the dev server to run against an in-memory mock of the Everything SDK instead: no account needed, and onboarding plus the sample dataset are exercised from scratch on every reload.
 
 ```sh
 npm test             # unit tests
@@ -123,7 +121,7 @@ npm run build        # production build to dist/
 
 ## Notes
 
-- When running inside the Puter desktop (`puter.env === 'app'`), the sign-out control is hidden; sessions belong to the OS shell there.
+- When running inside the Everything desktop (`everything.env === 'app'`), the sign-out control is hidden; sessions belong to the OS shell there.
 - Sample data is available from onboarding and can be wiped from the banner at any time.
 
 ## License

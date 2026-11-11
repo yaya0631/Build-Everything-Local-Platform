@@ -16,7 +16,7 @@
 
 - **Plain JavaScript, ES modules.** No TypeScript, no framework, no CSS preprocessor.
 - **No new runtime dependencies.** `package.json` gains nothing. Playwright and sharp are installed with `npm i --no-save` for image generation only.
-- **`src/game/**` must never import from `src/ui/**` or `src/services/**`, and must never touch `document`, `window`, or `puter`.**
+- **`src/game/**` must never import from `src/ui/**` or `src/services/**`, and must never touch `document`, `window`, or `everything`.**
 - **Any per-card visual variation must be deterministic where it is re-rendered.** The cascade is an exception: each card is launched once and animated to completion, so `Math.random()` is correct there — unlike `render()`, which rebuilds every card on every move.
 - **`prefers-reduced-motion: reduce` must skip the cascade entirely** and show the win overlay immediately. A full-screen bouncing animation is exactly what that media query exists for.
 - **The service worker must not break development.** Register only under `import.meta.env.PROD`.
@@ -342,7 +342,7 @@ if (import.meta.env.PROD && 'serviceWorker' in navigator) {
 
 - [ ] **Step 4: Fill in `index.html`'s head**
 
-Mirror `../checkers/index.html`: description, canonical, the full `og:*` and `twitter:*` sets, icon links, manifest link, light and dark `theme-color`, and a JSON-LD `WebApplication`/`VideoGame` block. Canonical host is `http://solitaire.localhost:8443/`. Keep the existing `js.localhost:8443` script tag and the "Powered by Puter" footer link.
+Mirror `../checkers/index.html`: description, canonical, the full `og:*` and `twitter:*` sets, icon links, manifest link, light and dark `theme-color`, and a JSON-LD `WebApplication`/`VideoGame` block. Canonical host is `http://solitaire.localhost:8443/`. Keep the existing `js.localhost:8443` script tag and the "Powered by Everything" footer link.
 
 - [ ] **Step 5: Render the social preview**
 
@@ -375,7 +375,7 @@ git commit -m "Add PWA support: manifest, icons, offline service worker, metadat
 
 Match the section structure of `../checkers/STORE_LISTING.md`: name, tagline, short description, long description, key features, who it is for, highlights in this version, keywords, category, and a caption per screenshot. It is the single source — `store/description.md` is only a signpost to it, so a submission form and a screenshot can never disagree.
 
-Content should be honest about what the game actually is: Klondike solitaire, draw-one, unlimited undo, real playing-card art on larger screens, plain readable cards on phones, plays offline, and syncs your record across devices when signed in to Puter.
+Content should be honest about what the game actually is: Klondike solitaire, draw-one, unlimited undo, real playing-card art on larger screens, plain readable cards on phones, plays offline, and syncs your record across devices when signed in to Everything.
 
 - [ ] **Step 2: Write `tools/store-screenshots.mjs`**
 

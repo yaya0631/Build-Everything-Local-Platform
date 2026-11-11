@@ -1,8 +1,8 @@
 /**
  * Conversation UI (review pass 22), driven in node through
  * tests/helpers/dom.js as the pass-19 to pass-21 files are: a fresh DOM and
- * a fresh module registry for every test, Puter faked at
- * `puter.workers.exec`, the toast, the theme, the modal layer and navigation
+ * a fresh module registry for every test, Everything faked at
+ * `everything.workers.exec`, the toast, the theme, the modal layer and navigation
  * mocked.
  */
 import { describe, it, expect, afterEach, vi } from 'vitest';
@@ -33,7 +33,7 @@ async function boot({ width = 1280, ...env } = {}) {
   dom?.uninstall();
   dom = installDom({ width, ...env });
   vi.resetModules();
-  globalThis.puter = { workers: { exec: async () => json({ code: 'not_found', message: 'nope' }, 404) } };
+  globalThis.everything = { workers: { exec: async () => json({ code: 'not_found', message: 'nope' }, 404) } };
   ({ store } = await import('../src/lib/store.js'));
   const { api } = await import('../src/lib/api.js');
   store.wsId = REF;
@@ -65,7 +65,7 @@ afterEach(async () => {
   store = null;
   dom?.uninstall();
   dom = null;
-  delete globalThis.puter;
+  delete globalThis.everything;
   vi.restoreAllMocks();
 });
 
@@ -290,7 +290,7 @@ describe('the export dialog when some attachments could not be written', () => {
     archiveLib.exportWorkspace.mockResolvedValue(archive);
     // The drive takes every write; the server has the bytes of neither file (the worker answers 404 to everything here).
     const written = [];
-    globalThis.puter.fs = { write: async (path) => { written.push(path); return { path }; } };
+    globalThis.everything.fs = { write: async (path) => { written.push(path); return { path }; } };
     const { exportDialog } = await import('../src/ui/dialogs.js');
     exportDialog();
     const start = [...document.querySelectorAll('button')].find((b) => b.textContent === 'Export now');
@@ -308,7 +308,7 @@ describe('the export dialog when some attachments could not be written', () => {
     expect(toast).toHaveBeenCalledWith('Workspace exported; 2 attachments could not be written', expect.objectContaining({ icon: 'alert' }));
     // Every attachment written: the words as before, and no count.
     toast.mockClear();
-    globalThis.puter.workers.exec = async () => new Response(new Blob([new Uint8Array([1, 2, 3, 4])], { type: 'image/png' }), { status: 200, headers: { 'Content-Type': 'image/png' } });
+    globalThis.everything.workers.exec = async () => new Response(new Blob([new Uint8Array([1, 2, 3, 4])], { type: 'image/png' }), { status: 200, headers: { 'Content-Type': 'image/png' } });
     document.body.replaceChildren();
     exportDialog();
     [...document.querySelectorAll('button')].find((b) => b.textContent === 'Export now').click();

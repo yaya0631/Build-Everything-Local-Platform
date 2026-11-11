@@ -2,7 +2,7 @@
  * Export dialog: a still of the current frame beside the settings (file
  * name, destination, video file and audio file sections, size estimate), then a progress
  * view with a live thumbnail, then a result view with Download and Save to
- * Puter. Settings are remembered per device.
+ * Everything. Settings are remembered per device.
  */
 import '../styles/export.css';
 import { h, announce } from '../lib/dom.js';
@@ -26,7 +26,7 @@ let seq = 0;
 /** Frame rates picked in the dialog this session, by project and timeline; otherwise exports use the timeline's own. */
 const pickedFps = new Map();
 
-const signedIn = (ctx) => ctx.library?.backend?.kind === 'puter' && typeof puter !== 'undefined';
+const signedIn = (ctx) => ctx.library?.backend?.kind === 'everything' && typeof everything !== 'undefined';
 
 /** Settings worth remembering on this device (not the per-project name). */
 function remember(s) {
@@ -169,7 +169,7 @@ export function openExportDialog(ctx) {
   const nameRow = h('div.export-row', h('label.export-label', { for: nameId }, 'File name'), nameInput);
 
   const destOptions = [{ value: 'device', label: 'This device', icon: 'saveLocal' }];
-  if (signedIn(ctx)) destOptions.push({ value: 'puter', label: 'Puter', icon: 'cloud' });
+  if (signedIn(ctx)) destOptions.push({ value: 'everything', label: 'Everything', icon: 'cloud' });
   const destGroup = h('div.segmented.export-dest', { role: 'radiogroup', 'aria-labelledby': `${nameId}-dest` });
   const destButtons = destOptions.map((o) => {
     const b = h('button', { type: 'button', role: 'radio', 'aria-checked': String(s.destination === o.value), tabindex: s.destination === o.value ? '0' : '-1' }, icon(o.icon, 15), o.label);
@@ -364,7 +364,7 @@ export function openExportDialog(ctx) {
     audioRow.classList.toggle('disabled', !hasSound);
     if (!hasSound) audioHint.textContent = 'This project has no sound yet.';
     else audioHint.textContent = s.video ? 'Also saves the sound as a separate file.' : 'Audio only: exports just the sound.';
-    destHint.textContent = s.destination === 'puter' ? 'Saved to the Videos folder in your Puter account.' : 'Downloaded by your browser.';
+    destHint.textContent = s.destination === 'everything' ? 'Saved to the Videos folder in your Everything account.' : 'Downloaded by your browser.';
     const gifW = Math.min(s.gifWidth, projW);
     const gifFrames = Math.ceil((duration / US) * s.gifFps);
     // GIFs land around half a byte per pixel per frame for video content.
@@ -534,29 +534,29 @@ export function openExportDialog(ctx) {
   }
 
   async function saveToVideos(r, statusEl) {
-    statusEl.textContent = 'Saving to Puter...';
+    statusEl.textContent = 'Saving to Everything...';
     try {
-      const user = ctx.account?.user || (await puter.auth.getUser());
-      const item = await puter.fs.write(`/${user.username}/Videos/${r.fileName}`, r.blob, { dedupeName: true, createMissingParents: true, overwrite: false });
+      const user = ctx.account?.user || (await everything.auth.getUser());
+      const item = await everything.fs.write(`/${user.username}/Videos/${r.fileName}`, r.blob, { dedupeName: true, createMissingParents: true, overwrite: false });
       statusEl.textContent = `Saved to ${item?.path || `Videos/${r.fileName}`}`;
-      announce(`Saved ${r.fileName} to Puter`);
+      announce(`Saved ${r.fileName} to Everything`);
     } catch (err) {
-      statusEl.textContent = 'Could not save to Puter.';
-      toast(`Could not save to Puter: ${err?.message || err}`, { kind: 'error' });
+      statusEl.textContent = 'Could not save to Everything.';
+      toast(`Could not save to Everything: ${err?.message || err}`, { kind: 'error' });
     }
   }
 
   async function saveWithPicker(r, statusEl) {
-    if (!puter.ui?.showSaveFilePicker) return saveToVideos(r, statusEl);
-    statusEl.textContent = 'Choose where to save it in Puter.';
+    if (!everything.ui?.showSaveFilePicker) return saveToVideos(r, statusEl);
+    statusEl.textContent = 'Choose where to save it in Everything.';
     try {
       // The picker never resolves when dismissed, so the status just stays as a prompt.
-      const item = await puter.ui.showSaveFilePicker(r.blob, r.fileName);
-      statusEl.textContent = `Saved to ${item?.path || item?.name || 'Puter'}`;
-      announce(`Saved ${r.fileName} to Puter`);
+      const item = await everything.ui.showSaveFilePicker(r.blob, r.fileName);
+      statusEl.textContent = `Saved to ${item?.path || item?.name || 'Everything'}`;
+      announce(`Saved ${r.fileName} to Everything`);
     } catch (err) {
-      statusEl.textContent = 'Could not save to Puter.';
-      toast(`Could not save to Puter: ${err?.message || err}`, { kind: 'error' });
+      statusEl.textContent = 'Could not save to Everything.';
+      toast(`Could not save to Everything: ${err?.message || err}`, { kind: 'error' });
     }
   }
 
@@ -569,7 +569,7 @@ export function openExportDialog(ctx) {
       const status = h('p.export-file-status', { role: 'status' });
       const dl = h('button.btn', { type: 'button' }, icon('download', 16), 'Download');
       dl.addEventListener('click', () => download(r));
-      const save = cloud ? h('button.btn', { type: 'button' }, icon('cloud', 16), 'Save to Puter') : null;
+      const save = cloud ? h('button.btn', { type: 'button' }, icon('cloud', 16), 'Save to Everything') : null;
       save?.addEventListener('click', () => saveWithPicker(r, status));
       const meta = r.kind === 'video' || r.kind === 'gif'
         ? `${r.width} x ${r.height}, ${clock(r.duration)}, ${formatBytes(r.blob.size)}`
@@ -577,7 +577,7 @@ export function openExportDialog(ctx) {
       const row = h('li.export-file', h('span.export-file-icon', icon({ video: 'fileVideo', audio: 'fileAudio', gif: 'fileImage', captions: 'subtitles' }[r.kind] || 'fileVideo', 20)),
         h('div.export-file-text', h('span.export-file-name', r.fileName), h('span.export-file-meta', meta), status),
         h('div.export-file-actions', dl, save));
-      if (s.destination === 'puter' && cloud) saveToVideos(r, status);
+      if (s.destination === 'everything' && cloud) saveToVideos(r, status);
       return row;
     });
     const took = results.reduce((a, r) => a + r.elapsed, 0);
@@ -596,7 +596,7 @@ export function openExportDialog(ctx) {
     doneBtn.focus();
     if (!stopped) announce('Export complete');
     else if (stopped.canceled) announce(stopped.message);
-    if (s.destination !== 'puter' || !cloud) for (const r of results) download(r);
+    if (s.destination !== 'everything' || !cloud) for (const r of results) download(r);
   }
 
   showSettingsFooter();

@@ -91,7 +91,7 @@ for (const locale of ["en", "fr"])
           canEdit: () => true,
           toast: (m) => toasts.push(m),
           refresh() {},
-          puter: () => null,
+          everything: () => null,
         });
         ai.open();
         const button = d.querySelector('[data-ai="summarize"]');
@@ -244,7 +244,7 @@ test("a summary includes the board's comments and completed votes and polls this
       canEdit: () => true,
       toast() {},
       refresh() {},
-      puter: () => null,
+      everything: () => null,
     });
     ai.open();
     await d.querySelector('[data-ai="summarize"]').onclick();

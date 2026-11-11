@@ -210,7 +210,7 @@ export function exportStyles(source, normalFont = null, palette = null, defaultV
     numberFormatCode,
     differentialXml: xml => intern(dxfs, xml),
     pivotStyle(xml) {
-      const name = `PuterPivotStyle${tableStyles.length + 1}`;
+      const name = `EverythingPivotStyle${tableStyles.length + 1}`;
       tableStyles.push(xml.replace(/\sname="[^"]*"/, ` name="${name}"`));
       return name;
     },

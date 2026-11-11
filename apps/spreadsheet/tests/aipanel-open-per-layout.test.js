@@ -2,7 +2,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Workbook } from '../src/core/workbook.js';
 import { createAiPanel, loadAiSettings } from '../src/ui/aipanel.js';
-import * as P from '../src/lib/puter.js';
+import * as P from '../src/lib/everything.js';
 
 let width = 1200;
 const media = (query) => { const max = /max-width:\s*(\d+)px/.exec(query); return { matches: max ? width <= Number(max[1]) : false, addEventListener() {}, removeEventListener() {} }; };

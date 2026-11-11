@@ -111,14 +111,14 @@
  * into one corner or one narrow lane), just rerun the script for that
  * folder -- see task-4-report.md.
  *
- * Also: an actual signed-in Puter session would let main.js's load-time
+ * Also: an actual signed-in Everything session would let main.js's load-time
  * cloud-restore silently replace the staged local save with whatever is in
  * that account's KV store (this bit a previous task in this increment,
  * working against a real browser profile with a live session -- see
  * task-2-report.md). Each context here is a fresh, disposable Chromium
  * profile, and every one additionally routes the hosted SDK to abort(), so
- * `puter` is never even defined and every codepath in
- * src/services/puter-sync.js short-circuits on puterAvailable() === false
+ * `everything` is never even defined and every codepath in
+ * src/services/everything-sync.js short-circuits on everythingAvailable() === false
  * with no network round trip at all.
  *
  * Playwright is only needed to regenerate the pictures, so it is not a
@@ -355,10 +355,10 @@ for (const size of SIZES) {
     });
 
     // Keep the hosted SDK from ever loading -- see the file header. Aborting
-    // the request (rather than, say, stubbing a fake `puter` global) means
-    // `typeof puter` genuinely stays 'undefined', which is exactly the
-    // condition puter-sync.js's puterAvailable() checks.
-    await context.route('**/sdk/puter.js', route => route.abort());
+    // the request (rather than, say, stubbing a fake `everything` global) means
+    // `typeof everything` genuinely stays 'undefined', which is exactly the
+    // condition everything-sync.js's everythingAvailable() checks.
+    await context.route('**/sdk/everything.js', route => route.abort());
 
     await context.addInitScript(
       ([key, save]) => localStorage.setItem(key, JSON.stringify(save)),

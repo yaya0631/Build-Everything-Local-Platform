@@ -6,7 +6,7 @@ async function cloudMenu(page) {
   const bar = page.getByRole('menubar');
   if (await bar.isVisible()) await bar.getByRole('menuitem', { name: 'File', exact: true }).click();
   else await page.getByRole('button', { name: 'Menu', exact: true }).click();
-  await page.getByRole('menuitem', { name: 'Open from Puter…', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'Open from Everything…', exact: true }).click();
 }
 
 for (const view of ['editor', 'library'])
@@ -21,10 +21,10 @@ for (const view of ['editor', 'library'])
           cloud.addPage([310, 400]);
           cloud.addPage([320, 400]);
           const encoded = Buffer.from(await cloud.save()).toString('base64');
-          await page.route('**/sdk/puter.js', (route) =>
+          await page.route('**/sdk/everything.js', (route) =>
             route.fulfill({
               contentType: 'application/javascript',
-              body: `window.cloudReads=0;window.cloudPickers=0;window.puter={env:'web',auth:{
+              body: `window.cloudReads=0;window.cloudPickers=0;window.everything={env:'web',auth:{
               isSignedIn:()=>${phase === 'picker'},getUser:async()=>({username:'Alice'}),
               signIn:()=>new Promise((resolve,reject)=>{window.releaseCloudAction=()=>{
                 ${outcome === 'success' ? 'resolve();' : "reject(new Error('Old cloud request failed'));"}
@@ -48,10 +48,10 @@ for (const view of ['editor', 'library'])
             await expect(page.locator('.editor')).toHaveAttribute('aria-busy', 'false');
             if (phase === 'picker')
               await expect(
-                page.getByRole('button', { name: 'Save to Puter', exact: true }),
+                page.getByRole('button', { name: 'Save to Everything', exact: true }),
               ).toBeVisible();
             await cloudMenu(page);
-          } else await page.getByRole('button', { name: 'Open from Puter', exact: true }).click();
+          } else await page.getByRole('button', { name: 'Open from Everything', exact: true }).click();
           await expect
             .poll(() => page.evaluate(() => typeof window.releaseCloudAction))
             .toBe('function');
@@ -128,10 +128,10 @@ for (const newer of ['picker', 'sign-out'])
       const doc = await PDFDocument.create();
       doc.addPage([410, 500]);
       const encoded = Buffer.from(await doc.save()).toString('base64');
-      await page.route('**/sdk/puter.js', (route) =>
+      await page.route('**/sdk/everything.js', (route) =>
         route.fulfill({
           contentType: 'application/javascript',
-          body: `window.pickers=[];window.cloudReads=[];window.puter={env:'web',auth:{
+          body: `window.pickers=[];window.cloudReads=[];window.everything={env:'web',auth:{
           isSignedIn:()=>true,getUser:async()=>({username:'Alice'}),signOut:async()=>{}
         },fs:{readdir:async()=>[],read:async path=>{
           window.cloudReads.push(path);return new Blob([Uint8Array.from(atob(${JSON.stringify(encoded)}),c=>c.charCodeAt(0))]);
@@ -140,10 +140,10 @@ for (const newer of ['picker', 'sign-out'])
       );
       await page.goto('/#library');
       await expect(page.locator('.account-label')).toHaveText('Alice');
-      await page.getByRole('button', { name: 'Open from Puter', exact: true }).click();
+      await page.getByRole('button', { name: 'Open from Everything', exact: true }).click();
       await expect.poll(() => page.evaluate(() => window.pickers.length)).toBe(1);
       if (newer === 'picker') {
-        await page.getByRole('button', { name: 'Open from Puter', exact: true }).click();
+        await page.getByRole('button', { name: 'Open from Everything', exact: true }).click();
         await expect.poll(() => page.evaluate(() => window.pickers.length)).toBe(2);
         await page.evaluate(() =>
           window.pickers[1].resolve({ path: 'latest.pdf', name: 'latest.pdf' }),

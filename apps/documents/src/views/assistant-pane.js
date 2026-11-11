@@ -1,5 +1,5 @@
 /**
- * The Assistant pane: a conversation with Puter's AI beside the pages, about
+ * The Assistant pane: a conversation with Everything's AI beside the pages, about
  * and for this document. Above the box the person chooses what goes with a
  * message, the selected text or the whole document, and the chip says how
  * much that is; nothing else is sent. Replies that are text for the document
@@ -7,11 +7,11 @@
  * applies them, as one change Undo takes back (the reply offers Undo too).
  *
  * The pane, its button on the Home tab and the floating button beside the
- * pages are offered only where Puter's AI is available.
+ * pages are offered only where Everything's AI is available.
  */
 import { el, isComposing, MOD_KEY, shortcutCode } from '../ui/dom.js';
 import { toast } from '../ui/toast.js';
-import * as P from '../lib/puter.js';
+import * as P from '../lib/everything.js';
 import { aiActionById, askAi, answerParagraphs, readableText, insertableText, listItems } from '../lib/ai.js';
 import { assistantPrompt, readReply, assistantError, SUGGESTIONS, MAX_ASSISTANT_CHARS } from '../lib/assistant.js';
 import { sidePane, hint } from './review-ui.js';
@@ -45,14 +45,14 @@ export function createAssistantPane({ editor, pkg, error, available = () => P.ca
   const context = el('p.as-context', { 'aria-live': 'polite' });
   const input = el('textarea.input.as-input', { rows: 3, placeholder: 'Ask about this document, or ask for a draft or a rewrite…', 'aria-label': 'Message the assistant', enterKeyHint: 'send' });
   const send = el('button.btn.btn-primary.as-send', { type: 'submit', 'aria-label': 'Send', title: 'Send (Enter)' }, 'Send');
-  const form = el('form.as-form', { onsubmit: e => { e.preventDefault(); submit(input.value); } }, scopeGroup, context, el('div.as-box', {}, input, send), el('p.as-disclaimer', {}, 'Only the text shown above is sent to Puter’s AI. Replies can be wrong: check them before you use them.'));
+  const form = el('form.as-form', { onsubmit: e => { e.preventDefault(); submit(input.value); } }, scopeGroup, context, el('div.as-box', {}, input, send), el('p.as-disclaimer', {}, 'Only the text shown above is sent to Everything’s AI. Replies can be wrong: check them before you use them.'));
   input.addEventListener('keydown', e => {
     if (isComposing(e)) return;
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(input.value); }
   });
   pane.body.append(log, form);
 
-  // A small button at the edge of the pages opens the pane (where Puter's AI is available).
+  // A small button at the edge of the pages opens the pane (where Everything's AI is available).
   // In the title bar beside Comments, as the other apps' assistants sit in their top bars.
   const titleButton = el('button.ed-pill.as-title-button', { type: 'button', 'aria-label': 'Assistant', title: `Assistant (${MOD_KEY}+Shift+I)`, 'aria-pressed': 'false', hidden: true, onclick: () => toggle() }, commandIconEl('assistant', 16));
   titleButton.addEventListener('mousedown', e => e.preventDefault());

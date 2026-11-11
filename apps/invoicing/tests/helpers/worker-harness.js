@@ -1,9 +1,9 @@
 /**
  * Test harness for the workers in src/workers: instantiates one the way the
- * Puter workers runtime would — a `router` global collecting routes, a `me`
- * global exposing the owner's own Puter resources — and lets tests call its
+ * Everything workers runtime would — a `router` global collecting routes, a `me`
+ * global exposing the owner's own Everything resources — and lets tests call its
  * routes as plain HTTP, with or without a signed-in caller (`user`, which the
- * runtime only populates for puter.workers.exec() callers). Request/Response
+ * runtime only populates for everything.workers.exec() callers). Request/Response
  * are small local shims so the harness never depends on which fetch globals
  * the test environment ships.
  */
@@ -52,7 +52,7 @@ export class ResponseShim {
   }
 }
 
-/* ---- Fake puter.kv (the worker owner's storage) ------------------------- */
+/* ---- Fake everything.kv (the worker owner's storage) ------------------------- */
 
 export function makeKv(initial = {}) {
   const map = new Map(Object.entries(initial));
@@ -108,10 +108,10 @@ function matchRoute(routes, method, pathname) {
 /**
  * Run worker source and return a `call` able to hit its routes. `kv` is the
  * worker-owner's storage; `me` overrides the whole owner context for a worker
- * that uses more of it than storage (the email worker's `me.puter.email` and
- * `me.puter.authToken`).
+ * that uses more of it than storage (the email worker's `me.everything.email` and
+ * `me.everything.authToken`).
  */
-export function instantiateWorker(source, { kv = makeKv(), me = { puter: { kv } } } = {}) {
+export function instantiateWorker(source, { kv = makeKv(), me = { everything: { kv } } } = {}) {
   const routes = [];
   const add = (method) => (pattern, handler) => routes.push({ method, pattern, handler });
   const router = {
@@ -129,7 +129,7 @@ export function instantiateWorker(source, { kv = makeKv(), me = { puter: { kv } 
   );
 
   /** `user` stands in for the caller context the runtime attaches when the
-   *  request arrives through puter.workers.exec(); omit it to call as an
+   *  request arrives through everything.workers.exec(); omit it to call as an
    *  anonymous visitor. `bindAs` picks the property it arrives on — the
    *  runtime has used both `user` and `requestor`. */
   async function call(

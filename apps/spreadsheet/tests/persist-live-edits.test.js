@@ -3,20 +3,20 @@ import { Doc } from '../src/lib/doc.js';
 import { draftKey, liveDraftKey, saveDraft, loadDraft, listDrafts } from '../src/lib/drafts.js';
 import { Workbook } from '../src/core/workbook.js';
 import { memoryStorage } from './helpers/memory-storage.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 
 let mock;
 // SheetJS is loaded on first use with a real dynamic import; warm it up so no test waits on it.
 beforeAll(async () => { await Doc.blank().toXlsxBlob(); });
-beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); mock = installMockPuter(); vi.useFakeTimers(); });
-afterEach(() => { vi.useRealTimers(); delete globalThis.puter; });
+beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); mock = installMockEverything(); vi.useFakeTimers(); });
+afterEach(() => { vi.useRealTimers(); delete globalThis.everything; });
 
 const PATH = 'Spreadsheets/Budget.xlsx';
 const KEY = () => draftKey(PATH);
 const text = (draft) => draft?.workbook.sheets[0].cells['0,0']?.v;
 const cellA1 = (doc) => doc.wb.getValue(doc.wb.activeSheetId, 0, 0);
 
-/** A blank file on the drive with an older draft of edits that never reached Puter waiting under its key. */
+/** A blank file on the drive with an older draft of edits that never reached Everything waiting under its key. */
 async function fileWithDraft() {
   const bytes = await Doc.blank().toXlsxBlob();
   mock.fs.set(PATH, { blob: bytes, size: bytes.size, modified: 1 });

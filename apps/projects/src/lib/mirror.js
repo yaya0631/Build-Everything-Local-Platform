@@ -5,7 +5,7 @@
  *
  *  1. Work in progress survives the tab. Saves are debounced and can fail;
  *     without this, closing the laptop on a train loses whatever had not
- *     reached Puter, which is why the app used to hang a beforeunload
+ *     reached Everything, which is why the app used to hang a beforeunload
  *     warning off `store.dirty`.
  *  2. Reading offline. A project opened with no connection shows the last
  *     version this device saw — clearly labelled as such, never passed off
@@ -95,7 +95,7 @@ export const mirrorDocKey = (projectId) => `doc:${projectId}`;
 /**
  * Is this the shape of failure that means "no connection", rather than a
  * real answer from the server? Offline fetches reject with a TypeError, and
- * the Puter SDK surfaces its own network errors; anything that names a
+ * the Everything SDK surfaces its own network errors; anything that names a
  * missing subject is a genuine answer and must not be treated as offline.
  */
 export function looksOffline(err) {

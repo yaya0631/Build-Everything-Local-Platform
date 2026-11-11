@@ -119,7 +119,7 @@ describe('a conversation in the list', () => {
 
   it('leaves an ordinary message counting nothing', async () => {
     await mount();
-    const row = rowFor('Welcome to your Puter mailbox');
+    const row = rowFor('Welcome to your Everything mailbox');
     expect(row.querySelector('.row-count').hidden).toBe(true);
     expect(row.querySelector('.row-count').textContent).toBe('');
   });
@@ -155,7 +155,7 @@ describe('opening a conversation', () => {
     // heading is read as what it says.
     root.querySelector('.icon-btn[aria-label="Back to list"]').click();
     await settle();
-    rowFor('Welcome to your Puter mailbox').click();
+    rowFor('Welcome to your Everything mailbox').click();
     await settle();
     expect(root.querySelector('.msg-subject').getAttribute('aria-label')).toBeNull();
   });
@@ -505,7 +505,7 @@ describe('acting on a conversation', () => {
     expect(open.classList.contains('is-open')).toBe(true);
     root.querySelector('.icon-btn[aria-label="Back to list"]').click();
     await settle();
-    rowFor('Welcome to your Puter mailbox').click();
+    rowFor('Welcome to your Everything mailbox').click();
     await settle();
     expect(root.querySelector('.msg-expander')).toBeNull();
     expect(root.querySelector('.msg-from-name').tagName).toBe('SPAN');
@@ -717,7 +717,7 @@ describe('a page of older mail', () => {
 
   const raw = (subject, extra = []) => [
     'From: Dana Ruiz <dana@example.com>',
-    'To: you@puter.email',
+    'To: you@everything.email',
     `Subject: ${subject}`,
     'Date: Mon, 17 Aug 2026 10:30:00 GMT',
     ...extra,

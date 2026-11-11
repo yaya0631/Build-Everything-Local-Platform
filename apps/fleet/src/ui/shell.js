@@ -17,7 +17,7 @@ import { canSignOut, signOut, clearProfilePicture } from '../platform.js';
 import { clearUserCaches } from '../core/cache.js';
 import { computeAlerts } from '../views/alerts.js';
 
-export const REPO_URL = 'https://github.com/heyputer/everything';
+export const REPO_URL = 'https://github.com/yaya0631/Build-Everything-Local-Platform';
 const RAIL_KEY = 'fleet.rail';
 const OPEN_KEY = 'fleet.navOpen';
 
@@ -223,7 +223,7 @@ export function buildShell({ onSignIn } = {}) {
           { href: REPO_URL, target: '_blank', rel: 'noopener noreferrer', 'aria-label': 'Source code on GitHub (opens in a new tab)', title: 'Source code on GitHub' },
           icon('github', 17),
         ),
-        h('span.powered.grow', 'Built on ', h('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener noreferrer' }, 'Puter')),
+        h('span.powered.grow', 'Built on ', h('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener noreferrer' }, 'Everything')),
         railToggle,
       ),
     ),
@@ -471,7 +471,7 @@ function openAccountMenu(anchor, onSignIn) {
         link('Source code on GitHub', 'github', { href: REPO_URL, target: '_blank', rel: 'noopener noreferrer', onClick: () => close() }),
       ];
       let footer = null;
-      if (app.demo) footer = link('Sign in with Puter', 'log-in', { onClick: () => (close(), onSignIn?.()) });
+      if (app.demo) footer = link('Sign in with Everything', 'log-in', { onClick: () => (close(), onSignIn?.()) });
       else if (canSignOut())
         footer = link('Sign out', 'log-out', {
           onClick: async () => {
@@ -505,7 +505,7 @@ function openAccountMenu(anchor, onSignIn) {
         h(
           'div.row.account-head',
           avatar(app.user?.username || 'Guest', { color: '#55606e', img: app.avatarUrl, size: 'lg' }),
-          h('div.grow', h('div.account-name', app.demo ? 'Demo mode' : app.user?.username || ''), h('div.subtle.account-sub', app.demo ? 'Nothing is saved' : 'Signed in with Puter')),
+          h('div.grow', h('div.account-name', app.demo ? 'Demo mode' : app.user?.username || ''), h('div.subtle.account-sub', app.demo ? 'Nothing is saved' : 'Signed in with Everything')),
         ),
         h('div.menu-sep'),
         h(

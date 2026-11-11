@@ -57,7 +57,7 @@ function deliveredBody(addr = 'alice@example.com') {
   return { sentPath: '/nariman/.mail/sent/x', delivered: [addr], failed: [] };
 }
 
-function fakePuter({ api = true, worker = true, sendImpl, permsRequest = vi.fn(async () => true) } = {}) {
+function fakeEverything({ api = true, worker = true, sendImpl, permsRequest = vi.fn(async () => true) } = {}) {
   const send = sendImpl || vi.fn(async () => deliveredBody());
   return {
     ...(api ? { email: { send } } : {}),
@@ -74,7 +74,7 @@ function makeMail({ p, toast = vi.fn(), user = fakeUser(), store = fakeStore() }
   return createMailReply({
     store,
     user,
-    getPuter: () => p,
+    getEverything: () => p,
     toast,
     requestUser: async () => user,
     requestEmail: async () => user.email,
@@ -82,13 +82,13 @@ function makeMail({ p, toast = vi.fn(), user = fakeUser(), store = fakeStore() }
 }
 
 describe('createMailReply: sendReply — call shape', () => {
-  it('calls puter.email.send with the recipient, ASCII subject, base64 .ics content and method=REPLY contentType', async () => {
+  it('calls everything.email.send with the recipient, ASCII subject, base64 .ics content and method=REPLY contentType', async () => {
     let captured = null;
     const send = vi.fn(async (payload) => {
       captured = payload;
       return deliveredBody();
     });
-    const p = fakePuter({ sendImpl: send });
+    const p = fakeEverything({ sendImpl: send });
     const mail = makeMail({ p });
 
     const out = await mail.sendReply(fakeEvent(), 'accepted');
@@ -113,7 +113,7 @@ describe('createMailReply: sendReply — call shape', () => {
       captured = payload;
       return deliveredBody();
     });
-    const p = fakePuter({ sendImpl: send });
+    const p = fakeEverything({ sendImpl: send });
     const mail = makeMail({ p });
 
     await mail.sendReply(fakeEvent({ title: 'Café ☕ meetup' }), 'accepted');
@@ -127,7 +127,7 @@ describe('createMailReply: sendReply — call shape', () => {
       captured = payload;
       return deliveredBody();
     });
-    const p = fakePuter({ sendImpl: send });
+    const p = fakeEverything({ sendImpl: send });
     const mail = makeMail({ p });
 
     await mail.sendReply(fakeEvent({ title: '日本語' }), 'declined');
@@ -137,7 +137,7 @@ describe('createMailReply: sendReply — call shape', () => {
 
 describe('createMailReply: sendReply — result interpretation matrix', () => {
   it('delivered including the organizer -> sent, worker never touched', async () => {
-    const p = fakePuter();
+    const p = fakeEverything();
     const toast = vi.fn();
     const mail = makeMail({ p, toast });
 
@@ -152,7 +152,7 @@ describe('createMailReply: sendReply — result interpretation matrix', () => {
       .mockResolvedValueOnce({ code: 'forbidden', message: 'no grant' })
       .mockResolvedValueOnce(deliveredBody());
     const permsRequest = vi.fn(async () => true);
-    const p = fakePuter({ sendImpl: send, permsRequest });
+    const p = fakeEverything({ sendImpl: send, permsRequest });
     const mail = makeMail({ p });
 
     const out = await mail.sendReply(fakeEvent(), 'accepted');
@@ -168,7 +168,7 @@ describe('createMailReply: sendReply — result interpretation matrix', () => {
       .mockResolvedValueOnce({ code: 'forbidden' })
       .mockResolvedValueOnce({ code: 'forbidden' });
     const permsRequest = vi.fn(async () => false); // denial resolves falsy, never throws
-    const p = fakePuter({ sendImpl: send, permsRequest });
+    const p = fakeEverything({ sendImpl: send, permsRequest });
     p.workers.exec = vi.fn(async () => workerOk());
     const mail = makeMail({ p });
 
@@ -180,7 +180,7 @@ describe('createMailReply: sendReply — result interpretation matrix', () => {
 
   it('subscription_required -> falls back to the worker, no retry', async () => {
     const send = vi.fn(async () => ({ code: 'subscription_required', message: 'upgrade' }));
-    const p = fakePuter({ sendImpl: send });
+    const p = fakeEverything({ sendImpl: send });
     p.workers.exec = vi.fn(async () => workerOk());
     const mail = makeMail({ p });
 
@@ -195,7 +195,7 @@ describe('createMailReply: sendReply — result interpretation matrix', () => {
       delivered: [],
       failed: [{ address: 'alice@example.com', reason: 'destination_requires_paid_plan' }],
     }));
-    const p = fakePuter({ sendImpl: send });
+    const p = fakeEverything({ sendImpl: send });
     p.workers.exec = vi.fn(async () => workerOk());
     const mail = makeMail({ p });
 
@@ -205,7 +205,7 @@ describe('createMailReply: sendReply — result interpretation matrix', () => {
 
   it('too_many_requests -> reports it and does NOT fall back (the budget is the user\'s own)', async () => {
     const send = vi.fn(async () => ({ code: 'too_many_requests' }));
-    const p = fakePuter({ sendImpl: send });
+    const p = fakeEverything({ sendImpl: send });
     p.workers.exec = vi.fn();
     const toast = vi.fn();
     const mail = makeMail({ p, toast });
@@ -218,7 +218,7 @@ describe('createMailReply: sendReply — result interpretation matrix', () => {
 
   it('an unrecognized body -> falls back to the worker', async () => {
     const send = vi.fn(async () => ({ code: 'something_new_we_do_not_know' }));
-    const p = fakePuter({ sendImpl: send });
+    const p = fakeEverything({ sendImpl: send });
     p.workers.exec = vi.fn(async () => workerOk());
     const mail = makeMail({ p });
 
@@ -226,8 +226,8 @@ describe('createMailReply: sendReply — result interpretation matrix', () => {
     expect(out.method).toBe('worker');
   });
 
-  it('goes straight to the worker when this SDK has no puter.email.send at all', async () => {
-    const p = fakePuter({ api: false });
+  it('goes straight to the worker when this SDK has no everything.email.send at all', async () => {
+    const p = fakeEverything({ api: false });
     p.workers.exec = vi.fn(async () => workerOk());
     const mail = makeMail({ p });
 
@@ -236,7 +236,7 @@ describe('createMailReply: sendReply — result interpretation matrix', () => {
   });
 
   it('reports, but never throws, when neither the API nor the worker is available', async () => {
-    const p = fakePuter({ api: false, worker: false });
+    const p = fakeEverything({ api: false, worker: false });
     const toast = vi.fn();
     const mail = makeMail({ p, toast });
     const out = await mail.sendReply(fakeEvent(), 'accepted');
@@ -245,7 +245,7 @@ describe('createMailReply: sendReply — result interpretation matrix', () => {
   });
 
   it('does nothing when the event has no organizer to reply to', async () => {
-    const p = fakePuter();
+    const p = fakeEverything();
     const mail = makeMail({ p });
     const out = await mail.sendReply(fakeEvent({ organizer: null }), 'accepted');
     expect(out).toMatchObject({ ok: false, sent: false, reason: 'no_organizer' });
@@ -253,11 +253,11 @@ describe('createMailReply: sendReply — result interpretation matrix', () => {
   });
 
   it('does nothing while offline', async () => {
-    const p = fakePuter();
+    const p = fakeEverything();
     const mail = createMailReply({
       store: fakeStore(),
       user: fakeUser(),
-      getPuter: () => p,
+      getEverything: () => p,
       blocked: () => true,
       toast: vi.fn(),
     });
@@ -270,7 +270,7 @@ describe('createMailReply: sendReply — result interpretation matrix', () => {
 describe('createMailReply: sendReply — worker fallback payload', () => {
   it('sends the fallback with the documented { event, attendee, partstat, ics, version } shape', async () => {
     const send = vi.fn(async () => ({ code: 'subscription_required' }));
-    const p = fakePuter({ sendImpl: send });
+    const p = fakeEverything({ sendImpl: send });
     p.workers.exec = vi.fn(async () => workerOk());
     const mail = makeMail({ p });
 
@@ -290,7 +290,7 @@ describe('createMailReply: sendReply — worker fallback payload', () => {
 
   it('surfaces the worker\'s own failure message when it refuses the fallback', async () => {
     const send = vi.fn(async () => ({ code: 'subscription_required' }));
-    const p = fakePuter({ sendImpl: send });
+    const p = fakeEverything({ sendImpl: send });
     p.workers.exec = vi.fn(async () => ({ ok: false, status: 429, json: async () => ({ error: 'daily_limit' }) }));
     const toast = vi.fn();
     const mail = makeMail({ p, toast });
@@ -308,28 +308,28 @@ describe('createMailReply: sendReply — .ics attendee/UID', () => {
       captured = payload;
       return deliveredBody();
     });
-    const p = fakePuter({ sendImpl: send });
+    const p = fakeEverything({ sendImpl: send });
     const mail = makeMail({ p, user: fakeUser({ email: 'nariman@example.com' }) });
 
-    const event = fakeEvent({ invite: { uid: 'ext-uid-123@google.com', attendee: 'nariman@puter.email' } });
+    const event = fakeEvent({ invite: { uid: 'ext-uid-123@google.com', attendee: 'nariman@everything.email' } });
     await mail.sendReply(event, 'accepted');
 
     const ics = decodeIcs(captured);
     const attendeeLines = attendeeLinesOf(ics);
     expect(attendeeLines).toHaveLength(1);
-    expect(attendeeLines[0].toLowerCase()).toContain('nariman@puter.email');
+    expect(attendeeLines[0].toLowerCase()).toContain('nariman@everything.email');
     expect(attendeeLines[0].toLowerCase()).not.toContain('nariman@example.com');
     expect(attendeeLines[0].toUpperCase()).toContain('PARTSTAT=ACCEPTED');
     expect(ics).toContain('UID:ext-uid-123@google.com');
   });
 
-  it('falls back to the current account email, then <username>@puter.email, when there is no invite.attendee', async () => {
+  it('falls back to the current account email, then <username>@everything.email, when there is no invite.attendee', async () => {
     let captured = null;
     const send = vi.fn(async (payload) => {
       captured = payload;
       return deliveredBody();
     });
-    const p = fakePuter({ sendImpl: send });
+    const p = fakeEverything({ sendImpl: send });
     const mail = makeMail({ p, user: fakeUser({ email: 'nariman@example.com' }) });
     await mail.sendReply(fakeEvent(), 'declined');
 
@@ -344,7 +344,7 @@ describe('createMailReply: sendReply — .ics attendee/UID', () => {
 
 describe('createMailReply: offerReply — nothing sent without a press', () => {
   it('opens a confirm dialog and sends only when "Send" is pressed', async () => {
-    const p = fakePuter();
+    const p = fakeEverything();
     const mail = makeMail({ p });
 
     mail.offerReply(fakeEvent(), 'accepted');
@@ -360,7 +360,7 @@ describe('createMailReply: offerReply — nothing sent without a press', () => {
   });
 
   it('sends nothing at all when "Don\'t send" is pressed', async () => {
-    const p = fakePuter();
+    const p = fakeEverything();
     const mail = makeMail({ p });
 
     mail.offerReply(fakeEvent(), 'declined');
@@ -374,19 +374,19 @@ describe('createMailReply: offerReply — nothing sent without a press', () => {
   });
 
   it('offers nothing when the event has no organizer, offline, or reply is unavailable', () => {
-    const p = fakePuter();
+    const p = fakeEverything();
     const noOrganizerMail = makeMail({ p });
     noOrganizerMail.offerReply(fakeEvent({ organizer: null }), 'accepted');
     expect(document.querySelector('.dialog-scrim')).toBeFalsy();
 
-    const blockedMail = createMailReply({ store: fakeStore(), user: fakeUser(), getPuter: () => p, blocked: () => true, toast: vi.fn() });
+    const blockedMail = createMailReply({ store: fakeStore(), user: fakeUser(), getEverything: () => p, blocked: () => true, toast: vi.fn() });
     blockedMail.offerReply(fakeEvent(), 'accepted');
     expect(document.querySelector('.dialog-scrim')).toBeFalsy();
 
     const noneMail = createMailReply({
       store: fakeStore(),
       user: fakeUser(),
-      getPuter: () => fakePuter({ api: false, worker: false }),
+      getEverything: () => fakeEverything({ api: false, worker: false }),
       toast: vi.fn(),
     });
     noneMail.offerReply(fakeEvent(), 'accepted');

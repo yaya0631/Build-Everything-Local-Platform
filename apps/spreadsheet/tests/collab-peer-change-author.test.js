@@ -11,10 +11,10 @@ afterEach(() => { for (const c of open.splice(0)) c.close(); });
 it("names a change that arrives over a peer link after the person the room says made it, whatever the sender claims", async () => {
   const env = environment();
   const wb = new Workbook({ sheets: [{ name: 'Plan' }] });
-  const room = await RoomClient.create({ puter: env.sdk(owner), server: SERVER, wb, name: 'Plan' });
+  const room = await RoomClient.create({ everything: env.sdk(owner), server: SERVER, wb, name: 'Plan' });
   const token = (await call(env.sdk(owner), SERVER, { op: 'invite', room, role: 'editor' })).token;
   await call(env.sdk(editor), SERVER, { op: 'join', room, token });
-  const client = new RoomClient({ puter: env.sdk(owner), server: SERVER, room, store: memoryOutbox(), poll: 60_000, noPeers: true });
+  const client = new RoomClient({ everything: env.sdk(owner), server: SERVER, room, store: memoryOutbox(), poll: 60_000, noPeers: true });
   open.push(client);
   await client.open();
   client.subscription?.off();

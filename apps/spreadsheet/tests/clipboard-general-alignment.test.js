@@ -60,7 +60,7 @@ it('retains text values through edits, undo, outgoing HTML and native XLSX witho
   const data = await new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = () => reject(reader.error); reader.readAsArrayBuffer(blob); });
   const zip = X.CFB.read(new Uint8Array(data), { type: 'array' });
   const part = X.CFB.find(zip, '/xl/workbook.xml');
-  X.CFB.utils.cfb_add(zip, '/xl/workbook.xml', new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')));
+  X.CFB.utils.cfb_add(zip, '/xl/workbook.xml', new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')));
   const back = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'native.xlsx');
   expect([0, 1, 2].map(c => back.getValue(back.activeSheetId, 0, c))).toEqual(['0091', '=1+2', 'FALSE']);
   expect(back.getCell(back.activeSheetId, 0, 1).f).toBeNull();

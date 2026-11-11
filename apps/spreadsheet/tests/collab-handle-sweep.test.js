@@ -7,7 +7,7 @@ const HOUR = 3_600_000;
 
 async function shared() {
   const env = environment();
-  const room = await RoomClient.create({ puter: env.sdk(owner), server: SERVER, wb: new Workbook({ sheets: [{ name: 'Plan' }] }), name: 'Plan' });
+  const room = await RoomClient.create({ everything: env.sdk(owner), server: SERVER, wb: new Workbook({ sheets: [{ name: 'Plan' }] }), name: 'Plan' });
   for (const [user, role] of [[editor, 'editor'], [viewer, 'viewer']]) {
     await env.service.call(owner, { op: 'invite-user', room, username: user.username, role });
     await env.service.call(user, { op: 'join', room });
@@ -17,7 +17,7 @@ async function shared() {
   return { env, room, orphan, look };
 }
 
-// Removals used to forget a handle without revoking it, so Puter kept handles no record names, each holding one of
+// Removals used to forget a handle without revoking it, so Everything kept handles no record names, each holding one of
 // the owner's limited handle slots for good.
 it('revokes handles no member record names, but not one minted moments ago', async () => {
   const { env, orphan, look } = await shared();
@@ -41,7 +41,7 @@ it("revokes an expired member's handle and forgets it, and keeps everyone else's
 it('revokes what a closed room left behind', async () => {
   const { env, room, look } = await shared();
   await env.kv.set(`ss:${room}:meta`, { ...(await env.kv.get(`ss:${room}:meta`)), closed: env.now });
-  const other = await RoomClient.create({ puter: env.sdk(owner), server: SERVER, wb: new Workbook({ sheets: [{ name: 'Other' }] }), name: 'Other' });
+  const other = await RoomClient.create({ everything: env.sdk(owner), server: SERVER, wb: new Workbook({ sheets: [{ name: 'Other' }] }), name: 'Other' });
   env.now += HOUR;
   await look(other);
   expect(env.revoked.sort()).toEqual([`handle-${editor.uuid}`, `handle-${viewer.uuid}`].sort());

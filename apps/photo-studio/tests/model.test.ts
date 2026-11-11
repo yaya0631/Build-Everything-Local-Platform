@@ -18,7 +18,7 @@ import {
 } from "../src/model/serialization";
 import { Assets } from "../src/model/assets";
 import { uniforms } from "../src/renderer/renderer";
-import { canSignOut } from "../src/persistence/puter";
+import { canSignOut } from "../src/persistence/everything";
 describe("document and layers", () => {
   it("rejects unsupported sizes", () => {
     expect(() => newDocument(0, 100)).toThrow();
@@ -225,7 +225,7 @@ describe("rendering calculations", () => {
     expect(Array.from(u.slice(16, 20))).toEqual([1, 2, 3, 4]);
     expect(u[20]).toBe(1);
   });
-  it("never offers sign out inside Puter app", () => {
+  it("never offers sign out inside Everything app", () => {
     expect(canSignOut("app")).toBe(false);
     expect(canSignOut("web")).toBe(true);
   });

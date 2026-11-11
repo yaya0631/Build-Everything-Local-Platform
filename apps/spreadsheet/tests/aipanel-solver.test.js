@@ -2,7 +2,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Workbook } from '../src/core/workbook.js';
 import { createAiPanel } from '../src/ui/aipanel.js';
-import * as P from '../src/lib/puter.js';
+import * as P from '../src/lib/everything.js';
 import { memoryStorage } from './helpers/memory-storage.js';
 
 Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true });

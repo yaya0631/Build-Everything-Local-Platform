@@ -4,7 +4,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 /*
  * The green room remembers the name from the last join and prefills it.
  * The order matters: a name the user entered (local, or synced down from
- * puter.kv on a device that has never joined here) outranks the Puter
+ * everything.kv on a device that has never joined here) outranks the Everything
  * account username, which is only a fallback.
  */
 
@@ -24,7 +24,7 @@ class FakeMediaStream {
   removeTrack() {}
 }
 
-function fakePuter({ username = 'ada-42', signedIn = true, kv = {} } = {}) {
+function fakeEverything({ username = 'ada-42', signedIn = true, kv = {} } = {}) {
   return {
     auth: {
       isSignedIn: () => signedIn,
@@ -54,7 +54,7 @@ const nameField = () => root.querySelector('.prejoin-side input[type="text"]');
 
 beforeEach(async () => {
   localStorage.clear();
-  delete window.puter;
+  delete window.everything;
   globalThis.MediaStream = FakeMediaStream;
   Object.defineProperty(navigator, 'mediaDevices', {
     value: {
@@ -99,7 +99,7 @@ describe('green room name memory', () => {
   });
 
   it('prefers a cloud-remembered name over the account username', async () => {
-    window.puter = fakePuter({ kv: { 'meet:pref:name': JSON.stringify('Ada Lovelace') } });
+    window.everything = fakeEverything({ kv: { 'meet:pref:name': JSON.stringify('Ada Lovelace') } });
     prefs.syncPrefsFromCloud(); // main.js kicks this off before routing
     mount();
 
@@ -107,7 +107,7 @@ describe('green room name memory', () => {
   });
 
   it('falls back to the account username when nothing is remembered', async () => {
-    window.puter = fakePuter();
+    window.everything = fakeEverything();
     prefs.syncPrefsFromCloud();
     mount();
 
@@ -115,7 +115,7 @@ describe('green room name memory', () => {
   });
 
   it('never overwrites a name the user is already typing', async () => {
-    window.puter = fakePuter();
+    window.everything = fakeEverything();
     prefs.syncPrefsFromCloud();
     mount();
     nameField().value = 'Grace';
@@ -125,7 +125,7 @@ describe('green room name memory', () => {
   });
 
   it('remembers the typed name even when the join fails', async () => {
-    mount(); // no window.puter: the join cannot get off the ground
+    mount(); // no window.everything: the join cannot get off the ground
     nameField().value = '  Ada   Lovelace ';
     root.querySelector('.btn-primary').click();
 

@@ -1,5 +1,5 @@
 /**
- * Team sign-in: let colleagues work in the same firm with their own Puter
+ * Team sign-in: let colleagues work in the same firm with their own Everything
  * accounts. Turning it on deploys the firm server in the owner's account
  * (team.js). Owners and admins invite people with single-use links, change
  * roles, and remove members.
@@ -17,16 +17,16 @@ import * as teamModule from '../team.js';
 // team.js is already part of the main bundle, so import it directly.
 const team = async () => teamModule;
 
-/** Link the signed-in Puter account to one firm user record. */
+/** Link the signed-in Everything account to one firm user record. */
 function whoAmI() {
   const users = app.store.all('users').filter((u) => u.active !== false);
   if (!app.user || !users.length) return null;
   const username = app.user.username;
-  const linked = users.find((u) => u.puterUsername?.toLowerCase() === username.toLowerCase());
+  const linked = users.find((u) => u.everythingUsername?.toLowerCase() === username.toLowerCase());
   const sel = select({ name: 'me', value: linked?.id || '', 'aria-label': 'Your firm user', options: [{ value: '', label: 'Not linked' }, ...users.map((u) => ({ value: u.id, label: u.name }))] });
   sel.addEventListener('change', () => {
-    for (const u of app.store.all('users')) if (u.puterUsername?.toLowerCase() === username.toLowerCase() && u.id !== sel.value) app.store.patch('users', u.id, { puterUsername: '' });
-    if (sel.value) app.store.patch('users', sel.value, { puterUsername: username });
+    for (const u of app.store.all('users')) if (u.everythingUsername?.toLowerCase() === username.toLowerCase() && u.id !== sel.value) app.store.patch('users', u.id, { everythingUsername: '' });
+    if (sel.value) app.store.patch('users', sel.value, { everythingUsername: username });
     toast(sel.value ? `You are now ${app.store.get('users', sel.value).name} in this firm` : 'Unlinked');
   });
   return card({
@@ -58,7 +58,7 @@ async function enableFlow() {
   const ok = await confirmDialog({
     title: 'Turn on team sign-in?',
     message:
-      'This sets up a small firm server in your Puter account and copies your firm’s records and documents into it. Everyone you invite then works on the same data with their own Puter account. The data stays in your account, and you pay for its storage.',
+      'This sets up a small firm server in your Everything account and copies your firm’s records and documents into it. Everyone you invite then works on the same data with their own Everything account. The data stays in your account, and you pay for its storage.',
     confirmLabel: 'Turn on team sign-in',
   });
   if (!ok) return;
@@ -77,7 +77,7 @@ async function enableFlow() {
     const t = await team();
     const res = await t.enableTeam({ store: app.store, onProgress: (text) => (status.textContent = text) });
     const ws = { ...(app.workspaces || { joined: [] }), own: res.own, current: 'own' };
-    await t.saveWorkspaces(globalThis.puter.kv, ws);
+    await t.saveWorkspaces(globalThis.everything.kv, ws);
     dlg.close();
     // The page reloads next, so this must be read before, not as a toast.
     if (res.skipped.length) await skippedNotice(res.skipped);
@@ -95,7 +95,7 @@ function skippedNotice(names) {
       title: names.length === 1 ? '1 document could not be copied' : `${names.length} documents could not be copied`,
       body: h(
         'div.stack',
-        h('p', 'These files are still in your own Puter drive but not in the shared firm. Files over 8 MB cannot be stored in a shared firm; upload the others again from Documents.'),
+        h('p', 'These files are still in your own Everything drive but not in the shared firm. Files over 8 MB cannot be stored in a shared firm; upload the others again from Documents.'),
         h(
           'ul.bullets',
           names.map((n) => h('li', n)),
@@ -113,7 +113,7 @@ export function teamSection() {
     wrap.append(
       card({
         title: 'Team sign-in',
-        body: emptyState({ compact: true, icon: 'users', title: 'Not available in the sample firm', text: 'Sign in with Puter to create your own firm and invite colleagues.', headingLevel: 3 }),
+        body: emptyState({ compact: true, icon: 'users', title: 'Not available in the sample firm', text: 'Sign in with Everything to create your own firm and invite colleagues.', headingLevel: 3 }),
       }),
     );
     return wrap;
@@ -122,7 +122,7 @@ export function teamSection() {
     wrap.append(
       card({
         title: 'Team sign-in',
-        body: h('div.notice.warning', { role: 'alert' }, icon('warning', 16), h('span', 'Team sign-in could not be checked because Puter did not answer. Reload the page to try again.')),
+        body: h('div.notice.warning', { role: 'alert' }, icon('warning', 16), h('span', 'Team sign-in could not be checked because Everything did not answer. Reload the page to try again.')),
       }),
     );
     return wrap;
@@ -133,12 +133,12 @@ export function teamSection() {
         title: 'Team sign-in',
         body: h(
           'div.stack',
-          h('p', 'Work with colleagues in the same firm. Each person signs in with their own Puter account, and everyone sees the same matters, time, bills, and documents.'),
+          h('p', 'Work with colleagues in the same firm. Each person signs in with their own Everything account, and everyone sees the same matters, time, bills, and documents.'),
           h(
             'ul.bullets',
             h('li', 'Invitations are single-use links that expire after 7 days.'),
             h('li', 'Admins can invite and remove people. Members work on the firm’s records.'),
-            h('li', 'Your data stays in your Puter account. You can remove anyone at any time.'),
+            h('li', 'Your data stays in your Everything account. You can remove anyone at any time.'),
           ),
           h('div', h('button.btn.primary', { type: 'button', onClick: enableFlow }, icon('users', 16), 'Turn on team sign-in')),
         ),
@@ -204,7 +204,7 @@ export function teamSection() {
   }
 
   function firmUserFor(username) {
-    return app.store.all('users').find((u) => u.puterUsername?.toLowerCase() === String(username).toLowerCase());
+    return app.store.all('users').find((u) => u.everythingUsername?.toLowerCase() === String(username).toLowerCase());
   }
 
   function linkSelect(username) {
@@ -217,8 +217,8 @@ export function teamSection() {
       options: [{ value: '', label: 'Not linked' }, ...users.map((u) => ({ value: u.id, label: u.name }))],
     });
     sel.addEventListener('change', () => {
-      for (const u of app.store.all('users')) if (u.puterUsername?.toLowerCase() === username.toLowerCase() && u.id !== sel.value) app.store.patch('users', u.id, { puterUsername: '' });
-      if (sel.value) app.store.patch('users', sel.value, { puterUsername: username });
+      for (const u of app.store.all('users')) if (u.everythingUsername?.toLowerCase() === username.toLowerCase() && u.id !== sel.value) app.store.patch('users', u.id, { everythingUsername: '' });
+      if (sel.value) app.store.patch('users', sel.value, { everythingUsername: username });
       toast(sel.value ? `${username} linked to ${app.store.get('users', sel.value).name}` : `${username} unlinked`);
     });
     return sel;
@@ -237,7 +237,7 @@ export function teamSection() {
             'thead',
             h(
               'tr',
-              h('th', { scope: 'col' }, 'Puter account'),
+              h('th', { scope: 'col' }, 'Everything account'),
               h('th', { scope: 'col' }, 'Role'),
               h('th', { scope: 'col' }, 'Firm user'),
               h('th', { scope: 'col' }, 'Joined'),

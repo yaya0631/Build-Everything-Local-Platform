@@ -52,7 +52,7 @@ export function renderData(container) {
     isOwner
       ? panel('Delete help desk', null,
           h('div.danger-zone',
-            h('div.grow', h('h3', 'Delete this help desk permanently'), h('p.muted', 'Removes every ticket, conversation, customer, article and setting, and ends access for all agents. Attachments in your Puter drive under help-desk/ stay until you delete them.')),
+            h('div.grow', h('h3', 'Delete this help desk permanently'), h('p.muted', 'Removes every ticket, conversation, customer, article and setting, and ends access for all agents. Attachments in your Everything drive under help-desk/ stay until you delete them.')),
             h('button.btn.btn-danger', { type: 'button', onclick: () => deleteDialog() }, icon('trash', { size: 15 }), 'Delete help desk')))
       : null,
   );

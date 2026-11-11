@@ -19,7 +19,7 @@ for (const kind of ['text', 'dropdown', 'list', 'widget-layout', 'widgets'])
   test(`an unreadable ${kind} appearance does not block editing another field`, async ({
     page,
   }) => {
-    await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
+    await page.route('**/sdk/everything.js', (route) => route.fulfill({ body: '' }));
     await page.goto('/#library');
     const source = await PDFDocument.load(await partialFlattenPdf(kind));
     if (kind === 'widget-layout')

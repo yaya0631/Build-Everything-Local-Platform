@@ -10,14 +10,14 @@ async function pdf(pages, title) {
 }
 async function setup(page, { api = 'both', launch = true, held = false } = {}) {
   const bytes = await pdf(2, 'Initial file');
-  await page.route('**/sdk/puter.js', (route) =>
+  await page.route('**/sdk/everything.js', (route) =>
     route.fulfill({
       contentType: 'application/javascript',
       body: `
       window.reads = []; window.exits = 0; window.fileBytes = ${JSON.stringify(bytes)};
       const item = { path:'launch.pdf', name:'launch.pdf' };
       const replay = callback => { if (${launch}) callback([item]); };
-      window.puter = {
+      window.everything = {
         env:'app', auth:{getUser:async()=>({username:'test'})},
         fs:{readdir:async()=>[],read:async(path)=>{
           window.reads.push(path);

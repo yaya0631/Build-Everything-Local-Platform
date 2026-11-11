@@ -1,7 +1,7 @@
-// Shared setup for the review tests: a fake Puter with an owner (alice),
+// Shared setup for the review tests: a fake Everything with an owner (alice),
 // reviewers (bob, carol) and an outsider (dave), and helpers to publish a
 // review the way the share dialog does.
-import { createWorld, USERS } from '../dev/fake-puter.js';
+import { createWorld, USERS } from '../dev/fake-everything.js';
 import { deploy, call } from '../src/review/api.js';
 
 export { USERS };

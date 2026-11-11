@@ -7,7 +7,7 @@ vi.mock('../src/collab/outbox.js', async (original) => ({ ...(await original()),
 
 const { confirmSignOut } = await import('../src/ui/appmenu.js');
 const { closeAllModals } = await import('../src/ui/modal.js');
-const P = await import('../src/lib/puter.js');
+const P = await import('../src/lib/everything.js');
 const { session } = await import('../src/lib/session.js');
 
 beforeEach(() => {

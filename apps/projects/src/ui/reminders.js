@@ -11,7 +11,7 @@ import { toast } from './toast.js';
  * Three surfaces, in order of how much they ask of the user:
  *
  *  1. the document title, which needs no permission at all and is what a
- *     pinned tab or a Puter desktop window shows;
+ *     pinned tab or an Everything desktop window shows;
  *  2. an in-app toast, when the app is on screen and a reminder comes due —
  *     a system notification for something you are already looking at is
  *     noise;

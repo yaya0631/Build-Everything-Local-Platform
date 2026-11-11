@@ -21,7 +21,7 @@ const get = (zip, path) => new TextDecoder().decode(X.CFB.find(zip, path).conten
 const set = (zip, path, content) => X.CFB.utils.cfb_add(zip, path, new TextEncoder().encode(content));
 const save = async wb => X.CFB.read(new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()), { type: 'array' });
 const open = zip => {
-  set(zip, '/xl/workbook.xml', get(zip, '/xl/workbook.xml').replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  set(zip, '/xl/workbook.xml', get(zip, '/xl/workbook.xml').replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   return workbookFromFile(new Uint8Array(X.CFB.write(zip, { type: 'array', fileType: 'zip' })), 'native.xlsx');
 };
 it.each(['bar', 'column'])('preserves sparse %s point label overrides, inheritance and copies through native-only export', async type => {

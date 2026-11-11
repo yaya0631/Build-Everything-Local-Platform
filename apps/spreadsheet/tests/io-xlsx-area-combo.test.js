@@ -48,7 +48,7 @@ it('exports editable native chart groups that reopen without app metadata', asyn
     expect(xml).toContain('<c:scatterChart>');
     expect(xml).toContain('<c:xVal><c:numLit>');
     const book = X.CFB.find(zip, '/xl/workbook.xml');
-    book.content = new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+    book.content = new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
     book.size = book.content.length;
     wb = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'external.xlsx');
     expect(areaPaths(rendered(wb))).toEqual(expected);

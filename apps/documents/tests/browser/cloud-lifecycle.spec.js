@@ -14,10 +14,10 @@ async function openEditor(page, hash = '#/new') {
 test('AutoSave off: hiding the page, reconnecting or signing in does not write the file', async ({ page }) => {
   await openEditor(page);
   await text(page).fill('Kept');
-  await expect(status(page)).toHaveAttribute('aria-label', 'Saved to Puter');
+  await expect(status(page)).toHaveAttribute('aria-label', 'Saved to Everything');
   const path = await page.evaluate(() => window.__docs.current.view.doc.path);
   const writes = () => page.evaluate(p => window.__writes.filter(w => w === p).length, path.replace(/^\/+/, ''));
-  await page.evaluate(() => { window.__writes = []; const write = puter.fs.write; puter.fs.write = function (p, ...rest) { window.__writes.push(String(p).replace(/^\/+/, '')); return write.call(this, p, ...rest); }; });
+  await page.evaluate(() => { window.__writes = []; const write = everything.fs.write; everything.fs.write = function (p, ...rest) { window.__writes.push(String(p).replace(/^\/+/, '')); return write.call(this, p, ...rest); }; });
   await page.locator('label.ed-autosave').click();
   await expect(page.getByRole('switch', { name: 'AutoSave' })).not.toBeChecked();
   await text(page).press('End'); await page.keyboard.type(' experiment');
@@ -35,7 +35,7 @@ test('AutoSave off: hiding the page, reconnecting or signing in does not write t
   await expect(status(page)).toHaveAttribute('aria-label', 'Unsaved changes');
   // Save still writes.
   await text(page).press('ControlOrMeta+s');
-  await expect(status(page)).toHaveAttribute('aria-label', 'Saved to Puter');
+  await expect(status(page)).toHaveAttribute('aria-label', 'Saved to Everything');
   expect(await writes()).toBe(1);
   await page.locator('label.ed-autosave').click();
 });
@@ -43,10 +43,10 @@ test('AutoSave off: hiding the page, reconnecting or signing in does not write t
 test('File > Info: a version that cannot be saved says so', async ({ page }) => {
   await openEditor(page);
   await text(page).fill('Versioned');
-  await expect(status(page)).toHaveAttribute('aria-label', 'Saved to Puter');
+  await expect(status(page)).toHaveAttribute('aria-label', 'Saved to Everything');
   const errors = [];
   page.on('pageerror', e => errors.push(e.message));
-  await page.evaluate(() => window.__puterFaults.push({ op: 'write', path: '\\.versions/', message: 'The cloud is unreachable', times: 5 }));
+  await page.evaluate(() => window.__everythingFaults.push({ op: 'write', path: '\\.versions/', message: 'The cloud is unreachable', times: 5 }));
   await page.getByRole('button', { name: 'File', exact: true }).click();
   const view = page.getByRole('dialog', { name: 'File' });
   await view.getByRole('tab', { name: 'Info' }).click();
@@ -117,7 +117,7 @@ test('an invited editor keeps edits made after the owner stopped sharing', async
   // The copy is the guest's own now: its edits are saved like any new document's, and leaving before then is guarded.
   await expect.poll(() => guest.evaluate(() => { const d = window.__docs.current.view.doc; return d.dirty || !!d.path; })).toBe(true);
   await expect.poll(() => guest.evaluate(() => window.__docs.current.view.doc.path), { timeout: 15000 }).toMatch(/\.docx$/);
-  await expect(status(guest)).toHaveAttribute('aria-label', 'Saved to Puter');
+  await expect(status(guest)).toHaveAttribute('aria-label', 'Saved to Everything');
   expect(await guest.evaluate(() => window.__docs.current.view.doc.dirty)).toBe(false);
   expect(Object.keys(await drive(guest)).filter(p => /^Documents\/[^/]+\.docx$/.test(p))).toHaveLength(1);
   await ownerContext.close(); await guestContext.close();
@@ -130,7 +130,7 @@ test('Save As in a shared document goes on in a copy the others do not see', asy
   await owner.goto('/mock.html?user=ada#/new');
   await expect(owner.getByRole('button', { name: 'Bold', exact: true })).toBeEnabled();
   await text(owner).fill('Quarterly plan.');
-  await expect(status(owner)).toHaveAttribute('aria-label', 'Saved to Puter');
+  await expect(status(owner)).toHaveAttribute('aria-label', 'Saved to Everything');
   const link = await shareForEditing(owner);
   const guestContext = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   const guest = await guestContext.newPage();
@@ -146,7 +146,7 @@ test('Save As in a shared document goes on in a copy the others do not see', asy
   await expect(owner.locator('.cl-banner')).toContainText('your own copy now, which is not shared');
   await text(owner).evaluate(el => { el.focus(); el.setSelectionRange(el.value.length, el.value.length); el.dispatchEvent(new Event('select')); });
   await text(owner).pressSequentially(' Private note.');
-  await expect(status(owner)).toHaveAttribute('aria-label', 'Saved to Puter');
+  await expect(status(owner)).toHaveAttribute('aria-label', 'Saved to Everything');
   // The copy's text stays out of the shared document.
   await guest.waitForTimeout(2000);
   expect(await text(guest).evaluate(el => el.value)).toBe('Quarterly plan.');
@@ -160,7 +160,7 @@ test('a guest leaving a shared document with changes the others have not receive
   await owner.goto('/mock.html?user=ada#/new');
   await expect(owner.getByRole('button', { name: 'Bold', exact: true })).toBeEnabled();
   await text(owner).fill('Quarterly plan.');
-  await expect(status(owner)).toHaveAttribute('aria-label', 'Saved to Puter');
+  await expect(status(owner)).toHaveAttribute('aria-label', 'Saved to Everything');
   const link = await shareForEditing(owner);
   const guestContext = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   const guest = await guestContext.newPage();
@@ -188,10 +188,10 @@ test('a guest leaving a shared document with changes the others have not receive
 test('an autosave refused because another window changed the file says so once, with Save a Copy', async ({ page }) => {
   await openEditor(page);
   await text(page).fill('Mine');
-  await expect(status(page)).toHaveAttribute('aria-label', 'Saved to Puter');
+  await expect(status(page)).toHaveAttribute('aria-label', 'Saved to Everything');
   // Time stamps are whole seconds: the other window writes in a later one.
   await page.waitForTimeout(1100);
-  await page.evaluate(async () => { const { path } = window.__docs.current.view.doc; await puter.fs.write(path, await puter.fs.read(path)); });
+  await page.evaluate(async () => { const { path } = window.__docs.current.view.doc; await everything.fs.write(path, await everything.fs.read(path)); });
   await text(page).press('End');
   await page.keyboard.type(' and more');
   await expect(status(page)).toHaveAttribute('aria-label', 'Not saved');
@@ -208,7 +208,7 @@ test('an autosave refused because another window changed the file says so once, 
   await view.getByRole('button', { name: 'Save As', exact: true }).click();
   await expect(view.getByRole('status')).toHaveText('Saved. You are now editing the copy.');
   await page.keyboard.press('Escape');
-  await expect(status(page)).toHaveAttribute('aria-label', 'Saved to Puter');
+  await expect(status(page)).toHaveAttribute('aria-label', 'Saved to Everything');
 });
 
 test('leaving a template before it has opened asks nothing, since nothing in it is the user\'s', async ({ page }) => {
@@ -232,8 +232,8 @@ test('leaving a template before it has opened asks nothing, since nothing in it 
 test('File > Save: pressing Save As twice saves one copy and says so', async ({ page }) => {
   await openEditor(page);
   await text(page).fill('Original');
-  await expect(status(page)).toHaveAttribute('aria-label', 'Saved to Puter');
-  await page.evaluate(() => window.__puterFaults.push({ op: 'write', path: 'Copy\\.docx$', delay: 600, times: 1 }));
+  await expect(status(page)).toHaveAttribute('aria-label', 'Saved to Everything');
+  await page.evaluate(() => window.__everythingFaults.push({ op: 'write', path: 'Copy\\.docx$', delay: 600, times: 1 }));
   await page.getByRole('button', { name: 'File', exact: true }).click();
   const view = page.getByRole('dialog', { name: 'File' });
   await view.getByRole('tab', { name: 'Save' }).click();
@@ -250,7 +250,7 @@ test('File > Save: pressing Save As twice saves one copy and says so', async ({ 
 test('autosave waits for an open IME composition instead of reporting a failed save', async ({ page }) => {
   await openEditor(page);
   await text(page).fill('Kept');
-  await expect(status(page)).toHaveAttribute('aria-label', 'Saved to Puter');
+  await expect(status(page)).toHaveAttribute('aria-label', 'Saved to Everything');
   await text(page).press('End');
   await page.keyboard.type(' 안');
   // The last syllable stays in composition while the writer pauses, as a Korean IME keeps it.
@@ -264,7 +264,7 @@ test('autosave waits for an open IME composition instead of reporting a failed s
   expect(seen).not.toContain('error');
   await expect(status(page)).toHaveAttribute('aria-label', 'Unsaved changes');
   await cdp.send('Input.insertText', { text: '녕' });
-  await expect(status(page)).toHaveAttribute('aria-label', 'Saved to Puter', { timeout: 10000 });
+  await expect(status(page)).toHaveAttribute('aria-label', 'Saved to Everything', { timeout: 10000 });
   expect(seen).not.toContain('error');
   expect(await page.evaluate(() => window.__docs.current.view.engine.model.text)).toBe('Kept 안녕');
 });
@@ -273,8 +273,8 @@ test('leaving while a save hangs asks instead of waiting forever', async ({ page
   test.setTimeout(60000);
   await openEditor(page);
   await text(page).fill('Kept');
-  await expect(status(page)).toHaveAttribute('aria-label', 'Saved to Puter');
-  await page.evaluate(() => window.__puterFaults.push({ op: 'write', path: '^Documents/[^/]+\\.docx$', delay: 120000, times: 1 }));
+  await expect(status(page)).toHaveAttribute('aria-label', 'Saved to Everything');
+  await page.evaluate(() => window.__everythingFaults.push({ op: 'write', path: '^Documents/[^/]+\\.docx$', delay: 120000, times: 1 }));
   await text(page).press('End'); await page.keyboard.type(' more');
   await expect(status(page)).toHaveAttribute('aria-label', 'Saving…');
   await page.evaluate(() => { location.hash = '#/home'; });
@@ -302,7 +302,7 @@ test('signing out with a document that cannot be saved says why it did not sign 
 test('a starred document renamed in the editor stays starred', async ({ page }) => {
   await openEditor(page);
   await text(page).fill('Starred text');
-  await expect(status(page)).toHaveAttribute('aria-label', 'Saved to Puter');
+  await expect(status(page)).toHaveAttribute('aria-label', 'Saved to Everything');
   await page.evaluate(() => { location.hash = '#/home'; });
   const row = page.locator('.file-row', { hasText: 'Untitled document' });
   await row.getByRole('button', { name: /^Star / }).click();
@@ -320,9 +320,9 @@ test('a starred document renamed in the editor stays starred', async ({ page }) 
 test('a name typed just before going back to the documents is kept', async ({ page }) => {
   await openEditor(page);
   await text(page).fill('Plan text');
-  await expect(status(page)).toHaveAttribute('aria-label', 'Saved to Puter');
+  await expect(status(page)).toHaveAttribute('aria-label', 'Saved to Everything');
   // Checking that the new name is free takes a moment.
-  await page.evaluate(() => window.__puterFaults.push({ op: 'stat', path: '^Documents/Final plan\\.docx$', delay: 800, times: 1 }));
+  await page.evaluate(() => window.__everythingFaults.push({ op: 'stat', path: '^Documents/Final plan\\.docx$', delay: 800, times: 1 }));
   const title = page.getByRole('textbox', { name: 'Document name' });
   await title.fill('Final plan');
   await title.press('Enter');
@@ -334,7 +334,7 @@ test('a name typed just before going back to the documents is kept', async ({ pa
 
 test('Open Recent says when the documents could not be listed', async ({ page }) => {
   await openEditor(page);
-  await page.evaluate(() => window.__puterFaults.push({ op: 'readdir', path: '^Documents$', message: 'Network error', times: 1 }));
+  await page.evaluate(() => window.__everythingFaults.push({ op: 'readdir', path: '^Documents$', message: 'Network error', times: 1 }));
   await page.locator('.ed-menubar').getByRole('menuitem', { name: 'File', exact: true }).click();
   await page.getByRole('menuitem', { name: 'Open Recent', exact: true }).click();
   await expect(page.locator('.menu-note')).toHaveText('Could not load recent documents. Check your connection and try again.');
@@ -343,9 +343,9 @@ test('Open Recent says when the documents could not be listed', async ({ page })
 test('hiding the page writes edits typed during a save as soon as that save ends', async ({ page }) => {
   await openEditor(page);
   await text(page).fill('Draft');
-  await expect(status(page)).toHaveAttribute('aria-label', 'Saved to Puter');
+  await expect(status(page)).toHaveAttribute('aria-label', 'Saved to Everything');
   // A slow write: the pause before the next autosave grows with it, to several seconds.
-  await page.evaluate(() => window.__puterFaults.push({ op: 'write', path: '^Documents/[^/]+\\.docx$', delay: 1500, times: 1 }));
+  await page.evaluate(() => window.__everythingFaults.push({ op: 'write', path: '^Documents/[^/]+\\.docx$', delay: 1500, times: 1 }));
   await text(page).press('End'); await page.keyboard.type(' one');
   await expect(status(page)).toHaveAttribute('aria-label', 'Saving…');
   await page.keyboard.type(' two');
@@ -360,7 +360,7 @@ test('hiding the page writes edits typed during a save as soon as that save ends
 test('a new document saved under a free name shows that name', async ({ page }) => {
   await openEditor(page);
   await text(page).fill('First');
-  await expect(status(page)).toHaveAttribute('aria-label', 'Saved to Puter');
+  await expect(status(page)).toHaveAttribute('aria-label', 'Saved to Everything');
   await page.evaluate(() => { location.hash = '#/home'; });
   await page.getByRole('button', { name: 'New document' }).first().click();
   await expect(page.getByRole('button', { name: 'Bold', exact: true })).toBeEnabled();

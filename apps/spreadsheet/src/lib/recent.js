@@ -1,13 +1,13 @@
 /**
  * Recently opened spreadsheets, kept on this device so files opened from
- * elsewhere on the Puter drive (not in the app folder) can be found again.
+ * elsewhere on the Everything drive (not in the app folder) can be found again.
  * Each record keeps the file's id as well as its address: a file keeps its id
  * when it is moved or renamed (here, on the desktop or by another app), so the
  * record follows it there rather than pointing at where it used to be.
  */
 
 import { accountStorageKey } from './account-storage.js';
-import { inAppFolder, inTrash, statByUid } from './puter.js';
+import { inAppFolder, inTrash, statByUid } from './everything.js';
 
 const KEY = 'spreadsheet:recent';
 const LIMIT = 8;

@@ -2,7 +2,7 @@
  * Eleventh review pass, client libraries: the message window when a send
  * lands while a page of a detached window is still on its way, the huddle
  * a second join leaves behind, and the loaded windows a switch of workspace
- * leaves mid-refresh. Puter is faked at `puter.workers.exec`, as in
+ * leaves mid-refresh. Everything is faked at `everything.workers.exec`, as in
  * tests/store.test.js.
  */
 import { describe, it, expect, afterEach, vi } from 'vitest';
@@ -18,7 +18,7 @@ const msgs = (from, to) => Array.from({ length: to - from + 1 }, (_, i) => ({ se
 /** Route each call by the end of its path; a handler may return a promise that waits. */
 function worker(routes) {
   const calls = [];
-  globalThis.puter = {
+  globalThis.everything = {
     workers: {
       exec: async (url, init = {}) => {
         const u = new URL(url);
@@ -52,7 +52,7 @@ afterEach(() => {
   store._seenAt.clear();
   for (const t of store._readTimers.values()) clearTimeout(t);
   store._readTimers.clear();
-  delete globalThis.puter;
+  delete globalThis.everything;
 });
 
 describe('a send from a window opened at an older message', () => {
@@ -342,7 +342,7 @@ describe('joining a huddle while the last one is still being left', () => {
       },
     });
     openPlain();
-    globalThis.puter.peer = {
+    globalThis.everything.peer = {
       async serve() { const s = new FakeServer(`TAB-${servers.length + 1}`); servers.push(s); return s; },
       async connect() { throw new Error('nobody to dial'); },
     };

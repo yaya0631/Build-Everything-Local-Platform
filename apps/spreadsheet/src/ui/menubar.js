@@ -72,7 +72,7 @@ export function menubarMenus(f = {}) {
   const file = [
     i('New spreadsheet', 'filePlus', 'new'),
     f.templates && i('New from template…', 'sparkle', 'newFromTemplate'),
-    f.pick && i('Open from Puter…', 'folderOpen', 'open', null, { shortcut: `${M}+O` }),
+    f.pick && i('Open from Everything…', 'folderOpen', 'open', null, { shortcut: `${M}+O` }),
     sub('Import', 'upload', [
       i('From this device…', 'upload', 'import'),
       i('From a URL…', 'external', 'importUrl'),
@@ -267,13 +267,13 @@ export function menubarMenus(f = {}) {
     i('Sparklines…', 'chartLine', 'insertSparklines'),
     sub('Image', 'image', [
       i('From this device…', 'image', 'insertImage'),
-      f.pick && i('From Puter…', 'folderOpen', 'insertImagePuter'),
+      f.pick && i('From Everything…', 'folderOpen', 'insertImageEverything'),
       i('From a URL…', 'external', 'insertImageUrl'),
       sep,
       // The picture as the active cell's value, sized to the cell: it moves, sorts and copies with it.
       sub('Place in Cell', 'placeInCell', [
         i('From this device…', 'image', 'insertImage', 'cell'),
-        f.pick && i('From Puter…', 'folderOpen', 'insertImagePuter', 'cell'),
+        f.pick && i('From Everything…', 'folderOpen', 'insertImageEverything', 'cell'),
         i('From a URL…', 'external', 'insertImageUrl', 'cell'),
       ]),
     ]),

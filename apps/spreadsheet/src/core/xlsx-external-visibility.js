@@ -4,7 +4,7 @@ import { parseModelXml, modelChildren } from './data-model-metadata.js';
 import { decodeXlsxString, encodeXlsxAttribute } from './xlsx-string.js';
 import { xmlTag, xmlText } from './xlsx-export-styles.js';
 const MAIN = 'http://schemas.openxmlformats.org/spreadsheetml/2006/main';
-const NS = 'urn:puter:spreadsheet:external-visibility:1';
+const NS = 'urn:everything:spreadsheet:external-visibility:1';
 const children = (node, name, ns = MAIN) => modelChildren(node, name, ns);
 // ExternalRow has no hidden attribute. This optional application extension is
 // not an Excel visibility feature. Ordinary chart caches still contain the

@@ -1,4 +1,4 @@
-// A small word list the Thesaurus falls back on when Puter's AI cannot be
+// A small word list the Thesaurus falls back on when Everything's AI cannot be
 // reached: common words of business and teaching slides. Each entry lists
 // synonyms and, where there is a natural one, antonyms.
 const W = (synonyms, antonyms = []) => ({ synonyms, antonyms });

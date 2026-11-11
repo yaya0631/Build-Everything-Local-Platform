@@ -9,8 +9,8 @@ export async function conditionalKVMock(importOriginal) {
   const revisions = new WeakMap();
   const bytes = (raw) => raw == null ? null : typeof raw === 'string' ? raw : JSON.stringify(raw);
   const readKV = async (key) => {
-    const raw = await puter.kv.get(key);
-    let remembered = revisions.get(puter.kv)?.get(key);
+    const raw = await everything.kv.get(key);
+    let remembered = revisions.get(everything.kv)?.get(key);
     while (remembered && remembered.raw !== bytes(raw)) remembered = remembered.prior;
     return { raw, revision: remembered?.revision ?? bytes(raw), deleted: remembered?.deleted === true };
   };
@@ -19,12 +19,12 @@ export async function conditionalKVMock(importOriginal) {
     readKV,
     getKV: async (key) => (await readKV(key)).raw,
     deleteKV: async (key) => {
-      const raw = await puter.kv.get(key);
-      await puter.kv.del?.(key);
+      const raw = await everything.kv.get(key);
+      await everything.kv.del?.(key);
       return raw;
     },
     compareAndSetKV: async (key, expected, raw, { revision = crypto.randomUUID() } = {}) => {
-      const kv = puter.kv;
+      const kv = everything.kv;
       if (!queues.has(kv)) queues.set(kv, new Map());
       const pending = queues.get(kv);
       const run = (pending.get(key) || Promise.resolve()).then(async () => {

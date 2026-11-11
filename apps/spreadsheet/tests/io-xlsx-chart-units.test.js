@@ -40,7 +40,7 @@ it('scales only axis labels and preserves styled unit labels in native Excel exp
     if (pass === 0) wb = await workbookFromFile(bytes, 'saved.xlsx');
     else if (pass === 1) {
       const zip = X.CFB.read(bytes, { type: 'array' }), book = X.CFB.find(zip, '/xl/workbook.xml');
-      book.content = new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+      book.content = new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
       book.size = book.content.length;
       wb = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'external.xlsx');
     }
@@ -63,7 +63,7 @@ it.each([-180, 135, 360, 450])('retains full display-unit text rotation %s in re
   expect(render(wb)).toContain(`rotate(${angle})">HUNDREDS</text>`);
   const zip = X.CFB.read(new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()), { type: 'array' });
   const book = X.CFB.find(zip, '/xl/workbook.xml');
-  book.content = new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  book.content = new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   book.size = book.content.length;
   const back = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'native.xlsx');
   expect(back.sheets[0].charts[0].appearance.yUnits.rotation).toBe(angle);

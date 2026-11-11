@@ -4,7 +4,7 @@
 
 ## Short description
 
-Write with blocks, organize pages in a tree, track work in databases and share pages with your team. Stored in your own Puter cloud.
+Write with blocks, organize pages in a tree, track work in databases and share pages with your team. Stored in your own Everything cloud.
 
 ## Long description
 
@@ -16,7 +16,7 @@ Databases turn pages into rows. Track tasks on a board, plan on a calendar, brow
 
 Share a page and everything under it with the people you choose. They can view, comment or edit, you see who is on the same page, and everyone's changes merge as they type. Comment on a whole page or on one block, reply and resolve.
 
-Private pages are stored as files in your own Puter cloud, not in a shared database, and they are never sold or shown to advertisers. Shared pages stay in the account of the person who shared them. Wiki works on a laptop, tablet or phone, follows your light or dark setting and is built to be usable with a keyboard and a screen reader.
+Private pages are stored as files in your own Everything cloud, not in a shared database, and they are never sold or shown to advertisers. Shared pages stay in the account of the person who shared them. Wiki works on a laptop, tablet or phone, follows your light or dark setting and is built to be usable with a keyboard and a screen reader.
 
 ## Key features
 

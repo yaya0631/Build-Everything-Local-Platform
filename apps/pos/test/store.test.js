@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 import { Store } from '../src/lib/store.js';
 import { monthKeyOf, todayISO } from '../src/lib/dates.js';
 
@@ -7,7 +7,7 @@ let mock;
 let store;
 
 beforeEach(async () => {
-  mock = installMockPuter();
+  mock = installMockEverything();
   store = new Store();
   await store.init();
 });
@@ -724,9 +724,9 @@ describe('stock adjustments and the movement ledger', () => {
 
     let release;
     const gate = new Promise((r) => { release = r; });
-    const realWrite = puter.fs.write;
+    const realWrite = everything.fs.write;
     let held = false;
-    puter.fs.write = async (path, data) => {
+    everything.fs.write = async (path, data) => {
       if (stockPath(path) && !held) { held = true; await gate; }
       return realWrite(path, data);
     };
@@ -737,7 +737,7 @@ describe('stock adjustments and the movement ledger', () => {
     expect(store.product(p.id).stock).toBe(3);                  // the sale sold 2
     release();
     const entry = await adjusting;
-    puter.fs.write = realWrite;
+    everything.fs.write = realWrite;
 
     expect(store.product(p.id).stock).toBe(6);                  // 3 + 3, not 5 + 3
     expect(entry.level).toBe(6);                                // the ledger tells the truth

@@ -9,7 +9,7 @@ const edit = (zip, path, fn) => { const p = X.CFB.find(zip, path); p.content = n
 const bytes = zip => X.CFB.write(zip, { type: 'array', fileType: 'zip' });
 async function native(wb) {
   const zip = X.CFB.read(new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()), { type: 'array' });
-  edit(zip, '/xl/workbook.xml', xml => xml.replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  edit(zip, '/xl/workbook.xml', xml => xml.replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   return workbookFromFile(bytes(zip));
 }
 function shapeLink(url, mode = 'External') {

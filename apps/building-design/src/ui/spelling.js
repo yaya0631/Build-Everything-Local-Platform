@@ -1,11 +1,11 @@
 /**
  * Check Spelling: the words people read on drawings (text notes, room,
- * view and sheet names, keynotes and comments) are checked by Puter's AI,
+ * view and sheet names, keynotes and comments) are checked by Everything's AI,
  * and each suggested correction can be accepted or skipped.
  */
 import { h } from './dom.js';
 import { openDialog, toast } from './dialog.js';
-import { puterAvailable, isSignedIn, whenPuter } from '../platform.js';
+import { everythingAvailable, isSignedIn, whenEverything } from '../platform.js';
 import { isView } from '../core/doc.js';
 
 /** The pieces of text in the project worth checking: [{ id, field, text, where }]. */
@@ -39,14 +39,14 @@ export async function checkSpelling(app) {
   const doc = app.doc;
   const items = spellableTexts(doc);
   if (!items.length) return toast('There is no text to check.');
-  if (!puterAvailable() || !(await whenPuter(4000))) return toast('Checking spelling needs Puter, which could not be reached.', { kind: 'error' });
+  if (!everythingAvailable() || !(await whenEverything(4000))) return toast('Checking spelling needs Everything, which could not be reached.', { kind: 'error' });
   if (!(await isSignedIn()) && !(await app.signIn())) return;
   app.setPrompt(`Checking the spelling of ${items.length} pieces of text...`);
   let fixes = [];
   try {
     const list = items.map((it, i) => ({ i, text: it.text }));
     const prompt = `You check spelling in architectural drawings. Find spelling mistakes in these texts. Leave abbreviations, codes, numbers, names and technical terms alone, and do not change style or wording. Reply with only a JSON array of {"i": <index>, "corrected": "<the whole text corrected>"} for the texts that have mistakes, or [] if none.\n\n${JSON.stringify(list)}`;
-    const res = await puter.ai.chat(prompt);
+    const res = await everything.ai.chat(prompt);
     const text = typeof res === 'string' ? res : typeof res?.message?.content === 'string' ? res.message.content : Array.isArray(res?.message?.content) ? res.message.content.map((c) => c?.text || '').join('') : '';
     fixes = parseJSON(text).filter((f) => items[f.i] && typeof f.corrected === 'string' && f.corrected.trim() && f.corrected !== items[f.i].text);
   } catch (err) {

@@ -11,7 +11,7 @@ async function external(wb) {
     const reader = new FileReader(); reader.onload = () => resolve(new Uint8Array(reader.result)); reader.readAsArrayBuffer(blob);
   });
   const zip = X.CFB.read(bytes, { type: 'array' }), part = X.CFB.find(zip, '/xl/workbook.xml');
-  part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   part.size = part.content.length;
   return workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'inverse-underflow.xlsx');
 }

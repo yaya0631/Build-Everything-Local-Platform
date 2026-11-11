@@ -1,6 +1,6 @@
 /**
  * Generate category of the Media tab: describe a picture, pick a frame
- * shape and a style, and Puter AI draws it. Results stay in a small strip
+ * shape and a style, and Everything AI draws it. Results stay in a small strip
  * for this session; the chosen ones are imported as media.
  */
 import { h, announce } from '../../lib/dom.js';
@@ -15,8 +15,8 @@ import { emptyState } from './common.js';
 const MAX_RESULTS = 8;
 
 function signInHint(ctx) {
-  const btn = ctx.account?.onSignIn ? h('button.btn.primary', { type: 'button', onclick: () => ctx.account.onSignIn() }, icon('cloud', 16), 'Sign in to Puter') : null;
-  return emptyState('user', 'Sign in to generate pictures', 'Picture generation runs on Puter AI, so it needs a Puter account.', btn);
+  const btn = ctx.account?.onSignIn ? h('button.btn.primary', { type: 'button', onclick: () => ctx.account.onSignIn() }, icon('cloud', 16), 'Sign in to Everything') : null;
+  return emptyState('user', 'Sign in to generate pictures', 'Picture generation runs on Everything AI, so it needs an Everything account.', btn);
 }
 
 /** getFolder() returns the media bin folder new pictures go into. */

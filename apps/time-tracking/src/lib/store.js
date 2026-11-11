@@ -1,5 +1,5 @@
 /**
- * Data layer on top of Puter.
+ * Data layer on top of Everything.
  *
  * Storage design, chosen for cost/scale characteristics:
  *
@@ -151,7 +151,7 @@ const LOGO_EXT = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp'
 const logoPath = (stamp, ext) => `${DATA_DIR}/logo-${stamp}.${ext}`;
 
 /* ---------- reconciling two copies of the same list ----------
-   One Puter account, several devices: the phone tracks, the laptop
+   One Everything account, several devices: the phone tracks, the laptop
    reviews. Every document here is written whole, so a stale copy used to
    overwrite whatever the other device had done. Reconciliation is per
    record, by id, newest write winning, with one extra piece of knowledge
@@ -383,12 +383,12 @@ export const DEFAULT_SETTINGS = {
   paymentTermsDays: null, // net days used to date invoices; null = no due date
   taxRate: 0, // default tax percentage prefilled on new invoices
   paymentDetails: '', // how to pay: account or IBAN, BIC, a payment link
-  businessLogo: '', // path of the logo file in the user's own Puter files
+  businessLogo: '', // path of the logo file in the user's own Everything files
 };
 
 /**
  * True when an fs read failed because the file doesn't exist rather than a
- * transport/API failure. Puter rejects missing paths with
+ * transport/API failure. Everything rejects missing paths with
  * { code: 'subject_does_not_exist' }; the message match covers other SDK
  * builds and the dev mock.
  */
@@ -426,7 +426,7 @@ class Store extends EventTarget {
     // served (or flushed) into this one.
     let user = null;
     try {
-      user = await puter.auth.getUser();
+      user = await everything.auth.getUser();
     } catch {
       user = null;
     }
@@ -480,7 +480,7 @@ class Store extends EventTarget {
     }
     let value;
     try {
-      value = await puter.kv.get(key);
+      value = await everything.kv.get(key);
     } catch (err) {
       const cached = offline.getKV(key);
       if (cached === undefined) throw err;
@@ -498,7 +498,7 @@ class Store extends EventTarget {
    */
   async #kvReadRemote(key) {
     try {
-      const value = await puter.kv.get(key);
+      const value = await everything.kv.get(key);
       // A queued write's only durable copy lives in the mirror. Reading
       // the server for reconciliation must not replace it before the
       // merged write succeeds: a failed sync still needs that payload.
@@ -532,7 +532,7 @@ class Store extends EventTarget {
       }
       const str = payload == null ? null : JSON.stringify(payload);
       try {
-        await puter.kv.set(key, payload);
+        await everything.kv.set(key, payload);
       } catch (err) {
         if (!isNetworkError(err) || !offline.setKV(key, str)) throw err;
         offline.markDirty(`kv:${key}`, { replace: key === KV.months && !merge });
@@ -586,7 +586,7 @@ class Store extends EventTarget {
    */
   async #writeMonthFile(key, text, { replace = false } = {}) {
     try {
-      await puter.fs.write(monthPath(key), text, { createMissingParents: true });
+      await everything.fs.write(monthPath(key), text, { createMissingParents: true });
     } catch (err) {
       if (!isNetworkError(err) || !offline.setMonth(key, text)) throw err;
       offline.markDirty(`fs:${key}`, { replace });
@@ -604,7 +604,7 @@ class Store extends EventTarget {
   /* ---------- picking up another device's work ---------- */
 
   /**
-   * Re-read from Puter and reconcile: the whole point of one account
+   * Re-read from Everything and reconcile: the whole point of one account
    * holding the data is tracking on a phone and reviewing on a laptop, and
    * until now nothing here ever looked at the server again after boot.
    *
@@ -718,7 +718,7 @@ class Store extends EventTarget {
     for (const key of keys) {
       let remote;
       try {
-        const blob = await puter.fs.read(monthPath(key));
+        const blob = await everything.fs.read(monthPath(key));
         remote = JSON.parse(await blob.text());
       } catch {
         continue; // unreachable or not written yet: nothing to reconcile
@@ -740,7 +740,7 @@ class Store extends EventTarget {
   }
 
   /**
-   * Push queued offline writes to Puter. Every queued document's newest
+   * Push queued offline writes to Everything. Every queued document's newest
    * version lives in the mirror, so replaying just re-sends those values
    * in the order they were queued. Stops at the first failure (order
    * matters: the month index precedes month files). Returns how many
@@ -780,7 +780,7 @@ class Store extends EventTarget {
               const remote = await this.#kvReadRemote(key);
               if (Array.isArray(remote)) value = [...new Set([...remote, ...value])].sort();
             }
-            await puter.kv.set(key, value);
+            await everything.kv.set(key, value);
             if (key === KV.months) {
               this.months = value;
               offline.setKV(key, JSON.stringify(value));
@@ -824,7 +824,7 @@ class Store extends EventTarget {
             } catch {
               merged = null; // fall through with the mirrored text
             }
-            await puter.fs.write(monthPath(key), payload, { createMissingParents: true });
+            await everything.fs.write(monthPath(key), payload, { createMissingParents: true });
             // Landed: what was written is now both this device's copy and
             // its picture of the server.
             if (merged) {
@@ -1130,7 +1130,7 @@ class Store extends EventTarget {
       }
       if (text === undefined) {
         try {
-          const blob = await puter.fs.read(monthPath(key));
+          const blob = await everything.fs.read(monthPath(key));
           text = await blob.text();
           offline.setMonth(key, text);
         } catch (err) {
@@ -1187,7 +1187,7 @@ class Store extends EventTarget {
     if (!this.months.includes(key)) return entries;
     let remote;
     try {
-      const blob = await puter.fs.read(monthPath(key));
+      const blob = await everything.fs.read(monthPath(key));
       remote = JSON.parse(await blob.text());
     } catch {
       return entries;
@@ -2153,7 +2153,7 @@ class Store extends EventTarget {
     let stamp = Date.now();
     if (this.settings.businessLogo === logoPath(stamp, ext)) stamp += 1;
     const path = logoPath(stamp, ext);
-    await puter.fs.write(path, blob, { createMissingParents: true });
+    await everything.fs.write(path, blob, { createMissingParents: true });
     await this.updateSettings({ businessLogo: path });
     return path;
   }
@@ -2167,7 +2167,7 @@ class Store extends EventTarget {
   async readLogo(path) {
     if (!isLogoPath(path)) return null;
     try {
-      const out = await puter.fs.read(path);
+      const out = await everything.fs.read(path);
       return out instanceof Blob ? out : null;
     } catch {
       return null;
@@ -2185,7 +2185,7 @@ class Store extends EventTarget {
   async writeBackup(now = Date.now()) {
     const date = isoOf(new Date(now));
     const text = JSON.stringify(await this.exportAll());
-    await puter.fs.write(backupPath(date), text, { createMissingParents: true });
+    await everything.fs.write(backupPath(date), text, { createMissingParents: true });
     const entry = { date, size: text.length };
     // A second snapshot on the same day overwrites the same file, so the
     // index keeps one row per day.
@@ -2203,7 +2203,7 @@ class Store extends EventTarget {
     // Delete pruned files only after the index stopped referencing them:
     // a leftover file is harmless, a listed-but-missing one is a scare.
     for (const b of pruned) {
-      await puter.fs.delete(backupPath(b.date)).catch(() => {});
+      await everything.fs.delete(backupPath(b.date)).catch(() => {});
     }
     this.#emit();
     return entry;
@@ -2226,7 +2226,7 @@ class Store extends EventTarget {
 
   /** Parsed contents of one stored snapshot. */
   async readBackup(date) {
-    const blob = await puter.fs.read(backupPath(date));
+    const blob = await everything.fs.read(backupPath(date));
     return JSON.parse(await blob.text());
   }
 
@@ -2289,7 +2289,7 @@ class Store extends EventTarget {
       this.#monthCache.delete(key);
       offline.setMonth(key, null);
       offline.clearDirty(`fs:${key}`);
-      await puter.fs.delete(monthPath(key)).catch(() => {});
+      await everything.fs.delete(monthPath(key)).catch(() => {});
     }
     const settings = (data.settings && typeof data.settings === 'object') ? data.settings : {};
     /* Stamped as a write, not with whatever the file carried. Settings

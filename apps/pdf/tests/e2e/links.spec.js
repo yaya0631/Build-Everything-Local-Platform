@@ -4,10 +4,10 @@ import { readFile } from 'node:fs/promises';
 import { protectPdf } from '../../src/core/security.js';
 import { listLinks } from '../../src/core/links.js';
 
-const PUTER_MOCK = `window.puter = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async () => ({}) }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
-async function mockPuter(page) {
-  await page.route('**/sdk/puter.js', (route) =>
-    route.fulfill({ contentType: 'application/javascript', body: PUTER_MOCK }),
+const EVERYTHING_MOCK = `window.everything = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async () => ({}) }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
+async function mockEverything(page) {
+  await page.route('**/sdk/everything.js', (route) =>
+    route.fulfill({ contentType: 'application/javascript', body: EVERYTHING_MOCK }),
   );
 }
 async function openPdf(page, doc) {
@@ -81,7 +81,7 @@ for (const indirectAction of [false, true])
   test(`numeric page links follow the same page through insertion, reordering, download and undo (indirect action ${indirectAction})`, async ({
     page,
   }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     const doc = await linkedPdf();
     const link = doc.context.lookup(doc.getPage(0).node.Annots().get(1));
@@ -144,7 +144,7 @@ test('links edit on click, open explicitly, and can be removed from their menu',
   page,
   context,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await linkedPdf());
   const web = page.getByRole('button', { name: 'Link to example.com' });
@@ -205,7 +205,7 @@ test('links edit on click, open explicitly, and can be removed from their menu',
 });
 
 test('encoded address limits keep the link dialog open for correction', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await linkedPdf());
   await page.getByRole('button', { name: 'Link to example.com', exact: true }).click();
@@ -233,7 +233,7 @@ test('encoded address limits keep the link dialog open for correction', async ({
 });
 
 test('links with script, data, or file addresses never become anchors', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   const font = await doc.embedFont(StandardFonts.Helvetica);
@@ -294,7 +294,7 @@ test('links with script, data, or file addresses never become anchors', async ({
 test('the Link tool links a dragged area to a typed address or a page, with undo', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   const font = await doc.embedFont(StandardFonts.Helvetica);
@@ -360,7 +360,7 @@ for (const [address, expected] of [
   ['[2001:db8::1]:8443/docs', 'https://[2001:db8::1]:8443/docs'],
 ])
   test(`a link to ${address} survives export and reopening`, async ({ page }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/');
     await expect(page.locator('.page-caption')).toHaveText('Page 1 of 1');
     await menu(page, 'Link…');
@@ -383,7 +383,7 @@ test('a link address copies without the clipboard API, as a plain-http page has'
   context,
 }) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
-  await mockPuter(page);
+  await mockEverything(page);
   // The clipboard API belongs to secure contexts alone; a page served over plain http has none.
   await page.addInitScript(() => {
     Object.defineProperty(navigator, 'clipboard', { get: () => undefined, configurable: true });
@@ -405,7 +405,7 @@ test('a link address copies without the clipboard API, as a plain-http page has'
 test('clicking or using the keyboard edits a link without navigating, with cancel, undo, redo and export', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const source = await linkedPdf();
   const original = listLinks(source, 0)[0];
@@ -476,7 +476,7 @@ test('clicking or using the keyboard edits a link without navigating, with cance
 test('protected links offer explicit navigation while editing remains disabled', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const source = await linkedPdf();
   const bytes = await protectPdf(await source.save(), {
@@ -502,7 +502,7 @@ test('protected links offer explicit navigation while editing remains disabled',
 test('saving an unchanged page link at a different zoom preserves its exact destination and history', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const source = await linkedPdf();
   source.getPage(0).setRotation(degrees(90));
@@ -529,7 +529,7 @@ test('saving an unchanged page link at a different zoom preserves its exact dest
 
 for (const flags of [64, 128, 128 | 512]) {
   test(`links with flags ${flags} cannot be edited or removed`, async ({ page }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     const doc = await linkedPdf();
     for (const ref of doc.getPage(0).node.Annots().asArray())
@@ -565,7 +565,7 @@ for (const operation of ['edit', 'remove'])
   test(`an imported link with an indirect subtype supports ${operation}, history, and reopening`, async ({
     page,
   }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     const source = await linkedPdf();
     const original = listLinks(source, 0)[0];
@@ -633,7 +633,7 @@ for (const dismiss of ['Escape', 'Cancel', 'Save link'])
     test(`${dismiss} allows reopening ${destination} while the previous close event is pending`, async ({
       page,
     }) => {
-      await mockPuter(page);
+      await mockEverything(page);
       await page.goto('/#library');
       await openPdf(page, await linkedPdf());
       const web = page.getByRole('button', { name: 'Link to example.com', exact: true });
@@ -670,7 +670,7 @@ for (const leave of ['next page', 'library'])
   test(`a link activation awaiting a close event is cancelled when navigating to the ${leave}`, async ({
     page,
   }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     await openPdf(page, await linkedPdf());
     await page.getByRole('button', { name: 'Link to example.com', exact: true }).click();
@@ -699,7 +699,7 @@ for (const index of [0, 1])
     test(`editing a shared ${kind} link on page ${index + 1} returns focus to that link for keyboard reopening`, async ({
       page,
     }) => {
-      await mockPuter(page);
+      await mockEverything(page);
       await page.goto('/#library');
       const doc = await linkedPdf();
       doc.getPage(1).node.set(PDFName.of('Annots'), doc.getPage(0).node.Annots().clone());

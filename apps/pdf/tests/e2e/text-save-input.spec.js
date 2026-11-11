@@ -7,7 +7,7 @@ for (const kind of ['new', 'existing'])
     test(`${kind} text stays locked during a pending ${fails ? 'failed' : 'successful'} save and resumes editing after failure`, async ({
       page,
     }) => {
-      await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
+      await page.route('**/sdk/everything.js', (route) => route.fulfill({ body: '' }));
       await page.goto('/#library');
       const doc = await PDFDocument.create();
       doc.addPage([500, 600]).drawText('Original text', { x: 60, y: 350, size: 18 });

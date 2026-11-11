@@ -158,7 +158,7 @@ export function writeStl(scene: ExportScene, opts: StlWriteOptions = {}): { byte
     const l = nn.length();
     return l > 0 ? nn.multiplyScalar(1 / l) : nn.set(0, 0, 0);
   };
-  const name = (opts.name ?? 'Puter3D').replace(/\s+/g, '_');
+  const name = (opts.name ?? 'Everything3D').replace(/\s+/g, '_');
   if (opts.ascii) {
     const f = (x: number) => x.toExponential(6);
     const out: string[] = [`solid ${name}`];
@@ -173,7 +173,7 @@ export function writeStl(scene: ExportScene, opts: StlWriteOptions = {}): { byte
   }
   const bytes = new Uint8Array(84 + n * 50);
   const dv = new DataView(bytes.buffer);
-  const header = new TextEncoder().encode(`Binary STL exported by Puter 3D`.slice(0, 79));
+  const header = new TextEncoder().encode(`Binary STL exported by Everything 3D`.slice(0, 79));
   bytes.set(header, 0);
   dv.setUint32(80, n, true);
   for (let i = 0; i < n; i++) {

@@ -50,7 +50,7 @@ beforeEach(() => {
   vi.useFakeTimers();
   posts = [];
   drafts = draftStore();
-  globalThis.puter = {
+  globalThis.everything = {
     ui: {}, APIOrigin: 'https://api.example', authToken: 't',
     fs: { write: async () => {} },
   };
@@ -63,7 +63,7 @@ beforeEach(() => {
 afterEach(() => {
   vi.useRealTimers();
   document.querySelectorAll('.modal-root, .toast').forEach((node) => node.remove());
-  delete globalThis.puter;
+  delete globalThis.everything;
   delete globalThis.fetch;
 });
 

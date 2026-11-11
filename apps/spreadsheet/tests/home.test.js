@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { homeView } from '../src/views/home.js';
-import * as P from '../src/lib/puter.js';
+import * as P from '../src/lib/everything.js';
 import { closeMenu } from '../src/ui/menu.js';
 
 vi.mock('../src/lib/session.js', () => ({ session: { settings: {}, username: 'Test user', signedOut: false, addEventListener() {}, removeEventListener() {} } }));
@@ -58,7 +58,7 @@ describe('duplicating files from the home screen', () => {
       files.set(racedPath, otherFile);
       return new Uint8Array([1, 2, 3]);
     });
-    vi.stubGlobal('puter', { fs: {
+    vi.stubGlobal('everything', { fs: {
       mkdir: vi.fn(),
       write: vi.fn(async (target, blob, options) => {
         if (files.has(target) && options.dedupeName) target = copyPath;

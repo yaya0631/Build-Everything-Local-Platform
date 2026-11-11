@@ -1,9 +1,9 @@
 /**
- * Sharing collections between Puter users with Puter's file sharing.
+ * Sharing collections between Everything users with Everything's file sharing.
  *
  * Owners share the collection's own cloud file (workspace/collections/<id>.json)
  * with people by username or email, as view or edit. People it was shared with
- * see it under "Shared with you": the app reads the file at the path Puter
+ * see it under "Shared with you": the app reads the file at the path Everything
  * gives it, keeps a local copy marked with `shared: { path, owner, mode }`, and,
  * for edit access, writes changes back to the same file. Changes from others
  * are picked up when the app starts or regains focus, newest edit winning.

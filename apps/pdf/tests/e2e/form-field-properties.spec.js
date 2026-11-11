@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { PDFDocument, PDFName, PDFString, degrees } from 'pdf-lib';
 import { readFile } from 'node:fs/promises';
 
-const PUTER_MOCK = `window.puter = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async () => ({}) }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
+const EVERYTHING_MOCK = `window.everything = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async () => ({}) }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
 const settled = (page) => expect(page.locator('.editor')).toHaveAttribute('aria-busy', 'false');
 async function openPdf(page, doc, name = 'form.pdf') {
   const chooser = page.waitForEvent('filechooser');
@@ -37,8 +37,8 @@ async function retitle(page, target, dialogName, tooltip) {
 test.skip(({ isMobile }) => isMobile, 'desktop workspace');
 
 test.beforeEach(async ({ page }) => {
-  await page.route('**/sdk/puter.js', (route) =>
-    route.fulfill({ contentType: 'application/javascript', body: PUTER_MOCK }),
+  await page.route('**/sdk/everything.js', (route) =>
+    route.fulfill({ contentType: 'application/javascript', body: EVERYTHING_MOCK }),
   );
   await page.goto('/#library');
 });

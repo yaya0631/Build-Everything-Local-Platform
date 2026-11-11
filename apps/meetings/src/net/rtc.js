@@ -7,7 +7,7 @@
  * bitrate (and letting the encoder drop resolution before framerate)
  * keeps motion smooth at every call size.
  *
- * Mesh economics are ours, not the SDK's: puter.peer applies whatever
+ * Mesh economics are ours, not the SDK's: everything.peer applies whatever
  * limits we hand it and re-applies them after every renegotiation.
  */
 export function cameraSendProfile(peerCount) {
@@ -35,7 +35,7 @@ export const SCREEN_SEND_PROFILE = Object.freeze({
 });
 
 /**
- * How long puter.peer spends rescuing a link in place (ICE restarts) before
+ * How long everything.peer spends rescuing a link in place (ICE restarts) before
  * closing it, counted from the link's first sign of trouble. Handed to the
  * SDK as `recoveryTimeout` on every serve() and connect().
  *

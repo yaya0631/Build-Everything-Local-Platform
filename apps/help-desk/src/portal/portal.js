@@ -1,8 +1,8 @@
 /**
  * The public help center of one help desk, at #/help/<server>/<desk>/...
  * Customers search and read published articles, send requests, and follow
- * up on them. No Puter account is needed; requests sent from this device are
- * remembered here, and visitors signed in to Puter also see the requests
+ * up on them. No Everything account is needed; requests sent from this device are
+ * remembered here, and visitors signed in to Everything also see the requests
  * linked to their account.
  *
  *   /                    home: search, promoted articles, categories
@@ -26,7 +26,7 @@ import { onRoute, go, parse } from '../ui/router.js';
 import { sanitizeHtml } from '../shared/html.js';
 import { initials, isEmail, LIMITS } from '../shared/model.js';
 import { PortalApi, PortalError, savedRequests, saveRequest, keyFor, searchArticles } from '../client/portal-api.js';
-import { sdk, isSignedIn, currentUser, signIn } from '../client/puter.js';
+import { sdk, isSignedIn, currentUser, signIn } from '../client/everything.js';
 
 export const PUBLIC_STATUS = {
   open: { label: 'Open', hint: 'We are working on it' },
@@ -187,7 +187,7 @@ export function mountPortal(root, route) {
       h('span.spacer'),
       h('a', { href: `${location.pathname}${location.search}#/home` }, 'Agent sign in'),
       h('span.subtle', '·'),
-      h('span', 'Powered by ', h('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Puter'))));
+      h('span', 'Powered by ', h('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Everything'))));
     paintTheme();
   }
 
@@ -462,7 +462,7 @@ export function mountPortal(root, route) {
     // the desk asks for it, so offer the sign-in instead of a form that
     // cannot be sent.
     if (info.portal?.signInRequired && !isSignedIn()) {
-      const btn = h('button.btn.btn-primary.btn-lg', { type: 'button', disabled: !sdk()?.auth }, 'Sign in with Puter');
+      const btn = h('button.btn.btn-primary.btn-lg', { type: 'button', disabled: !sdk()?.auth }, 'Sign in with Everything');
       btn.addEventListener('click', async () => {
         btn.disabled = true;
         try {
@@ -477,7 +477,7 @@ export function mountPortal(root, route) {
         crumbs([{ label: 'Help center', href: link() }, { label: 'Submit a request' }]),
         h('h1', 'Submit a request'),
         h('div.hc-card.hc-signin',
-          h('p.hc-lead', 'Sign in with your free Puter account to send a request. Your requests and our replies will then be with you on any device.'),
+          h('p.hc-lead', 'Sign in with your free Everything account to send a request. Your requests and our replies will then be with you on any device.'),
           btn)));
       return;
     }

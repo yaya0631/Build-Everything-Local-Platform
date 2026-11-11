@@ -7,7 +7,7 @@
 //   { kind: 'pattern', id }
 //   { kind: 'channel', id }                        (rack channel, e.g. onto a mixer insert)
 //   { kind: 'automation', id }                     (automation clip source, playlist picker)
-//   { kind: 'file', path, name, size }             (a Puter file)
+//   { kind: 'file', path, name, size }             (an Everything file)
 //   { kind: 'sample', id, name }                   (a sample already in the project)
 //
 // Files dragged in from the operating system arrive as e.dataTransfer.files.

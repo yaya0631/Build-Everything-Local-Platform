@@ -19,8 +19,8 @@ addTranslations({
     "Cette modification ajoute un fichier qui n’a pas été téléversé.",
   "Too much feedback at once. Try again in an hour.":
     "Trop de commentaires d’un coup. Réessayez dans une heure.",
-  "Sign in with Puter to continue.":
-    "Connectez-vous avec Puter pour continuer.",
+  "Sign in with Everything to continue.":
+    "Connectez-vous avec Everything pour continuer.",
   "Board not found.": "Tableau introuvable.",
   "You no longer have access to this board.":
     "Vous n’avez plus accès à ce tableau.",
@@ -163,8 +163,8 @@ addTranslations({
     "Cette adresse courriel est déjà liée à un autre compte.",
   "Your identity provider manages your email address. Ask your administrator to change it.":
     "Votre fournisseur d’identité gère votre adresse courriel. Demandez à votre administrateur de la modifier.",
-  "The verification email could not be sent. Ask your administrator to check the organization's Puter plan.":
-    "Le courriel de vérification n’a pas pu être envoyé. Demandez à votre administrateur de vérifier l’abonnement Puter de l’organisation.",
+  "The verification email could not be sent. Ask your administrator to check the organization's Everything plan.":
+    "Le courriel de vérification n’a pas pu être envoyé. Demandez à votre administrateur de vérifier l’abonnement Everything de l’organisation.",
   "Use an email address in your organization's domain, or ask an administrator for an invitation.":
     "Utilisez une adresse courriel du domaine de votre organisation, ou demandez une invitation à un administrateur.",
   "Verify an email address in your organization's domain, or ask an administrator for an invitation.":
@@ -225,8 +225,8 @@ addTranslations({
     "Choisissez une destination SIEM pour envoyer un événement d’essai.",
   "The webhook test failed.": "L’essai du webhook a échoué.",
   "Could not reach Slack.": "Impossible de joindre Slack.",
-  "Puter enforces multifactor authentication at sign-in, so there is nothing to turn on here.":
-    "Puter impose l’authentification multifacteur à la connexion; il n’y a donc rien à activer ici.",
+  "Everything enforces multifactor authentication at sign-in, so there is nothing to turn on here.":
+    "Everything impose l’authentification multifacteur à la connexion; il n’y a donc rien à activer ici.",
   "Choose at least one scope.": "Choisissez au moins une portée.",
   "Choose a whole number of days for the key to expire.":
     "Choisissez un nombre entier de jours avant l’expiration de la clé.",

@@ -364,7 +364,7 @@ export class Editor {
     }
   }
   /** Let the user work while a task waits on something that may never answer
-   * (a Puter picker that was dismissed); later steps run through `run` again. */
+   * (an Everything picker that was dismissed); later steps run through `run` again. */
   release() {
     this.busy = false;
     this.root.removeAttribute('aria-busy');

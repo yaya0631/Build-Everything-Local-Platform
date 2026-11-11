@@ -3,11 +3,11 @@
  * calling side).
  *
  * Unlike the workspace worker — one per workspace owner, deployed into their
- * own account — this one is deployed ONCE, by the app's developer account:
+ * own account — this one is shared by the app:
  * outbound mail has to be authorized by a worker's own token, and that
  * capability must not be minted per user, so it lives somewhere the app
  * controls. The cost does not: the app calls this worker with
- * puter.workers.exec(), which forwards the signed-in user's Puter token, and
+ * everything.workers.exec(), which forwards the signed-in user's Everything token, and
  * each message is sent with that token in hand — so every send is billed to,
  * and rate-limited as, the person who asked for it, never the app owner.
  *
@@ -20,8 +20,8 @@
  *
  * An app-owned relay that forwarded whatever it was handed would be a spam
  * cannon wearing Teamchat's sending reputation, so it never does:
- *   - no Puter session, no send. `user` is only populated for callers that
- *     come through puter.workers.exec(); everyone else gets 401.
+ *   - no Everything session, no send. `user` is only populated for callers that
+ *     come through everything.workers.exec(); everyone else gets 401.
  *   - the caller supplies the PARTS of an invitation (server, code, names, a
  *     note), never a message. Subject, body, and above all the link are
  *     composed here: the one URL a mail carries is `app`/#/join/... or
@@ -36,10 +36,10 @@
  *
  *   tcmail:rate:<sha256(callerId)>:<YYYY-MM-DD> -> count  (expires: RATE_TTL)
  *
- * Deploy with:  puter worker deploy worker/email.js teamchat-email
+ * Registered automatically by the local server as teamchat-email.
  */
 
-// '2': redeployed to pick up the current worker runtime (puter.js with
+// '2': redeployed to pick up the current worker runtime (everything.js with
 //      email.sendTransactional); /health and /whoami now report it as runtime.
 const WORKER_VERSION = '2';
 
@@ -59,10 +59,10 @@ function ownerOf(ctx) {
   return (ctx && ctx.me) || (typeof me !== 'undefined' ? me : null);
 }
 
-/** The puter.js build the platform baked into this deploy (its preamble's
+/** The everything.js build the platform baked into this deploy (its preamble's
  *  first line). Null under the test harness, which has no preamble. */
 function workerRuntime() {
-  return typeof __PUTER_PREAMBLE_VERSION__ === 'string' ? __PUTER_PREAMBLE_VERSION__ : null;
+  return typeof __EVERYTHING_PREAMBLE_VERSION__ === 'string' ? __EVERYTHING_PREAMBLE_VERSION__ : null;
 }
 
 /** The signed-in caller. The runtime has called this both `user` and `requestor`. */
@@ -72,7 +72,7 @@ function callerOf(ctx) {
 
 /**
  * A stable id for the caller — it keys the daily-cap records. The live
- * platform hands over a caller whose only own property may be `puter`, so
+ * platform hands over a caller whose only own property may be `everything`, so
  * try the documented names first, then the nested ones, then getUser().
  * '' means "could not tell", which is refused rather than guessed at.
  */
@@ -80,7 +80,7 @@ async function callerIdOf(caller) {
   if (!caller) return '';
   const own = caller.uuid || caller.uid || caller.user_uuid || caller.username;
   if (typeof own === 'string' && own) return own;
-  const p = caller.puter;
+  const p = caller.everything;
   const nested = p && (p.uuid || p.uid || p.username);
   if (typeof nested === 'string' && nested) return nested;
   try {
@@ -94,7 +94,7 @@ async function callerIdOf(caller) {
 
 function kvOf(ctx) {
   const owner = ownerOf(ctx);
-  return owner && owner.puter && owner.puter.kv;
+  return owner && owner.everything && owner.everything.kv;
 }
 
 function json(body, status = 200) {
@@ -296,8 +296,8 @@ function htmlBody(req) {
  * A send has two halves — who pays (the caller) and what authorizes it (this
  * worker) — and the platform accepts them in either arrangement:
  *
- *   me.puter.email.sendTransactional({ …, requesterToken: user.puter.authToken })
- *   user.puter.email.sendTransactional({ …, emailAccessToken: me.puter.authToken })
+ *   me.everything.email.sendTransactional({ …, requesterToken: user.everything.authToken })
+ *   user.everything.email.sendTransactional({ …, emailAccessToken: me.everything.authToken })
  *
  * Both bill the caller; which name a given runtime knows has moved, and a
  * worker that only spoke one of them would silently stop sending. So try the
@@ -309,8 +309,8 @@ function htmlBody(req) {
 let preferredForm = 0;
 
 /** Prefer the current SDK method; older worker runtimes still expose `send`. */
-function mailerOf(puter) {
-  const email = puter && puter.email;
+function mailerOf(everything) {
+  const email = everything && everything.email;
   if (email && typeof email.sendTransactional === 'function') {
     return (message) => email.sendTransactional(message);
   }
@@ -318,8 +318,8 @@ function mailerOf(puter) {
   return (message) => email.send(message);
 }
 
-function hasMailer(puter) {
-  const email = puter && puter.email;
+function hasMailer(everything) {
+  const email = everything && everything.email;
   return Boolean(email && (typeof email.sendTransactional === 'function' || typeof email.send === 'function'));
 }
 
@@ -330,8 +330,8 @@ function sendForms(ctx) {
   const owner = ownerOf(ctx);
   const caller = callerOf(ctx);
   return [
-    (message) => mailerOf(owner.puter)({ ...message, requesterToken: caller.puter && caller.puter.authToken }),
-    (message) => mailerOf(caller.puter)({ ...message, emailAccessToken: owner.puter && owner.puter.authToken }),
+    (message) => mailerOf(owner.everything)({ ...message, requesterToken: caller.everything && caller.everything.authToken }),
+    (message) => mailerOf(caller.everything)({ ...message, emailAccessToken: owner.everything && owner.everything.authToken }),
   ];
 }
 
@@ -415,33 +415,33 @@ router.get('/health', async () => json({ ok: true, version: WORKER_VERSION, runt
  *  presence only, never a value, a token, or an address. */
 router.get('/whoami', async (ctx) => {
   const caller = callerOf(ctx);
-  const p = caller && caller.puter;
+  const p = caller && caller.everything;
   const owner = ownerOf(ctx);
   return json({
     ok: true,
     version: WORKER_VERSION,
     runtime: workerRuntime(),
-    sawAuthHeader: Boolean(ctx.request.headers.get('puter-auth')),
+    sawAuthHeader: Boolean(ctx.request.headers.get('everything-auth')),
     boundAs: ctx.user ? 'user' : ctx.requestor ? 'requestor' : null,
     has: {
-      puter: Boolean(p),
+      everything: Boolean(p),
       authToken: Boolean(p && p.authToken),
       email: hasMailer(p),
     },
     identified: Boolean(await callerIdOf(caller)),
     owner: {
-      email: Boolean(owner && owner.puter && owner.puter.email),
-      authToken: Boolean(owner && owner.puter && owner.puter.authToken),
+      email: Boolean(owner && owner.everything && owner.everything.email),
+      authToken: Boolean(owner && owner.everything && owner.everything.authToken),
     },
   });
 });
 
 router.post('/invites', async (ctx) => {
   // A caller context exists only for requests that came through
-  // puter.workers.exec(), which forwards their Puter session. No session, no
+  // everything.workers.exec(), which forwards their Everything session. No session, no
   // send — and no way to bill anyone for one either.
   const caller = callerOf(ctx);
-  if (!caller || !caller.puter) return json({ error: 'sign_in_required', detail: 'no_caller' }, 401);
+  if (!caller || !caller.everything) return json({ error: 'sign_in_required', detail: 'no_caller' }, 401);
   const callerId = await callerIdOf(caller);
   if (!callerId) return json({ error: 'sign_in_required', detail: 'no_identity' }, 401);
 

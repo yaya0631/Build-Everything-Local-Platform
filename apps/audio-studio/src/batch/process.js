@@ -1,7 +1,7 @@
 // Processing one Batch Process item: load the audio (an open document's
-// current state or a range of it, a file from this device or a Puter file), apply the chosen
+// current state or a range of it, a file from this device or an Everything file), apply the chosen
 // Favorite to the whole file, encode it with the batch export options in the
-// export worker and hand the Blob to the output (a Puter folder or the ZIP
+// export worker and hand the Blob to the output (an Everything folder or the ZIP
 // collector). Open documents are never modified.
 
 import { getEffect } from '../effects/registry.js';
@@ -11,7 +11,7 @@ import * as E from '../model/edits.js';
 import { peakOf } from '../effects/commands.js';
 import { exportAudio } from '../export/export.js';
 import { audioFileFromBlob } from '../storage/files.js';
-import * as puter from '../storage/puter.js';
+import * as everything from '../storage/everything.js';
 import { exportOptionsFor } from './queue.js';
 import { UserError } from '../lib/errors.js';
 import { batchStepsProblem, applyStepsToState } from '../effects/favorite-sequence.js';
@@ -66,8 +66,8 @@ export async function loadItem(item) {
   if (s.type === 'doc') return { state: s.doc.state, doc: s.doc };
   if (s.type === 'range') return { state: E.cropRange(s.doc.state, s.start, s.end), doc: s.doc };
   let blob = s.file;
-  if (s.type === 'puter') blob = typeof s.item?.read === 'function' ? await s.item.read() : await puter.readFile(s.path);
-  const doc = await audioFileFromBlob(blob, item.name, s.type === 'puter' ? { type: 'puter', path: s.path } : { type: 'local' });
+  if (s.type === 'everything') blob = typeof s.item?.read === 'function' ? await s.item.read() : await everything.readFile(s.path);
+  const doc = await audioFileFromBlob(blob, item.name, s.type === 'everything' ? { type: 'everything', path: s.path } : { type: 'local' });
   return { state: doc.state, doc };
 }
 

@@ -23,7 +23,7 @@ async function native(wb, patch) {
     X.CFB.utils.cfb_add(zip, path, new TextEncoder().encode(doc.documentElement.outerHTML));
   }
   const part = X.CFB.find(zip, '/xl/workbook.xml');
-  X.CFB.utils.cfb_add(zip, '/xl/workbook.xml', new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')));
+  X.CFB.utils.cfb_add(zip, '/xl/workbook.xml', new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')));
   return { wb: await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' })), doc };
 }
 const boolean = (doc, value) => {

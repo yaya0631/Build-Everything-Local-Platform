@@ -56,7 +56,7 @@ function pick(list, i) {
 }
 
 window.__seed = async function seed() {
-  const p = window.puter;
+  const p = window.everything;
   const me = await p.auth.getUser();
   const doc = await p.kv.get('hdu:me');
   const ref = doc?.last;

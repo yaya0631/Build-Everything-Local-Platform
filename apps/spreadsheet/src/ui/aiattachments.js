@@ -2,7 +2,7 @@
  * Reading a file the user attaches to a message into what the model is sent (core/aiattach.js): an image fitted
  * to the vision API's limits, a PDF checked for its length, a text file as its text.
  *
- * The image fitting is Puter Builder's (src/tools/fs/view_image.js): the API refuses an image over 5 MB or 8000 px
+ * The image fitting is Everything Builder's (src/tools/fs/view_image.js): the API refuses an image over 5 MB or 8000 px
  * and scales anything over about 1568 px on its long edge down itself, at full cost, so an image is sent at most
  * that size. A phone photo is routinely 3–12 MB and 4000 px or more.
  */

@@ -24,7 +24,7 @@ beforeEach(() => {
   mailbox = createSampleMailbox();
   root = document.createElement('div');
   document.body.append(root);
-  vi.stubGlobal('puter', { fs: mailbox.fs, ui: {}, APIOrigin: 'https://api.example', authToken: 'test' });
+  vi.stubGlobal('everything', { fs: mailbox.fs, ui: {}, APIOrigin: 'https://api.example', authToken: 'test' });
   vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true })));
   compose = vi.fn((prefill, options) => {
     modal = openCompose({ username: 'sample', mailPath: mailbox.mailPath, prefill, ...options, undoSend: 0 });
@@ -87,7 +87,7 @@ describe('sent replies in the reader', () => {
     other.click();
     await vi.waitFor(() => expect(root.querySelector('.msg-subject').textContent).not.toContain('Thursday walkthrough'));
     const subject = root.querySelector('.msg-subject').textContent;
-    const raw = buildMessage({ from: 'sample@puter.email', to: ['priya@example.com'], subject: prefill.subject,
+    const raw = buildMessage({ from: 'sample@everything.email', to: ['priya@example.com'], subject: prefill.subject,
       body: 'Late copy', date: new Date(), messageId: '<late@example.com>', inReplyTo: prefill.inReplyTo, references: prefill.references });
     const path = await fileSentCopy({ fs: mailbox.fs, mailPath: mailbox.mailPath, raw, subject: prefill.subject, date: new Date() });
     options.onFiled(path);

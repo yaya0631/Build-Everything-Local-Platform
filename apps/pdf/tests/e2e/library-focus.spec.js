@@ -5,7 +5,7 @@ for (const action of ['Rename', 'Duplicate', 'Delete'])
     test(`${action} completion ${movedFocus ? 'preserves newer keyboard focus' : 'restores focus after refreshing the library'}`, async ({
       page,
     }) => {
-      await page.route('**/sdk/puter.js', (route) =>
+      await page.route('**/sdk/everything.js', (route) =>
         route.fulfill({
           contentType: 'application/javascript',
           body: `
@@ -13,7 +13,7 @@ for (const action of ['Rename', 'Duplicate', 'Delete'])
             const hold = update => new Promise(resolve => {
               window.finishLibraryAction = () => { update(); resolve({}); };
             });
-            window.puter = {
+            window.everything = {
               env: 'web',
               auth: {isSignedIn: () => true, getUser: async () => ({username: 'test-user'})},
               fs: {
@@ -65,10 +65,10 @@ for (const action of ['Rename', 'Duplicate', 'Delete'])
 test('a question dialog gives screen readers its message as well as its title', async ({
   page,
 }) => {
-  await page.route('**/sdk/puter.js', (route) =>
+  await page.route('**/sdk/everything.js', (route) =>
     route.fulfill({
       contentType: 'application/javascript',
-      body: `window.puter = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username: 'test-user'}) }, fs: { readdir: async () => [{ name: 'report.pdf', path: 'PDF Editor/report.pdf' }] } };`,
+      body: `window.everything = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username: 'test-user'}) }, fs: { readdir: async () => [{ name: 'report.pdf', path: 'PDF Editor/report.pdf' }] } };`,
     }),
   );
   await page.goto('/#library');
@@ -77,7 +77,7 @@ test('a question dialog gives screen readers its message as well as its title', 
   // The focus lands on a button, so the question itself is read only as the description.
   const confirm = page.getByRole('dialog', { name: 'Delete PDF?', exact: true });
   await expect(confirm).toHaveAccessibleDescription(
-    'Delete report.pdf from your Puter cloud? This cannot be undone.',
+    'Delete report.pdf from your Everything cloud? This cannot be undone.',
   );
   // A dialog of fields and choices has no single message to read out.
   await confirm.getByRole('button', { name: 'Cancel', exact: true }).click();

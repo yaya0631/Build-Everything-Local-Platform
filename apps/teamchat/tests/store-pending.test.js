@@ -3,7 +3,7 @@ import { describe/**
  * the store keeps a read's cleared badge, a notification setting, the
  * Activity badge and a mark-unread over a bootstrap or a host refetch built
  * before the write landed, on this workspace and on a shared channel's host
- * alike. Drives the store in node with a fake puter.workers.exec whose
+ * alike. Drives the store in node with a fake everything.workers.exec whose
  * answers can be held back.
  */
 , it, expect, beforeEach, afterEach } from 'vitest';
@@ -23,7 +23,7 @@ beforeEach(() => {
   gate = null;
   readGate = null;
   calls.length = 0;
-  globalThis.puter = {
+  globalThis.everything = {
     workers: {
       exec: async (url, init = {}) => {
         const u = new URL(url);

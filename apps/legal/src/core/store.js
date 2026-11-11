@@ -42,7 +42,7 @@ const NUMBERED = { matters: 'matter', bills: 'bill' };
 const FLUSH_MAX_PUTS = 500;
 const FLUSH_MAX_DELS = 100;
 
-// Error codes Puter KV uses when it refuses the data itself (a value or key
+// Error codes Everything KV uses when it refuses the data itself (a value or key
 // over the size limit, a malformed request), which sending again cannot fix.
 const REJECTED_CODES = new Set(['value_too_large', 'key_too_large', 'key_undefined', 'items_required', 'invalid_item', 'bad_request']);
 
@@ -226,7 +226,7 @@ export function createStore({ backend, cache = null, now = () => new Date().toIS
   function isPermanent(err) {
     const s = Number(err?.status) || 0;
     if (s) return s >= 400 && s < 500 && ![401, 403, 408, 425, 429].includes(s);
-    // Puter KV refuses bad data with a plain { message, code } and no status.
+    // Everything KV refuses bad data with a plain { message, code } and no status.
     return REJECTED_CODES.has(err?.code);
   }
 

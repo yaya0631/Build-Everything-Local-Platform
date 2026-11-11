@@ -47,7 +47,7 @@ export function openOnboarding() {
           style: { borderRadius: '14px', marginBottom: '14px' },
         }),
         el('h3', { style: { fontSize: '19px' } }, 'Your stock, your cloud'),
-        el('p', {}, 'Track products, quantities, and costs across locations. Stored in your own Puter account, never sold or shared.')
+        el('p', {}, 'Track products, quantities, and costs across locations. Stored in your own Everything account, never sold or shared.')
       ),
       el('button.btn.btn-primary.btn-block', {
         type: 'button', style: { padding: '13px' },

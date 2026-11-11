@@ -292,7 +292,7 @@ export function mergeCellStyles(wb, other, { replace = false } = {}) {
 }
 
 /**
- * Merge Styles…: pick a spreadsheet (from the app's folder, Puter's file picker, or this device), then its
+ * Merge Styles…: pick a spreadsheet (from the app's folder, Everything's file picker, or this device), then its
  * styles are merged in, asking first whether same-named styles should be replaced.
  * `io` carries the host's file access: { listFiles, pickFile, readFile, displayName, open(bytes, name), currentPath }.
  */
@@ -355,7 +355,7 @@ export function openMergeStylesDialog(ctx, io) {
   const browse = io.pickFile && el('button.btn.btn-ghost', { type: 'button', onclick: async () => {
     const picked = await io.pickFile();
     if (picked) mergeFrom({ path: picked.path, name: picked.name });
-  } }, 'Browse Puter…');
+  } }, 'Browse Everything…');
   const deviceInput = el('input', { type: 'file', accept: '.xlsx,.xlsm,.ods', hidden: true, onchange: async () => {
     const file = deviceInput.files?.[0];
     if (file) mergeFrom({ name: file.name, bytes: new Uint8Array(await file.arrayBuffer()) });

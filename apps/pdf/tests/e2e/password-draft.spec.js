@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 for (const kind of ['open', 'permissions'])
   for (const newerAction of ['typing', 'focus'])
     test(`a late ${kind} password rejection preserves newer ${newerAction}`, async ({ page }) => {
-      await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
+      await page.route('**/sdk/everything.js', (route) => route.fulfill({ body: '' }));
       await page.goto('/#library');
       const chooser = page.waitForEvent('filechooser');
       await page.getByRole('button', { name: /Open a PDF/ }).click();

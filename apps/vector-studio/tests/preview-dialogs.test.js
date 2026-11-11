@@ -80,7 +80,7 @@ describe('Preview dialogs', () => {
 
 describe('Preview dialogs and outside actions', () => {
   it('closing the app window cancels an open preview dialog before asking to save', async () => {
-    const { installPuterHooks } = await import('../src/features/files/index.js');
+    const { installEverythingHooks } = await import('../src/features/files/index.js');
     const { app, doc, id } = await setup();
     const before = doc.get(id);
     let onClose = null;
@@ -90,9 +90,9 @@ describe('Preview dialogs and outside actions', () => {
       editors: app.editors,
       activate: () => {},
       closeDocument: async (ed) => (seen.push({ tx: ed.doc.tx, fill: ed.doc.get(id).fill }), false),
-      puter: { ui: { onWindowClose: (fn) => (onClose = fn), setWindowTitle: () => {} } },
+      everything: { ui: { onWindowClose: (fn) => (onClose = fn), setWindowTitle: () => {} } },
     };
-    installPuterHooks(fake, {});
+    installEverythingHooks(fake, {});
     const done = app.commands.run('color.saturate');
     await tick();
     const dlg = document.querySelector('dialog[open]');

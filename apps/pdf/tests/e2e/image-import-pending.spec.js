@@ -25,10 +25,10 @@ async function prepare(page) {
       });
     };
   });
-  await page.route('**/sdk/puter.js', (route) =>
+  await page.route('**/sdk/everything.js', (route) =>
     route.fulfill({
       contentType: 'application/javascript',
-      body: `window.puter = {
+      body: `window.everything = {
       env: 'web',
       auth: { isSignedIn: () => true, getUser: async () => ({ username: 'test-user' }) },
       fs: { readdir: async () => [], write: async (path, blob) => {

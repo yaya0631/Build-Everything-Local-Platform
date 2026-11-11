@@ -15,7 +15,7 @@ function asOpenXmlSdk(bytes) {
   for (const entry of zip.FileIndex) {
     if (!/\.xml$/.test(entry.name) || !entry.content?.length) continue;
     let xml = new TextDecoder().decode(entry.content);
-    if (entry.name === 'workbook.xml') xml = xml.replace(/<sheet name="_puter_meta"[^>]*\/>/, '');
+    if (entry.name === 'workbook.xml') xml = xml.replace(/<sheet name="_everything_meta"[^>]*\/>/, '');
     // A tab coloured from the theme, as Excel's palette sets it.
     xml = xml.replace(/<tabColor rgb="[^"]*"\/>/, '<tabColor theme="5"/>');
     // Only parts whose root element has SpreadsheetML as its default namespace.

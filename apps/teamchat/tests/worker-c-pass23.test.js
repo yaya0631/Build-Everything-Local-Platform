@@ -79,10 +79,10 @@ function bridge(hook = null) {
 }
 
 describe('an export whose page loses its answer', () => {
-  const hadPuter = Object.hasOwn(globalThis, 'puter') ? globalThis.puter : undefined;
+  const hadEverything = Object.hasOwn(globalThis, 'everything') ? globalThis.everything : undefined;
   afterEach(() => {
-    if (hadPuter === undefined) delete globalThis.puter;
-    else globalThis.puter = hadPuter;
+    if (hadEverything === undefined) delete globalThis.everything;
+    else globalThis.everything = hadEverything;
   });
   /** A workspace whose export takes more than one page: a dozen channels beyond the defaults, each with its opening line. */
   async function wide() {
@@ -97,14 +97,14 @@ describe('an export whose page loses its answer', () => {
   it('asks for the page again, and the archive is whole; the first page too', async () => {
     const wsId = await wide();
     let plain = 0;
-    globalThis.puter = bridge(() => { plain++; });
+    globalThis.everything = bridge(() => { plain++; });
     const whole = await exportWorkspace(`${wsId}@teamchat-old`);
     expect(whole.pages.length).toBeGreaterThan(12);
     expect(plain).toBeGreaterThan(1);
     // The connection drops once on the first page and once on a later one.
     const lost = { first: false, page: false };
     let asked = 0;
-    globalThis.puter = bridge((path) => {
+    globalThis.everything = bridge((path) => {
       asked++;
       if (isFirst(path) && !lost.first) { lost.first = true; throw new TypeError('Failed to fetch'); }
       if (isPage(path) && !lost.page) { lost.page = true; throw new TypeError('Failed to fetch'); }
@@ -122,13 +122,13 @@ describe('an export whose page loses its answer', () => {
   it('gives up after its tries, and a refusal (an expired export) is answered at once', async () => {
     const wsId = await wide();
     let pages = 0;
-    globalThis.puter = bridge((path) => {
+    globalThis.everything = bridge((path) => {
       if (isPage(path)) { pages++; throw new TypeError('Failed to fetch'); }
     });
     await expect(exportWorkspace(`${wsId}@teamchat-old`, { pause: 1 })).rejects.toMatchObject({ code: 'network' });
     expect(pages).toBe(3);
     let refused = 0;
-    globalThis.puter = bridge((path) => {
+    globalThis.everything = bridge((path) => {
       if (isPage(path)) { refused++; return new Response(JSON.stringify({ code: 'expired', message: 'This export has expired; start it again' }), { status: 410, headers: { 'Content-Type': 'application/json' } }); }
     });
     await expect(exportWorkspace(`${wsId}@teamchat-old`, { pause: 1 })).rejects.toMatchObject({ code: 'expired' });
@@ -138,7 +138,7 @@ describe('an export whose page loses its answer', () => {
   it('a move stopped by another session is not asked again', async () => {
     const wsId = await wide();
     let pages = 0;
-    globalThis.puter = bridge((path) => {
+    globalThis.everything = bridge((path) => {
       if (isPage(path)) { pages++; throw new TypeError('Failed to fetch'); }
     });
     const stop = new Error('taken over');
@@ -149,16 +149,16 @@ describe('an export whose page loses its answer', () => {
 });
 
 describe('an export whose attachment loses its answer on the way to the drive', () => {
-  const hadPuter = Object.hasOwn(globalThis, 'puter') ? globalThis.puter : undefined;
+  const hadEverything = Object.hasOwn(globalThis, 'everything') ? globalThis.everything : undefined;
   afterEach(() => {
-    if (hadPuter === undefined) delete globalThis.puter;
-    else globalThis.puter = hadPuter;
+    if (hadEverything === undefined) delete globalThis.everything;
+    else globalThis.everything = hadEverything;
   });
   async function withFile() {
     const { wsId, general } = await workspaceWith(alice, [bob]);
     const file = await upload(bob, wsId);
     expect((await as(bob).post(`/api/ws/${wsId}/conv/${general.id}/messages`, { text: 'with the spec', attachments: [{ id: file.id }] })).ok).toBe(true);
-    globalThis.puter = bridge();
+    globalThis.everything = bridge();
     const archive = await exportWorkspace(`${wsId}@teamchat-old`);
     expect(archive.files.map((f) => f.id)).toEqual([file.id]);
     return { wsId, file, archive };
@@ -171,7 +171,7 @@ describe('an export whose attachment loses its answer on the way to the drive', 
     const { wsId, archive } = await withFile();
     const written = [];
     let lost = 0;
-    globalThis.puter = { ...bridge((path) => {
+    globalThis.everything = { ...bridge((path) => {
       if (isFile(path) && !lost) { lost++; throw new TypeError('Failed to fetch'); }
     }), fs: drive(written) };
     const reports = [];
@@ -185,7 +185,7 @@ describe('an export whose attachment loses its answer on the way to the drive', 
     const { wsId, archive } = await withFile();
     const written = [];
     let asked = 0;
-    globalThis.puter = { ...bridge((path) => {
+    globalThis.everything = { ...bridge((path) => {
       if (isFile(path)) { asked++; return new Response(JSON.stringify({ code: 'not_found', message: 'File not found' }), { status: 404, headers: { 'Content-Type': 'application/json' } }); }
     }), fs: drive(written) };
     const reports = [];
@@ -195,7 +195,7 @@ describe('an export whose attachment loses its answer on the way to the drive', 
     expect(reports[reports.length - 1]).toMatchObject({ phase: 'files', done: 1, total: 1, missing: 1 });
     // The drive refusing the bytes is no lost answer: the file is asked for once, and counted missing.
     let fetched = 0;
-    globalThis.puter = { ...bridge((path) => { if (isFile(path)) fetched++; }), fs: { write: async (path) => { if (path.includes('/files/')) throw { code: 'storage_limit_reached' }; return { path }; } } };
+    globalThis.everything = { ...bridge((path) => { if (isFile(path)) fetched++; }), fs: { write: async (path) => { if (path.includes('/files/')) throw { code: 'storage_limit_reached' }; return { path }; } } };
     const again = [];
     await writeArchiveToDrive(`${wsId}@teamchat-old`, archive, { pause: 1, onProgress: (p) => again.push(p) });
     expect(fetched).toBe(1);
@@ -530,10 +530,10 @@ describe('a download of an attachment or a preview\'s picture', () => {
 });
 
 describe('the attachments of an export written to the drive', () => {
-  const hadPuter = Object.hasOwn(globalThis, 'puter') ? globalThis.puter : undefined;
+  const hadEverything = Object.hasOwn(globalThis, 'everything') ? globalThis.everything : undefined;
   afterEach(() => {
-    if (hadPuter === undefined) delete globalThis.puter;
-    else globalThis.puter = hadPuter;
+    if (hadEverything === undefined) delete globalThis.everything;
+    else globalThis.everything = hadEverything;
   });
   /** A drive that takes a moment over each write and remembers how many were in flight together, and in what order they began and ended. */
   const drive = () => {
@@ -558,14 +558,14 @@ describe('the attachments of an export written to the drive', () => {
     const files = [];
     for (let i = 0; i < 9; i++) files.push(await upload(alice, wsId, `pic-${i}.png`, 'image/png'));
     for (const f of files) expect((await as(alice).post(`/api/ws/${wsId}/conv/${general.id}/messages`, { text: `see ${f.name}`, attachments: [{ id: f.id }] })).ok).toBe(true);
-    globalThis.puter = bridge();
+    globalThis.everything = bridge();
     const archive = await exportWorkspace(`${wsId}@teamchat-old`);
     expect(archive.files).toHaveLength(9);
     // The fourth file's bytes are gone from the server; the fifth's the drive refuses (its bytes are empty here). Both fall in the second batch, so the third goes whole.
     const gone = files[3].id;
     const refused = files[4].id;
     const d = drive();
-    globalThis.puter = { ...bridge((path) => {
+    globalThis.everything = { ...bridge((path) => {
       if (path.endsWith(`/files/${gone}`)) return new Response(JSON.stringify({ code: 'not_found', message: 'File not found' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
       if (path.endsWith(`/files/${refused}`)) return new Response(new Uint8Array(0), { status: 200, headers: { 'Content-Type': 'image/png' } });
     }), fs: d.fs };

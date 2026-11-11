@@ -4,7 +4,7 @@
 // browser asks for permission again after a reload (a click on the folder).
 //
 // Paths look like "local:<rootId>/<sub/folders>/<name>" so they never clash
-// with Puter paths. Items match the shape of Puter directory entries
+// with Everything paths. Items match the shape of Everything directory entries
 // ({ name, path, is_dir, size, modified }) plus `local: true`.
 
 const DB = 'audio-studio-local-folders';

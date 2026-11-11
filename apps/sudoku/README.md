@@ -2,7 +2,7 @@
 
 A Sudoku that generates its own puzzles, grades them by the reasoning they
 actually demand, and explains its hints instead of just filling in the answer.
-No frameworks: plain JavaScript, Vite, and Puter.js for the optional account.
+No frameworks: plain JavaScript, Vite, and Everything.js for the optional account.
 
 ## Playing it
 
@@ -12,7 +12,7 @@ npm run dev
 ```
 
 `npm run build` produces a static `dist/` that can be served from anywhere.
-Puter.js requires an HTTP origin, so open the dev server rather than the file.
+Everything.js requires an HTTP origin, so open the dev server rather than the file.
 
 ## What is interesting here
 
@@ -68,14 +68,14 @@ src/
     hints.js         the ladder applied to the position in front of you
     serialize.js     versioned, validating save format
     stats.js         records, and a merge that cannot lose a personal best
-    persistence.js   localStorage first, Puter account as a second copy
+    persistence.js   localStorage first, Everything account as a second copy
     settings.js      preferences, and why each default is what it is
     timer.js         a clock that survives a backgrounded tab
     puzzles.js       worker with an inline fallback
   ui/
     boardView.js     the 81 cells, the ARIA grid pattern
     keypad.js        digits, with a count of how many are left
-  net/puter.js       account and cloud storage, all of it optional
+  net/everything.js       account and cloud storage, all of it optional
   main.js            wiring, keyboard, theme, dialogs
 ```
 
@@ -110,17 +110,17 @@ circle Android may crop it to.
 | Ctrl/Cmd + Shift + Z   | Redo                                    |
 | Escape                 | Dismiss the hint                        |
 
-## The Puter account
+## The Everything account
 
 Everything works signed out; the whole game runs from localStorage. Signing in
 carries your times and your unfinished puzzle between devices, using
-[`puter.kv`](http://localhost:8443/KV/) under two keys. Records are merged field
+[`everything.kv`](http://localhost:8443/KV/) under two keys. Records are merged field
 by field so neither device's progress is dropped; a saved game cannot be merged
 that way, so the newer of the two wins. A read that failed is never treated as an
 empty store, which is the mistake that would let a flaky connection wipe a
 player's records.
 
-Inside a Puter app window (`puter.env === 'app'` or `'gui'`) the session belongs
+Inside an Everything app window (`everything.env === 'app'` or `'gui'`) the session belongs
 to the shell, so the app shows who is signed in and offers no sign-out.
 
 ## Accessibility

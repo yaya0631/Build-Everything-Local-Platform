@@ -102,7 +102,7 @@ it('saves a moved trendline label in the file and opens it in the same place', a
   expect(xml).toContain('<c:trendlineLbl><c:layout><c:manualLayout><c:xMode val="edge"/><c:yMode val="edge"/><c:x val="0.25"/><c:y val="0.125"/></c:manualLayout></c:layout>');
   // Opened as Excel would save it: without this app's own record of the workbook.
   const book = X.CFB.find(zip, '/xl/workbook.xml');
-  book.content = new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  book.content = new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   book.size = book.content.length;
   const back = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'trend.xlsx');
   expect(back.activeSheet.charts[0].trendlines[0].labelPos).toEqual({ x: 0.25, y: 0.125 });

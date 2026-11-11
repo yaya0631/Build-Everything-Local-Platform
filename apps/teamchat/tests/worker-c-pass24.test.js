@@ -209,10 +209,10 @@ describe('addresses pasted out of prose or off a web page', () => {
 });
 
 describe('an export or a move answered by the platform in place of the worker', () => {
-  const hadPuter = Object.hasOwn(globalThis, 'puter') ? globalThis.puter : undefined;
+  const hadEverything = Object.hasOwn(globalThis, 'everything') ? globalThis.everything : undefined;
   afterEach(() => {
-    if (hadPuter === undefined) delete globalThis.puter;
-    else globalThis.puter = hadPuter;
+    if (hadEverything === undefined) delete globalThis.everything;
+    else globalThis.everything = hadEverything;
   });
   /** The app's bridge to the (real) worker as `who`, with `hook(path, init)` given each request first: what it returns stands for the answer. */
   function bridge(hook = null, who = alice) {
@@ -240,7 +240,7 @@ describe('an export or a move answered by the platform in place of the worker', 
   it('asks the page again, as for a lost answer; the worker\'s own refusals and errors are answered at once', async () => {
     const { wsId } = await wide();
     let plain = 0;
-    globalThis.puter = bridge(() => { plain++; });
+    globalThis.everything = bridge(() => { plain++; });
     const whole = await exportWorkspace(`${wsId}@teamchat-old`);
     expect(whole.pages.length).toBeGreaterThan(40);
     expect(plain).toBe(4);
@@ -248,7 +248,7 @@ describe('an export or a move answered by the platform in place of the worker', 
     const served = [502, 503, 429];
     const seen = new Set();
     let asked = 0;
-    globalThis.puter = bridge((path) => {
+    globalThis.everything = bridge((path) => {
       asked++;
       if (isPage(path) && served.length && !seen.has(path)) { seen.add(path); return platform(served.shift()); }
     });
@@ -258,26 +258,26 @@ describe('an export or a move answered by the platform in place of the worker', 
     expect(asked).toBe(plain + 3);
     // The worker's own server error carries its JSON and says the work failed: answered at once, not asked again.
     let internal = 0;
-    globalThis.puter = bridge((path) => {
+    globalThis.everything = bridge((path) => {
       if (isPage(path)) { internal++; return new Response(JSON.stringify({ code: 'internal', message: 'Something went wrong on the server' }), { status: 500, headers: { 'Content-Type': 'application/json' } }); }
     });
     await expect(exportWorkspace(`${wsId}@teamchat-old`, { pause: 1 })).rejects.toMatchObject({ code: 'internal', status: 500 });
     expect(internal).toBe(1);
     // A platform page that does not go away is given up on after the tries, with its status in the error.
     let gateway = 0;
-    globalThis.puter = bridge((path) => { if (isPage(path)) { gateway++; return platform(504); } });
+    globalThis.everything = bridge((path) => { if (isPage(path)) { gateway++; return platform(504); } });
     await expect(exportWorkspace(`${wsId}@teamchat-old`, { pause: 1 })).rejects.toMatchObject({ code: 'http_504', status: 504 });
     expect(gateway).toBe(3);
   });
 
   it('an attachment\'s bytes answered by the platform once are asked again and land in the drive folder', async () => {
     const { wsId, file } = await wide();
-    globalThis.puter = bridge();
+    globalThis.everything = bridge();
     const archive = await exportWorkspace(`${wsId}@teamchat-old`);
     expect(archive.files.map((f) => f.id)).toEqual([file.id]);
     const written = [];
     let served = 0;
-    globalThis.puter = { ...bridge((path) => { if (isFile(path) && !served) { served++; return platform(503); } }), fs: { write: async (path, blob) => { written.push([path, blob.size]); return { path }; } } };
+    globalThis.everything = { ...bridge((path) => { if (isFile(path) && !served) { served++; return platform(503); } }), fs: { write: async (path, blob) => { written.push([path, blob.size]); return { path }; } } };
     const reports = [];
     const folder = await writeArchiveToDrive(`${wsId}@teamchat-old`, archive, { pause: 1, onProgress: (p) => reports.push(p) });
     expect(served).toBe(1);
@@ -295,7 +295,7 @@ describe('an export or a move answered by the platform in place of the worker', 
     const copies = async () => (await rt.kv.list('tc:ws:*')).filter((k) => /^tc:ws:[a-z0-9]+$/.test(k)).length;
     let once = true;
     const calls = [];
-    globalThis.puter = bridge((path, init) => {
+    globalThis.everything = bridge((path, init) => {
       calls.push(`${init?.method || 'GET'} ${path}`);
       if (once && path.endsWith('/transfer/complete')) { once = false; return platform(429); }
     }, bob);
@@ -315,13 +315,13 @@ describe('an export or a move answered by the platform in place of the worker', 
 });
 
 describe('what the app says when the platform answers in place of the server, or a request runs out of time', () => {
-  const hadPuter = Object.hasOwn(globalThis, 'puter') ? globalThis.puter : undefined;
+  const hadEverything = Object.hasOwn(globalThis, 'everything') ? globalThis.everything : undefined;
   afterEach(() => {
     vi.useRealTimers();
-    if (hadPuter === undefined) delete globalThis.puter;
-    else globalThis.puter = hadPuter;
+    if (hadEverything === undefined) delete globalThis.everything;
+    else globalThis.everything = hadEverything;
   });
-  const answering = (fn) => { globalThis.puter = { workers: { exec: fn } }; };
+  const answering = (fn) => { globalThis.everything = { workers: { exec: fn } }; };
   const page = (status) => new Response(`<html><body>${status}</body></html>`, { status, headers: { 'Content-Type': 'text/html' } });
   const URL_ = 'http://teamchat-x.localhost:8443';
 

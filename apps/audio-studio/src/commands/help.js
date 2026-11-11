@@ -5,7 +5,7 @@ import { h } from '../lib/dom.js';
 import { icon } from '../ui/icons.js';
 import { openDialog } from '../ui/dialog.js';
 
-const REPO = 'https://github.com/HeyPuter/everything';
+const REPO = 'https://github.com/yaya0631/Build-Everything-Local-Platform';
 export const SOURCE_URL = `${REPO}/tree/main/src/audio-studio`;
 export const ISSUES_URL = `${REPO}/issues/new?labels=audio-studio&title=${encodeURIComponent('Audio Studio: ')}`;
 
@@ -18,7 +18,7 @@ export const GUIDE = [
       ['Open audio with File > Open, or drop files anywhere in the window.', 'file.open'],
       ['Drag across the waveform to select time; drag near the top or bottom of a channel to select just that channel.', null],
       ['Cut, copy, paste and delete work on the selection; every step can be undone in the History panel.', 'edit.undo'],
-      ['Save back to Puter with File > Save, or export another format with File > Export.', 'file.save'],
+      ['Save back to Everything with File > Save, or export another format with File > Export.', 'file.save'],
     ],
   },
   {

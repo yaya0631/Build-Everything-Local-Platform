@@ -2,7 +2,7 @@ import { hash, verify } from "../src/collaboration/protocol.js";
 import { tokenClaims } from "../src/collaboration/auth.js";
 
 const proofs = new Map();
-// How long Puter's validation of a restricted token is reused. Revoking the
+// How long Everything's validation of a restricted token is reused. Revoking the
 // token takes effect within it, sooner than a peer ticket's 90 seconds; board
 // access is still checked on every request.
 const VALIDATED = 30_000;
@@ -11,20 +11,20 @@ const denied = () =>
     status: 401,
   });
 
-async function publicKey(puter, file) {
-  const proof = JSON.parse(await (await puter.fs.read(file.path)).text());
+async function publicKey(everything, file) {
+  const proof = JSON.parse(await (await everything.fs.read(file.path)).text());
   if (proof.version !== 1 || !proof.publicKey || proof.publicKey.d)
     throw denied();
   return proof.publicKey;
 }
 
-export async function authenticate(request, puter, input, now = Date.now) {
-  const token = request.headers.get("puter-auth");
+export async function authenticate(request, everything, input, now = Date.now) {
+  const token = request.headers.get("everything-auth");
   // Keep already-open clients compatible. A restricted bearer token must never
   // be allowed through this legacy path by dropping its proof header.
   const claims = tokenClaims(token);
   if (claims.type === "session" || claims.type === "app-under-user")
-    return puter.auth.getUser();
+    return everything.auth.getUser();
   if (claims.type !== "access-token" || !claims.user_uid) throw denied();
   try {
     const header = request.headers.get("x-whiteboard-proof");
@@ -47,11 +47,11 @@ export async function authenticate(request, puter, input, now = Date.now) {
       cached.checked + VALIDATED <= now()
     ) {
       // /whoami rejects scoped access tokens. A strong stat validates the
-      // exact token with Puter, including expiry and revocation.
-      // Puter reports is_shared:null for a file the authenticated caller does
+      // exact token with Everything, including expiry and revocation.
+      // Everything reports is_shared:null for a file the authenticated caller does
       // not own. Requiring an unshared owned file also prevents substituting
       // an attacker's public key through a publicly readable file.
-      const file = await puter.fs.stat(proof.path, { consistency: "strong" });
+      const file = await everything.fs.stat(proof.path, { consistency: "strong" });
       if (
         file.is_shared !== false ||
         typeof file.owner?.username !== "string" ||
@@ -71,7 +71,7 @@ export async function authenticate(request, puter, input, now = Date.now) {
           expires: now() + 5 * 60_000,
           checked: now(),
           username: file.owner.username,
-          pending: publicKey(puter, file),
+          pending: publicKey(everything, file),
         };
         proofs.set(key, cached);
         const entry = cached;
@@ -80,7 +80,7 @@ export async function authenticate(request, puter, input, now = Date.now) {
         });
       }
     }
-    // Only trust decoded identity claims after Puter accepts the credential.
+    // Only trust decoded identity claims after Everything accepts the credential.
     const identity = { uuid: claims.user_uid, username: cached.username };
     if (
       !(await verify(

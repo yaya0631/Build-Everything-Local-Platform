@@ -58,7 +58,7 @@ export function attachmentProblem(file, count = 0) {
   return null;
 }
 
-/** An image as a content block (the shape Puter passes to the model). */
+/** An image as a content block (the shape Everything passes to the model). */
 export const imageBlock = (mediaType, data) => ({ type: 'image', source: { type: 'base64', media_type: mediaType, data } });
 
 /** What an attachment's blocks take of a request: the base64 of its picture. */

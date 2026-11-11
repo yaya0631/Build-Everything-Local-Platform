@@ -13,10 +13,10 @@ const pairs = [
 test("duotone pixels use sRGB luminance and preserve image transparency in pictures, shape fills and layouts", async ({
   page,
 }) => {
-  await page.route("**/sdk/puter.js", (r) =>
+  await page.route("**/sdk/everything.js", (r) =>
     r.fulfill({
       contentType: "application/javascript",
-      body: 'window.puter={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',
+      body: 'window.everything={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',
     }),
   );
   await page.goto("/");
@@ -96,10 +96,10 @@ test("duotone pixels use sRGB luminance and preserve image transparency in pictu
 test("duotone pictures retain colors and effects through clipboard and .pptx download", async ({
   page,
 }) => {
-  await page.route("**/sdk/puter.js", (r) =>
+  await page.route("**/sdk/everything.js", (r) =>
     r.fulfill({
       contentType: "application/javascript",
-      body: 'window.puter={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',
+      body: 'window.everything={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',
     }),
   );
   await page.goto("/#/home");

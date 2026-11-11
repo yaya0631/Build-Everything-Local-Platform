@@ -8,7 +8,7 @@ for (const inherited of [false, true])
     test(`clears default-only checkbox groups (${mode}, inherited=${inherited})`, async ({
       page,
     }) => {
-      await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
+      await page.route('**/sdk/everything.js', (route) => route.fulfill({ body: '' }));
       await page.goto('/#library');
       const { doc, field } = await checkboxOptionsPdf({ inherited, indirect: true, selected: 'B' });
       useCheckboxDefault(doc, field);

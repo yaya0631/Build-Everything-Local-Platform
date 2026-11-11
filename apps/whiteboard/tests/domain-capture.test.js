@@ -15,7 +15,7 @@ function setup() {
   const boards = env.service,
     org = boards.org;
   const sent = [];
-  org.puter.email = {
+  org.everything.email = {
     async sendTransactional(message) {
       sent.push(message);
       return { failed: [] };
@@ -41,13 +41,13 @@ async function capturing(call, domains = ["fabrikam.test"]) {
   await call(owner, { op: "org.policy.set", policy: { domainCapture: true } });
 }
 
-test("a verification code is only said to be sent when Puter delivers it", async () => {
+test("a verification code is only said to be sent when Everything delivers it", async () => {
   const { call, org } = setup();
   await capturing(call);
   const refused = { status: 502, message: /could not be sent/ };
-  // Puter reports the address as failed, or suppressed.
+  // Everything reports the address as failed, or suppressed.
   for (const outcome of ["failed", "suppressed"]) {
-    org.puter.email = {
+    org.everything.email = {
       async sendTransactional(message) {
         return { [outcome]: message.to };
       },
@@ -58,14 +58,14 @@ test("a verification code is only said to be sent when Puter delivers it", async
     );
   }
   // A runtime with no mail service at all sends nothing either.
-  org.puter.email = undefined;
+  org.everything.email = undefined;
   await assert.rejects(
     call(viewer, { op: "email.start", email: "cam@fabrikam.test" }),
     refused,
   );
   // An older runtime that only has send() still delivers.
   const sent = [];
-  org.puter.email = {
+  org.everything.email = {
     async send(message) {
       sent.push(message);
       return {};
@@ -356,7 +356,7 @@ test("a deactivated person cannot come back in through a plus alias", async () =
     uuid: viewer.uuid,
     status: "deactivated",
   });
-  // From another Puter account, the alias reaches the same mailbox.
+  // From another Everything account, the alias reaches the same mailbox.
   const again = {
     uuid: "66666666-6666-4666-8666-666666666666",
     username: "Cam2",

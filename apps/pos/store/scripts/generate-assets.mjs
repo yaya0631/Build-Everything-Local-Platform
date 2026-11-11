@@ -24,7 +24,7 @@ const errors = [];
 page.on('pageerror', error => errors.push(error.message));
 await page.clock.setFixedTime(new Date('2026-09-05T15:00:00-07:00'));
 // Sample account identity, confined to this isolated browser context.
-await page.route('**/dev/puter-mock.js', async route => {
+await page.route('**/dev/everything-mock.js', async route => {
   const response = await route.fetch();
   await route.fulfill({ response, body: (await response.text()).replace("username: 'demo'", "username: 'Maya'") });
 });

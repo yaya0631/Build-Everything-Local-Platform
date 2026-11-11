@@ -1,13 +1,13 @@
 import { afterEach, beforeAll, beforeEach, expect, it, vi } from 'vitest';
 import { Doc, UNTITLED } from '../src/lib/doc.js';
-import { sanitizeName, ensureXlsx } from '../src/lib/puter.js';
+import { sanitizeName, ensureXlsx } from '../src/lib/everything.js';
 import { memoryStorage } from './helpers/memory-storage.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 
 // SheetJS is loaded on first use with a real dynamic import; warm it up so no test waits on it.
 beforeAll(async () => { await Doc.blank().toXlsxBlob(); });
-beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); installMockPuter(); vi.useFakeTimers(); });
-afterEach(() => { vi.useRealTimers(); delete globalThis.puter; });
+beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); installMockEverything(); vi.useFakeTimers(); });
+afterEach(() => { vi.useRealTimers(); delete globalThis.everything; });
 
 // A name made of a zero-width space (pasted, or what is left once the visible characters of a name are
 // deleted) saved as an invisible file with a blank title and row, and a bidi override in a name showed

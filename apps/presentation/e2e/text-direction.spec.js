@@ -12,10 +12,10 @@ test("horizontal overrides survive imported vertical layouts, clipboard and .ppt
   page,
 }) => {
   const f = await fixture({ slideDirection: "horz" });
-  await page.route("**/sdk/puter.js", (route) =>
+  await page.route("**/sdk/everything.js", (route) =>
     route.fulfill({
       contentType: "application/javascript",
-      body: 'window.puter={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',
+      body: 'window.everything={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',
     }),
   );
   await page.goto("/#/home");

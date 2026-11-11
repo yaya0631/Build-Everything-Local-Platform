@@ -89,7 +89,7 @@ export function openVersionHistory(doc, { onRestored } = {}) {
     const from = content.contains(document.activeElement) ? document.activeElement : null;
     setBusy(true);
     try {
-      // Null: the spreadsheet had no file yet, and Puter's Save dialog for it was cancelled.
+      // Null: the spreadsheet had no file yet, and Everything's Save dialog for it was cancelled.
       const entry = await doc.saveVersion(labelInput.value);
       if (closed || entry === null) return;
       labelInput.value = '';

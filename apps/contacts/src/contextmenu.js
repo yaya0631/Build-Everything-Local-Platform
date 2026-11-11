@@ -1,4 +1,4 @@
-// Context menu helper. Uses Puter's native puter.ui.contextMenu() whenever the
+// Context menu helper. Uses Everything's native everything.ui.contextMenu() whenever the
 // SDK provides it, and only falls back to a styled DOM menu if that API is
 // entirely unavailable (so menus never become dead).
 import { escapeHtml } from './format.js'
@@ -21,10 +21,10 @@ export function showContextMenu(event, items, opts = {}) {
   if (event && typeof event.preventDefault === 'function') event.preventDefault()
   const onClose = typeof opts.onClose === 'function' ? opts.onClose : null
 
-  if (window.puter && window.puter.ui && typeof window.puter.ui.contextMenu === 'function') {
+  if (window.everything && window.everything.ui && typeof window.everything.ui.contextMenu === 'function') {
     try {
-      window.puter.ui.contextMenu({ theme: currentTheme(), items: toPuterItems(items) })
-      // Puter renders the menu itself and gives us no close event, so fall back
+      window.everything.ui.contextMenu({ theme: currentTheme(), items: toEverythingItems(items) })
+      // Everything renders the menu itself and gives us no close event, so fall back
       // to clearing caller state on the user's next interaction.
       if (onClose) armNextInteractionClose(onClose)
       return
@@ -35,7 +35,7 @@ export function showContextMenu(event, items, opts = {}) {
   showDomMenu(event, items, onClose)
 }
 
-// Best-effort close signal for the Puter native menu: fire onClose on the next
+// Best-effort close signal for the Everything native menu: fire onClose on the next
 // pointer/key interaction (deferred so the event that opened the menu doesn't
 // immediately trigger it).
 function armNextInteractionClose(onClose) {
@@ -50,13 +50,13 @@ function armNextInteractionClose(onClose) {
   }, 0)
 }
 
-function toPuterItems(items) {
+function toEverythingItems(items) {
   return items.map((item) => {
     if (item === '-') return '-'
     const out = { label: item.label }
     if (item.disabled) out.disabled = true
     if (item.danger) out.type = 'danger'
-    if (Array.isArray(item.items)) out.items = toPuterItems(item.items)
+    if (Array.isArray(item.items)) out.items = toEverythingItems(item.items)
     else if (typeof item.action === 'function') out.action = item.action
     return out
   })

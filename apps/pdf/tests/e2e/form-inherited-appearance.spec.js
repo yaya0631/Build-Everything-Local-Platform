@@ -9,7 +9,7 @@ for (const kind of ['text', 'multiline', 'dropdown', 'list'])
       test(`editing preserves inherited color and size (${kind}, ${level}, ${mode})`, async ({
         page,
       }) => {
-        await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
+        await page.route('**/sdk/everything.js', (route) => route.fulfill({ body: '' }));
         await page.goto('/#library');
         const { doc } = await inheritedAppearancePdf({ kind, level, indirect: true });
         const open = async (doc) => {

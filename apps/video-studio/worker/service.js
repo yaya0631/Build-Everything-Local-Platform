@@ -1,5 +1,5 @@
 /**
- * Review service: runs in the owner's Puter worker against the owner's KV
+ * Review service: runs in the owner's Everything worker against the owner's KV
  * and files. Every operation is validated here; the app's own checks are
  * only for quick feedback.
  *
@@ -77,17 +77,17 @@ export function validateVideo(video) {
 }
 
 export class ReviewService {
-  /** puter: the owner's Puter client (me.puter in the worker). */
-  constructor(puter, { now = () => Date.now() } = {}) {
-    this.puter = puter;
-    this.kv = puter.kv;
+  /** everything: the owner's Everything client (me.everything in the worker). */
+  constructor(everything, { now = () => Date.now() } = {}) {
+    this.everything = everything;
+    this.kv = everything.kv;
     this.now = now;
     this._owner = null;
     this._minting = new Map();
   }
 
   async owner() {
-    this._owner ??= this.puter.auth.getUser().then(
+    this._owner ??= this.everything.auth.getUser().then(
       (u) => ({ uuid: u.uuid, username: u.username }),
       (err) => {
         this._owner = null;
@@ -206,7 +206,7 @@ export class ReviewService {
     const video = validateVideo(input.video);
     let file;
     try {
-      file = await this.puter.fs.stat(video.path);
+      file = await this.everything.fs.stat(video.path);
     } catch {
       fail(400, 'The review video could not be found in your files.');
     }
@@ -357,7 +357,7 @@ export class ReviewService {
     const m = typeof input.uuid === 'string' && input.uuid.length <= 64 ? await this.kv.get(key) : null;
     if (!m) fail(404, 'That person is not in this review.');
     if (!m.removed) await this.kv.set(key, { ...m, removed: this.now() });
-    // Video links already handed out stop working at once where Puter lets the
+    // Video links already handed out stop working at once where Everything lets the
     // worker revoke them; new links are made for everyone else on demand.
     await this.dropVideoLinks(rid);
     return { ok: true };
@@ -372,7 +372,7 @@ export class ReviewService {
     await Promise.all(links.map(async (link, i) => {
       if (!link) return;
       try {
-        await this.puter.fs.revokeReadURL?.(link.url);
+        await this.everything.fs.revokeReadURL?.(link.url);
       } catch {
         /* expires on its own */
       }
@@ -389,12 +389,12 @@ export class ReviewService {
     const key = `vsr:r:${rid}:url:${n}`;
     const cached = await this.kv.get(key);
     if (cached && cached.expires - VIDEO_LINK_RENEW_MS > this.now()) return { url: cached.url, expires: cached.expires, mime: v.mime };
-    // Read links are rate limited by Puter, so one instance makes one at a time per video.
+    // Read links are rate limited by Everything, so one instance makes one at a time per video.
     let pending = this._minting.get(key);
     if (!pending) {
       pending = (async () => {
         const expires = this.now() + VIDEO_LINK_HOURS * 3_600_000;
-        const url = await this.puter.fs.getReadURL(v.path, `${VIDEO_LINK_HOURS}h`);
+        const url = await this.everything.fs.getReadURL(v.path, `${VIDEO_LINK_HOURS}h`);
         const link = { url, expires };
         await this.kv.set(key, link);
         return link;

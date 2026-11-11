@@ -15,11 +15,11 @@
  *   graphicStyle    { style }                         fill, stroke, effects, ...
  *   text            { text }                          plain text
  *
- * Libraries live in the user's Puter cloud (app data folder "libraries")
+ * Libraries live in the user's Everything cloud (app data folder "libraries")
  * when signed in, else in this browser's private storage, so they follow
  * the user across devices whenever possible.
  */
-import { puterBackend, opfsBackend, opfsAvailable, memoryBackend } from '../files/backends.js';
+import { everythingBackend, opfsBackend, opfsAvailable, memoryBackend } from '../files/backends.js';
 import { uid } from '../../lib/ids.js';
 
 export const ITEM_KINDS = ['color', 'gradient', 'graphic', 'characterStyle', 'paragraphStyle', 'graphicStyle', 'text'];
@@ -65,12 +65,12 @@ export class LibraryStore {
 
   get backend() {
     if (this.fixed) return this.fixed;
-    const puter = this.app.puter;
-    const cloud = Boolean(puter?.fs && (this.app.env === 'app' || this.app.user));
+    const everything = this.app.everything;
+    const cloud = Boolean(everything?.fs && (this.app.env === 'app' || this.app.user));
     const key = cloud ? 'cloud' : opfsAvailable() ? 'local' : 'memory';
     if (key !== this.backendKey) {
       this.backendKey = key;
-      this.cachedBackend = key === 'cloud' ? puterBackend(puter, 'libraries') : key === 'local' ? opfsBackend('vector-studio-libraries') : memoryBackend();
+      this.cachedBackend = key === 'cloud' ? everythingBackend(everything, 'libraries') : key === 'local' ? opfsBackend('vector-studio-libraries') : memoryBackend();
       this.loaded = false;
     }
     return this.cachedBackend;

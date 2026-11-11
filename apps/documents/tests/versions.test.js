@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import * as P from '../src/lib/puter.js';
+import * as P from '../src/lib/everything.js';
 import { rememberDocumentRoot } from '../src/lib/document-paths.js';
 import { versionsFolder, versionName, parseVersionTime, shouldSnapshot, listVersions, saveVersion, snapshotIfDue, renameVersions, deleteVersions, VERSION_INTERVAL_MS, MAX_VERSIONS } from '../src/lib/versions.js';
 
-/** An in-memory Puter file system with folders. */
-const fakePuter = () => {
+/** An in-memory Everything file system with folders. */
+const fakeEverything = () => {
   const files = new Map();
   const dirs = new Set();
   const notFound = () => Object.assign(new Error('does not exist'), { code: 'subject_does_not_exist' });
@@ -69,10 +69,10 @@ describe('version naming', () => {
   });
 });
 
-describe('snapshots on Puter', () => {
+describe('snapshots on Everything', () => {
   let pf;
-  beforeEach(() => { pf = fakePuter(); globalThis.puter = pf; });
-  afterEach(() => { delete globalThis.puter; });
+  beforeEach(() => { pf = fakeEverything(); globalThis.everything = pf; });
+  afterEach(() => { delete globalThis.everything; });
   const blob = (s) => new Blob([s]);
   const T0 = Date.UTC(2026, 7, 28, 9, 0, 0, 0);
 
@@ -180,7 +180,7 @@ describe('snapshots on Puter', () => {
     expect(await listVersions('Documents/A.docx')).toEqual([]);
   });
 
-  it('keeps the same history after reopening an absolute path returned by Puter', async () => {
+  it('keeps the same history after reopening an absolute path returned by Everything', async () => {
     const root = '/demo/AppData/documents-app';
     await P.writeFile('Documents/A.docx', blob('document'));
     await saveVersion('Documents/A.docx', blob('one'), { now: T0 });
@@ -233,7 +233,7 @@ describe('snapshots on Puter', () => {
   });
 
   it('keeps the history of a document elsewhere on the drive by its id, through a rename, until it is deleted', async () => {
-    // Inside the Puter desktop Save puts a new document where the user chooses, outside the app folder.
+    // Inside the Everything desktop Save puts a new document where the user chooses, outside the app folder.
     const path = '/demo/Desktop/Plan.docx', uid = 'file-uid-1';
     expect(await snapshotIfDue(path, blob('first'), undefined, { now: T0, uid })).toBe(T0);
     await saveVersion(path, blob('named'), { now: T0 + 1, uid });

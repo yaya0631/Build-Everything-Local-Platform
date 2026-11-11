@@ -5,7 +5,7 @@ import { inheritedTextLimitPdf } from '../fixtures/inherited-text-limit.js';
 
 for (const kind of ['text', 'comb', 'multiline'])
   test(`Fill forms respects inherited ${kind} length limits`, async ({ page }) => {
-    await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
+    await page.route('**/sdk/everything.js', (route) => route.fulfill({ body: '' }));
     await page.goto('/#library');
     const { doc } = await inheritedTextLimitPdf({
       comb: kind === 'comb',

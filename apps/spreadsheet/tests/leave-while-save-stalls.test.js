@@ -3,7 +3,7 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { editorView } from '../src/views/editor.js';
 import { Doc } from '../src/lib/doc.js';
 import { closeAllModals } from '../src/ui/modal.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 
 // On a slow or stalled connection the save on the way out could take minutes, or never end: Back, Home and every
 // other way out waited on it with nothing said, and pressing Back again did nothing. After a while the user is
@@ -17,7 +17,7 @@ Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), conf
 let view;
 beforeEach(() => {
   localStorage.clear();
-  installMockPuter();
+  installMockEverything();
   vi.useFakeTimers();
   vi.stubGlobal('matchMedia', () => ({ matches: true, addEventListener() {}, removeEventListener() {} }));
   vi.stubGlobal('requestAnimationFrame', (fn) => setTimeout(fn, 0));
@@ -30,7 +30,7 @@ beforeEach(() => {
   vi.spyOn(console, 'error').mockImplementation(() => {});
   document.body.innerHTML = '<div id="app"></div>';
 });
-afterEach(() => { closeAllModals(); view?.destroy(); view = null; vi.clearAllTimers(); vi.useRealTimers(); vi.restoreAllMocks(); vi.unstubAllGlobals(); delete globalThis.puter; document.body.replaceChildren(); });
+afterEach(() => { closeAllModals(); view?.destroy(); view = null; vi.clearAllTimers(); vi.useRealTimers(); vi.restoreAllMocks(); vi.unstubAllGlobals(); delete globalThis.everything; document.body.replaceChildren(); });
 
 /** An editor on a saved file whose next write hangs until `release(error?)` settles it. */
 async function stalled() {
@@ -41,10 +41,10 @@ async function stalled() {
   const goHome = vi.fn();
   view = editorView({ doc, goHome, openPath: vi.fn(), newDoc: vi.fn(), templateDoc: vi.fn(), importFile: vi.fn() });
   document.querySelector('#app').append(view.el);
-  const write = puter.fs.write;
+  const write = everything.fs.write;
   let release;
-  puter.fs.write = (path, ...rest) => (path !== doc.path ? write.call(puter.fs, path, ...rest)
-    : new Promise((resolve, reject) => { release = (error) => (error ? reject(error) : resolve(write.call(puter.fs, path, ...rest))); }));
+  everything.fs.write = (path, ...rest) => (path !== doc.path ? write.call(everything.fs, path, ...rest)
+    : new Promise((resolve, reject) => { release = (error) => (error ? reject(error) : resolve(write.call(everything.fs, path, ...rest))); }));
   doc.wb.setInput(doc.wb.activeSheetId, 1, 0, 'unsaved');
   return { doc, goHome, release: (error) => release(error) };
 }
@@ -79,7 +79,7 @@ it('leaves with the edits in the local draft, and the stalled save, when it fail
   await expect(view.flush()).resolves.toBe(true);
   view.destroy();
   view = null;
-  const writes = vi.spyOn(puter.fs, 'write');
+  const writes = vi.spyOn(everything.fs, 'write');
   release(new TypeError('Failed to fetch'));
   await vi.advanceTimersByTimeAsync(10 * 60_000);
   expect(writes.mock.calls.filter(([path]) => path === doc.path)).toEqual([]); // no retries from a document that was closed

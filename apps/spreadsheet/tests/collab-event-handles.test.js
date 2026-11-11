@@ -6,14 +6,14 @@ import { editor, environment, owner, SERVER, viewer } from './collab-helpers.js'
 
 async function shared() {
   const env = environment();
-  const room = await RoomClient.create({ puter: env.sdk(owner), server: SERVER, wb: new Workbook({ sheets: [{ name: 'Plan' }] }), name: 'Plan' });
+  const room = await RoomClient.create({ everything: env.sdk(owner), server: SERVER, wb: new Workbook({ sheets: [{ name: 'Plan' }] }), name: 'Plan' });
   for (const [user, role] of [[editor, 'editor'], [viewer, 'viewer']]) await env.service.call(owner, { op: 'invite-user', room, username: user.username, role });
   return { env, room };
 }
 
-// Removing someone only forgot their handle: Puter kept it live, so they went on hearing of every change, and it
+// Removing someone only forgot their handle: Everything kept it live, so they went on hearing of every change, and it
 // held one of the owner's limited handle slots for good.
-it('takes back a removed member\'s handle at Puter', async () => {
+it('takes back a removed member\'s handle at Everything', async () => {
   const { env, room } = await shared();
   expect((await env.service.call(editor, { op: 'join', room })).events).toEqual({ handle: `handle-${editor.uuid}`, key: 'signal' });
   await env.service.call(owner, { op: 'role', room, uuid: editor.uuid, role: 'removed' });
@@ -59,7 +59,7 @@ it('asks the owner for the consent when they invite someone, and tells the room'
   const sdk = env.sdk(owner);
   const request = vi.fn(async () => true);
   Object.assign(sdk, { appID: 'app-sheet', perms: { request } });
-  const client = new RoomClient({ puter: sdk, server: SERVER, room, store: memoryOutbox(), noPeers: true });
+  const client = new RoomClient({ everything: sdk, server: SERVER, room, store: memoryOutbox(), noPeers: true });
   await client.open();
   try {
     expect(await client.allowLiveUpdates()).toBe(true);
@@ -76,7 +76,7 @@ it('does not ask from a page running as another app, or for a member', async () 
   const request = vi.fn(async () => true);
   const other = Object.assign(env.sdk(owner), { appID: 'app-other', perms: { request } });
   const member = Object.assign(env.sdk(editor), { appID: 'app-sheet', perms: { request } });
-  const clients = [other, member].map((puter) => new RoomClient({ puter, server: SERVER, room, store: memoryOutbox(), noPeers: true }));
+  const clients = [other, member].map((everything) => new RoomClient({ everything, server: SERVER, room, store: memoryOutbox(), noPeers: true }));
   try {
     for (const c of clients) { await c.open(); expect(await c.allowLiveUpdates()).toBe(false); }
     expect(request).not.toHaveBeenCalled();

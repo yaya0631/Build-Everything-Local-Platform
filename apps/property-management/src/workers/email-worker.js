@@ -1,13 +1,13 @@
 /**
  * Emailing tenants, owners and vendors from the app: the app's one shared,
- * app-owned Puter worker (deployed to http://property-management-email.localhost:8443;
+ * app-owned Everything worker (served at http://property-management-email.localhost:8443;
  * src/mailer.js is the calling side).
  *
- * It is deployed ONCE, by the app owner (npm run deploy:email-worker):
+ * The local server registers it automatically as property-management-email:
  * outbound mail has to be authorized by a worker's own token, so the sending
  * capability lives somewhere the app controls. The cost does not: the app
- * calls this worker with puter.workers.exec(), which forwards the signed-in
- * user's Puter token, and each message is sent with that token in hand, so
+ * calls this worker with everything.workers.exec(), which forwards the signed-in
+ * user's Everything token, and each message is sent with that token in hand, so
  * every send is billed to, and rate-limited as, the user who asked for it.
  *
  *   POST /send    email one message to its recipients (one private mail each)
@@ -17,8 +17,8 @@
  * An app-owned relay that forwarded whatever it was handed would be a spam
  * cannon wearing this app's sending reputation, so:
  *
- *   - no Puter session, no send. `user` is only populated for callers that
- *     come through puter.workers.exec(); everyone else gets 401, and so does
+ *   - no Everything session, no send. `user` is only populated for callers that
+ *     come through everything.workers.exec(); everyone else gets 401, and so does
  *     a caller whose session arrived without a form that bills THEM.
  *   - the caller supplies TEXT, never markup. The body is HTML-escaped here
  *     and laid out by this worker, so nothing can inject links, images, or a
@@ -77,10 +77,10 @@ function callerOf(ctx) {
  * A stable id for the caller - it keys the already-sent and daily-cap records,
  * so it has to be the same tomorrow as it is today, and different for every
  * user. Do NOT assume it is sitting on the caller object: the live platform
- * (2026-08) hands over a caller whose only own property is `puter`, so the
- * documented `user.uuid` is absent and asking their own Puter is the path that
+ * (2026-08) hands over a caller whose only own property is `everything`, so the
+ * documented `user.uuid` is absent and asking their own Everything is the path that
  * actually answers. Try the known names first anyway, then the ones nested
- * under their Puter handle, then getUser(). '' means "could not tell", which
+ * under their Everything handle, then getUser(). '' means "could not tell", which
  * is refused rather than guessed at: a shared id would let one user's dedupe
  * record suppress another user's message.
  */
@@ -88,7 +88,7 @@ async function callerIdOf(caller) {
   if (!caller) return '';
   const own = caller.uuid || caller.uid || caller.user_uuid || caller.username;
   if (typeof own === 'string' && own) return own;
-  const p = caller.puter;
+  const p = caller.everything;
   const nested = p && (p.uuid || p.uid || p.username);
   if (typeof nested === 'string' && nested) return nested;
   try {
@@ -101,10 +101,10 @@ async function callerIdOf(caller) {
 }
 
 function kvOf(ctx) {
-  return ownerOf(ctx).puter.kv;
+  return ownerOf(ctx).everything.kv;
 }
 
-/** puter.kv values may come back as parsed objects or JSON strings. */
+/** everything.kv values may come back as parsed objects or JSON strings. */
 function coerce(value) {
   if (value == null) return null;
   if (typeof value === 'string') {
@@ -324,8 +324,8 @@ function htmlBody(req) {
  * A send has two halves - who pays (the app's user) and what authorizes it
  * (this worker) - and the platform accepts them in either arrangement:
  *
- *   me.puter.email.send({ …, requesterToken: user.puter.authToken })
- *   user.puter.email.send({ …, emailAccessToken: me.puter.authToken })
+ *   me.everything.email.send({ …, requesterToken: user.everything.authToken })
+ *   user.everything.email.send({ …, emailAccessToken: me.everything.authToken })
  *
  * Both bill the user; which name a given runtime knows has moved, and a worker
  * that only spoke one of them would silently stop sending. So try the first,
@@ -355,18 +355,18 @@ const REQUEST_ERROR = /token|auth|unauthor|forbidden|permission|denied|unknown|u
 function sendForms(ctx) {
   const owner = ownerOf(ctx);
   const caller = callerOf(ctx);
-  const ownerPuter = (owner && owner.puter) || null;
-  const callerPuter = (caller && caller.puter) || null;
+  const ownerEverything = (owner && owner.everything) || null;
+  const callerEverything = (caller && caller.everything) || null;
   const token = (p) => (p && typeof p.authToken === 'string' && p.authToken ? p.authToken : '');
   const mailer = (p) => Boolean(p && p.email && typeof p.email.send === 'function');
-  const callerToken = token(callerPuter);
-  const ownerToken = token(ownerPuter);
+  const callerToken = token(callerEverything);
+  const ownerToken = token(ownerEverything);
   return [
-    callerToken && mailer(ownerPuter)
-      ? (message) => ownerPuter.email.send({ ...message, requesterToken: callerToken })
+    callerToken && mailer(ownerEverything)
+      ? (message) => ownerEverything.email.send({ ...message, requesterToken: callerToken })
       : null,
-    ownerToken && mailer(callerPuter)
-      ? (message) => callerPuter.email.send({ ...message, emailAccessToken: ownerToken })
+    ownerToken && mailer(callerEverything)
+      ? (message) => callerEverything.email.send({ ...message, emailAccessToken: ownerToken })
       : null,
   ];
 }
@@ -474,18 +474,18 @@ router.get('/health', async () => json({ ok: true, version: WORKER_VERSION }));
  */
 router.get('/whoami', async (ctx) => {
   const caller = callerOf(ctx);
-  const p = caller && caller.puter;
+  const p = caller && caller.everything;
   const owner = ownerOf(ctx);
   return json({
     ok: true,
     version: WORKER_VERSION,
-    // Did the session even reach us? puter.workers.exec() sends this header.
-    sawAuthHeader: Boolean(ctx.request.headers.get('puter-auth')),
+    // Did the session even reach us? everything.workers.exec() sends this header.
+    sawAuthHeader: Boolean(ctx.request.headers.get('everything-auth')),
     boundAs: ctx.user ? 'user' : ctx.requestor ? 'requestor' : null,
     callerKeys: caller ? Object.keys(caller).sort() : [],
-    puterKeys: p ? Object.keys(p).sort() : [],
+    everythingKeys: p ? Object.keys(p).sort() : [],
     has: {
-      puter: Boolean(p),
+      everything: Boolean(p),
       authToken: Boolean(p && p.authToken),
       email: Boolean(p && p.email && typeof p.email.send === 'function'),
       auth: Boolean(p && p.auth && typeof p.auth.getUser === 'function'),
@@ -495,8 +495,8 @@ router.get('/whoami', async (ctx) => {
     // I getting a 401", and the one /send checks before it spends anything.
     billable: sendForms(ctx).map(Boolean),
     owner: {
-      email: Boolean(owner && owner.puter && owner.puter.email),
-      authToken: Boolean(owner && owner.puter && owner.puter.authToken),
+      email: Boolean(owner && owner.everything && owner.everything.email),
+      authToken: Boolean(owner && owner.everything && owner.everything.authToken),
     },
   });
 });
@@ -508,12 +508,12 @@ router.get('/whoami', async (ctx) => {
  */
 router.post('/send', async (ctx) => {
   // A caller context exists only for requests that came through
-  // puter.workers.exec(), which forwards their Puter session. No session, no
+  // everything.workers.exec(), which forwards their Everything session. No session, no
   // send - and no way to bill anyone for one either. `detail` separates "no
   // session arrived" from "a session arrived that we could not pin to a
   // person"; GET /whoami reports the same picture in full.
   const caller = callerOf(ctx);
-  if (!caller || !caller.puter) {
+  if (!caller || !caller.everything) {
     return json({ error: 'sign_in_required', detail: 'no_caller' }, 401);
   }
   const callerId = await callerIdOf(caller);

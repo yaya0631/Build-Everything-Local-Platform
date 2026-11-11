@@ -1,7 +1,7 @@
 import { type Page, expect, test } from '@playwright/test';
 import { openApp } from './helpers';
 
-// A scripted stand-in for Puter AI (window.__assistantChat, dev builds only):
+// A scripted stand-in for Everything AI (window.__assistantChat, dev builds only):
 // it builds a plate with holes and rounded corners, looks at it and answers.
 async function scriptModel(page: Page) {
   await page.addInitScript(() => {

@@ -19,7 +19,7 @@ import { toast } from './ui/toast.js';
 import { confirmDialog } from './ui/dialog.js';
 import { app } from './app.js';
 import { createStore } from './core/store.js';
-import { createMemoryBackend, createPuterBackend } from './core/backend.js';
+import { createMemoryBackend, createEverythingBackend } from './core/backend.js';
 import { createIdbCache } from './core/cache.js';
 import { setMoneyDefaults } from './core/money.js';
 import { today } from './core/dates.js';
@@ -31,7 +31,7 @@ import { showAlphaNotice } from './ui/alpha.js';
 import { maybeOnboard } from './views/onboarding.js';
 import { startBookkeeping as startPosting } from './bookkeeping.js';
 
-const REPO_URL = 'https://github.com/heyputer/everything';
+const REPO_URL = 'https://github.com/yaya0631/Build-Everything-Local-Platform';
 const root = document.getElementById('app');
 
 initTheme();
@@ -44,7 +44,7 @@ if (import.meta.env.PROD && 'serviceWorker' in navigator && location.protocol ==
 
 async function boot() {
   mount(root, h('div.boot', { role: 'status', 'aria-label': 'Loading' }, h('img', { src: './icons/icon-192.png', alt: '' })));
-  app.env = platform.puterEnv();
+  app.env = platform.everythingEnv();
   if (await platform.isSignedIn()) {
     await startSignedIn();
   } else if (new URLSearchParams(location.search).has('demo')) {
@@ -74,20 +74,20 @@ async function startSignedIn() {
     user = await platform.getUser();
   } catch (err) {
     console.error(err);
-    showWelcome('We could not reach your Puter account. Check your connection and try again.');
+    showWelcome('We could not reach your Everything account. Check your connection and try again.');
     return;
   }
   app.user = { username: user.username, uuid: user.uuid };
   app.avatarUrl = platform.cachedProfilePicture(user.username);
 
   // Which business: the person's own, or one they joined as a team member.
-  const kv = globalThis.puter.kv;
+  const kv = globalThis.everything.kv;
   let ws;
   try {
     ws = await team.loadWorkspaces(kv);
   } catch (err) {
     console.error('[property-management] could not read workspaces', err);
-    showWelcome('We could not load your companies from your Puter account. Check your connection and try again.');
+    showWelcome('We could not load your companies from your Everything account. Check your connection and try again.');
     return;
   }
   const join = location.hash.startsWith('#/join') ? team.parseJoin(Object.fromEntries(new URLSearchParams(location.hash.split('?')[1] || ''))) : null;
@@ -98,7 +98,7 @@ async function startSignedIn() {
   const joined = ws.joined.find((j) => j.url === workerUrl);
   app.team = workerUrl ? { url: workerUrl, role: joined ? joined.role : 'owner', business: joined?.business || '' } : null;
   const store = createStore({
-    backend: workerUrl ? team.createWorkerBackend(workerUrl) : createPuterBackend(globalThis.puter),
+    backend: workerUrl ? team.createWorkerBackend(workerUrl) : createEverythingBackend(globalThis.everything),
     cache: createIdbCache(`user:${user.uuid}${workerUrl ? `:team:${workerUrl}` : ''}`),
   });
   app.store = store;
@@ -139,11 +139,11 @@ async function acceptInvite(kv, ws, { url, token }) {
   // A company already joined still gets the invitation (a member who was
   // removed and invited back); joining again is harmless for a member.
   if (!ws.joined.some((j) => j.url === url)) {
-    // Joining sends your Puter session to that business's server, so ask first.
+    // Joining sends your Everything session to that business's server, so ask first.
     const host = new URL(url).hostname;
     const ok = await confirmDialog({
       title: 'Join a company?',
-      message: `You opened an invitation to a company whose team server is ${host}. Its owner will see your Puter username, and what you add there is stored in their account. While you work in it, their server acts with your Puter session, so a dishonest owner could use it to read this app's data in your own account or use up your Puter allowance. Only accept invitations from people you trust.`,
+      message: `You opened an invitation to a company whose team server is ${host}. Its owner will see your Everything username, and what you add there is stored in their account. While you work in it, their server acts with your Everything session, so a dishonest owner could use it to read this app's data in your own account or use up your Everything allowance. Only accept invitations from people you trust.`,
       confirmLabel: 'Join company',
     });
     if (!ok) return ws;
@@ -188,7 +188,7 @@ function startBookkeeping() {
 }
 
 function showWelcome(error) {
-  const available = platform.puterAvailable();
+  const available = platform.everythingAvailable();
   const signInBtn = h(
     'button.btn.primary.lg',
     { type: 'button', disabled: !available || null, onClick: handleSignIn },
@@ -216,8 +216,8 @@ function showWelcome(error) {
         h('h1', 'Every property, lease and dollar in one place.'),
         h('p.lead', 'Collect rent, track leases and renewals, handle maintenance, pay bills, and keep owner-ready books. Free and open source.'),
         error ? h('div.notice.danger', { role: 'alert' }, icon('alert'), h('span', error)) : null,
-        location.hash.startsWith('#/join') ? h('div.notice.accent', icon('users'), h('span', 'You have been invited to join a company. Sign in with Puter to accept the invitation.')) : null,
-        !available ? h('div.notice.warning', { role: 'alert' }, icon('warning'), h('span', 'Puter could not be loaded, so signing in is unavailable right now. You can still explore the sample portfolio.')) : null,
+        location.hash.startsWith('#/join') ? h('div.notice.accent', icon('users'), h('span', 'You have been invited to join a company. Sign in with Everything to accept the invitation.')) : null,
+        !available ? h('div.notice.warning', { role: 'alert' }, icon('warning'), h('span', 'Everything could not be loaded, so signing in is unavailable right now. You can still explore the sample portfolio.')) : null,
         h('div.cta', signInBtn, demoBtn),
         h(
           'ul.welcome-points',
@@ -231,7 +231,7 @@ function showWelcome(error) {
         h(
           'div.welcome-foot',
           h('a', { href: REPO_URL, target: '_blank', rel: 'noopener noreferrer' }, icon('github', 16), 'Source on GitHub'),
-          h('span', 'Your data is stored in your own Puter account.'),
+          h('span', 'Your data is stored in your own Everything account.'),
         ),
       ),
       h('div.welcome-art', { 'aria-hidden': 'true', html: WELCOME_ART }),

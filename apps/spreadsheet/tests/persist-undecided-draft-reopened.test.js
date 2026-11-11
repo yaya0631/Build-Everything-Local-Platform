@@ -3,13 +3,13 @@ import { Doc } from '../src/lib/doc.js';
 import { draftKey, liveDraftKey, saveDraft, loadDraft, listDrafts } from '../src/lib/drafts.js';
 import { Workbook } from '../src/core/workbook.js';
 import { memoryStorage } from './helpers/memory-storage.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 
 let mock;
 // SheetJS is loaded on first use with a real dynamic import; warm it up so no test waits on it.
 beforeAll(async () => { await Doc.blank().toXlsxBlob(); });
-beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); mock = installMockPuter(); vi.useFakeTimers(); });
-afterEach(() => { vi.useRealTimers(); delete globalThis.puter; });
+beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); mock = installMockEverything(); vi.useFakeTimers(); });
+afterEach(() => { vi.useRealTimers(); delete globalThis.everything; });
 
 const PATH = 'Spreadsheets/Budget.xlsx';
 const KEY = () => draftKey(PATH);
@@ -25,7 +25,7 @@ function book(value) {
 }
 
 /**
- * A blank file on the drive whose draft of edits that never reached Puter was offered once, dismissed
+ * A blank file on the drive whose draft of edits that never reached Everything was offered once, dismissed
  * without a decision and edited past, the tab then closing: the closed tab leaves both behind.
  */
 async function closedUndecided() {
@@ -103,7 +103,7 @@ it('opens the edits made beside an undecided draft of a file since deleted as th
 
 it('carries both along when the file was renamed elsewhere, and offers the edits made beside the draft there', async () => {
   await closedUndecided();
-  await puter.fs.rename(PATH, 'Plan.xlsx');
+  await everything.fs.rename(PATH, 'Plan.xlsx');
   const doc = await Doc.fromPath(PATH);
   try {
     expect(doc.path).toBe('Spreadsheets/Plan.xlsx');

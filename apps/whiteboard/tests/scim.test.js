@@ -36,7 +36,7 @@ async function setup() {
 
 async function verifyEmail(org, boards, identity, email) {
   const sent = [];
-  org.puter.email = {
+  org.everything.email = {
     async sendTransactional(message) {
       sent.push(message);
       return { failed: [] };
@@ -347,7 +347,7 @@ test("the shipped SCIM worker applies mutations safely and returns SCIM errors",
         custom: (method, path, handler) =>
           routes.set(`${method} ${path}`, handler),
       },
-      me: { puter: env.sdk(owner) },
+      me: { everything: env.sdk(owner) },
       Response,
       URL,
       TextEncoder,

@@ -6,9 +6,9 @@ export function authView({ onSignedIn }) {
   const cta = el('button.btn.btn-primary.auth-cta', {
     onclick: async () => {
       cta.disabled = true;
-      cta.textContent = 'Waiting for Puter…';
+      cta.textContent = 'Waiting for Everything…';
       try {
-        await puter.auth.signIn();
+        await everything.auth.signIn();
         onSignedIn();
       } catch {
         cta.disabled = false;
@@ -28,7 +28,7 @@ export function authView({ onSignedIn }) {
     ),
     cta,
     el('p.auth-note', {}, 'Free • No ads • Powered by ',
-      el('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Puter'))
+      el('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Everything'))
   );
 
   function feature(ic, text) {

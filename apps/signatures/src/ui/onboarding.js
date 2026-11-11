@@ -39,7 +39,7 @@ export function openOnboarding() {
           style: { background: 'var(--accent-wash)', color: 'var(--accent-strong)' },
         }),
         el('h3', { style: { fontSize: '19px' } }, 'Get documents signed'),
-        el('p', {}, 'Upload a PDF, place signature fields, and send private sign links by email. Everything is stored in your own Puter account.')
+        el('p', {}, 'Upload a PDF, place signature fields, and send private sign links by email. Everything is stored in your own Everything account.')
       ),
       el('button.btn.btn-primary.btn-block', {
         type: 'button', style: { padding: '13px' },

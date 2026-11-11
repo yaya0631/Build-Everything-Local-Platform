@@ -1,6 +1,6 @@
 # Vector Studio
 
-A professional vector illustration editor for the web, built on [Puter](http://localhost:8443): a free, open-source alternative to Adobe Illustrator, CorelDRAW and Affinity Designer. Files are stored in your own Puter cloud.
+A professional vector illustration editor for the web, built on [Everything](http://localhost:8443): a free, open-source alternative to Adobe Illustrator, CorelDRAW and Affinity Designer. Files are stored in your own Everything cloud.
 
 No UI framework: plain ES modules, Canvas 2D for artwork rendering, Rust compiled to WebAssembly for heavy geometry, and Vite for the build.
 
@@ -33,7 +33,7 @@ npm run build   # production build in dist/ (includes the collaboration worker)
 - `src/commands/` the command registry: menus, shortcuts and buttons all run commands by id.
 - `src/ui/` the shell: menu bar, tools panel, panel dock, dialogs, status bar, rulers.
 - `src/features/` feature modules, each registering its tools, panels, commands and hooks (`src/features.js` installs them): files, import/export, format interoperability (PDF, EPS, DXF, TIFF, PSD), geometry, paint, type, symbols, brushes, effects, 3D, envelopes, repeat, paint regions, trace, mesh, graphs, perspective, patterns, slices, workspaces, panels, collaboration and more.
-- `worker/` the collaboration server that sharing deploys to the owner's Puter account.
+- `worker/` the collaboration server that sharing deploys to the owner's Everything account.
 
 ## License
 

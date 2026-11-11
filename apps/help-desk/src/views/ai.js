@@ -1,12 +1,12 @@
 /**
- * Writing help powered by Puter AI. Requests run with the signed-in agent's
- * own Puter account (user pays), and nothing is sent until the agent asks.
+ * Writing help powered by Everything AI. Requests run with the signed-in agent's
+ * own Everything account (user pays), and nothing is sent until the agent asks.
  */
 import { h } from '../ui/dom.js';
 import { openMenu } from '../ui/popover.js';
 import { toast, toastError } from '../ui/toast.js';
 import { escapeHtml, textToHtml } from '../shared/html.js';
-import { sdk } from '../client/puter.js';
+import { sdk } from '../client/everything.js';
 
 function textOf(res) {
   if (typeof res === 'string') return res;

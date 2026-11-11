@@ -23,7 +23,7 @@ describe('chart tooltips', () => {
     wb.setInput(id, 1, 1, '4321.75');
     const zip = X.CFB.read(new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()), { type: 'array' });
     const part = X.CFB.find(zip, '/xl/workbook.xml');
-    part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')); part.size = part.content.length;
+    part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')); part.size = part.content.length;
     const back = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'formats.xlsx');
     expect(back.activeSheet.charts).toHaveLength(2);
     for (const ch of back.activeSheet.charts) {

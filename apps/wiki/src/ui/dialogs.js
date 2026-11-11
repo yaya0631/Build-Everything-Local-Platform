@@ -90,19 +90,19 @@ export function openSettings(app) {
     h(
       'section.settings-section',
       h('h3', 'Account'),
-      h('div.account-row', avatar(user?.username || 'You', { picture: app.picture, size: 40 }), h('div', h('strong', sandbox || !user?.username ? 'Local sandbox' : user.username), h('p.settings-hint', sandbox || !user?.username ? 'Pages are kept in this browser only.' : app.env === 'app' ? 'Signed in through Puter.' : 'Signed in with Puter.'))),
+      h('div.account-row', avatar(user?.username || 'You', { picture: app.picture, size: 40 }), h('div', h('strong', sandbox || !user?.username ? 'Local sandbox' : user.username), h('p.settings-hint', sandbox || !user?.username ? 'Pages are kept in this browser only.' : app.env === 'app' ? 'Signed in through Everything.' : 'Signed in with Everything.'))),
       app.env !== 'app' && app.onSignOut ? h('button.btn.small', { type: 'button', onclick: () => app.signOut() }, icon('logOut', 15), 'Sign out') : null,
     ),
     h(
       'section.settings-section',
       h('h3', 'Your data'),
-      h('p.settings-hint', `${pages} page${pages === 1 ? '' : 's'} across ${app.ws.allSpaces().length} space${app.ws.allSpaces().length === 1 ? '' : 's'}. Private pages are files in the Wiki folder of your Puter cloud. Shared spaces are stored on the account of the person who shared them.`),
+      h('p.settings-hint', `${pages} page${pages === 1 ? '' : 's'} across ${app.ws.allSpaces().length} space${app.ws.allSpaces().length === 1 ? '' : 's'}. Private pages are files in the Wiki folder of your Everything cloud. Shared spaces are stored on the account of the person who shared them.`),
       h('button.btn.small', { type: 'button', onclick: () => {
           dlg.close();
           app.importMarkdown();
         } }, icon('fileUp', 15), 'Import Markdown files'),
     ),
-    h('section.settings-section', h('h3', 'About'), h('p.settings-hint', 'Wiki is part of the Everything project: free, open-source software built on Puter.'), h('a.settings-link', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Powered by Puter', icon('externalLink', 13))),
+    h('section.settings-section', h('h3', 'About'), h('p.settings-hint', 'Wiki is part of the Everything project: free, open-source software built on Everything.'), h('a.settings-link', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Powered by Everything', icon('externalLink', 13))),
   );
   const dlg = openDialog({ title: 'Settings', body, className: 'settings-dialog' });
 }

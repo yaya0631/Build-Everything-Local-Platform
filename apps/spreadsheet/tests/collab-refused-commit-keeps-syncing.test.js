@@ -14,10 +14,10 @@ afterEach(() => { for (const c of open.splice(0)) c.close(); });
 it('goes on receiving the others\' changes after the room refuses a change made just as the owner made this person a viewer', async () => {
   const env = environment();
   const wb = new Workbook({ sheets: [{ name: 'Plan' }] });
-  const room = await RoomClient.create({ puter: env.sdk(owner), server: SERVER, wb, name: 'Plan' });
+  const room = await RoomClient.create({ everything: env.sdk(owner), server: SERVER, wb, name: 'Plan' });
   const token = (await call(env.sdk(owner), SERVER, { op: 'invite', room, role: 'editor' })).token;
   const join = async (user, invite) => {
-    const client = new RoomClient({ puter: env.sdk(user), server: SERVER, room, token: invite, store: memoryOutbox(), poll: 50, noPeers: true });
+    const client = new RoomClient({ everything: env.sdk(user), server: SERVER, room, token: invite, store: memoryOutbox(), poll: 50, noPeers: true });
     open.push(client);
     await client.open();
     return client;

@@ -27,7 +27,7 @@ describe('app shell', () => {
     expect(app.toolId).toBe('rectangle');
   });
 
-  it('hides sign-out inside the Puter desktop (app env)', () => {
+  it('hides sign-out inside the Everything desktop (app env)', () => {
     bootApp({ env: 'app', user: { username: 'ada' } });
     document.querySelector('.account-btn').click();
     const labels = [...document.querySelectorAll('.menu-item')].map((m) => m.textContent);

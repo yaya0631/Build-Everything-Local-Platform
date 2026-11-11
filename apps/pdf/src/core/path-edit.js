@@ -24,7 +24,7 @@ const fits = (transform, clips) =>
 // Only our explicit hint makes an unpainted path an editable object. Ordinary PDF
 // end-path and clipping commands must not become selectable objects.
 function pathHint(args) {
-  if (args[0]?.value !== 'PuterPath' || args[1]?.type !== 'dict') return null;
+  if (args[0]?.value !== 'EverythingPath' || args[1]?.type !== 'dict') return null;
   const tokens = args[1].value,
     data = Object.create(null);
   if (tokens.length !== 6) return null;
@@ -134,8 +134,8 @@ export function inspectPaths(doc, index) {
             textDecoration: state.textDecoration,
           });
           state.optional ||= a[0] === 'OC';
-          state.textDecoration ||= a[0] === 'PuterTextDecoration';
-          if (a[0] === 'PuterPath') state.ownPath = pathHint(command.args);
+          state.textDecoration ||= a[0] === 'EverythingTextDecoration';
+          if (a[0] === 'EverythingPath') state.ownPath = pathHint(command.args);
         } else if (op === 'EMC') {
           const previous = marked.pop();
           state.optional = previous?.optional ?? false;
@@ -444,7 +444,7 @@ export function editPath(
   )
     return false;
   if (changedPaint || changedOpacity)
-    source = `/PuterPath << /V 1 /Kind /${entry.kind === 'shape' ? 'Shape' : 'Drawing'} /Rule /${entry.fillRule === 'evenodd' ? 'EvenOdd' : 'NonZero'} >> BDC\n${source}\nEMC`;
+    source = `/EverythingPath << /V 1 /Kind /${entry.kind === 'shape' ? 'Shape' : 'Drawing'} /Rule /${entry.fillRule === 'evenodd' ? 'EvenOdd' : 'NonZero'} >> BDC\n${source}\nEMC`;
   const states = get(entry.resources, 'ExtGState') || doc.context.obj({});
   const opacityName = changedOpacity && !remove ? uniqueName(states, 'PathOpacity') : null;
   if (opacityName) commands.push(`${opacityName} gs`);

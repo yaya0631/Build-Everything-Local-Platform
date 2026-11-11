@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 /**
- * Drive a real MCP session against the real server, with no Puter account and no
+ * Drive a real MCP session against the real server, with no Everything account and no
  * desktop:
  *
  *   node scripts/mcp-demo.js
  *
- * Only two things are stand-ins — an in-memory Map for `puter.kv`, and a fake
- * AppConnection for the one the Puter desktop hands over. Everything between
+ * Only two things are stand-ins — an in-memory Map for `everything.kv`, and a fake
+ * AppConnection for the one the Everything desktop hands over. Everything between
  * them is the code that ships: server.js routing the dialect, mcp.js answering
  * it, tools.js rendering the result, methods.js and store.js doing the work
  * (including the real freshness re-read, which is why the first call reads the
@@ -15,10 +15,10 @@
  * Read it as a transcript: → is the client, ← is Contacts.
  */
 
-/* The store reaches for window.puter.kv, exactly as it does in a browser. */
+/* The store reaches for window.everything.kv, exactly as it does in a browser. */
 const kv = new Map()
 globalThis.window = globalThis
-globalThis.window.puter = {
+globalThis.window.everything = {
   kv: {
     list: async () => [...kv.entries()].map(([key, value]) => ({ key, value })),
     get: async (k) => (kv.has(k) ? kv.get(k) : null),
@@ -133,7 +133,7 @@ for (const c of [
   kv.set(`contact:${contact.id}`, contact)
 }
 
-console.log(bold('\nContacts over MCP — a full session, no Puter required.'))
+console.log(bold('\nContacts over MCP — a full session, no Everything required.'))
 console.log(dim(`${kv.size} contacts seeded in the fake cloud.\n`))
 
 // Exactly what main.js does when another app launches us.

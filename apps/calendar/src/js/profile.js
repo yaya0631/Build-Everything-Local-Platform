@@ -1,5 +1,5 @@
 /**
- * The user's profile picture, read through puter.auth.getProfilePicture().
+ * The user's profile picture, read through everything.auth.getProfilePicture().
  *
  * Everything here is strictly best-effort: some users have no picture, the
  * SDK may be missing pieces, the device may be offline, and the returned images
@@ -52,7 +52,7 @@ const offline = () =>
  */
 export async function fetchProfilePicture(username) {
   if (!isSafeUsername(username) || offline()) return { state: 'unknown' };
-  const auth = typeof puter !== 'undefined' && puter.auth;
+  const auth = typeof everything !== 'undefined' && everything.auth;
   if (!auth || typeof auth.getProfilePicture !== 'function') return { state: 'unknown' };
 
   try {

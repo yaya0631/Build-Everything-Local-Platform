@@ -218,8 +218,8 @@ const pairs = {
     "Cliquez pour ajouter la forme · Faites glisser pour la dessiner à la taille voulue",
   "Align and distribute": "Aligner et répartir",
   "Share this board?": "Partager ce tableau ?",
-  "Sharing moves this board into your Puter account, so the people you invite can open it and work on it with you. It stays a shared board from then on; Duplicate still makes a personal copy.":
-    "Le partage place ce tableau dans votre compte Puter, pour que les personnes invitées puissent l’ouvrir et y travailler avec vous. Il reste ensuite un tableau partagé ; Dupliquer en fait toujours une copie personnelle.",
+  "Sharing moves this board into your Everything account, so the people you invite can open it and work on it with you. It stays a shared board from then on; Duplicate still makes a personal copy.":
+    "Le partage place ce tableau dans votre compte Everything, pour que les personnes invitées puissent l’ouvrir et y travailler avec vous. Il reste ensuite un tableau partagé ; Dupliquer en fait toujours une copie personnelle.",
   "Clear search": "Effacer la recherche",
   "Vertical alignment": "Alignement vertical",
   "Align text top": "Aligner le texte en haut",
@@ -862,8 +862,8 @@ const pairs = {
   "Join shared board": "Rejoindre un tableau partagé",
   "Board link": "Lien du tableau",
   "Join board": "Rejoindre le tableau",
-  "Sign in with Puter to join this board.":
-    "Connectez-vous à Puter pour rejoindre ce tableau.",
+  "Sign in with Everything to join this board.":
+    "Connectez-vous à Everything pour rejoindre ce tableau.",
   "Paste the link you were given to open the board.":
     "Collez le lien que vous avez reçu pour ouvrir le tableau.",
   "You were invited to a shared board. Choose Join board to open it.":
@@ -907,8 +907,8 @@ const pairs = {
   "Preparing collaboration…": "Préparation de la collaboration…",
   "Starting collaboration…": "Démarrage de la collaboration…",
   "Sharing failed · try again": "Échec du partage · réessayez",
-  "Shared, but the copy in Puter could not be updated.":
-    "Partagé, mais la copie dans Puter n’a pas pu être mise à jour.",
+  "Shared, but the copy in Everything could not be updated.":
+    "Partagé, mais la copie dans Everything n’a pas pu être mise à jour.",
   "The collaboration server bundle could not load.":
     "Le module du serveur de collaboration n’a pas pu être chargé.",
   "Invalid collaboration server bundle.":
@@ -983,8 +983,8 @@ const pairs = {
     "Adresse de serveur Whiteboard non valide.",
   "The collaboration server is still starting. Try Share again shortly.":
     "Le serveur de collaboration démarre encore. Réessayez Partager dans un instant.",
-  "Your Puter account changed. Reopen the shared board.":
-    "Votre compte Puter a changé. Rouvrez le tableau partagé.",
+  "Your Everything account changed. Reopen the shared board.":
+    "Votre compte Everything a changé. Rouvrez le tableau partagé.",
   "Could not synchronize this board.": "Impossible de synchroniser ce tableau.",
   "Could not reach the shared board. Check your connection and try again.":
     "Impossible de joindre le tableau partagé. Vérifiez votre connexion et réessayez.",
@@ -1203,7 +1203,7 @@ const pairs = {
   System: "Système",
   Light: "Clair",
   Dark: "Sombre",
-  "Powered by Puter": "Propulsé par Puter",
+  "Powered by Everything": "Propulsé par Everything",
   Workspace: "Espace de travail",
   "Keyboard shortcuts": "Raccourcis clavier",
   "Start with a little inspiration": "Un peu d’inspiration pour commencer",
@@ -1243,15 +1243,15 @@ const pairs = {
   "Back to boards": "Retour aux tableaux",
   "Board name": "Nom du tableau",
   "Saved on this device": "Enregistré sur cet appareil",
-  "Save to Puter": "Enregistrer sur Puter",
-  "Saved to Puter · Save again":
-    "Enregistré sur Puter · Enregistrer de nouveau",
+  "Save to Everything": "Enregistrer sur Everything",
+  "Saved to Everything · Save again":
+    "Enregistré sur Everything · Enregistrer de nouveau",
   "Save shared changes now":
     "Enregistrer les modifications partagées maintenant",
   "On this device": "Sur cet appareil",
   "Boards stay in this browser until you sign in.":
     "Les tableaux restent dans ce navigateur tant que vous n’êtes pas connecté.",
-  "Open from Puter": "Ouvrir depuis Puter",
+  "Open from Everything": "Ouvrir depuis Everything",
   "Not on this device yet": "Pas encore sur cet appareil",
   "Export board": "Exporter le tableau",
   "Drawing tools": "Outils de création",
@@ -1351,8 +1351,8 @@ const pairs = {
   "Move this board to the trash?": "Mettre ce tableau à la corbeille?",
   "Boards in the trash can be restored from there.":
     "Les tableaux dans la corbeille peuvent être restaurés à partir de là.",
-  "The copy saved in Puter is kept.":
-    "La copie enregistrée sur Puter est conservée.",
+  "The copy saved in Everything is kept.":
+    "La copie enregistrée sur Everything est conservée.",
   Duplicate: "Dupliquer",
   "Save name": "Enregistrer le nom",
   "Board name saved. You changed it while saving. Save again to update the name.":
@@ -1368,20 +1368,20 @@ const pairs = {
   "Saving…": "Enregistrement…",
   "Saved locally": "Enregistré localement",
   "Storage full": "Stockage plein",
-  "Saving to Puter…": "Enregistrement sur Puter…",
-  "Saved to Puter": "Enregistré sur Puter",
+  "Saving to Everything…": "Enregistrement sur Everything…",
+  "Saved to Everything": "Enregistré sur Everything",
   "Cloud save failed": "Échec de l’enregistrement dans le nuage",
-  "Newer copy in Puter": "Copie plus récente sur Puter",
-  "A newer copy of this board is saved in Puter.":
-    "Une copie plus récente de ce tableau est enregistrée sur Puter.",
+  "Newer copy in Everything": "Copie plus récente sur Everything",
+  "A newer copy of this board is saved in Everything.":
+    "Une copie plus récente de ce tableau est enregistrée sur Everything.",
   "Open newer copy": "Ouvrir la copie plus récente",
   "copy on this device": "copie sur cet appareil",
-  "Opened the copy from Puter. The edits made on this device are kept as their own board.":
-    "La copie de Puter est ouverte. Les modifications faites sur cet appareil sont conservées dans un tableau à part.",
-  "Could not open the copy in Puter.":
-    "Impossible d’ouvrir la copie sur Puter.",
-  "The cloud board index is invalid. Your files remain in Puter.":
-    "L’index des tableaux dans le nuage est invalide. Vos fichiers restent dans Puter.",
+  "Opened the copy from Everything. The edits made on this device are kept as their own board.":
+    "La copie de Everything est ouverte. Les modifications faites sur cet appareil sont conservées dans un tableau à part.",
+  "Could not open the copy in Everything.":
+    "Impossible d’ouvrir la copie sur Everything.",
+  "The cloud board index is invalid. Your files remain in Everything.":
+    "L’index des tableaux dans le nuage est invalide. Vos fichiers restent dans Everything.",
   "Invalid board identifier.": "Identifiant de tableau invalide.",
   "The AI request failed.": "La demande à l’IA a échoué.",
   "Could not move this board to the trash.":
@@ -1395,8 +1395,8 @@ const pairs = {
     "Impossible d’enregistrer cette modification sur cet appareil.",
   "Could not save locally. Export your board to keep a copy.":
     "Enregistrement local impossible. Exportez votre tableau pour en conserver une copie.",
-  "Cloud save failed. Your local copy is safe. Use Save to Puter to retry.":
-    "Échec de l’enregistrement sur Puter. Votre copie locale est conservée. Réessayez avec Enregistrer sur Puter.",
+  "Cloud save failed. Your local copy is safe. Use Save to Everything to retry.":
+    "Échec de l’enregistrement sur Everything. Votre copie locale est conservée. Réessayez avec Enregistrer sur Everything.",
   "Board imported.": "Tableau importé.",
   "A newer local copy was kept.":
     "La copie locale plus récente a été conservée.",
@@ -1721,9 +1721,9 @@ const pairs = {
   "Could not import this file.": "Impossible d’importer ce fichier.",
   "Could not open cloud board.":
     "Impossible d’ouvrir le tableau dans le nuage.",
-  "Puter could not load. Check your connection and try again.":
-    "Puter n’a pas pu être chargé. Vérifiez votre connexion et réessayez.",
-  "Could not connect to Puter.": "Connexion à Puter impossible.",
+  "Everything could not load. Check your connection and try again.":
+    "Everything n’a pas pu être chargé. Vérifiez votre connexion et réessayez.",
+  "Could not connect to Everything.": "Connexion à Everything impossible.",
   "Could not connect. Please try again.":
     "Connexion impossible. Veuillez réessayer.",
   "Export failed. Please try again.":

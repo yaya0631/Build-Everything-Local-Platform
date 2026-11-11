@@ -1,5 +1,5 @@
 /**
- * Data layer on top of Puter KV. Everything lives under a handful of
+ * Data layer on top of Everything KV. Everything lives under a handful of
  * collection projections plus immutable inv:op:v1:<uuid> commits.
  * Boot and saves discover journal entries; unchanged entries are cached.
  * The journal merges session changes and recovers incomplete projections:
@@ -247,7 +247,7 @@ class Store extends EventTarget {
       this.#persistence.read(KV.takeout),
       this.#persistence.read(KV.snapshots),
       this.#persistence.read(KV.backups),
-      puter.auth.getUser().catch(() => null),
+      everything.auth.getUser().catch(() => null),
     ]);
     this.settings = { ...DEFAULT_SETTINGS, ...(settings || {}) };
     this.products = Array.isArray(products) ? products.map(migrateProduct) : [];

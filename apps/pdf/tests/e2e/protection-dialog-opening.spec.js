@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { unlockPdf, documentAccess, openedProtection } from '../../src/core/security.js';
 
 async function prepare(page) {
-  await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
+  await page.route('**/sdk/everything.js', (route) => route.fulfill({ body: '' }));
   await page.goto('/#library');
   const choosing = page.waitForEvent('filechooser');
   await page.getByRole('button', { name: /Open a PDF/ }).click();

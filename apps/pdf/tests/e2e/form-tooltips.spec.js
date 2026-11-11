@@ -4,7 +4,7 @@ import { PDFDocument, PDFName, PDFString } from 'pdf-lib';
 test('fields on the page are named by their tooltips, or by their names without one', async ({
   page,
 }) => {
-  await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
+  await page.route('**/sdk/everything.js', (route) => route.fulfill({ body: '' }));
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   const sheet = doc.addPage([600, 400]);
@@ -38,7 +38,7 @@ test('fields on the page are named by their tooltips, or by their names without 
 });
 
 test('the Fill forms dialog labels fields by their tooltips too', async ({ page }) => {
-  await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
+  await page.route('**/sdk/everything.js', (route) => route.fulfill({ body: '' }));
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   const sheet = doc.addPage([600, 400]);
@@ -69,7 +69,7 @@ test('the Fill forms dialog labels fields by their tooltips too', async ({ page 
 });
 
 test('required fields are marked on the page and in the Fill forms dialog', async ({ page }) => {
-  await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
+  await page.route('**/sdk/everything.js', (route) => route.fulfill({ body: '' }));
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   const sheet = doc.addPage([600, 400]);

@@ -2,11 +2,11 @@ import { describe, it, expect } from 'vitest';
 import { Store } from '../src/lib/store.js';
 import { sampleDataset, wipeSampleData } from '../src/lib/sample.js';
 import { suggestMatches } from '../src/lib/reconcile.js';
-import { fakePuter } from './helpers/fake-puter.js';
+import { fakeEverything } from './helpers/fake-everything.js';
 
 describe('sampleDataset', () => {
   it('installs through importAll and produces a coherent dataset', async () => {
-    const sdk = fakePuter();
+    const sdk = fakeEverything();
     const store = new Store(() => sdk);
     await store.init();
     await store.updateSettings({ baseCurrency: 'GBP' });
@@ -32,7 +32,7 @@ describe('sampleDataset', () => {
     expect(lines.some((l) => !l.matchedExpenseId && !suggestMatches(lines, all).some((m) => m.lineId === l.id))).toBe(true);
   });
   it('wipes back to an empty, un-onboarded state', async () => {
-    const sdk = fakePuter();
+    const sdk = fakeEverything();
     const store = new Store(() => sdk);
     await store.init();
     await store.importAll(sampleDataset(store));

@@ -137,7 +137,7 @@ export class AccessStamp {
   }
 }
 // Reads records kept under access stamps, and each stamp due, in one
-// request for everything an instance cannot use: Puter counts a get of
+// request for everything an instance cannot use: Everything counts a get of
 // several keys as one request. Each want names a key, the Map keeping what
 // was read of it, and its stamp. Records a changed stamp leaves unusable
 // are read again in a second request.
@@ -601,9 +601,9 @@ export function publicHost(hostname) {
   );
 }
 export class OrgService {
-  constructor(puter, { now = Date.now, fetcher = fetch, request } = {}) {
-    this.puter = puter;
-    this.kv = puter.kv;
+  constructor(everything, { now = Date.now, fetcher = fetch, request } = {}) {
+    this.everything = everything;
+    this.kv = everything.kv;
     this.now = now;
     this.fetcher = fetcher;
     this.request = request;
@@ -613,8 +613,8 @@ export class OrgService {
       purged: 0,
       reported: 0,
     };
-    if (!INSTANCES.has(puter))
-      INSTANCES.set(puter, {
+    if (!INSTANCES.has(everything))
+      INSTANCES.set(everything, {
         owner: null,
         touched: new Map(),
         // User records and the organization's metadata, read for access
@@ -631,7 +631,7 @@ export class OrgService {
         // oldest first.
         unsaved: [],
       });
-    this.instance = INSTANCES.get(puter);
+    this.instance = INSTANCES.get(everything);
     this.siemInterval = 10_000;
   }
   // One request of a listing, taking its turn with the boards' listings
@@ -676,7 +676,7 @@ export class OrgService {
   }
   async accountOwner() {
     const instance = this.instance;
-    instance.owner ??= this.puter.auth.getUser().then(
+    instance.owner ??= this.everything.auth.getUser().then(
       (u) => ({ uuid: u.uuid, username: u.username }),
       (error) => {
         instance.owner = null;

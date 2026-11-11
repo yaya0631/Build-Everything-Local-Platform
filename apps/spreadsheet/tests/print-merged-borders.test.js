@@ -81,7 +81,7 @@ it('preserves perimeter cells through metadata-free XLSX, an edit, and another e
   const blob=await workbookToXlsx(wb);
   const data=new Uint8Array(await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(reader.error);reader.readAsArrayBuffer(blob);}));
   const zip=X.CFB.read(data,{type:'array'}),part=X.CFB.find(zip,'/xl/workbook.xml');
-  part.content=new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,''));part.size=part.content.length;
+  part.content=new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,''));part.size=part.content.length;
   wb=await workbookFromFile(X.CFB.write(zip,{type:'array',fileType:'zip'}),'Merged.xlsx');
   wb.setInput(wb.activeSheetId,1,1,'Edited merged value');
   const before=JSON.stringify(wb.toJSON());

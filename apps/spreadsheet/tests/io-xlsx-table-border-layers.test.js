@@ -60,7 +60,7 @@ it('exports native differential edge colors and clears without depending on priv
     const bytes = await new Promise(resolve => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.readAsArrayBuffer(blob); });
     const zip = X.CFB.read(new Uint8Array(bytes), { type: 'array' });
     const part = X.CFB.find(zip, '/xl/workbook.xml');
-    part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+    part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
     part.size = part.content.length;
     wb = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'external.xlsx');
     expectBorders(wb);

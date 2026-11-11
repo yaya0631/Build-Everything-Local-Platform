@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { createPuterMock } from './puter-mock.js';
+import { createEverythingMock } from './everything-mock.js';
 
 const DAYS = ['2026-08-03', '2026-08-04', '2026-08-05', '2026-08-06', '2026-08-07', '2026-08-08', '2026-08-09'];
 let store;
@@ -17,7 +17,7 @@ beforeEach(async () => {
   vi.resetModules();
   ({ store } = await import('../src/lib/store.js'));
   ({ weekGrid, captureGridFocus, restoreGridFocus } = await import('../src/ui/weekgrid.js'));
-  vi.stubGlobal('puter', createPuterMock());
+  vi.stubGlobal('everything', createEverythingMock());
   vi.stubGlobal('matchMedia', () => ({ matches: true }));
   document.body.innerHTML = '<main id="app"></main>';
   await store.init();

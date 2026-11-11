@@ -4,7 +4,7 @@ import type { Editor } from '../../editor';
 import { commands } from '../../app/registry';
 import { eventShortcut, formatShortcut, platformShortcut } from '../../app/shortcuts';
 import { escapeXML } from '../../model/assets';
-import { download } from '../../persistence/puter';
+import { download } from '../../persistence/everything';
 import { modal } from '../files/ui';
 import { askChoice } from '../preferences/warnings';
 import { deleteScript, findScript, newScriptRecord, saveScript, scriptMetadata, updateScript } from './store';
@@ -29,7 +29,7 @@ async function readSource(blob: Blob) {
 }
 
 /** File → Scripts → Browse…: run a script file once (offering to install it). */
-export async function browse(e: Editor, from: 'device' | 'puter') {
+export async function browse(e: Editor, from: 'device' | 'everything') {
   let name: string, source: string;
   if (from === 'device') {
     const file = await pickScriptFile();
@@ -37,7 +37,7 @@ export async function browse(e: Editor, from: 'device' | 'puter') {
     name = file.name;
     source = await readSource(file);
   } else {
-    // The Puter picker never settles when dismissed: do not hold the editor busy.
+    // The Everything picker never settles when dismissed: do not hold the editor busy.
     e.release();
     const { pickCloudFiles } = await import('../files/cloud');
     const [item] = await pickCloudFiles(false, '.js,.mjs');

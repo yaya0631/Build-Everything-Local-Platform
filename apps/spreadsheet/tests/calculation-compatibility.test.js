@@ -117,7 +117,7 @@ describe('native calculation compatibility extension', () => {
         expect(readXlsxCalculationCompatibility(text)).toEqual(settings || { version: 1 });
         const raw = X.read(bytes), sheet = raw.Sheets[raw.SheetNames[0]];
         expect(sheet.B1.v).toBe(value(wb));
-        text = text.replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '');
+        text = text.replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '');
         part.content = new TextEncoder().encode(text); part.size = part.content.length;
         wb = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'external-roundtrip.xlsx');
       }

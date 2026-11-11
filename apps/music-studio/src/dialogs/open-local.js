@@ -7,7 +7,7 @@ import { openDialog, confirmDialog } from '../ui/dialog.js';
 import { icon } from '../ui/icons.js';
 import { downloadBlob, safeFileName } from '../io/download.js';
 import { FILE_EXT } from '../model/project.js';
-import * as puter from '../storage/puter.js';
+import * as everything from '../storage/everything.js';
 
 /** "Today 14:05", "Yesterday", "3 Oct" (pure, `now` injectable). */
 export function formatWhen(ms, now = Date.now()) {
@@ -99,13 +99,13 @@ export async function openLocalProjects(app) {
   });
   render();
 
-  const canSignIn = Boolean(puter.sdk()) && puter.env() !== 'app' && !puter.isSignedIn();
+  const canSignIn = Boolean(everything.sdk()) && everything.env() !== 'app' && !everything.isSignedIn();
   const body = h(
     'div.local-projects',
     list,
     empty,
     canSignIn
-      ? h('div.lp-cloud', icon('cloud', 16), h('span', 'Sign in to Puter to save projects to your cloud and open them on any device.'), h('button.btn.sm', { type: 'button', onclick: () => (closeDialog?.(null), app.signIn?.()) }, 'Sign in'))
+      ? h('div.lp-cloud', icon('cloud', 16), h('span', 'Sign in to Everything to save projects to your cloud and open them on any device.'), h('button.btn.sm', { type: 'button', onclick: () => (closeDialog?.(null), app.signIn?.()) }, 'Sign in'))
       : null,
   );
   const footerStart = h('button.btn', { type: 'button', onclick: () => (closeDialog?.(null), app.commands.run('file.openLocal')) }, icon('upload', 14), h('span', 'Open from this device...'));

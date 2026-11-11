@@ -14,7 +14,7 @@ async function native(wb, position, inject = false) {
   const axes=[...xml.matchAll(/<c:valAx>([\s\S]*?)<\/c:valAx>/g)].map(m=>m[1]);
   expect(axes.find(a=>a.includes('<c:axId val="2"/>'))).toContain('<c:tickLblPos val="high"/>');
   expect(axes.find(a=>a.includes('<c:axId val="3"/>'))).toContain(`<c:tickLblPos val="${position}"/>`);
-  const book=X.CFB.find(zip,'/xl/workbook.xml');book.content=new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,''));book.size=book.content.length;
+  const book=X.CFB.find(zip,'/xl/workbook.xml');book.content=new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,''));book.size=book.content.length;
   return workbookFromFile(X.CFB.write(zip,{type:'array',fileType:'zip'}),'secondary.xlsx');
 }
 it.each(['nextTo','low','high','none'])('retains native secondary %s labels through edits, copies and metadata-free exports',async position=>{

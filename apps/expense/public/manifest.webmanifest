@@ -2,7 +2,7 @@
   "name": "Expenses",
   "short_name": "Expenses",
   "description": "Receipt capture with AI OCR, expense reports, and reconciliation. Private, fast, on every device.",
-  "id": "expenses-puter",
+  "id": "expenses-everything",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

@@ -161,7 +161,7 @@ it.each(['column', 'pie'])('preserves manual %s legend geometry through duplicat
   expect(sheet.charts[0].sourceRefs[0].literal.values[0]).not.toBe(27);
   const zip = X.CFB.read(new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()), { type: 'array' });
   const book = X.CFB.find(zip, '/xl/workbook.xml');
-  book.content = new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')); book.size = book.content.length;
+  book.content = new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')); book.size = book.content.length;
   const back = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'native.xlsx');
   for (const restored of back.activeSheet.charts) {
     expect(restored.appearance.legend).toEqual(box);
@@ -184,7 +184,7 @@ it('retains automatic layout through duplication and native-only XLSX reopening'
   const part = new TextDecoder().decode(X.CFB.find(zip, '/xl/charts/chart1_1.xml').content);
   expect(xml(part).getElementsByTagNameNS('*', 'legend')[0].getElementsByTagNameNS('*', 'manualLayout')).toHaveLength(0);
   const book = X.CFB.find(zip, '/xl/workbook.xml');
-  book.content = new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')); book.size = book.content.length;
+  book.content = new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')); book.size = book.content.length;
   const back = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'native.xlsx');
   expect(back.activeSheet.charts[0].appearance.legend).toBeNull();
   expect(labels(xml(renderChartSvg(data, back.activeSheet.charts[0], 700, 400))).map(t => t.textContent)).toEqual(['North', 'South']);

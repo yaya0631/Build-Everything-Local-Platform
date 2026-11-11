@@ -18,7 +18,7 @@ describe('home Hanword import flow', () => {
       return { dismiss() {} };
     });
     vi.stubGlobal('matchMedia', () => ({ matches: true }));
-    vi.stubGlobal('puter', { fs: {
+    vi.stubGlobal('everything', { fs: {
       mkdir: async () => {},
       readdir: async () => [],
       stat: async (p) => fs.has(p) ? { path: p } : null,
@@ -75,8 +75,8 @@ describe('home Hanword import flow', () => {
     setup();
     const existing = new Blob(['Work saved in another tab']);
     // Another tab writes the file after uniqueName has checked the destination and before this write lands.
-    const write = puter.fs.write;
-    puter.fs.write = async (...args) => { if (!fs.has('Documents/collision.docx')) fs.set('Documents/collision.docx', existing); return write(...args); };
+    const write = everything.fs.write;
+    everything.fs.write = async (...args) => { if (!fs.has('Documents/collision.docx')) fs.set('Documents/collision.docx', existing); return write(...args); };
     pick([new File([hwp()], 'collision.hwp'), new File(['word bytes'], 'other.docx')]);
     await finished;
     expect(writes).toHaveLength(2);

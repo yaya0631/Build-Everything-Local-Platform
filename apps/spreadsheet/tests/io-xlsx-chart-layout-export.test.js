@@ -40,7 +40,7 @@ it.each(['column', 'line', 'pie'])('exports %s manual layouts as absolute edges 
     }
   }
   const book = X.CFB.find(zip, '/xl/workbook.xml');
-  book.content = new TextEncoder().encode(readPart(zip, '/xl/workbook.xml').replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  book.content = new TextEncoder().encode(readPart(zip, '/xl/workbook.xml').replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   book.size = book.content.length;
   const back = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'native.xlsx');
   expect(back.activeSheet.charts[0].appearance).toMatchObject({ plot, title, legend });

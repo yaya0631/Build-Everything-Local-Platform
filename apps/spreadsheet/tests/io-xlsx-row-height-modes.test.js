@@ -17,7 +17,7 @@ const modes = wb => Object.fromEntries(wb.activeSheet.rowHeightModes);
 async function output(wb, native = false) {
   const zip = X.CFB.read(new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()), { type: 'array' });
   const text = path => new TextDecoder().decode(X.CFB.find(zip, path).content);
-  if (native) X.CFB.utils.cfb_add(zip, '/xl/workbook.xml', new TextEncoder().encode(text('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')));
+  if (native) X.CFB.utils.cfb_add(zip, '/xl/workbook.xml', new TextEncoder().encode(text('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')));
   return { xml: text('/xl/worksheets/sheet1.xml'), back: await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'roundtrip.xlsx') };
 }
 

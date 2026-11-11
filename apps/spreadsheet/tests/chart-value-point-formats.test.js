@@ -22,7 +22,7 @@ async function native(wb, patch) {
   const zip = X.CFB.read(new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()), { type: 'array' });
   const get = p => new TextDecoder().decode(X.CFB.find(zip, p).content);
   const put = (p, s) => X.CFB.utils.cfb_add(zip, p, new TextEncoder().encode(s));
-  put('/xl/workbook.xml', get('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  put('/xl/workbook.xml', get('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   const path = '/xl/charts/chart1_1.xml';
   if (patch) put(path, patch(get(path)));
   return { xml: get(path), wb: await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' })) };

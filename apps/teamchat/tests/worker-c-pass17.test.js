@@ -224,16 +224,16 @@ describe('a bot token’s reaction that changes nothing', () => {
 });
 
 describe('one archive imported twice in the same instant', () => {
-  const hadPuter = Object.hasOwn(globalThis, 'puter') ? globalThis.puter : undefined;
+  const hadEverything = Object.hasOwn(globalThis, 'everything') ? globalThis.everything : undefined;
   afterEach(() => {
-    if (hadPuter === undefined) delete globalThis.puter;
-    else globalThis.puter = hadPuter;
+    if (hadEverything === undefined) delete globalThis.everything;
+    else globalThis.everything = hadEverything;
   });
 
   it('makes two copies, each whole, rather than one written by both and then taken down by the one that lost', async () => {
     const header = { format: 'teamchat-export', version: 1, workspace: { id: 'abcdef1234', name: 'Acme' }, channels: { chan000001: { name: 'general', def: true } }, members: { [alice.uuid]: { username: 'alice', name: 'Alice', role: 'owner' } }, memberDocs: { [alice.uuid]: { channels: ['chan000001'] } } };
     const pages = Array.from({ length: 3 }, (_, i) => ({ conv: 'chan000001', seq: 3, from: 0, messages: [{ seq: i + 1, user: alice.uuid, text: `m${i + 1}`, ts: i + 1 }] }));
-    globalThis.puter = { workers: { exec: async (url, init = {}) => rt.dispatch(url, init, alice) } };
+    globalThis.everything = { workers: { exec: async (url, init = {}) => rt.dispatch(url, init, alice) } };
     const refs = await Promise.all([0, 1].map(() => importArchive('http://teamchat-new.localhost:8443', { header, pages, files: [] }, { profile: { name: 'Alice' } })));
     const ids = refs.map((r) => r.split('@')[0]);
     expect(ids[0]).not.toBe(ids[1]);

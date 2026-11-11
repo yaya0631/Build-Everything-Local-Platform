@@ -16,7 +16,7 @@ beforeEach(() => {
     removeItem: (key) => data.delete(key),
   });
   vi.stubGlobal('matchMedia', () => ({ matches: false }));
-  vi.stubGlobal('puter', { auth: { isSignedIn: () => true, getUser: async () => user }, kv: { get: async () => null } });
+  vi.stubGlobal('everything', { auth: { isSignedIn: () => true, getUser: async () => user }, kv: { get: async () => null } });
 });
 afterEach(() => {
   for (const doc of docs.splice(0)) doc.destroy();

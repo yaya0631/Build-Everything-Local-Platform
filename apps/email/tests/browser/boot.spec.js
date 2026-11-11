@@ -18,7 +18,7 @@ test('a refused access check still asks for permission', async ({ page }) => {
 });
 
 test('an SDK that failed to load is reported at once, not after the poll', async ({ page }) => {
-  await page.route('**/sdk/puter.js', (route) => route.abort('internetdisconnected'));
+  await page.route('**/sdk/everything.js', (route) => route.abort('internetdisconnected'));
   const start = Date.now();
   await page.goto('/');
   await expect(page.locator('.gate-title')).toHaveText('Something went wrong', { timeout: 20000 });

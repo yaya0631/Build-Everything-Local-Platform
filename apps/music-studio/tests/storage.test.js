@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { Library, toBase64, fromBase64 } from '../src/storage/library.js';
 import { memoryDB } from '../src/storage/idb.js';
 import { Autosave } from '../src/storage/autosave.js';
-import * as puterApi from '../src/storage/puter.js';
+import * as everythingApi from '../src/storage/everything.js';
 import { Store } from '../src/model/store.js';
 import * as E from '../src/model/edits.js';
 import { demoProject, newProject } from '../src/model/demo.js';
@@ -11,8 +11,8 @@ import { App } from '../src/app.js';
 import { install, RESTORE_WAIT_MS } from '../src/storage/index.js';
 import { ProjectFiles } from '../src/storage/files.js';
 
-/** A fake Puter SDK with an in-memory file system. Every fs call is recorded. */
-function fakePuter({ signedIn = true, username = 'ada' } = {}) {
+/** A fake Everything SDK with an in-memory file system. Every fs call is recorded. */
+function fakeEverything({ signedIn = true, username = 'ada' } = {}) {
   const files = new Map();
   const calls = [];
   const rec = (name, fn) => (...args) => {
@@ -49,7 +49,7 @@ function fakePuter({ signedIn = true, username = 'ada' } = {}) {
         return { path };
       }),
       readdir: rec('readdir', async () => []),
-      // Relative paths resolve into the app's AppData folder, as in Puter.
+      // Relative paths resolve into the app's AppData folder, as in Everything.
       mkdir: rec('mkdir', async (path) => ({ path: path.startsWith('/') ? path : `/${username}/AppData/app-test/${path}` })),
     },
     ui: {},
@@ -69,12 +69,12 @@ HTMLCanvasElement.prototype.getContext = () => new Proxy({}, { get: (t, k) => (k
 
 let saved;
 beforeEach(() => {
-  saved = window.puter;
-  puterApi.resetAccountCache();
+  saved = window.everything;
+  everythingApi.resetAccountCache();
 });
 afterEach(() => {
-  window.puter = saved;
-  puterApi.resetAccountCache();
+  window.everything = saved;
+  everythingApi.resetAccountCache();
 });
 
 describe('local projects (this device)', () => {
@@ -108,19 +108,19 @@ describe('local projects (this device)', () => {
 
 describe('samples', () => {
   it('loads from this device first and reports missing ones', async () => {
-    const lib = new Library({ db: memoryDB(), decode: fakeDecode, puter: { isSignedIn: () => false, readFile: vi.fn() } });
+    const lib = new Library({ db: memoryDB(), decode: fakeDecode, everything: { isSignedIn: () => false, readFile: vi.fn() } });
     await lib.putSample('s1', { data: new Uint8Array([1, 2, 3]).buffer, name: 'kick.wav' });
     const p = { samples: { s1: { id: 's1', name: 'kick.wav', local: 's1', path: null }, s2: { id: 's2', name: 'gone.wav', local: null, path: '/ada/x.wav' } } };
     const c = cache();
     const r = await lib.loadSamples(p, c);
     expect(r).toEqual({ loaded: 1, missing: ['gone.wav'] });
     expect(c.get('s1').channels[0].length).toBe(3);
-    expect(lib.puter.readFile).not.toHaveBeenCalled();
+    expect(lib.everything.readFile).not.toHaveBeenCalled();
   });
 
-  it('downloads from Puter when signed in and caches the bytes', async () => {
-    const fake = fakePuter();
-    window.puter = fake;
+  it('downloads from Everything when signed in and caches the bytes', async () => {
+    const fake = fakeEverything();
+    window.everything = fake;
     fake.files.set('/ada/AppData/app-test/Samples/s2.wav', new Uint8Array([9, 9]));
     const lib = new Library({ db: memoryDB(), decode: fakeDecode });
     const c = cache();
@@ -135,8 +135,8 @@ describe('samples', () => {
 
 describe('cloud projects', () => {
   it('saves to Projects in the app folder, uploads new samples once and opens again', async () => {
-    const fake = fakePuter();
-    window.puter = fake;
+    const fake = fakeEverything();
+    window.everything = fake;
     const lib = new Library({ db: memoryDB(), decode: fakeDecode });
     let p = demoProject();
     await lib.putSample('smp1', { data: new Uint8Array([1, 2, 3, 4]).buffer, name: 'loop.wav', type: 'audio/wav' });
@@ -160,21 +160,21 @@ describe('cloud projects', () => {
     expect(back.patterns.map((x) => x.id)).toEqual(p.patterns.map((x) => x.id));
   });
 
-  it('never touches Puter while signed out', async () => {
-    const fake = fakePuter({ signedIn: false });
-    window.puter = fake;
+  it('never touches Everything while signed out', async () => {
+    const fake = fakeEverything({ signedIn: false });
+    window.everything = fake;
     const lib = new Library({ db: memoryDB(), decode: fakeDecode });
     await expect(lib.saveCloud(demoProject(), {}, { path: '/x/y.msproj' })).rejects.toThrow(/Sign in/);
     await expect(lib.loadCloud('/x/y.msproj')).rejects.toThrow(/Sign in/);
     expect(await lib.sampleBytes({ id: 'a', name: 'a', path: '/x/a.wav' })).toBe(null);
-    expect(await puterApi.homeDir()).toBe('~');
+    expect(await everythingApi.homeDir()).toBe('~');
     expect(fake.calls).toEqual([]);
   });
 });
 
 describe('device files', () => {
   it('embeds samples in a downloaded project and restores them on open', async () => {
-    const lib = new Library({ db: memoryDB(), decode: fakeDecode, puter: { isSignedIn: () => false } });
+    const lib = new Library({ db: memoryDB(), decode: fakeDecode, everything: { isSignedIn: () => false } });
     await lib.putSample('s1', { data: new Uint8Array([5, 6, 7]).buffer, name: 'hat.wav', type: 'audio/wav' });
     const p = E.addSample(newProject(), { id: 's1', name: 'hat.wav', local: 's1' }).project;
     const { blob, missing } = await lib.exportFile(p, {});
@@ -182,7 +182,7 @@ describe('device files', () => {
     const text = await blob.text();
     expect(JSON.parse(text).embedded.s1.type).toBe('audio/wav');
 
-    const other = new Library({ db: memoryDB(), decode: fakeDecode, puter: { isSignedIn: () => false } });
+    const other = new Library({ db: memoryDB(), decode: fakeDecode, everything: { isSignedIn: () => false } });
     const back = await other.readProjectText(text);
     expect(back.samples.s1.local).toBe('s1');
     expect(new Uint8Array((await other.sampleRecord('s1')).data)).toEqual(new Uint8Array([5, 6, 7]));
@@ -259,9 +259,9 @@ describe('storage feature in the app', () => {
     return { root, storage };
   };
 
-  it('opens the demo song on first launch and restores the draft afterwards, without Puter calls when signed out', async () => {
-    const fake = fakePuter({ signedIn: false });
-    window.puter = fake;
+  it('opens the demo song on first launch and restores the draft afterwards, without Everything calls when signed out', async () => {
+    const fake = fakeEverything({ signedIn: false });
+    window.everything = fake;
     const { root, storage } = mount();
     const db = memoryDB();
     const app = new App(root, { storage });
@@ -303,7 +303,7 @@ describe('storage feature in the app', () => {
   });
 
   it('asks for a name on the first signed-out save of an untitled project', async () => {
-    window.puter = fakePuter({ signedIn: false });
+    window.everything = fakeEverything({ signedIn: false });
     const { root, storage } = mount();
     const app = new App(root, { storage });
     app.start([{ install: (a) => install(a, { db: memoryDB() }) }]);
@@ -316,7 +316,7 @@ describe('storage feature in the app', () => {
   });
 
   it('shows the app after a timeout when the draft store never answers', async () => {
-    window.puter = fakePuter({ signedIn: false });
+    window.everything = fakeEverything({ signedIn: false });
     vi.useFakeTimers();
     try {
       const { root, storage } = mount();
@@ -334,8 +334,8 @@ describe('storage feature in the app', () => {
   });
 
   it('reopens a saved cloud project from the cloud (it may be newer) instead of its clean draft', async () => {
-    const fake = fakePuter();
-    window.puter = fake;
+    const fake = fakeEverything();
+    window.everything = fake;
     const path = '/ada/MusicStudio/Projects/Song.msproj';
     const elsewhere = { ...demoProject(), name: 'Song', bpm: 141 };
     fake.files.set(path, new TextEncoder().encode(serializeProject(elsewhere)));
@@ -352,7 +352,7 @@ describe('storage feature in the app', () => {
   });
 
   it('imports audio as a sampler channel or into an existing channel in one undo step', async () => {
-    window.puter = fakePuter({ signedIn: false });
+    window.everything = fakeEverything({ signedIn: false });
     const { root, storage } = mount();
     const db = memoryDB();
     const app = new App(root, { storage });
@@ -481,32 +481,32 @@ describe('serialize helper', () => {
 
 describe('app folder', () => {
   afterEach(() => {
-    delete window.puter;
-    puterApi.resetAccountCache();
+    delete window.everything;
+    everythingApi.resetAccountCache();
   });
 
   it('lives in the app\'s AppData folder, never in the home folder', async () => {
-    window.puter = fakePuter();
-    puterApi.resetAccountCache();
-    expect(await puterApi.appDir()).toBe('/ada/AppData/app-test');
-    expect(await puterApi.appSubdir('Samples')).toBe('/ada/AppData/app-test/Samples');
-    expect(window.puter.calls).not.toContain('getUser');
+    window.everything = fakeEverything();
+    everythingApi.resetAccountCache();
+    expect(await everythingApi.appDir()).toBe('/ada/AppData/app-test');
+    expect(await everythingApi.appSubdir('Samples')).toBe('/ada/AppData/app-test/Samples');
+    expect(window.everything.calls).not.toContain('getUser');
   });
 });
 
-describe('Puter desktop window close', () => {
+describe('Everything desktop window close', () => {
   afterEach(() => {
-    delete window.puter;
+    delete window.everything;
     document.querySelectorAll('.dialog-backdrop').forEach((n) => n.remove());
   });
 
   it('asks about unsaved changes and only exits once answered', async () => {
-    const fake = fakePuter();
+    const fake = fakeEverything();
     fake.env = 'app';
     let onClose = null;
     fake.ui.onWindowClose = (fn) => (onClose = fn);
     fake.exit = vi.fn();
-    window.puter = fake;
+    window.everything = fake;
     const app = new App(document.createElement('div'), { storage: null });
     install(app, { db: Promise.resolve(memoryDB()), tab: Promise.resolve({ key: 'session', liveKeys: async () => new Set(['session']) }) });
     expect(typeof onClose).toBe('function');
@@ -522,9 +522,9 @@ describe('Puter desktop window close', () => {
   });
 
   it('is not installed on websites', () => {
-    const fake = fakePuter();
+    const fake = fakeEverything();
     fake.ui.onWindowClose = vi.fn();
-    window.puter = fake;
+    window.everything = fake;
     const app = new App(document.createElement('div'), { storage: null });
     install(app, { db: Promise.resolve(memoryDB()), tab: Promise.resolve({ key: 'session', liveKeys: async () => new Set(['session']) }) });
     expect(fake.ui.onWindowClose).not.toHaveBeenCalled();

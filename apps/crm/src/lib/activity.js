@@ -8,7 +8,7 @@
  * lagging number a target; this gives the leading one one.
  *
  * Pure functions over plain activity records, so the week maths and the
- * pace maths test without Puter or a DOM.
+ * pace maths test without Everything or a DOM.
  */
 
 import { todayISO, addDays, monthKey, round2 } from './util.js';

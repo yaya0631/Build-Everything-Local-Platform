@@ -51,7 +51,7 @@ import { openAppMenu, renderAccountButton } from '../ui/appmenu.js';
 import { openShortcuts } from '../ui/shortcuts.js';
 import { loadEngine } from '../lib/engine.js';
 import { session } from '../lib/session.js';
-import * as P from '../lib/puter.js';
+import * as P from '../lib/everything.js';
 import { printPages } from '../lib/print.js';
 import { templateById } from '../lib/templates.js';
 import { autocorrectEnabled, capitalizeSentencesEnabled, correction, sentenceCapital } from '../lib/autocorrect.js';
@@ -706,7 +706,7 @@ export function editorView({ doc, goHome, newDoc, importFile, openPath, newFromT
   const insertTab = tool('Insert tab', 'tab', () => engine?.insertTab(), { title: 'Insert tab (Tab)' });
   const exportButton = button('Download .docx', download, { disabled: true, className: 'btn btn-primary' });
   const printButton = button('Print / Save as PDF', printDocument, { disabled: true });
-  const saveButton = button('Save to Puter', save, { disabled: true });
+  const saveButton = button('Save to Everything', save, { disabled: true });
   const templateButton = button('Save as template…', saveTemplate, { disabled: true });
   // Choosing any other zoom leaves View → Multiple Pages.
   const singlePages = () => engine?.pages.classList.remove('is-multipage');
@@ -953,12 +953,12 @@ export function editorView({ doc, goHome, newDoc, importFile, openPath, newFromT
     },
     recentDocuments: cloud ? async () => {
       if (session.signedOut) return [];
-      // Documents saved elsewhere on the drive through Puter's Save dialog are recent too.
+      // Documents saved elsewhere on the drive through Everything's Save dialog are recent too.
       const [folder, made] = await Promise.all([P.listFiles(), madeFiles().catch(() => [])]);
       return recentFiles(withMade(folder, made), { exclude: doc.path }).map(f => ({ name: Doc.nameFor(f.path), path: f.path, when: relativeTime(f.modified) }));
     } : null,
     openRecent: path => openPath?.(path),
-    documentLocation: () => ({ location: local ? 'This device' : doc.path ? `Puter › ${doc.path.replace(/^(?:\/[^/]+|~)\//, '')}` : 'Puter (not saved yet)' }),
+    documentLocation: () => ({ location: local ? 'This device' : doc.path ? `Everything › ${doc.path.replace(/^(?:\/[^/]+|~)\//, '')}` : 'Everything (not saved yet)' }),
     autosaveEnabled: () => doc.autosave !== false,
     setAutosave: cloud ? on => { doc.setAutosave?.(on); updateStatus(); } : null,
     preferences: section => openPreferencesDialog(section),
@@ -993,7 +993,7 @@ export function editorView({ doc, goHome, newDoc, importFile, openPath, newFromT
         { type: 'button', label: 'Language of the selection', hint: 'Mark text as another language, or exclude it from spelling.', action: 'Language…', run: () => statusBar?.openLanguageDialog() },
       ] },
       { id: 'saving', label: 'Save', controls: [
-        cloud ? { type: 'toggle', label: 'AutoSave', hint: 'Save every change to Puter as you work. When off, use Save (' + MOD_KEY + '+S).', get: () => doc.autosave !== false, set: on => { doc.setAutosave?.(on); updateStatus(); chrome.refresh(); } }
+        cloud ? { type: 'toggle', label: 'AutoSave', hint: 'Save every change to Everything as you work. When off, use Save (' + MOD_KEY + '+S).', get: () => doc.autosave !== false, set: on => { doc.setAutosave?.(on); updateStatus(); chrome.refresh(); } }
           : { type: 'button', label: 'Documents on this device', hint: 'Changes stay in this tab until you download the document.', action: 'Download', run: download },
       ] },
       { id: 'view', label: 'View', controls: [
@@ -1158,7 +1158,7 @@ export function editorView({ doc, goHome, newDoc, importFile, openPath, newFromT
       if (!failure) { title.value = doc.name; refreshTitle(); document.title = `${doc.name} — Documents`; }
       return failure;
     } : null,
-    // Inside the Puter desktop Save a copy asks where, with Puter's Save dialog, rather than for a name in the app folder.
+    // Inside the Everything desktop Save a copy asks where, with Everything's Save dialog, rather than for a name in the app folder.
     saveCopyWhere: cloud && P.asksWhereToSave() ? async () => {
       try { await ready; if (!engine || failed) return 'The document is not open.'; engine.finishComposition(); if (session.signedOut && !await session.signIn()) return 'Sign in to save a copy.'; }
       catch (e) { return e?.message || String(e); }
@@ -1186,7 +1186,7 @@ export function editorView({ doc, goHome, newDoc, importFile, openPath, newFromT
     openVersionHistory: cloud && versioning.enabled ? () => versionHistory.open() : null,
     publish: canPublish() || (cloud && publishing.enabled && P.canHost()) ? async () => {
       await ready; if (!engine || failed) throw new Error('The document is not open.');
-      // A template or other file whose edits go to a new .docx (inside the Puter desktop, where Save puts it) is
+      // A template or other file whose edits go to a new .docx (inside the Everything desktop, where Save puts it) is
       // published as that .docx, as a new document is: the page then follows the file the edits are saved in.
       if (!doc.path || doc.waitsForPlace) { await save(); if (!doc.path || doc.waitsForPlace) throw new Error('Save the document first.'); }
       engine.finishComposition();
@@ -1594,11 +1594,11 @@ export function editorView({ doc, goHome, newDoc, importFile, openPath, newFromT
       : doc.status === 'offline' ? ['Offline', 'wifiOff', 'offline']
       // A shared document's other tabs leave saving to the owner's (see collab/live.js).
       : doc.writes === false ? (local ? ['Shared in this browser', 'monitor', 'local'] : ['Shared · saved by the owner', 'cloud', 'saved'])
-      // Inside the Puter desktop a new document's edits wait for a first Save to ask where they go: AutoSave cannot write them yet.
+      // Inside the Everything desktop a new document's edits wait for a first Save to ask where they go: AutoSave cannot write them yet.
       : doc.waitsForPlace ? ['Not saved yet', 'cloudOff', 'unsaved']
       : doc.dirty ? ['Unsaved changes', 'cloudOff', 'unsaved']
       : local ? ['On this device', 'monitor', 'local']
-      : doc.path ? ['Saved to Puter', 'cloud', 'saved'] : ['Not saved yet', 'cloud', 'unsaved'];
+      : doc.path ? ['Saved to Everything', 'cloud', 'saved'] : ['Not saved yet', 'cloud', 'unsaved'];
     renderStatus(label, name, state);
     if (label === 'Not saved yet' && doc.waitsForPlace) status.title = 'Not saved yet. Save to choose where it goes; AutoSave starts then';
     status.disabled = !signedOut && (!doc.exporter || doc.status === 'saving');
@@ -1919,7 +1919,7 @@ export function editorView({ doc, goHome, newDoc, importFile, openPath, newFromT
       const flushing = doc.flush().then(saved => saved && collab.deliver());
       flushing.catch(() => {});
       let timer;
-      // Time spent in Puter's Save dialog is the user's, not a stalled connection: the wait starts over while it is open.
+      // Time spent in Everything's Save dialog is the user's, not a stalled connection: the wait starts over while it is open.
       const stalled = new Promise(resolve => { const wait = () => { timer = setTimeout(() => (doc.choosingPlace ? wait() : resolve('stalled')), FLUSH_STALL_MS); }; wait(); });
       try {
         const saved = await Promise.race([flushing, stalled]);

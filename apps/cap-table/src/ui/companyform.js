@@ -54,7 +54,7 @@ export function openNewCompanyForm({ onCreated = null } = {}) {
     },
   },
     el('p.confirm-message', {},
-      'A new, empty cap table under the same Puter account. Everything stays scoped per company; nothing is shared between them.'),
+      'A new, empty cap table under the same Everything account. Everything stays scoped per company; nothing is shared between them.'),
     field('Company name', nameInput),
     saveBtn);
   /* Focus is the dialog's to place, as on every other sheet: the name field

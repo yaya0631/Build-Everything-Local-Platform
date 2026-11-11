@@ -70,7 +70,7 @@ The performance smoke run before the delayed-spinner follow-up is recorded in
 errors, timeouts or observed tasks of 50 ms or longer. Cold inboxes retained
 60 rows, 60 header reads and 62 total requests at every size; warm folder visits
 used zero requests. Peak request concurrency remained 12. These are synthetic
-Chromium checks, not signed-in Puter latency measurements or a paired speedup
+Chromium checks, not signed-in Everything latency measurements or a paired speedup
 claim. No SDK, transport or storage protocol changed.
 
 The final repeat after the refresh and unthreaded-row fixes is recorded in

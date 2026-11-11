@@ -1,6 +1,6 @@
 // Library storage and sync. The browser keeps the working copy (IndexedDB:
 // the index, queued edits and asset blobs); when the user is signed in to
-// Puter, the app's own Puter folder holds the shared copy (one JSON index and
+// Everything, the app's own Everything folder holds the shared copy (one JSON index and
 // content-addressed asset files) and every sync replays the queued edits on
 // the newest index there, writes it with a new revision and reads it back to
 // confirm no other writer got in between (retrying when one did). Writes are
@@ -35,7 +35,7 @@ export interface LocalLibraryStore {
   getAsset(hash: string): Promise<Blob | undefined>;
   putAsset(hash: string, blob: Blob): Promise<void>;
 }
-/** The shared copy (Puter). Reads of a missing index resolve undefined. */
+/** The shared copy (Everything). Reads of a missing index resolve undefined. */
 export interface CloudLibraryStore {
   readIndex(): Promise<LibraryIndex | undefined>;
   writeIndex(index: LibraryIndex): Promise<void>;
@@ -135,12 +135,12 @@ export class IndexedDbLibraryStore implements LocalLibraryStore {
   }
 }
 
-// ----- Puter -----
-type PuterFs = {
+// ----- Everything -----
+type EverythingFs = {
   read(path: string): Promise<Blob>;
   write(path: string, data: Blob | string, options?: Record<string, unknown>): Promise<unknown>;
 };
-/** Puter calls never settle in some failure modes (and in tests); give up after a while. */
+/** Everything calls never settle in some failure modes (and in tests); give up after a while. */
 export function withTimeout<T>(p: Promise<T>, ms: number, what: string): Promise<T> {
   return new Promise<T>((resolve, reject) => {
     const t = setTimeout(() => reject(new Error(`${what} timed out.`)), ms);
@@ -160,17 +160,17 @@ const notFound = (e: unknown) => {
   const x = e as { code?: string; message?: string } | undefined;
   return x?.code === 'subject_does_not_exist' || /does not exist|not found|no such/i.test(String(x?.message ?? e));
 };
-/** The cloud copy in the app's own Puter folder: relative paths resolve to
+/** The cloud copy in the app's own Everything folder: relative paths resolve to
  * the app's data directory. */
-export class PuterLibraryCloud implements CloudLibraryStore {
+export class EverythingLibraryCloud implements CloudLibraryStore {
   constructor(
-    private fs: PuterFs,
+    private fs: EverythingFs,
     private root = 'libraries',
     private timeout = 20_000,
   ) {}
   private async readPath(path: string): Promise<Blob | undefined> {
     try {
-      return await withTimeout(this.fs.read(path), this.timeout, 'Reading from Puter');
+      return await withTimeout(this.fs.read(path), this.timeout, 'Reading from Everything');
     } catch (error) {
       if (notFound(error)) return undefined;
       throw error;
@@ -183,21 +183,21 @@ export class PuterLibraryCloud implements CloudLibraryStore {
     try {
       v = JSON.parse(await blob.text());
     } catch {
-      throw new Error('The library index on Puter is damaged.');
+      throw new Error('The library index on Everything is damaged.');
     }
     const index = validIndex(v);
-    if (!index) throw new Error('The library index on Puter was written by a newer version.');
+    if (!index) throw new Error('The library index on Everything was written by a newer version.');
     return index;
   }
   async writeIndex(index: LibraryIndex) {
     const blob = new Blob([JSON.stringify(index)], { type: 'application/json' });
-    await withTimeout(this.fs.write(`${this.root}/index.json`, blob, { overwrite: true, createMissingParents: true }), this.timeout, 'Writing to Puter');
+    await withTimeout(this.fs.write(`${this.root}/index.json`, blob, { overwrite: true, createMissingParents: true }), this.timeout, 'Writing to Everything');
   }
   readAsset(hash: string) {
     return this.readPath(`${this.root}/assets/${hash}`);
   }
   async writeAsset(hash: string, blob: Blob) {
-    await withTimeout(this.fs.write(`${this.root}/assets/${hash}`, blob, { overwrite: true, createMissingParents: true }), this.timeout * 3, 'Uploading to Puter');
+    await withTimeout(this.fs.write(`${this.root}/assets/${hash}`, blob, { overwrite: true, createMissingParents: true }), this.timeout * 3, 'Uploading to Everything');
   }
 }
 
@@ -330,7 +330,7 @@ export class LibraryRepository {
       this.setStatus('local', 'Saved in this browser');
       return state.index;
     }
-    this.setStatus('syncing', 'Syncing with Puter…');
+    this.setStatus('syncing', 'Syncing with Everything…');
     try {
       for (let attempt = 0; ; attempt++) {
         const remote = (await cloud.readIndex()) ?? emptyIndex();
@@ -378,7 +378,7 @@ export class LibraryRepository {
           const keep = referencedAssets(next);
           s.uploaded = [...uploaded].filter((h) => keep.has(h));
         });
-        this.setStatus('synced', 'Synced with Puter');
+        this.setStatus('synced', 'Synced with Everything');
         return state.index;
       }
     } catch (error) {

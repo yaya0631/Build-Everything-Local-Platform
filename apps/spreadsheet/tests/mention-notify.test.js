@@ -4,7 +4,7 @@ import { Workbook } from '../src/core/workbook.js';
 import { addComment, getThread, replyToThread, setThreadAssignee, readComments, commentsJSON, setThreadResolved } from '../src/core/comments.js';
 import { findMentions, mentionedPeople, assignmentsOfPerson } from '../src/core/mentions.js';
 import { withoutAccess, createMentionNotifier, createMentionAlerts, mentionCandidates } from '../src/ui/mention-notify.js';
-import * as P from '../src/lib/puter.js';
+import * as P from '../src/lib/everything.js';
 import * as T from '../src/ui/toast.js';
 
 const ANA = { name: 'ana', user: 'ana' };
@@ -62,7 +62,7 @@ describe('telling the people mentioned', () => {
     expect(P.shareFile).toHaveBeenCalledWith('Spreadsheets/Plan.xlsx', 'kim@example.org', 'write');
     expect(out.sent).toBe(2);
     const [req] = mailer.sendMentions.mock.calls[0];
-    expect(req.recipients).toEqual([{ email: 'ana@puter.email', name: 'ana' }, { email: 'kim@example.org', name: 'kim@example.org' }]);
+    expect(req.recipients).toEqual([{ email: 'ana@everything.email', name: 'ana' }, { email: 'kim@example.org', name: 'kim@example.org' }]);
     expect(req.link).toBe('http://spreadsheet.localhost:8443/#/file/uid-7?range=Sheet1!B4');
     expect(req.comment).toMatchObject({ text: '@ana and @kim@example.org please check', cell: 'Sheet1!B4' });
     expect(req.comment.id).toMatch(/^\{[0-9A-F-]+\}$/);
@@ -94,7 +94,7 @@ describe('telling the people mentioned', () => {
     const p = posted(wb, '@ana do this, cc @kim@example.org', [ANA]);
     await notifier.notify({ ...p, assigned: ANA });
     const calls = mailer.sendMentions.mock.calls.map(([req]) => [req.recipients.map((r) => r.email), req.assigned]);
-    expect(calls).toEqual([[['kim@example.org'], false], [['ana@puter.email'], true]]);
+    expect(calls).toEqual([[['kim@example.org'], false], [['ana@everything.email'], true]]);
   });
 
   it('says the mention will be seen in the workbook when email cannot be sent from here', async () => {

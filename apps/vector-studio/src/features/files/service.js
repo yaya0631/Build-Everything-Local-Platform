@@ -2,17 +2,17 @@
  * FileService: opening and saving documents.
  *
  * Where files live:
- *   Cloud (signed in, or inside the Puter desktop): real files in the
- *     user's Puter storage. Save writes in place with puter.fs.write; Save As
+ *   Cloud (signed in, or inside the Everything desktop): real files in the
+ *     user's Everything storage. Save writes in place with everything.fs.write; Save As
  *     on a new document offers the "Your files" folder (Documents/Vector
  *     Studio when the user grants Documents access, otherwise the app's own
- *     Puter folder) or Puter's own Save dialog for any other location; Open
- *     uses Puter's own Open dialog.
+ *     Everything folder) or Everything's own Save dialog for any other location; Open
+ *     uses Everything's own Open dialog.
  *   This computer (signed out on the open web): Open uses the File System
  *     Access API in Chromium (true save-in-place) or an <input type=file>;
  *     Save writes through the handle or downloads, and offers sign-in.
  *
- * editor.file = { kind: 'puter', path, name } | { kind: 'local', name, handle, handleId }
+ * editor.file = { kind: 'everything', path, name } | { kind: 'local', name, handle, handleId }
  *             | { kind: 'download', name } | { kind: 'import', name, path?, format }
  */
 import { h } from '../../lib/dom.js';
@@ -25,7 +25,7 @@ import { classifyError, errorText, saveErrorDialog, sleep } from './errors.js';
 import { handleStore, ensurePermission, fsAccessAvailable } from './handles.js';
 import { isMissing, toMs } from './backends.js';
 
-/** App-relative fallback folder (inside the app's own Puter folder). */
+/** App-relative fallback folder (inside the app's own Everything folder). */
 export const APPDATA_DIR = 'Documents';
 export const DOCS_SUBDIR = 'Vector Studio';
 export const OPEN_EXTS = ['.vstudio', '.svg', '.svgz'];
@@ -57,13 +57,13 @@ export class FileService {
     this.docsDir = null; // resolved absolute "Documents/Vector Studio" path once granted
   }
 
-  get puter() {
-    return this.app.puter;
+  get everything() {
+    return this.app.everything;
   }
 
-  /** Files go to the Puter cloud when signed in or running inside the Puter desktop. */
+  /** Files go to the Everything cloud when signed in or running inside the Everything desktop. */
   get cloud() {
-    return Boolean(this.puter?.fs && (this.app.env === 'app' || this.app.user));
+    return Boolean(this.everything?.fs && (this.app.env === 'app' || this.app.user));
   }
 
   // ---- encoding ----
@@ -93,7 +93,7 @@ export class FileService {
 
   async documentsDir({ prompt = false } = {}) {
     if (this.docsDir) return this.docsDir;
-    const perms = this.puter?.perms;
+    const perms = this.everything?.perms;
     const username = this.app.user?.username;
     if (!perms?.check || !this.cloud) return null;
     const details = { name: 'Documents', access: 'write' };
@@ -131,7 +131,7 @@ export class FileService {
     for (const dir of await this.folders()) {
       let items = [];
       try {
-        items = await this.puter.fs.readdir(dir);
+        items = await this.everything.fs.readdir(dir);
       } catch (err) {
         if (!isMissing(err)) throw err;
       }
@@ -142,7 +142,7 @@ export class FileService {
         const path = it.path || joinPath(dir, it.name);
         if (seen.has(path)) continue;
         seen.add(path);
-        out.push({ kind: 'puter', name: it.name, path, modified: toMs(it.modified), size: it.size || 0, format: ext === '.svg' || ext === '.svgz' ? 'svg' : 'native' });
+        out.push({ kind: 'everything', name: it.name, path, modified: toMs(it.modified), size: it.size || 0, format: ext === '.svg' || ext === '.svgz' ? 'svg' : 'native' });
       }
     }
     return out.sort((a, b) => b.modified - a.modified);
@@ -163,7 +163,7 @@ export class FileService {
 
   async #save(editor) {
     const f = editor.file;
-    if (f?.kind === 'puter' && f.path && this.puter?.fs) return this.#writeCloud(editor, f);
+    if (f?.kind === 'everything' && f.path && this.everything?.fs) return this.#writeCloud(editor, f);
     if (f?.kind === 'local' && f.handle) return this.#writeHandle(editor, f);
     if (f?.kind === 'download') {
       const enc = await this.encode(editor);
@@ -176,12 +176,12 @@ export class FileService {
 
   async #writeCloud(editor, file, enc = null) {
     enc = enc || (await this.encode(editor));
-    const r = await this.#withRetry(editor, enc, () => this.puter.fs.write(file.path, blobOf(enc.bytes), { overwrite: true, dedupeName: false, createMissingParents: true }));
+    const r = await this.#withRetry(editor, enc, () => this.everything.fs.write(file.path, blobOf(enc.bytes), { overwrite: true, dedupeName: false, createMissingParents: true }));
     if (!r) return false;
     if (r.saveAs) return this.saveAs(editor);
     if (r.downloaded) return true;
     const item = r.result;
-    this.#markSaved(editor, enc, { kind: 'puter', path: item?.path || file.path, name: item?.name || file.name });
+    this.#markSaved(editor, enc, { kind: 'everything', path: item?.path || file.path, name: item?.name || file.name });
     return true;
   }
 
@@ -241,7 +241,7 @@ export class FileService {
 
   async #remember(file, thumb) {
     if (!this.recent) return;
-    if (file.kind === 'puter' && file.path) await this.recent.add({ kind: 'puter', path: file.path, name: file.name, thumb });
+    if (file.kind === 'everything' && file.path) await this.recent.add({ kind: 'everything', path: file.path, name: file.name, thumb });
     else if (file.kind === 'local' && file.handle) {
       let id = file.handleId || (await this.handles.find(file.handle));
       if (!id) {
@@ -287,7 +287,7 @@ export class FileService {
       title: copy ? 'Save a Copy' : 'Save',
       body: h(
         'div.files-signin',
-        h('p.dialog-message', 'Sign in to save to your Puter cloud. Your files stay in your own storage and open from any device.'),
+        h('p.dialog-message', 'Sign in to save to your Everything cloud. Your files stay in your own storage and open from any device.'),
         h('p.dialog-message.muted', 'Or save the file to this computer instead.'),
         h('div.form-row.check', skip, h('label', { for: 'files-skip-signin' }, "Don't ask again")),
       ),
@@ -303,14 +303,14 @@ export class FileService {
 
   async #saveAsCloud(editor, enc, suggested, { copy }) {
     let target = null;
-    if (this.app.prefs.get('filesSaveDialog') !== 'puter') target = await this.#saveDialog(editor, suggested, { copy });
+    if (this.app.prefs.get('filesSaveDialog') !== 'everything') target = await this.#saveDialog(editor, suggested, { copy });
     else target = { picker: true, name: suggested };
     if (!target) return false;
     let item = null;
     if (target.picker) {
-      const ui = this.puter.ui;
+      const ui = this.everything.ui;
       if (!ui?.showSaveFilePicker) {
-        this.app.notify('The Puter Save dialog is not available here.', { error: true });
+        this.app.notify('The Everything Save dialog is not available here.', { error: true });
         return false;
       }
       try {
@@ -321,21 +321,21 @@ export class FileService {
       }
       if (!item) return false;
       // Keep the native extension so the file opens with Vector Studio later.
-      if (!/\.vstudio$/i.test(item.name || '') && this.puter.fs.rename) {
+      if (!/\.vstudio$/i.test(item.name || '') && this.everything.fs.rename) {
         try {
-          item = (await this.puter.fs.rename(item.path, ensureExtension(item.name))) || item;
+          item = (await this.everything.fs.rename(item.path, ensureExtension(item.name))) || item;
         } catch {
           // Keep the name the user typed.
         }
       }
     } else {
-      const r = await this.#withRetry(editor, enc, () => this.puter.fs.write(target.path, blobOf(enc.bytes), { overwrite: true, dedupeName: false, createMissingParents: true }));
+      const r = await this.#withRetry(editor, enc, () => this.everything.fs.write(target.path, blobOf(enc.bytes), { overwrite: true, dedupeName: false, createMissingParents: true }));
       if (!r) return false;
       if (r.saveAs) return this.#saveAsCloud(editor, enc, suggested, { copy });
       if (r.downloaded) return !copy;
       item = r.result || { path: target.path, name: baseName(target.path) };
     }
-    const file = { kind: 'puter', path: item.path, name: item.name || baseName(item.path) };
+    const file = { kind: 'everything', path: item.path, name: item.name || baseName(item.path) };
     if (copy) {
       this.#remember(file, enc.thumb);
       this.app.notify(`Saved a copy as "${file.name}"`);
@@ -347,20 +347,20 @@ export class FileService {
 
   /**
    * Vector Studio's Save dialog: a name and the "Your files" folder, with
-   * "Choose Location..." for Puter's own Save dialog. Resolves
+   * "Choose Location..." for Everything's own Save dialog. Resolves
    * { path } | { picker: true, name } | null.
    */
   async #saveDialog(editor, suggested, { copy }) {
     const dir = await this.defaultDir({ prompt: false });
     const nameInput = h('input', { type: 'text', id: 'files-save-name', value: stripExtension(suggested), spellcheck: false, autocomplete: 'off' });
-    const where = h('p.form-help', { id: 'files-save-where' }, `Saves to Your files (${dir === APPDATA_DIR ? 'Vector Studio app folder' : dir.replace(/^\/[^/]+\//, '')}) in your Puter cloud.`);
+    const where = h('p.form-help', { id: 'files-save-where' }, `Saves to Your files (${dir === APPDATA_DIR ? 'Vector Studio app folder' : dir.replace(/^\/[^/]+\//, '')}) in your Everything cloud.`);
     const error = h('p.form-error', { role: 'alert' });
     const usingDocs = dir !== APPDATA_DIR;
     const body = h(
       'div.form.files-save',
       h('div.form-row', h('label', { for: 'files-save-name' }, 'File name'), h('div.files-name-wrap', nameInput, h('span.files-ext', NATIVE_EXT))),
       where,
-      !usingDocs && this.puter?.perms?.request && this.app.prefs.get('filesUseDocuments') !== false
+      !usingDocs && this.everything?.perms?.request && this.app.prefs.get('filesUseDocuments') !== false
         ? h('p.form-help', 'Tip: allow access to your Documents folder when asked to keep your files in Documents/Vector Studio.')
         : null,
       error,
@@ -409,7 +409,7 @@ export class FileService {
 
   async #exists(path) {
     try {
-      await this.puter.fs.stat(path);
+      await this.everything.fs.stat(path);
       return true;
     } catch {
       return false;
@@ -445,12 +445,12 @@ export class FileService {
 
   // ---- opening ----
 
-  /** File > Open: Puter's Open dialog in the cloud, this computer otherwise. */
+  /** File > Open: Everything's Open dialog in the cloud, this computer otherwise. */
   async open() {
-    if (this.cloud && this.puter.ui?.showOpenFilePicker) {
+    if (this.cloud && this.everything.ui?.showOpenFilePicker) {
       let picked;
       try {
-        picked = await cancellable(this.puter.ui.showOpenFilePicker({ multiple: true, accept: this.openExtensions() }));
+        picked = await cancellable(this.everything.ui.showOpenFilePicker({ multiple: true, accept: this.openExtensions() }));
       } catch (err) {
         this.app.notify(`Could not open the file dialog: ${errorText(err) || 'unknown error'}`, { error: true });
         return null;
@@ -504,34 +504,34 @@ export class FileService {
       this.app.editors.find((ed) => {
         const f = ed.file;
         if (!f || !file) return false;
-        if (file.kind === 'puter' && f.kind === 'puter') return f.path === file.path;
+        if (file.kind === 'everything' && f.kind === 'everything') return f.path === file.path;
         // An SVG opened from the cloud is shown as an imported document that remembers its path.
-        if (file.kind === 'puter' && f.kind === 'import' && f.path) return f.path === file.path;
+        if (file.kind === 'everything' && f.kind === 'import' && f.path) return f.path === file.path;
         if (file.kind === 'local' && f.kind === 'local' && file.handleId) return f.handleId === file.handleId;
         return false;
       }) || null
     );
   }
 
-  /** Open a file from the Puter cloud by path. */
+  /** Open a file from the Everything cloud by path. */
   async openPath(path, { name = baseName(path), item = null } = {}) {
-    const existing = this.findOpen({ kind: 'puter', path });
+    const existing = this.findOpen({ kind: 'everything', path });
     if (existing) {
       this.app.activate(existing);
       return existing;
     }
     let blob;
     try {
-      blob = item?.read ? await item.read() : await this.puter.fs.read(path);
+      blob = item?.read ? await item.read() : await this.everything.fs.read(path);
     } catch (err) {
       const info = classifyError(err);
       if (info.kind === 'missing') {
         await this.app.dialogs.alert({ title: 'File Not Found', message: `"${name}" could not be found. It may have been moved, renamed or deleted.` });
-        await this.recent?.remove({ kind: 'puter', path });
+        await this.recent?.remove({ kind: 'everything', path });
       } else await this.app.dialogs.alert({ title: 'Could Not Open', message: `"${name}" could not be opened. ${info.message}` });
       return null;
     }
-    return this.openBytes(await toBytes(blob), { name, file: { kind: 'puter', path, name } });
+    return this.openBytes(await toBytes(blob), { name, file: { kind: 'everything', path, name } });
   }
 
   /** Open a File or Blob (drag and drop, file input, File System Access). */
@@ -610,7 +610,7 @@ export class FileService {
     if (!doc) return null;
     // Saving an imported SVG writes a new .vstudio file (Save As); the SVG is left untouched.
     const editor = this.app.addDocument(doc, { file: { kind: 'import', format: 'svg', name, path: file?.path || null } });
-    if (file?.kind === 'puter') renderThumbnail(doc).then((thumb) => this.#remember(file, thumb));
+    if (file?.kind === 'everything') renderThumbnail(doc).then((thumb) => this.#remember(file, thumb));
     else if (file?.kind === 'local') renderThumbnail(doc).then((thumb) => this.#remember(file, thumb));
     this.app.emit('file-opened', editor);
     return editor;
@@ -627,7 +627,7 @@ export class FileService {
     if (!doc) return null;
     // Like SVG, an imported file saves as a new .vstudio document; the original is left untouched.
     const editor = this.app.addDocument(doc, { file: { kind: 'import', format, name, path: file?.path || null } });
-    if (file?.kind === 'puter' || file?.kind === 'local') renderThumbnail(doc).then((thumb) => this.#remember(file, thumb));
+    if (file?.kind === 'everything' || file?.kind === 'local') renderThumbnail(doc).then((thumb) => this.#remember(file, thumb));
     if (doc.importWarnings?.length) this.app.importers.report?.(doc.importWarnings);
     this.app.emit('file-opened', editor);
     return editor;
@@ -635,7 +635,7 @@ export class FileService {
 
   /** Reopen an entry from the recent list. */
   async openRecent(entry) {
-    if (entry.kind === 'puter') return this.openPath(entry.path, { name: entry.name });
+    if (entry.kind === 'everything') return this.openPath(entry.path, { name: entry.name });
     if (entry.kind === 'local') {
       const handle = await this.handles.get(entry.handleId);
       if (!handle) {
@@ -668,7 +668,7 @@ export class FileService {
 
   canRevert(editor) {
     const f = editor?.file;
-    return Boolean(editor?.doc.dirty && f && ((f.kind === 'puter' && f.path) || (f.kind === 'local' && f.handle)));
+    return Boolean(editor?.doc.dirty && f && ((f.kind === 'everything' && f.path) || (f.kind === 'local' && f.handle)));
   }
 
   async revert(editor = this.app.editor) {
@@ -678,7 +678,7 @@ export class FileService {
     const f = editor.file;
     let bytes;
     try {
-      if (f.kind === 'puter') bytes = await toBytes(await this.puter.fs.read(f.path));
+      if (f.kind === 'everything') bytes = await toBytes(await this.everything.fs.read(f.path));
       else bytes = await toBytes(await f.handle.getFile());
     } catch (err) {
       await this.app.dialogs.alert({ title: 'Could Not Revert', message: `The saved version of "${editor.name}" could not be read. ${classifyError(err).message}` });

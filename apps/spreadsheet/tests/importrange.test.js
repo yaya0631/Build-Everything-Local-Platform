@@ -5,7 +5,7 @@ import { resolveImportPath, parseImportRange, readImportRange, rowsFromDelimited
 import { detectDelimiter } from '../src/core/io.js';
 import { parseDelimited } from '../src/core/tsv.js';
 import { parseInput } from '../src/core/format.js';
-import { ensureXlsx } from '../src/lib/puter.js';
+import { ensureXlsx } from '../src/lib/everything.js';
 
 function book(cells) {
   const wb = new Workbook({ sheets: [{ name: 'Data' }, { name: 'Q1 Data' }] });

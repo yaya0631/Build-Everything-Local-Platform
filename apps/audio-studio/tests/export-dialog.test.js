@@ -15,7 +15,7 @@ describe('Export File dialog', () => {
   let app;
   beforeEach(() => {
     document.body.replaceChildren();
-    delete window.puter;
+    delete window.everything;
     app = { prefs: new Prefs(null) };
   });
 
@@ -26,7 +26,7 @@ describe('Export File dialog', () => {
     await tick(10);
     const name = $('.io-name');
     expect(name.value).toBe('Podcast.wav');
-    // Without Puter only "This device" can be chosen.
+    // Without Everything only "This device" can be chosen.
     expect($('select[aria-label=Location]').value).toBe('download');
     expect($('.io-export').textContent).toContain('48000 Hz Stereo, 24-bit');
     // WebCodecs formats are listed but disabled in this environment.

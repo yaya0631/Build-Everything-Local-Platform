@@ -3,10 +3,10 @@ import { Doc } from '../src/lib/doc.js';
 import { draftKey, saveDraft, loadDraft, sameBook } from '../src/lib/drafts.js';
 import { Workbook } from '../src/core/workbook.js';
 import { memoryStorage } from './helpers/memory-storage.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 
-beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); installMockPuter(); vi.useFakeTimers(); });
-afterEach(() => { vi.useRealTimers(); delete globalThis.puter; });
+beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); installMockEverything(); vi.useFakeTimers(); });
+afterEach(() => { vi.useRealTimers(); delete globalThis.everything; });
 
 // A book too large for local storage was left without a draft in silence: the document looked
 // like any other with unsaved changes, though nothing but the tab held the edits.

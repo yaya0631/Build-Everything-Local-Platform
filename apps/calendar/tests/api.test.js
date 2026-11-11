@@ -12,7 +12,7 @@ import {
   readLaunchContext,
 } from '../src/js/api/protocol.js';
 
-/** In-memory stand-in matching the subset of puter.kv the store uses. */
+/** In-memory stand-in matching the subset of everything.kv the store uses. */
 function makeKv() {
   const map = new Map();
   const globToRe = (glob) =>
@@ -84,22 +84,22 @@ describe('api/protocol — access control', () => {
 
   it('reads the caller from the desktop-stamped launch parameter, not the message', () => {
     const win = {
-      puter: { env: 'app', args: { service: 'calendar-api' } },
-      location: { search: '?puter.source_app.name=Contacts&puter.app_instance_id=abc' },
+      everything: { env: 'app', args: { service: 'calendar-api' } },
+      location: { search: '?everything.source_app.name=Contacts&everything.app_instance_id=abc' },
     };
     expect(readLaunchContext(win)).toEqual({
       callerApp: 'contacts',
       serviceMode: true,
-      inPuterApp: true,
+      inEverythingApp: true,
     });
   });
 
-  it('reports no caller outside the Puter desktop', () => {
+  it('reports no caller outside the Everything desktop', () => {
     const win = {
-      puter: { env: 'web', args: { service: 'calendar-api' } },
-      location: { search: '?puter.source_app.name=contacts' },
+      everything: { env: 'web', args: { service: 'calendar-api' } },
+      location: { search: '?everything.source_app.name=contacts' },
     };
-    expect(readLaunchContext(win)).toEqual({ callerApp: '', serviceMode: false, inPuterApp: false });
+    expect(readLaunchContext(win)).toEqual({ callerApp: '', serviceMode: false, inEverythingApp: false });
   });
 });
 

@@ -6,7 +6,7 @@ import { editorView } from '../src/views/editor.js';
 import { Doc } from '../src/lib/doc.js';
 import { closeAllModals } from '../src/ui/modal.js';
 import * as notifications from '../src/ui/toast.js';
-import * as P from '../src/lib/puter.js';
+import * as P from '../src/lib/everything.js';
 import * as IO from '../src/core/io.js';
 import { Workbook, DEFAULT_ROW_HEIGHT } from '../src/core/workbook.js';
 

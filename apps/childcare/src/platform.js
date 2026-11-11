@@ -1,5 +1,5 @@
 /**
- * Everything that touches Puter directly (besides KV inside the backend):
+ * Everything that touches Everything directly (besides KV inside the backend):
  * auth, environment, profile pictures.
  */
 import { clearSnapshots } from './core/cache.js';
@@ -7,34 +7,34 @@ import { app } from './app.js';
 
 const PIC_KEY = 'childcare.profilePicture';
 
-export function puterAvailable() {
-  return typeof globalThis.puter !== 'undefined';
+export function everythingAvailable() {
+  return typeof globalThis.everything !== 'undefined';
 }
 
-export function puterEnv() {
+export function everythingEnv() {
   try {
-    return globalThis.puter?.env || 'web';
+    return globalThis.everything?.env || 'web';
   } catch {
     return 'web';
   }
 }
 
-/** Inside the Puter desktop the user is always signed in and can't sign out. */
+/** Inside the Everything desktop the user is always signed in and can't sign out. */
 export function canSignOut() {
-  return puterEnv() !== 'app';
+  return everythingEnv() !== 'app';
 }
 
 export async function isSignedIn() {
-  if (!puterAvailable()) return false;
+  if (!everythingAvailable()) return false;
   try {
-    return (await Promise.resolve(puter.auth.isSignedIn())) === true;
+    return (await Promise.resolve(everything.auth.isSignedIn())) === true;
   } catch {
     return false;
   }
 }
 
 export async function signIn() {
-  await puter.auth.signIn();
+  await everything.auth.signIn();
 }
 
 /**
@@ -60,25 +60,25 @@ export async function signOut(uuid) {
     await Promise.race([forget, new Promise((r) => setTimeout(r, 3000))]);
   }
   try {
-    puter.auth.signOut();
+    everything.auth.signOut();
   } catch {}
 }
 
 export async function getUser() {
-  return puter.auth.getUser();
+  return everything.auth.getUser();
 }
 
 const USER_KEY = 'childcare.lastUser';
 
-/** A hash of the current Puter session token, or null if it is not known. */
+/** A hash of the current Everything session token, or null if it is not known. */
 async function sessionHash() {
-  const token = globalThis.puter?.authToken;
+  const token = globalThis.everything?.authToken;
   if (typeof token !== 'string' || !token || !globalThis.crypto?.subtle) return null;
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(token));
   return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
-/** Remember who is signed in, tied to this session, for starts when Puter cannot be reached. */
+/** Remember who is signed in, tied to this session, for starts when Everything cannot be reached. */
 export async function rememberUser(user) {
   try {
     const session = await sessionHash();
@@ -112,7 +112,7 @@ export function cachedProfilePicture(username) {
 
 export async function fetchProfilePicture(username) {
   try {
-    const url = await puter.auth.getProfilePicture?.();
+    const url = await everything.auth.getProfilePicture?.();
     if (typeof url === 'string' && url.startsWith('data:image/') && url.length < 2_000_000) {
       try {
         localStorage.setItem(PIC_KEY, JSON.stringify({ user: username, url }));

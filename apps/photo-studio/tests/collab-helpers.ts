@@ -1,9 +1,9 @@
-// In-memory Puter for collaboration tests: KV with events, files, restricted
+// In-memory Everything for collaboration tests: KV with events, files, restricted
 // read tokens, workers.exec routed to a RoomService, and a fake peer service.
 // Ported from the Whiteboard app's collaboration test helpers.
-import { RoomService, type WorkerPuter } from '../src/collab/server/service';
+import { RoomService, type WorkerEverything } from '../src/collab/server/service';
 import { authenticate } from '../src/collab/server/auth';
-import type { CollabPuter } from '../src/collab/puter-types';
+import type { CollabEverything } from '../src/collab/everything-types';
 import type { PeerApi, PeerConnection, PeerServer } from '../src/collab/peers';
 
 export type User = { uuid: string; username: string };
@@ -120,8 +120,8 @@ export function environment() {
     offlineUsers: new Set<string>(),
     dropEvents: false,
     now: Date.now(),
-    // Puter's handle routes: `refuse` answers mints with that error code; `mints` and `revoked` record calls;
-    // `minted` holds every handle with its prefix, creation and revocation times, oldest first, as Puter lists them.
+    // Everything's handle routes: `refuse` answers mints with that error code; `mints` and `revoked` record calls;
+    // `minted` holds every handle with its prefix, creation and revocation times, oldest first, as Everything lists them.
     refuse: null as string | null,
     mints: [] as string[],
     revoked: [] as string[],
@@ -129,11 +129,11 @@ export function environment() {
     listings: 0,
     service: undefined as unknown as RoomService,
     route: undefined as ((user: User) => RoomService | undefined) | undefined,
-    sdk: undefined as unknown as (user: User) => CollabPuter,
+    sdk: undefined as unknown as (user: User) => CollabEverything,
     hub: createPeerHub(),
   };
   const clone = <T>(v: T): T => (v === undefined ? v : structuredClone(v));
-  const kv: WorkerPuter['kv'] & { expiries: Map<string, number> } = {
+  const kv: WorkerEverything['kv'] & { expiries: Map<string, number> } = {
     expiries: new Map(),
     async get(key: string) {
       return clone(data.get(key) ?? null);
@@ -183,14 +183,14 @@ export function environment() {
       if (!files.has(path)) throw new Error('Missing file: ' + path);
       const token = 'header.' + btoa(JSON.stringify({ type: 'access-token', user_uid: user.uuid, token_uid: crypto.randomUUID(), exp: Math.floor(Date.now() / 1000) + 86400 })) + '.signature';
       credentials.set(token, { user, path });
-      return `https://api.puter.test/token-read?uid=proof&token=${encodeURIComponent(token)}`;
+      return `https://api.everything.test/token-read?uid=proof&token=${encodeURIComponent(token)}`;
     },
   });
-  const workerPuter: WorkerPuter = {
+  const workerEverything: WorkerEverything = {
     kv,
     fs: fsFor(owner),
     auth: { getUser: async () => owner },
-    APIOrigin: 'https://api.puter.test',
+    APIOrigin: 'https://api.everything.test',
     authToken: 'header.' + btoa(JSON.stringify({ app_uid: 'app-photo' })) + '.signature',
   };
   const fetcher = (async (url: string, options: RequestInit = {}) => {
@@ -221,10 +221,10 @@ export function environment() {
     }
     return Response.json({ handle });
   }) as unknown as typeof fetch;
-  const service = new RoomService(workerPuter, { now: () => env.now, fetcher, rooms: new Map() });
+  const service = new RoomService(workerEverything, { now: () => env.now, fetcher, rooms: new Map() });
   env.service = service;
   /** Another worker instance (its own loaded rooms) over the same storage. */
-  const instance = () => new RoomService(workerPuter, { now: () => env.now, fetcher, rooms: new Map() });
+  const instance = () => new RoomService(workerEverything, { now: () => env.now, fetcher, rooms: new Map() });
   const requestor = (token: string) => {
     const credential = credentials.get(token);
     if (!credential) throw Object.assign(new Error('Invalid credential'), { status: 401 });
@@ -251,10 +251,10 @@ export function environment() {
       },
     };
   };
-  env.sdk = (user: User): CollabPuter => {
+  env.sdk = (user: User): CollabEverything => {
     const prefix = user.uuid === owner.uuid ? '' : `account:${user.uuid}:`;
     return {
-      APIOrigin: 'https://api.puter.test',
+      APIOrigin: 'https://api.everything.test',
       authToken: 'header.' + btoa(JSON.stringify({ type: 'app-under-user', app_uid: 'app-photo', user_uid: user.uuid })) + '.signature',
       auth: { isSignedIn: () => true, signIn: async () => true, getUser: async () => user },
       kv: {
@@ -272,7 +272,7 @@ export function environment() {
           const input = JSON.parse(options.body!);
           calls.push({ user: user.uuid, ...input });
           try {
-            const identity = await authenticate(new Request(url, { method: options.method, headers: options.headers, body: options.body }), requestor(options.headers!['puter-auth']!) as never, input);
+            const identity = await authenticate(new Request(url, { method: options.method, headers: options.headers, body: options.body }), requestor(options.headers!['everything-auth']!) as never, input);
             const result = await (env.route?.(user) ?? service).call(identity, input);
             return Response.json(result);
           } catch (error) {
@@ -291,7 +291,7 @@ export function environment() {
       peer: env.hub.peer,
     };
   };
-  return Object.assign(env, { instance, kv, workerPuter });
+  return Object.assign(env, { instance, kv, workerEverything });
 }
 
 export const wait = (ms = 0) => new Promise((r) => setTimeout(r, ms));

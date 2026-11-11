@@ -9,9 +9,9 @@ import { store } from '../store.js'
 import { mountApp } from './app.js'
 import { contactKey } from '../model.js'
 
-function stubPuter() {
+function stubEverything() {
   const kv = new Map()
-  window.puter = {
+  window.everything = {
     env: 'web',
     auth: { isSignedIn: () => true, getUser: async () => ({}) },
     kv: {
@@ -51,7 +51,7 @@ describe('mobile selection focus', () => {
       removeListener() {},
     })
     try {
-      const kv = stubPuter()
+      const kv = stubEverything()
       kv.set(contactKey('f1'), { id: 'f1', firstName: 'Fia' })
       const root = document.createElement('div')
       document.body.appendChild(root)
@@ -73,7 +73,7 @@ describe('mobile selection focus', () => {
   })
 
   it('returns focus to the Edit button after saving re-renders the detail pane', async () => {
-    const kv = stubPuter()
+    const kv = stubEverything()
     kv.set(contactKey('e1'), { id: 'e1', firstName: 'Ada' })
     const root = document.createElement('div')
     document.body.appendChild(root)

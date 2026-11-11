@@ -1,5 +1,5 @@
 /**
- * Text to speech through Puter AI. The call returns an audio element; its
+ * Text to speech through Everything AI. The call returns an audio element; its
  * source is fetched into a Blob so the speech can be imported like any
  * other audio file and saved with the project.
  */
@@ -17,9 +17,9 @@ export const TTS_VOICES = [
   })),
 ];
 
-/** Puter AI is present and the user is signed in (the project lives in Puter). */
+/** Everything AI is present and the user is signed in (the project lives in Everything). */
 export function aiAvailable(ctx) {
-  return typeof puter !== 'undefined' && Boolean(puter.ai) && ctx.library?.backend?.kind === 'puter';
+  return typeof everything !== 'undefined' && Boolean(everything.ai) && ctx.library?.backend?.kind === 'everything';
 }
 
 const cache = new Map(); // `${voice}|${text}` -> Blob
@@ -33,7 +33,7 @@ export async function synthesize(text, voiceId, { testMode = false } = {}) {
   if (cache.has(key)) return cache.get(key);
   let audio;
   try {
-    audio = await puter.ai.txt2speech(t, { ...voice.options, ...(testMode ? { test_mode: true } : {}) });
+    audio = await everything.ai.txt2speech(t, { ...voice.options, ...(testMode ? { test_mode: true } : {}) });
   } catch (err) {
     throw new Error(errorMessage(err, "Couldn't create the speech."));
   }

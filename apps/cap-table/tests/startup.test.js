@@ -35,8 +35,8 @@ beforeEach(() => {
 });
 afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 
-async function start(puter) {
-  vi.stubGlobal('puter', puter);
+async function start(everything) {
+  vi.stubGlobal('everything', everything);
   await import('../src/main.js');
   await vi.waitFor(() => expect(document.getElementById('app').textContent.length).toBeGreaterThan(0));
 }
@@ -44,7 +44,7 @@ async function start(puter) {
 describe('landing visibility at startup', () => {
   it('keeps navigation usable while the SDK loads and initializes sign-in only once', async () => {
     const sdk = document.createElement('script');
-    sdk.dataset.puterSdk = '';
+    sdk.dataset.everythingSdk = '';
     document.body.append(sdk);
     await start(undefined);
     const view = document.querySelector('.landing');
@@ -54,7 +54,7 @@ describe('landing visibility at startup', () => {
     toggle.click();
     expect(toggle.getAttribute('aria-expanded')).toBe('true');
     const signIn = vi.fn().mockResolvedValue();
-    vi.stubGlobal('puter', { env: 'web', auth: { isSignedIn: () => false, signIn } });
+    vi.stubGlobal('everything', { env: 'web', auth: { isSignedIn: () => false, signIn } });
     sdk.dispatchEvent(new Event('load'));
     await vi.waitFor(() => expect(button.disabled).toBe(false));
     button.click();
@@ -64,14 +64,14 @@ describe('landing visibility at startup', () => {
 
   it('recovers when an asynchronous SDK request fails', async () => {
     const sdk = document.createElement('script');
-    sdk.dataset.puterSdk = '';
+    sdk.dataset.everythingSdk = '';
     document.body.append(sdk);
     await start(undefined);
     sdk.dispatchEvent(new Event('error'));
     const button = document.querySelector('[data-sign-in]');
     await vi.waitFor(() => expect(button.disabled).toBe(false));
     button.click();
-    expect(document.querySelector('[role="status"]').textContent).toContain('Couldn’t connect to Puter');
+    expect(document.querySelector('[role="status"]').textContent).toContain('Couldn’t connect to Everything');
     expect(mocks.init).not.toHaveBeenCalled();
   });
 
@@ -133,7 +133,7 @@ describe('landing visibility at startup', () => {
     expect(mocks.loadRestorePoints).not.toHaveBeenCalled();
   });
 
-  it.each([false, true])('boots inside Puter even when web auth is %s', async (signedIn) => {
+  it.each([false, true])('boots inside Everything even when web auth is %s', async (signedIn) => {
     const isSignedIn = vi.fn(() => signedIn);
     await start({ env: 'app', auth: { isSignedIn } });
     await vi.waitFor(() => expect(mocks.mountShell).toHaveBeenCalledTimes(1));

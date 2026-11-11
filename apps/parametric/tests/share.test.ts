@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { setPuterForTests } from '../src/platform/puter';
+import { setEverythingForTests } from '../src/platform/everything';
 import { sharedWithMe } from '../src/app/share';
 
-afterEach(() => setPuterForTests(null));
+afterEach(() => setEverythingForTests(null));
 
 describe('sharedWithMe', () => {
   it('follows the cursor through short pages and keeps only part files', async () => {
@@ -12,7 +12,7 @@ describe('sharedWithMe', () => {
       p3: { items: [{ name: 'notes.txt', path: '/bob/notes.txt' }, { name: 'Parts', path: '/bob/Parts', is_dir: true }, { name: 'Flange.parametric', path: '/bob/Flange.parametric', owner: 'bob' }], cursor: null },
     };
     const calls: (string | null | undefined)[] = [];
-    setPuterForTests({
+    setEverythingForTests({
       env: 'app',
       fs: { listShared: async ({ cursor }: { cursor?: string | null }) => { calls.push(cursor); return pages[cursor ?? 'start']; } },
     } as never);

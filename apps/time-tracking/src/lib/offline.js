@@ -1,5 +1,5 @@
 /**
- * Offline layer: a per-user localStorage mirror of the Puter data plus a
+ * Offline layer: a per-user localStorage mirror of the Everything data plus a
  * queue of writes made while unreachable.
  *
  * The mirror stores raw JSON strings, so it needs no schema knowledge:
@@ -206,13 +206,13 @@ export const offline = {
   },
 
   /**
-   * When the Puter SDK itself could not load (offline, uncached), install
+   * When the Everything SDK itself could not load (offline, uncached), install
    * a stand-in whose network calls all fail. The store's cache fallbacks
    * and write queue then serve the whole app from local data.
    */
   installStub() {
-    const fail = () => Promise.reject(new TypeError('Offline: Puter is unreachable'));
-    window.puter = {
+    const fail = () => Promise.reject(new TypeError('Offline: Everything is unreachable'));
+    window.everything = {
       env: 'web',
       auth: {
         isSignedIn: () => true,

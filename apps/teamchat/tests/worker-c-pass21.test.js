@@ -51,10 +51,10 @@ describe('rotating a token that has run through its minute', () => {
 });
 
 describe('an export whose drive write is refused', () => {
-  const hadPuter = Object.hasOwn(globalThis, 'puter') ? globalThis.puter : undefined;
+  const hadEverything = Object.hasOwn(globalThis, 'everything') ? globalThis.everything : undefined;
   afterEach(() => {
-    if (hadPuter === undefined) delete globalThis.puter;
-    else globalThis.puter = hadPuter;
+    if (hadEverything === undefined) delete globalThis.everything;
+    else globalThis.everything = hadEverything;
   });
   const archive = {
     header: { workspace: { id: 'abcdef1234', name: 'Acme' }, exportedAt: Date.UTC(2026, 8, 6, 12), members: {}, channels: { c1: { name: 'general' } } },
@@ -63,7 +63,7 @@ describe('an export whose drive write is refused', () => {
   };
   const drive = (refuse) => {
     const written = [];
-    globalThis.puter = {
+    globalThis.everything = {
       fs: { write: async (path) => { written.push(path); if (refuse(path)) throw refuse(path); return { path }; } },
       workers: { exec: async () => new Response(new Blob([new Uint8Array([1, 2, 3, 4])], { type: 'image/png' }), { status: 200, headers: { 'Content-Type': 'image/png' } }) },
     };
@@ -73,11 +73,11 @@ describe('an export whose drive write is refused', () => {
 
   it('names the file, the folder and the drive\'s reason, and says what was written is there, even when the drive\'s refusal carries no message', async () => {
     const written = drive((path) => (path.endsWith('channels/c1.html') ? { code: 'storage_limit_reached' } : null));
-    await expect(writeArchiveToDrive('abcdef1234@teamchat-old', archive)).rejects.toThrow(`could not write channels/c1.html into "${folder}" in your Puter drive (storage_limit_reached); what was written before it is in that folder`);
+    await expect(writeArchiveToDrive('abcdef1234@teamchat-old', archive)).rejects.toThrow(`could not write channels/c1.html into "${folder}" in your Everything drive (storage_limit_reached); what was written before it is in that folder`);
     // What the dialog prints is the message: never "Stopped: undefined".
     expect(written).toEqual([`${folder}/messages.json`, `${folder}/index.html`, `${folder}/channels/c1.html`]);
     drive((path) => (path.endsWith('messages.json') ? new Error('Storage limit reached') : null));
-    await expect(writeArchiveToDrive('abcdef1234@teamchat-old', archive)).rejects.toThrow(`could not write messages.json into "${folder}" in your Puter drive (Storage limit reached)`);
+    await expect(writeArchiveToDrive('abcdef1234@teamchat-old', archive)).rejects.toThrow(`could not write messages.json into "${folder}" in your Everything drive (Storage limit reached)`);
     drive((path) => (path.endsWith('index.html') ? 'quota' : null));
     await expect(writeArchiveToDrive('abcdef1234@teamchat-old', archive)).rejects.toThrow('could not write index.html into');
     drive((path) => (path.endsWith('index.html') ? {} : null));

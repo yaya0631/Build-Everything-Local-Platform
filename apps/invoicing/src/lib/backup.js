@@ -206,12 +206,12 @@ export async function retireSharePages(store, backupTokens = []) {
     // deletions, counting the token once if either fails; missing is fine.
     let tokenFailed = false;
     try {
-      await puter.fs.delete(`${SHARE_DIR}/${token}`, { recursive: true });
+      await everything.fs.delete(`${SHARE_DIR}/${token}`, { recursive: true });
     } catch (err) {
       if (!isMissingFileError(err)) tokenFailed = true;
     }
     try {
-      await puter.fs.delete(`${SHARE_DIR}/${token}.html`);
+      await everything.fs.delete(`${SHARE_DIR}/${token}.html`);
     } catch (err) {
       if (!isMissingFileError(err)) tokenFailed = true;
     }
@@ -237,8 +237,8 @@ export async function missingAttachments(store, { limit = 200 } = {}) {
     if (checked >= limit) break;
     checked++;
     try {
-      if (puter.fs.stat) await puter.fs.stat(entry.path);
-      else await puter.fs.read(entry.path);
+      if (everything.fs.stat) await everything.fs.stat(entry.path);
+      else await everything.fs.read(entry.path);
     } catch (err) {
       if (isMissingFileError(err)) missing++;
     }

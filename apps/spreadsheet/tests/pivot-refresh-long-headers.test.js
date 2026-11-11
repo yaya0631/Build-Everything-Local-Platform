@@ -21,7 +21,7 @@ function book(header) {
   insertPivotSheet(wb, id, buildPivot(wb, id, { range: { r1: 0, c1: 0, r2: 2, c2: 1 }, rowField: 0, colField: null, valueField: 1, agg: 'sum', filters: [] }));
   return { wb, id, pivot: wb.sheets.at(-1) };
 }
-const fieldsName = (wb) => wb.names.find((n) => n.name === '_PuterPivot_Fields');
+const fieldsName = (wb) => wb.names.find((n) => n.name === '_EverythingPivot_Fields');
 const literals = (formula) => [...formula.matchAll(/"((?:[^"]|"")*)"/g)].map((m) => m[1].replace(/""/g, '"'));
 
 it('writes long field headers as constants of 255 characters at most, and reopens and refreshes them', async () => {
@@ -32,7 +32,7 @@ it('writes long field headers as constants of 255 characters at most, and reopen
   const bytes = new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer());
   const zip = X.CFB.read(bytes, { type: 'array' });
   const xml = new TextDecoder().decode(X.CFB.find(zip, '/xl/workbook.xml').content);
-  const defined = /<definedName[^>]*name="_PuterPivot_Fields"[^>]*>([^<]*)<\/definedName>/.exec(xml)[1].replace(/&amp;/g, '&').replace(/&quot;/g, '"');
+  const defined = /<definedName[^>]*name="_EverythingPivot_Fields"[^>]*>([^<]*)<\/definedName>/.exec(xml)[1].replace(/&amp;/g, '&').replace(/&quot;/g, '"');
   expect(literals(defined).every((t) => [...t].length <= 255)).toBe(true);
   expect(defined.length).toBeLessThan(8192);
   const back = await workbookFromFile(bytes, 'Long.xlsx');

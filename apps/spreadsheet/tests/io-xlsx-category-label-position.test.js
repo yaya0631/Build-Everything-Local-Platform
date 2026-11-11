@@ -19,7 +19,7 @@ it.each(['column', 'bar', 'scatter', 'line'])('preserves every tick label positi
       expect(axis).toContain(`<c:tickLblPos val="${position}"/>`);
       expect(axis).toContain('<c:delete val="0"/>');
       const book = X.CFB.find(zip, '/xl/workbook.xml');
-      book.content = new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+      book.content = new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
       book.size = book.content.length;
       wb = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'native.xlsx');
       expect(wb.activeSheet.charts[0].appearance).toMatchObject({ xLabelPosition: position, xRotation: 45, hideXAxis: false });

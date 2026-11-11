@@ -61,10 +61,10 @@ for (const dirty of [false, true])
     }) => {
       const errors = [];
       page.on('pageerror', (error) => errors.push(error.message));
-      await page.route('**/sdk/puter.js', (route) =>
+      await page.route('**/sdk/everything.js', (route) =>
         route.fulfill({
           contentType: 'application/javascript',
-          body: `window.puter={
+          body: `window.everything={
         env:'web',auth:{isSignedIn:()=>true,getUser:async()=>({username:'test'}),
           signOut:()=>new Promise(resolve=>{window.releaseSignOut=()=>{
             resolve();setTimeout(()=>{window.signOutFinished=true;},0);
@@ -72,7 +72,7 @@ for (const dirty of [false, true])
         }),
       );
       await page.goto('/');
-      await expect(page.getByRole('button', { name: 'Save to Puter', exact: true })).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Save to Everything', exact: true })).toBeVisible();
       await expect(page.locator('.editor')).toHaveAttribute('aria-busy', 'false');
       if (dirty) await rotate(page);
       await page.getByRole('button', { name: 'Settings', exact: true }).click();
@@ -144,7 +144,7 @@ for (const dirty of [false, true])
           'Work locally',
         );
         await expect(
-          page.getByRole('button', { name: 'Sign in with Puter', exact: true }),
+          page.getByRole('button', { name: 'Sign in with Everything', exact: true }),
         ).toBeVisible();
       }
       expect(errors).toEqual([]);

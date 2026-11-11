@@ -9,7 +9,7 @@ import { icon } from './icons.js';
 import { showMenu } from './menu.js';
 import { commandTip } from './ribbon.js';
 
-export const REPO_URL = 'https://github.com/heyputer/everything';
+export const REPO_URL = 'https://github.com/yaya0631/Build-Everything-Local-Platform';
 
 export function buildShell(app) {
   const qat = (cmd, ic, label, keys) => {

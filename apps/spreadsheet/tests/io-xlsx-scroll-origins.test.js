@@ -29,7 +29,7 @@ it.each([[3, 2, { r: 19, c: 7 }, { r: 4, c: 3 }], [3, 0, { r: 19, c: 3 }, { r: 4
     const xml = new TextDecoder().decode(X.CFB.find(zip, '/xl/worksheets/sheet1.xml').content);
     expect(xml).toMatch(/<sheetView\b[^>]*topLeftCell="D5"/);
     const book = X.CFB.find(zip, '/xl/workbook.xml');
-    book.content = new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+    book.content = new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
     book.size = book.content.length;
     const back = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'native.xlsx');
     expect(back.activeSheet.viewOrigin).toEqual(origin);

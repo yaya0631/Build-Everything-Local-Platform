@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { beforeAll, expect, it, vi } from 'vitest';
 import { memoryStorage } from './helpers/memory-storage.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 
 const mocks = vi.hoisted(() => ({ views: [] }));
 vi.mock('../src/views/editor.js', () => ({ editorView: (o) => { const v = { el: document.createElement('div'), doc: o.doc, flush: async () => true, destroy() {}, goTo() {} }; mocks.views.push(v); return v; } }));
@@ -18,7 +18,7 @@ const blip = (back = true) => {
 beforeAll(async () => {
   Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true });
   Object.defineProperty(navigator, 'onLine', { configurable: true, get: () => online });
-  mock = installMockPuter();
+  mock = installMockEverything();
   document.body.innerHTML = '<div id="app"></div>';
   history.replaceState(null, '', '#/new');
   const { setAutoSaveEnabled } = await import('../src/lib/doc.js');
@@ -39,8 +39,8 @@ it('does not save, on coming back online, edits held back with AutoSave off', as
 });
 
 it('still tries again at once, on coming back online, a Save that failed offline', async () => {
-  const write = globalThis.puter.fs.write;
-  globalThis.puter.fs.write = async (...a) => { if (!online) throw new Error('Network unavailable'); return write(...a); };
+  const write = globalThis.everything.fs.write;
+  globalThis.everything.fs.write = async (...a) => { if (!online) throw new Error('Network unavailable'); return write(...a); };
   blip(false);
   await expect(doc.save()).rejects.toThrow();
   expect(doc.status).toBe('offline');

@@ -2,7 +2,7 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { Workbook } from '../src/core/workbook.js';
 import * as S from '../src/core/selection.js';
-import * as P from '../src/lib/puter.js';
+import * as P from '../src/lib/everything.js';
 import { openPivotDialog } from '../src/ui/pivotdialog.js';
 import { openPrintDialog } from '../src/ui/printdialog.js';
 import { openTextBoxDialog } from '../src/ui/textboxdialog.js';

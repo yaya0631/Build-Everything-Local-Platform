@@ -74,7 +74,7 @@ export function writeXlsxBackground(xml, rels, background, index, { binary, cont
   const path = `/xl/media/background${index}.${extension}`;
   binary(path, Uint8Array.from(atob(data.replace(/\s+/g, '')), (c) => c.charCodeAt(0)));
   contentType(path, `image/${type}`);
-  rels = rels.replace('</Relationships>', `${xmlTag('Relationship', { Id: 'puterBackground', Type: `${REL}image`, Target: `../media/background${index}.${extension}` })}</Relationships>`);
-  xml = xml.replace(/<oleObjects\b|<controls\b|<webPublishItems\b|<tableParts\b|<extLst\b|<\/worksheet>/, (match) => `${xmlTag('picture', { 'r:id': 'puterBackground' })}${match}`);
+  rels = rels.replace('</Relationships>', `${xmlTag('Relationship', { Id: 'everythingBackground', Type: `${REL}image`, Target: `../media/background${index}.${extension}` })}</Relationships>`);
+  xml = xml.replace(/<oleObjects\b|<controls\b|<webPublishItems\b|<tableParts\b|<extLst\b|<\/worksheet>/, (match) => `${xmlTag('picture', { 'r:id': 'everythingBackground' })}${match}`);
   return { xml, rels };
 }

@@ -70,7 +70,7 @@ export function createEventModal({
   user,
   requestEmail = requestUserEmail,
   rsvp = null,
-  // Emails those RSVP links to the guests (see invites.js). Null — or a Puter
+  // Emails those RSVP links to the guests (see invites.js). Null — or an Everything
   // build without the worker bridge — leaves the card with its copy buttons,
   // which is how the links got out before there was anything to send them.
   invites = null,
@@ -81,9 +81,9 @@ export function createEventModal({
   // Booking links (see booking.js). Powers the details card's "Cancel booking"
   // action on events a guest booked through one; null hides that action.
   booking = null,
-  // Meeting links for the Puter Meetings app, minted locally from its
+  // Meeting links for the Everything Meetings app, minted locally from its
   // published stateless recipe (see meetings.js). Null — or simply
-  // unavailable — hides the editor's "Add Puter Meetings link" button; a
+  // unavailable — hides the editor's "Add Everything Meetings link" button; a
   // link already on an event still shows and can still be removed.
   meetings = null,
   // Opens the account menu on the public-holiday country picker (see app.js).
@@ -107,7 +107,7 @@ export function createEventModal({
   let meeting = null; // the meeting link on this event { url, code? }, or null
   let openedMeetingJson = 'null'; // the link as shown at open, to detect a change on save
   let selfRemoved = false; // the user took themself off the list — don't re-add this open
-  // The signed-in user's email — how we recognize "me" in a guest list. Puter
+  // The signed-in user's email — how we recognize "me" in a guest list. Everything
   // withholds it from apps until the user grants email access, so this may be
   // empty here and get filled in lazily by ensureSelfEmail().
   let selfEmail =
@@ -786,8 +786,8 @@ export function createEventModal({
     renderGuests();
   }
 
-  /** Resolve the signed-in user's email, asking Puter for the email-read
-   *  permission (a one-time Puter prompt) the first time it's needed. The
+  /** Resolve the signed-in user's email, asking Everything for the email-read
+   *  permission (a one-time Everything prompt) the first time it's needed. The
    *  outcome — including a denial — is remembered for the session so the user
    *  is never re-prompted while browsing. Resolves to '' when denied. */
   function ensureSelfEmail() {
@@ -811,7 +811,7 @@ export function createEventModal({
     guests.push(name ? { email, name, status: 'needs-action' } : { email, status: 'needs-action' });
     renderGuests();
     // First use of the guests feature: start resolving "who am I" now (this
-    // may pop Puter's permission prompt), so it's usually settled by the
+    // may pop Everything's permission prompt), so it's usually settled by the
     // time Save needs it to stamp the organizer — then join me to my own
     // event's list, since the organizer is implicitly a participant.
     ensureSelfEmail().then(maybeAddSelfGuest);
@@ -1343,7 +1343,7 @@ export function createEventModal({
         el('button', {
           class: 'btn btn--ghost meeting__add',
           type: 'button',
-          html: icon('video', { size: 'sm' }) + '<span>Add Puter Meetings link</span>',
+          html: icon('video', { size: 'sm' }) + '<span>Add Everything Meetings link</span>',
           on: { click: addMeetingLink },
         }),
       );
@@ -1413,7 +1413,7 @@ export function createEventModal({
     if (!times) return;
 
     // Stamping the organizer on a guest-bearing event needs to know who "me"
-    // is, which may pop Puter's permission prompt. Park this save on it (and
+    // is, which may pop Everything's permission prompt. Park this save on it (and
     // swallow further Save clicks meanwhile); the modal may have been closed —
     // or switched to task mode — by the time it settles.
     if (mode === 'event' && guests.length && !selfEmail && !(current && current.organizer)) {
@@ -2843,7 +2843,7 @@ export function createEventModal({
     // "Going?" chips appear when this is an invitation TO me: someone else is
     // the organizer and my email is on the guest list.
     // An invitation that arrived by mail names us by the address it was sent
-    // to — the Puter mailbox — which need not be the account email. Matching on
+    // to — the Everything mailbox — which need not be the account email. Matching on
     // the account address alone hid the Yes / No / Maybe chips entirely for
     // those, and with them the reply-by-email offer.
     const myGuest = !isTask ? findSelfGuest(item) : null;
@@ -2989,7 +2989,7 @@ export function createEventModal({
     requestAnimationFrame(() => card.focus());
 
     // An event with guests and an organizer may be an invitation TO me, but we
-    // can't tell without my email. Ask (one-time Puter prompt) and, once known,
+    // can't tell without my email. Ask (one-time Everything prompt) and, once known,
     // rebuild the card so the Going? chips and my Organizer tag can appear.
     if (!selfEmail && item.organizer && Array.isArray(item.guests) && item.guests.length) {
       ensureSelfEmail().then((email) => {

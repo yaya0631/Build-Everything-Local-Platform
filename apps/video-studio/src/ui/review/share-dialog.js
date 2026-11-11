@@ -1,6 +1,6 @@
 /**
  * Share for review: render the project (or its in/out range) as a review
- * copy, save it in the owner's Puter files and publish it as the next
+ * copy, save it in the owner's Everything files and publish it as the next
  * version of this project's review. Below that, access: invite links with
  * a role and an expiry (revocable), and the people who joined, with their
  * role and a way to remove them.
@@ -19,14 +19,14 @@ import { openDialog, confirmDialog, toast } from '../dialog.js';
 
 let seq = 0;
 
-/** The address reviewers open: this app without its query (Puter adds its own parameters). */
+/** The address reviewers open: this app without its query (Everything adds its own parameters). */
 export function appBase(href = location.href) {
   const u = new URL(href);
   return `${u.origin}${u.pathname}`;
 }
 
 export function reviewAvailable(ctx) {
-  return ctx.library?.backend?.kind === 'puter' && Boolean(ctx.puter || (typeof puter !== 'undefined' && puter));
+  return ctx.library?.backend?.kind === 'everything' && Boolean(ctx.everything || (typeof everything !== 'undefined' && everything));
 }
 
 function dateLabel(ts) {
@@ -49,7 +49,7 @@ async function copyText(text, input) {
 
 export function openShareDialog(ctx, { deps = {} } = {}) {
   const d = { ensureWorker: ensureWorkerDefault, call: callDefault, shareForReview: shareDefault, base: () => appBase(), ...deps };
-  const P = ctx.puter || globalThis.puter;
+  const P = ctx.everything || globalThis.everything;
   const { store, library } = ctx;
   const project = store.project;
   let server = null;
@@ -74,9 +74,9 @@ export function openShareDialog(ctx, { deps = {} } = {}) {
   const callOwner = (op, fields = {}) => d.call(P, server, { op, review: review?.id, ...fields });
 
   if (!reviewAvailable(ctx)) {
-    const signIn = ctx.account?.onSignIn ? h('button.btn.primary', { type: 'button' }, 'Sign in to Puter') : null;
+    const signIn = ctx.account?.onSignIn ? h('button.btn.primary', { type: 'button' }, 'Sign in to Everything') : null;
     signIn?.addEventListener('click', () => ctx.account.onSignIn());
-    body.replaceChildren(h('div.rv-share-message', icon('cloudOff', 28), h('p', 'Sharing for review needs a Puter account: the review copy is saved in your Puter files and reviewers sign in with theirs.')));
+    body.replaceChildren(h('div.rv-share-message', icon('cloudOff', 28), h('p', 'Sharing for review needs an Everything account: the review copy is saved in your Everything files and reviewers sign in with theirs.')));
     footerButtons.replaceChildren(...[closeBtn, signIn].filter(Boolean));
     return dlg;
   }
@@ -96,7 +96,7 @@ export function openShareDialog(ctx, { deps = {} } = {}) {
     const next = review ? review.versions.length + 1 : 1;
     intro.textContent = review
       ? `This adds version ${next} to the review "${review.title}". Everyone you invited sees it the next time they open the review, and earlier versions keep their comments.`
-      : 'Makes a 720p review copy, saves it in your Puter files, and creates a review you can invite people to.';
+      : 'Makes a 720p review copy, saves it in your Everything files, and creates a review you can invite people to.';
     shareBtn.lastChild.textContent = review ? `Share version ${next}` : 'Share';
     const { project: src } = reviewSource(store.project, scopeSelect.value);
     const len = projectDuration(src);
@@ -138,7 +138,7 @@ export function openShareDialog(ctx, { deps = {} } = {}) {
     };
     try {
       const r = await d.shareForReview({
-        puter: P,
+        everything: P,
         project: store.project,
         library,
         scope: scopeSelect.value,
@@ -151,7 +151,7 @@ export function openShareDialog(ctx, { deps = {} } = {}) {
             setBar((info.fraction || 0) * 0.85);
             info.preview?.close?.();
           } else if (phase === 'save') {
-            progressPhase.textContent = `Saving to your Puter files (${formatBytes(info.bytes)})...`;
+            progressPhase.textContent = `Saving to your Everything files (${formatBytes(info.bytes)})...`;
             setBar(0.9);
           } else if (phase === 'publish') {
             // Too late to take back: the version is being published.
@@ -198,7 +198,7 @@ export function openShareDialog(ctx, { deps = {} } = {}) {
   const peopleList = h('ul.rv-rows', { 'aria-label': 'People' });
   accessSection.append(
     h('h3.rv-share-h', 'Invite people'),
-    h('p.rv-hint', 'Anyone with a link can join after signing in to Puter; their Puter username is shown with their comments. A link is shown only when it is made, so make a new one whenever you need it.'),
+    h('p.rv-hint', 'Anyone with a link can join after signing in to Everything; their Everything username is shown with their comments. A link is shown only when it is made, so make a new one whenever you need it.'),
     h('div.rv-invite-row',
       h('label.rv-field', h('span', 'Role'), roleSelect),
       h('label.rv-field', h('span', 'Expires after'), daysSelect),

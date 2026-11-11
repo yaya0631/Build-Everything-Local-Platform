@@ -125,7 +125,7 @@ describe('Match Font', () => {
     expect(clipRect({ x: 0, y: 0, w: 1, h: 1 }, { x: 5, y: 5, w: 1, h: 1 })).toBeNull();
   });
 
-  it('sends the selection picture to Puter AI and lists matches with previews', async () => {
+  it('sends the selection picture to Everything AI and lists matches with previews', async () => {
     const { app, captures } = await setup();
     await app.commands.run('type.matchFont');
     const panel = panelOf(app);
@@ -220,8 +220,8 @@ describe('Match Font', () => {
     expect(panel.result).toBeNull();
     expect(panel.status.textContent).toMatch(/No readable lettering/);
     app.generativeAI = null;
-    app.puter = null;
+    app.everything = null;
     await panel.match();
-    expect(panel.status.textContent).toMatch(/Puter AI/);
+    expect(panel.status.textContent).toMatch(/Everything AI/);
   });
 });

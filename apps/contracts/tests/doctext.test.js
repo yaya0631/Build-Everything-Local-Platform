@@ -73,9 +73,9 @@ describe('documentText', () => {
 
   describe('with OCR', () => {
     beforeEach(() => {
-      globalThis.puter = { ai: { async img2txt() { return 'SIGNED AGREEMENT read by OCR'; } } };
+      globalThis.everything = { ai: { async img2txt() { return 'SIGNED AGREEMENT read by OCR'; } } };
     });
-    afterEach(() => { delete globalThis.puter; });
+    afterEach(() => { delete globalThis.everything; });
 
     it('reads an image through OCR', async () => {
       const result = await documentText(doc('page1.jpg'), { read: read('binary') });

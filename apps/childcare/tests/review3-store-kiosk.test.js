@@ -20,7 +20,7 @@ async function openKiosk(role) {
   const store = await setupStore({});
   store.saveSettings({ kioskPinHash: role === 'staff' ? '' : await sha256Hex('4321') });
   Object.assign(app, { demo: false, user: { username: 'director', uuid: 'u1' }, team: { url: 'http://school.localhost:8443', role } });
-  globalThis.puter = { workers: { exec: async () => Promise.reject(new TypeError('Failed to fetch')) } };
+  globalThis.everything = { workers: { exec: async () => Promise.reject(new TypeError('Failed to fetch')) } };
   const { render } = await import('../src/views/kiosk.js');
   ctx = makeCtx();
   const out = render(ctx);
@@ -41,7 +41,7 @@ async function exitWith(root, pin) {
 
 afterEach(() => {
   ctx?.dispose();
-  delete globalThis.puter;
+  delete globalThis.everything;
   localStorage.clear();
 });
 

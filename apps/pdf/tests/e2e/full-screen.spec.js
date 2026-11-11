@@ -2,11 +2,11 @@ import { test, expect } from '@playwright/test';
 import { PDFDocument, StandardFonts, PDFString } from 'pdf-lib';
 
 // Full screen shows the pages alone: anything the app pops over them has to show there too.
-const PUTER_MOCK = `window.puter = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async () => ({}) }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
+const EVERYTHING_MOCK = `window.everything = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async () => ({}) }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
 
 async function openLinkedPdf(page) {
-  await page.route('**/sdk/puter.js', (route) =>
-    route.fulfill({ contentType: 'application/javascript', body: PUTER_MOCK }),
+  await page.route('**/sdk/everything.js', (route) =>
+    route.fulfill({ contentType: 'application/javascript', body: EVERYTHING_MOCK }),
   );
   await page.goto('/#library');
   const doc = await PDFDocument.create();

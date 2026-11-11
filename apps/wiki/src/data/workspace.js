@@ -1,7 +1,7 @@
 /**
  * Everything the signed-in person can open: their private pages, the shared
  * spaces they own or joined, and small per-person lists (favorites, recent
- * pages, joined spaces) kept in puter.kv. Page content never goes in kv.
+ * pages, joined spaces) kept in everything.kv. Page content never goes in kv.
  */
 import { Y, makeDoc, local } from './ydoc.js';
 import { Emitter } from '../lib/emitter.js';
@@ -445,7 +445,7 @@ export class Workspace extends Emitter {
    * shared space on this person's collaboration server. Returns the space.
    */
   async sharePage(pageId, progress = () => {}) {
-    if (!this.collab) throw new Error('Sharing needs a Puter account.');
+    if (!this.collab) throw new Error('Sharing needs an Everything account.');
     const from = this.personal;
     const root = getPage(from.tree, pageId);
     if (!root) throw new Error('This page no longer exists.');

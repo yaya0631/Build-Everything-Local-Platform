@@ -1,10 +1,10 @@
-// A fake Puter AI client and synthetic pictures for the generative tests.
+// A fake Everything AI client and synthetic pictures for the generative tests.
 import { makeImage } from './trace-helpers.js';
 
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
 /**
- * A fake of puter.ai: txt2img answers with an { src } object and chat with
+ * A fake of everything.ai: txt2img answers with an { src } object and chat with
  * a { message: { content } } object, from the given functions. `calls`
  * records every request; `gate` (a promise) holds answers back until it
  * resolves, for cancellation tests.

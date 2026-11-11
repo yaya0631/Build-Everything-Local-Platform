@@ -9,7 +9,7 @@ const text = (zip, path) => new TextDecoder().decode(X.CFB.find(zip, path)?.cont
 const set = (zip, path, value) => X.CFB.utils.cfb_add(zip, path, new TextEncoder().encode(value));
 async function exported(wb) {
   const zip = X.CFB.read(new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()), { type: 'array' });
-  set(zip, '/xl/workbook.xml', text(zip, '/xl/workbook.xml').replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  set(zip, '/xl/workbook.xml', text(zip, '/xl/workbook.xml').replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   return zip;
 }
 const reopen = zip => workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'native.xlsx');

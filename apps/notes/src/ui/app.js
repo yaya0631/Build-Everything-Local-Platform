@@ -205,9 +205,9 @@ export class App {
   }
 
   async loadAvatar() {
-    if (!this.user || typeof puter === 'undefined' || !puter.auth?.getProfilePicture) return;
+    if (!this.user || typeof everything === 'undefined' || !everything.auth?.getProfilePicture) return;
     try {
-      const pic = await puter.auth.getProfilePicture();
+      const pic = await everything.auth.getProfilePicture();
       if (pic) this.avatar.replaceChildren(h('img', { src: pic, alt: '' }));
     } catch {
       /* initials stay */
@@ -352,7 +352,7 @@ export class App {
         this.store.flush();
       } else this.refreshFromCloud();
     });
-    // Switching between visible windows (or Puter app windows) changes
+    // Switching between visible windows (or Everything app windows) changes
     // focus, not visibility.
     this.listen(window, 'focus', () => this.refreshFromCloud());
     this.refreshFromCloud = debounce(async () => {
@@ -1422,9 +1422,9 @@ export class App {
     return features.pickFiles(this, opts);
   }
 
-  /** Puter's own file picker, when the SDK provides one. */
+  /** Everything's own file picker, when the SDK provides one. */
   cloudPicker() {
-    return typeof puter !== 'undefined' && typeof puter.ui?.showOpenFilePicker === 'function' ? puter.ui.showOpenFilePicker.bind(puter.ui) : null;
+    return typeof everything !== 'undefined' && typeof everything.ui?.showOpenFilePicker === 'function' ? everything.ui.showOpenFilePicker.bind(everything.ui) : null;
   }
 
   pickFromCloud(opts) {

@@ -1,10 +1,10 @@
 /**
  * RFC 822 / MIME parsing for the mail files written by the `emailrx` backend
  * extension. Each file is a raw RFC 822 message; everything here is a pure
- * function over bytes or text so the module is testable without Puter.
+ * function over bytes or text so the module is testable without Everything.
  *
  * HTML bodies are flattened to plain text rather than rendered: this app
- * holds the Puter auth token, and mail bodies are attacker-supplied.
+ * holds the Everything auth token, and mail bodies are attacker-supplied.
  */
 
 import { parseCalendar } from './calendar.js';

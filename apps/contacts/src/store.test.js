@@ -3,9 +3,9 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { store } from './store.js'
 import { createContact, contactKey } from './model.js'
 
-function stubPuter() {
+function stubEverything() {
   const kv = new Map()
-  window.puter = {
+  window.everything = {
     kv: {
       list: async () => [...kv.entries()].map(([key, value]) => ({ key, value })),
       set: async (k, v) => {
@@ -24,7 +24,7 @@ function stubPuter() {
 
 describe('store', () => {
   beforeEach(() => {
-    stubPuter()
+    stubEverything()
     store.contacts.clear()
     store.exitSelectMode()
     store.ui.selectedId = null
@@ -41,12 +41,12 @@ describe('store', () => {
   })
 
   it('asks the cloud for its own keys only, and still filters what comes back', async () => {
-    const kv = stubPuter()
+    const kv = stubEverything()
     kv.set('pref:sort', 'last') // something that is not a contact
     await store.save(createContact({ firstName: 'Ada' }))
     const calls = []
-    const inner = window.puter.kv.list
-    window.puter.kv.list = async (...args) => {
+    const inner = window.everything.kv.list
+    window.everything.kv.list = async (...args) => {
       calls.push(args)
       return inner() // a backend that ignores the pattern, as an older one may
     }
@@ -61,7 +61,7 @@ describe('store', () => {
     expect(store.isFresh()).toBe(true)
     const loadedAt = store.loadedAt
 
-    window.puter.kv.list = async () => {
+    window.everything.kv.list = async () => {
       throw new Error('offline')
     }
     // A background revalidation that fails keeps the book *and* the clean state:
@@ -139,8 +139,8 @@ describe('store', () => {
   it('removeMany reports progress, counting failures so the bar always completes', async () => {
     const a = await store.save(createContact({ firstName: 'A' }))
     const b = await store.save(createContact({ firstName: 'B' }))
-    const realDel = window.puter.kv.del
-    window.puter.kv.del = async (k) => {
+    const realDel = window.everything.kv.del
+    window.everything.kv.del = async (k) => {
       if (k === contactKey(b.id)) throw new Error('boom')
       return realDel(k)
     }
@@ -149,7 +149,7 @@ describe('store', () => {
       concurrency: 1,
       onProgress: (done, total) => ticks.push([done, total]),
     })
-    window.puter.kv.del = realDel
+    window.everything.kv.del = realDel
     expect(n).toBe(1)
     expect(ticks).toEqual([
       [0, 2],
@@ -161,8 +161,8 @@ describe('store', () => {
   it('publishes partial results mid-job, so a long import fills the list as it goes', async () => {
     // 12 writes at 60ms each, one at a time: long enough to outlive the store's
     // coalescing window and emit at least once before the job is done.
-    const realSet = window.puter.kv.set
-    window.puter.kv.set = async (k, v) => {
+    const realSet = window.everything.kv.set
+    window.everything.kv.set = async (k, v) => {
       await new Promise((r) => setTimeout(r, 60))
       return realSet(k, v)
     }
@@ -174,7 +174,7 @@ describe('store', () => {
     }))
     await store.importMany(batch, { concurrency: 1 })
     unsubscribe()
-    window.puter.kv.set = realSet
+    window.everything.kv.set = realSet
     expect(store.all).toHaveLength(12)
     const partial = sizes.filter((n) => n > 0 && n < 12)
     expect(partial.length).toBeGreaterThan(0)
@@ -226,8 +226,8 @@ describe('store', () => {
     const a = await store.save(createContact({ firstName: 'A', tags: ['old'] }))
     const b = await store.save(createContact({ firstName: 'B', tags: ['old'] }))
     store.setUI({ tag: 'old' })
-    const realSet = window.puter.kv.set
-    window.puter.kv.set = async (k, v) => {
+    const realSet = window.everything.kv.set
+    window.everything.kv.set = async (k, v) => {
       if (k === contactKey(b.id)) throw new Error('boom')
       return realSet(k, v)
     }
@@ -257,8 +257,8 @@ describe('store', () => {
     const a = await store.save(createContact({ firstName: 'A', tags: ['temp'] }))
     const b = await store.save(createContact({ firstName: 'B', tags: ['temp'] }))
     store.setUI({ tag: 'temp' })
-    const realSet = window.puter.kv.set
-    window.puter.kv.set = async (k, v) => {
+    const realSet = window.everything.kv.set
+    window.everything.kv.set = async (k, v) => {
       if (k === contactKey(b.id)) throw new Error('boom')
       return realSet(k, v)
     }

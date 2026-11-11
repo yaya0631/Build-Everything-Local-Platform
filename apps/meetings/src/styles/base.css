@@ -1,11 +1,11 @@
 /* ---------------------------------------------------------------------------
-   Puter Meet — design tokens & base styles
+   Everything Meet — design tokens & base styles
    --------------------------------------------------------------------------- */
 
 :root {
   color-scheme: light;
 
-  /* Brand — Puter blue #0010d7 */
+  /* Brand — Everything blue #0010d7 */
   --brand: #0010d7;
   --accent: #0010d7;
   --accent-hover: #2733e6;

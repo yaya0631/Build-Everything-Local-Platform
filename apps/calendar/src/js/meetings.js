@@ -1,5 +1,5 @@
 /**
- * Meeting links for the Puter Meetings app (meetings.localhost:8443).
+ * Meeting links for the Everything Meetings app (meetings.localhost:8443).
  *
  * Meetings publishes a stateless recipe for other apps ("Minting links from
  * other apps" in its README): an *open room code* is 12 crypto-random
@@ -32,7 +32,7 @@ const CODE_LETTERS = 12;
 const GROUP_LETTERS = 4; // abcd-efgh-ijkl
 
 /**
- * True when `value` is exactly a Puter Meetings room link — nothing more.
+ * True when `value` is exactly an Everything Meetings room link — nothing more.
  * Meeting URLs reach the calendar from outside too (ICS import, the booking
  * worker's pull), and several surfaces render or mail whatever they're given
  * as a clickable "Join" link; each of those holds the URL to this shape so a

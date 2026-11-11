@@ -8,7 +8,7 @@
  *
  * Persisted specs never carry a `src` — preset sources are resolved from
  * the id (so asset URLs can change between builds), and the custom
- * image's data URL lives in local storage only (too big for puter.kv).
+ * image's data URL lives in local storage only (too big for everything.kv).
  * `resolveBackground` turns a stored spec into a runnable one.
  */
 

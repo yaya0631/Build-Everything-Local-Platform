@@ -2,7 +2,7 @@
 // options with a live preview of the encoded result and its file size.
 import type { PhotoDocument } from '../../model/document';
 import type { Editor } from '../../editor';
-import { download } from '../../persistence/puter';
+import { download } from '../../persistence/everything';
 import { canEncodeAvif, exportFileName, formatInfo, outputSize, type ExportFormat, type ExportSettings, type SourceImage } from './encode';
 import { rgba16To8 } from './png';
 import { bytesBlob, documentSource, encodeDocument, formatBytes, isDeep, loadSettings, mustConvert, saveSettings } from './pipeline';
@@ -81,7 +81,7 @@ export async function exportAsDialog(e: Editor, initial: Partial<ExportSettings>
   </div>
   <div class="dialog-actions export-actions">
     <button type="button" data-act="cancel">Cancel</button>
-    <button type="button" data-act="puter">Save to Puter…</button>
+    <button type="button" data-act="everything">Save to Everything…</button>
     <button type="submit" class="primary" data-act="export">Export</button>
   </div>
 </form>`;
@@ -249,7 +249,7 @@ export async function exportAsDialog(e: Editor, initial: Partial<ExportSettings>
       close();
     });
     dialog.querySelector('[data-act="cancel"]')!.addEventListener('click', close);
-    const finish = async (puter: boolean) => {
+    const finish = async (everything: boolean) => {
       const buttons = dialog.querySelectorAll<HTMLButtonElement>('.export-actions button');
       buttons.forEach((b) => (b.disabled = true));
       busy.hidden = false;
@@ -264,11 +264,11 @@ export async function exportAsDialog(e: Editor, initial: Partial<ExportSettings>
         const bytes = await withProvenance(e.session, out.bytes, name, provenance, { prompts: e.preferences.provenancePrompts, width: s.canvasWidth || w, height: s.canvasHeight || h });
         const blob = bytesBlob(bytes, out.mime);
         close();
-        if (puter) {
+        if (everything) {
           // The picker never settles when dismissed, so it is not awaited.
           void cloudSaveAs(blob, name)
             .then((item) => {
-              e.message(`Saved ${item.name} to Puter`);
+              e.message(`Saved ${item.name} to Everything`);
               void emitAppEvent('export', e.session);
             })
             .catch((error) => e.message(String(error instanceof Error ? error.message : error)));
@@ -286,7 +286,7 @@ export async function exportAsDialog(e: Editor, initial: Partial<ExportSettings>
       ev.preventDefault();
       void finish(false);
     });
-    dialog.querySelector('[data-act="puter"]')!.addEventListener('click', () => void finish(true));
+    dialog.querySelector('[data-act="everything"]')!.addEventListener('click', () => void finish(true));
     write();
     visibility();
     dialog.showModal();

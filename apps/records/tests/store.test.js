@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { Store, CHUNK } from '../src/data/store.js';
-import { memoryBackend, memoryKv, puterBackend, isMissing } from '../src/data/backend.js';
+import { memoryBackend, memoryKv, everythingBackend, isMissing } from '../src/data/backend.js';
 import { memoryJournal } from '../src/data/journal.js';
 
 afterEach(() => vi.useRealTimers());
@@ -140,10 +140,10 @@ describe('store', () => {
   });
 });
 
-describe('puter backend', () => {
+describe('everything backend', () => {
   it('writes with overwrite and missing parents, reads blobs, treats missing files as empty', async () => {
     const calls = [];
-    const puter = {
+    const everything = {
       fs: {
         async write(path, data, opts) {
           calls.push(['write', path, opts]);
@@ -161,7 +161,7 @@ describe('puter backend', () => {
         },
       },
     };
-    const b = puterBackend(puter);
+    const b = everythingBackend(everything);
     const res = await b.write('x/y.json', '{}');
     expect(calls[0]).toEqual(['write', 'records/x/y.json', { overwrite: true, dedupeName: false, createMissingParents: true }]);
     expect(res.modified).toBe(1700000000000);

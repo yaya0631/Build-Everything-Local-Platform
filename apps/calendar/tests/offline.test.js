@@ -164,7 +164,7 @@ describe('snapshot KV (offline-store.js)', () => {
       }),
       set: vi.fn(async (key, value) => {
         if (kv.offline) throw new Error('net');
-        // Mirrors puter.kv.set's two forms: (key, value) or a batch array.
+        // Mirrors everything.kv.set's two forms: (key, value) or a batch array.
         const items = Array.isArray(key) ? key : [{ key, value }];
         for (const it of items) backing.set(it.key, it.value);
         return true;
@@ -216,7 +216,7 @@ describe('snapshot KV (offline-store.js)', () => {
   });
 
   it('a possibly-truncated list merges into the snapshot instead of replacing it', async () => {
-    // puter.kv silently truncates big flat lists; store.js shards them, but
+    // everything.kv silently truncates big flat lists; store.js shards them, but
     // the FLAT (cut) result reaches this wrapper first. Replacing the
     // namespace with it would poison the last good snapshot with a partial
     // calendar — permanently, if the shard fan-out then fails or the tab

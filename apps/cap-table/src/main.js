@@ -9,7 +9,7 @@ import { shouldOnboard, openOnboarding } from './ui/onboarding.js';
 import { bottomStack, toast } from './ui/toast.js';
 import { authView } from './views/auth.js';
 import { recoveryView } from './views/recovery.js';
-import { isPuterApp } from './lib/env.js';
+import { isEverythingApp } from './lib/env.js';
 
 const appRoot = document.getElementById('app');
 let landing;
@@ -49,13 +49,13 @@ function showRecovery(title, message) {
 }
 
 async function start() {
-  const sdk = document.querySelector('script[data-puter-sdk]');
+  const sdk = document.querySelector('script[data-everything-sdk]');
   /* Wait only for a script still in flight. One that already fired load
-     without defining `puter` (a proxy's block page, a stub) fires nothing
+     without defining `everything` (a proxy's block page, a stub) fires nothing
      more, and the wait below never ended: the landing kept its buttons
      disabled and said nothing. Read as loaded, it falls through to the
      sign-in path, which says the connection failed. */
-  if (sdk && !globalThis.puter && sdk.dataset.failed !== 'true' && sdk.dataset.loaded !== 'true') {
+  if (sdk && !globalThis.everything && sdk.dataset.failed !== 'true' && sdk.dataset.loaded !== 'true') {
     const view = showLanding();
     const buttons = [...view.querySelectorAll('[data-sign-in]')];
     buttons.forEach((button) => { button.disabled = true; });
@@ -72,16 +72,16 @@ async function start() {
     view.removeAttribute('data-sign-in-loading');
     buttons.forEach((button) => { button.disabled = false; });
   }
-  // Once the SDK identifies the Puter shell, the platform owns the session,
+  // Once the SDK identifies the Everything shell, the platform owns the session,
   // even when the web auth check reports false. Continue into the workspace.
-  if (isPuterApp()) {
+  if (isEverythingApp()) {
     await boot();
     return;
   }
 
   let signedIn = false;
   try {
-    signedIn = await Promise.resolve(puter.auth.isSignedIn());
+    signedIn = await Promise.resolve(everything.auth.isSignedIn());
   } catch {
     signedIn = false;
   }
@@ -134,7 +134,7 @@ async function boot() {
       return;
     }
     showError('Couldn’t load your data',
-      'Something went wrong talking to your Puter cloud. Check your connection and try again.',
+      'Something went wrong talking to your Everything cloud. Check your connection and try again.',
       () => location.reload());
     return;
   }
@@ -202,7 +202,7 @@ async function boot() {
      change, so the way out is to stay: the rewrite is retried when the
      connection returns, on a timer meanwhile, and on demand. */
   const retryUnsaved = async (recoverPending = true) => {
-    if (await store.retryUnsaved({ recoverPending }) && !store.isStale) toast('Your cap table is back in sync with your Puter cloud.');
+    if (await store.retryUnsaved({ recoverPending }) && !store.isStale) toast('Your cap table is back in sync with your Everything cloud.');
   };
   const unsavedBanner = el('div.offline-banner', {
     role: 'status', 'aria-live': 'polite', hidden: true,

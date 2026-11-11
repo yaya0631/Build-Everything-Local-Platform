@@ -22,7 +22,7 @@ it('offers keep editing, leave, or sign in and save when leaving unsaved work wi
     },
     fs: { readdir: vi.fn(async () => []), mkdir: async () => {}, stat: async () => null, write },
   };
-  vi.stubGlobal('puter', sdk);
+  vi.stubGlobal('everything', sdk);
   document.body.innerHTML = '<div id="app"></div>';
   history.replaceState(null, '', '#/new');
   await import('../src/main.js');

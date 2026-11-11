@@ -11,7 +11,7 @@ test.skip(({ isMobile }) => isMobile, 'desktop workspace');
 // A drag along a line is a slip of the hand, not a box: a text box placed that way had no
 // room to show its words, and a rectangle or oval failed with "too small for its border".
 test('a flat drag places a text box as a click does and adds no flat shape', async ({ page }) => {
-  await page.route('**/sdk/puter.js', (route) => route.abort());
+  await page.route('**/sdk/everything.js', (route) => route.abort());
   const doc = await PDFDocument.create();
   doc.addPage([612, 792]);
   await page.goto('/#library');

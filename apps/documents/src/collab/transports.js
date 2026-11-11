@@ -11,7 +11,7 @@
  * BroadcastRoom    rooms between tabs of one browser (BroadcastChannel); the
  *                  playground's local co-editing and the browser tests. No
  *                  server: tabs answer each other's requests for the state.
- * WorkerTransport  a room on the owner's Puter worker (server/service.js).
+ * WorkerTransport  a room on the owner's Everything worker (server/service.js).
  */
 import * as Y from 'yjs';
 import { canComment, canEdit, PRESENCE_TTL, MAX_UPDATE, encode, decode } from './protocol.js';
@@ -174,10 +174,10 @@ export class BroadcastRoom {
   }
 }
 
-/* ---------- The owner's Puter worker ---------- */
+/* ---------- The owner's Everything worker ---------- */
 
 /**
- * A room on a Puter worker (server/service.js). Changes are committed with a
+ * A room on an Everything worker (server/service.js). Changes are committed with a
  * request each; others' changes and the roster arrive with synchronization
  * requests, every second while others are here and every few seconds when
  * alone, and at once after a commit.

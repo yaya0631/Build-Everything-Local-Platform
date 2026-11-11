@@ -1,6 +1,6 @@
 /**
- * Twelfth review pass, client libraries. Puter is faked at
- * `puter.workers.exec`, as in tests/store.test.js and
+ * Twelfth review pass, client libraries. Everything is faked at
+ * `everything.workers.exec`, as in tests/store.test.js and
  * tests/client-lib-pass11.test.js.
  */
 import { describe, it, expect, afterEach, vi } from 'vitest';
@@ -32,7 +32,7 @@ const tick = (ms = 2) => new Promise((r) => setTimeout(r, ms));
 /** Route each call by the end of its path; a handler may return a promise that waits. */
 function worker(routes) {
   const calls = [];
-  globalThis.puter = {
+  globalThis.everything = {
     workers: {
       exec: async (url, init = {}) => {
         const u = new URL(url);
@@ -67,7 +67,7 @@ function resetStore() {
   store._seenAt.clear();
   for (const t of store._readTimers.values()) clearTimeout(t);
   store._readTimers.clear();
-  delete globalThis.puter;
+  delete globalThis.everything;
 }
 
 describe('italics and strikethrough closed by punctuation', () => {
@@ -283,7 +283,7 @@ describe('signing out while one workspace server does not answer', () => {
     pwa.on = false;
     pwa.unsub = null;
     store.workspaces = [];
-    delete globalThis.puter;
+    delete globalThis.everything;
   });
 
   it('tells every server at once and does not wait on the silent one for long', async () => {
@@ -295,7 +295,7 @@ describe('signing out while one workspace server does not answer', () => {
       return ref.startsWith('dead') ? new Promise(() => {}) : Promise.resolve();
     };
     let signedOut = false;
-    globalThis.puter = { auth: { signOut: async () => { signedOut = true; } } };
+    globalThis.everything = { auth: { signOut: async () => { signedOut = true; } } };
     store.workspaces = [{ ref: 'dead000000@teamchat-x' }, { ref: 'live000000@teamchat-x' }, { ref: 'live111111@teamchat-x' }];
     const t0 = Date.now();
     await store.signOut();

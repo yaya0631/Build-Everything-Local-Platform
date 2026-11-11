@@ -1,10 +1,10 @@
 import { afterEach, beforeEach, expect, it } from 'vitest';
 import { Doc } from '../src/lib/doc.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 
 let mock;
-beforeEach(() => { mock = installMockPuter(); });
-afterEach(() => { delete globalThis.puter; });
+beforeEach(() => { mock = installMockEverything(); });
+afterEach(() => { delete globalThis.everything; });
 
 it('renames a file that has no extension without inventing one', async () => {
   const doc = new Doc({ name: 'data', path: 'Desktop/data' });
@@ -29,13 +29,13 @@ it('keeps the extension of other files and handles dotted folders', async () => 
 
 it('names the old path in the path event so a stale recent entry can be dropped', async () => {
   const { Doc } = await import('../src/lib/doc.js');
-  const { installMockPuter } = await import('./helpers/mock-puter.js');
-  installMockPuter();
-  await puter.fs.write('Spreadsheets/Old.xlsx', new Blob(['x']));
+  const { installMockEverything } = await import('./helpers/mock-everything.js');
+  installMockEverything();
+  await everything.fs.write('Spreadsheets/Old.xlsx', new Blob(['x']));
   const doc = new Doc({ name: 'Old', path: 'Spreadsheets/Old.xlsx' });
   const events = [];
   doc.addEventListener('path', (e) => events.push(e.detail));
   expect(await doc.rename('New')).toBeNull();
   expect(events).toEqual([{ path: 'Spreadsheets/New.xlsx', name: 'New', oldPath: 'Spreadsheets/Old.xlsx' }]);
-  delete globalThis.puter;
+  delete globalThis.everything;
 });

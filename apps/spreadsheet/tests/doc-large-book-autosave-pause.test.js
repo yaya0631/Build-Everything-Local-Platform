@@ -3,15 +3,15 @@ import { Doc, noteUserInput } from '../src/lib/doc.js';
 import { Workbook } from '../src/core/workbook.js';
 import { workbookFromFile, workbookToXlsx } from '../src/core/io.js';
 import { memoryStorage } from './helpers/memory-storage.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 
 // Encoding a large book for its autosave held the page for about a second (200,000 cells pasted, then a frame of
 // nearly two seconds while scrolling). A large book's autosave now waits for a pause in what the user is doing,
 // though never more than ten seconds past its time, and the encoding gives the page turns along the way.
 beforeAll(async () => { await Doc.blank().toXlsxBlob(); });
 let mock;
-beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); mock = installMockPuter(); });
-afterEach(() => { delete globalThis.puter; vi.useRealTimers(); });
+beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); mock = installMockEverything(); });
+afterEach(() => { delete globalThis.everything; vi.useRealTimers(); });
 
 function largeBook(rows = 6000) {
   const wb = new Workbook({ sheets: [{ name: 'S' }] });

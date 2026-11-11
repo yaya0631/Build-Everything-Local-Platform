@@ -1,10 +1,10 @@
 import { afterEach, beforeEach, expect, it } from 'vitest';
 import { Doc } from '../src/lib/doc.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 
 let mock;
-beforeEach(() => { mock = installMockPuter(); });
-afterEach(() => { delete globalThis.puter; });
+beforeEach(() => { mock = installMockEverything(); });
+afterEach(() => { delete globalThis.everything; });
 
 it('does not create a file for an automatic save of an untouched new document', async () => {
   const doc = Doc.blank();

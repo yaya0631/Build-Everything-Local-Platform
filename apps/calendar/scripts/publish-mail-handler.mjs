@@ -1,15 +1,14 @@
 #!/usr/bin/env node
 /**
- * Deploy step for the mail intake handler (src/workers/mail-handler.js) —
- * the sibling of `npm run deploy:email-worker`; see README's "Deploying the
- * mail handler".
+ * Publish step for the mail intake handler (src/workers/mail-handler.js), the
+ * sibling of the email worker; see README's "Deploying the mail handler".
  *
  * Plain Node, zero dependencies: reads the handler source, checks it against
  * the platform's own publish-time constraints, and calls the raw Events API
  * directly (a one-shot script has no reason to carry the whole SDK).
  *
- *   PUTER_TOKEN=<token> PUTER_APP_UID=<app uid> npm run publish:mail-handler
- *   optional: PUTER_API_ORIGIN (default http://127.0.0.1:8443), --replace
+ *   EVERYTHING_TOKEN=<token> EVERYTHING_APP_UID=<app uid> npm run publish:mail-handler
+ *   optional: EVERYTHING_API_ORIGIN (default http://127.0.0.1:8443), --replace
  *
  * REST contract (verified against backend/controllers/events/EventsController.ts
  * + EventsService.ts):
@@ -52,7 +51,7 @@ function readSource() {
   if (bytes > MAX_SOURCE_BYTES) {
     throw new PublishError(`source is ${bytes} bytes, over the platform's ${MAX_SOURCE_BYTES}-byte handler limit`);
   }
-  // The server bakes this string into `__puterEvents.register(name, (\n<source>\n))` —
+  // The server bakes this string into `__everythingEvents.register(name, (\n<source>\n))` —
   // it must be exactly one function expression, nothing else. Same check the
   // platform runs at publish time; failing it here is cheaper than a 400.
   try {
@@ -82,13 +81,13 @@ async function findExistingHash(origin, headers, appUid) {
 }
 
 async function main() {
-  const token = process.env.PUTER_TOKEN;
-  const appUid = process.env.PUTER_APP_UID;
-  const origin = process.env.PUTER_API_ORIGIN || 'http://127.0.0.1:8443';
+  const token = process.env.EVERYTHING_TOKEN;
+  const appUid = process.env.EVERYTHING_APP_UID;
+  const origin = process.env.EVERYTHING_API_ORIGIN || 'http://127.0.0.1:8443';
   const replace = process.argv.includes('--replace');
 
-  if (!token) throw new PublishError('PUTER_TOKEN is required (a Puter auth token for the account that owns this app).');
-  if (!appUid) throw new PublishError('PUTER_APP_UID is required (the app uid to publish the handler under).');
+  if (!token) throw new PublishError('EVERYTHING_TOKEN is required (an Everything auth token for the account that owns this app).');
+  if (!appUid) throw new PublishError('EVERYTHING_APP_UID is required (the app uid to publish the handler under).');
 
   const source = readSource();
   const hash = sha256Hex(source);

@@ -13,7 +13,7 @@ import { IMPORT_EXTS } from '../platform/files';
 
 export type AttachmentKind = 'image' | 'pdf' | 'text';
 
-/** Content blocks in the shape Puter passes to the model (Anthropic's). */
+/** Content blocks in the shape Everything passes to the model (Anthropic's). */
 export type FileBlock =
   | { type: 'image'; source: { type: 'base64'; media_type: string; data: string } }
   | { type: 'document'; source: { type: 'base64'; media_type: 'application/pdf'; data: string } }

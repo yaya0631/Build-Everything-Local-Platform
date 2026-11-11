@@ -1,7 +1,7 @@
 /**
  * Publishing service: renders job pages into a public directory in the
- * user's Puter cloud and serves it on a per-account subdomain via
- * puter.hosting. One site per account; one page per published job, plus
+ * user's Everything cloud and serves it on a per-account subdomain via
+ * everything.hosting. One site per account; one page per published job, plus
  * an index of open roles at the root.
  */
 import {
@@ -44,11 +44,11 @@ async function writeIndex(store) {
   const base = siteUrl(settings);
   const jobs = publishedJobs(store);
   const html = buildSiteIndexHtml(jobs, { companyName: settings.companyName, siteUrl: base });
-  await puter.fs.write(`${SITE_DIR}/index.html`, html, { createMissingParents: true });
+  await everything.fs.write(`${SITE_DIR}/index.html`, html, { createMissingParents: true });
   if (!base) return;
   await Promise.all([
-    puter.fs.write(`${SITE_DIR}/sitemap.xml`, buildSitemapXml(jobs, { siteUrl: base }), { createMissingParents: true }),
-    puter.fs.write(`${SITE_DIR}/robots.txt`, buildRobotsTxt({ siteUrl: base }), { createMissingParents: true }),
+    everything.fs.write(`${SITE_DIR}/sitemap.xml`, buildSitemapXml(jobs, { siteUrl: base }), { createMissingParents: true }),
+    everything.fs.write(`${SITE_DIR}/robots.txt`, buildRobotsTxt({ siteUrl: base }), { createMissingParents: true }),
   ]);
 }
 
@@ -58,7 +58,7 @@ async function writeJobPage(store, job) {
     applyEmail: store.state.settings.applyEmail,
     siteUrl: siteUrl(store.state.settings),
   });
-  await puter.fs.write(`${SITE_DIR}/${job.id}.html`, html, { createMissingParents: true });
+  await everything.fs.write(`${SITE_DIR}/${job.id}.html`, html, { createMissingParents: true });
 }
 
 /** Reserve the account's public site on first publish. */
@@ -77,7 +77,7 @@ async function ensureSite(store) {
   for (let attempt = 0; attempt < 3 && !subdomain; attempt++) {
     const candidate = `${base}-jobs-${Math.random().toString(36).slice(2, 6)}`;
     try {
-      await puter.hosting.create(candidate, SITE_DIR);
+      await everything.hosting.create(candidate, SITE_DIR);
       subdomain = candidate;
     } catch (err) {
       lastError = err; // Almost always a name collision; retry with a new suffix.
@@ -93,7 +93,7 @@ async function ensureSite(store) {
     // Reserved but unrecorded: the app wouldn't know it owns this
     // subdomain and the next publish would reserve another. Give it
     // back (best-effort), then report the real failure.
-    await puter.hosting.delete(subdomain).catch(() => {});
+    await everything.hosting.delete(subdomain).catch(() => {});
     throw err;
   }
   return site;
@@ -134,7 +134,7 @@ export async function unpublishJob(ctx, jobId) {
   const job = store.state.jobs.find((j) => j.id === jobId);
   if (!job) return;
   try {
-    await puter.fs.delete(`${SITE_DIR}/${job.id}.html`);
+    await everything.fs.delete(`${SITE_DIR}/${job.id}.html`);
   } catch (err) {
     if (!isMissingPathError(err)) throw err;
   }
@@ -179,7 +179,7 @@ export async function reconcilePublishedPages(ctx) {
   const wanted = new Set(publishedJobs(store).map((j) => `${j.id}.html`));
   let entries;
   try {
-    entries = await puter.fs.readdir(SITE_DIR);
+    entries = await everything.fs.readdir(SITE_DIR);
   } catch (err) {
     if (isMissingPathError(err)) return; // nothing hosted yet
     throw err;
@@ -187,7 +187,7 @@ export async function reconcilePublishedPages(ctx) {
   await Promise.all(
     (entries ?? [])
       .filter((e) => e.name?.endsWith('.html') && e.name !== 'index.html' && !wanted.has(e.name))
-      .map((e) => puter.fs.delete(`${SITE_DIR}/${e.name}`).catch(() => {}))
+      .map((e) => everything.fs.delete(`${SITE_DIR}/${e.name}`).catch(() => {}))
   );
   // Re-render the pages that should exist (the restored records may
   // carry different content) and the index of open roles.
@@ -201,7 +201,7 @@ export async function reconcilePublishedPages(ctx) {
 /**
  * Open a local preview of the page in a new tab (works before
  * publishing). Returns false when the browser refused the tab — the app
- * runs embedded in Puter, and a blocked popup makes the button look
+ * runs embedded in Everything, and a blocked popup makes the button look
  * broken unless the caller says what happened.
  */
 export function previewJobPage(store, job) {
@@ -240,7 +240,7 @@ export function calendarFeedWebcalUrl(settings) {
 
 /** Write the feed file for the current data. Caller guarantees it is shared. */
 async function writeFeedFile(store, feed) {
-  await puter.fs.write(`${SITE_DIR}/${feed.file}`, buildInterviewFeed(store.state, { fullNames: Boolean(feed.fullNames) }), {
+  await everything.fs.write(`${SITE_DIR}/${feed.file}`, buildInterviewFeed(store.state, { fullNames: Boolean(feed.fullNames) }), {
     createMissingParents: true,
   });
 }
@@ -290,7 +290,7 @@ export async function stopCalendarFeed(ctx) {
   const feed = store.state.settings.calendarFeed;
   if (isFeedFile(feed?.file)) {
     try {
-      await puter.fs.delete(`${SITE_DIR}/${feed.file}`);
+      await everything.fs.delete(`${SITE_DIR}/${feed.file}`);
     } catch (err) {
       // Already gone is the outcome we wanted.
       if (!isMissingPathError(err)) throw err;

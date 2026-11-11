@@ -5,7 +5,7 @@ export async function openApp(page, query = '') {
   const errors = [];
   page.on('pageerror', (e) => errors.push(e.message));
   page.on('console', (m) => {
-    if (m.type() === 'error' && !/puter|favicon|Failed to load resource/i.test(m.text())) errors.push(m.text());
+    if (m.type() === 'error' && !/everything|favicon|Failed to load resource/i.test(m.text())) errors.push(m.text());
   });
   await page.addInitScript(() => localStorage.setItem('bd.alphaNoticeSeen', '1'));
   await page.goto(`/${query}`);

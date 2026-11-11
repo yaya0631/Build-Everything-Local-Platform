@@ -58,7 +58,7 @@ function renderPrivate(app, dlg, body, space, pageId) {
     page = getPage(space.tree, pageId);
   }
   if (!app.ws.canShare) {
-    body.replaceChildren(h('div.share-intro', h('span.share-badge', icon('users', 20)), h('p', 'Sharing needs a Puter account. Sign in with Puter to invite people.')));
+    body.replaceChildren(h('div.share-intro', h('span.share-badge', icon('users', 20)), h('p', 'Sharing needs an Everything account. Sign in with Everything to invite people.')));
     return;
   }
   const status = h('p.share-progress', { role: 'status', 'aria-live': 'polite' });
@@ -80,7 +80,7 @@ function renderPrivate(app, dlg, body, space, pageId) {
   const subpages = childrenOf(space.tree, pageId).length;
   body.replaceChildren(
     h('div.share-intro', h('span.share-badge', pageIcon(page, 22)), h('div', h('h3', displayTitle(page)), h('p', 'Private: only you can see this page.'))),
-    h('p.share-text', `Sharing lets people you invite view, comment on or edit this page${subpages ? ` and its ${subpages} subpage${subpages === 1 ? '' : 's'}` : ''}. It moves to Shared in your sidebar and stays stored in your Puter account.`),
+    h('p.share-text', `Sharing lets people you invite view, comment on or edit this page${subpages ? ` and its ${subpages} subpage${subpages === 1 ? '' : 's'}` : ''}. It moves to Shared in your sidebar and stays stored in your Everything account.`),
     h('div.share-actions', go),
     status,
   );
@@ -238,7 +238,7 @@ async function renderShared(app, dlg, body, space, pageId, { fresh = false } = {
   });
   body.replaceChildren(
     intro,
-    h('section.share-section', h('h3.share-label', 'Invite people'), h('p.share-text', 'Anyone who opens the link and signs in with Puter joins with the access you pick. Links work for 14 days.'), h('div.share-row', roleSel, copy), h('div.share-row', linkField, reset)),
+    h('section.share-section', h('h3.share-label', 'Invite people'), h('p.share-text', 'Anyone who opens the link and signs in with Everything joins with the access you pick. Links work for 14 days.'), h('div.share-row', roleSel, copy), h('div.share-row', linkField, reset)),
     h('section.share-section', h('h3.share-label', 'General access'), h('div.share-row', access, linkRole)),
     h('section.share-section', h('h3.share-label', 'People with access'), people),
     h('div.share-danger', del),

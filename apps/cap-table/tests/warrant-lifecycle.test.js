@@ -7,7 +7,7 @@ import { dbAsOf, fullyDiluted, warrantsOutstanding, sharesOutstanding, warrantEx
 
 function fresh() {
   const values = new Map();
-  globalThis.puter = { kv: {
+  globalThis.everything = { kv: {
     get: async (key) => values.get(key) ?? null,
     set: async (key, value) => { values.set(key, value); return true; },
   }, auth: { getUser: async () => ({ uuid: 'test', username: 'test' }) } };
@@ -108,7 +108,7 @@ describe('dated warrant lifecycle', () => {
   it('rolls back a failed exercise write without losing rights or leaving shares', async () => {
     const s = fresh(); const w = await s.addSecurity(terms);
     const before = JSON.stringify(s.securities);
-    globalThis.puter.kv.set = async () => { throw new Error('Offline'); };
+    globalThis.everything.kv.set = async () => { throw new Error('Offline'); };
     await expect(exercise(s, w, 40)).rejects.toThrow();
     expect(JSON.stringify(s.securities)).toBe(before);
   });

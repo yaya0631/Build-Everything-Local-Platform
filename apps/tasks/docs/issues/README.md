@@ -20,7 +20,7 @@ gh issue create --title "<first heading>" --body-file docs/issues/00N-*.md
 | [008](008-tags.md) | Tags with filtering | P3 | No cross-list organization; users fake it in titles and search |
 
 Considered and deliberately left out for now: bulk multi-select edits,
-logbook statistics/streaks, task file attachments via Puter fs, sections
+logbook statistics/streaks, task file attachments via Everything fs, sections
 within lists, and a Settings control for `defaultListId` (the setting
 exists in the store but nothing writes it — worth a tiny fix-issue if
 quick-add doesn't obsolete it).

@@ -1,7 +1,7 @@
 {
   "name": "spreadsheet",
   "version": "1.0.0",
-  "description": "A fast, private spreadsheet app on Puter: formulas, formatting, and .xlsx files in your own cloud",
+  "description": "A fast, private spreadsheet app on Everything: formulas, formatting, and .xlsx files in your own cloud",
   "type": "module",
   "private": true,
   "license": "AGPL-3.0-only",
@@ -17,12 +17,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/HeyPuter/spreadsheet.git"
+    "url": "git+https://github.com/yaya0631/Build-Everything-Local-Platform"
   },
   "bugs": {
-    "url": "https://github.com/HeyPuter/spreadsheet/issues"
+    "url": "https://github.com/yaya0631/Build-Everything-Local-Platform"
   },
-  "homepage": "https://github.com/HeyPuter/spreadsheet#readme",
+  "homepage": "https://github.com/yaya0631/Build-Everything-Local-Platform",
   "dependencies": {
     "@noble/hashes": "^2.4.0",
     "@xmldom/xmldom": "0.9.12",

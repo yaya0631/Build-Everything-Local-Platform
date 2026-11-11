@@ -48,7 +48,7 @@ it('preserves native external link targets, cell caches and formulas without pri
     const get = p => new TextDecoder().decode(X.CFB.find(zip,p)?.content || new Uint8Array());
     expect(get('/xl/worksheets/sheet1.xml')).toContain('[1]Data!B1:B2');
     expect(get('/xl/externalLinks/_rels/externalLink1.xml.rels')).toContain('Target="../Source.xlsx"');
-    X.CFB.utils.cfb_add(zip, '/xl/workbook.xml', new TextEncoder().encode(get('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,'')));
+    X.CFB.utils.cfb_add(zip, '/xl/workbook.xml', new TextEncoder().encode(get('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,'')));
     wb = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }));
     expect(wb.externalWorkbooks.books[0].sheets[0].cells).toEqual(data().books[0].sheets[0].cells);
     expect(wb.getCell(wb.activeSheetId,0,1).f).toBe('SUM([1]Data!B1:B2)*A1');
@@ -144,7 +144,7 @@ it('copies cross-sheet dependencies as native supporting values while local inpu
   for (let i = 0; i < 2; i++) {
     const bytes = new Uint8Array(await (await workbookToXlsx(copy)).arrayBuffer()), zip = X.CFB.read(bytes, { type: 'array' });
     const part = X.CFB.find(zip, '/xl/workbook.xml');
-    X.CFB.utils.cfb_add(zip, '/xl/workbook.xml', new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')));
+    X.CFB.utils.cfb_add(zip, '/xl/workbook.xml', new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')));
     copy = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }));
     expect(copy.sheets).toHaveLength(1); expect(copy.getValue(copy.activeSheetId,0,1)).toBe(7.5);
     expect(chartData(copy,copy.activeSheetId,copy.activeSheet.charts[0]).series[0].values).toEqual([2.5]);
@@ -209,7 +209,7 @@ it('calculates ordered external 3D spans and leaves them unchanged by local stru
   expect(wb.getValue(id,0,0)).toBe(10);
   const bytes = new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()), zip = X.CFB.read(bytes,{type:'array'});
   const part = X.CFB.find(zip,'/xl/workbook.xml');
-  X.CFB.utils.cfb_add(zip,'/xl/workbook.xml',new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,'')));
+  X.CFB.utils.cfb_add(zip,'/xl/workbook.xml',new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,'')));
   const again = await workbookFromFile(X.CFB.write(zip,{type:'array',fileType:'zip'}));
   expect(again.getCell(again.activeSheetId,0,0).f).toBe(formula);
   expect(again.getValue(again.activeSheetId,0,0)).toBe(10);
@@ -247,7 +247,7 @@ it('preserves qualified source names, transitive formulas, functions and local s
   for(let cycle=0;cycle<2;cycle++) {
     const bytes = new Uint8Array(await (await workbookToXlsx(copy)).arrayBuffer()), zip=X.CFB.read(bytes,{type:'array'});
     const part=X.CFB.find(zip,'/xl/workbook.xml');
-    X.CFB.utils.cfb_add(zip,'/xl/workbook.xml',new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,'')));
+    X.CFB.utils.cfb_add(zip,'/xl/workbook.xml',new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,'')));
     copy=await workbookFromFile(X.CFB.write(zip,{type:'array',fileType:'zip'}));
     expect(copy.getValue(copy.activeSheetId,0,1)).toBe(3);
     expect(copy.getValue(copy.activeSheetId,0,2)).toBe(15);
@@ -287,7 +287,7 @@ it('resolves workbook-scoped external names without binding to destination defin
     expect(externalFormulaHasCaches('[1]!Total',wb.externalWorkbooks)).toBe(true);
     const bytes=new Uint8Array(await(await workbookToXlsx(wb)).arrayBuffer()),zip=X.CFB.read(bytes,{type:'array'});
     const part=X.CFB.find(zip,'/xl/workbook.xml');
-    X.CFB.utils.cfb_add(zip,'/xl/workbook.xml',new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,'')));
+    X.CFB.utils.cfb_add(zip,'/xl/workbook.xml',new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,'')));
     wb=await workbookFromFile(X.CFB.write(zip,{type:'array',fileType:'zip'}));
   }
 });
@@ -303,7 +303,7 @@ it('keeps a native formula and its last calculated result when the source cache 
   const original=fixture(); original.externalWorkbooks.books[0].sheets[0].cells=null;
   const bytes=new Uint8Array(await(await workbookToXlsx(original)).arrayBuffer()),zip=X.CFB.read(bytes,{type:'array'});
   const get=(zip,path)=>new TextDecoder().decode(X.CFB.find(zip,path).content);
-  const strip=zip=>X.CFB.utils.cfb_add(zip,'/xl/workbook.xml',new TextEncoder().encode(get(zip,'/xl/workbook.xml').replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,'')));
+  const strip=zip=>X.CFB.utils.cfb_add(zip,'/xl/workbook.xml',new TextEncoder().encode(get(zip,'/xl/workbook.xml').replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,'')));
   X.CFB.utils.cfb_add(zip,'/xl/worksheets/sheet1.xml',new TextEncoder().encode(get(zip,'/xl/worksheets/sheet1.xml').replace(/<c\b[^>]*r="B1"[^>]*>[\s\S]*?<\/c>/,'<c r="B1"><f>[1]Data!B1</f><v>77</v></c>')));
   strip(zip);
   let wb=await workbookFromFile(X.CFB.write(zip,{type:'array',fileType:'zip'}));
@@ -332,7 +332,7 @@ it('preserves DDE and OLE link parts without activating them or changing workboo
     expect(get('/xl/externalLinks/externalLink1.xml')).toContain('<val>4</val>');
     expect(get('/xl/externalLinks/externalLink2.xml')).toContain('progId="Example.Object"');
     expect(get('/xl/externalLinks/_rels/externalLink2.xml.rels')).toContain('Target="../Object.bin"');
-    X.CFB.utils.cfb_add(zip,'/xl/workbook.xml',new TextEncoder().encode(get('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,'')));
+    X.CFB.utils.cfb_add(zip,'/xl/workbook.xml',new TextEncoder().encode(get('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,'')));
     wb=await workbookFromFile(X.CFB.write(zip,{type:'array',fileType:'zip'}));
     expect(wb.externalWorkbooks.books.map(b=>b.kind||'workbook')).toEqual(['dde','ole','workbook']);
   }
@@ -353,7 +353,7 @@ it('preserves alternate link relationships and rebases relative targets without 
     expect(get('/xl/externalLinks/externalLink1.xml')).toContain('r:id="rPrimary"');
     expect(get('/xl/externalLinks/externalLink1.xml')).toContain('r:id="rId1"');
     expect(get('/xl/externalLinks/_rels/externalLink1.xml.rels')).toContain('Id="rId1"');
-    X.CFB.utils.cfb_add(zip,'/xl/workbook.xml',new TextEncoder().encode(get('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,'')));
+    X.CFB.utils.cfb_add(zip,'/xl/workbook.xml',new TextEncoder().encode(get('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,'')));
     wb=await workbookFromFile(X.CFB.write(zip,{type:'array',fileType:'zip'}));
     expect(wb.externalWorkbooks.books[0].relationships).toEqual(cache.books[0].relationships);
     expect(wb.getValue(wb.activeSheetId,0,0)).toBe(10);
@@ -382,7 +382,7 @@ it('exports relocated link targets without changing source formulas, cache metad
   const bytes = new Uint8Array(await blob.arrayBuffer()), zip = X.CFB.read(bytes,{type:'array'});
   const get = path => new TextDecoder().decode(X.CFB.find(zip,path)?.content || new Uint8Array());
   expect(get('/xl/externalLinks/_rels/externalLink1.xml.rels')).toContain('Target="https://example.com/Source.xlsx"');
-  X.CFB.utils.cfb_add(zip,'/xl/workbook.xml',new TextEncoder().encode(get('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,'')));
+  X.CFB.utils.cfb_add(zip,'/xl/workbook.xml',new TextEncoder().encode(get('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,'')));
   const reopened = await workbookFromFile(X.CFB.write(zip,{type:'array',fileType:'zip'}));
   expect(reopened.externalWorkbooks.books[0].target).toBe('https://example.com/Source.xlsx');
   expect(reopened.getValue(reopened.activeSheetId,0,1)).toBe(40);
@@ -415,7 +415,7 @@ it('preserves source-derived chart number formats when a copied sheet links to o
     expect(chart.sourceRefs[0].literal?.categories).toBeUndefined();
     const bytes=new Uint8Array(await(await workbookToXlsx(copy)).arrayBuffer()),zip=X.CFB.read(bytes,{type:'array'});
     const part=X.CFB.find(zip,'/xl/workbook.xml');
-    X.CFB.utils.cfb_add(zip,'/xl/workbook.xml',new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,'')));
+    X.CFB.utils.cfb_add(zip,'/xl/workbook.xml',new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,'')));
     copy=await workbookFromFile(X.CFB.write(zip,{type:'array',fileType:'zip'}));
   }
   expect(source.toJSON()).toEqual(original);

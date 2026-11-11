@@ -6,7 +6,7 @@ import { toast } from './toast.js';
 import { openModal } from './modal.js';
 import { radioGroupKeys } from './bits.js';
 import { downloadBlob } from './backupactions.js';
-import { canSaveFiles, saveToPuter } from '../lib/puterui.js';
+import { canSaveFiles, saveToEverything } from '../lib/everythingui.js';
 import { calendarEvents, buildCalendar, countEvents } from '../lib/ics.js';
 import { todayISO } from '../lib/dates.js';
 
@@ -111,7 +111,7 @@ export function openCalendarExport({ projectId = null } = {}) {
       ? `${total} all-day event${total === 1 ? '' : 's'}: ${parts.join(', ')}.`
       : 'Nothing dated to export yet. Give a task a due date, or add a milestone.';
     downloadBtn.disabled = !total;
-    if (puterBtn) puterBtn.disabled = !total;
+    if (everythingBtn) everythingBtn.disabled = !total;
   }
 
   /* Reads for whatever the current scope needs and nobody has in memory yet:
@@ -143,7 +143,7 @@ export function openCalendarExport({ projectId = null } = {}) {
     }
   }
 
-  async function run(toPuter, button) {
+  async function run(toEverything, button) {
     button.disabled = true;
     try {
       const list = events();
@@ -151,8 +151,8 @@ export function openCalendarExport({ projectId = null } = {}) {
       const text = buildCalendar(list, { name });
       const blob = new Blob([text], { type: 'text/calendar;charset=utf-8' });
       const filename = `${safeSlug(name)}-${stamp()}.ics`;
-      if (toPuter) {
-        const saved = await saveToPuter(blob, filename);
+      if (toEverything) {
+        const saved = await saveToEverything(blob, filename);
         if (!saved) return;
         toast(`Saved to ${saved.path}`, { icon: 'cloud' });
       } else {
@@ -174,11 +174,11 @@ export function openCalendarExport({ projectId = null } = {}) {
     onclick: () => run(false, downloadBtn),
   }, ' Download .ics');
 
-  const puterBtn = canSaveFiles() && el('button.btn.btn-ghost', {
+  const everythingBtn = canSaveFiles() && el('button.btn.btn-ghost', {
     type: 'button',
     html: icon('cloud', 15, 2),
-    onclick: () => run(true, puterBtn),
-  }, ' Save to Puter…');
+    onclick: () => run(true, everythingBtn),
+  }, ' Save to Everything…');
 
   const modal = openModal({
     title: 'Calendar file',
@@ -201,7 +201,7 @@ export function openCalendarExport({ projectId = null } = {}) {
         + 'snapshot, not a subscription: nothing here is published anywhere.'),
       el('div.row.row-end', {},
         el('button.btn.btn-ghost', { type: 'button', onclick: () => modal.close() }, 'Cancel'),
-        puterBtn || null,
+        everythingBtn || null,
         downloadBtn
       )
     ),

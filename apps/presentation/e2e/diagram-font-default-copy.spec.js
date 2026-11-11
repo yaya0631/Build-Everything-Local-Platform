@@ -12,10 +12,10 @@ for (const cached of [false, true])
     test.setTimeout(60000);
     const errors = [];
     page.on("pageerror", (e) => errors.push(e.message));
-    await page.route("**/sdk/puter.js", (r) =>
+    await page.route("**/sdk/everything.js", (r) =>
       r.fulfill({
         contentType: "application/javascript",
-        body: 'window.puter={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',
+        body: 'window.everything={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',
       }),
     );
     await page.goto("/#/home");

@@ -20,7 +20,7 @@ async function saved(wb) {
 async function native(wb) {
   const result = await saved(wb), book = X.read(result.bytes, { type: 'array' });
   for (const [index, name] of book.SheetNames.entries()) {
-    if (!/^_puter_meta\d*$/.test(name)) continue;
+    if (!/^_everything_meta\d*$/.test(name)) continue;
     const entry = X.CFB.find(result.zip, `/xl/worksheets/sheet${index+1}.xml`);
     const doc = xmlDoc(new TextDecoder().decode(entry.content));
     for (const cell of doc.querySelectorAll('c')) if (/^A\d+$/.test(cell.getAttribute('r'))) cell.remove();
@@ -86,15 +86,15 @@ it('preserves the workbook and hides helper data after repeated app reopening', 
 });
 it('avoids user names and sidecar names, and reuses identical literal lists', async () => {
   const wb=setup({type:'list',source:['A,B','C']});
-  wb.addSheet('_puter_meta'); wb.defineName('_puter_validation_1', '99');
+  wb.addSheet('_everything_meta'); wb.defineName('_everything_validation_1', '99');
   wb.addValidation(wb.sheets[0].id,{type:'list',source:['A,B','C'],range:{r1:1,c1:2,r2:2,c2:2}});
   const {bytes,doc}=await saved(wb), book=X.read(bytes,{type:'array'});
   const values=[...doc.querySelectorAll('dataValidation formula1')].map(n=>n.textContent);
-  expect(values[0]).toBe(values[1]); expect(values[0]).not.toBe('_puter_validation_1');
-  expect(book.SheetNames).toEqual(['Data','_puter_meta','_puter_meta2']);
+  expect(values[0]).toBe(values[1]); expect(values[0]).not.toBe('_everything_validation_1');
+  expect(book.SheetNames).toEqual(['Data','_everything_meta','_everything_meta2']);
   const copy=await workbookFromFile(bytes,'saved.xlsx');
-  expect(copy.sheets.map(s=>s.name)).toEqual(['Data','_puter_meta']);
-  expect(copy.names.map(n=>n.name)).toEqual(['_puter_validation_1']);
+  expect(copy.sheets.map(s=>s.name)).toEqual(['Data','_everything_meta']);
+  expect(copy.names.map(n=>n.name)).toEqual(['_everything_validation_1']);
 });
 it('keeps numeric text acceptance and rejects logical values for number rules', async () => {
   const copy=await native(setup({type:'number',min:2,max:6})), id=copy.sheets[0].id;
@@ -129,7 +129,7 @@ it('exports a live cross-sheet dropdown using a defined name', async () => {
 });
 it('ignores malformed helper-name metadata while preserving user definitions', async () => {
   const wb=setup({type:'list',source:['A,B','C']}); wb.defineName('Limit','5');
-  const {bytes}=await saved(wb), book=X.read(bytes,{type:'array'}), cell=book.Sheets._puter_meta.A1;
+  const {bytes}=await saved(wb), book=X.read(bytes,{type:'array'}), cell=book.Sheets._everything_meta.A1;
   const meta=JSON.parse(cell.v); meta.validationNames=[null,42,{},...(meta.validationNames||[])];cell.v=JSON.stringify(meta);
   const copy=await workbookFromFile(X.write(book,{type:'array',bookType:'xlsx'}),'edited.xlsx');
   expect(copy.names.map(n=>n.name)).toEqual(['Limit']);

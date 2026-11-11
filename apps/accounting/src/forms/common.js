@@ -7,7 +7,7 @@ import { toast, toastError } from '../ui/toast.js';
 import { store } from '../lib/store.js';
 import { ACCOUNT_TYPES } from '../lib/accounts.js';
 import { formatMoney, parseQty } from '../lib/money.js';
-import { sdk } from '../lib/puter.js';
+import { sdk } from '../lib/everything.js';
 import { openContactForm, quickContact } from './contact.js';
 import { openItemForm } from './item.js';
 import { openAccountForm } from './account.js';
@@ -206,7 +206,7 @@ export function filledLines(lines, isBlank) {
 // ------------------------------------------------------------ attachments
 
 /**
- * Files attached to a transaction live in the user's Puter drive, under
+ * Files attached to a transaction live in the user's Everything drive, under
  * attachments/<transaction id>/, never in the key-value store. The record
  * only keeps their names and paths.
  */

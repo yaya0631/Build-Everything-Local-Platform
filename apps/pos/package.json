@@ -1,7 +1,7 @@
 {
   "name": "point-of-sale",
   "version": "1.0.0",
-  "description": "Point of Sale — catalog, checkout, receipts, discounts, taxes, and sales reports on Puter",
+  "description": "Point of Sale — catalog, checkout, receipts, discounts, taxes, and sales reports on Everything",
   "type": "module",
   "private": true,
   "scripts": {

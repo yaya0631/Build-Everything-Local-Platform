@@ -4,12 +4,12 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import axe from 'axe-core';
 import { App, REPO_URL } from '../src/app/app.js';
-import { setPuterForTests } from '../src/app/puter.js';
+import { setEverythingForTests } from '../src/app/everything.js';
 import { comboOf } from '../src/app/commands.js';
 import { createExampleProject } from '../src/app/demo.js';
 import { closeMenus } from '../src/ui/menu.js';
 
-function mockPuter({ env = 'web', signedIn = true, username = 'ada' } = {}) {
+function mockEverything({ env = 'web', signedIn = true, username = 'ada' } = {}) {
   return {
     env,
     auth: {
@@ -25,21 +25,21 @@ function mockPuter({ env = 'web', signedIn = true, username = 'ada' } = {}) {
   };
 }
 
-async function boot(puterMock) {
+async function boot(everythingMock) {
   document.body.innerHTML = '<div id="app"></div><div id="live-region"></div>';
-  setPuterForTests(null);
-  if (puterMock) window.puter = puterMock; else delete window.puter;
-  const app = new App(document.getElementById('app'), { puterTimeout: 10 });
+  setEverythingForTests(null);
+  if (everythingMock) window.everything = everythingMock; else delete window.everything;
+  const app = new App(document.getElementById('app'), { everythingTimeout: 10 });
   await app.init();
   return app;
 }
 
 beforeEach(() => { localStorage.clear(); });
-afterEach(() => { closeMenus(); delete window.puter; setPuterForTests(null); document.body.innerHTML = ''; });
+afterEach(() => { closeMenus(); delete window.everything; setEverythingForTests(null); document.body.innerHTML = ''; });
 
 describe('account controls', () => {
-  it('shows the profile picture and no sign out inside the Puter desktop', async () => {
-    const app = await boot(mockPuter({ env: 'app' }));
+  it('shows the profile picture and no sign out inside the Everything desktop', async () => {
+    const app = await boot(mockEverything({ env: 'app' }));
     const btn = document.querySelector('.account-btn');
     expect(btn).toBeTruthy();
     expect(btn.querySelector('img.avatar').getAttribute('src')).toMatch(/^data:image\//);
@@ -50,7 +50,7 @@ describe('account controls', () => {
   });
 
   it('offers sign out on the web when signed in', async () => {
-    const app = await boot(mockPuter({ env: 'web', signedIn: true }));
+    const app = await boot(mockEverything({ env: 'web', signedIn: true }));
     document.querySelector('.account-btn').click();
     const labels = [...document.querySelectorAll('.menu-item')].map((m) => m.textContent);
     expect(labels.some((l) => /sign out/i.test(l))).toBe(true);
@@ -58,7 +58,7 @@ describe('account controls', () => {
   });
 
   it('offers sign in when signed out, and the app stays usable', async () => {
-    const app = await boot(mockPuter({ env: 'web', signedIn: false }));
+    const app = await boot(mockEverything({ env: 'web', signedIn: false }));
     expect([...document.querySelectorAll('.account button')].some((b) => /sign in/i.test(b.textContent))).toBe(true);
     expect(document.querySelector('.start-page')).toBeTruthy();
     await app.openExample();

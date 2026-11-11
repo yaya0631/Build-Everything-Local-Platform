@@ -16,9 +16,9 @@ afterEach(() => { for (const c of open.splice(0)) c.close(); });
 it('tells someone a shared workbook was shared with that only its owner can rename it', async () => {
   const env = environment();
   const wb = new Workbook({ sheets: [{ name: 'Plan' }] });
-  const room = await RoomClient.create({ puter: env.sdk(owner), server: SERVER, wb, name: 'Plan' });
+  const room = await RoomClient.create({ everything: env.sdk(owner), server: SERVER, wb, name: 'Plan' });
   const token = (await call(env.sdk(owner), SERVER, { op: 'invite', room, role: 'editor' })).token;
-  const client = new RoomClient({ puter: env.sdk(editor), server: SERVER, room, token, store: memoryOutbox(), poll: 50, noPeers: true });
+  const client = new RoomClient({ everything: env.sdk(editor), server: SERVER, room, token, store: memoryOutbox(), poll: 50, noPeers: true });
   open.push(client);
   await client.open();
   const doc = Doc.forRoom(client);

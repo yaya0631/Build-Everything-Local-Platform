@@ -13,7 +13,7 @@ for (const backend of ["default", "WebGL"]) {
   test(`pattern paint combines transparency with stroke, masks and separate material assets (${backend})`, async ({
     page,
   }) => {
-    await boot(page, backend as Backend, "window.puter={};");
+    await boot(page, backend as Backend, "window.everything={};");
     const fixture = Array.from(
       await readFile(
         new URL("../fixtures/psd-patterns/rgb-8-3.bin", import.meta.url),
@@ -263,7 +263,7 @@ for (const backend of ["default", "WebGL"]) {
     page,
   }) => {
     test.setTimeout(90000);
-    await boot(page, backend as Backend, "window.puter={};");
+    await boot(page, backend as Backend, "window.everything={};");
     const fixtures = await Promise.all(
       [8, 16, 32].map(async (depth) =>
         Array.from(
@@ -537,7 +537,7 @@ for (const backend of ["default", "WebGL"]) {
 test("pattern properties retain fractional offsets and linking through undo", async ({
   page,
 }) => {
-  await boot(page, "default", "window.puter={};");
+  await boot(page, "default", "window.everything={};");
   const doc = newDocument(37, 29, "Pattern controls"),
     assets = new Assets();
   try {
@@ -604,7 +604,7 @@ test("pattern properties retain fractional offsets and linking through undo", as
 });
 
 test("keyboard Undo refreshes a focused pattern offset field", async ({ page }) => {
-  await boot(page, "default", "window.puter={};");
+  await boot(page, "default", "window.everything={};");
   const doc = newDocument(37, 29, "Pattern focus"),
     assets = new Assets();
   try {

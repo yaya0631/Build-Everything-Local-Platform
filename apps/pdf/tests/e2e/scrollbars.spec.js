@@ -3,10 +3,10 @@ import { PDFDocument } from 'pdf-lib';
 
 // Playwright hides scrollbars by default; Windows and Linux desktops give them layout space.
 test.use({ launchOptions: { ignoreDefaultArgs: ['--hide-scrollbars'] } });
-const PUTER_MOCK = `window.puter = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async (path, blob, options) => { window.lastSave = {path, size:blob.size, options}; return {path, name:path.split('/').pop()}; } }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
-async function mockPuter(page) {
-  await page.route('**/sdk/puter.js', (route) =>
-    route.fulfill({ contentType: 'application/javascript', body: PUTER_MOCK }),
+const EVERYTHING_MOCK = `window.everything = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async (path, blob, options) => { window.lastSave = {path, size:blob.size, options}; return {path, name:path.split('/').pop()}; } }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
+async function mockEverything(page) {
+  await page.route('**/sdk/everything.js', (route) =>
+    route.fulfill({ contentType: 'application/javascript', body: EVERYTHING_MOCK }),
   );
 }
 async function openPdf(page, doc, name = 'test.pdf') {
@@ -20,7 +20,7 @@ async function openPdf(page, doc, name = 'test.pdf') {
 test('a page that overflows the workspace keeps the fit width stable', async ({ page }) => {
   // One page at a time, so the short page alone does not overflow.
   await page.addInitScript(() => localStorage.setItem('pdf-editor:page-display', 'single'));
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([400, 100]);

@@ -5,7 +5,7 @@ import { store } from '../lib/store.js';
 /**
  * "You are offline, and this is what that means here." Every view that shows
  * stored work says it the same way — which copy is on screen, how much of it
- * has not reached Puter yet, and a way to try now — so the message cannot
+ * has not reached Everything yet, and a way to try now — so the message cannot
  * drift between the board and the cross-project list.
  *
  * offlineNotice() → node with .destroy()
@@ -21,7 +21,7 @@ export function offlineNotice() {
       el('span.offline-ic', { html: icon('cloudOff', 15, 2), 'aria-hidden': 'true' }),
       el('span.grow', {}, pending
         ? `Offline. ${pending} project${pending === 1 ? '' : 's'} saved on this device, `
-          + 'waiting to reach Puter'
+          + 'waiting to reach Everything'
         : 'Offline. Showing the last version saved on this device'),
       el('button.btn.btn-ghost.btn-sm', {
         type: 'button',

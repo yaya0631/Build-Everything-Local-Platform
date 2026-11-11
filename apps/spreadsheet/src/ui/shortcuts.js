@@ -118,7 +118,7 @@ const GROUPS = [
     [`${MOD_KEY} + ${IS_MAC ? 'Shift + ' : ''}H`, 'Find and replace'],
     [`${MOD_KEY} + S`, 'Save now'],
     [`${MOD_KEY} + P`, 'Print the sheet'],
-    [`${MOD_KEY} + O`, 'Open from Puter'],
+    [`${MOD_KEY} + O`, 'Open from Everything'],
   ]],
 ];
 

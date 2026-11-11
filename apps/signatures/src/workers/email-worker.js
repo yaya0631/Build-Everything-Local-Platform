@@ -1,13 +1,13 @@
 /**
- * Email delivery: the app's one shared, app-owned Puter worker (deployed to
+ * Email delivery: the app's one shared, app-owned Everything worker (served at
  * http://signatures-email.localhost:8443; see src/lib/emailer.js for the
  * calling side).
  *
  * Unlike the sign worker (one per user, deployed into their own account) this
- * one is deployed ONCE, by the app owner: outbound mail has to be authorized
+ * one is shared by the app: outbound mail has to be authorized
  * by a worker's own token, so the sending capability lives somewhere the app
  * controls. The cost does not: the app calls this worker with
- * puter.workers.exec(), which forwards the signed-in user's Puter token, and
+ * everything.workers.exec(), which forwards the signed-in user's Everything token, and
  * each message is sent with that token in hand, so every send is billed to,
  * and rate-limited as, the user who asked for it, never the app owner.
  *
@@ -18,8 +18,8 @@
  *
  * An app-owned relay that forwarded whatever it was handed would be a spam
  * cannon wearing the app's sending reputation, so it never does:
- *   - no Puter session, no send. `user` is only populated for callers that
- *     come through puter.workers.exec(); everyone else gets 401.
+ *   - no Everything session, no send. `user` is only populated for callers that
+ *     come through everything.workers.exec(); everyone else gets 401.
  *   - the caller supplies a DOCUMENT, not an email. Subject and body are
  *     composed here, so every message this worker can be made to send is a
  *     signature request (or reminder, or completion notice) for that
@@ -43,7 +43,7 @@
  *   mail:sent:<sha256(callerId|docId|email)>  -> { v, at }  (expires: SENT_TTL)
  *   mail:rate:<sha256(callerId)>:<YYYY-MM-DD> -> count      (expires: RATE_TTL)
  *
- * Deploy with:  npm run deploy:email-worker
+ * Registered automatically by the local server as signatures-email.
  */
 
 const WORKER_VERSION = '3';
@@ -74,7 +74,7 @@ function callerOf(ctx) {
  * A stable id for the caller: it keys the already-sent and daily-cap records,
  * so it has to be the same tomorrow as it is today, and different for every
  * user. The live platform has handed over callers whose documented `uuid` was
- * absent, so try the known names, then the ones nested under their Puter
+ * absent, so try the known names, then the ones nested under their Everything
  * handle, then getUser(). '' means "could not tell", which is refused rather
  * than guessed at: a shared id would let one user's dedupe record suppress
  * another's mail.
@@ -83,7 +83,7 @@ async function callerIdOf(caller) {
   if (!caller) return '';
   const own = caller.uuid || caller.uid || caller.user_uuid || caller.username;
   if (typeof own === 'string' && own) return own;
-  const p = caller.puter;
+  const p = caller.everything;
   const nested = p && (p.uuid || p.uid || p.username);
   if (typeof nested === 'string' && nested) return nested;
   try {
@@ -101,7 +101,7 @@ async function callerIdOf(caller) {
  * reach you.
  */
 async function callerEmailOf(caller) {
-  const p = caller && caller.puter;
+  const p = caller && caller.everything;
   const direct = caller && (caller.email || (p && p.email && typeof p.email === 'string' ? p.email : ''));
   if (typeof direct === 'string' && lowerEmail(direct)) return lowerEmail(direct);
   try {
@@ -113,10 +113,10 @@ async function callerEmailOf(caller) {
 }
 
 function kvOf(ctx) {
-  return ownerOf(ctx).puter.kv;
+  return ownerOf(ctx).everything.kv;
 }
 
-/** puter.kv values may come back as parsed objects or JSON strings. */
+/** everything.kv values may come back as parsed objects or JSON strings. */
 function coerce(value) {
   if (value == null) return null;
   if (typeof value === 'string') {
@@ -181,7 +181,7 @@ function escapeBlock(v) {
 
 /**
  * A signer's link, or '': the ONLY link this worker will put in a mail. It
- * must be a capability URL on the Puter workers domain: https, a *.localhost:8443
+ * must be a capability URL on the Everything workers domain: https, a *.localhost:8443
  * host, and the exact /sign/<40 hex> path the sign worker mints. Query and
  * fragment are dropped rather than trusted.
  */
@@ -416,8 +416,8 @@ function htmlBody(req, signer) {
  * A send has two halves, who pays (the app user) and what authorizes it (this
  * worker), and the platform accepts them in either arrangement:
  *
- *   me.puter.email.send({ ..., requesterToken: user.puter.authToken })
- *   user.puter.email.send({ ..., emailAccessToken: me.puter.authToken })
+ *   me.everything.email.send({ ..., requesterToken: user.everything.authToken })
+ *   user.everything.email.send({ ..., emailAccessToken: me.everything.authToken })
  *
  * Both bill the app user; which name a given runtime knows has moved, so try
  * the first, fall back to the second, and remember which one answered. The
@@ -435,9 +435,9 @@ function sendForms(ctx) {
   const caller = callerOf(ctx);
   return [
     (message) =>
-      owner.puter.email.send({ ...message, requesterToken: caller.puter.authToken }),
+      owner.everything.email.send({ ...message, requesterToken: caller.everything.authToken }),
     (message) =>
-      caller.puter.email.send({ ...message, emailAccessToken: owner.puter.authToken }),
+      caller.everything.email.send({ ...message, emailAccessToken: owner.everything.authToken }),
   ];
 }
 
@@ -506,33 +506,33 @@ router.get('/health', async () => json({ ok: true, version: WORKER_VERSION, kind
  */
 router.get('/whoami', async (ctx) => {
   const caller = callerOf(ctx);
-  const p = caller && caller.puter;
+  const p = caller && caller.everything;
   return json({
     ok: true,
     version: WORKER_VERSION,
-    sawAuthHeader: Boolean(ctx.request.headers.get('puter-auth')),
+    sawAuthHeader: Boolean(ctx.request.headers.get('everything-auth')),
     boundAs: ctx.user ? 'user' : ctx.requestor ? 'requestor' : null,
     callerKeys: caller ? Object.keys(caller).sort() : [],
     has: {
-      puter: Boolean(p),
+      everything: Boolean(p),
       authToken: Boolean(p && p.authToken),
       email: Boolean(p && p.email && typeof p.email.send === 'function'),
       auth: Boolean(p && p.auth && typeof p.auth.getUser === 'function'),
     },
     identified: Boolean(await callerIdOf(caller)),
     owner: {
-      email: Boolean(ownerOf(ctx) && ownerOf(ctx).puter && ownerOf(ctx).puter.email),
-      authToken: Boolean(ownerOf(ctx) && ownerOf(ctx).puter && ownerOf(ctx).puter.authToken),
+      email: Boolean(ownerOf(ctx) && ownerOf(ctx).everything && ownerOf(ctx).everything.email),
+      authToken: Boolean(ownerOf(ctx) && ownerOf(ctx).everything && ownerOf(ctx).everything.authToken),
     },
   });
 });
 
 router.post('/send', async (ctx) => {
   // A caller context exists only for requests that came through
-  // puter.workers.exec(), which forwards their Puter session. No session, no
+  // everything.workers.exec(), which forwards their Everything session. No session, no
   // send, and no way to bill anyone for one either.
   const caller = callerOf(ctx);
-  if (!caller || !caller.puter) {
+  if (!caller || !caller.everything) {
     return json({ error: 'sign_in_required', detail: 'no_caller' }, 401);
   }
   const callerId = await callerIdOf(caller);

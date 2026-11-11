@@ -122,7 +122,7 @@ export function documentText(coll, doc) {
 }
 
 /**
- * Send dialog. With a Puter session the message is emailed through the app's
+ * Send dialog. With an Everything session the message is emailed through the app's
  * email worker; it can also open in the person's own email app, or be copied.
  * onSent() runs when the document should be marked as sent.
  */
@@ -142,7 +142,7 @@ export function sendDialog(coll, doc, { onSent } = {}) {
       'div.stack',
       h('div.form-grid', field('To', to, { hint: 'Separate several addresses with commas' }), field('Subject', subject), field('Message', body, { span2: true })),
       canSend
-        ? h('div.notice', icon('info'), h('span', `Sent from Puter on your behalf${s.company.email ? `, with replies going to ${s.company.email}` : ''}. To attach a PDF, choose Print, then Save as PDF, and send it from your email app.`))
+        ? h('div.notice', icon('info'), h('span', `Sent from Everything on your behalf${s.company.email ? `, with replies going to ${s.company.email}` : ''}. To attach a PDF, choose Print, then Save as PDF, and send it from your email app.`))
         : h('div.notice', icon('info'), h('span', app.demo ? 'Emailing is turned off in the demo. You can still open the message in your email app.' : 'This opens your email app with the message ready to send.')),
       status,
     ),

@@ -12,7 +12,7 @@ import { formatBST, formatTime } from '../model/time.js';
 import { cssVar } from './theme.js';
 import { patternColor } from '../model/project.js';
 
-export const REPO_URL = 'https://github.com/HeyPuter/everything';
+export const REPO_URL = 'https://github.com/yaya0631/Build-Everything-Local-Platform';
 
 function cmdButton(app, id, glyph, { cls = '', size = 16, toggle = false, label } = {}) {
   const b = h(`button.icon-btn${cls}`, { type: 'button', 'aria-label': label || app.commands.label(id), onclick: () => app.commands.run(id) }, icon(glyph, size));

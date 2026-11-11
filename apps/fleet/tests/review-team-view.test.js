@@ -30,7 +30,7 @@ beforeEach(async () => {
   document.body.innerHTML = '';
 });
 afterEach(() => {
-  delete globalThis.puter;
+  delete globalThis.everything;
   app.team = null;
   app.user = null;
   app.workspaces = null;
@@ -42,7 +42,7 @@ async function join(role, user) {
 }
 
 function render(as, user, role, exec = w.exec(user)) {
-  globalThis.puter = { workers: { exec } };
+  globalThis.everything = { workers: { exec } };
   app.user = as;
   app.team = { url: URL_, role, business: 'Acme' };
   app.workspaces = { current: role === 'owner' ? 'own' : URL_, own: role === 'owner' ? { url: URL_ } : {}, joined: role === 'owner' ? [] : [{ url: URL_, business: 'Acme', role }] };
@@ -119,7 +119,7 @@ describe('leaving from the team card', () => {
   it('says so and lets you try again when leaving fails', async () => {
     await join('member', SAM);
     const card = render({ uuid: 'user-2', username: 'sam' }, SAM, 'member');
-    globalThis.puter.kv = { get: async () => null, set: async () => Promise.reject(new Error('Puter is not responding')) };
+    globalThis.everything.kv = { get: async () => null, set: async () => Promise.reject(new Error('Everything is not responding')) };
     const btn = button(card, 'Leave this fleet');
     btn.click();
     await tick();

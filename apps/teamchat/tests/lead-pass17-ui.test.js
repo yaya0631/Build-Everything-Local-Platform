@@ -29,7 +29,7 @@ async function boot({ width = 1280, ...env } = {}) {
   dom?.uninstall();
   dom = installDom({ width, ...env });
   vi.resetModules();
-  globalThis.puter = { workers: { exec: async () => json({ code: 'not_found', message: 'nope' }, 404) } };
+  globalThis.everything = { workers: { exec: async () => json({ code: 'not_found', message: 'nope' }, 404) } };
   ({ store } = await import('../src/lib/store.js'));
   store.wsId = REF;
   store.profile = { uuid: 'u-me', username: 'me', name: 'Me', prefs: {} };
@@ -57,7 +57,7 @@ afterEach(async () => {
   store = null;
   dom?.uninstall();
   dom = null;
-  delete globalThis.puter;
+  delete globalThis.everything;
   vi.restoreAllMocks();
 });
 

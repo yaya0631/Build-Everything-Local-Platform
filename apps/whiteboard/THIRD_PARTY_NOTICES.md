@@ -17,6 +17,6 @@ All bundled dependencies and resources use conventional open-source licenses. No
 | axe-core                                                                | Accessibility checks in tests              | MPL-2.0                         |
 | Prettier                                                                | Source formatting                          | MIT                             |
 
-Puter.js is loaded from its official SDK URL as required by the application backend. Puter.js is Apache-2.0 licensed; using the hosted Puter service is subject to the user's Puter account and service terms.
+Everything.js is loaded from its official SDK URL as required by the application backend. Everything.js is Apache-2.0 licensed; using the hosted Everything service is subject to the user's Everything account and service terms.
 
 Dependency license texts are included in the respective installed packages. The package lock pins the full dependency tree, whose installed license metadata was reviewed during development. Transitive licenses are MIT, MIT-0, ISC, BSD-2-Clause, BSD-3-Clause, and Apache-2.0. Templates and visual compositions were created for this application; no Miro assets or source code were copied.

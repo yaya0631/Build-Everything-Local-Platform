@@ -14,7 +14,7 @@ const make = (type = 'column', bars) => ({ type, legend: false, colors: ['#2468a
 const content = (zip, path) => new TextDecoder().decode(X.CFB.find(zip, path).content);
 const set = (zip, path, text) => { const p = X.CFB.find(zip, path); p.content = new TextEncoder().encode(text); p.size = p.content.length; };
 const native = zip => {
-  set(zip, '/xl/workbook.xml', content(zip, '/xl/workbook.xml').replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  set(zip, '/xl/workbook.xml', content(zip, '/xl/workbook.xml').replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   return X.CFB.write(zip, { type: 'array', fileType: 'zip' });
 };
 const zipOf = async wb => X.CFB.read(new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()), { type: 'array' });

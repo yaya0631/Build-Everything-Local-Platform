@@ -25,7 +25,7 @@ const setXml = (zip, path, xml) => {
 const readZip = zip => workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'roundtrip.xlsx');
 async function reopen(wb, native = false) {
   const zip = await zipOf(wb);
-  if (native) setXml(zip, '/xl/workbook.xml', xmlOf(zip, '/xl/workbook.xml').replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  if (native) setXml(zip, '/xl/workbook.xml', xmlOf(zip, '/xl/workbook.xml').replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   return readZip(zip);
 }
 const alignment = (wb, r = 2, c = 1, id = wb.activeSheetId) => wb.styleAt(id, r, c)?.valign || 'middle';

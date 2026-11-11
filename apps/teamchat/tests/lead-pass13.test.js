@@ -1,8 +1,8 @@
 /**
  * Thirteenth review pass, the lead's own findings: shell views driven in
  * node through tests/helpers/dom.js the way tests/ui-shell-pass12.test.js
- * drives them (a fresh DOM and module registry per test, Puter faked at
- * `puter.workers.exec`, the conversation column and huddle window stubbed).
+ * drives them (a fresh DOM and module registry per test, Everything faked at
+ * `everything.workers.exec`, the conversation column and huddle window stubbed).
  */
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import { installDom } from './helpers/dom.js';
@@ -31,7 +31,7 @@ async function boot({ hash = '', width = 1280, routes = {}, ...env } = {}) {
   dom?.uninstall();
   dom = installDom({ hash, width, ...env });
   vi.resetModules();
-  globalThis.puter = {
+  globalThis.everything = {
     workers: {
       exec: async (url, init = {}) => {
         const u = new URL(url);
@@ -66,7 +66,7 @@ async function boot({ hash = '', width = 1280, routes = {}, ...env } = {}) {
 afterEach(() => {
   dom?.uninstall();
   dom = null;
-  delete globalThis.puter;
+  delete globalThis.everything;
 });
 
 describe('Files & links leaves the app\'s own permalinks out', () => {

@@ -2,12 +2,12 @@ import { afterEach, beforeAll, beforeEach, expect, it, vi } from 'vitest';
 import { Doc } from '../src/lib/doc.js';
 import { draftKey, loadDraft } from '../src/lib/drafts.js';
 import { memoryStorage } from './helpers/memory-storage.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 
 // SheetJS is loaded on first use with a real dynamic import; warm it up so no test waits on it.
 beforeAll(async () => { await Doc.blank().toXlsxBlob(); });
-beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); installMockPuter(); vi.useFakeTimers(); });
-afterEach(() => { vi.useRealTimers(); delete globalThis.puter; });
+beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); installMockEverything(); vi.useFakeTimers(); });
+afterEach(() => { vi.useRealTimers(); delete globalThis.everything; });
 
 const text = (draft) => draft?.workbook.sheets[0].cells['0,0']?.v;
 
@@ -26,11 +26,11 @@ async function openDocument() {
 it('rewrites the draft as soon as a save lands while the book is still dirty, so the edits are not taken for older than the file', async () => {
   const doc = await openDocument();
   const key = draftKey(doc.path);
-  const write = puter.fs.write;
+  const write = everything.fs.write;
   let release;
-  puter.fs.write = async (path, ...rest) => {
+  everything.fs.write = async (path, ...rest) => {
     if (path === doc.path) await new Promise((resolve) => { release = resolve; }); // a slow write
-    return write.call(puter.fs, path, ...rest);
+    return write.call(everything.fs, path, ...rest);
   };
   const before = doc.remoteModified;
   doc.wb.setInput(doc.wb.activeSheetId, 0, 0, 'one');
@@ -49,7 +49,7 @@ it('rewrites the draft as soon as a save lands while the book is still dirty, so
   expect(loadDraft(key).fileModified).toBe(doc.remoteModified);
   expect(text(loadDraft(key))).toBe('two');
   // Reopened now, the edits are offered as the newest, not as older than the file.
-  puter.fs.write = write;
+  everything.fs.write = write;
   doc.destroy();
   const again = await Doc.fromPath(doc.path);
   try {

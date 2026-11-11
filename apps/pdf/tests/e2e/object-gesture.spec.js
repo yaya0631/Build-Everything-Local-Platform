@@ -4,7 +4,7 @@ for (const kind of ['image', 'shape'])
   test(`${kind} drags released during selection are committed, while taps and cancellations are not`, async ({
     page,
   }) => {
-    await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
+    await page.route('**/sdk/everything.js', (route) => route.fulfill({ body: '' }));
     await page.goto('/#library');
     await page.evaluate(async (kind) => {
       const { createImageLayer } = await import('/src/image-layer.js');

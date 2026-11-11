@@ -3,11 +3,11 @@ import { Doc } from '../src/lib/doc.js';
 import { Workbook } from '../src/core/workbook.js';
 import { workbookToXlsx } from '../src/core/io.js';
 import { memoryStorage } from './helpers/memory-storage.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 
 let mock;
-beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); mock = installMockPuter(); });
-afterEach(() => { delete globalThis.puter; });
+beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); mock = installMockEverything(); });
+afterEach(() => { delete globalThis.everything; });
 
 /** A workbook that reaches out to the web, as .xlsx bytes. */
 function reachingOut(formula = '=IMPORTDATA("https://example.com/a.csv")') {
@@ -69,7 +69,7 @@ it('keeps the decision with the file when it is renamed elsewhere', async () => 
   expect(doc.wb.externalAllowed).toBe(false);
   doc.allowExternal();
   doc.destroy();
-  await puter.fs.rename('Spreadsheets/Q.xlsx', 'R.xlsx'); // the file keeps its identity
+  await everything.fs.rename('Spreadsheets/Q.xlsx', 'R.xlsx'); // the file keeps its identity
   otherDevice();
   expect((await Doc.fromPath('Spreadsheets/R.xlsx')).wb.externalAllowed).toBe(true);
 });
@@ -89,7 +89,7 @@ it('falls back to what this browser remembers when the account store cannot be r
   const doc = await Doc.fromPath('Spreadsheets/flaky.xlsx');
   doc.allowExternal();
   doc.destroy();
-  puter.kv.get = async () => { throw new Error('Network request failed'); };
+  everything.kv.get = async () => { throw new Error('Network request failed'); };
   expect((await Doc.fromPath('Spreadsheets/flaky.xlsx')).wb.externalAllowed).toBe(true);
   otherDevice();
   expect((await Doc.fromPath('Spreadsheets/flaky.xlsx')).wb.externalAllowed).toBe(false);

@@ -189,7 +189,7 @@ export function stepDetail(step: Step): string {
     const op = opById.get(step.action)!;
     return op.describe?.(step.args) || summarizeArgs(op.params, step.args);
   }
-  if (step.input === 'ai') return `${step.params ? summarizeArgs(step.params, step.args) : compactJSON(step.args, 120)}. Opens prefilled; you press Generate (uses Puter AI credits).`;
+  if (step.input === 'ai') return `${step.params ? summarizeArgs(step.params, step.args) : compactJSON(step.args, 120)}. Opens prefilled; you press Generate (uses Everything AI credits).`;
   if (step.input === 'dialog') return 'Opens its dialog so you can choose the settings.';
   if (step.input === 'settings') return Object.keys(step.args).length ? (step.params ? summarizeArgs(step.params, step.args) : compactJSON(step.args, 120)) : 'Default settings';
   return '';

@@ -46,7 +46,7 @@ export function openOnboarding() {
       el('div.onboard-hero', {},
         el('div.onboard-logo', { html: LOGO_HTML.replace('width="72" height="72"', 'width="60" height="60"') }),
         el('h3', {}, 'Your equity, in order'),
-        el('p', {}, 'Track every share, option, and SAFE. Model your next round before you sign it. Stored in your own Puter account.')
+        el('p', {}, 'Track every share, option, and SAFE. Model your next round before you sign it. Stored in your own Everything account.')
       ),
       el('button.btn.btn-primary.btn-block', {
         type: 'button', style: { padding: '13px' },

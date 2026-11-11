@@ -57,7 +57,7 @@ describe("presentations opened from elsewhere on the drive", () => {
       if (uid === "flaky") throw new Error("Network error");
       throw { code: "subject_does_not_exist" };
     });
-    vi.stubGlobal("puter", { fs: { stat } });
+    vi.stubGlobal("everything", { fs: { stat } });
     expect(await refreshRecent("a")).toMatchObject([
       { path: "/a/Desktop/Unknown.pptx" },
       { path: "/a/Docs/Moved.pptx", modified: 5 },
@@ -65,7 +65,7 @@ describe("presentations opened from elsewhere on the drive", () => {
   });
   it("are left as they are where files cannot be looked up", async () => {
     rememberRecent("a", { path: "/a/Desktop/One.pptx", uid: "1" });
-    vi.stubGlobal("puter", { fs: {} });
+    vi.stubGlobal("everything", { fs: {} });
     expect(await refreshRecent("a")).toHaveLength(1);
   });
 });

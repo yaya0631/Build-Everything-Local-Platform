@@ -32,7 +32,7 @@ for (const [action, options] of [
 ])
   test(`${action} handles Crypt appearances and keeps the open PDF usable`, async ({ page }) => {
     const { bytes, password } = await cryptAppearance(options);
-    await page.route('**/sdk/puter.js', (route) => route.abort());
+    await page.route('**/sdk/everything.js', (route) => route.abort());
     await page.goto('/#library');
     const chooser = page.waitForEvent('filechooser');
     await page.getByRole('button', { name: /Open a PDF/ }).click();

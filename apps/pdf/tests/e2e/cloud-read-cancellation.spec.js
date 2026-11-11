@@ -12,13 +12,13 @@ for (const source of ['desktop', 'picker', 'row'])
       original.setTitle('Cloud original');
       original.addPage([300, 300]);
       const base64 = Buffer.from(await original.save()).toString('base64');
-      await page.route('**/sdk/puter.js', (route) =>
+      await page.route('**/sdk/everything.js', (route) =>
         route.fulfill({
           contentType: 'application/javascript',
           body: `
           window.cloudBuffers = 0;
           const item = { path:'older.pdf', name:'older.pdf' };
-          window.puter = {
+          window.everything = {
             env:'app', auth:{ getUser:async()=>({username:'test'}) },
             fs:{ readdir:async()=>[item], read:()=>new Promise(resolve=>{
               window.releaseCloud = () => {
@@ -39,7 +39,7 @@ for (const source of ['desktop', 'picker', 'row'])
         await expect(page.locator('.page-caption')).toHaveText('Page 1 of 1');
         await page.evaluate(() => window.openItems([{ path: 'older.pdf', name: 'older.pdf' }]));
       } else if (source === 'picker')
-        await page.getByRole('button', { name: 'Open from Puter', exact: true }).click();
+        await page.getByRole('button', { name: 'Open from Everything', exact: true }).click();
       else await page.getByRole('button', { name: 'older.pdf', exact: true }).click();
       await expect.poll(() => page.evaluate(() => typeof window.releaseCloud)).toBe('function');
       if (newer === 'pdf') {

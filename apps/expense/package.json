@@ -1,7 +1,7 @@
 {
   "name": "expenses",
   "version": "1.0.0",
-  "description": "Expenses: receipt capture with AI OCR, expense reports, and reconciliation, on Puter",
+  "description": "Expenses: receipt capture with AI OCR, expense reports, and reconciliation, on Everything",
   "type": "module",
   "private": true,
   "scripts": {
@@ -13,7 +13,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/HeyPuter/expenses.git"
+    "url": "git+https://github.com/yaya0631/Build-Everything-Local-Platform"
   },
   "dependencies": {
     "lucide": "^1.28.0"

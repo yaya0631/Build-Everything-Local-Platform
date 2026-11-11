@@ -13,7 +13,7 @@ function stubNetwork({ workerBuild, appBuild }) {
     if (String(url).endsWith('/health')) return new Response(JSON.stringify({ ok: true, build: workerBuild }));
     return new Response(bundle(appBuild));
   });
-  vi.stubGlobal('puter', { fs: { write: async (path, blob) => writes.push([path, await blob.text()]) } });
+  vi.stubGlobal('everything', { fs: { write: async (path, blob) => writes.push([path, await blob.text()]) } });
   return writes;
 }
 
@@ -48,7 +48,7 @@ describe('team: turning access on', () => {
     store.put('students', { firstName: 'Ava' });
     const create = vi.fn(async () => ({ url: 'http://childcare-x.localhost:8443' }));
     vi.stubGlobal('fetch', async (url) => new Response(String(url).endsWith('/health') ? JSON.stringify({ ok: true, build: '3' }) : bundle('3')));
-    vi.stubGlobal('puter', { fs: { write: async () => ({ path: '/d/childcare-team-worker.js' }) }, workers: { create }, kv: { list: async () => [] } });
+    vi.stubGlobal('everything', { fs: { write: async () => ({ path: '/d/childcare-team-worker.js' }) }, workers: { create }, kv: { list: async () => [] } });
     await expect(enableTeam({ store })).rejects.toThrow(/not saved yet/);
     expect(create).not.toHaveBeenCalled();
     expect(store.pendingCount()).toBe(1);

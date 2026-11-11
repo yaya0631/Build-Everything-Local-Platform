@@ -1,5 +1,5 @@
 /**
- * Data layer on top of Puter.
+ * Data layer on top of Everything.
  *
  * Storage design:
  *
@@ -56,7 +56,7 @@ const MAX_AUDIT = 200;
 
 /**
  * True when an fs read failed because the file doesn't exist rather than a
- * transport failure. Puter rejects missing paths with
+ * transport failure. Everything rejects missing paths with
  * { code: 'subject_does_not_exist' }; the message match covers other SDK
  * builds and test mocks.
  */
@@ -67,7 +67,7 @@ export function isMissingFileError(err) {
   return /no such file|not found|does not exist/i.test(msg);
 }
 
-export function createStore({ getPuter = () => (typeof puter !== 'undefined' ? puter : null) } = {}) {
+export function createStore({ getEverything = () => (typeof everything !== 'undefined' ? everything : null) } = {}) {
   const events = new EventTarget();
   const docs = new Map(); // id -> record
   const templates = new Map(); // id -> template record
@@ -77,8 +77,8 @@ export function createStore({ getPuter = () => (typeof puter !== 'undefined' ? p
   let savedSignatureLoaded = false;
 
   const p = () => {
-    const sdk = getPuter();
-    if (!sdk) throw new Error('Puter SDK is unavailable');
+    const sdk = getEverything();
+    if (!sdk) throw new Error('Everything SDK is unavailable');
     return sdk;
   };
 

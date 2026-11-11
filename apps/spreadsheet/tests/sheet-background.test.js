@@ -38,7 +38,7 @@ describe('sheet background', () => {
     wb.setSheetBackground(wb.sheets[0].id, PNG);
     const zip = await unzip(wb);
     const sheet = text(zip, '/xl/worksheets/sheet1.xml'), rels = text(zip, '/xl/worksheets/_rels/sheet1.xml.rels');
-    expect(sheet).toMatch(/<picture r:id="puterBackground"\/>/);
+    expect(sheet).toMatch(/<picture r:id="everythingBackground"\/>/);
     expect(sheet.indexOf('<picture')).toBeGreaterThan(sheet.indexOf('</sheetData>'));
     expect(rels).toContain('Target="../media/background1.png"');
     expect([...X.CFB.find(zip, '/xl/media/background1.png').content]).toEqual([...PNG_BYTES]);

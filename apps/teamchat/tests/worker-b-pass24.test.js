@@ -241,7 +241,7 @@ describe('a member\'s own state written into a copy that has moved', () => {
       const res = await call();
       expect(res.status).toBe(423);
       expect(res.data.code).toBe('moved');
-      expect(res.data.message).toMatch(/moved to newcopy123@other\.puter\.work/);
+      expect(res.data.message).toMatch(/moved to newcopy123@other\.everything\.work/);
     }
     expect(await rt.kv.get(KEYS.member(wsId, bob.uuid))).toEqual(before);
     expect(await rt.kv.get(KEYS.saved(wsId, bob.uuid))).toEqual(savedBefore);

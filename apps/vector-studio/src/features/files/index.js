@@ -1,8 +1,8 @@
 /**
  * Files feature: the native .vstudio format, opening and saving in the
- * Puter cloud or on this computer, recent files, autosave and recovery,
+ * Everything cloud or on this computer, recent files, autosave and recovery,
  * New Document / New from Template, Document Setup, Document Info and
- * Preferences, Puter launch items and window close handling.
+ * Preferences, Everything launch items and window close handling.
  */
 import { BookmarkPlus, RectangleVertical } from 'lucide';
 import { registerIcons } from '../../ui/icons.js';
@@ -58,7 +58,7 @@ export function install(app) {
   app.on('started', () => {
     applyPrefs(app);
     installDrop(app, service);
-    installPuterHooks(app, service);
+    installEverythingHooks(app, service);
     autosaver.start();
   });
   app.on('ready', () => {
@@ -131,10 +131,10 @@ function installDrop(app, service) {
   });
 }
 
-/** Puter desktop integration: launch items, window title, close prompt. */
-export function installPuterHooks(app, service) {
-  const puter = app.puter;
-  const ui = puter?.ui;
+/** Everything desktop integration: launch items, window title, close prompt. */
+export function installEverythingHooks(app, service) {
+  const everything = app.everything;
+  const ui = everything?.ui;
   if (!ui || app.env !== 'app') return;
   const openItems = async (items) => {
     // An open dialog (and the preview it shows) is cancelled first, so the document is never left mid-change.
@@ -147,7 +147,7 @@ export function installPuterHooks(app, service) {
   ui.onLaunchedWithItems?.(openItems);
   ui.onItemsOpened?.(openItems);
 
-  // Mirror the page title (document name, unsaved marker) onto the Puter window.
+  // Mirror the page title (document name, unsaved marker) onto the Everything window.
   let last = '';
   const sync = () => {
     const t = document.title;
@@ -170,6 +170,6 @@ export function installPuterHooks(app, service) {
       app.activate(ed);
       if (!(await app.closeDocument(ed))) return;
     }
-    puter.exit?.();
+    everything.exit?.();
   });
 }

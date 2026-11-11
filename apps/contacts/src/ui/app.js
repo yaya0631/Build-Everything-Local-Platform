@@ -5,7 +5,7 @@ import { store } from '../store.js'
 import { toast, progressToast } from '../toast.js'
 import { icons } from '../icons.js'
 import { track } from '../analytics.js'
-import { isPuterApp } from '../env.js'
+import { isEverythingApp } from '../env.js'
 import { renderList, listCount, listLoading } from './list.js'
 import { renderDetail, detailLoading } from './detail.js'
 import { openEditor } from './editor.js'
@@ -170,7 +170,7 @@ function whenLoaded() {
 
 /**
  * Import from anything that reads like a file — a File from the picker or an
- * OS drop, or a Puter cloud item wrapped by the drop importer. A source only
+ * OS drop, or an Everything cloud item wrapped by the drop importer. A source only
  * has to answer `name` and `text()`.
  *
  * `via` tags where the contacts came in, so the drop gesture's use is
@@ -340,7 +340,7 @@ function openAccountMenu(btn) {
     label: 'Theme',
     items: [themeItem('System', 'system'), themeItem('Light', 'light'), themeItem('Dark', 'dark')],
   })
-  if (!isPuterApp()) {
+  if (!isEverythingApp()) {
     items.push('-', {
       label: 'Sign out',
       danger: true,
@@ -349,7 +349,7 @@ function openAccountMenu(btn) {
         // user's session, and nothing of theirs should outlive the sign-out.
         disposeCalendar()
         try {
-          await window.puter.auth.signOut()
+          await window.everything.auth.signOut()
         } finally {
           location.reload()
         }
@@ -1054,7 +1054,7 @@ export function mountApp(root, { email = '' } = {}) {
   document.body.appendChild(els.fileInput)
   els.fileInput.addEventListener('change', () => handleImportFiles(els.fileInput.files))
 
-  // Dropping a .vcf on the app imports it, from the OS or from the Puter
+  // Dropping a .vcf on the app imports it, from the OS or from the Everything
   // desktop. Wired at the document so the whole window is the target — a drop
   // that lands on the detail pane or a scrollbar should work like any other.
   startDropImport({
@@ -1137,7 +1137,7 @@ export function mountApp(root, { email = '' } = {}) {
 
   // Let go of the Calendar when this window goes away. Reading someone's
   // calendar means holding a service window open in their session, and inside
-  // the Puter desktop — the only place that window exists — closing Contacts is
+  // the Everything desktop — the only place that window exists — closing Contacts is
   // how a user ends this app, not the Sign out item below, which the desktop
   // owns the session for and so isn't offered. Without this the service window
   // outlives the app that opened it, invisible, until its own idle timeout.

@@ -6,17 +6,17 @@
  *   save(collection, data)  -> Promise<void>
  *   remove(collection)      -> Promise<void>
  *
- * `createPuterBackend` is backed by the Puter.js cloud key-value store
+ * `createEverythingBackend` is backed by the Everything.js cloud key-value store
  * (http://localhost:8443) and is used in production. `createMemoryBackend`
  * is used for tests.
  */
 
 const NS = 'shifts.v1';
 
-export function createPuterBackend(puterInstance) {
+export function createEverythingBackend(everythingInstance) {
   const kv = () => {
-    const p = puterInstance ?? globalThis.puter;
-    if (!p?.kv) throw new Error('Puter.js is not available');
+    const p = everythingInstance ?? globalThis.everything;
+    if (!p?.kv) throw new Error('Everything.js is not available');
     return p.kv;
   };
 

@@ -10,7 +10,7 @@
  *   bumpVersions(buckets)       -> { [bucket]: version } (whole map)
  *   nextNumber(kind, atLeast)   -> integer, atomically increasing, >= atLeast
  *
- * Puter KV layout. KV is backed by DynamoDB, so every read is a key lookup
+ * Everything KV layout. KV is backed by DynamoDB, so every read is a key lookup
  * or a prefix query, never a scan, and every write touches one small item:
  *
  *   fl1:r:<bucket>:<id>   one record (bucket = `vehicles` or `fuel_202610`)
@@ -23,10 +23,10 @@ export const PREFIX = 'fl1:';
 const recordKey = (bucket, id) => `${PREFIX}r:${bucket}:${id}`;
 const BATCH = 100;
 
-export function createPuterBackend(puter) {
-  const kv = puter.kv;
+export function createEverythingBackend(everything) {
+  const kv = everything.kv;
   return {
-    kind: 'puter',
+    kind: 'everything',
     async loadMeta() {
       return (await kv.get(`${PREFIX}meta`)) || {};
     },

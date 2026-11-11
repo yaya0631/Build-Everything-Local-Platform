@@ -1,13 +1,13 @@
 /**
  * The assistant: a side panel where you ask about the project or ask for
- * changes in plain words. It answers through Puter's AI and acts with the
+ * changes in plain words. It answers through Everything's AI and acts with the
  * functions in assistant/tools.js; every change it makes is an ordinary
  * undo step.
  */
 import { h, clear } from './dom.js';
 import { icon } from './icons.js';
 import { toolSchemas, runTool } from '../assistant/tools.js';
-import { puterAvailable, isSignedIn, whenPuter } from '../platform.js';
+import { everythingAvailable, isSignedIn, whenEverything } from '../platform.js';
 
 const SUGGESTIONS = ['What can you do for me?', 'Check the model for problems', 'Make a door schedule sorted by level', 'List the rooms on Level 1 with their areas'];
 const MAX_ROUNDS = 8;
@@ -98,9 +98,9 @@ export class Assistant {
     this.input.value = '';
     this.log.querySelector('.as-suggest')?.remove();
     this.add('as-user', q);
-    if (!puterAvailable() || !(await whenPuter(4000))) return this.add('as-bot.as-err', 'The assistant needs Puter, which could not be reached. Check your connection.');
+    if (!everythingAvailable() || !(await whenEverything(4000))) return this.add('as-bot.as-err', 'The assistant needs Everything, which could not be reached. Check your connection.');
     if (!(await isSignedIn())) {
-      const m = this.add('as-bot', 'Sign in with Puter to use the assistant. ');
+      const m = this.add('as-bot', 'Sign in with Everything to use the assistant. ');
       m.append(h('button.btn.sm', { type: 'button', onClick: async () => (await this.app.signIn()) && this.send(q) }, 'Sign in'));
       return;
     }
@@ -109,7 +109,7 @@ export class Assistant {
     this.messages.push({ role: 'user', content: q });
     try {
       for (let round = 0; round < MAX_ROUNDS; round++) {
-        const res = await puter.ai.chat([{ role: 'system', content: SYSTEM }, ...this.messages], { tools: toolSchemas() });
+        const res = await everything.ai.chat([{ role: 'system', content: SYSTEM }, ...this.messages], { tools: toolSchemas() });
         if (res?.success === false) throw new Error(res.error?.message || 'The AI did not answer');
         const calls = toolCalls(res);
         const text = replyText(res);

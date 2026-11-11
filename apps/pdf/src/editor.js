@@ -116,7 +116,7 @@ import {
   formatBytes,
   contrastInk,
 } from './lib/ui.js';
-import * as P from './lib/puter.js';
+import * as P from './lib/everything.js';
 import { waitFor } from './lib/abort.js';
 import {
   safeName,
@@ -396,14 +396,14 @@ export function createEditor({
       const next = await promptText('Name this PDF', 'File name', name.replace(/\.pdf$/i, ''));
       const nextName = next && safeName(next);
       if (!nextName || nextName === name || destroyed) return;
-      // A PDF in Puter belongs to the signed-in account; settle a pending account check first.
+      // A PDF in Everything belongs to the signed-in account; settle a pending account check first.
       // Its path is cleared if that account ended, and the PDF is then renamed here alone.
       if (path && !getUser()) await signIn();
       if (destroyed) return;
       if (path) {
         if (saving || busy || !getUser())
           throw new Error('The file could not be renamed right now. Try again in a moment.');
-        // A PDF saved in Puter is renamed where it is, as the file manager would: saving it
+        // A PDF saved in Everything is renamed where it is, as the file manager would: saving it
         // under a new name used to leave the old file behind beside a second copy.
         saveGeneration++;
         saving = true;
@@ -461,7 +461,7 @@ export function createEditor({
   /** A tooltip naming a command and its shortcut, as this platform writes it. */
   const withShortcut = (label, spec) => `${label} (${formatShortcut(spec)})`;
   const saveButton = button(
-    'Save to Puter',
+    'Save to Everything',
     'Cloud',
     safe(() => save()),
     'btn primary',
@@ -2126,7 +2126,7 @@ export function createEditor({
             safe(() => downloadPdf()),
             {
               class: 'icon-btn download-btn',
-              // On the Puter desktop the shortcut saves to another folder instead.
+              // On the Everything desktop the shortcut saves to another folder instead.
               ...(!P.isApp() && { title: withShortcut('Download', 'Mod+Shift+S') }),
             },
           ),
@@ -2288,14 +2288,14 @@ export function createEditor({
           : unsaved
             ? 'Unsaved changes'
             : path && cloudRevision === session.revision
-              ? 'Saved to Puter'
+              ? 'Saved to Everything'
               : downloadedRevision === session.revision
                 ? 'Downloaded'
                 : 'Local file';
     saveStatus.title = saveStatus.textContent;
     saveButton.disabled = saving || busy;
     // Without a session the button says what saving needs first.
-    const saveLabel = signedOut() ? 'Sign in to save' : path ? 'Save' : 'Save to Puter';
+    const saveLabel = signedOut() ? 'Sign in to save' : path ? 'Save' : 'Save to Everything';
     saveButton.querySelector('span').textContent = saveLabel;
     saveButton.setAttribute('aria-label', saveLabel);
     saveButton.title = withShortcut(saveLabel, 'Mod+S');
@@ -6145,7 +6145,7 @@ export function createEditor({
     if (!file) {
       const choice = await choose(
         'This PDF was moved or deleted',
-        `${name} is no longer where it was opened from in your Puter cloud. Your changes are still here: save them as a new file, or put the file back where it was.`,
+        `${name} is no longer where it was opened from in your Everything cloud. Your changes are still here: save them as a new file, or put the file back where it was.`,
         [
           ['Keep editing', 'cancel'],
           ['Put it back', 'restore'],
@@ -6159,7 +6159,7 @@ export function createEditor({
     if (!changed) return { path: file.path, name: file.name };
     const choice = await choose(
       'This PDF changed elsewhere',
-      `${file.name} was saved in your Puter cloud after you opened it here, perhaps in another window or on another device. Replace that version with yours, or keep both by saving yours as a new file.`,
+      `${file.name} was saved in your Everything cloud after you opened it here, perhaps in another window or on another device. Replace that version with yours, or keep both by saving yours as a new file.`,
       [
         ['Keep editing', 'cancel'],
         ['Replace it', 'replace', 'btn danger'],
@@ -6179,7 +6179,7 @@ export function createEditor({
   function saveFailure(error) {
     if (error instanceof Error || P.isSignInCancelled(error)) return error;
     const reason = reasonOf(error);
-    return new Error(`Puter could not save ${name}${reason ? `: ${reason}` : ''}.`);
+    return new Error(`Everything could not save ${name}${reason ? `: ${reason}` : ''}.`);
   }
   /** After a failed write to an existing file: whether to keep the changes as a new file. */
   async function offerCopy(error) {
@@ -6187,7 +6187,7 @@ export function createEditor({
     return (
       (await choose(
         'This PDF could not be saved',
-        `Puter could not save ${name}${reason ? ` (${reason})` : ''}. Your changes are still here. Save them as a new file in your PDF Editor folder instead?`,
+        `Everything could not save ${name}${reason ? ` (${reason})` : ''}. Your changes are still here. Save them as a new file in your PDF Editor folder instead?`,
         [
           ['Keep editing', 'cancel'],
           ['Save as a new file', 'copy', 'btn primary'],
@@ -6266,7 +6266,7 @@ export function createEditor({
         if (protection === savedProtection) protectionDirty = false;
         remote = await written(item, path, bytes.length, signal);
         if (destroyed || token !== saveGeneration) return;
-        toast(created ? `Saved to Puter as ${name}.` : 'PDF saved to Puter.');
+        toast(created ? `Saved to Everything as ${name}.` : 'PDF saved to Everything.');
       }
     } catch (error) {
       if (!signal.aborted) throw error;
@@ -6391,7 +6391,7 @@ export function createEditor({
     const revision = session.revision,
       savedProtection = protection;
     let size = 0;
-    // A cancelled Puter save picker can remain pending. Never lock the editor on it.
+    // A cancelled Everything save picker can remain pending. Never lock the editor on it.
     exportBytes()
       .then(async (bytes) => {
         // Encryption can finish after a rename, replacement, or newer save. Do not open
@@ -6414,7 +6414,7 @@ export function createEditor({
         // The picker wrote a new file: later saves check that one, not the file opened before.
         remote = null;
         updateStatus();
-        toast(`Saved to Puter as ${name}.`);
+        toast(`Saved to Everything as ${name}.`);
         const savedPath = path;
         const info = await written(item, savedPath, size);
         if (!destroyed && token === saveGeneration && path === savedPath) remote = info;
@@ -6644,7 +6644,7 @@ export function createEditor({
                 onSelect: () => onOpen(),
               },
               onOpenCloud && {
-                label: 'From Puter…',
+                label: 'From Everything…',
                 glyph: 'Cloud',
                 onSelect: () => onOpenCloud(),
               },
@@ -7472,33 +7472,33 @@ export function createEditor({
   // Menus are built as they open, so every disabled and checked state is current.
   function fileItems(folded) {
     const cloud = saving || busy;
-    // On the Puter desktop the shortcuts belong to the cloud, where its files are: Open
-    // browses Puter and Save As chooses a Puter folder. Elsewhere they use this device.
+    // On the Everything desktop the shortcuts belong to the cloud, where its files are: Open
+    // browses Everything and Save As chooses an Everything folder. Elsewhere they use this device.
     const desktop = P.isApp() && !!onOpenCloud;
     return [
       { label: 'New blank PDF', icon: 'FilePlus2', onSelect: onNew },
       desktop
-        ? { label: 'Open from Puter…', icon: 'Cloud', shortcut: 'Mod+O', onSelect: onOpenCloud }
+        ? { label: 'Open from Everything…', icon: 'Cloud', shortcut: 'Mod+O', onSelect: onOpenCloud }
         : { label: 'Open…', icon: 'FolderOpen', shortcut: 'Mod+O', onSelect: onOpen },
       desktop
         ? { label: 'Open from this device…', icon: 'FolderOpen', onSelect: onOpen }
-        : onOpenCloud && { label: 'Open from Puter…', icon: 'Cloud', onSelect: onOpenCloud },
+        : onOpenCloud && { label: 'Open from Everything…', icon: 'Cloud', onSelect: onOpenCloud },
       { separator: true },
       {
-        label: signedOut() ? 'Sign in to save' : path ? 'Save' : 'Save to Puter',
+        label: signedOut() ? 'Sign in to save' : path ? 'Save' : 'Save to Everything',
         icon: 'CloudUpload',
         shortcut: 'Mod+S',
         disabled: cloud,
         onSelect: safe(() => save()),
       },
       {
-        label: 'Save a copy to Puter',
+        label: 'Save a copy to Everything',
         icon: 'Copy',
         disabled: cloud,
         onSelect: safe(() => save(true)),
       },
       {
-        label: 'Save to another Puter folder…',
+        label: 'Save to another Everything folder…',
         icon: 'FolderInput',
         ...(desktop && { shortcut: 'Mod+Shift+S' }),
         disabled: cloud,
@@ -12098,7 +12098,7 @@ export function createEditor({
         ));
     if (modifier && key === 's') {
       e.preventDefault();
-      // On the Puter desktop, Save As chooses a folder in the cloud; elsewhere it downloads.
+      // On the Everything desktop, Save As chooses a folder in the cloud; elsewhere it downloads.
       if (e.shiftKey) safe(P.isApp() ? saveAs : downloadPdf)();
       else safe(() => save())();
     } else if (modifier && key === 'f') {

@@ -1,10 +1,10 @@
 // Assisted editing in the running app: Denoise and Upscale end to end, plus
-// Generate Image with a stubbed Puter SDK, Mask All Objects and Harmonize.
+// Generate Image with a stubbed Everything SDK, Mask All Objects and Harmonize.
 import { test, expect, type Page } from '@playwright/test';
 import { boot, historyLabels, idle, menu, run } from './helpers';
 
-// Puter stub: txt2img returns a flat image whose hue identifies the call.
-const PUTER = `window.puter={env:"app",auth:{isSignedIn:()=>true},ai:{calls:[],txt2img:async(prompt,opts)=>{const n=window.puter.ai.calls.push({prompt,opts});const c=document.createElement('canvas');c.width=256;c.height=192;const g=c.getContext('2d');g.fillStyle='hsl('+(n*90)+',80%,50%)';g.fillRect(0,0,256,192);return {src:c.toDataURL()};}}};`;
+// Everything stub: txt2img returns a flat image whose hue identifies the call.
+const EVERYTHING = `window.everything={env:"app",auth:{isSignedIn:()=>true},ai:{calls:[],txt2img:async(prompt,opts)=>{const n=window.everything.ai.calls.push({prompt,opts});const c=document.createElement('canvas');c.width=256;c.height=192;const g=c.getContext('2d');g.fillStyle='hsl('+(n*90)+',80%,50%)';g.fillRect(0,0,256,192);return {src:c.toDataURL()};}}};`;
 
 /** A 240x160 scene: gradient, three shapes, optional Gaussian-like noise. */
 async function scene(page: Page, noise: number) {
@@ -126,7 +126,7 @@ test('Upscale enlarges every layer and mask with Enhanced Upscale', async ({ pag
 });
 
 test('Generate Image adds the chosen variation as a layer with its prompt', async ({ page }) => {
-  await boot(page, 'default', PUTER);
+  await boot(page, 'default', EVERYTHING);
   await scene(page, 0);
   await page.evaluate(async () => {
     const e = window.photoStudio;
@@ -143,7 +143,7 @@ test('Generate Image adds the chosen variation as a layer with its prompt', asyn
   const dialog = page.locator('dialog.assist-studio');
   await expect(dialog.getByText('Before you generate')).toBeVisible();
   // Nothing is sent before Generate is pressed.
-  expect(await page.evaluate(() => (window as unknown as { puter: { ai: { calls: unknown[] } } }).puter.ai.calls.length)).toBe(0);
+  expect(await page.evaluate(() => (window as unknown as { everything: { ai: { calls: unknown[] } } }).everything.ai.calls.length)).toBe(0);
   await dialog.locator('#as-prompt').fill('a paper boat');
   await dialog.locator('#as-style').selectOption('watercolor');
   await dialog.locator('#as-count').selectOption('3');
@@ -156,7 +156,7 @@ test('Generate Image adds the chosen variation as a layer with its prompt', asyn
     const e = window.photoStudio;
     const { gridDocBounds } = await import('/src/model/tiles.ts');
     const top = e.doc.layers.at(-1)!;
-    const calls = (window as unknown as { puter: { ai: { calls: { prompt: string; opts: Record<string, unknown> }[] } } }).puter.ai.calls;
+    const calls = (window as unknown as { everything: { ai: { calls: { prompt: string; opts: Record<string, unknown> }[] } } }).everything.ai.calls;
     return { name: top.name, generated: top.generated, bounds: gridDocBounds(top.pixels!), masked: !!top.maskGrid, prompts: calls.map((c) => c.prompt), ratio: calls[0].opts.ratio, selection: e.doc.selection };
   });
   expect(out.name).toBe('Generated: a paper boat');

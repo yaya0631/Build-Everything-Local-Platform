@@ -3,24 +3,24 @@ import './styles/main.css';
 import { el, mount } from './lib/dom.js';
 import { icon } from './lib/icons.js';
 import { brandMark } from './ui/components.js';
-import { createPuterBackend } from './core/backend.js';
+import { createEverythingBackend } from './core/backend.js';
 import { createStore } from './core/store.js';
 import { startApp } from './ui/app.js';
 import { shouldOnboard, openOnboarding } from './ui/onboarding.js';
 import { primeToastRegion, toast } from './ui/toast.js';
 
-function authScreen({ puterAvailable }) {
+function authScreen({ everythingAvailable }) {
   const signInButton = el(
     'button',
     {
       class: 'btn btn-primary',
-      disabled: !puterAvailable,
+      disabled: !everythingAvailable,
       onClick: async (e) => {
         const button = e.currentTarget;
         button.disabled = true;
-        button.textContent = 'Waiting for Puter…';
+        button.textContent = 'Waiting for Everything…';
         try {
-          await puter.auth.signIn();
+          await everything.auth.signIn();
         } catch {
           button.disabled = false;
           button.textContent = 'Sign in';
@@ -34,7 +34,7 @@ function authScreen({ puterAvailable }) {
           // The splash may have replaced this screen; render a fresh auth
           // screen so the user is never stranded without a button.
           console.error(err);
-          authScreen({ puterAvailable: true });
+          authScreen({ everythingAvailable: true });
           toast(err.message ?? 'Couldn’t load your data. Try again.', 'error');
         }
       },
@@ -66,15 +66,15 @@ function authScreen({ puterAvailable }) {
           feature('kanban', 'A pipeline that shows every candidate, stage by stage, per job'),
           feature('calendar-check', 'Interviews export as calendar invites and carry video-call links'),
           feature('signature', 'Offer letters generated for you, with recorded e-signatures'),
-          feature('cloud', 'Your data lives in your own Puter cloud, not on our servers')
+          feature('cloud', 'Your data lives in your own Everything cloud, not on our servers')
         ),
         signInButton,
-        !puterAvailable
+        !everythingAvailable
           ? el(
               'div',
               { class: 'form-error', style: { marginTop: '10px' } },
               icon('circle-alert', 15),
-              'Puter.js could not be loaded. Check your connection and reload the page.'
+              'Everything.js could not be loaded. Check your connection and reload the page.'
             )
           : null
       ),
@@ -82,7 +82,7 @@ function authScreen({ puterAvailable }) {
         'p',
         { class: 'auth-footer' },
         'Free · No ads · Powered by ',
-        el('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noreferrer' }, 'Puter')
+        el('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noreferrer' }, 'Everything')
       )
     )
   );
@@ -95,7 +95,7 @@ async function bootSignedIn() {
   // Show the splash only when loading is actually slow; rendering it
   // unconditionally makes fast loads flash it for a frame or two.
   const splashTimer = setTimeout(() => splashScreen('Loading your pipeline…'), 250);
-  const backend = createPuterBackend();
+  const backend = createEverythingBackend();
   // Snapshots on: the app keeps its own copies of the whole dataset in the
   // user's drive, so a wipe, a mistaken restore, or a purge has something
   // behind it. Tests build stores without them.
@@ -104,21 +104,21 @@ async function bootSignedIn() {
   try {
     [user] = await Promise.all([
       // A failed profile fetch is non-fatal: the sidebar shows a generic account.
-      puter.auth.getUser().catch(() => null),
+      everything.auth.getUser().catch(() => null),
       store.init(),
     ]);
   } finally {
     clearTimeout(splashTimer);
   }
-  // Inside Puter itself the platform owns the session, so the app must not
+  // Inside Everything itself the platform owns the session, so the app must not
   // offer its own sign-out (http://localhost:8443/Utils/env/).
-  const canSignOut = puter.env !== 'app';
+  const canSignOut = everything.env !== 'app';
   const ctx = startApp({
     store,
     user,
     canSignOut,
     onSignOut: () => {
-      puter.auth.signOut();
+      everything.auth.signOut();
       location.hash = '';
       location.reload();
     },
@@ -168,16 +168,16 @@ window.addEventListener('unhandledrejection', (event) => {
 
 async function boot() {
   await domReady();
-  // Local development without a Puter session: `npm run dev` then open
+  // Local development without an Everything session: `npm run dev` then open
   // http://localhost:5173/?mock — data persists in localStorage.
   if (import.meta.env.DEV && new URLSearchParams(location.search).has('mock')) {
-    await import('../dev/puter-mock.js');
+    await import('../dev/everything-mock.js');
   }
-  const puterAvailable = typeof globalThis.puter !== 'undefined';
-  if (puterAvailable && (await Promise.resolve(puter.auth.isSignedIn()))) {
+  const everythingAvailable = typeof globalThis.everything !== 'undefined';
+  if (everythingAvailable && (await Promise.resolve(everything.auth.isSignedIn()))) {
     await bootSignedIn();
   } else {
-    authScreen({ puterAvailable });
+    authScreen({ everythingAvailable });
   }
 }
 

@@ -36,10 +36,10 @@ function fixture(
   return p;
 }
 async function start(page) {
-  await page.route("**/sdk/puter.js", (route) =>
+  await page.route("**/sdk/everything.js", (route) =>
     route.fulfill({
       contentType: "application/javascript",
-      body: 'window.puter={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',
+      body: 'window.everything={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',
     }),
   );
   await page.goto("/#/home");

@@ -48,7 +48,7 @@ describe('isMeetingUrl — the exact room-link shape', () => {
     expect(isMeetingUrl(createMeetings().mintLink().url)).toBe(true);
   });
 
-  it('rejects everything that is not exactly a Puter Meetings room link', () => {
+  it('rejects everything that is not exactly an Everything Meetings room link', () => {
     for (const bad of [
       'http://meetings.localhost:8443.evil.example/#/m/abcd-efgh-ijkl', // host prefix trick
       'http://meetings.localhost:8443/#/m/abcd-efgh-ijkl', //              not https

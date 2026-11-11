@@ -13,7 +13,7 @@ vi.mock('../src/ui/toast.js', () => ({ toast: vi.fn() }));
 
 beforeEach(async () => {
   const data = new Map();
-  vi.stubGlobal('puter', {
+  vi.stubGlobal('everything', {
     auth: { getUser: async () => ({ username: 'tester' }) },
     kv: {
       list: async (prefix) => [...data.keys()].filter((key) => key.startsWith(prefix.replace(/\*$/, ''))),

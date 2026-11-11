@@ -40,7 +40,7 @@ function excelFile({ link = false } = {}) {
 const underlines = wb => KINDS.map((_, r) => wb.getCell(wb.activeSheetId, r, 0).s?.underline);
 const withoutAppRecord = zip => {
   const book = X.CFB.find(zip, '/xl/workbook.xml');
-  book.content = new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  book.content = new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   book.size = book.content.length;
   return X.CFB.write(zip, { type: 'array', fileType: 'zip' });
 };

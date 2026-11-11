@@ -39,7 +39,7 @@ it('keeps numeric text and live coercion through native XLSX, edits, Undo and in
     expect(sheet).toContain('<f>VALUE(A1)</f>');
     expect(sheet).toContain('#VALUE!');
     const part = X.CFB.find(zip, '/xl/workbook.xml');
-    part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+    part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
     part.size = part.content.length;
     wb = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'numeric-syntax.xlsx');
     id = wb.activeSheetId;

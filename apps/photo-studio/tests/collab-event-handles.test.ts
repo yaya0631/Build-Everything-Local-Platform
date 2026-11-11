@@ -14,9 +14,9 @@ async function shared() {
   return { env, room, join };
 }
 
-// Removing someone only forgot their handle: Puter kept it live, so they went on hearing of every change, and it
+// Removing someone only forgot their handle: Everything kept it live, so they went on hearing of every change, and it
 // held one of the owner's limited handle slots for good.
-it("takes back a removed member's handle at Puter", async () => {
+it("takes back a removed member's handle at Everything", async () => {
   const { env, room, join } = await shared();
   expect((await join(editor)).events).toEqual({ handle: `handle-${editor.uuid}`, key: 'signal' });
   await env.service.call(owner, { op: 'role', room, uuid: editor.uuid, role: 'removed' });

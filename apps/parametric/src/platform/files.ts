@@ -1,11 +1,11 @@
 // Part files. Every open document has a location:
-//   { type: 'cloud', path }  a .parametric file in the user's Puter storage
+//   { type: 'cloud', path }  a .parametric file in the user's Everything storage
 //   { type: 'local', id }    a file in this browser's private storage (OPFS)
 // Signed-in users save to the cloud by default; anyone can work signed out
 // with browser storage and import or download files at any time.
 // Files never go into the key-value store.
 
-import { cloudAvailable, isMissing, puter, toMs } from './puter';
+import { cloudAvailable, isMissing, everything, toMs } from './everything';
 
 export const EXT = '.parametric';
 /** Files that open as an imported body rather than as a part document. */
@@ -70,7 +70,7 @@ async function writeFile(dir: FileSystemDirectoryHandle, name: string, text: str
 
 async function localWrite(id: string, name: string, text: string) {
   const dir = await opfsDir();
-  if (!dir) throw new Error('This browser cannot store parts locally. Download the part or sign in to save it to your Puter cloud.');
+  if (!dir) throw new Error('This browser cannot store parts locally. Download the part or sign in to save it to your Everything cloud.');
   await writeFile(dir, `${id}${EXT}`, text);
   const list = readIndex().filter((p) => p.id !== id);
   list.unshift({ id, name, modified: Date.now(), size: text.length });
@@ -94,22 +94,22 @@ async function localDelete(id: string) {
   writeIndex(readIndex().filter((p) => p.id !== id));
 }
 
-// ---- Cloud (Puter FS) ----
+// ---- Cloud (Everything FS) ----
 
 async function cloudWrite(path: string, text: string) {
-  const fs = puter()?.fs;
-  if (!fs) throw new Error('Puter storage is not available.');
+  const fs = everything()?.fs;
+  if (!fs) throw new Error('Everything storage is not available.');
   return fs.write(path, new Blob([text], { type: 'application/json' }), { overwrite: true, createMissingParents: true });
 }
 
 async function cloudRead(path: string): Promise<string> {
-  const blob = await puter()!.fs.read(path);
+  const blob = await everything()!.fs.read(path);
   return blob.text();
 }
 
 /** A free path for a new cloud part named `name`. */
 export async function uniqueCloudPath(name: string): Promise<string> {
-  const fs = puter()!.fs;
+  const fs = everything()!.fs;
   const base = safeName(name);
   let existing = new Set<string>();
   try {
@@ -149,13 +149,13 @@ export async function loadText(location: Location): Promise<string> {
 }
 
 export async function deletePart(location: Location) {
-  if (location.type === 'cloud') await puter()!.fs.delete(location.path);
+  if (location.type === 'cloud') await everything()!.fs.delete(location.path);
   else await localDelete(location.id);
   forgetRecent(location);
 }
 
 export async function renameCloud(location: Location & { type: 'cloud' }, newName: string): Promise<Location> {
-  const item = await puter()!.fs.rename(location.path, `${safeName(newName)}${EXT}`);
+  const item = await everything()!.fs.rename(location.path, `${safeName(newName)}${EXT}`);
   return { type: 'cloud', path: item?.path || location.path.replace(/[^/]+$/, `${safeName(newName)}${EXT}`) };
 }
 
@@ -164,7 +164,7 @@ export async function listParts(): Promise<FileEntry[]> {
   const out: FileEntry[] = [];
   if (cloudAvailable()) {
     try {
-      const items = await puter()!.fs.readdir(CLOUD_DIR);
+      const items = await everything()!.fs.readdir(CLOUD_DIR);
       for (const it of items) {
         if (it.is_dir || it.isDir || !it.name.endsWith(EXT)) continue;
         out.push({ name: it.name.slice(0, -EXT.length), location: { type: 'cloud', path: it.path }, modified: toMs(it.modified), size: it.size });
@@ -211,9 +211,9 @@ export function forgetRecent(location: Location) {
 export const locationLabel = (loc?: Location | null) =>
   !loc ? 'Not saved' : loc.type === 'cloud' ? loc.path.replace(/^.*\/AppData\/[^/]+\//, '') : 'This browser';
 
-/** Opens a file chosen from Puter storage: a part, or a STEP or SolidWorks file to import. */
+/** Opens a file chosen from Everything storage: a part, or a STEP or SolidWorks file to import. */
 export async function pickCloudFile(): Promise<{ blob: Blob; fileName: string; location: Location; name: string } | null> {
-  const p = puter();
+  const p = everything();
   if (!p?.ui?.showOpenFilePicker) return null;
   const pick = p.ui.showOpenFilePicker({ accept: [EXT, '.json', ...IMPORT_EXTS], path: `%appdata%/${CLOUD_DIR}` });
   const item = await (pick?.undefinedOnCancel ?? pick);
@@ -223,9 +223,9 @@ export async function pickCloudFile(): Promise<{ blob: Blob; fileName: string; l
   return { blob, fileName: file.name, location: { type: 'cloud', path: file.path }, name: file.name.replace(/\.(parametric|json)$/i, '') };
 }
 
-/** Save As into a user-chosen Puter folder. */
+/** Save As into a user-chosen Everything folder. */
 export async function pickCloudSave(text: string, name: string): Promise<Location | null> {
-  const p = puter();
+  const p = everything();
   if (!p?.ui?.showSaveFilePicker) return null;
   const pick = p.ui.showSaveFilePicker(new Blob([text], { type: 'application/json' }), `${safeName(name)}${EXT}`);
   const item = await (pick?.undefinedOnCancel ?? pick);

@@ -3,13 +3,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { mockApi } from './helpers.js';
 
-const fakePuter = fs.readFileSync(path.resolve('e2e/fake-puter.js'), 'utf8');
+const fakeEverything = fs.readFileSync(path.resolve('e2e/fake-everything.js'), 'utf8');
 
 async function asUser(page, config) {
   await page.addInitScript((c) => {
-    window.__puterConfig = c;
+    window.__everythingConfig = c;
   }, config);
-  await page.route('**/sdk/puter.js', (route) => route.fulfill({ status: 200, contentType: 'application/javascript', body: fakePuter }));
+  await page.route('**/sdk/everything.js', (route) => route.fulfill({ status: 200, contentType: 'application/javascript', body: fakeEverything }));
   await mockApi(page);
   await page.goto('/');
   await page.waitForSelector('.shell');
@@ -25,12 +25,12 @@ test('signed-in users get cloud sync, a profile picture and sign out', async ({ 
   await page.getByRole('dialog').getByRole('textbox').fill('Synced');
   await page.keyboard.press('Enter');
   await expect(page.locator('.sync-state')).toHaveAttribute('title', /All changes saved|Syncing|Saving/);
-  await expect.poll(() => page.evaluate(() => Object.keys(JSON.parse(localStorage.getItem('fake-puter-cloud') || '{"files":{}}').files).some((k) => k.includes('/workspace/collections/')))).toBe(true);
+  await expect.poll(() => page.evaluate(() => Object.keys(JSON.parse(localStorage.getItem('fake-everything-cloud') || '{"files":{}}').files).some((k) => k.includes('/workspace/collections/')))).toBe(true);
   await page.getByRole('button', { name: 'Account: ada' }).click();
   await expect(page.getByRole('menuitem', { name: 'Sign out' })).toBeVisible();
 });
 
-test('inside the Puter desktop there is no sign out', async ({ page }) => {
+test('inside the Everything desktop there is no sign out', async ({ page }) => {
   await asUser(page, { user: 'ada', env: 'app' });
   await page.getByRole('button', { name: 'Account: ada' }).click();
   await expect(page.getByRole('menuitem', { name: 'Export everything' })).toBeVisible();
@@ -55,10 +55,10 @@ test('collections can be shared with another user', async ({ page }) => {
 
   // Bob opens the app (same fake cloud, different user and local database).
   await page.evaluate(() => {
-    window.__puterConfig = { user: 'bob' };
+    window.__everythingConfig = { user: 'bob' };
   });
   await page.addInitScript(() => {
-    window.__puterConfig = { user: 'bob' };
+    window.__everythingConfig = { user: 'bob' };
   });
   await page.reload();
   await page.waitForSelector('.shell');

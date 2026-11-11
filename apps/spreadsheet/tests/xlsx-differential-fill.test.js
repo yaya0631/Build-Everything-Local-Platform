@@ -75,7 +75,7 @@ it('preserves differential fills through editing, native export and external HTM
   const blob = await workbookToXlsx(wb);
   const bytes = await new Promise(resolve => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.readAsArrayBuffer(blob); });
   const zip = X.CFB.read(new Uint8Array(bytes), { type: 'array' }), part = X.CFB.find(zip, '/xl/workbook.xml');
-  part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')); part.size = part.content.length;
+  part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')); part.size = part.content.length;
   const restored = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'external.xlsx');
   expect(coat(restored).bg).toBe('#2266aa');
 });

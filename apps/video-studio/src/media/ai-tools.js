@@ -9,7 +9,7 @@
  *  - editing: the edit assistant's tools (media/edit-assistant.js), checked
  *    and clamped there and performed by ui/assistant-actions.js
  *  - making: video from words or a picture, extending a clip, an AI bridge
- *    between two shots, pictures, picture edits and voiceover through Puter
+ *    between two shots, pictures, picture edits and voiceover through Everything
  *    AI. Video costs the most: those calls are the ones the default approval
  *    mode asks about.
  *
@@ -40,9 +40,9 @@ const PLACE = {
 
 /** The tools that only look. */
 export const READ_TOOLS = new Set(['get_project', 'list_media', 'get_clip']);
-/** The tools that make video through Puter AI: the costly ones. */
+/** The tools that make video through Everything AI: the costly ones. */
 export const VIDEO_TOOLS = new Set(['generate_video', 'animate_image', 'extend_clip', 'generate_transition']);
-/** The tools that make other media through Puter AI (pictures, speech). */
+/** The tools that make other media through Everything AI (pictures, speech). */
 export const MEDIA_TOOLS = new Set(['generate_image', 'edit_image', 'add_voiceover']);
 
 const MAKE_TOOLS = [
@@ -63,7 +63,7 @@ const MAKE_TOOLS = [
   },
   {
     name: 'generate_video',
-    description: 'Make a new video clip with Puter AI from a description, optionally starting from a picture (image to video) and/or ending on one. Takes from about half a minute to a few minutes, and costs the user Puter credits by its length.',
+    description: 'Make a new video clip with Everything AI from a description, optionally starting from a picture (image to video) and/or ending on one. Takes from about half a minute to a few minutes, and costs the user Everything credits by its length.',
     parameters: obj({
       prompt: { type: 'string', description: 'What happens in the clip: subject, action, setting, camera movement, lighting and mood. With a first frame, describe the motion from that picture.' },
       seconds: SECONDS('Length (default 5; the model rounds to what it makes)'),
@@ -78,7 +78,7 @@ const MAKE_TOOLS = [
   },
   {
     name: 'animate_image',
-    description: 'Turn an image clip into a video clip that starts from its picture and moves as described, in its place on the timeline (keeping its position, look and effects). Costs Puter credits.',
+    description: 'Turn an image clip into a video clip that starts from its picture and moves as described, in its place on the timeline (keeping its position, look and effects). Costs Everything credits.',
     parameters: obj({
       clip: CLIP,
       prompt: { type: 'string', description: 'The motion: what moves and how, camera movement, mood.' },
@@ -88,7 +88,7 @@ const MAKE_TOOLS = [
   },
   {
     name: 'extend_clip',
-    description: 'Make the shot go on: a new clip that starts from the last frame of a video or image clip and continues as described, put right after it. Costs Puter credits.',
+    description: 'Make the shot go on: a new clip that starts from the last frame of a video or image clip and continues as described, put right after it. Costs Everything credits.',
     parameters: obj({
       clip: CLIP,
       prompt: { type: 'string', description: 'What happens next, continuing the shot.' },
@@ -98,7 +98,7 @@ const MAKE_TOOLS = [
   },
   {
     name: 'generate_transition',
-    description: 'Make a short AI shot that morphs from the last frame of a base track clip into the first frame of the clip after it, and put it between them. Costs Puter credits.',
+    description: 'Make a short AI shot that morphs from the last frame of a base track clip into the first frame of the clip after it, and put it between them. Costs Everything credits.',
     parameters: obj({
       after_clip: CLIP,
       prompt: { type: 'string', description: 'How the first shot becomes the second (e.g. "the camera flies through the window into the next scene"). Optional.' },
@@ -107,7 +107,7 @@ const MAKE_TOOLS = [
   },
   {
     name: 'generate_image',
-    description: 'Make a picture with Puter AI and add it as an image clip (a backdrop, a title card, a still to animate later).',
+    description: 'Make a picture with Everything AI and add it as an image clip (a backdrop, a title card, a still to animate later).',
     parameters: obj({
       prompt: { type: 'string', description: 'What the picture shows.' },
       aspect: { type: 'string', enum: IMAGE_ASPECTS.map((a) => a.id), description: 'Shape (default: the project\'s)' },
@@ -119,7 +119,7 @@ const MAKE_TOOLS = [
   },
   {
     name: 'edit_image',
-    description: 'Change a picture as described with Puter AI ("make it night", "remove the car", "add snow"). From an image clip it replaces that clip\'s picture (unless replace is false); from a video frame or media it makes a new image clip.',
+    description: 'Change a picture as described with Everything AI ("make it night", "remove the car", "add snow"). From an image clip it replaces that clip\'s picture (unless replace is false); from a video frame or media it makes a new image clip.',
     parameters: obj({
       source: PICTURE('The picture to change'),
       instruction: { type: 'string', description: 'The change to make.' },
@@ -155,7 +155,7 @@ export const TOOL_NAMES = new Set(TOOLS.map((t) => t.name));
 const EDIT_NAMES = new Set(EDIT_TOOLS.map((t) => t.name));
 export const isEditTool = (name) => EDIT_NAMES.has(name);
 
-/** The tools as OpenAI-style function definitions for puter.ai.chat({ tools }). */
+/** The tools as OpenAI-style function definitions for everything.ai.chat({ tools }). */
 export function toolSpecs() {
   return TOOLS.map((t) => ({ type: 'function', function: { name: t.name, description: t.description, parameters: t.parameters } }));
 }
@@ -246,8 +246,8 @@ export function describeCall(name, args = {}, { videoModel = null, seconds } = {
       const want = Number.isFinite(num(a.seconds)) ? num(a.seconds) : Number.isFinite(seconds) ? seconds : name === 'generate_transition' ? shortest : undefined;
       const len = fitSeconds(model, want);
       const bits = [`with ${model.label}${fallback ? ' (the chosen model can\'t start from a picture)' : ''}`, len ? `${len}s long` : 'at the length the model picks', a.aspect].filter(Boolean).join(', ');
-      parts.push(`Made ${bits}. About ${formatCents(estimateCents(model, want))} in Puter credits.`);
-    } else parts.push('Uses Puter credits.');
+      parts.push(`Made ${bits}. About ${formatCents(estimateCents(model, want))} in Everything credits.`);
+    } else parts.push('Uses Everything credits.');
     out.detail = parts.filter(Boolean).join(' ');
   } else if (prompt) out.detail = `"${String(prompt).slice(0, 600)}"`;
   else if (name === 'add_voiceover' && a.text) out.detail = `"${String(a.text).slice(0, 600)}"`;

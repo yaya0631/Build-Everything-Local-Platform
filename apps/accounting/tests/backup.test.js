@@ -17,8 +17,8 @@ describe('backup', () => {
   });
   it('rejects damaged files before writing', () => {
     expect(() => validateBackup({})).toThrow(/not an Accounting backup/);
-    expect(() => validateBackup({ format: 'puter-bookkeeping-backup', version: 1, collections: { txns: [{ id: 'a', type: 'nope' }] } })).toThrow(/unknown type/);
-    expect(() => validateBackup({ format: 'puter-bookkeeping-backup', version: 1, collections: { txns: [{ type: 'invoice' }] } })).toThrow(/valid id/);
+    expect(() => validateBackup({ format: 'everything-bookkeeping-backup', version: 1, collections: { txns: [{ id: 'a', type: 'nope' }] } })).toThrow(/unknown type/);
+    expect(() => validateBackup({ format: 'everything-bookkeeping-backup', version: 1, collections: { txns: [{ type: 'invoice' }] } })).toThrow(/valid id/);
     const { s } = makeBooks();
     const before = s.accounts.size;
     expect(() => restoreBackup(s, { format: 'x' })).toThrow();

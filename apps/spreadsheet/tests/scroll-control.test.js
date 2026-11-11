@@ -14,7 +14,7 @@ const roundtrip = async (wb, native = true, edit) => {
   const zip = X.CFB.read(new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()), { type: 'array' });
   if (native) {
     const p = X.CFB.find(zip, '/xl/workbook.xml');
-    p.content = new TextEncoder().encode(new TextDecoder().decode(p.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')); p.size = p.content.length;
+    p.content = new TextEncoder().encode(new TextDecoder().decode(p.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')); p.size = p.content.length;
   }
   edit?.(zip);
   return workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'controls.xlsx');

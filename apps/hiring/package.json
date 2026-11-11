@@ -6,11 +6,11 @@
   "description": "Hiring & applicant tracking: job pages, candidate pipeline, interview scheduling, scorecards, offers, and onboarding.",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/HeyPuter/hiring.git"
+    "url": "git+https://github.com/yaya0631/Build-Everything-Local-Platform"
   },
-  "homepage": "https://github.com/HeyPuter/hiring#readme",
+  "homepage": "https://github.com/yaya0631/Build-Everything-Local-Platform",
   "bugs": {
-    "url": "https://github.com/HeyPuter/hiring/issues"
+    "url": "https://github.com/yaya0631/Build-Everything-Local-Platform"
   },
   "scripts": {
     "dev": "vite",

@@ -27,7 +27,7 @@ beforeEach(() => {
     fs: { readdir: vi.fn(async () => files), stat: async () => null, mkdir: async () => {} },
     ui: {},
   };
-  vi.stubGlobal('puter', sdk);
+  vi.stubGlobal('everything', sdk);
 });
 
 afterEach(() => {
@@ -96,9 +96,9 @@ it('says what the gate is waiting for without taking the focus off the button', 
   cta.focus();
   cta.click();
   await Promise.resolve();
-  expect(status.textContent).toBe('Waiting for Puter…');
+  expect(status.textContent).toBe('Waiting for Everything…');
   // The label and the accessible name stay put, and so does the keyboard.
-  expect(cta.textContent).toBe('Sign in to Puter');
+  expect(cta.textContent).toBe('Sign in to Everything');
   expect(cta.disabled).toBe(false);
   expect(cta.getAttribute('aria-disabled')).toBe('true');
   expect(cta.getAttribute('aria-busy')).toBe('true');

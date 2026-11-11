@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 //
-// Integration smoke test: boots the whole app against a stubbed Puter SDK and
+// Integration smoke test: boots the whole app against a stubbed Everything SDK and
 // drives it through the DOM, catching wiring bugs the pure unit tests can't.
 import { describe, it, expect } from 'vitest'
 import { store } from '../store.js'
@@ -8,9 +8,9 @@ import { mountApp } from './app.js'
 import { disposeCalendar } from './calendar.js'
 import { contactKey } from '../model.js'
 
-function stubPuter() {
+function stubEverything() {
   const kv = new Map()
-  window.puter = {
+  window.everything = {
     env: 'web',
     appID: 'contacts-test',
     auth: {
@@ -47,7 +47,7 @@ async function flush() {
 
 describe('app integration', () => {
   it('mounts, loads contacts, selects one, and opens the editor', async () => {
-    const kv = stubPuter()
+    const kv = stubEverything()
     kv.set(contactKey('1'), {
       id: '1',
       firstName: 'Ada',
@@ -79,7 +79,7 @@ describe('app integration', () => {
   })
 
   it('shows a loading state until the first load resolves (not the empty-book card)', async () => {
-    stubPuter()
+    stubEverything()
     store.contacts.clear()
     store.loaded = false
     store.error = null
@@ -108,7 +108,7 @@ describe('app integration', () => {
   })
 
   it('marks the listbox multi-selectable only in select mode', async () => {
-    const kv = stubPuter()
+    const kv = stubEverything()
     store.contacts.clear()
     store.loaded = false
     store.error = null
@@ -128,7 +128,7 @@ describe('app integration', () => {
   })
 
   it('does not create duplicate contacts when Save is double-clicked', async () => {
-    stubPuter()
+    stubEverything()
     store.contacts.clear()
     store.loaded = false
     store.error = null
@@ -156,7 +156,7 @@ describe('app integration', () => {
   })
 
   it('highlights the sidebar row while its context menu is open', async () => {
-    const kv = stubPuter()
+    const kv = stubEverything()
     store.contacts.clear()
     store.loaded = false
     store.error = null
@@ -182,7 +182,7 @@ describe('app integration', () => {
   })
 
   it('keeps the highlight when a menu re-opens over an undismissed one', async () => {
-    const kv = stubPuter()
+    const kv = stubEverything()
     store.contacts.clear()
     store.loaded = false
     store.error = null
@@ -209,7 +209,7 @@ describe('app integration', () => {
   })
 
   it('highlights the detail "More" button (and the row) while its menu is open', async () => {
-    const kv = stubPuter()
+    const kv = stubEverything()
     store.contacts.clear()
     store.loaded = false
     store.error = null
@@ -238,7 +238,7 @@ describe('app integration', () => {
   })
 
   it('highlights the account and list-options buttons while their menus are open', async () => {
-    stubPuter()
+    stubEverything()
     store.contacts.clear()
     store.loaded = false
     store.error = null
@@ -263,7 +263,7 @@ describe('app integration', () => {
   })
 
   it('renames a tag from the sidebar chip context menu (with validation)', async () => {
-    const kv = stubPuter()
+    const kv = stubEverything()
     store.contacts.clear()
     store.loaded = false
     store.error = null
@@ -316,7 +316,7 @@ describe('app integration', () => {
   })
 
   it('deletes a tag via its chip menu, then undo restores it', async () => {
-    const kv = stubPuter()
+    const kv = stubEverything()
     store.contacts.clear()
     store.loaded = false
     store.error = null
@@ -361,7 +361,7 @@ describe('app integration', () => {
   })
 
   it('undo after delete restores a contact that shares an email with another', async () => {
-    const kv = stubPuter()
+    const kv = stubEverything()
     store.contacts.clear()
     store.loaded = false
     store.error = null
@@ -402,7 +402,7 @@ describe('app integration', () => {
   })
 
   it('reports live progress while a slow bulk delete runs, then clears it', async () => {
-    const kv = stubPuter()
+    const kv = stubEverything()
     store.contacts.clear()
     store.loaded = false
     store.error = null
@@ -413,8 +413,8 @@ describe('app integration', () => {
     // emit-coalescing window — i.e. the case the user actually notices.
     const ids = Array.from({ length: 30 }, (_v, i) => `d${i}`)
     for (const id of ids) kv.set(contactKey(id), { id, firstName: `Del ${id}` })
-    const realDel = window.puter.kv.del
-    window.puter.kv.del = async (k) => {
+    const realDel = window.everything.kv.del
+    window.everything.kv.del = async (k) => {
       await new Promise((r) => setTimeout(r, 150))
       return realDel(k)
     }
@@ -440,7 +440,7 @@ describe('app integration', () => {
     expect(root.querySelectorAll('.contact-item').length).toBeLessThan(30)
 
     await new Promise((r) => setTimeout(r, 900))
-    window.puter.kv.del = realDel
+    window.everything.kv.del = realDel
     expect(store.all).toHaveLength(0)
     // The progress toast hands off to the summary rather than lingering.
     expect(document.querySelector('.toast--progress')).toBeFalsy()
@@ -449,7 +449,7 @@ describe('app integration', () => {
   })
 
   it('keeps focus on "Select all" across the select-bar re-render it triggers', async () => {
-    const kv = stubPuter()
+    const kv = stubEverything()
     store.contacts.clear()
     store.loaded = false
     store.error = null
@@ -476,7 +476,7 @@ describe('app integration', () => {
   })
 
   it('keeps focus on a tag chip toggled by keyboard', async () => {
-    const kv = stubPuter()
+    const kv = stubEverything()
     store.contacts.clear()
     store.loaded = false
     store.error = null
@@ -499,7 +499,7 @@ describe('app integration', () => {
   })
 
   it('opens the tag menu from a touch long-press (iOS has no contextmenu)', async () => {
-    const kv = stubPuter()
+    const kv = stubEverything()
     store.contacts.clear()
     store.loaded = false
     store.error = null
@@ -543,7 +543,7 @@ describe('app integration', () => {
   })
 
   it('exposes filter toggle state via aria-pressed, not styling alone', async () => {
-    const kv = stubPuter()
+    const kv = stubEverything()
     store.contacts.clear()
     store.loaded = false
     store.error = null
@@ -578,7 +578,7 @@ describe('app integration', () => {
   })
 
   it('announces the visible count as a live status region', async () => {
-    const kv = stubPuter()
+    const kv = stubEverything()
     store.contacts.clear()
     store.loaded = false
     store.error = null
@@ -603,7 +603,7 @@ describe('app integration', () => {
   })
 
   it('filtering by a tag de-highlights the "All" segment', async () => {
-    const kv = stubPuter()
+    const kv = stubEverything()
     store.contacts.clear()
     store.loaded = false
     store.error = null
@@ -628,7 +628,7 @@ describe('app integration', () => {
   })
 
   it('imports a vCard dropped on the app', async () => {
-    stubPuter()
+    stubEverything()
     store.contacts.clear()
     store.loaded = false
     store.error = null
@@ -661,7 +661,7 @@ describe('app integration', () => {
   })
 
   it('waits for the address book before importing, so a drop during boot cannot duplicate', async () => {
-    const kv = stubPuter()
+    const kv = stubEverything()
     store.contacts.clear()
     store.loaded = false
     store.error = null
@@ -674,7 +674,7 @@ describe('app integration', () => {
     document.body.appendChild(root)
     mountApp(root, {})
 
-    // The drop lands *before* store.load() resolves — the case where Puter opens
+    // The drop lands *before* store.load() resolves — the case where Everything opens
     // the app with a .vcf, since mountApp runs ahead of the first load.
     const card = 'BEGIN:VCARD\r\nVERSION:3.0\r\nFN:Edith Clarke\r\nEMAIL:edith@ge.com\r\nEND:VCARD\r\n'
     const drop = new window.Event('drop', { bubbles: true, cancelable: true })
@@ -694,14 +694,14 @@ describe('app integration', () => {
 
   /**
    * Showing what is coming up with someone means holding a Calendar service
-   * window open in their session. Inside the Puter desktop, closing Contacts is
+   * window open in their session. Inside the Everything desktop, closing Contacts is
    * how a user ends this app — there is no Sign out item, because the desktop
    * owns the session — so that is where the window has to be handed back.
    */
   it('lets go of the Calendar service window when this window goes away', async () => {
     disposeCalendar() // a module singleton; an earlier test decided there was no desktop
 
-    const kv = stubPuter()
+    const kv = stubEverything()
     kv.set(contactKey('1'), {
       id: '1',
       firstName: 'Ada',
@@ -729,8 +729,8 @@ describe('app integration', () => {
         service.closed = true
       },
     }
-    window.puter.env = 'app'
-    window.puter.ui.launchApp = async () => {
+    window.everything.env = 'app'
+    window.everything.ui.launchApp = async () => {
       service.launched = true
       setTimeout(() => {
         for (const fn of [...(listeners.get('message') || [])]) {

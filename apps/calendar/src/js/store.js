@@ -2,7 +2,7 @@
  * Data layer for the calendar.
  *
  * Persistence is delegated to a key-value backend that matches the shape of
- * `puter.kv` (set / get / del / list). The backend is injected so the store
+ * `everything.kv` (set / get / del / list). The backend is injected so the store
  * can be exercised in tests with a plain in-memory stand-in.
  *
  * Events are stored one key per event under the `cal:evt:` prefix; app
@@ -50,7 +50,7 @@ function hashString(str) {
   return h >>> 0;
 }
 
-// Import persistence pacing (see importEvents): puter.kv 429s when a big
+// Import persistence pacing (see importEvents): everything.kv 429s when a big
 // import fires one request per event, so events are written in batched
 // `kv.set([{ key, value }, …])` calls, sent one at a time, with exponential
 // backoff on a rate limit. The chunk size is deliberately modest: the docs
@@ -62,7 +62,7 @@ const IMPORT_BACKOFF_MS = 500;
 const IMPORT_BACKOFF_CAP_MS = 8_000;
 
 /**
- * True for puter.kv's rate-limit rejection. It rejects with a plain object —
+ * True for everything.kv's rate-limit rejection. It rejects with a plain object —
  * `{ error: 'Too many requests.', message: '…', code: 'too_many_requests' }` —
  * not an Error, so check shape-first with a message fallback.
  */
@@ -76,7 +76,7 @@ function isRateLimitError(err) {
   return /too many requests|rate.?limit/i.test(String(msg));
 }
 
-// puter.kv.list SILENTLY truncates large result sets — observed live: 2,139
+// everything.kv.list SILENTLY truncates large result sets — observed live: 2,139
 // stored keys, one flat `list('cal:evt:*')` deterministically returned 1,085,
 // with no error, marker, or cursor (same count with and without values).
 // Sharded queries (`cal:evt:0*` … `cal:evt:f*`) each returned complete
@@ -198,7 +198,7 @@ function stampOf(value) {
   return Number.isFinite(value.updatedAt) ? value.updatedAt : Date.now();
 }
 
-/** Values from `puter.kv` may already be parsed objects or JSON strings. */
+/** Values from `everything.kv` may already be parsed objects or JSON strings. */
 function coerceValue(value) {
   if (value == null) return null;
   if (typeof value === 'string') {
@@ -279,7 +279,7 @@ function normalizeBookingRef(input) {
 }
 
 /**
- * A meeting link attached to an event (minted from the Puter Meetings app —
+ * A meeting link attached to an event (minted from the Everything Meetings app —
  * see meetings.js). `url` is what everyone opens to join; `code` is the
  * meeting room's own persistent code, kept so the link stays manageable
  * (recognized, resolved, released) without parsing the URL back apart. Null
@@ -816,7 +816,7 @@ export function createStore(backend) {
   /**
    * One batched `kv.set([{ key, value }, …])` write of events, retried with
    * exponential backoff on a rate limit (see the IMPORT_* constants above —
-   * puter.kv 429s bursts of one-request-per-event writes). All-or-nothing per
+   * everything.kv 429s bursts of one-request-per-event writes). All-or-nothing per
    * chunk; resolves false when the write never landed. Shared by importEvents
    * and applyOutOfOffice, the two bulk writers.
    */
@@ -840,7 +840,7 @@ export function createStore(backend) {
    * Bulk-add imported events. Each is given a fresh id, so importing is purely
    * additive and never overwrites existing events. Emits once up front (the
    * events appear immediately), then persists in sequential batched writes —
-   * puter.kv rate-limits a large import fired as one request per event (429
+   * everything.kv rate-limits a large import fired as one request per event (429
    * `too_many_requests`), but its `set` accepts an array of entries, so a few
    * chunked requests replace hundreds. Rate-limited chunks retry with
    * exponential backoff; a chunk whose write never lands is removed again so
@@ -1280,7 +1280,7 @@ export function createStore(backend) {
     emit();
     // Batched + sequential + rate-limit-retried, like importEvents: a wide OOO
     // over a busy calendar can overlap dozens of events, and a Promise.all of
-    // one kv.set per event is exactly the burst puter.kv 429s — rejecting
+    // one kv.set per event is exactly the burst everything.kv 429s — rejecting
     // AFTER a random subset persisted, with the undo lost to the throw. If a
     // chunk still fails, put everything back (memory always; cloud for the
     // chunks that landed, best-effort) so memory and cloud never diverge.

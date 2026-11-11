@@ -9,10 +9,10 @@ for (const backend of ["default", "WebGL"]) {
       await page.addInitScript(() =>
         Object.defineProperty(navigator, "gpu", { value: undefined }),
       );
-    await page.route("**/sdk/puter.js", (r) =>
+    await page.route("**/sdk/everything.js", (r) =>
       r.fulfill({
         contentType: "application/javascript",
-        body: "window.puter={};",
+        body: "window.everything={};",
       }),
     );
     await page.goto("/");
@@ -304,7 +304,7 @@ for (const backend of ["default", "WebGL"]) {
 test("File downloads preserve original PSB layers and explain edited preview exports", async ({
   page,
 }) => {
-  await boot(page, "default", "window.puter={};");
+  await boot(page, "default", "window.everything={};");
   // The original-PSD download is only enabled for documents that retain one.
   await page.getByRole("menubar").getByRole("menuitem", { name: "File", exact: true }).click();
   await expect(page.locator('.menu-item[data-command="file.export-original-psd"]')).toHaveAttribute("aria-disabled", "true");

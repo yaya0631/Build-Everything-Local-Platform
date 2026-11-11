@@ -2,13 +2,13 @@ import { el } from '../ui/dom.js';
 import { openModal } from '../ui/modal.js';
 import { toast } from '../ui/toast.js';
 import { session } from '../lib/session.js';
-import * as P from '../lib/puter.js';
+import * as P from '../lib/everything.js';
 
 /**
- * The Puter desktop window's close button, which waits for this (lib/puter.js onWindowClose). Edits the
+ * The Everything desktop window's close button, which waits for this (lib/everything.js onWindowClose). Edits the
  * autosave has not written yet are written first, and a save that cannot go through asks, as leaving the
  * document for another screen does. A document that was never saved has nowhere to go without the user:
- * inside the Puter desktop it waits for a first Save to ask where (lib/doc.js), so closing asks whether to
+ * inside the Everything desktop it waits for a first Save to ask where (lib/doc.js), so closing asks whether to
  * save it, as a desktop app does. Without this the window went at once, and a new document with it.
  */
 
@@ -44,8 +44,8 @@ export function closeDialog(doc) {
     const content = el('div', {},
       // A template or other file opened from the drive stays as it is: only the edits, which go to a new .docx, are at stake.
       el('p.modal-text', {}, doc.path
-        ? `Your changes to “${P.displayName(doc.path)}” have not been saved yet. Save them as a new document to choose where it goes on Puter, or close without saving and lose them.`
-        : `“${doc.name}” has not been saved yet. Save it to choose where it goes on Puter, or close without saving and lose it.`),
+        ? `Your changes to “${P.displayName(doc.path)}” have not been saved yet. Save them as a new document to choose where it goes on Everything, or close without saving and lose them.`
+        : `“${doc.name}” has not been saved yet. Save it to choose where it goes on Everything, or close without saving and lose it.`),
       el('div.row.row-end', { style: { flexWrap: 'wrap' } },
         el('button.btn.btn-ghost', { type: 'button', onclick: () => modal.close() }, 'Cancel'),
         el('button.btn.btn-danger', { type: 'button', onclick: () => { resolve('close'); modal.close(); } }, 'Close without saving'),
@@ -74,7 +74,7 @@ export async function readyToClose({ open, leaveDialog }) {
     const choice = await closeDialog(doc);
     if (!still() || choice === 'stay') return false;
     if (choice === 'close') return true;
-    // Save…: Puter's Save dialog. Cancelling it keeps the window open, with the document as it was.
+    // Save…: Everything's Save dialog. Cancelling it keeps the window open, with the document as it was.
     try {
       view.engine?.finishComposition?.();
       if (!await doc.save()) return false;

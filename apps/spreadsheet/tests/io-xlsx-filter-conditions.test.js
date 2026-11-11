@@ -166,7 +166,7 @@ it('writes the rows the filter hides as hidden rows, and reads them back as filt
   // Reopened from the file alone, as another program would hand it back: the conditions come from the autoFilter.
   X.CFB.utils.cfb_del(zip, '/xl/worksheets/sheet2.xml');
   const workbook = X.CFB.find(zip, '/xl/workbook.xml');
-  workbook.content = new TextEncoder().encode(new TextDecoder().decode(workbook.content).replace(/<sheet name="_puter_meta"[^>]*\/>/, ''));
+  workbook.content = new TextEncoder().encode(new TextDecoder().decode(workbook.content).replace(/<sheet name="_everything_meta"[^>]*\/>/, ''));
   workbook.size = workbook.content.length;
   const native = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'native.xlsx');
   expect(native.activeSheet.filter.criteria).toEqual({ 0: { caseSensitive: false, values: ['East'] } });
@@ -206,7 +206,7 @@ it('reapplies native value lists without case distinctions and retains literal p
     expect(wb.filterValues(wb.activeSheetId, 0).find(i => i.value === 'Alpha*?')).toEqual({ value: 'Alpha*?', count: 2 });
     const { zip } = await sheetPart(wb);
     const part = X.CFB.find(zip, '/xl/workbook.xml');
-    part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+    part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
     part.size = part.content.length;
     wb = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'native.xlsx');
   }

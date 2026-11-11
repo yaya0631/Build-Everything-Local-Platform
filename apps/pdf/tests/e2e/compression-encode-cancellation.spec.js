@@ -30,10 +30,10 @@ for (const phase of ['offscreen', 'dom'])
     }) => {
       const errors = [];
       page.on('pageerror', (error) => errors.push(error.message));
-      await page.route('**/sdk/puter.js', (route) =>
+      await page.route('**/sdk/everything.js', (route) =>
         route.fulfill({
           contentType: 'application/javascript',
-          body: `window.puter={env:'web',auth:{isSignedIn:()=>true,getUser:async()=>({username:'test'})},fs:{readdir:async()=>[]},ui:{onLaunchedWithItems:()=>{},onItemsOpened:()=>{}}};`,
+          body: `window.everything={env:'web',auth:{isSignedIn:()=>true,getUser:async()=>({username:'test'})},fs:{readdir:async()=>[]},ui:{onLaunchedWithItems:()=>{},onItemsOpened:()=>{}}};`,
         }),
       );
       const canvas = createCanvas(800, 600);

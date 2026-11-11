@@ -251,7 +251,7 @@ export function mountAgenda(host, { calendar, ctx, userKey = '', now = () => Dat
         el(
           'p',
           { class: 'agenda-empty-hint' },
-          'Meetings from your calendar show up here. Add a Puter Meetings link to an event in Calendar, and it is one click away.'
+          'Meetings from your calendar show up here. Add an Everything Meetings link to an event in Calendar, and it is one click away.'
         )
       );
       if (openCalendar) {

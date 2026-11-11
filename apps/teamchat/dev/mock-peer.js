@@ -1,7 +1,7 @@
 /**
- * A stand-in for puter.peer for /mock.html: real RTCPeerConnections between
+ * A stand-in for everything.peer for /mock.html: real RTCPeerConnections between
  * tabs of this origin (or within one), signalled over a BroadcastChannel in
- * place of Puter's signaller. Enough of the API for huddles: serve() with
+ * place of Everything's signaller. Enough of the API for huddles: serve() with
  * generated codes or room names, connect(), a server's `connection` event
  * carrying the connector's identity, `conn.owner`, `conn.peerconnection`,
  * send/close and the open/message/close/error events.
@@ -180,7 +180,7 @@ export function createMockPeer({ user }) {
     async serve(opts = {}) {
       if (opts.name !== undefined && !/^[a-z0-9](?:[a-z0-9-]{1,62}[a-z0-9])?$/.test(String(opts.name))) throw new TypeError('Not a valid room name');
       const code = opts.name || `MK-${rand()}`;
-      // The same identity serving a name again takes it over, as Puter does.
+      // The same identity serving a name again takes it over, as Everything does.
       servers.get(code)?.close();
       const server = new MockServer(code);
       server._onClose = () => {
@@ -193,7 +193,7 @@ export function createMockPeer({ user }) {
       const pc = new RTCPeerConnection(RTC);
       const connId = rand(8);
       const conn = new MockConn(pc, { owner: null, room: /^[a-z]/.test(String(code)) ? code : undefined });
-      conn.attachChannel(pc.createDataChannel('puter'));
+      conn.attachChannel(pc.createDataChannel('everything'));
       const rec = { pc, conn, queued: [], answered: false, timer: null };
       dials.set(connId, rec);
       conn.addEventListener('close', () => {

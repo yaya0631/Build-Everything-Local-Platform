@@ -290,7 +290,7 @@ export class App {
     if (d.drawing.modified) this.shell.title.append(h('span.title-mod', 'Edited'));
     document.title = `${d.drawing.modified ? '* ' : ''}${d.name} - CAD`;
     try {
-      if (platform.puterEnv() === 'app') puter.ui.setWindowTitle?.(`${d.name} - CAD`);
+      if (platform.everythingEnv() === 'app') everything.ui.setWindowTitle?.(`${d.name} - CAD`);
     } catch {
       /* ignore */
     }
@@ -483,9 +483,9 @@ export class App {
   // Files -----------------------------------------------------------------------------
 
   async open() {
-    if (storage.usePuterPickers()) {
+    if (storage.useEverythingPickers()) {
       try {
-        const f = await storage.puterOpenPicker();
+        const f = await storage.everythingOpenPicker();
         if (f) await this.openBuffer(f.buffer, f.name, { source: 'cloud', path: f.path });
       } catch (err) {
         this.fileError('open', err);
@@ -573,7 +573,7 @@ export class App {
       const blob = await this.encode(doc, kind);
       let downloaded = false;
       if (doc.file.source === 'cloud') {
-        if (!(await this.ensureSignedIn('save to your Puter drive'))) return false;
+        if (!(await this.ensureSignedIn('save to your Everything drive'))) return false;
         await storage.cloudWrite(doc.file.path, blob);
       } else {
         const r = await storage.deviceSave(blob, doc.file.name || `${doc.name}${kind === 'dxf' ? '.dxf' : NATIVE_EXT}`, doc.file.handle);
@@ -599,14 +599,14 @@ export class App {
   async saveAs(arg) {
     const doc = arg instanceof Doc ? arg : this.doc;
     if (!doc) return false;
-    if (storage.usePuterPickers()) {
+    if (storage.useEverythingPickers()) {
       const kind = await dialogs.formatChoice(this, doc);
       if (!kind) return false;
       const rev = doc.drawing.revision;
       try {
         const blob = await this.encode(doc, kind);
         // The picker never settles when cancelled, so nothing after it may hold state.
-        const item = await storage.puterSavePicker(blob, `${doc.name}${kind === 'dxf' ? '.dxf' : NATIVE_EXT}`);
+        const item = await storage.everythingSavePicker(blob, `${doc.name}${kind === 'dxf' ? '.dxf' : NATIVE_EXT}`);
         if (!item) return false;
         doc.file = { source: 'cloud', path: item.path, kind, name: item.name };
         doc.name = baseName(item.name);
@@ -626,7 +626,7 @@ export class App {
       const fileName = `${target.name}${target.kind === 'dxf' ? '.dxf' : NATIVE_EXT}`;
       let downloaded = false;
       if (target.source === 'cloud') {
-        if (!(await this.ensureSignedIn('save to your Puter drive'))) return false;
+        if (!(await this.ensureSignedIn('save to your Everything drive'))) return false;
         const path = `${storage.CLOUD_DIR}/${fileName}`;
         const same = !!doc.file?.path && (doc.file.path === path || doc.file.path.endsWith(`/${path}`));
         let item;
@@ -682,20 +682,20 @@ export class App {
     }
   }
 
-  /** Files opened from the Puter desktop (double click on a .dxf or .cad). */
+  /** Files opened from the Everything desktop (double click on a .dxf or .cad). */
   async handleLaunchItems() {
-    if (!(await platform.whenPuter())) return;
+    if (!(await platform.whenEverything())) return;
     try {
-      if (platform.puterEnv() !== 'app') return;
+      if (platform.everythingEnv() !== 'app') return;
       // Closing the desktop window asks about unsaved drawings first.
-      puter.ui.onWindowClose?.(async () => {
+      everything.ui.onWindowClose?.(async () => {
         await this.flushAutosave();
         const unsaved = this.docs.filter((d) => d.drawing.modified);
         if (unsaved.length && (!this.ownsSession || this.recoveryFailed)) {
           const ok = await confirmDialog('Close with unsaved drawings?', `${unsaved.length} drawing${unsaved.length === 1 ? ' has' : 's have'} changes that are not saved and will be lost.`, { confirm: 'Close anyway', danger: true });
           if (!ok) return;
         }
-        puter.exit();
+        everything.exit();
       });
       const open = async (items) => {
         for (const it of items || []) {
@@ -707,8 +707,8 @@ export class App {
           }
         }
       };
-      puter.ui.onLaunchedWithItems?.(open);
-      puter.ui.onItemsOpened?.(open);
+      everything.ui.onLaunchedWithItems?.(open);
+      everything.ui.onItemsOpened?.(open);
     } catch {
       /* not in the desktop */
     }
@@ -718,7 +718,7 @@ export class App {
 
   async initAccount() {
     this.renderAccount();
-    if (!(await platform.whenPuter())) return;
+    if (!(await platform.whenEverything())) return;
     this.signedIn = await platform.isSignedIn();
     if (this.signedIn) await this.onSignedIn();
     this.renderAccount();
@@ -747,9 +747,9 @@ export class App {
           'button.btn.sm.signin',
           {
             type: 'button',
-            'aria-label': 'Sign in with Puter',
-            'data-tip': 'Sign in with Puter',
-            'data-tip-desc': 'Save drawings to your Puter drive and sync settings. Drawing works without an account.',
+            'aria-label': 'Sign in with Everything',
+            'data-tip': 'Sign in with Everything',
+            'data-tip-desc': 'Save drawings to your Everything drive and sync settings. Drawing works without an account.',
             onClick: () => this.signIn(),
           },
           icon('log-in', 15),
@@ -772,7 +772,7 @@ export class App {
   accountMenu(anchor) {
     const items = [{ header: `Signed in as ${this.user?.username ?? ''}` }];
     if (platform.canSignOut()) items.push({ label: 'Sign out', icon: 'log-out', action: () => this.signOut() });
-    else items.push({ label: 'Signed in through Puter', disabled: true });
+    else items.push({ label: 'Signed in through Everything', disabled: true });
     showMenu(anchor, items, { alignRight: true, label: 'Account' });
   }
 
@@ -782,7 +782,7 @@ export class App {
       this.signedIn = await platform.isSignedIn();
       if (this.signedIn) {
         await this.onSignedIn();
-        toast('Signed in. You can now save drawings to your Puter drive.', { kind: 'success' });
+        toast('Signed in. You can now save drawings to your Everything drive.', { kind: 'success' });
       }
     } catch (err) {
       // Closing the sign-in window is a choice, not an error.
@@ -810,7 +810,7 @@ export class App {
 
   async ensureSignedIn(reason) {
     if (this.signedIn) return true;
-    const ok = await confirmDialog('Sign in to continue', `Sign in with Puter to ${reason}. Your drawings stay private to your account.`, { confirm: 'Sign in' });
+    const ok = await confirmDialog('Sign in to continue', `Sign in with Everything to ${reason}. Your drawings stay private to your account.`, { confirm: 'Sign in' });
     if (!ok) return false;
     return this.signIn();
   }
@@ -844,7 +844,7 @@ export class App {
 
   async syncSettingsFromCloud() {
     try {
-      const saved = await puter.kv.get('settings');
+      const saved = await everything.kv.get('settings');
       if (saved && typeof saved === 'object') {
         // The record holds only non-default values, so a missing key means the default.
         for (const k of SYNCED_SETTINGS) this.settings[k] = k in saved ? saved[k] : structuredClone(SETTING_DEFAULTS[k]);
@@ -870,7 +870,7 @@ export class App {
         if (JSON.stringify(v) !== JSON.stringify(SETTING_DEFAULTS[k])) changed[k] = v;
       }
       Promise.resolve()
-        .then(() => puter.kv.set('settings', changed))
+        .then(() => everything.kv.set('settings', changed))
         .catch(() => {});
     }, 4000);
   }
@@ -1385,7 +1385,7 @@ export class App {
 
   async openRecent(r) {
     if (r.source === 'cloud') {
-      if (!(await this.ensureSignedIn('open files from your Puter drive'))) return;
+      if (!(await this.ensureSignedIn('open files from your Everything drive'))) return;
       try {
         await this.openBuffer(await storage.cloudRead(r.path), r.name, { source: 'cloud', path: r.path });
       } catch (err) {

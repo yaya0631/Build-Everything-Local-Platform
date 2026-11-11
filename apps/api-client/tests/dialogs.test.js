@@ -32,7 +32,7 @@ async function makeWorkspace() {
 function fakeApp(ws) {
   return {
     ws,
-    session: { signedIn: false, user: null, puter: null },
+    session: { signedIn: false, user: null, everything: null },
     environmentId: null,
     tabs: [],
     activeId: null,

@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Surveys: build questionnaires, share them with a link, and analyze the results, stored in your own Puter cloud.",
+  "description": "Surveys: build questionnaires, share them with a link, and analyze the results, stored in your own Everything cloud.",
   "license": "MIT",
   "scripts": {
     "dev": "vite",

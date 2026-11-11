@@ -9,7 +9,7 @@
  * says how it bills instead, and every figure below is derived from
  * `value` + `billing` + `term` - nothing is stored twice.
  *
- * Pure functions over plain deal objects, so they test without Puter or a
+ * Pure functions over plain deal objects, so they test without Everything or a
  * DOM. Deliberately no dependency on forecast.js: that module reads this
  * one, and the reverse would be a cycle.
  */

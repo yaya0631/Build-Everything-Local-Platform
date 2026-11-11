@@ -7,7 +7,7 @@
  * The DOCX file stays the saved artifact. The room holds the document as it
  * was shared (its base file) and every change since; one tab saves the file:
  * the owner's, the one with the lowest session id when the owner has several
- * open. Everyone else's edits reach the file through it. A room on a Puter
+ * open. Everyone else's edits reach the file through it. A room on an Everything
  * worker keeps changes while the owner is away; the owner's next visit saves
  * them.
  */
@@ -23,7 +23,7 @@ import { canEdit, canManage, decode, encode, randomId, shareLink, INVITE_ROLES }
 const hexToRgba = (hex, alpha) => { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})`; };
 
 /** The SDK, when there is one (the mock SDK in development). */
-const sdk = () => (typeof puter !== 'undefined' ? puter : null);
+const sdk = () => (typeof everything !== 'undefined' ? everything : null);
 
 export { rememberedRoom };
 
@@ -208,13 +208,13 @@ export class LiveSession extends EventTarget {
     return call(sdk(), this.link.server, { op: 'members', room: this.link.room });
   }
   async inviteUser(username, role) {
-    if (this.local) throw new Error('Inviting people needs a document saved to Puter. Local sharing works between tabs of this browser only.');
+    if (this.local) throw new Error('Inviting people needs a document saved to Everything. Local sharing works between tabs of this browser only.');
     return call(sdk(), this.link.server, { op: 'invite-user', room: this.link.room, username, role });
   }
   /** A link that admits whoever opens it with `role` (invitations expire after seven days). */
   async inviteLink(role) {
     if (!INVITE_ROLES.includes(role)) throw new Error('Choose what people with the link can do.');
-    // The app's address alone: the sharer's own query parameters (a test user name, Puter's launch details) stay theirs.
+    // The app's address alone: the sharer's own query parameters (a test user name, Everything's launch details) stay theirs.
     const base = `${location.origin}${location.pathname}`;
     if (this.local) return shareLink(base, { local: true, room: this.link.room, role });
     if (!this.invites.has(role)) this.invites.set(role, call(sdk(), this.link.server, { op: 'invite', room: this.link.room, role }).then(r => r.token));
@@ -257,7 +257,7 @@ export class LiveSession extends EventTarget {
 
 /**
  * Start sharing the open document: a new room holding it (on the owner's
- * Puter worker, or between this browser's tabs for a local document).
+ * Everything worker, or between this browser's tabs for a local document).
  */
 export async function shareDocument({ engine, doc, user, name, baseBytes, local, progress = () => {} }) {
   const room = randomId(10);
@@ -267,7 +267,7 @@ export async function shareDocument({ engine, doc, user, name, baseBytes, local,
     link = { local: true, room };
   } else {
     const owner = sdk();
-    if (!owner) throw new Error('Sharing needs Puter.');
+    if (!owner) throw new Error('Sharing needs Everything.');
     const server = await deploy(owner, progress);
     link = { server, room };
   }

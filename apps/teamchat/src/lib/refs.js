@@ -8,18 +8,18 @@
  *   #/ws/abc123def0@teamchat-x7k2q9pw1a/c/...
  *   #/join/teamchat-x7k2q9pw1a/XXXX-XXXX-XXXX
  *
- * Every call to a worker goes through puter.workers.exec(), which attaches
- * the signed-in user's Puter token to the request whatever the host is. A
+ * Every call to a worker goes through everything.workers.exec(), which attaches
+ * the signed-in user's Everything token to the request whatever the host is. A
  * link therefore decides where that token is sent, so the hosts a reference
  * may name are limited: a localhost:8443 worker (any name; that is the design,
  * a workspace's members talk to its owner's worker), or a host the app was
  * explicitly told about (the configured shared worker, the user's own
- * worker as Puter reports it). A reference to any other host does not parse.
+ * worker as Everything reports it). A reference to any other host does not parse.
  *
  * Shared with the dev harness; no browser globals here.
  */
 
-const PUTER_WORK = '.localhost:8443';
+const EVERYTHING_WORK = '.localhost:8443';
 
 /** Hosts outside localhost:8443 the app may call (see trustServer). */
 const trusted = new Set();
@@ -31,12 +31,12 @@ export function serverKeyOf(url) {
   // case already).
   const host = String(url || '').replace(/^https?:\/\//i, '').replace(/\/.*$/, '').toLowerCase();
   if (!host) return null;
-  return host.endsWith(PUTER_WORK) ? host.slice(0, -PUTER_WORK.length) : host;
+  return host.endsWith(EVERYTHING_WORK) ? host.slice(0, -EVERYTHING_WORK.length) : host;
 }
 
 /**
  * Allow a host outside localhost:8443: the configured shared worker, or the
- * user's own worker as Puter reports it. Takes a URL or a server key.
+ * user's own worker as Everything reports it. Takes a URL or a server key.
  */
 export function trustServer(urlOrKey) {
   const s = String(urlOrKey || '');
@@ -57,9 +57,9 @@ export function isTrustedServer(key) {
 /** Worker URL for a server token (inverse of serverKeyOf); null when the server may not be called. */
 export function serverUrl(key) {
   let k = String(key || '').toLowerCase();
-  if (k.endsWith(PUTER_WORK)) k = k.slice(0, -PUTER_WORK.length);
+  if (k.endsWith(EVERYTHING_WORK)) k = k.slice(0, -EVERYTHING_WORK.length);
   if (!k || !isTrustedServer(k)) return null;
-  return k.includes('.') || k.includes(':') ? `http://${k}` : `http://${k}${PUTER_WORK}`;
+  return k.includes('.') || k.includes(':') ? `http://${k}` : `http://${k}${EVERYTHING_WORK}`;
 }
 
 export function isServerKey(key) {
@@ -92,7 +92,7 @@ export function parseRef(ref) {
   // are the same server, and a reference typed the long way must compare
   // equal to the one the worker's own answer is filed under.
   let server = s.slice(at + 1).toLowerCase();
-  if (server.endsWith(PUTER_WORK)) server = server.slice(0, -PUTER_WORK.length);
+  if (server.endsWith(EVERYTHING_WORK)) server = server.slice(0, -EVERYTHING_WORK.length);
   if (!/^[a-z0-9]{6,20}$/.test(id) || !isServerKey(server)) return null;
   const url = serverUrl(server);
   if (!url) return null;

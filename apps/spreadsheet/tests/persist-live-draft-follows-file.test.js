@@ -3,13 +3,13 @@ import { Doc } from '../src/lib/doc.js';
 import { draftKey, liveDraftKey, saveDraft, loadDraft, listDrafts, draftKeyForFile } from '../src/lib/drafts.js';
 import { Workbook } from '../src/core/workbook.js';
 import { memoryStorage } from './helpers/memory-storage.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 
 let mock;
 // SheetJS is loaded on first use with a real dynamic import; warm it up so no test waits on it.
 beforeAll(async () => { await Doc.blank().toXlsxBlob(); });
-beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); mock = installMockPuter(); vi.useFakeTimers(); });
-afterEach(() => { vi.useRealTimers(); delete globalThis.puter; });
+beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); mock = installMockEverything(); vi.useFakeTimers(); });
+afterEach(() => { vi.useRealTimers(); delete globalThis.everything; });
 
 const PATH = 'Spreadsheets/Budget.xlsx';
 const MOVED = 'Spreadsheets/Q3.xlsx';
@@ -25,14 +25,14 @@ function book(value) {
 }
 
 /**
- * A file with a draft of edits that never reached Puter, offered once and left undecided, then
+ * A file with a draft of edits that never reached Everything, offered once and left undecided, then
  * edited past and closed: the earlier draft waits under the file's key, the later edits beside it.
  * `withUid` says whether the earlier draft names the file (a legacy draft does not).
  */
 async function closedUndecided({ withUid = true } = {}) {
   const bytes = await Doc.blank().toXlsxBlob();
   mock.fs.set(PATH, { blob: bytes, size: bytes.size, modified: 1 });
-  const uid = (await puter.fs.stat(PATH)).uid;
+  const uid = (await everything.fs.stat(PATH)).uid;
   expect(saveDraft(draftKey(PATH), book('recovered edits'), 'Budget', 'rev-old', withUid ? { fileModified: 1000, fileUid: uid } : {})).toBe(true);
   const doc = await Doc.fromPath(PATH);
   expect(text(doc.recoverable)).toBe('recovered edits');
@@ -49,7 +49,7 @@ async function closedUndecided({ withUid = true } = {}) {
 // latest. Now both follow, and the later edits are offered, as they are when the file is reopened where it was.
 it('offers the edits made beside an undecided draft when the file is opened under the name a rename elsewhere gave it, and keeps the draft as an unsaved spreadsheet', async () => {
   await closedUndecided();
-  await puter.fs.rename(PATH, 'Q3.xlsx');
+  await everything.fs.rename(PATH, 'Q3.xlsx');
   const doc = await Doc.fromPath(MOVED);
   try {
     expect(text(doc.recoverable)).toBe('meanwhile');
@@ -68,7 +68,7 @@ it('offers the edits made beside an undecided draft when the file is opened unde
 it('follows the file by the edits kept beside a draft that does not name it, and offers those edits', async () => {
   const uid = await closedUndecided({ withUid: false });
   expect(draftKeyForFile(uid)).toBe(draftKey(PATH)); // found through the edits beside it
-  await puter.fs.rename(PATH, 'Q3.xlsx');
+  await everything.fs.rename(PATH, 'Q3.xlsx');
   const doc = await Doc.fromPath(MOVED);
   try {
     expect(text(doc.recoverable)).toBe('meanwhile');
@@ -86,10 +86,10 @@ it('takes the edits kept beside a draft along when the file is opened by another
   expect(saveDraft(draftKey(PATH), book('recovered edits'), 'Budget', 'rev-old')).toBe(true);
   expect(saveDraft(liveDraftKey(draftKey(PATH)), book('meanwhile'), 'Budget', 'rev-live')).toBe(true);
   // The drive answers for the relative address with the absolute one it keeps.
-  const stat = puter.fs.stat.bind(puter.fs);
-  puter.fs.stat = async (p) => stat(p === PATH ? absolute : p === 'Spreadsheets' ? '/nj/AppData/app/Spreadsheets' : p);
-  const read = puter.fs.read.bind(puter.fs);
-  puter.fs.read = async (p) => read(p === PATH ? absolute : p);
+  const stat = everything.fs.stat.bind(everything.fs);
+  everything.fs.stat = async (p) => stat(p === PATH ? absolute : p === 'Spreadsheets' ? '/nj/AppData/app/Spreadsheets' : p);
+  const read = everything.fs.read.bind(everything.fs);
+  everything.fs.read = async (p) => read(p === PATH ? absolute : p);
   const doc = await Doc.fromPath(PATH);
   try {
     expect(doc.path).toBe(absolute);

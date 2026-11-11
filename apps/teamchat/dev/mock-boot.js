@@ -1,10 +1,10 @@
 /**
  * Dev-only harness: runs the real worker code in the page against a
- * localStorage-backed fake KV, and installs a `puter` global with just the
+ * localStorage-backed fake KV, and installs a `everything` global with just the
  * surface the app uses: auth, the user's own kv, fs, and workers (create,
  * get, list, exec). Each mock user "deploys" their own fake worker the way
  * a real user does, and every fake worker sees its own slice of the store,
- * so the per-owner model is exercised end to end without a Puter account.
+ * so the per-owner model is exercised end to end without an Everything account.
  * Tabs share the store: open one as ?as=alice and another as ?as=bob to
  * watch messages flow between them.
  *
@@ -112,7 +112,7 @@ const runtime = await createWorkerRuntime({
     return u || null;
   },
   // Every mock worker is "deployed" from the same teamchat app, real workers
-  // included, so one shared app uid for all of them is accurate. `puter.events`
+  // included, so one shared app uid for all of them is accurate. `everything.events`
   // itself is not faked below (no mock socket, no share-handle mint answers),
   // so the owner's mode:'own' bootstrap block is real but nothing ever
   // subscribes to it: the mock exercises the events fallback path rather
@@ -121,7 +121,7 @@ const runtime = await createWorkerRuntime({
   loadWorker: () => import('../worker/index.js'),
 });
 
-/* ---- the puter global ---------------------------------------------------- */
+/* ---- the everything global ---------------------------------------------------- */
 
 let signedIn = localStorage.getItem('teamchat:mock:signedin') !== '0';
 const latency = () => new Promise((r) => setTimeout(r, 60 + Math.random() * 120));
@@ -131,7 +131,7 @@ const drivePath = (p) => (String(p).startsWith('/') ? String(p) : `/${currentUse
 
 if (params.get('fakemic')) installFakeDevices();
 
-window.puter = {
+window.everything = {
   env: params.get('env') === 'app' ? 'app' : 'web',
   /* Peer connections between mock tabs: real WebRTC, signalled over a BroadcastChannel. */
   peer: createMockPeer({ user: currentUser }),

@@ -16,7 +16,7 @@ vi.mock('../src/ui/toast.js', () => ({ toast: vi.fn() }));
 vi.mock('../src/views/onboarding.js', () => ({ maybeOnboard: vi.fn() }));
 vi.mock('../src/core/backend.js', async (importOriginal) => {
   const real = await importOriginal();
-  return { ...real, createPuterBackend: () => real.createMemoryBackend() };
+  return { ...real, createEverythingBackend: () => real.createMemoryBackend() };
 });
 vi.mock('../src/team.js', async (importOriginal) => ({
   ...(await importOriginal()),
@@ -28,7 +28,7 @@ describe('sign out', () => {
   it('leaves no offline copy behind when a change was made just before', async () => {
     document.body.innerHTML = '<div id="app"></div>';
     history.replaceState(null, '', '/#/');
-    globalThis.puter = { auth: { isSignedIn: () => true, getUser: async () => ({ username: 'director', uuid: 'u1' }), getProfilePicture: async () => null, signOut: vi.fn() }, kv: {} };
+    globalThis.everything = { auth: { isSignedIn: () => true, getUser: async () => ({ username: 'director', uuid: 'u1' }), getProfilePicture: async () => null, signOut: vi.fn() }, kv: {} };
     const { app } = await import('../src/app.js');
     await import('../src/main.js');
     for (let i = 0; i < 40 && !app.store?.state.loaded; i++) await tick(5);
@@ -39,6 +39,6 @@ describe('sign out', () => {
     window.dispatchEvent(new Event('pagehide'));
     await tick(700);
     expect(await createIdbCache('user:u1').load()).toBeUndefined();
-    delete globalThis.puter;
+    delete globalThis.everything;
   });
 });

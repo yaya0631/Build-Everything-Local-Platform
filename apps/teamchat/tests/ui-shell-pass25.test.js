@@ -3,8 +3,8 @@
  * and the sidebar, driven in node through tests/helpers/dom.js (a small DOM:
  * elements, selectors, bubbling events with capture, focus, matchMedia by
  * viewport and pointer; no CSS), as tests/ui-shell-pass24.test.js drives
- * them: a fresh DOM and a fresh module registry for every test, Puter faked
- * at `puter.workers.exec`, the toast, the theme, the modal layer and
+ * them: a fresh DOM and a fresh module registry for every test, Everything faked
+ * at `everything.workers.exec`, the toast, the theme, the modal layer and
  * navigation mocked.
  */
 import { describe, it, expect, afterEach, vi } from 'vitest';
@@ -35,7 +35,7 @@ async function boot({ width = 1280, ...env } = {}) {
   dom?.uninstall();
   dom = installDom({ width, ...env });
   vi.resetModules();
-  globalThis.puter = { workers: { exec: async () => json({ code: 'not_found', message: 'nope' }, 404) } };
+  globalThis.everything = { workers: { exec: async () => json({ code: 'not_found', message: 'nope' }, 404) } };
   ({ store } = await import('../src/lib/store.js'));
   const { api } = await import('../src/lib/api.js');
   store.wsId = REF;
@@ -67,7 +67,7 @@ afterEach(async () => {
   store = null;
   dom?.uninstall();
   dom = null;
-  delete globalThis.puter;
+  delete globalThis.everything;
   vi.restoreAllMocks();
 });
 
@@ -82,7 +82,7 @@ async function openThreads() {
   const { dom: d } = await boot({ hash: `#/ws/${encodeURIComponent(REF)}/threads` });
   const roots = { 1: rootOf(1, 'u-me'), 2: rootOf(2, 'u2') };
   const threads = { list: [1, 2].map((seq) => ({ id: `c1_t${seq}`, conv: 'c1', seq, at: 5000 + seq, unread: 0, root: roots[seq] })), reads: 0 };
-  globalThis.puter.workers.exec = async (url) => {
+  globalThis.everything.workers.exec = async (url) => {
     const u = new URL(url);
     if (u.pathname.endsWith('/threads')) { threads.reads++; return json({ threads: threads.list }); }
     if (u.pathname.endsWith('/messages')) return json({ messages: [], seq: 0 });
@@ -199,7 +199,7 @@ describe('the Files & links list of a conversation while a listed message is del
     Object.assign(store.conv('c1'), { loaded: true, seq: 2, hasMore: false, messages: messages.map((m) => ({ ...m })) });
     store.act.c.c1 = { s: 2, t: 1000 };
     const searches = [];
-    globalThis.puter.workers.exec = async (url) => {
+    globalThis.everything.workers.exec = async (url) => {
       const u = new URL(url);
       if (u.pathname.endsWith('/search')) {
         searches.push(u.searchParams.get('has'));

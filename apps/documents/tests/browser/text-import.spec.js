@@ -17,7 +17,7 @@ test('a plain-text file opens as one paragraph per line and saves as a document'
   await expect(page.getByRole('textbox', { name: 'Document name' })).toHaveValue('notes');
   expect(await input(page).evaluate(el => [el.selectionStart, el.selectionEnd])).toEqual([0, 0]);
   await expect(page.getByRole('button', { name: 'Undo', exact: true })).toBeDisabled();
-  await expect(page.locator('.canvas-save-status')).toHaveText('Saved to Puter', { timeout: 10000 });
+  await expect(page.locator('.canvas-save-status')).toHaveText('Saved to Everything', { timeout: 10000 });
   await input(page).press('ControlOrMeta+End'); await page.keyboard.type(' and plums');
   const download = page.waitForEvent('download'); await downloadDocx(page);
   const path = info.outputPath('notes.docx'); await (await download).saveAs(path);
@@ -55,7 +55,7 @@ test('a Markdown file opens with its headings, lists, emphasis and table text', 
   expect(await state(page, 'Letter')).toMatchObject({ bullets: 'true' });
   expect(await state(page, 'Restart')).toMatchObject({ numbers: 'true' });
   await state(page, 'a guide'); await expect((await onTab(page, 'insert')).getByRole('button', { name: 'Insert or edit link', exact: true })).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.locator('.canvas-save-status')).toHaveText('Saved to Puter', { timeout: 10000 });
+  await expect(page.locator('.canvas-save-status')).toHaveText('Saved to Everything', { timeout: 10000 });
   const download = page.waitForEvent('download'); await downloadDocx(page);
   const path = info.outputPath('notes.docx'); await (await download).saveAs(path);
   const xml = strFromU8(unzipSync(readFileSync(path))['word/document.xml']);

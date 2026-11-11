@@ -186,7 +186,7 @@ describe('Expand Image commands', () => {
     doc.transact('resize', () => doc.update(frame.id, { anchors: frame.anchors.map((a) => ({ ...a, x: a.x < 50 ? 0 : 120, ix: a.x < 50 ? 0 : 120, ox: a.x < 50 ? 0 : 120, y: a.y < 30 ? 0 : 60, iy: a.y < 30 ? 0 : 60, oy: a.y < 30 ? 0 : 60 })) }));
     const p = app.commands.run('expandImage.fill');
     const dlg = await until(openDlg);
-    // Without Puter AI the dialog says the image is extended locally.
+    // Without Everything AI the dialog says the image is extended locally.
     expect(dlg.textContent).toMatch(/on this device/);
     expect(dlg.querySelector('input[type="radio"]')).toBeNull();
     const before = doc.undoStack.length;
@@ -232,7 +232,7 @@ describe('Expand Image commands', () => {
     expect(at(out, 10, 5)).toEqual([200, 40, 40, 255]);
   });
 
-  it('Fill Bleed generates the margins with Puter AI and keeps the original', async () => {
+  it('Fill Bleed generates the margins with Everything AI and keeps the original', async () => {
     const ai = fakeAI();
     const { app, ed, doc, img, encoded } = await setup({ ai, bleed: 10 });
     expandHooks.decode = async () => makeImage(30, 20, () => [0, 220, 0]);
@@ -263,7 +263,7 @@ describe('Expand Image commands', () => {
     expect(ed.topSelection()).toEqual([img]);
   });
 
-  it('offers the local fill when Puter AI fails', async () => {
+  it('offers the local fill when Everything AI fails', async () => {
     const ai = fakeAI({ fail: { txt2img: new Error('Model unavailable') } });
     const { app, doc, img } = await setup({ ai, bleed: 10 });
     const p = app.commands.run('expandImage.bleed');

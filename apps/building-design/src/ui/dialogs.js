@@ -22,7 +22,7 @@ import { sheetSize } from '../core/sheet.js';
 import { bboxUnion } from '../core/geom.js';
 import { createLevel, boundaryFromExterior, interiorPoint } from '../editor/draw.js';
 import * as exporters from '../io/exporters.js';
-import { isSignedIn, puterAvailable } from '../platform.js';
+import { isSignedIn, everythingAvailable } from '../platform.js';
 
 const field = (label, control, hint) => h('label.field', h('span.field-label', label), control, hint ? h('span.field-hint', hint) : null);
 
@@ -1387,12 +1387,12 @@ export async function placeViewDialog(app, viewId) {
 // Sharing ------------------------------------------------------------------------------------------------
 
 export async function shareDialog(app) {
-  if (!puterAvailable() || !(await isSignedIn().catch(() => false))) {
-    const ok = await confirmDialog('Share Project', 'Sharing uses your Puter account: the project is saved to your Puter storage and shared with the people you choose. Sign in now?', { confirm: 'Sign in' });
+  if (!everythingAvailable() || !(await isSignedIn().catch(() => false))) {
+    const ok = await confirmDialog('Share Project', 'Sharing uses your Everything account: the project is saved to your Everything storage and shared with the people you choose. Sign in now?', { confirm: 'Sign in' });
     if (!ok || !(await app.signIn())) return;
   }
   if (app.file?.source !== 'cloud' || !app.file.path) {
-    toast('Save the project to Puter first.');
+    toast('Save the project to Everything first.');
     const saved = await app.saveAs();
     if (!saved || app.file?.source !== 'cloud') return;
   }
@@ -1404,7 +1404,7 @@ export async function shareDialog(app) {
   const refresh = async () => {
     clear(list);
     try {
-      const shares = await puter.fs.getShares(path);
+      const shares = await everything.fs.getShares(path);
       const items = Array.isArray(shares) ? shares : shares?.items || shares?.shares || [];
       if (!items.length) list.append(h('li', h('span.grow', { style: { color: 'var(--fg-muted)' } }, 'Not shared with anyone yet.')));
       for (const s of items) {
@@ -1417,7 +1417,7 @@ export async function shareDialog(app) {
             h('span.grow', name),
             h('span.file-meta', /write|manage/.test(mode) ? 'Can edit' : 'Can view'),
             h('button.btn.sm.ghost', { type: 'button', onClick: async () => {
-              await puter.fs.unshare(path, s.email ? { email: s.email } : { username: name });
+              await everything.fs.unshare(path, s.email ? { email: s.email } : { username: name });
               refresh();
             } }, 'Remove'),
           ),
@@ -1432,7 +1432,7 @@ export async function shareDialog(app) {
     if (!v) return;
     status.textContent = 'Sharing...';
     try {
-      await puter.fs.share(path, v.includes('@') ? { email: v } : { username: v }, access.value);
+      await everything.fs.share(path, v.includes('@') ? { email: v } : { username: v }, access.value);
       status.textContent = `Shared with ${v}.`;
       who.value = '';
       refresh();
@@ -1580,7 +1580,7 @@ export function helpDialog() {
         'Sheets hold views with a title block and export to PDF.',
       ]),
       ...sec('Files', [
-        'Projects are saved as .bdp files to your Puter storage or to this device. Open projects are also kept in this browser so work survives a reload.',
+        'Projects are saved as .bdp files to your Everything storage or to this device. Open projects are also kept in this browser so work survives a reload.',
         'Export to IFC, OBJ and glTF for other 3D and BIM tools, DXF for CAD, and PDF, SVG or PNG for drawings.',
       ]),
     ),
@@ -1592,7 +1592,7 @@ export function aboutDialog() {
   return openDialog({
     title: 'About Building Design',
     size: 'sm',
-    body: h('div', h('p.dialog-text', 'Building Design is a free, open-source building information modeling app that runs in the browser. It is in early alpha.'), h('p.dialog-text', { style: { marginTop: '8px' } }, 'Built with WebGL2 and Puter. Licensed under the MIT license.')),
+    body: h('div', h('p.dialog-text', 'Building Design is a free, open-source building information modeling app that runs in the browser. It is in early alpha.'), h('p.dialog-text', { style: { marginTop: '8px' } }, 'Built with WebGL2 and Everything. Licensed under the MIT license.')),
     actions: [{ label: 'Close', primary: true, value: null }],
   });
 }

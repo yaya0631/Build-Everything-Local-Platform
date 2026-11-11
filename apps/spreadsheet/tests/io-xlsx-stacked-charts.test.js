@@ -105,7 +105,7 @@ it.each(['clustered', 'stacked', 'percentStacked'])('exports %s columns with an 
       expect(secondary.match(/<c:numFmt formatCode="([^"]+)"/)[1]).toBe(pass ? '0.0%' : 'General');
     }
     const book = X.CFB.find(zip, '/xl/workbook.xml');
-    book.content = new TextEncoder().encode(decode(book).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+    book.content = new TextEncoder().encode(decode(book).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
     book.size = book.content.length;
     wb = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'native.xlsx');
     expect(wb.sheets[0].charts).toHaveLength(2);

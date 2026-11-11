@@ -21,7 +21,7 @@ for (const shared of [false, true])
         test(`${shared ? 'shared' : 'separate'} note edited on page ${editedPage + 1} reopens on ${samePage ? 'the same' : 'the other'} page with ${moved ? 'newer' : 'editor'} focus`, async ({
           page,
         }) => {
-          await page.route('**/sdk/puter.js', (route) => route.abort());
+          await page.route('**/sdk/everything.js', (route) => route.abort());
           const doc = await PDFDocument.create();
           doc.addPage([400, 500]);
           doc.addPage([400, 500]);

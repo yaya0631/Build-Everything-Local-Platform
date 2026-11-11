@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 const text = page => page.getByRole('textbox', { name: 'Document text' });
 
-// The local mock's drive keeps a file's id through a rename, as Puter does: the document list finds a document
+// The local mock's drive keeps a file's id through a rename, as Everything does: the document list finds a document
 // saved elsewhere by it, so renaming one from the list must not make it disappear.
 test('a document saved elsewhere stays listed after it is renamed from the list', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
@@ -13,7 +13,7 @@ test('a document saved elsewhere stays listed after it is renamed from the list'
   await title.fill('Report');
   await title.press('Enter');
   await text(page).press('ControlOrMeta+s');
-  await expect(page.locator('.canvas-save-status')).toHaveAttribute('aria-label', 'Saved to Puter', { timeout: 15000 });
+  await expect(page.locator('.canvas-save-status')).toHaveAttribute('aria-label', 'Saved to Everything', { timeout: 15000 });
   await page.evaluate(() => { location.hash = '#/home'; });
   await expect(page.locator('.file-row .file-name')).toHaveText(['Report']);
   await page.getByRole('button', { name: 'Options for Report.docx' }).click();

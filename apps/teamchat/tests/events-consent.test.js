@@ -43,7 +43,7 @@ let dom = null;
  * A fresh DOM and fresh modules, the store opened as the workspace's own
  * owner. `server` answers every GET/PUT /api/server; swap it mid-test with
  * the returned `setServer` to change what a later look finds. `permsCheck`
- * is what `puter.perms.check` answers (default: not held, so a test that
+ * is what `everything.perms.check` answers (default: not held, so a test that
  * never mentions it sees exactly the pre-healing behaviour); pass `null` to
  * drop `perms.check` off the fake entirely, as an SDK that predates it would.
  */
@@ -58,7 +58,7 @@ async function boot({
   let answer = server;
   const perms = { request: vi.fn(async () => true) };
   if (permsCheck !== null) perms.check = vi.fn(permsCheck);
-  globalThis.puter = {
+  globalThis.everything = {
     appID: 'app-teamchat-test',
     perms,
     workers: {
@@ -100,7 +100,7 @@ async function boot({
 afterEach(() => {
   dom?.uninstall();
   dom = null;
-  delete globalThis.puter;
+  delete globalThis.everything;
   vi.useRealTimers();
 });
 
@@ -199,7 +199,7 @@ describe('the events consent toast', () => {
     expect(toasts()).toBe(1);
     document.querySelector('.toast .toast-action').click();
     await ctx.dom.tick(5);
-    expect(globalThis.puter.perms.request).toHaveBeenCalledWith('permission', { permission: 'manage:kv-share:u-me:app-teamchat-test:tc:ws' });
+    expect(globalThis.everything.perms.request).toHaveBeenCalledWith('permission', { permission: 'manage:kv-share:u-me:app-teamchat-test:tc:ws' });
   });
 });
 
@@ -305,7 +305,7 @@ describe('Turn on: the same switch the toast offers, reachable any time from Wor
     ctx.button.focus();
     ctx.button.click();
     await ctx.dom.tick(5);
-    expect(globalThis.puter.perms.request).toHaveBeenCalledWith('permission', { permission: 'manage:kv-share:u-me:app-teamchat-test:tc:ws' });
+    expect(globalThis.everything.perms.request).toHaveBeenCalledWith('permission', { permission: 'manage:kv-share:u-me:app-teamchat-test:tc:ws' });
     expect(ctx.calls()).toContain('PUT /api/server');
     expect(updatePrefs).toHaveBeenCalledWith({ evConsent: null });
     expect(ctx.row.textContent).toContain('On: your permission is in.');
@@ -320,9 +320,9 @@ describe('Turn on: the same switch the toast offers, reachable any time from Wor
     expect(document.querySelector('.modal-panel').contains(document.activeElement)).toBe(true);
   });
 
-  it('declined in Puter’s own dialog leaves everything as it was', async () => {
+  it('declined in Everything’s own dialog leaves everything as it was', async () => {
     const ctx = await openWithRow(needsConsent);
-    globalThis.puter.perms.request = vi.fn(async () => false);
+    globalThis.everything.perms.request = vi.fn(async () => false);
     const updatePrefs = vi.spyOn(ctx.store, 'updatePrefs');
     ctx.button.click();
     await ctx.dom.tick(5);
@@ -335,7 +335,7 @@ describe('Turn on: the same switch the toast offers, reachable any time from Wor
 
   it('a thrown request restores the button and shows one plain toast, nothing else changed', async () => {
     const ctx = await openWithRow(needsConsent);
-    globalThis.puter.perms.request = vi.fn(async () => { throw new Error('offline'); });
+    globalThis.everything.perms.request = vi.fn(async () => { throw new Error('offline'); });
     ctx.button.click();
     await ctx.dom.tick(5);
     expect(ctx.calls()).not.toContain('PUT /api/server');

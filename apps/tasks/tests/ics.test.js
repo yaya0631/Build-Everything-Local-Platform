@@ -65,7 +65,7 @@ describe('buildICS', () => {
     expect(ics).toContain('DTEND;VALUE=DATE:20260811'); // exclusive end
     expect(ics).toContain('SUMMARY:Renew passport');
     expect(ics).toContain('DTSTAMP:20260804T120000Z');
-    expect(ics).toContain('UID:t1@tasks.puter');
+    expect(ics).toContain('UID:t1@tasks.everything');
   });
 
   it('renders timed tasks as one-hour blocks in floating local time', () => {
@@ -160,7 +160,7 @@ describe('buildICS', () => {
     // Exactly one SUMMARY line (the real one); nothing injected via the id.
     expect(ics.match(/^SUMMARY:/gm)).toHaveLength(1);
     // The newlines are neutralized, keeping the id on a single UID line.
-    expect(ics).toContain('UID:evil\\nSUMMARY:INJECTED\\nUID:x@tasks.puter');
+    expect(ics).toContain('UID:evil\\nSUMMARY:INJECTED\\nUID:x@tasks.everything');
   });
 
   it('never emits an unfolded line longer than 75 octets', () => {

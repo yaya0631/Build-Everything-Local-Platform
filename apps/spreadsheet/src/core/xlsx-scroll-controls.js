@@ -131,7 +131,7 @@ export function exportXlsxScrollControls(wb, sheet, index, xml, rels, { get, set
   };
   const bodies = [];
   for (const [i, control] of controls.entries()) {
-    const id = shapeId++, rid = `puterControl${i + 1}`, propsPath = `/xl/ctrlProps/control${index}_${i + 1}.xml`;
+    const id = shapeId++, rid = `everythingControl${i + 1}`, propsPath = `/xl/ctrlProps/control${index}_${i + 1}.xml`;
     const value = scrollControlValue(wb, sheet.id, control);
     set(propsPath, tag('formControlPr', { xmlns: 'http://schemas.microsoft.com/office/spreadsheetml/2009/9/main', objectType: 'Scroll',
       dx: control.scrollWidth, min: control.min, max: control.max, val: value, inc: control.step, page: control.page, horiz: Number(control.horizontal), fmlaLink: control.linkRef || null }));
@@ -157,22 +157,22 @@ export function exportXlsxScrollControls(wb, sheet, index, xml, rels, { get, set
       + tag('x:PrintObject', {}, control.print ? 'True' : 'False') + (control.linkRef ? tag('x:FmlaLink', {}, xmlText(control.linkRef)) : '')
       + [['Val', value], ['Min', control.min], ['Max', control.max], ['Inc', control.step], ['Page', control.page]].map(([name, val]) => tag(`x:${name}`, {}, val)).join('')
       + (control.scrollWidth != null ? tag('x:Dx', {}, control.scrollWidth) : '') + (control.horizontal ? tag('x:Horiz') : '');
-    vml = vml.replace('</xml>', tag('v:shape', { id: `_x0000_s${id}`, type: '#_puter_scroll', alt: control.description || null,
+    vml = vml.replace('</xml>', tag('v:shape', { id: `_x0000_s${id}`, type: '#_everything_scroll', alt: control.description || null,
       style: `position:absolute;margin-left:${x * .75}pt;margin-top:${y * .75}pt;width:${control.w * .75}pt;height:${control.h * .75}pt`,
       'xmlns:v': 'urn:schemas-microsoft-com:vml', 'xmlns:x': 'urn:schemas-microsoft-com:office:excel' }, tag('x:ClientData', { ObjectType: 'Scroll' }, data)) + '</xml>');
   }
-  vml = vml.replace(/(<xml\b[^>]*>)/, '$1<v:shapetype xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" id="_puter_scroll" coordsize="21600,21600" o:spt="201" path="m,l,21600r21600,l21600,xe"><v:stroke joinstyle="miter"/><v:path shadowok="f" o:extrusionok="f" strokeok="f" fillok="f" o:connecttype="rect"/></v:shapetype>');
+  vml = vml.replace(/(<xml\b[^>]*>)/, '$1<v:shapetype xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" id="_everything_scroll" coordsize="21600,21600" o:spt="201" path="m,l,21600r21600,l21600,xe"><v:stroke joinstyle="miter"/><v:path shadowok="f" o:extrusionok="f" strokeok="f" fillok="f" o:connecttype="rect"/></v:shapetype>');
   set(path, vml);
   contentType(path, 'application/vnd.openxmlformats-officedocument.vmlDrawing');
   set(drawingPath, drawing);
   contentType(drawingPath, 'application/vnd.openxmlformats-officedocument.drawing+xml');
   if (!drawingRel) {
-    rels = rels.replace('</Relationships>', tag('Relationship', { Id: 'puterControlDrawing', Type: `${REL}drawing`, Target: `../drawings/controlDrawing${index}.xml` }) + '</Relationships>');
-    xml = xml.replace(/<legacyDrawing\b|<\/worksheet>/, match => tag('drawing', { 'r:id': 'puterControlDrawing' }) + match);
+    rels = rels.replace('</Relationships>', tag('Relationship', { Id: 'everythingControlDrawing', Type: `${REL}drawing`, Target: `../drawings/controlDrawing${index}.xml` }) + '</Relationships>');
+    xml = xml.replace(/<legacyDrawing\b|<\/worksheet>/, match => tag('drawing', { 'r:id': 'everythingControlDrawing' }) + match);
   }
   if (!existing) {
-    rels = rels.replace('</Relationships>', tag('Relationship', { Id: 'puterControls', Type: `${REL}vmlDrawing`, Target: `../drawings/controls${index}.vml` }) + '</Relationships>');
-    xml = xml.replace('</worksheet>', tag('legacyDrawing', { 'r:id': 'puterControls' }) + '</worksheet>');
+    rels = rels.replace('</Relationships>', tag('Relationship', { Id: 'everythingControls', Type: `${REL}vmlDrawing`, Target: `../drawings/controls${index}.vml` }) + '</Relationships>');
+    xml = xml.replace('</worksheet>', tag('legacyDrawing', { 'r:id': 'everythingControls' }) + '</worksheet>');
   }
   xml = xml.replace('</worksheet>', tag('controls', {}, tag('mc:AlternateContent', { 'xmlns:mc': 'http://schemas.openxmlformats.org/markup-compatibility/2006', 'xmlns:x14': 'http://schemas.microsoft.com/office/spreadsheetml/2009/9/main' }, tag('mc:Choice', { Requires: 'x14' }, bodies.join('')))) + '</worksheet>');
   return { xml, rels };

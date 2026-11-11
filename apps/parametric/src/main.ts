@@ -5,7 +5,7 @@ import { FileOps } from './app/fileops';
 import { StartScreen, bindAccountMenu, refreshAccount, showAlphaNotice } from './app/start';
 import { TaskPane, recentItems } from './app/taskpane';
 import { AssistantPanel } from './assistant/panel';
-import { KV_SETTINGS_KEY, kvGet, kvSet, loadPuter, puter } from './platform/puter';
+import { KV_SETTINGS_KEY, kvGet, kvSet, loadEverything, everything } from './platform/everything';
 import { applyTheme } from './platform/theme';
 import { toast } from './ui/overlay';
 
@@ -59,11 +59,11 @@ async function boot() {
   root.removeAttribute('aria-busy');
   app.newDocument('Part1');
 
-  await loadPuter();
+  await loadEverything();
   void refreshAccount(app);
   void app.loadRemoteSettings();
   files.handleLaunchItems();
-  const launched = !!puter()?.ui?.wasLaunchedWithItems?.();
+  const launched = !!everything()?.ui?.wasLaunchedWithItems?.();
   const restored = launched ? false : await files.checkRecovery();
   if (!restored && !launched) start.show();
   showAlphaNotice();

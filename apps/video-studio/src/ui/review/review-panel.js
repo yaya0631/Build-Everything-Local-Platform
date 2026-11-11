@@ -38,7 +38,7 @@ export function reviewMarkers(threads, version, existing = []) {
 
 export function createReviewPanel(ctx, { deps = {} } = {}) {
   const d = { ensureWorker: ensureWorkerDefault, call: callDefault, Session: ReviewSession, interval: PANEL_POLL_MS, ...deps };
-  const P = () => ctx.puter || globalThis.puter;
+  const P = () => ctx.everything || globalThis.everything;
   const { store } = ctx;
   let session = null;
   let version = 0;
@@ -135,15 +135,15 @@ export function createReviewPanel(ctx, { deps = {} } = {}) {
 
   async function open() {
     if (!reviewAvailable(ctx)) {
-      const signIn = ctx.account?.onSignIn ? h('button.btn.small', { type: 'button' }, 'Sign in to Puter') : null;
+      const signIn = ctx.account?.onSignIn ? h('button.btn.small', { type: 'button' }, 'Sign in to Everything') : null;
       signIn?.addEventListener('click', () => ctx.account.onSignIn());
-      message('Review comments need a Puter account.', signIn);
+      message('Review comments need an Everything account.', signIn);
       return;
     }
     message('Loading review comments...');
-    const puter = P();
-    const server = await d.ensureWorker(puter);
-    const found = await d.call(puter, server, { op: 'review.find', projectId: store.project.id });
+    const everything = P();
+    const server = await d.ensureWorker(everything);
+    const found = await d.call(everything, server, { op: 'review.find', projectId: store.project.id });
     if (!found.review) {
       const share = h('button.btn.small.primary', { type: 'button' }, icon('shareReview', 14), 'Share for review...');
       share.addEventListener('click', () => ctx.openShareReview?.());
@@ -152,7 +152,7 @@ export function createReviewPanel(ctx, { deps = {} } = {}) {
     }
     session?.dispose();
     for (const off of offs.splice(0)) off();
-    session = new d.Session({ puter, server, review: found.review.id, call: d.call, interval: d.interval });
+    session = new d.Session({ everything, server, review: found.review.id, call: d.call, interval: d.interval });
     offs.push(session.on('change', render));
     offs.push(session.on('review', () => {
       renderVersions();

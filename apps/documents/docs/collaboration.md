@@ -5,7 +5,7 @@ artifact: a shared document is a room that holds the document as it was shared a
 since, and one browser tab (the owner's) writes the file. The design follows the Whiteboard and
 Photo Studio apps in this repository (`src/whiteboard/docs/collaboration.md`,
 `src/photo-studio/docs/collaboration.md`): Yjs (MIT) documents, a room service that the owner
-deploys as a Puter Worker, signed requests, an outbox, presence and per-person Undo.
+deploys as an Everything Worker, signed requests, an outbox, presence and per-person Undo.
 
 ## Where things live
 
@@ -15,7 +15,7 @@ deploys as a Puter Worker, signed requests, an outbox, presence and per-person U
 | `src/collab/text-diff.js` | A bounded shortest-edit-script diff for the changed stretch of a body |
 | `src/collab/binding.js` | Binds a `CanvasEditor` to the shared document: local transactions out, remote updates in, selection carried through, per-person Undo, roles, the single-editor fallback |
 | `src/collab/client.js` | A person's connection: the Yjs document, the outbox (IndexedDB), roster and status |
-| `src/collab/transports.js` | `MemoryHub` (unit tests), `BroadcastRoom` (tabs of one browser: the playground and browser tests), `WorkerTransport` (a room on the owner's Puter worker) |
+| `src/collab/transports.js` | `MemoryHub` (unit tests), `BroadcastRoom` (tabs of one browser: the playground and browser tests), `WorkerTransport` (a room on the owner's Everything worker) |
 | `src/collab/server/service.js`, `server/auth.js`, `server/index.js` | The room service and the worker entry (`npm run build:worker` → `public/worker/documents-worker.js`) |
 | `src/collab/protocol.js`, `auth.js`, `api.js` | Roles, encodings, signatures, links, colors; signed requests and worker deployment |
 | `src/collab/live.js` | A live session for an open document: sharing, joining, presence painting, which tab saves, access management |
@@ -98,18 +98,18 @@ mirror these stacks.
 
 ## Rooms, roles and transport
 
-**Puter rooms.** Sharing a document saved to Puter deploys (once) or updates the owner's room worker
-with `puter.workers.create`, keeps its address in the owner's app KV, creates a room holding the
+**Everything rooms.** Sharing a document saved to Everything deploys (once) or updates the owner's room worker
+with `everything.workers.create`, keeps its address in the owner's app KV, creates a room holding the
 original file (zipped from the opened package, so everyone's picture ids match) and the initial
 Yjs state, and remembers the room for the file so the owner's next visit rejoins it. Requests are
-signed as in the Whiteboard and Photo Studio apps: the browser mints a restricted Puter token that
+signed as in the Whiteboard and Photo Studio apps: the browser mints a restricted Everything token that
 can only read an identity file with its public key and signs the worker origin, file path and body
-digest; the worker validates the token with Puter (`fs.stat` with strong consistency) and the
+digest; the worker validates the token with Everything (`fs.stat` with strong consistency) and the
 signature.
 
 The worker keeps, in the owner's KV and files: room metadata, members (`owner`, `editor`,
 `commenter`, `viewer`, `removed`), invitation links (hashed tokens, seven days), invitations by
-Puter username, a numbered edit log with checkpoints every 100 updates, presence entries (30 s),
+Everything username, a numbered edit log with checkpoints every 100 updates, presence entries (30 s),
 and the base file. It enforces roles on every request, independently of the interface:
 
 - viewers cannot commit;
@@ -124,7 +124,7 @@ requests, every second while others are here, every three seconds when alone, an
 commit or a caret move. (The worker-based peer links of the Whiteboard app, which lower latency
 further, are not used yet.)
 
-**Local rooms.** A document that is not on Puter (the playground) can be shared between tabs of the
+**Local rooms.** A document that is not on Everything (the playground) can be shared between tabs of the
 same browser over `BroadcastChannel`: the sharing tab holds the state and the file, and tabs that
 join ask for them. Roles come from the link and each tab enforces them; there is no server. This is
 for evaluating co-editing without an account and for the browser tests.
@@ -169,19 +169,19 @@ document from then on.
 
 Share (title bar, File → Share → Invite People…, the File view's Share page, Tools menu) opens one dialog:
 
-- **Invite people**: Puter usernames (invitation by name: they open the link once signed in) or
-  email addresses (a mail from the person's own Puter address with a link that admits them), with
+- **Invite people**: Everything usernames (invitation by name: they open the link once signed in) or
+  email addresses (a mail from the person's own Everything address with a link that admits them), with
   *Can edit*, *Can comment* or *Can view* and an optional message.
 - **Share a link**: what people with the link can do, Copy Link, and Turn Off Earlier Links.
 - **People with access**: members with their role (change or remove, owner only), who is here now,
   pending invitations.
 - **Send a copy by email**: the document as a Word file or a PDF, attached to a mail from the
-  person's Puter address (the Calendar app's `puter.email.send` approach: permission asked once on
+  person's Everything address (the Calendar app's `everything.email.send` approach: permission asked once on
   `forbidden`), or downloaded instead.
 - **Stop Sharing** (owner).
 
 Sharing starts with the first invitation or link; until then nothing leaves the device. A document
-must be saved to Puter first (the dialog saves it).
+must be saved to Everything first (the dialog saves it).
 
 ## Version History
 
@@ -189,7 +189,7 @@ File → Browse Version History, the File view's Info page or the title bar's do
 open a pane listing the saved versions (`lib/versions.js`: one every ten minutes of editing, newest
 30 kept), grouped by day, each with the account that saved it and an optional name, kept beside the
 snapshot as `<snapshot>.json`. A document in the app folder keeps its snapshots under
-`Documents/.versions/<name>/`; one elsewhere on the drive (inside the Puter desktop, Save puts a new
+`Documents/.versions/<name>/`; one elsewhere on the drive (inside the Everything desktop, Save puts a new
 document where the user chooses) under `Documents/.versions-by-id/<tag>/`, named after the file's id,
 which follows it through renames and moves. **Save a Version Now** asks for an optional name. A version opens
 read-only beside the document in its own read-only canvas (both fit their width while it is open);
@@ -204,7 +204,7 @@ the revised one; **Restore**:
 ## Assistant
 
 The Assistant pane (its button in the title bar beside Comments, the Tools or View menu,
-Cmd/Ctrl+Shift+I, or the small button at the bottom right of the pages) is a conversation with Puter's AI about and for this document,
+Cmd/Ctrl+Shift+I, or the small button at the bottom right of the pages) is a conversation with Everything's AI about and for this document,
 consistent with the Spreadsheet and Presentation apps' assistant panels. Above the box the person
 chooses what goes with a message, *Selection* or *Whole document*, and the line under it says how
 many words that is; nothing else is sent. Suggestions in an empty conversation run the writing
@@ -216,7 +216,7 @@ Replies are read as text for the document or as an answer. Text shows as a sugge
 Selection*, *Insert Below*, *Insert After Selection* or *Insert at Cursor* — as one model
 transaction that Undo (or the reply's own Undo) takes back; in a shared document it is shared like
 any edit. Applying checks that the selected passage has not changed since the request. Without
-Puter's AI (the playground) the pane, its buttons and menu items are not offered.
+Everything's AI (the playground) the pane, its buttons and menu items are not offered.
 
 ## Limits and known gaps
 
@@ -232,8 +232,8 @@ Puter's AI (the playground) the pane, its buttons and menu items are not offered
   document properties) are not shared live; the writing tab saves its own.
 - Design changes that rewrite the package (themes, style sets, watermarks, page backgrounds) are
   refused while a document is shared: the editor would reopen on a package the room does not hold.
-- Transport is request-based (about one second of latency on Puter); the Whiteboard app's WebRTC
-  peer links are not used yet. Puter event notices are not used either.
+- Transport is request-based (about one second of latency on Everything); the Whiteboard app's WebRTC
+  peer links are not used yet. Everything event notices are not used either.
 - Remote carets are painted in the body only (not in headers, footers or notes).
 - Version details (author, name) exist only for versions saved by this version of the app.
 - Local (BroadcastChannel) rooms enforce roles in each tab only and need the sharing tab to stay open
@@ -249,10 +249,10 @@ Puter's AI (the playground) the pane, its buttons and menu items are not offered
 - `tests/collab-binding.test.js`: the binding on a story session with an in-process hub: joining,
   concurrent typing with carets kept, per-person Undo/Redo, presence through edits, viewer and
   commenter enforcement (client and server check), the offline outbox, single-editor mode.
-- `tests/collab-service.test.js`: the room service with an in-memory Puter: invitations and roles,
+- `tests/collab-service.test.js`: the room service with an in-memory Everything: invitations and roles,
   role enforcement on commits, presence and incremental synchronization, stopping.
 - `tests/collab-features.test.js`: Assistant prompts and replies, mail sending with the permission
   retry, version details.
 - `tests/browser/collab.spec.js`: two tabs typing at once converge and Undo is per person; a
-  view-only link; two Puter accounts (mock SDK + dev room server) with a comment-only invitation;
+  view-only link; two Everything accounts (mock SDK + dev room server) with a comment-only invitation;
   restoring a named version; the Assistant applying and undoing a rewrite.

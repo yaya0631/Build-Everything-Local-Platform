@@ -10,9 +10,9 @@ test('shows a cropped profile picture in home and editor, sharing the cache acro
   expect(await image.evaluate(img => [img.offsetWidth, img.offsetHeight, getComputedStyle(img).objectFit])).toEqual([32, 32, 'cover']);
   await page.evaluate(async () => {
     const { session } = await import('/src/lib/session.js');
-    const original = puter.auth.getProfilePicture;
+    const original = everything.auth.getProfilePicture;
     window.pictureCalls = 0;
-    puter.auth.getProfilePicture = (...args) => { window.pictureCalls++; return original(...args); };
+    everything.auth.getProfilePicture = (...args) => { window.pictureCalls++; return original(...args); };
     window.avatarImage = document.querySelector('.user-btn img');
     session.setTheme('dark');
   });
@@ -32,9 +32,9 @@ test('shows a cropped profile picture in home and editor, sharing the cache acro
 });
 
 test('keeps the initial while loading, recovers from an undecodable image, and ignores a late response after sign-out', async ({ page }) => {
-  await page.route('**/dev/puter-mock.js', async route => {
+  await page.route('**/dev/everything-mock.js', async route => {
     const response = await route.fetch();
-    await route.fulfill({ response, body: `${await response.text()}\nwindow.pictureCalls = 0; puter.auth.getProfilePicture = () => { window.pictureCalls++; return new Promise(resolve => { window.resolvePicture = resolve; }); };` });
+    await route.fulfill({ response, body: `${await response.text()}\nwindow.pictureCalls = 0; everything.auth.getProfilePicture = () => { window.pictureCalls++; return new Promise(resolve => { window.resolvePicture = resolve; }); };` });
   });
   await page.goto('/mock.html#/new');
   await expect(page.getByRole('textbox', { name: 'Document text' })).toBeVisible();
@@ -57,13 +57,13 @@ test('keeps the initial while loading, recovers from an undecodable image, and i
   await expect(account(page).locator('img')).toHaveCount(0);
   await page.evaluate(async () => {
     const { session } = await import('/src/lib/session.js');
-    puter.auth.signOut(); await session.refresh();
-    await puter.auth.signIn(); await session.refresh();
+    everything.auth.signOut(); await session.refresh();
+    await everything.auth.signIn(); await session.refresh();
   });
   expect(await page.evaluate(() => window.pictureCalls)).toBe(2);
   await page.evaluate(async () => {
     const { session } = await import('/src/lib/session.js');
-    puter.auth.signOut(); await session.refresh();
+    everything.auth.signOut(); await session.refresh();
     window.resolvePicture('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl6ZAAAAABJRU5ErkJggg==');
   });
   const guest = page.getByRole('button', { name: 'Account menu. Not signed in', exact: true });
@@ -72,9 +72,9 @@ test('keeps the initial while loading, recovers from an undecodable image, and i
 });
 
 test('does not request a picture or prompt for authentication when signed out', async ({ page }) => {
-  await page.route('**/dev/puter-mock.js', async route => {
+  await page.route('**/dev/everything-mock.js', async route => {
     const response = await route.fetch();
-    await route.fulfill({ response, body: `${await response.text()}\nwindow.pictureCalls = 0; window.signInCalls = 0; puter.auth.getProfilePicture = () => { window.pictureCalls++; return Promise.resolve(null); }; puter.auth.signIn = () => { window.signInCalls++; };` });
+    await route.fulfill({ response, body: `${await response.text()}\nwindow.pictureCalls = 0; window.signInCalls = 0; everything.auth.getProfilePicture = () => { window.pictureCalls++; return Promise.resolve(null); }; everything.auth.signIn = () => { window.signInCalls++; };` });
   });
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));

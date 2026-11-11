@@ -3,10 +3,10 @@ import { PDFDocument, PDFHexString, PDFName, PDFString, StandardFonts } from 'pd
 import { addNote } from '../../src/core/notes.js';
 import { addHighlight, rectQuad } from '../../src/core/highlight.js';
 
-const PUTER_MOCK = `window.puter = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async () => ({}) }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
-async function mockPuter(page) {
-  await page.route('**/sdk/puter.js', (route) =>
-    route.fulfill({ contentType: 'application/javascript', body: PUTER_MOCK }),
+const EVERYTHING_MOCK = `window.everything = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async () => ({}) }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
+async function mockEverything(page) {
+  await page.route('**/sdk/everything.js', (route) =>
+    route.fulfill({ contentType: 'application/javascript', body: EVERYTHING_MOCK }),
   );
 }
 async function openPdf(page, doc) {
@@ -32,7 +32,7 @@ async function showSidebar(page) {
 }
 
 test('the Comments tab lists notes and highlights by page and jumps to each', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   const font = await doc.embedFont(StandardFonts.Helvetica);
@@ -108,7 +108,7 @@ test('the Comments tab lists notes and highlights by page and jumps to each', as
 });
 
 test('undo and redo keep keyboard focus on the updated comment', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([400, 400]);
@@ -137,7 +137,7 @@ test('undo and redo keep keyboard focus on the updated comment', async ({ page }
 });
 
 test('a PDF without comments says so, and the tabs cycle with the arrow keys', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([400, 400]);
@@ -163,7 +163,7 @@ test('a PDF without comments says so, and the tabs cycle with the arrow keys', a
 });
 
 test('a PDF with more comments than the list holds says so', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   const total = 2001;
@@ -195,7 +195,7 @@ test('a PDF with more comments than the list holds says so', async ({ page }) =>
 test('invalid modification dates do not invent timestamps in the comments list or note editor', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   const sheet = doc.addPage([400, 400]);
@@ -222,7 +222,7 @@ test('invalid modification dates do not invent timestamps in the comments list o
 test('a locked highlight chosen in the Comments tab opens its page without edit controls', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([400, 400]);
@@ -249,7 +249,7 @@ test('a locked highlight chosen in the Comments tab opens its page without edit 
 });
 
 test('a comment chosen in the Comments tab is brought into view on its page', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   const font = await doc.embedFont(StandardFonts.Helvetica);
@@ -291,7 +291,7 @@ test.describe('narrow side panel', () => {
   test('choosing a page or a comment by keyboard hands focus to what it opens', async ({
     page,
   }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     const doc = await PDFDocument.create();
     for (let i = 0; i < 3; i++) doc.addPage([400, 400]);

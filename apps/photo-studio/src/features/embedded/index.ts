@@ -29,7 +29,7 @@ export function installEmbedded(e: Editor) {
   // ----- File -----
   cmd('file.open-as-embedded', 'Open as Embedded Object…', async () => (await convert()).openAsEmbedded(e), { recordable: false, description: 'Open a file as a new document holding it as one embedded object' });
   cmd('file.place-linked', 'Place Linked…', async () => (await linked()).placeLinked(e, 'local'), { enabled: hasDoc, recordable: false, description: 'Place a file that can be updated when it changes' });
-  cmd('file.place-linked-cloud', 'Place Linked from Puter…', async () => (await linked()).placeLinked(e, 'puter'), { enabled: hasDoc, recordable: false, description: 'Place a Puter file, re-read from its path on update' });
+  cmd('file.place-linked-cloud', 'Place Linked from Everything…', async () => (await linked()).placeLinked(e, 'everything'), { enabled: hasDoc, recordable: false, description: 'Place an Everything file, re-read from its path on update' });
   cmd('file.load-files-into-stack', 'Load Files into Stack…', async () => (await stack()).loadFilesIntoStack(e), { recordable: false, description: 'Open several files as layers of one document, optionally as a stack' });
   // ----- Layer → Embedded Objects -----
   cmd('layer.embed-convert', 'Convert to Embedded Object', async () => (await convert()).convertToEmbedded(e), { enabled: (e) => e.selectedLayers.length > 0, description: 'Combine the selected layers into one non-destructive object' });
@@ -46,7 +46,7 @@ export function installEmbedded(e: Editor) {
   cmd('layer.embed-convert-linked', 'Convert to Linked…', async () => (await linked()).convertToLinked(e), {
     enabled: (e) => object(e) && !hasLinked(e, false),
     recordable: false,
-    description: 'Save the contents to a file on this device or on Puter and link to it',
+    description: 'Save the contents to a file on this device or on Everything and link to it',
   });
   cmd('layer.embed-to-layers', 'Convert to Layers', async () => (await convert()).convertToLayers(e), { enabled: object, description: 'Unpack the contents into a group in place' });
   cmd('layer.embed-rasterize', 'Rasterize', async () => {

@@ -210,7 +210,7 @@ describe('Lyrics in the Captions tab', () => {
   function mount({ signedIn = true, deps } = {}) {
     const { p, music } = project();
     store = new EditorStore(p);
-    const ctx = { store, player: null, library: { backend: { kind: signedIn ? 'puter' : 'opfs' } }, account: { onSignIn: vi.fn() }, lyricsDeps: deps };
+    const ctx = { store, player: null, library: { backend: { kind: signedIn ? 'everything' : 'opfs' } }, account: { onSignIn: vi.fn() }, lyricsDeps: deps };
     ctx.actions = createActions(ctx);
     tab = captionsTab(ctx);
     document.body.append(tab.el);
@@ -220,20 +220,20 @@ describe('Lyrics in the Captions tab', () => {
 
   beforeEach(() => {
     setPref('captionOpts', {});
-    globalThis.puter = { ai: {} };
+    globalThis.everything = { ai: {} };
   });
 
   afterEach(() => {
     tab?.dispose();
     tab?.el.remove();
-    delete globalThis.puter;
+    delete globalThis.everything;
     document.querySelectorAll('.dialog, dialog').forEach((d) => d.remove());
   });
 
   it('asks to sign in when signed out', () => {
     const { ctx } = mount({ signedIn: false });
     expect(tab.el.textContent).toMatch(/Sign in to create lyrics/);
-    [...tab.el.querySelectorAll('button')].find((b) => b.textContent.includes('Sign in to Puter')).click();
+    [...tab.el.querySelectorAll('button')].find((b) => b.textContent.includes('Sign in to Everything')).click();
     expect(ctx.account.onSignIn).toHaveBeenCalled();
   });
 

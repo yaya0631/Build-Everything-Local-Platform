@@ -12,7 +12,7 @@ const drive = {
   read: vi.fn(async () => { throw new Error('no file'); }),
   delete: vi.fn(async () => true),
 };
-globalThis.puter = { fs: drive };
+globalThis.everything = { fs: drive };
 
 beforeEach(() => {
   drive.write.mockClear();

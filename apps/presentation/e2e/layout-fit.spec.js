@@ -6,10 +6,10 @@ import { test, expect } from "@playwright/test";
 test.setTimeout(90_000);
 
 async function stub(page) {
-  await page.route("**/sdk/puter.js", (r) =>
+  await page.route("**/sdk/everything.js", (r) =>
     r.fulfill({
       contentType: "application/javascript",
-      body: 'window.puter={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',
+      body: 'window.everything={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',
     }),
   );
 }

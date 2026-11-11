@@ -8,8 +8,8 @@ test('check spelling suggests corrections and applies the accepted ones', async 
     const room = app.doc.all('room')[0];
     app.commit('typo', () => app.doc.update(room.id, { name: 'Livng' }));
     window.__room = room.id;
-    window.puter = {
-      ...(window.puter || {}),
+    window.everything = {
+      ...(window.everything || {}),
       auth: { isSignedIn: () => true, getUser: async () => ({ username: 'me' }) },
       ai: {
         chat: async (prompt) => {
@@ -30,12 +30,12 @@ test('check spelling suggests corrections and applies the accepted ones', async 
 
 test('the assistant runs the functions the AI asks for and shows the answer', async ({ page }) => {
   const errors = await openApp(page, '?sample');
-  // A stand-in for Puter's AI: first it asks for a door schedule, then it answers.
+  // A stand-in for Everything's AI: first it asks for a door schedule, then it answers.
   await page.evaluate(() => {
     let round = 0;
     window.__aiCalls = [];
-    window.puter = {
-      ...(window.puter || {}),
+    window.everything = {
+      ...(window.everything || {}),
       auth: { isSignedIn: () => true, getUser: async () => ({ username: 'me' }) },
       ai: {
         chat: async (messages, opts) => {

@@ -1,7 +1,7 @@
 /**
  * The store's side of a huddle: the seat it takes on the worker and what it
  * makes of the rosters the polls bring while the Huddle object carries the
- * media. Puter is faked at `puter.workers.exec` and `puter.peer`; the media
+ * media. Everything is faked at `everything.workers.exec` and `everything.peer`; the media
  * devices are absent, as in a browser that refused the microphone, which
  * the huddle takes as listen-only.
  */
@@ -50,7 +50,7 @@ let notices;
 beforeEach(() => {
   calls = [];
   notices = [];
-  globalThis.puter = {
+  globalThis.everything = {
     peer: {
       async serve() { return new FakeServer('TAB-B'); },
       async connect() { return new FakeConn(); },
@@ -166,7 +166,7 @@ describe('who may connect to a private channel\'s huddle', () => {
     store.me.channels = ['c1'];
     store.me.dms = {};
     let server = null;
-    globalThis.puter.peer.serve = async () => { server = new FakeServer('TAB-B'); return server; };
+    globalThis.everything.peer.serve = async () => { server = new FakeServer('TAB-B'); return server; };
     answer = (method, path) => {
       if (method === 'POST' && path.endsWith('/huddle')) return json({ huddle: { by: 'alice', at: T0, m: { alice: { at: T0, j: T0, inv: 'TAB-B' } } }, started: true, now: T0 });
       if (method === 'DELETE') return json({ ok: true, ended: true });

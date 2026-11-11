@@ -13,7 +13,7 @@ const make = type => ({ type, legend: false, colors: ['none'],
     pointColors:[[{index:1,color:'#aa4400'}]]} });
 const native = async wb => {
   const zip=X.CFB.read(new Uint8Array(await(await workbookToXlsx(wb)).arrayBuffer()),{type:'array'});
-  const p=X.CFB.find(zip,'/xl/workbook.xml');p.content=new TextEncoder().encode(new TextDecoder().decode(p.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,''));p.size=p.content.length;
+  const p=X.CFB.find(zip,'/xl/workbook.xml');p.content=new TextEncoder().encode(new TextDecoder().decode(p.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,''));p.size=p.content.length;
   return workbookFromFile(X.CFB.write(zip,{type:'array',fileType:'zip'}),'paint.xlsx');
 };
 it('distinguishes no fill from automatic color and invalid paint',()=>{

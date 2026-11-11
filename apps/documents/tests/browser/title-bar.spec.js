@@ -13,9 +13,9 @@ test('a rename that fails sizes the title back to the name it keeps', async ({ p
   await openEditor(page);
   await text(page).fill('Draft');
   await (await fileCommand(page, 'Save')).click();
-  await expect(page.locator('.canvas-save-status')).toHaveText('Saved to Puter');
+  await expect(page.locator('.canvas-save-status')).toHaveText('Saved to Everything');
   const width = await title(page).evaluate(el => el.style.width);
-  await page.evaluate(() => { window.puter.fs.rename = async () => { throw new Error('A file with that name already exists'); }; });
+  await page.evaluate(() => { window.everything.fs.rename = async () => { throw new Error('A file with that name already exists'); }; });
   await title(page).fill('A considerably longer name that the rename will refuse');
   await title(page).press('Enter');
   await expect(title(page)).toHaveValue('Untitled document');
@@ -26,9 +26,9 @@ test('a save that fails stands out in the title bar, in light and dark', async (
   await openEditor(page, 1440);
   await text(page).fill('Draft');
   const pill = page.locator('.ed-titlebar .canvas-save-status');
-  await expect(pill).toHaveAttribute('aria-label', 'Saved to Puter');
+  await expect(pill).toHaveAttribute('aria-label', 'Saved to Everything');
   const quiet = await pill.evaluate(el => getComputedStyle(el).color);
-  await page.evaluate(() => window.__puterFaults.push({ op: 'write', message: 'The cloud is unreachable' }));
+  await page.evaluate(() => window.__everythingFaults.push({ op: 'write', message: 'The cloud is unreachable' }));
   await text(page).press('End');
   await page.keyboard.type(' two');
   await expect(pill).toHaveAttribute('aria-label', 'Not saved');
@@ -37,9 +37,9 @@ test('a save that fails stands out in the title bar, in light and dark', async (
     await expect.poll(() => pill.evaluate(el => getComputedStyle(el).color)).toBe(critical);
   }
   await page.emulateMedia({ colorScheme: 'light' });
-  await page.evaluate(() => { window.__puterFaults.length = 0; });
+  await page.evaluate(() => { window.__everythingFaults.length = 0; });
   await pill.click();
-  await expect(pill).toHaveAttribute('aria-label', 'Saved to Puter');
+  await expect(pill).toHaveAttribute('aria-label', 'Saved to Everything');
   expect(await pill.evaluate(el => getComputedStyle(el).color)).toBe(quiet);
 });
 
@@ -183,9 +183,9 @@ test('the document name stays put while AutoSave goes from unsaved to saving to 
         .observe(status, { attributes: true, childList: true, subtree: true });
     });
     await text(page).pressSequentially('Draft', { delay: 30 });
-    await expect(page.locator('.ed-titlebar .canvas-save-status')).toHaveAttribute('aria-label', 'Saved to Puter');
+    await expect(page.locator('.ed-titlebar .canvas-save-status')).toHaveAttribute('aria-label', 'Saved to Everything');
     const seen = await page.evaluate(() => window.titleAt);
-    expect(new Set(seen.map(([state]) => state)), `${width}px`).toEqual(new Set(['Unsaved changes', 'Saving…', 'Saved to Puter']));
+    expect(new Set(seen.map(([state]) => state)), `${width}px`).toEqual(new Set(['Unsaved changes', 'Saving…', 'Saved to Everything']));
     expect([...new Set(seen.map(([, left]) => left))], `${width}px: ${JSON.stringify(seen)}`).toHaveLength(1);
     // And the name is shown whole.
     expect(await title(page).evaluate(el => el.scrollWidth <= el.clientWidth), `${width}px`).toBe(true);

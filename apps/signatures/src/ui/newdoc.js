@@ -44,7 +44,7 @@ export function openNewDocModal({ navigate }) {
   },
     el('span', { html: icon('cloudUpload', 30) }),
     el('span.dz-title', {}, 'Choose files or drop them here'),
-    el('span.dz-sub', {}, `PDFs and images, up to ${formatBytes(MAX_FILE_BYTES)} each. They are uploaded to your own Puter cloud.`)
+    el('span.dz-sub', {}, `PDFs and images, up to ${formatBytes(MAX_FILE_BYTES)} each. They are uploaded to your own Everything cloud.`)
   );
 
   bindDropzone(zone, (file, all) => files.add(all || [file]));

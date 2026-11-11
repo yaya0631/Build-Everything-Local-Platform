@@ -1,11 +1,11 @@
 import { afterEach, beforeEach, expect, it } from 'vitest';
 import { Doc } from '../src/lib/doc.js';
 import { listVersions, removeVersions, moveVersions, saveVersion } from '../src/lib/versions.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 
 let mock;
-beforeEach(() => { mock = installMockPuter(); });
-afterEach(() => { delete globalThis.puter; });
+beforeEach(() => { mock = installMockEverything(); });
+afterEach(() => { delete globalThis.everything; });
 
 it('deletes a document\'s snapshots with the document', async () => {
   const path = 'Spreadsheets/Untitled spreadsheet.xlsx';

@@ -8,8 +8,8 @@ import { encode, decode } from '../src/collab/protocol.js';
 import { tokenClaims } from '../src/collab/auth.js';
 import { WorkerTransport } from '../src/collab/transports.js';
 
-/** An in-memory Puter for the service: KV and files. */
-function fakePuter(owner) {
+/** An in-memory Everything for the service: KV and files. */
+function fakeEverything(owner) {
   const kv = new Map(), files = new Map();
   return {
     auth: { getUser: async () => owner },
@@ -30,7 +30,7 @@ function fakePuter(owner) {
 const OWNER = { uuid: 'owner-1', username: 'ada' }, BOB = { uuid: 'user-2', username: 'bob' }, EVE = { uuid: 'user-3', username: 'eve' };
 
 async function sharedRoom() {
-  const service = new RoomService(fakePuter(OWNER), { rooms: new Map() });
+  const service = new RoomService(fakeEverything(OWNER), { rooms: new Map() });
   const doc = createSharedDoc(editorState({ session: { body: new TextDocument([paragraph('Shared text')]), storyEdits: {} } }));
   await service.call(OWNER, { op: 'create', room: 'room1', name: 'Plan', initial: encode(Y.encodeStateAsUpdate(doc)), base: encode(new Uint8Array([80, 75, 3, 4])) });
   return { service, doc };
@@ -96,7 +96,7 @@ describe('room service', () => {
   });
 
   it('refuses room creation by anyone but the worker owner', async () => {
-    const service = new RoomService(fakePuter(OWNER), { rooms: new Map() });
+    const service = new RoomService(fakeEverything(OWNER), { rooms: new Map() });
     await expect(service.call(BOB, { op: 'create', room: 'x', initial: '', base: '' })).rejects.toMatchObject({ status: 403 });
   });
 
@@ -127,7 +127,7 @@ describe('room service', () => {
     await expect(editAs(service, OWNER, doc => doc.getText('body').insert(0, 'Lost? '))).rejects.toThrow('kv down');
     await editAs(service, OWNER, doc => doc.getText('body').insert(0, 'Later. '));
     // Another worker instance (or this one after a restart) reads the room from the log.
-    const fresh = new RoomService(service.puter, { rooms: new Map() });
+    const fresh = new RoomService(service.everything, { rooms: new Map() });
     const doc = new Y.Doc(); Y.applyUpdate(doc, decode((await fresh.call(OWNER, { op: 'sync', room: 'room1' })).update));
     const body = doc.getText('body').toString();
     expect(body.startsWith('Later. ')).toBe(true);
@@ -153,7 +153,7 @@ describe('room service', () => {
   });
 
   it('ages worker presence by the worker\'s clock, whatever this computer\'s clock says', async () => {
-    const service = new RoomService(fakePuter(OWNER), { rooms: new Map(), now: () => Date.now() - 90_000 });
+    const service = new RoomService(fakeEverything(OWNER), { rooms: new Map(), now: () => Date.now() - 90_000 });
     const doc = createSharedDoc(editorState({ session: { body: new TextDocument([paragraph('Shared text')]), storyEdits: {} } }));
     await service.call(OWNER, { op: 'create', room: 'room1', name: 'Plan', initial: encode(Y.encodeStateAsUpdate(doc)), base: encode(new Uint8Array([80, 75, 3, 4])) });
     await service.call(OWNER, { op: 'invite-user', room: 'room1', username: 'bob', role: 'editor' });

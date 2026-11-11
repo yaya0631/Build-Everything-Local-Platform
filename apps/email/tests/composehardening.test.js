@@ -32,7 +32,7 @@ const attachment = { name: 'report.txt', size: 3, type: 'text/plain', arrayBuffe
 beforeEach(() => {
   modals = [];
   vi.stubGlobal('indexedDB', new IDBFactory());
-  vi.stubGlobal('puter', { ui: {}, APIOrigin: 'https://api.example', authToken: 'test', fs: { write: async () => {} } });
+  vi.stubGlobal('everything', { ui: {}, APIOrigin: 'https://api.example', authToken: 'test', fs: { write: async () => {} } });
   vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true })));
   drafts = createDraftStore('test', memoryStorage());
 });

@@ -1,5 +1,5 @@
-// Saving and opening multitrack sessions. On Puter a session is a .asesx JSON
-// file plus a "<Name>_Media" folder of WAV files next to it. Without Puter
+// Saving and opening multitrack sessions. On Everything a session is a .asesx JSON
+// file plus a "<Name>_Media" folder of WAV files next to it. Without Everything
 // (or for a local copy) the session and its media download as one ZIP, which
 // File > Open accepts again.
 
@@ -9,7 +9,7 @@ import { encodeWav } from '../audio/wav.js';
 import { audioFileFromBlob, downloadBlob, rememberRecent, OPENERS, EXTRA_ACCEPT } from '../storage/files.js';
 import { channelsAtRate } from './insert.js';
 import { zipStore, unzipStore } from '../lib/zip.js';
-import * as puter from '../storage/puter.js';
+import * as everything from '../storage/everything.js';
 import { saveSessionVideo, prepareVideoBytes, videoZipEntry, loadSessionVideo } from '../video/session-media.js';
 
 const dirOf = (path) => path.slice(0, path.lastIndexOf('/'));
@@ -20,19 +20,19 @@ function mediaBlob(session, m) {
 }
 
 /**
- * Saves a session: to its Puter path, or after asking where (Save As / first
- * save). Without Puter it downloads a ZIP. Returns true when saved.
+ * Saves a session: to its Everything path, or after asking where (Save As / first
+ * save). Without Everything it downloads a ZIP. Returns true when saved.
  */
 export async function saveSession(app, doc, { saveAs = false, copy = false } = {}) {
   // Stretched and remixed clips save their finished audio, not the preview.
   if (doc.stretcher?.busy) await doc.stretcher.whenIdle();
   if (doc.remixer?.busy) await doc.remixer.whenIdle();
-  if (puter.sdk() && puter.isSignedIn()) {
-    let path = !saveAs && !copy && doc.source?.type === 'puter' && /\.asesx$/i.test(doc.source.path || '') ? doc.source.path : null;
+  if (everything.sdk() && everything.isSignedIn()) {
+    let path = !saveAs && !copy && doc.source?.type === 'everything' && /\.asesx$/i.test(doc.source.path || '') ? doc.source.path : null;
     let name = withExt(doc.name);
     if (!path) {
       const draft = serializeSession(doc, { name });
-      const item = await puter.pickSave(new Blob([draft.text], { type: 'application/json' }), name);
+      const item = await everything.pickSave(new Blob([draft.text], { type: 'application/json' }), name);
       if (!item) return false;
       path = item.path;
       name = item.name;
@@ -47,15 +47,15 @@ export async function saveSession(app, doc, { saveAs = false, copy = false } = {
       if (!src?.channels?.length) continue;
       if (src.savedPath === target && src.savedRef === src.channels) continue;
       app.setStatus(`Saving media ${++written}...`);
-      await puter.writeFile(target, mediaBlob(doc, m));
+      await everything.writeFile(target, mediaBlob(doc, m));
       if (!copy) {
         src.savedPath = target;
         src.savedRef = src.channels;
       }
     }
-    await puter.writeFile(path, new Blob([text], { type: 'application/json' }));
+    await everything.writeFile(path, new Blob([text], { type: 'application/json' }));
     if (!copy) {
-      doc.source = { type: 'puter', path };
+      doc.source = { type: 'everything', path };
       if (doc.name !== name) doc.rename(name);
       doc.markSaved();
       rememberRecent(app, { name, path });
@@ -124,7 +124,7 @@ export function wavBytes(rate, channels) {
   return out;
 }
 
-/** Saves a copy of the session (and its media) to Puter, or downloads it. */
+/** Saves a copy of the session (and its media) to Everything, or downloads it. */
 export function exportSession(app, doc) {
   return saveSession(app, doc, { copy: true, saveAs: true });
 }
@@ -152,7 +152,7 @@ export async function sessionFromText(app, text, name, source, loadMedia) {
       continue;
     }
     try {
-      const mediaSource = source.type === 'puter' ? { type: 'puter', path: `${dirOf(source.path)}/${src.file}` } : { type: 'local' };
+      const mediaSource = source.type === 'everything' ? { type: 'everything', path: `${dirOf(source.path)}/${src.file}` } : { type: 'local' };
       const doc = await audioFileFromBlob(blob, src.name || fileName, mediaSource);
       app.addDocument(doc, { activate: false });
       const channels = await channelsAtRate(doc.state.channels, doc.sampleRate, session.sampleRate);
@@ -176,7 +176,7 @@ export async function sessionFromText(app, text, name, source, loadMedia) {
 async function openSessionFile(app, blob, name, source, context) {
   const text = await blob.text();
   return sessionFromText(app, text, name, source, async (src, fileName) => {
-    if (source.type === 'puter' && source.path) return puter.readFile(`${dirOf(source.path)}/${src.file}`);
+    if (source.type === 'everything' && source.path) return everything.readFile(`${dirOf(source.path)}/${src.file}`);
     // Local: media picked together with the session, matched by file name.
     const item = context.items.find((it) => it.name === fileName);
     if (item) {

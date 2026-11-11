@@ -2,13 +2,13 @@
 
 Production URL: [cap-table.io](https://cap-table.io/). The canonical URL, social metadata, structured data, and sitemap use this HTTPS origin. The production build copies `robots.txt` from `public/` and generates `sitemap.xml` from the public page registry.
 
-Manage your company's ownership, equity, cap table, options, and fundraising in one place. A web app built on [Puter](https://localhost:8443): your data lives in your own Puter cloud, not on anyone's server.
+Manage your company's ownership, equity, cap table, options, and fundraising in one place. A web app built on [Everything](https://localhost:8443): your data lives in your own Everything cloud, not on anyone's server.
 
 ## Features
 
 - **Permanent history**: actor-attributed business transactions with before/after records, recording and effective dates, filters, and complete JSON/CSV exports. Imports, wipes, undo, and restores preserve earlier events. Durable intents recover interrupted writes; the initial baseline explicitly marks earlier history as incomplete. See [audit history and recovery](docs/AUDIT_HISTORY.md).
 - **Cap table**: outstanding and fully diluted views, grouped by share class, with an include-pool toggle and CSV export. An as-of date picker (plus one-tap chips for each financing date) shows ownership as it stood on any past day.
-- **Securities**: share certificates (optionally reverse-vesting, for founder restricted stock, with the 83(b) filing tracked), option grants (ISO or NSO, with the $100K ISO limit checked, and early exercise where the plan allows it), RSU awards, warrants, pre- and post-money SAFEs, and convertible notes with simple-interest accrual. Vesting schedules run monthly, quarterly, or annually with a cliff, or as custom dated tranches, with single- or double-trigger acceleration. Certificate labels number themselves (CS-1, SA-2, OPT-3), and any record can carry attachments (the signed agreement, the 409A report) stored in your own Puter cloud.
+- **Securities**: share certificates (optionally reverse-vesting, for founder restricted stock, with the 83(b) filing tracked), option grants (ISO or NSO, with the $100K ISO limit checked, and early exercise where the plan allows it), RSU awards, warrants, pre- and post-money SAFEs, and convertible notes with simple-interest accrual. Vesting schedules run monthly, quarterly, or annually with a cliff, or as custom dated tranches, with single- or double-trigger acceleration. Certificate labels number themselves (CS-1, SA-2, OPT-3), and any record can carry attachments (the signed agreement, the 409A report) stored in your own Everything cloud.
 - **Lifecycle**: record an exercise (with its certificate, or issue the certificate later), settle vested RSUs into shares, cancel unvested options back to the pool, transfer or repurchase shares (the original certificate closes and successors are issued in one commit), and mark a holder as departed - unvested options return to the pool and a post-termination exercise window starts on the rest. Every write is checked against the records it touches, so an exercise cannot predate its grant or outrun its vesting, a window cannot close before an exercise already inside it, and a transferred certificate keeps the size and date its successors were drawn from.
 - **Stakeholders**: founders, investors, employees, advisors, and entities, with per-holder ownership. Open one for a full detail view - ownership on both bases, every security with vesting and terms, their history - which doubles as a printable equity statement (print or save as PDF) and exports to CSV.
 - **Share classes**: common and preferred with authorized counts, issue prices, liquidation preferences, participation, and anti-dilution protection. Plus stock splits that restate every per-share number from their effective date while earlier dates keep reading in their own units.
@@ -29,7 +29,7 @@ Manage your company's ownership, equity, cap table, options, and fundraising in 
 ## Stack
 
 - Vanilla JavaScript (no frameworks), [Vite](https://vitejs.dev) for dev/build, [Vitest](https://vitest.dev) for tests.
-- [Puter.js](http://localhost:8443) for auth and storage (KV). No other backend.
+- [Everything.js](http://localhost:8443) for auth and storage (KV). No other backend.
 - [Lucide](https://lucide.dev) icons.
 
 ## Development
@@ -41,11 +41,11 @@ npm test             # run the test suite
 npm run build        # production build to dist/
 ```
 
-The real app entry (`index.html`) loads the Puter SDK and requires signing in. For local development without a Puter account, open `/mock.html`, which stubs the SDK with an in-memory mock:
+The real app entry (`index.html`) loads the Everything SDK and requires signing in. For local development without an Everything account, open `/mock.html`, which stubs the SDK with an in-memory mock:
 
 - `/mock.html` - signed in, empty dataset (onboarding shows)
 - `/mock.html?signedout=1` - start on the intro page
-- `/mock.html?env=app` - simulate running inside Puter (no sign-out offered)
+- `/mock.html?env=app` - simulate running inside Everything (no sign-out offered)
 
 ## Public documentation and guides
 
@@ -54,19 +54,19 @@ The real app entry (`index.html`) loads the Puter SDK and requires signing in. F
 - `site/content.js` registers the original articles and collection ordering. `site/product-docs.js` and `site/equity-guides.js` hold the extended library; `site/workflow-docs.js` and `site/worked-guides.js` cover detailed operations, reference fields, and worked examples; `site/financing-docs.js`, `site/financing-guides.js` and `site/equity-reporting-guides.js` cover dividends, pro rata and MFN terms, exit waterfalls, and valuation and expense concepts; `site/content-helpers.js` provides the section and table markup helpers. Articles have permanent slugs and section IDs.
 - [Content coverage](docs/CONTENT_COVERAGE.md) maps current user-facing features to instructions, concepts, and limitations. Update it alongside feature changes.
 - `site/render.js` builds the library, article layouts, metadata, breadcrumbs, and sitemap. Header and footer links come from the landing page so navigation stays consistent.
-- `site/plugin.js` serves these routes during development and writes complete HTML documents to `dist/docs/` and `dist/guides/` during a production build. The public pages have their own small stylesheet and script and do not load the Puter SDK or app data.
+- `site/plugin.js` serves these routes during development and writes complete HTML documents to `dist/docs/` and `dist/guides/` during a production build. The public pages have their own small stylesheet and script and do not load the Everything SDK or app data.
 - `site/analytics.html` holds the Plausible snippet shared by the homepage and generated content pages.
 - `site/styles.css` and `site/client.js` provide the reading layout, library search, and accessible navigation. Articles and links remain available without JavaScript.
 
 Deploy the whole `dist/` directory, including its nested `index.html` files. Serve directory URLs with their index documents, and use `404.html` as a custom error document with HTTP status 404 if the host supports it. Do not rewrite missing documentation URLs to the app homepage. Every public page uses a self-referencing canonical on `https://cap-table.io/`.
 
-Documentation launch links currently return to `/`. The homepage keeps its existing Puter sign-in behavior; launches have not been redirected to the Puter app URL.
+Documentation launch links currently return to `/`. The homepage keeps its existing Everything sign-in behavior; launches have not been redirected to the Everything app URL.
 
 ## Storage design
 
 Collections are read by key (never a `kv.list()` scan): settings, company (with its equity plans, valuations and splits), share classes, stakeholders, securities, round and exit scenarios, the hiring plan, a capped activity log, and the restore points. Every collection is namespaced by company, with a registry naming the account's companies. Writes are optimistic with rollback on failure and run one at a time within a session. A stale session's save is refused, including when two tabs or devices save simultaneously.
 
-`src/lib/kv.js` implements conditional publication using [Puter's atomic list append](http://localhost:8443/KV/add/). A writer uploads an immutable revision, then appends its pointer to the previous revision's successor list; only the first pointer wins. The collection key is a shortcut, and readers follow successor links, so a delayed shortcut update cannot replace a newer save. Superseded payloads are removed; small successor links and deletion tombstones remain to protect against delayed writers. This adds storage requests per save, but needs no expiring lock or active browser to recover a published write; a session remembers the revision it last saw at each key, so the usual read is one round trip. Existing plain JSON values are read directly and upgraded on their first write. The SDK must support `kv.add`; there is no unsafe fallback. Reload older open sessions after updating the app.
+`src/lib/kv.js` implements conditional publication using [Everything's atomic list append](http://localhost:8443/KV/add/). A writer uploads an immutable revision, then appends its pointer to the previous revision's successor list; only the first pointer wins. The collection key is a shortcut, and readers follow successor links, so a delayed shortcut update cannot replace a newer save. Superseded payloads are removed; small successor links and deletion tombstones remain to protect against delayed writers. This adds storage requests per save, but needs no expiring lock or active browser to recover a published write; a session remembers the revision it last saw at each key, so the usual read is one round trip. Existing plain JSON values are read directly and upgraded on their first write. The SDK must support `kv.add`; there is no unsafe fallback. Reload older open sessions after updating the app.
 
 A commit spanning several collections still uses separate conditional publications. If one fails, memory is rolled back and its stored copies rewritten to match; a rewrite the connection refuses too is kept as owed, shown in the shell, and retried until it lands. Activity collisions merge their entries, and theme/settings choices retain their last-writer-wins behavior. A record whose holder is missing when a company loads is kept under a stand-in "Unknown holder" rather than dropped. A value over the platform's size limit is written across numbered part keys. See `src/lib/store.js`.
 

@@ -2,7 +2,7 @@
 
 Free, open-source fleet management for teams that run vehicles and equipment: delivery vans, pickups, trucks, trailers, forklifts, and EVs. An open-source alternative to Fleetio, Whip Around, and similar fleet maintenance software.
 
-Built with vanilla JavaScript, Vite, [Lucide](https://lucide.dev) icons, and [Puter.js](http://localhost:8443) as the only backend. There is no framework and no server of its own.
+Built with vanilla JavaScript, Vite, [Lucide](https://lucide.dev) icons, and [Everything.js](http://localhost:8443) as the only backend. There is no framework and no server of its own.
 
 > **Early alpha.** Features may change and data could be lost. Please do not rely on it for real fleet records yet.
 
@@ -38,7 +38,7 @@ Built with vanilla JavaScript, Vite, [Lucide](https://lucide.dev) icons, and [Pu
 - **Contacts and vendors.** Contacts record roles, license details, labor rates, and assigned vehicles and work. Vendors show their classifications and spend history.
 - **Documents.** Every photo and file attached anywhere in the fleet, in one searchable list.
 - **Reports.** Operating costs, total cost of ownership, expenses by type, fuel summary, utilization, service costs, service by task, maintenance compliance, inspections (including the most failed items), issues, and inventory valuation. All reports have date ranges and group and type filters, and export to CSV and print.
-- **Team access.** The owner invites drivers, members, and admins with single-use links that expire after 7 days. Each person signs in with their own Puter account. Drivers can only submit inspections, fuel, meter readings, and issues, and the team server enforces this.
+- **Team access.** The owner invites drivers, members, and admins with single-use links that expire after 7 days. Each person signs in with their own Everything account. Drivers can only submit inspections, fuel, meter readings, and issues, and the team server enforces this.
 - **Throughout the app**
   - global search (`/` or Ctrl+K)
   - quick add (`N`)
@@ -53,7 +53,7 @@ Built with vanilla JavaScript, Vite, [Lucide](https://lucide.dev) icons, and [Pu
 
 ```sh
 npm install
-npm run dev      # http://fleet.puter.localhost:5173/
+npm run dev      # http://fleet.localhost:8443/
 npm test         # unit tests (Vitest)
 npm run build    # production build in dist/
 ```
@@ -66,13 +66,13 @@ Open `/?demo` to start straight in the sample fleet without the welcome screen.
 src/
   main.js            boot: sign-in, demo, invitations
   app.js             shared runtime context and role checks
-  platform.js        Puter auth, environment, profile picture
-  files.js           attachments in the app's Puter folder
+  platform.js        Everything auth, environment, profile picture
+  files.js           attachments in the app's Everything folder
   team.js            team access: worker deploy, worker backend, invitations
   core/              framework-free logic (unit tested)
     schema.js          collections and month buckets
     store.js           local-first store and sync engine
-    backend.js         Puter KV and in-memory backends
+    backend.js         Everything KV and in-memory backends
     cache.js           IndexedDB snapshot cache
     actions.js         cross-record operations (meters, service, work orders, stock)
     reminders.js       service and renewal reminder schedules
@@ -88,7 +88,7 @@ tests/               Vitest unit tests and a jsdom render smoke test
 
 ### Storage design
 
-Puter KV is backed by DynamoDB, so the layout follows DynamoDB practice. Items are small. A write touches only the records that changed. Reads are key lookups or prefix queries, never scans, and the app never uses secondary indexes.
+Everything KV is backed by DynamoDB, so the layout follows DynamoDB practice. Items are small. A write touches only the records that changed. Reads are key lookups or prefix queries, never scans, and the app never uses secondary indexes.
 
 | Key | Holds |
 | --- | --- |
@@ -104,20 +104,20 @@ How sync works:
 - **Changed buckets only.** A device reads `fl1:meta` (one read) on focus and on a timer, then re-reads only the buckets whose version moved. When a driver logs fuel today, other devices re-read this month's fuel, not years of history.
 - **Detecting other devices.** When a device bumps a version and gets back anything other than its own last version plus one, another device wrote in between, so it refreshes that bucket.
 - **Local first.** Writes apply locally first, then go out in debounced batches with retry and backoff. An IndexedDB snapshot, including writes not sent yet, makes the app open instantly and keeps it working offline.
-- **Files.** Attachments live in the app's Puter folder (`files/<collection>/`), never in KV. Records keep only a small reference. Photos are downscaled in the browser before upload.
+- **Files.** Attachments live in the app's Everything folder (`files/<collection>/`), never in KV. Records keep only a small reference. Photos are downscaled in the browser before upload.
 
 ### Team access
 
-Puter KV and files are private to each account, so a shared fleet runs through a [Puter worker](http://localhost:8443/Workers/) in the **owner's own account**. The worker source is `public/worker/fleet-team-worker.js`.
+Everything KV and files are private to each account, so a shared fleet runs through a [Everything worker](http://localhost:8443/Workers/) in the **owner's own account**. The worker source is `public/worker/fleet-team-worker.js`.
 
-- **Turning it on.** The app writes the worker to the owner's drive, deploys it with `puter.workers.create`, and copies the owner's records and files into it.
-- **Using it.** After that, everyone reads and writes through `puter.workers.exec`, which forwards each person's own session.
+- **Turning it on.** The app writes the worker to the owner's drive, deploys it with `everything.workers.create`, and copies the owner's records and files into it.
+- **Using it.** After that, everyone reads and writes through `everything.workers.exec`, which forwards each person's own session.
 - **Identity.** The worker identifies the caller from that session, never from the request body, and checks membership and role on every request.
 - **Roles.**
   - Admins can manage the team and settings.
   - Members can change any fleet record.
   - Drivers can read everything but write only inspections, fuel, issues, meter readings, and comments.
-- **Invitations.** Tokens are stored only as SHA-256 hashes and work once for 7 days. An invitation stops working if the person who sent it is removed. Joining always asks first, because it sends your Puter session to that fleet's worker.
+- **Invitations.** Tokens are stored only as SHA-256 hashes and work once for 7 days. An invitation stops working if the person who sent it is removed. Joining always asks first, because it sends your Everything session to that fleet's worker.
 - **Key layout.** The worker uses the same key layout as a single account, so the store and sync engine run unchanged on top of it.
 
 ### Performance notes
@@ -131,7 +131,7 @@ Fleet is a forms, lists, and charts app, so the right tools are plain DOM and sm
 
 ## Data and privacy
 
-Each user's data lives in their own Puter account (KV and files). It is not shared with anyone unless the owner turns on team access, and then it stays in the owner's account. The app has no server of its own.
+Each user's data lives in their own Everything account (KV and files). It is not shared with anyone unless the owner turns on team access, and then it stays in the owner's account. The app has no server of its own.
 
 ## License
 

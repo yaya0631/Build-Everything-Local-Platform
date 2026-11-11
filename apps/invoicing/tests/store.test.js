@@ -6,10 +6,10 @@ import { docStatus, dueDateFor } from '../src/lib/doc.js';
 const freshStore = async () => (await import('../src/lib/store.js')).store;
 const storeModule = async () => import('../src/lib/store.js');
 
-/* The same stand-in for Puter that backup.test.js uses. */
+/* The same stand-in for Everything that backup.test.js uses. */
 const kv = new Map();
 const files = new Map();
-globalThis.puter = {
+globalThis.everything = {
   auth: { getUser: async () => ({ username: 'test' }) },
   kv: {
     get: async (k) => (kv.has(k) ? kv.get(k) : null),
@@ -66,10 +66,10 @@ describe('a failed restore with writes still pending', () => {
     };
     let release;
     const pending = new Promise((resolve) => { release = resolve; });
-    const set = puter.kv.set;
+    const set = everything.kv.set;
     let started = false;
     let settled = false;
-    puter.kv.set = async (key, value) => {
+    everything.kv.set = async (key, value) => {
       if (key === 'invc:clients:v1' && JSON.parse(value)[0]?.id === 'imported') {
         started = true;
         await pending;
@@ -93,7 +93,7 @@ describe('a failed restore with writes still pending', () => {
     } finally {
       release();
       await restoring;
-      puter.kv.set = set;
+      everything.kv.set = set;
     }
   });
 });
@@ -129,9 +129,9 @@ describe('payments while receipt numbering is pending', () => {
     const store = await freshStore();
     await store.init();
     await store.saveDoc(doc());
-    const write = puter.fs.write;
+    const write = everything.fs.write;
     let failed = false;
-    puter.fs.write = async (path, body, options) => {
+    everything.fs.write = async (path, body, options) => {
       if (!failed && JSON.parse(body)[0]?.payments?.length) {
         failed = true;
         throw new Error('payment write failed');
@@ -149,7 +149,7 @@ describe('payments while receipt numbering is pending', () => {
       await store.init();
       expect(store.doc('D1').payments).toEqual([second.value]);
     } finally {
-      puter.fs.write = write;
+      everything.fs.write = write;
     }
   });
 
@@ -159,9 +159,9 @@ describe('payments while receipt numbering is pending', () => {
     await store.saveDoc(doc());
     let release;
     const pending = new Promise((resolve) => { release = resolve; });
-    const set = puter.kv.set;
+    const set = everything.kv.set;
     let started = false;
-    puter.kv.set = async (key, value) => {
+    everything.kv.set = async (key, value) => {
       if (key === 'invc:settings:v1') {
         started = true;
         await pending;
@@ -186,7 +186,7 @@ describe('payments while receipt numbering is pending', () => {
     } finally {
       release();
       await recording;
-      puter.kv.set = set;
+      everything.kv.set = set;
     }
   });
 });
@@ -478,9 +478,9 @@ describe('convertQuote', () => {
 
     // The invoice write lands; linking the quote fails (a connection drop
     // between the two writes).
-    const write = puter.fs.write;
+    const write = everything.fs.write;
     let n = 0;
-    puter.fs.write = async (...args) => {
+    everything.fs.write = async (...args) => {
       n++;
       if (n === 2) throw new Error('connection dropped');
       return write(...args);
@@ -488,7 +488,7 @@ describe('convertQuote', () => {
     try {
       await expect(store.convertQuote('Q1')).rejects.toThrow();
     } finally {
-      puter.fs.write = write;
+      everything.fs.write = write;
     }
     const orphan = store.docs().find((d) => d.kind === 'invoice');
     expect(orphan.quoteId).toBe('Q1');
@@ -518,15 +518,15 @@ describe('processRecurringDue', () => {
 
     // The drafts save, then advancing the schedule fails (a connection
     // drop after the loop): the rule still points at the old nextDue.
-    const set = puter.kv.set;
-    puter.kv.set = async (k, v) => {
+    const set = everything.kv.set;
+    everything.kv.set = async (k, v) => {
       if (k === 'invc:recurring:v1') throw new Error('connection dropped');
       return set(k, v);
     };
     try {
       await expect(store.processRecurringDue()).rejects.toThrow();
     } finally {
-      puter.kv.set = set;
+      everything.kv.set = set;
     }
     const drafted = store.docs().filter((d) => d.recurringId === 'r1');
     expect(drafted.length).toBeGreaterThan(0);
@@ -601,8 +601,8 @@ describe('a recurring run that the user acts under', () => {
     // which boot's un-awaited catch-up leaves fully usable.
     let release;
     let held = new Promise((resolve) => { release = resolve; });
-    const write = puter.fs.write;
-    puter.fs.write = async (path, data) => {
+    const write = everything.fs.write;
+    everything.fs.write = async (path, data) => {
       const gate = held;
       held = null;
       if (gate) await gate;
@@ -622,7 +622,7 @@ describe('a recurring run that the user acts under', () => {
       const created = await run;
       expect(created).toBe(3);
     } finally {
-      puter.fs.write = write;
+      everything.fs.write = write;
     }
 
     const drafts = (id) => store.docs().filter((d) => d.recurringId === id);
@@ -657,9 +657,9 @@ describe('a recurring run that the user acts under', () => {
     expect(dates.length).toBeGreaterThan(1);
 
     // Pause the moment the first draft has landed.
-    const write = puter.fs.write;
+    const write = everything.fs.write;
     let paused = false;
-    puter.fs.write = async (path, data) => {
+    everything.fs.write = async (path, data) => {
       const out = await write(path, data);
       if (!paused && path.startsWith('invoicing-data/docs-')) {
         paused = true;
@@ -670,7 +670,7 @@ describe('a recurring run that the user acts under', () => {
     try {
       expect(await store.processRecurringDue()).toBe(1);
     } finally {
-      puter.fs.write = write;
+      everything.fs.write = write;
     }
     const rule = store.recurring[0];
     expect(rule.paused).toBe(true);
@@ -786,9 +786,9 @@ describe('dangling quote links', () => {
     await store.init();
 
     // Deleting the invoice persists, but the quote's unlink write is lost.
-    const write = puter.fs.write;
+    const write = everything.fs.write;
     let n = 0;
-    puter.fs.write = async (...args) => {
+    everything.fs.write = async (...args) => {
       n++;
       if (n === 2) throw new Error('connection dropped');
       return write(...args);
@@ -796,7 +796,7 @@ describe('dangling quote links', () => {
     try {
       await store.deleteDoc('I1');
     } finally {
-      puter.fs.write = write;
+      everything.fs.write = write;
     }
     expect(store.doc('I1')).toBeFalsy();
     expect(store.doc('Q1').invoiceId).toBe('I1');   // the stranded link
@@ -818,12 +818,12 @@ describe('a lost year-file delete', () => {
     await store.init();
 
     // The wipe replaces the dataset, but the stale file's delete is lost.
-    const del = puter.fs.delete;
-    puter.fs.delete = async () => { throw new Error('offline'); };
+    const del = everything.fs.delete;
+    everything.fs.delete = async () => { throw new Error('offline'); };
     try {
       await store.importAll({ settings: { currency: 'USD' }, clients: [], items: [], recurring: [], docs: {} });
     } finally {
-      puter.fs.delete = del;
+      everything.fs.delete = del;
     }
     expect(store.docs()).toHaveLength(0);
     expect(files.has('invoicing-data/docs-2026.json')).toBe(true);
@@ -848,9 +848,9 @@ describe('the year index under concurrent saves', () => {
     await store.init();
     // The first index write is slow; the second lands first and used to win
     // with the shorter list, leaving the first year's file unindexed.
-    const set = puter.kv.set;
+    const set = everything.kv.set;
     let slowed = false;
-    puter.kv.set = async (k, v) => {
+    everything.kv.set = async (k, v) => {
       if (k === 'invc:years:v1' && !slowed) {
         slowed = true;
         await new Promise((r) => setTimeout(r, 30));
@@ -863,7 +863,7 @@ describe('the year index under concurrent saves', () => {
         store.saveDoc(doc({ id: 'B', issueDate: '2028-01-05' })),
       ]);
     } finally {
-      puter.kv.set = set;
+      everything.kv.set = set;
     }
     expect(JSON.parse(kv.get('invc:years:v1')).sort()).toEqual(['2027', '2028']);
     vi.resetModules();
@@ -874,8 +874,8 @@ describe('the year index under concurrent saves', () => {
   it('fails a save that joined a failing index write, rather than leaving its file unindexed', async () => {
     const store = await freshStore();
     await store.init();
-    const set = puter.kv.set;
-    puter.kv.set = async (k, v) => {
+    const set = everything.kv.set;
+    everything.kv.set = async (k, v) => {
       if (k === 'invc:years:v1') throw new Error('kv down');
       return set(k, v);
     };
@@ -886,7 +886,7 @@ describe('the year index under concurrent saves', () => {
         store.saveDoc(doc({ id: 'B', issueDate: '2027-02-05' })).then(() => outcomes.push('B ok'), () => outcomes.push('B failed')),
       ]);
     } finally {
-      puter.kv.set = set;
+      everything.kv.set = set;
     }
     expect(outcomes.sort()).toEqual(['A failed', 'B failed']);
     expect(store.docs()).toEqual([]);
@@ -910,9 +910,9 @@ describe('a failed restore', () => {
 
     // The backup covers both years; the second year's write dies mid-restore,
     // after the first has already replaced a current file.
-    const write = puter.fs.write;
+    const write = everything.fs.write;
     let calls = 0;
-    puter.fs.write = async (path, data) => {
+    everything.fs.write = async (path, data) => {
       if (++calls === 2) throw new Error('offline');
       return write(path, data);
     };
@@ -929,7 +929,7 @@ describe('a failed restore', () => {
         },
       }).catch((e) => { threw = e; });
     } finally {
-      puter.fs.write = write;
+      everything.fs.write = write;
     }
     expect(threw).toBeInstanceOf(Error);
 
@@ -951,9 +951,9 @@ describe('overlapping document saves', () => {
 
     // Save A's queued year write fails; save B's, queued behind it in the
     // same year, succeeds — B resolves and the UI reports it saved.
-    const write = puter.fs.write;
+    const write = everything.fs.write;
     let failures = 1;
-    puter.fs.write = async (path, data) => {
+    everything.fs.write = async (path, data) => {
       if (failures-- > 0) throw new Error('offline');
       return write(path, data);
     };
@@ -963,7 +963,7 @@ describe('overlapping document saves', () => {
       expect(await a).toBe('failed');
       await b;
     } finally {
-      puter.fs.write = write;
+      everything.fs.write = write;
     }
 
     // A's rollback may undo only its own change, and the next write into
@@ -985,9 +985,9 @@ describe('overlapping document saves', () => {
     // write carried A to disk after A had been reported as not saved — and a
     // reload would have resurrected A. The store must follow up with a
     // rewrite of the year as it stands.
-    const write = puter.fs.write;
+    const write = everything.fs.write;
     let failures = 1;
-    puter.fs.write = async (path, data) => {
+    everything.fs.write = async (path, data) => {
       if (failures-- > 0) throw new Error('offline');
       return write(path, data);
     };
@@ -998,7 +998,7 @@ describe('overlapping document saves', () => {
       await b;
       await new Promise((r) => setTimeout(r, 0));
     } finally {
-      puter.fs.write = write;
+      everything.fs.write = write;
     }
     expect(JSON.parse(files.get('invoicing-data/docs-2026.json')).map((d) => d.id)).toEqual(['B']);
   });
@@ -1012,10 +1012,10 @@ describe('concurrent settings writes', () => {
     const store = await freshStore();
     await store.init();
 
-    const set = puter.kv.set;
+    const set = everything.kv.set;
     let fail;
     let calls = 0;
-    puter.kv.set = (k, v) => {
+    everything.kv.set = (k, v) => {
       if (k !== SETTINGS) return set(k, v);
       calls++;
       if (calls === 1) return new Promise((_, rej) => { fail = () => rej(new Error('offline')); });
@@ -1029,7 +1029,7 @@ describe('concurrent settings writes', () => {
       expect(await a).toBeInstanceOf(Error);
       await b;
     } finally {
-      puter.kv.set = set;
+      everything.kv.set = set;
     }
     // The bump a concurrent flow persisted must survive the rollback.
     expect(store.settings.nextInvoice).toBe(8);
@@ -1041,10 +1041,10 @@ describe('concurrent settings writes', () => {
     const store = await freshStore();
     await store.init();
 
-    const set = puter.kv.set;
+    const set = everything.kv.set;
     let release;
     let calls = 0;
-    puter.kv.set = (k, v) => {
+    everything.kv.set = (k, v) => {
       if (k !== SETTINGS) return set(k, v);
       calls++;
       if (calls === 1) return new Promise((res) => { release = () => res(set(k, v)); });
@@ -1057,7 +1057,7 @@ describe('concurrent settings writes', () => {
       release();
       await Promise.all([a, b]);
     } finally {
-      puter.kv.set = set;
+      everything.kv.set = set;
     }
     expect(JSON.parse(kv.get(SETTINGS)).nextInvoice).toBe(6);
   });
@@ -1335,13 +1335,13 @@ describe('the trash', () => {
     expect(store.trash().payments).toHaveLength(1);
 
     writes = [];
-    const set = puter.kv.set;
+    const set = everything.kv.set;
     let clientWrites = 0;
-    puter.kv.set = async (k, v) => { if (k === 'invc:clients:v1') clientWrites++; return set(k, v); };
+    everything.kv.set = async (k, v) => { if (k === 'invc:clients:v1') clientWrites++; return set(k, v); };
     try {
       await store.emptyTrash();
     } finally {
-      puter.kv.set = set;
+      everything.kv.set = set;
     }
     expect(store.trashCount()).toBe(0);
     expect(writes.filter((path) => path.includes('docs-2025'))).toHaveLength(1);
@@ -1356,15 +1356,15 @@ describe('the trash', () => {
     await store.saveDoc(doc({ id: 'E2', number: 'INV-0202', issueDate: '2026-03-01' }));
     await store.deleteDoc('E1');
     await store.deleteDoc('E2');
-    const write = puter.fs.write;
-    puter.fs.write = async (path, data) => {
+    const write = everything.fs.write;
+    everything.fs.write = async (path, data) => {
       if (path.includes('docs-2026')) throw new Error('year write failed');
       return write(path, data);
     };
     try {
       await expect(store.emptyTrash()).rejects.toThrow('year write failed');
     } finally {
-      puter.fs.write = write;
+      everything.fs.write = write;
     }
     expect(store.trash().docs.map((d) => d.id)).toEqual(['E2']);
   });
@@ -1418,10 +1418,10 @@ describe('attachments', () => {
     const store = await freshStore();
     await store.init();
     await store.saveDoc(doc());
-    const write = puter.fs.write;
+    const write = everything.fs.write;
     let holdFirst = null;
     let n = 0;
-    puter.fs.write = (path, data) => {
+    everything.fs.write = (path, data) => {
       if (!path.endsWith('.json')) return write(path, data);
       n++;
       if (n === 1) return new Promise((_, reject) => { holdFirst = reject; });
@@ -1441,7 +1441,7 @@ describe('attachments', () => {
       expect(settled.map((s) => s.status)).toEqual(['rejected', 'rejected']);
       await tick();
     } finally {
-      puter.fs.write = write;
+      everything.fs.write = write;
     }
     const [entry] = store.doc('D1').attachments || [];
     expect(entry).toBeTruthy();
@@ -1452,9 +1452,9 @@ describe('attachments', () => {
     const store = await freshStore();
     await store.init();
     await store.saveDoc(doc());
-    const write = puter.fs.write;
+    const write = everything.fs.write;
     let n = 0;
-    puter.fs.write = async (...args) => {
+    everything.fs.write = async (...args) => {
       n++;
       if (n === 2) throw new Error('connection dropped');
       return write(...args);
@@ -1462,7 +1462,7 @@ describe('attachments', () => {
     try {
       await expect(store.attachFile('D1', file('a.pdf'))).rejects.toThrow();
     } finally {
-      puter.fs.write = write;
+      everything.fs.write = write;
     }
     expect(store.doc('D1').attachments ?? []).toEqual([]);
     expect([...files.keys()].some((k) => k.includes('attachments'))).toBe(false);
@@ -1517,15 +1517,15 @@ describe('attachments', () => {
     await store.deleteDoc('D1');
 
     // The year file cannot be written: the purge rolls back into the trash.
-    const write = puter.fs.write;
-    puter.fs.write = async (path, data) => {
+    const write = everything.fs.write;
+    everything.fs.write = async (path, data) => {
       if (path.includes('docs-')) throw new Error('year write failed');
       return write(path, data);
     };
     try {
       await expect(store.purgeDoc('D1')).rejects.toThrow('year write failed');
     } finally {
-      puter.fs.write = write;
+      everything.fs.write = write;
     }
     expect(store.trash().docs.map((d) => d.id)).toEqual(['D1']);
     // The record still lists the file, so the file has to still be there.
@@ -1646,18 +1646,18 @@ describe('the read-only offline state', () => {
     const store = await freshStore();
     store.loadOffline(snapshot());
     const held = [];
-    const get = puter.kv.get;
-    puter.kv.get = (k) => new Promise((resolve) => { held.push(() => resolve(get(k))); });
+    const get = everything.kv.get;
+    everything.kv.get = (k) => new Promise((resolve) => { held.push(() => resolve(get(k))); });
     try {
       const pending = store.reconnect();
       await Promise.resolve();
       expect(store.readOnly).toBe(true);
       await expect(store.saveDoc(doc())).rejects.toThrow(/saved copy/);
-      puter.kv.get = get;
+      everything.kv.get = get;
       held.splice(0).forEach((go) => go());
       await pending;
     } finally {
-      puter.kv.get = get;
+      everything.kv.get = get;
     }
     expect(store.readOnly).toBe(false);
   });
@@ -1665,13 +1665,13 @@ describe('the read-only offline state', () => {
   it('runs one reconnect at a time', async () => {
     const store = await freshStore();
     store.loadOffline(snapshot());
-    const getUser = puter.auth.getUser;
+    const getUser = everything.auth.getUser;
     let calls = 0;
-    puter.auth.getUser = async () => { calls += 1; return getUser(); };
+    everything.auth.getUser = async () => { calls += 1; return getUser(); };
     try {
       await Promise.all([store.reconnect(), store.reconnect()]);
     } finally {
-      puter.auth.getUser = getUser;
+      everything.auth.getUser = getUser;
     }
     expect(calls).toBe(1);
     expect(store.readOnly).toBe(false);
@@ -1691,8 +1691,8 @@ describe('the read-only offline state', () => {
     ]));
     const store = await freshStore();
     let release;
-    const read = puter.fs.read;
-    puter.fs.read = (p) => new Promise((resolve) => { release = () => resolve(read(p)); });
+    const read = everything.fs.read;
+    everything.fs.read = (p) => new Promise((resolve) => { release = () => resolve(read(p)); });
     let outcome;
     try {
       const late = store.init().then((r) => { outcome = r; });
@@ -1702,11 +1702,11 @@ describe('the read-only offline state', () => {
       const snap = snapshot();
       snap.docs[2026].push(doc({ id: 'T1', issueDate: '2026-01-01', deletedAt: '2020-01-01T00:00:00.000Z' }));
       store.loadOffline(snap, { user: { username: 'offline' } });
-      puter.fs.read = read;
+      everything.fs.read = read;
       release();
       await late;
     } finally {
-      puter.fs.read = read;
+      everything.fs.read = read;
     }
     expect(outcome).toBe(false);
     expect(store.readOnly).toBe(true);
@@ -1721,12 +1721,12 @@ describe('the read-only offline state', () => {
   it('stays read-only when reconnecting fails', async () => {
     const store = await freshStore();
     store.loadOffline(snapshot());
-    const get = puter.kv.get;
-    puter.kv.get = async () => { throw new Error('offline'); };
+    const get = everything.kv.get;
+    everything.kv.get = async () => { throw new Error('offline'); };
     try {
       await expect(store.reconnect()).rejects.toThrow();
     } finally {
-      puter.kv.get = get;
+      everything.kv.get = get;
     }
     expect(store.readOnly).toBe(true);
   });

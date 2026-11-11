@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { appOptions, appOption, setAppOptions, resetAppOptions, onAppOptions, reloadAppOptions, normalizeOption, normalizeOptions, OPTION_DEFAULTS, displayUserName } from '../src/lib/app-options.js';
 import { installAppOptions } from '../src/lib/apply-options.js';
 import { parseInput, twoDigitYearCutoff, expandTwoDigitYear, setTwoDigitYearCutoff } from '../src/core/format.js';
-import { canAI } from '../src/lib/puter.js';
+import { canAI } from '../src/lib/everything.js';
 import { autoSaveEnabled } from '../src/lib/doc.js';
 
 function memoryStorage() {
@@ -89,14 +89,14 @@ describe('options that reach past the editor', () => {
 
   it('turning AI features off makes AI unavailable', () => {
     installAppOptions();
-    vi.stubGlobal('puter', { ai: { chat: () => {} } });
-    globalThis.window.puter = globalThis.puter;
+    vi.stubGlobal('everything', { ai: { chat: () => {} } });
+    globalThis.window.everything = globalThis.everything;
     expect(canAI()).toBe(true);
     setAppOptions({ aiFeatures: false });
     expect(canAI()).toBe(false);
     setAppOptions({ aiFeatures: true });
     expect(canAI()).toBe(true);
-    delete globalThis.window.puter;
+    delete globalThis.window.everything;
   });
 
   it('AutoSave by default applies where the device never chose', () => {

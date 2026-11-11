@@ -2,7 +2,7 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { openShareDialog } from '../src/ui/share.js';
 import { closeAllModals } from '../src/ui/modal.js';
-import * as P from '../src/lib/puter.js';
+import * as P from '../src/lib/everything.js';
 import { toast } from '../src/ui/toast.js';
 
 vi.mock('../src/ui/toast.js', () => ({ toast: vi.fn() }));
@@ -53,13 +53,13 @@ it('lists who has access, and adds a person at the level chosen', async () => {
 });
 
 it('shows a refusal on the field and keeps what was typed', async () => {
-  vi.spyOn(P, 'shareFile').mockRejectedValue(Object.assign(new Error('No Puter account has that username.'), { code: 'user_does_not_exist' }));
+  vi.spyOn(P, 'shareFile').mockRejectedValue(Object.assign(new Error('No Everything account has that username.'), { code: 'user_does_not_exist' }));
   const { panel } = openShareDialog({ path: 'a.xlsx', name: 'a' });
   await tick();
   field(panel).value = 'ghost';
   submit(panel);
   await tick();
-  expect(panel.querySelector('.field-error').textContent).toMatch(/No Puter account/);
+  expect(panel.querySelector('.field-error').textContent).toMatch(/No Everything account/);
   expect(field(panel).getAttribute('aria-invalid')).toBe('true');
   expect(field(panel).value).toBe('ghost');
   expect(field(panel).disabled).toBe(false);
@@ -103,7 +103,7 @@ it('changes and withdraws a person’s access, but offers no control over a link
 it('copies a link that names the file by its id on the web', async () => {
   const writeText = vi.fn().mockResolvedValue();
   vi.stubGlobal('navigator', { ...navigator, clipboard: { writeText } });
-  vi.spyOn(P, 'puterShareLink').mockResolvedValue(null);
+  vi.spyOn(P, 'everythingShareLink').mockResolvedValue(null);
   const { panel } = openShareDialog({ path: 'a.xlsx', name: 'a', uid: 'u-1' });
   await tick();
   [...panel.querySelectorAll('button')].find((b) => b.textContent === 'Copy link').click();

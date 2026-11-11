@@ -14,7 +14,7 @@
  *
  * Applied steps become plain follow-ups with no link back, so this module
  * is only ever asked to shape definitions and work out dates. Pure
- * functions: no Puter, no DOM.
+ * functions: no Everything, no DOM.
  */
 
 import { uid, addDays, todayISO } from './util.js';

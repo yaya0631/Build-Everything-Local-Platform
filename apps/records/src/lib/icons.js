@@ -77,7 +77,7 @@ export function githubIcon(size = 16) {
   return svg;
 }
 
-export const REPO_URL = 'https://github.com/HeyPuter/everything';
+export const REPO_URL = 'https://github.com/yaya0631/Build-Everything-Local-Platform';
 
 /** An inline SVG icon element. */
 export function icon(name, size = 16, opts = {}) {

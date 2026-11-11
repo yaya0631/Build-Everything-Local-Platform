@@ -252,7 +252,7 @@ export function openDataDialog(ctx) {
       el(
         'p',
         { class: 'share-copy' },
-        'Your data lives in your Puter account. A backup file is a full copy: keep it somewhere safe, move it to another account, or restore it after a mistake.'
+        'Your data lives in your Everything account. A backup file is a full copy: keep it somewhere safe, move it to another account, or restore it after a mistake.'
       ),
       el('p', { class: 'export-preview' }, `Right now: ${describeBackup(store.state)}.`),
       el(

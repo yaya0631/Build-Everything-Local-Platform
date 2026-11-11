@@ -10,7 +10,7 @@ import { createSampleMailbox } from '../src/lib/sample.js';
 const settle = (ms = 120) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const NEWSLETTER = 'Issue 214: Interfaces that disappear';
-const PLAIN = 'Welcome to your Puter mailbox';
+const PLAIN = 'Welcome to your Everything mailbox';
 
 let root;
 

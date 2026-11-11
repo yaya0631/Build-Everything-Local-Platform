@@ -14,7 +14,7 @@ const get = (node, name) => node.getElementsByTagNameNS('*', name)[0];
 const axisLine = axis => get([...axis.children].find(n => n.localName === 'spPr'), 'ln');
 const native = async wb => {
   const zip = X.CFB.read(new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()), { type: 'array' });
-  patch(zip, '/xl/workbook.xml', s => s.replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  patch(zip, '/xl/workbook.xml', s => s.replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   return zip;
 };
 async function setup({ type = 'column', major = 'out', minor = 'in', color = '2266AA', width = 19050, dash = 'dashDot', axisExtra = '', date = false } = {}) {

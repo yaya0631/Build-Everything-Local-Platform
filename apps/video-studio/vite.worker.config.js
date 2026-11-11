@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { defineConfig } from 'vite';
 
 /**
- * Bundles the review worker into one plain script for Puter's worker
+ * Bundles the review worker into one plain script for Everything's worker
  * runtime, which provides `router` and `me` as globals. The owner's app
  * deploys it to their own account (src/review/api.js). The build id is a
  * hash of the bundled code, written in the first line, so the app can tell

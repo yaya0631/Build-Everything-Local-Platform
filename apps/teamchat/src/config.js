@@ -1,6 +1,6 @@
 /**
  * Where workspaces live. By default each workspace owner runs their own copy
- * of the worker, deployed by the app into their Puter account the first time
+ * of the worker, deployed by the app into their Everything account the first time
  * they create a workspace (see lib/deploy.js). The bundle the app deploys is
  * served next to it, at WORKER_BUNDLE_URL.
  *

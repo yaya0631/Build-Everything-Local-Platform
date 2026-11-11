@@ -47,7 +47,7 @@ export function lazyImage(att, { thumb = true, ref, id, alt = '', cls = '' } = {
 
 // Types a browser tab shows without running anything. A file's object URL
 // belongs to the app's origin, so an HTML or SVG document opened in a tab
-// would run its scripts with the signed-in Puter session.
+// would run its scripts with the signed-in Everything session.
 const VIEWABLE = new Set(['image/png', 'image/jpeg', 'image/gif', 'image/webp', 'image/avif', 'application/pdf']);
 
 /** Open a photo or PDF in a new tab; download anything else. */

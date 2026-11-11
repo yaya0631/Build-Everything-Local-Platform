@@ -29,7 +29,7 @@ import {
 } from './date-utils.js';
 import { resolveTzid } from './windows-zones.js';
 
-const PRODID = '-//Calendar//Puter//EN';
+const PRODID = '-//Calendar//Everything//EN';
 const ICS_WEEKDAYS = ['SU', 'MO', 'TU', 'WE', 'TH', 'FR', 'SA'];
 
 // RSVP participation status, app <-> RFC 5545 PARTSTAT.

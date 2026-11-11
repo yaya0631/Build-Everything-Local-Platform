@@ -8,7 +8,7 @@ vi.mock('../src/views/home.js', () => ({ homeView: mocks.home }));
 vi.mock('../src/ui/toast.js', () => ({ toast: mocks.toast }));
 vi.mock('../src/lib/session.js', () => ({ session: { init: async () => {}, signedOut: false, addEventListener() {}, removeEventListener() {} } }));
 vi.mock('../src/lib/recent.js', () => ({ rememberRecent: vi.fn(), forgetRecent: mocks.forgetRecent }));
-vi.mock('../src/lib/puter.js', () => ({
+vi.mock('../src/lib/everything.js', () => ({
   hasSDK: () => true, isSignedIn: async () => true, onAuth() {}, onLaunchedWithItems() {}, onWindowClose() {}, setWindowTitle() {}, isNotFound: () => false, samePath: (a, b) => a === b,
 }));
 

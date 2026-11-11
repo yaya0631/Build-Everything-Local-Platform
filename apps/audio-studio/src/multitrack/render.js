@@ -64,7 +64,7 @@ export function renderedDoc(app, session, data, name, markers = []) {
     markers,
     info: { bitDepth: 32, format: 'wav' },
     // Edit > Edit Original goes back to the session this audio came from.
-    origin: { sessionId: session.id, name: session.name, path: session.source?.type === 'puter' ? session.source.path : null },
+    origin: { sessionId: session.id, name: session.name, path: session.source?.type === 'everything' ? session.source.path : null },
   });
 }
 

@@ -20,7 +20,7 @@ export async function documentInfoDialog(app, editor = app.editor) {
   const L = (v) => formatLength(v, units);
   const sizeEl = h('dd', 'Calculating...');
   const f = editor.file;
-  const where = !f ? 'Not saved yet' : f.kind === 'puter' ? f.path : f.kind === 'local' ? 'This computer' : f.kind === 'download' ? 'Downloaded to this computer' : 'Imported, not saved yet';
+  const where = !f ? 'Not saved yet' : f.kind === 'everything' ? f.path : f.kind === 'local' ? 'This computer' : f.kind === 'download' ? 'Downloaded to this computer' : 'Imported, not saved yet';
   const bleed = normalizeBleed(root.bleed ?? 0);
   const dl = (rows) => h('dl.files-info-list', rows.flatMap(([k, v]) => [h('dt', k), v instanceof Node ? v : h('dd', String(v))]));
   const sec = (title, ...content) => h('section.files-info-sec', h('h3.form-heading', title), ...content);

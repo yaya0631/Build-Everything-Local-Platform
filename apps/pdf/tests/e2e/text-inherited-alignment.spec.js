@@ -8,7 +8,7 @@ for (const alignment of [1, 2])
     test(`editing an inherited alignment preserves exported positioning (Q=${alignment}, ${mode})`, async ({
       page,
     }) => {
-      await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
+      await page.route('**/sdk/everything.js', (route) => route.fulfill({ body: '' }));
       await page.goto('/#library');
       const { doc } = await inheritedAlignmentPdf({ alignment, indirect: true });
       const opening = page.waitForEvent('filechooser');

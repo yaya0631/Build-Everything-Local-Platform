@@ -8,7 +8,7 @@
 
 import { dateStamp, uid } from './util.js';
 
-export const BACKUP_APP = 'puter-inventory';
+export const BACKUP_APP = 'everything-inventory';
 export const BACKUP_VERSION = 1;
 
 const COLLECTIONS = ['products', 'locations', 'suppliers', 'activity', 'orders'];

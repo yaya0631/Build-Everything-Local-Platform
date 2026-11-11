@@ -7,7 +7,7 @@ for (const entry of ['page', 'dialog'])
   test(`a last-row list choice made from the ${entry} stays visible in the saved PDF`, async ({
     page,
   }) => {
-    await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
+    await page.route('**/sdk/everything.js', (route) => route.fulfill({ body: '' }));
     await page.goto('/#library');
     const { doc } = await scrollingChoicePdf();
     const opening = page.waitForEvent('filechooser');

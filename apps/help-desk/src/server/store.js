@@ -1,7 +1,7 @@
 /**
- * Key-value helpers for the backend. They wrap the Puter KV API the backend
- * is handed (the worker owner's `me.puter.kv`, or the signed-in user's
- * `puter.kv` when the desk runs in the browser) with the access patterns the
+ * Key-value helpers for the backend. They wrap the Everything KV API the backend
+ * is handed (the worker owner's `me.everything.kv`, or the signed-in user's
+ * `everything.kv` when the desk runs in the browser) with the access patterns the
  * help desk needs: batched reads, paged prefix scans, and the commit that
  * writes records together with a numbered change feed entry.
  */

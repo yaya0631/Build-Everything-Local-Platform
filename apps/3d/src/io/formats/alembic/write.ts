@@ -473,7 +473,7 @@ export function writeAlembicScene(scene: AlembicSceneOut): Uint8Array {
     {
       metadata: {
         FramesPerTimeUnit: fps.toFixed(6),
-        _ai_Application: scene.application ?? 'Puter 3D',
+        _ai_Application: scene.application ?? 'Everything 3D',
         _ai_DateWritten: new Date().toUTCString(),
         _ai_Description: 'unknown',
       },

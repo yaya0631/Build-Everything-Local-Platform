@@ -300,7 +300,7 @@ export function sheetsToPdf(wb, parts, { title = 'Spreadsheet' } = {}) {
   });
   objects[catalog - 1] = `<< /Type /Catalog /Pages ${pagesObj} 0 R >>`;
   objects[pagesObj - 1] = `<< /Type /Pages /Kids [${kids.map((k) => `${k} 0 R`).join(' ')}] /Count ${kids.length} >>`;
-  const info = add(`<< /Title ${pdfTextString(String(title).slice(0, 200))} /Producer (Spreadsheet on Puter) >>`);
+  const info = add(`<< /Title ${pdfTextString(String(title).slice(0, 200))} /Producer (Spreadsheet on Everything) >>`);
   // Every string above holds one byte per character (pdfString encodes text that way), so lengths are offsets.
   let out = '%PDF-1.4\n%\xe2\xe3\xcf\xd3\n';
   const offsets = [];

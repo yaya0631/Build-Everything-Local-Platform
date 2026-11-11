@@ -12,7 +12,7 @@
  * so JSON export/import, CSV, and the trash restore path carry them
  * without a second store to fall out of step.
  *
- * Pure functions over plain objects - no Puter, no DOM. Deliberately no
+ * Pure functions over plain objects - no Everything, no DOM. Deliberately no
  * dependency on csv.js: that module reads this one, and spreadsheet-shaped
  * coercion (loose dates, money cells) belongs on its side of the line.
  */

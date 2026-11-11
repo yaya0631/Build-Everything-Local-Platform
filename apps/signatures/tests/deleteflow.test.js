@@ -1,7 +1,7 @@
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
 import { store } from '../src/lib/store.js';
 import { createSignLinks } from '../src/lib/signlinks.js';
-import { makeFakePuter } from './helpers/fake-puter.js';
+import { makeFakeEverything } from './helpers/fake-everything.js';
 import { signlinks } from '../src/lib/services.js';
 import { confirmDialog } from '../src/ui/modal.js';
 import { toast } from '../src/ui/toast.js';
@@ -17,10 +17,10 @@ let doc;
 
 beforeEach(async () => {
   vi.clearAllMocks();
-  p = makeFakePuter();
-  vi.stubGlobal('puter', p);
+  p = makeFakeEverything();
+  vi.stubGlobal('everything', p);
   await store.init();
-  links = createSignLinks({ store, getPuter: () => p, fetchFn: p.fetchTo, verifyDelayMs: 1 });
+  links = createSignLinks({ store, getEverything: () => p, fetchFn: p.fetchTo, verifyDelayMs: 1 });
   signlinks.revokeDoc.mockImplementation((id) => links.revokeDoc(id));
   confirmDialog.mockResolvedValue(true);
   doc = await store.createDoc({ title: 'NDA', pdfBytes: new Uint8Array([1]), pageCount: 1 });

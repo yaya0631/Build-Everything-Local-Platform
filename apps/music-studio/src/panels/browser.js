@@ -8,8 +8,8 @@
 //                Enter adds to the selected insert.
 //   Project      patterns, channels, samples and automation of the open
 //                project, updated live (rebuilt only when what it shows changes).
-//   My files     signed in: the app's Puter folder (Projects, Samples, Exports), the
-//                home folder and folders picked with the Puter folder picker,
+//   My files     signed in: the app's Everything folder (Projects, Samples, Exports), the
+//                home folder and folders picked with the Everything folder picker,
 //                listed lazily. Audio previews stream only on an explicit play
 //                (temporary read URLs are rate limited), projects open on
 //                double-click, files drag into the rack and playlist.
@@ -26,7 +26,7 @@ import { icon, registerIcons } from '../ui/icons.js';
 import { contextMenu, openMenu, isContextKey } from '../ui/menu.js';
 import { setDragData } from '../lib/dnd.js';
 import { Play, Square, ChevronsDownUp, FolderSearch } from 'lucide';
-import * as puter from '../storage/puter.js';
+import * as everything from '../storage/everything.js';
 import * as E from '../model/edits.js';
 import { FILE_EXT, MAX_FX_SLOTS } from '../model/project.js';
 import { EFFECTS } from '../effects/catalog.js';
@@ -86,9 +86,9 @@ function createBrowser(app, host) {
     dirs = null;
     folders.clear();
     urls.clear();
-    if (puter.isSignedIn()) {
+    if (everything.isSignedIn()) {
       try {
-        dirs = { music: await puter.appDir() };
+        dirs = { music: await everything.appDir() };
       } catch {
         dirs = null;
       }
@@ -105,15 +105,15 @@ function createBrowser(app, host) {
   };
 
   const loadFolder = async (path, force = false) => {
-    if (!puter.isSignedIn()) return;
+    if (!everything.isSignedIn()) return;
     const cur = folders.get(path);
     if (cur && !force && (cur.loading || cur.items)) return;
     folders.set(path, { loading: true });
     invalidate();
     try {
-      const list = await puter.readdir(path);
-      const items = (Array.isArray(list) ? list : list?.items || []).filter((it) => puter.isDir(it) || isAudioName(it.name) || SHOWN_EXT.test(it.name));
-      items.sort((a, b) => Number(puter.isDir(b)) - Number(puter.isDir(a)) || a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
+      const list = await everything.readdir(path);
+      const items = (Array.isArray(list) ? list : list?.items || []).filter((it) => everything.isDir(it) || isAudioName(it.name) || SHOWN_EXT.test(it.name));
+      items.sort((a, b) => Number(everything.isDir(b)) - Number(everything.isDir(a)) || a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
       folders.set(path, { items });
     } catch (err) {
       folders.set(path, { error: err?.code === 'subject_does_not_exist' || err?.status === 404 ? 'missing' : 'error' });
@@ -126,7 +126,7 @@ function createBrowser(app, host) {
     const state = folders.get(path);
     let children;
     if (state?.items) {
-      children = state.items.slice(0, FOLDER_LIMIT).map((it) => (puter.isDir(it) ? folderNode(it.path, it.name) : fileNode(it)));
+      children = state.items.slice(0, FOLDER_LIMIT).map((it) => (everything.isDir(it) ? folderNode(it.path, it.name) : fileNode(it)));
       if (state.items.length > FOLDER_LIMIT) children.push({ id: `${id}:more`, label: `${state.items.length - FOLDER_LIMIT} more items not shown`, kind: 'note' });
       if (!children.length) children = [{ id: `${id}:empty`, label: 'No audio, project or MIDI files', kind: 'note' }];
     } else if (state?.error) {
@@ -150,11 +150,11 @@ function createBrowser(app, host) {
   };
 
   const filesSection = () => {
-    if (!puter.sdk()) return [{ id: 'files:offline', label: 'Puter is not available right now. Check your connection, then reload.', kind: 'note' }];
-    if (!puter.isSignedIn()) {
+    if (!everything.sdk()) return [{ id: 'files:offline', label: 'Everything is not available right now. Check your connection, then reload.', kind: 'note' }];
+    if (!everything.isSignedIn()) {
       return [
-        { id: 'files:why', label: 'Sign in to keep projects, samples and exports in your Puter cloud and open them on any device.', kind: 'note' },
-        { id: 'files:signin', label: 'Sign in to Puter', kind: 'action', icon: 'log-in', data: { run: () => app.signIn?.() } },
+        { id: 'files:why', label: 'Sign in to keep projects, samples and exports in your Everything cloud and open them on any device.', kind: 'note' },
+        { id: 'files:signin', label: 'Sign in to Everything', kind: 'action', icon: 'log-in', data: { run: () => app.signIn?.() } },
         { id: 'files:import', label: 'Import audio from this device...', kind: 'action', icon: 'upload', data: { run: () => app.commands.run('file.importAudio') } },
         { id: 'files:open', label: 'Open a project from this device...', kind: 'action', icon: 'folder-open', data: { run: () => app.commands.run('file.openLocal') } },
       ];
@@ -169,7 +169,7 @@ function createBrowser(app, host) {
   };
 
   const deviceSection = () => {
-    if (!localProjects.length) return [{ id: 'dev:none', label: puter.isSignedIn() ? 'No projects saved in this browser' : 'Projects you save while signed out appear here', kind: 'note' }];
+    if (!localProjects.length) return [{ id: 'dev:none', label: everything.isSignedIn() ? 'No projects saved in this browser' : 'Projects you save while signed out appear here', kind: 'note' }];
     return localProjects.map((m) => ({ id: `local:${m.key}`, label: m.name, kind: 'project', icon: 'file-music', detail: m.key === app.file?.local ? 'Open' : '', data: { local: m.key, name: m.name } }));
   };
 
@@ -366,7 +366,7 @@ function createBrowser(app, host) {
       return;
     }
     stopPreview();
-    if (!puter.isSignedIn()) return;
+    if (!everything.isSignedIn()) return;
     playing.path = data.path;
     invalidate();
     try {
@@ -376,11 +376,11 @@ function createBrowser(app, host) {
       if (!url) {
         urls.delete(data.path);
         try {
-          url = await puter.readURL(data.path, '2h');
+          url = await everything.readURL(data.path, '2h');
           urls.set(data.path, { url, at: Date.now() });
         } catch {
           // Read URLs are rate limited: fall back to downloading the file.
-          url = blobUrl = URL.createObjectURL(await puter.readFile(data.path));
+          url = blobUrl = URL.createObjectURL(await everything.readFile(data.path));
         }
       }
       if (playing.path !== data.path) {
@@ -398,7 +398,7 @@ function createBrowser(app, host) {
     } catch (err) {
       urls.delete(data.path); // maybe expired or revoked: make a new one next time
       if (playing.path === data.path) stopPreview();
-      app.notify(`${data.name} could not be previewed: ${puter.errorMessage(err)}`, { error: true });
+      app.notify(`${data.name} could not be previewed: ${everything.errorMessage(err)}`, { error: true });
     }
   }
 
@@ -436,13 +436,13 @@ function createBrowser(app, host) {
 
   async function openFileNode(data) {
     if (data.project) return app.openProjectPath?.(data.path);
-    if (data.midi) return app.files?.importMidiBlob(await puter.readFile(data.path), data.name);
+    if (data.midi) return app.files?.importMidiBlob(await everything.readFile(data.path), data.name);
     return importFile(data);
   }
 
   async function pickFolder() {
     try {
-      const dir = await puter.pickDirectory();
+      const dir = await everything.pickDirectory();
       if (!dir?.path) return;
       if (!extraRoots.includes(dir.path)) extraRoots.push(dir.path);
       expanded.add(`dir:${dir.path}`);

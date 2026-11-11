@@ -53,7 +53,7 @@ const set = (zip, path, text) => X.CFB.utils.cfb_add(zip, path, new TextEncoder(
 async function excelFile() {
   const zip = X.CFB.read(new Uint8Array(await (await workbookToXlsx(fixture())).arrayBuffer()), { type: 'array' });
   const parts = { date: slicer('Slicer_Date', 'Date', [3, 4, 5, 1, 2, 6, 7, 8, 9, 10, 11, 12, 0, 13].map(x => [x, x < 3 || x > 5])), category: slicer('Slicer_Category', 'Category', [[1], [0]]) };
-  set(zip, '/xl/workbook.xml', get(zip, '/xl/workbook.xml').replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')
+  set(zip, '/xl/workbook.xml', get(zip, '/xl/workbook.xml').replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')
     .replace('</extLst>', `<ext uri="{BBE1A952-AA13-448E-AADC-164F8A28A991}"><x:slicerCaches xmlns:x="${X14}" xmlns:r="${R}"><x:slicerCache r:id="sDate"/><x:slicerCache r:id="sCategory"/></x:slicerCaches></ext></extLst>`));
   set(zip, '/xl/_rels/workbook.xml.rels', get(zip, '/xl/_rels/workbook.xml.rels').replace('</Relationships>',
     `<Relationship Id="sDate" Type="${S}/slicerCache" Target="slicerCaches/date.xml"/><Relationship Id="sCategory" Type="${S}/slicerCache" Target="slicerCaches/category.xml"/></Relationships>`));

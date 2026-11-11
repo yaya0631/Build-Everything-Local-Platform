@@ -9,12 +9,12 @@ word processors. The design is in [collaboration.md](../collaboration.md).
 - Share button in the title bar (menu: Invite People…, Copy Link, Manage Access…, then the chrome's
   publishing and send-a-copy items), File → Share → Invite People…, the File view's Share page,
   Tools → Share….
-- Share dialog: invite Puter usernames or email addresses as *Can edit*, *Can comment* or *Can
+- Share dialog: invite Everything usernames or email addresses as *Can edit*, *Can comment* or *Can
   view*, with a message; copy a link with a chosen role; turn off earlier links; people with access
   with role changes and removal (owner); pending invitations; who is in the document now; Stop
   Sharing.
-- Send a copy by email as a Word document or PDF from the person's Puter address (or download).
-- Roles are enforced by the room server (Puter worker) and by the editor: viewers read only (the
+- Send a copy by email as a Word document or PDF from the person's Everything address (or download).
+- Roles are enforced by the room server (Everything worker) and by the editor: viewers read only (the
   Editing/Viewing switch cannot override it), commenters can only add and answer comments (Review's
   protection guard in comments mode), with a notice bar explaining the role.
 
@@ -51,7 +51,7 @@ word processors. The design is in [collaboration.md](../collaboration.md).
 - Replies that are text show what they replace and apply only on request (Replace Selection, Insert
   Below, Insert After Selection, Insert at Cursor) as one undoable change; answers can be inserted
   or copied.
-- Hidden when Puter AI is not available; the mock SDK answers in development and tests.
+- Hidden when Everything AI is not available; the mock SDK answers in development and tests.
 
 **AutoSave**
 - The chrome's AutoSave switch drives `Doc` (cloud documents only); `w.autoSave({ enabled })` is
@@ -59,12 +59,12 @@ word processors. The design is in [collaboration.md](../collaboration.md).
 
 ## Approximated
 
-- Latency: about one second between people on Puter rooms (request-based synchronization); the
+- Latency: about one second between people on Everything rooms (request-based synchronization); the
   desktop products' push channels are faster. Local rooms between tabs are immediate.
 - Concurrent structural edits of the same table keep one person's structure; concurrent edits of
   the same header or footer keep one version.
 - Presence shows carets in the body only.
-- Email invitations carry a link; there is no notification inside Puter for invitations by
+- Email invitations carry a link; there is no notification inside Everything for invitations by
   username (the owner shares the link, or the invitee opens it from the mail).
 
 ## Not implemented

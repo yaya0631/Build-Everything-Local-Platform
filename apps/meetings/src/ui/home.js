@@ -7,7 +7,7 @@ import { mintRoomCode } from '../lib/rooms.js';
 import { copyText } from './panels.js';
 import { formatClock, formatDay } from '../lib/time.js';
 import { accountAvatar, loadAccountAvatar } from './account-avatar.js';
-import { hasPuter } from '../lib/env.js';
+import { hasEverything } from '../lib/env.js';
 import { mountAgenda } from './agenda.js';
 import { clearAgendaCaches } from '../lib/agenda.js';
 import { brandLockup } from './brand.js';
@@ -103,16 +103,16 @@ export function mountHome(root, ctx) {
           feature('Links never expire'),
           feature('No account needed to join')
         ),
-        hasPuter() && !ctx.calendar?.supported()
+        hasEverything() && !ctx.calendar?.supported()
           ? el(
               'p',
               { class: 'home-art-hint' },
               icon('calendar'),
-              'Open Meetings from your Puter desktop to see the day’s meetings from Calendar here.'
+              'Open Meetings from your Everything desktop to see the day’s meetings from Calendar here.'
             )
           : null
       ),
-      // Inside the Puter desktop the day's meetings from the Calendar app
+      // Inside the Everything desktop the day's meetings from the Calendar app
       // sit beside the hero, each one click from joining. On the open web
       // there is no Calendar to ask (see lib/calendar.js), so the hero stands
       // alone — with a line saying where the list lives.
@@ -146,7 +146,7 @@ export function mountHome(root, ctx) {
       userKey: currentUser().then((user) => user?.uuid ?? user?.id ?? user?.username ?? ''),
       openCalendar: () => {
         try {
-          void window.puter.ui.launchApp({ name: 'calendar' });
+          void window.everything.ui.launchApp({ name: 'calendar' });
         } catch {
           toast('Could not open Calendar.', { icon: 'info' });
         }
@@ -363,13 +363,13 @@ export function mountHome(root, ctx) {
     ctx.openPrejoin({ mode: 'join', code });
   }
 
-  /** The signed-in Puter user, or null. */
+  /** The signed-in Everything user, or null. */
   async function fetchUser() {
-    if (!hasPuter()) return null;
+    if (!hasEverything()) return null;
     try {
-      const puter = window.puter;
-      if (!puter.auth?.isSignedIn?.()) return null;
-      return (await puter.auth.getUser()) ?? null;
+      const everything = window.everything;
+      if (!everything.auth?.isSignedIn?.()) return null;
+      return (await everything.auth.getUser()) ?? null;
     } catch {
       return null;
     }
@@ -377,10 +377,10 @@ export function mountHome(root, ctx) {
 
   async function renderUser() {
     clear(userSlot);
-    if (!hasPuter()) return;
-    const puter = window.puter;
+    if (!hasEverything()) return;
+    const everything = window.everything;
     try {
-      if (puter.auth?.isSignedIn?.()) {
+      if (everything.auth?.isSignedIn?.()) {
         const avatar = accountAvatar();
         userSlot.append(avatar);
         const user = await currentUser();
@@ -396,7 +396,7 @@ export function mountHome(root, ctx) {
               'aria-label': 'Sign out',
               onclick: async () => {
                 try {
-                  await puter.auth.signOut();
+                  await everything.auth.signOut();
                 } catch {
                   /* noop */
                 }
@@ -412,7 +412,7 @@ export function mountHome(root, ctx) {
             icon('logout')
           )
         );
-        void loadAccountAvatar(avatar, user, puter.auth);
+        void loadAccountAvatar(avatar, user, everything.auth);
         // The account username is only a fallback — never clobber a
         // display name the user chose earlier.
         if (!ctx.getUserName?.()) ctx.setUserName?.(name);
@@ -424,7 +424,7 @@ export function mountHome(root, ctx) {
               class: 'btn btn-outline home-signin',
               onclick: async () => {
                 try {
-                  await puter.auth.signIn();
+                  await everything.auth.signIn();
                   forgetUser();
                   renderUser();
                   mountAgendaPanel();

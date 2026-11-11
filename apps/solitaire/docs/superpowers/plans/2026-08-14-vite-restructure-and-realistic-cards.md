@@ -2,11 +2,11 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Turn a single 1307-line `index.html` Klondike solitaire into a Vite project with separated HTML/CSS/JS modules, add realistic desktop card faces while keeping small cards plain, and back stats plus game-resume with Puter.
+**Goal:** Turn a single 1307-line `index.html` Klondike solitaire into a Vite project with separated HTML/CSS/JS modules, add realistic desktop card faces while keeping small cards plain, and back stats plus game-resume with Everything.
 
-**Architecture:** Pure game logic in `src/game/` with no DOM access and full Vitest coverage; DOM rendering in `src/ui/`; Puter and localStorage behind `src/services/stats.js`. Cards render in one of two modes chosen by card pixel width — a plain corner-index DOM below 76px, and a vendored public-domain `<playing-card>` SVG element at 76px and above.
+**Architecture:** Pure game logic in `src/game/` with no DOM access and full Vitest coverage; DOM rendering in `src/ui/`; Everything and localStorage behind `src/services/stats.js`. Cards render in one of two modes chosen by card pixel width — a plain corner-index DOM below 76px, and a vendored public-domain `<playing-card>` SVG element at 76px and above.
 
-**Tech Stack:** Vite, Vitest, plain JavaScript ES modules, no framework. CardMeister (Unlicense/public domain) for card art. puter.js for auth, KV storage.
+**Tech Stack:** Vite, Vitest, plain JavaScript ES modules, no framework. CardMeister (Unlicense/public domain) for card art. everything.js for auth, KV storage.
 
 **Spec:** `docs/superpowers/specs/2026-08-14-solitaire-vite-and-card-realism-design.md`
 
@@ -15,11 +15,11 @@
 - **Plain JavaScript, ES modules.** No TypeScript, no framework, no CSS preprocessor.
 - **Card aspect ratio is locked at 1:1.4** (`cardH = cardW * 1.4`). The vendored card SVG preserves aspect ratio and letterboxes if the box ratio differs. Do not change this ratio.
 - **Rich mode threshold is 76px card width.** Constant `RICH_MODE_MIN_CARD_W = 76` in `src/ui/layout.js`.
-- **`src/game/**` must never import from `src/ui/**` or `src/services/**`, and must never touch `document`, `window`, or `puter`.** This is what makes it testable.
+- **`src/game/**` must never import from `src/ui/**` or `src/services/**`, and must never touch `document`, `window`, or `everything`.** This is what makes it testable.
 - **`board.js` and `drag.js` must not import each other.** `main.js` owns `requestRender()` and passes it into both.
 - **Any value derived per-card for visual variation must be a pure function of the card id, never `Math.random()`.** `render()` rebuilds the whole board on every move.
-- **No Puter cloud call may run on page load unless `puter.auth.isSignedIn()` is already true.** Any cloud call auto-prompts a sign-in dialog; the game must never demand an account.
-- **Every Puter call is wrapped in try/catch and falls back to localStorage silently.**
+- **No Everything cloud call may run on page load unless `everything.auth.isSignedIn()` is already true.** Any cloud call auto-prompts a sign-in dialog; the game must never demand an account.
+- **Every Everything call is wrapped in try/catch and falls back to localStorage silently.**
 - **Tests cover `src/game/**` and the pure helpers in `src/ui/layout.js`, `src/ui/drag.js`, `src/ui/card-tilt.js`, and `src/services/stats.js` only.** No DOM or e2e tests.
 - **`findHint`, `showHint`, the `.hint` CSS class and the `hintPulse` keyframes are deleted.** Do not port them.
 - **Baseline reference:** the original single-file game is commit `d8b025b`, file `index.html`. "Port verbatim from baseline" below means copy that code unchanged apart from the import/export wrapper.
@@ -48,7 +48,7 @@
 | `src/ui/board.js` | Full board render |
 | `src/ui/drag.js` | Pointer drag/drop, drop-target picking |
 | `src/ui/animate.js` | Flip, stock flight, win celebration |
-| `src/services/stats.js` | localStorage stats/save, optional Puter mirror |
+| `src/services/stats.js` | localStorage stats/save, optional Everything mirror |
 | `src/vendor/cardmeister.js` | Vendored public-domain 52-card SVG element |
 
 ---
@@ -86,7 +86,7 @@ npm pkg delete main
 
 - [ ] **Step 2: Create `vite.config.js`**
 
-`base: './'` matters — the build is served from a Puter subdomain root, and absolute asset paths break there.
+`base: './'` matters — the build is served from an Everything subdomain root, and absolute asset paths break there.
 
 ```js
 import { defineConfig } from 'vite';
@@ -975,7 +975,7 @@ This task is a pure extraction. No behaviour changes, no new styles. Material re
 
 - [ ] **Step 1: Replace `index.html` with the shell**
 
-Changes from baseline: the inline `<style>` and `<script>` are gone, a `#sync` button and a Puter footer link are added, and the hidden moves counter is now visible.
+Changes from baseline: the inline `<style>` and `<script>` are gone, a `#sync` button and an Everything footer link are added, and the hidden moves counter is now visible.
 
 ```html
 <!DOCTYPE html>
@@ -987,7 +987,7 @@ Changes from baseline: the inline `<style>` and `<script>` are gone, a `#sync` b
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Outlined" rel="stylesheet">
-<script src="/sdk/puter.js"></script>
+<script src="/sdk/everything.js"></script>
 </head>
 <body>
 
@@ -997,7 +997,7 @@ Changes from baseline: the inline `<style>` and `<script>` are gone, a `#sync` b
     <span>Moves<b id="moves">0</b></span>
   </div>
   <div class="actions">
-    <button class="btn" id="sync" title="Sync stats with Puter">
+    <button class="btn" id="sync" title="Sync stats with Everything">
       <span class="material-symbols-outlined">cloud_off</span><span>Sync</span>
     </button>
     <button class="btn" id="undo" title="Undo">
@@ -1024,7 +1024,7 @@ Changes from baseline: the inline `<style>` and `<script>` are gone, a `#sync` b
 </div>
 
 <footer class="credit">
-  <a href="http://localhost:8443" target="_blank" rel="noopener">Powered by Puter</a>
+  <a href="http://localhost:8443" target="_blank" rel="noopener">Powered by Everything</a>
 </footer>
 
 <script type="module" src="/src/main.js"></script>
@@ -1104,7 +1104,7 @@ console.log('solitaire: styles loaded');
 - [ ] **Step 7: Verify**
 
 Run: `npm run dev`, open the page.
-Expected: green felt background, header with Moves / Sync / Undo / New, an empty board area, and the "Powered by Puter" link bottom right. No cards yet. Console shows the log line and no errors.
+Expected: green felt background, header with Moves / Sync / Undo / New, an empty board area, and the "Powered by Everything" link bottom right. No cards yet. Console shows the log line and no errors.
 
 - [ ] **Step 8: Commit**
 
@@ -2751,16 +2751,16 @@ git commit -m "Add local stats tracking"
 
 ---
 
-## Task 14: Puter sign-in and stats sync
+## Task 14: Everything sign-in and stats sync
 
 **Files:**
-- Create: `src/services/puter-sync.js`
+- Create: `src/services/everything-sync.js`
 - Modify: `src/main.js`
 
 **Interfaces:**
 - Consumes: `mergeStats` from `./stats.js`
 - Produces:
-  - `puterAvailable(): boolean`
+  - `everythingAvailable(): boolean`
   - `isSignedIn(): Promise<boolean>` — never throws, never prompts
   - `signIn(): Promise<boolean>`
   - `pullStats(): Promise<Stats|null>`
@@ -2769,24 +2769,24 @@ git commit -m "Add local stats tracking"
   - `pushSave(save): Promise<boolean>`
   - `clearSave(): Promise<void>`
 
-The load-time rule from the spec lives here: **nothing in this module calls `puter.kv` unless `isSignedIn()` has already returned true.**
+The load-time rule from the spec lives here: **nothing in this module calls `everything.kv` unless `isSignedIn()` has already returned true.**
 
-- [ ] **Step 1: Write `src/services/puter-sync.js`**
+- [ ] **Step 1: Write `src/services/everything-sync.js`**
 
 ```js
 const KV_STATS_KEY = 'stats';
 const KV_SAVE_KEY = 'savedGame';
 
-export function puterAvailable() {
-  return typeof puter !== 'undefined' && !!puter?.auth && !!puter?.kv;
+export function everythingAvailable() {
+  return typeof everything !== 'undefined' && !!everything?.auth && !!everything?.kv;
 }
 
 // Never throws and never triggers the sign-in dialog. Everything else in this
 // module is gated behind this returning true.
 export async function isSignedIn() {
-  if (!puterAvailable()) return false;
+  if (!everythingAvailable()) return false;
   try {
-    return !!(await puter.auth.isSignedIn());
+    return !!(await everything.auth.isSignedIn());
   } catch {
     return false;
   }
@@ -2794,10 +2794,10 @@ export async function isSignedIn() {
 
 // The only function permitted to prompt. Call it from a user gesture only.
 export async function signIn() {
-  if (!puterAvailable()) return false;
+  if (!everythingAvailable()) return false;
   try {
-    await puter.auth.signIn();
-    return !!(await puter.auth.isSignedIn());
+    await everything.auth.signIn();
+    return !!(await everything.auth.isSignedIn());
   } catch {
     return false;
   }
@@ -2813,18 +2813,18 @@ export async function signIn() {
 > a transient network failure reads as "this key is empty" and gets
 > silently overwritten with a fresh local-only value, which can clobber a
 > better value that was sitting in KV the whole time. The shipped, correct
-> version is `src/services/puter-sync.js`: `kvGet`/`kvSet` return
+> version is `src/services/everything-sync.js`: `kvGet`/`kvSet` return
 > `{ ok, value }`, where `ok: false` means "the read failed or the user
 > isn't signed in — treat this as unknown, not empty," and callers
 > (`syncStats()` / `writeSave()` in `src/main.js`) refuse to merge or push
 > unless the preceding pull actually had `ok: true`. See
-> `src/services/puter-sync.test.js` for the pinned contract.
+> `src/services/everything-sync.test.js` for the pinned contract.
 
 ```js
 async function kvGet(key) {
   if (!await isSignedIn()) return null;
   try {
-    const raw = await puter.kv.get(key);
+    const raw = await everything.kv.get(key);
     return raw ? JSON.parse(raw) : null;
   } catch {
     return null;
@@ -2835,10 +2835,10 @@ async function kvSet(key, value) {
   if (!await isSignedIn()) return false;
   try {
     const payload = JSON.stringify(value);
-    const limit = puter.kv.MAX_VALUE_SIZE;
+    const limit = everything.kv.MAX_VALUE_SIZE;
     // The docs do not publish this as a number, so read it rather than assume.
     if (typeof limit === 'number' && payload.length > limit) return false;
-    await puter.kv.set(key, payload);
+    await everything.kv.set(key, payload);
     return true;
   } catch {
     return false;
@@ -2853,7 +2853,7 @@ export const pushSave = save => kvSet(KV_SAVE_KEY, save);
 export async function clearSave() {
   if (!await isSignedIn()) return;
   try {
-    await puter.kv.del(KV_SAVE_KEY);
+    await everything.kv.del(KV_SAVE_KEY);
   } catch {
     // Ignore.
   }
@@ -2864,7 +2864,7 @@ export async function clearSave() {
 
 ```js
 import { mergeStats } from './services/stats.js';
-import * as cloud from './services/puter-sync.js';
+import * as cloud from './services/everything-sync.js';
 
 const syncBtn = document.getElementById('sync');
 let signedIn = false;
@@ -2886,7 +2886,7 @@ async function syncStats() {
 }
 
 syncBtn.onclick = async () => {
-  if (!cloud.puterAvailable()) return;
+  if (!cloud.everythingAvailable()) return;
   setSyncUI('busy');
   signedIn = await cloud.isSignedIn() || await cloud.signIn();
   if (!signedIn) { setSyncUI('off'); return; }
@@ -2897,7 +2897,7 @@ syncBtn.onclick = async () => {
 // Load-time path: only touch the cloud if already signed in, so opening the
 // game never throws a login dialog at anyone.
 (async () => {
-  if (!cloud.puterAvailable()) { setSyncUI('off'); return; }
+  if (!cloud.everythingAvailable()) { setSyncUI('off'); return; }
   signedIn = await cloud.isSignedIn();
   if (!signedIn) { setSyncUI('off'); return; }
   setSyncUI('busy');
@@ -2918,7 +2918,7 @@ Also push stats after a win — add to the end of `showWin`:
 Run: `npm run dev`.
 
 - **Load the page signed out. No sign-in dialog may appear.** This is the single most important check in this task. The button reads "Sync" with a `cloud_off` icon.
-- Click Sync — the Puter dialog opens. Sign in. Button becomes "Synced".
+- Click Sync — the Everything dialog opens. Sign in. Button becomes "Synced".
 - Reload — it goes straight to "Synced" with no dialog.
 - Win a game, reload in another browser, sign in, and confirm the counts merged.
 - Block `js.localhost:8443` in devtools and reload: the game still plays, button stays "Sync", console has no unhandled rejections.
@@ -2926,8 +2926,8 @@ Run: `npm run dev`.
 - [ ] **Step 4: Commit**
 
 ```bash
-git add src/services/puter-sync.js src/main.js
-git commit -m "Add Puter sign-in and stats sync"
+git add src/services/everything-sync.js src/main.js
+git commit -m "Add Everything sign-in and stats sync"
 ```
 
 ---
@@ -2938,7 +2938,7 @@ git commit -m "Add Puter sign-in and stats sync"
 - Modify: `src/main.js`
 
 **Interfaces:**
-- Consumes: `serialize`, `deserialize` from `./game/serialize.js`; `loadLocalSave`, `saveLocalSave`, `clearLocalSave` from `./services/stats.js`; `pullSave`, `pushSave`, `clearSave` from `./services/puter-sync.js`
+- Consumes: `serialize`, `deserialize` from `./game/serialize.js`; `loadLocalSave`, `saveLocalSave`, `clearLocalSave` from `./services/stats.js`; `pullSave`, `pushSave`, `clearSave` from `./services/everything-sync.js`
 - Produces: no new exports
 
 Rules from the spec: save on an 800 ms debounce, flush on `visibilitychange`, write local only on `beforeunload`, restore whichever of local/remote has the greater `ts`, clear on win and on New Game, and **do not persist undo history** — a resumed game starts with an empty history.
@@ -3087,7 +3087,7 @@ Expected: no matches.
 
 ```bash
 git add src/main.js
-git commit -m "Add game resume backed by localStorage and Puter KV"
+git commit -m "Add game resume backed by localStorage and Everything KV"
 ```
 
 ---
@@ -3111,14 +3111,14 @@ git commit -m "Add game resume backed by localStorage and Puter KV"
 | No `board.js` ↔ `drag.js` cycle | 8, 9, 10 |
 | Stats local-first, opt-in cloud | 13, 14 |
 | No cloud call on load unless signed in | 14 |
-| Puter failures fall back silently | 13, 14 |
-| "Powered by Puter" footer | 5 |
+| Everything failures fall back silently | 13, 14 |
+| "Powered by Everything" footer | 5 |
 | Resume game, last-write-wins | 15 |
 | Undo history not persisted | 4, 15 |
 | Compact save format | 4 |
 | `MAX_VALUE_SIZE` guard | 14 |
 | Hint deleted | 5, 15 (grep check) |
-| puter.js becomes a real dependency | 14 |
+| everything.js becomes a real dependency | 14 |
 
 No gaps.
 

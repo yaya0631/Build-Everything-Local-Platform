@@ -20,7 +20,7 @@ async function switchAccount(page) {
   await page.evaluate(() => window.releaseSignOut());
   await expect.poll(() => page.evaluate(() => window.signedOut)).toBe(true);
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
-  await settings.getByRole('button', { name: 'Sign in with Puter', exact: true }).click();
+  await settings.getByRole('button', { name: 'Sign in with Everything', exact: true }).click();
   await expect(settings).toHaveCount(0);
 }
 
@@ -33,13 +33,13 @@ for (const source of ['opened PDF', 'saved PDF', 'folder save', 'pending write',
       doc.setTitle('Alice report');
       doc.addPage([410, 500]);
       const encoded = Buffer.from(await doc.save()).toString('base64');
-      await page.route('**/sdk/puter.js', (route) =>
+      await page.route('**/sdk/everything.js', (route) =>
         route.fulfill({
           contentType: 'application/javascript',
           body: `window.account={username:'Alice'};window.writes=[];
           const item={path:'PDF Editor/report.pdf',name:'report.pdf'};
           const hold=()=>new Promise(resolve=>{window.releaseOldSave=()=>{resolve(item);setTimeout(()=>{window.oldSaveFinished=true;},0);};});
-          window.puter={env:'web',auth:{isSignedIn:()=>!!window.account,getUser:async()=>window.account,
+          window.everything={env:'web',auth:{isSignedIn:()=>!!window.account,getUser:async()=>window.account,
             signIn:async()=>{window.account={username:'Bob'};},signOut:()=>new Promise(resolve=>{window.releaseSignOut=()=>{
               window.account=null;resolve();setTimeout(()=>{window.signedOut=true;},0);
             };})},fs:{readdir:async()=>[],read:async()=>new Blob([Uint8Array.from(atob(${JSON.stringify(encoded)}),c=>c.charCodeAt(0))]),
@@ -53,37 +53,37 @@ for (const source of ['opened PDF', 'saved PDF', 'folder save', 'pending write',
       );
       await page.goto('/');
       await expect(page.locator('.editor')).toHaveAttribute('aria-busy', 'false');
-      await expect(page.getByRole('button', { name: 'Save to Puter', exact: true })).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Save to Everything', exact: true })).toBeVisible();
       if (source === 'opened PDF') {
-        await fileMenu(page, 'Open from Puter…');
+        await fileMenu(page, 'Open from Everything…');
         await expect(page).toHaveTitle('report.pdf · PDF Editor');
         await expect(page.locator('.editor')).toHaveAttribute('aria-busy', 'false');
-      } else if (source.includes('folder')) await fileMenu(page, 'Save to another Puter folder…');
-      else await page.getByRole('button', { name: 'Save to Puter', exact: true }).click();
+      } else if (source.includes('folder')) await fileMenu(page, 'Save to another Everything folder…');
+      else await page.getByRole('button', { name: 'Save to Everything', exact: true }).click();
       if (source.startsWith('pending'))
         await expect.poll(() => page.evaluate(() => typeof window.releaseOldSave)).toBe('function');
-      else await expect(page.locator('.save-status')).toHaveText('Saved to Puter');
+      else await expect(page.locator('.save-status')).toHaveText('Saved to Everything');
       if (changed) await switchAccount(page);
       if (source.startsWith('pending')) {
         await page.evaluate(() => window.releaseOldSave());
         await expect.poll(() => page.evaluate(() => window.oldSaveFinished)).toBe(true);
       }
       const priorStatus = await page.locator('.save-status').textContent();
-      const expectedLabel = changed ? 'Save to Puter' : 'Save';
-      const saveControl = page.getByRole('button', { name: /^Save(?: to Puter)?$/ });
+      const expectedLabel = changed ? 'Save to Everything' : 'Save';
+      const saveControl = page.getByRole('button', { name: /^Save(?: to Everything)?$/ });
       const priorLabel = await saveControl.getAttribute('aria-label');
       await saveControl.click();
-      await expect(page.locator('.save-status')).toHaveText('Saved to Puter');
+      await expect(page.locator('.save-status')).toHaveText('Saved to Everything');
       const last = await page.evaluate(() => window.writes.at(-1));
       expect(last.account).toBe(changed ? 'Bob' : 'Alice');
       expect(last.options.overwrite).toBe(!changed);
       expect(last.options.dedupeName).toBe(changed);
       expect(priorLabel).toBe(expectedLabel);
-      if (changed) expect(priorStatus).not.toBe('Saved to Puter');
-      else expect(priorStatus).toBe('Saved to Puter');
+      if (changed) expect(priorStatus).not.toBe('Saved to Everything');
+      else expect(priorStatus).toBe('Saved to Everything');
       if (changed) {
         await page.getByRole('button', { name: 'Save', exact: true }).click();
-        await expect(page.locator('.save-status')).toHaveText('Saved to Puter');
+        await expect(page.locator('.save-status')).toHaveText('Saved to Everything');
         const next = await page.evaluate(() => window.writes.at(-1));
         expect(next.path).toBe('PDF Editor/report (1).pdf');
         expect(next.options.overwrite).toBe(true);
@@ -97,12 +97,12 @@ test('an encrypted save prepared for an ended account cannot start its cloud wri
   const encoded = (
     await readFile(new URL('../fixtures/security/owner-only.pdf', import.meta.url))
   ).toString('base64');
-  await page.route('**/sdk/puter.js', (route) =>
+  await page.route('**/sdk/everything.js', (route) =>
     route.fulfill({
       contentType: 'application/javascript',
       body: `
     window.account={username:'Alice'};window.writes=[];const item={path:'PDF Editor/report.pdf',name:'report.pdf'};
-    window.puter={env:'web',auth:{isSignedIn:()=>!!window.account,getUser:async()=>window.account,
+    window.everything={env:'web',auth:{isSignedIn:()=>!!window.account,getUser:async()=>window.account,
       signIn:async()=>{window.account={username:'Bob'};},signOut:()=>new Promise(resolve=>{window.releaseSignOut=()=>{
         window.account=null;resolve();setTimeout(()=>{window.signedOut=true;},0);
       };})},fs:{readdir:async()=>[],read:async()=>new Blob([Uint8Array.from(atob(${JSON.stringify(encoded)}),c=>c.charCodeAt(0))]),
@@ -111,9 +111,9 @@ test('an encrypted save prepared for an ended account cannot start its cloud wri
     }),
   );
   await page.goto('/');
-  await expect(page.getByRole('button', { name: 'Save to Puter', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Save to Everything', exact: true })).toBeVisible();
   await expect(page.locator('.editor')).toHaveAttribute('aria-busy', 'false');
-  await fileMenu(page, 'Open from Puter…');
+  await fileMenu(page, 'Open from Everything…');
   await expect(page).toHaveTitle('report.pdf · PDF Editor');
   await expect(page.locator('.editor')).toHaveAttribute('aria-busy', 'false');
   await page.evaluate(async () => {
@@ -133,10 +133,10 @@ test('an encrypted save prepared for an ended account cannot start its cloud wri
   await expect.poll(() => page.evaluate(() => typeof window.releaseExport)).toBe('function');
   await switchAccount(page);
   await page.evaluate(() => window.releaseExport());
-  await expect(page.getByRole('button', { name: /^Save(?: to Puter)?$/ })).toBeEnabled();
+  await expect(page.getByRole('button', { name: /^Save(?: to Everything)?$/ })).toBeEnabled();
   expect(await page.evaluate(() => window.writes)).toEqual([]);
-  await page.getByRole('button', { name: 'Save to Puter', exact: true }).click();
-  await expect(page.locator('.save-status')).toHaveText('Saved to Puter');
+  await page.getByRole('button', { name: 'Save to Everything', exact: true }).click();
+  await expect(page.locator('.save-status')).toHaveText('Saved to Everything');
   const write = await page.evaluate(() => window.writes[0]);
   expect(write.account).toBe('Bob');
   expect(write.options.overwrite).toBe(false);

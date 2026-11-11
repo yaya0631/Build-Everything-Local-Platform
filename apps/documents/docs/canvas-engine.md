@@ -348,7 +348,7 @@ or replace their text; replacement retains every cell and inserts text in the
 first selected region. Use **Table actions** to remove structure. Empty cells
 always retain a paragraph. **Keep table row together** controls selected rows;
 oversized rows still split across pages. Undo/redo restores text, structure,
-formatting, selection and layout. Download/reopen and Puter save/reload preserve
+formatting, selection and layout. Download/reopen and Everything save/reload preserve
 the table. Dashed guides for borderless cells are preview-only.
 
 Open **AutoFit sample** (`public/fixtures/autofit-tables.docx`) to try columns
@@ -560,7 +560,7 @@ Unchanged imported measurements remain exact.
 Insert a **Page break** with the toolbar or Ctrl/Cmd+Enter; Shift+Enter inserts a
 manual line break. Both remain inside the current paragraph. Backspace/Delete
 can remove them. **Start paragraph on new page** changes paragraph pagination, including
-an explicit override of a style-inherited setting. Download/reopen and Puter
+an explicit override of a style-inherited setting. Download/reopen and Everything
 save/reload use the same page settings as the preview.
 
 ### Bullets and numbering
@@ -619,7 +619,7 @@ Open `public/fixtures/paragraph-formatting.docx`, independently generated with p
 
 Select both paragraphs: different values appear as **Mixed**. Set center alignment and double line spacing; text moves onto additional pages. Undo the spacing change to restore two pages, then redo. Set before/after spacing to 12pt/18pt, download, and reopen. Confirm the text, formatting, page count, click placement, and selection are retained. Paragraph changes are one undo transaction and keep the original text selection.
 
-`/mock.html` runs the full app with its existing local Puter mock. The ordinary app entry uses the new editor with the existing Puter document/save/navigation model.
+`/mock.html` runs the full app with its existing local Everything mock. The ordinary app entry uses the new editor with the existing Everything document/save/navigation model.
 
 ## Modules and contracts
 
@@ -699,7 +699,7 @@ The suite starts its own development server on port 5189 so another app on the
 usual Vite port cannot be mistaken for this editor. Set `PLAYWRIGHT_PORT` to use
 another free port; an occupied port fails rather than reusing an unknown server.
 
-The browser suite covers canvas editing, cross-paragraph bold and paragraph formatting, mixed toolbar values, spacing-driven repagination, undo/redo, download/reopen, input composition events, text mode, and Puter mock save/reload. It saves screenshots and the downloaded DOCX in `test-results/`.
+The browser suite covers canvas editing, cross-paragraph bold and paragraph formatting, mixed toolbar values, spacing-driven repagination, undo/redo, download/reopen, input composition events, text mode, and Everything mock save/reload. It saves screenshots and the downloaded DOCX in `test-results/`.
 
 For an independent format check, install `python-docx` in a separate environment and run:
 

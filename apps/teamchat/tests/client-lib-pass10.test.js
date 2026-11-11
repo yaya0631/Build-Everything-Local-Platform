@@ -2,8 +2,8 @@
  * Tenth review pass, client libraries: what a window has reached when the
  * poll reads past deleted messages, the outbox's handoff across workspaces
  * and across a host's lapsed attestation, and the channel join and leave
- * flows when the refresh after them fails. Puter is faked at
- * `puter.workers.exec`, as in tests/store.test.js.
+ * flows when the refresh after them fails. Everything is faked at
+ * `everything.workers.exec`, as in tests/store.test.js.
  */
 import { describe, it, expect, afterEach } from 'vitest';
 import { store } from '../src/lib/store.js';
@@ -15,7 +15,7 @@ const json = (body, status = 200) => new Response(JSON.stringify(body), { status
 /** Route each call by the end of its path; a handler may throw to stand for a network failure. */
 function worker(routes) {
   const calls = [];
-  globalThis.puter = {
+  globalThis.everything = {
     workers: {
       exec: async (url, init = {}) => {
         const u = new URL(url);
@@ -46,7 +46,7 @@ afterEach(() => {
   store.convs.clear();
   store._localSeen.clear();
   store._seenAt.clear();
-  delete globalThis.puter;
+  delete globalThis.everything;
 });
 
 describe('fetchNewer and what the window has reached', () => {

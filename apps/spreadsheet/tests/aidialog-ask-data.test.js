@@ -4,7 +4,7 @@ import { Workbook } from '../src/core/workbook.js';
 import { openAiDialog } from '../src/ui/aidialog.js';
 import { closeAllModals } from '../src/ui/modal.js';
 import { parseRange } from '../src/core/cell.js';
-import * as P from '../src/lib/puter.js';
+import * as P from '../src/lib/everything.js';
 
 vi.mock('../src/ui/toast.js', () => ({ toast: vi.fn() }));
 

@@ -1,6 +1,6 @@
 # Documents
 
-A browser word processor with an original canvas editor and `.docx` files stored in your own Puter cloud — an open-source alternative to Microsoft Word.
+A browser word processor with an original canvas editor and `.docx` files stored in your own Everything cloud — an open-source alternative to Microsoft Word.
 
 This branch implements the original canvas engine. **AGPL code and dependencies must not be introduced.** The dependency policy is recorded in [AGENTS.md](AGENTS.md) and checked by `npm run check:licenses` and before production builds.
 
@@ -12,8 +12,8 @@ npm run dev
 ```
 
 - **`/playground.html`** — standalone local editor; no account or cloud SDK. Includes two-paragraph and two-page samples, local DOCX opening, and downloads.
-- **`/mock.html`** — the app with an in-memory Puter mock for testing save/reopen.
-- **`/`** — the app using Puter for cloud storage.
+- **`/mock.html`** — the app with an in-memory Everything mock for testing save/reopen.
+- **`/`** — the app using Everything for cloud storage.
 
 ## Canvas editor features
 
@@ -48,7 +48,7 @@ npm run dev
 - Inline PNG/JPEG insertion, sizing, source cropping, horizontal/vertical flips, rotation, alt text and preserved original image bytes.
 - Native text input and composition bridge; copy, cut and paste that keep headings, lists, emphasis, color and links (plain text inside tables, fields and controls).
 - A native textarea mode for text editing.
-- Local DOCX open/download and Puter save/reopen.
+- Local DOCX open/download and Everything save/reopen.
 - Preservation of untouched DOCX package parts and original run/paragraph properties.
 
 This is a restricted editor prototype. The page preview uses saved single-section dimensions/margins and the bundled Noto Sans upright/italic fonts; it is not a full reproduction of native DOCX layout. Fields, comments, tracked changes, multiple sections, nested tables, floating pictures, automatic paragraph spacing, and other unsupported structures are rejected before editing. The engine guide and conformance record define each supported subset. The built-in templates (Letter, Meeting notes, Report, Résumé, Essay) open as new documents laid out with the canvas engine's styles, lists and tables. Plain-text files import as one paragraph per line, and Markdown and HTML files with their headings, lists, emphasis and links. Advanced features from the previous editor are not yet connected.

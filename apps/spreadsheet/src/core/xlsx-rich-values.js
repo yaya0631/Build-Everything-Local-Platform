@@ -159,14 +159,14 @@ export function richValueWriter({ get, set, binary, contentType }) {
       if (kind === 'rdRichValueWebImage' && !addresses.size) continue;
       set(base + name, HEADER + xml); contentType(base + name, type);
       const year = kind === 'richValueRel' ? '2022/10' : kind === 'rdRichValueWebImage' ? '2020/07' : '2017/06';
-      workbookRels = workbookRels.replace('</Relationships>', tag('Relationship', { Id: `puter_${kind}`, Type: `http://schemas.microsoft.com/office/${year}/relationships/${kind}`, Target: `richData/${name}` }) + '</Relationships>');
+      workbookRels = workbookRels.replace('</Relationships>', tag('Relationship', { Id: `everything_${kind}`, Type: `http://schemas.microsoft.com/office/${year}/relationships/${kind}`, Target: `richData/${name}` }) + '</Relationships>');
     }
     if (media.size) set(base + '_rels/richValueRel.xml.rels', HEADER + tag('Relationships', { xmlns: 'http://schemas.openxmlformats.org/package/2006/relationships' }, rels.join('')));
     if (addresses.size) set(base + '_rels/rdRichValueWebImage.xml.rels', HEADER + tag('Relationships', { xmlns: 'http://schemas.openxmlformats.org/package/2006/relationships' }, webRels.join('')));
     let metadata = get('/xl/metadata.xml');
     if (!metadata) {
       metadata = HEADER + tag('metadata', { xmlns: MAIN }, tag('metadataTypes', { count: 0 }, ''));
-      workbookRels = workbookRels.replace('</Relationships>', tag('Relationship', { Id: 'puter_metadata', Type: `${REL}sheetMetadata`, Target: 'metadata.xml' }) + '</Relationships>');
+      workbookRels = workbookRels.replace('</Relationships>', tag('Relationship', { Id: 'everything_metadata', Type: `${REL}sheetMetadata`, Target: 'metadata.xml' }) + '</Relationships>');
       contentType('/xl/metadata.xml', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheetMetadata+xml');
     }
     const count = elements(elements(metadata, 'metadataTypes')[0], 'metadataType').length + 1;

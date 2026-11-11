@@ -1,12 +1,12 @@
 /**
- * The spreadsheets the app made elsewhere on the drive, kept on this device for the account: inside the Puter
- * desktop, Save and Save a copy write a new file where the user picks it in Puter's Save dialog, outside the app
+ * The spreadsheets the app made elsewhere on the drive, kept on this device for the account: inside the Everything
+ * desktop, Save and Save a copy write a new file where the user picks it in Everything's Save dialog, outside the app
  * folder the home screen lists. The home screen lists these with the folder's own, wherever they are now, so that
  * they are not left to the eight files kept as opened elsewhere (recent.js), out of which they soon fell.
  */
 
 import { accountStorageKey } from './account-storage.js';
-import { inAppFolder, inTrash, statByUid, listDir, displayName } from './puter.js';
+import { inAppFolder, inTrash, statByUid, listDir, displayName } from './everything.js';
 
 const KEY = 'spreadsheet:made';
 // Enough for years of spreadsheets; past it the oldest record goes.

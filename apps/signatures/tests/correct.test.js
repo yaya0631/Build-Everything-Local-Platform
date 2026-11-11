@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { createStore } from '../src/lib/store.js';
 import { createSignLinks } from '../src/lib/signlinks.js';
-import { makeFakePuter } from './helpers/fake-puter.js';
+import { makeFakeEverything } from './helpers/fake-everything.js';
 import { canCorrect } from '../src/ui/correct.js';
 import { auditLabel } from '../src/lib/model.js';
 
@@ -38,12 +38,12 @@ describe('reissuing a link', () => {
   let links;
 
   beforeEach(async () => {
-    p = makeFakePuter();
-    store = createStore({ getPuter: () => p });
+    p = makeFakeEverything();
+    store = createStore({ getEverything: () => p });
     await store.init();
     links = createSignLinks({
       store,
-      getPuter: () => p,
+      getEverything: () => p,
       fetchFn: (...args) => p.fetchTo(...args),
       verifyAttempts: 1,
       verifyDelayMs: 0,

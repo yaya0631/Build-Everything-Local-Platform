@@ -1,5 +1,5 @@
 /**
- * Data layer on Puter. Small, hot documents live in KV; expenses live in one
+ * Data layer on Everything. Small, hot documents live in KV; expenses live in one
  * file per month under the app's data folder so loading never scans history;
  * receipts are files next to them; statement lines share one file.
  *
@@ -91,7 +91,7 @@ export function normalizeExpense(input, now = Date.now()) {
 }
 
 export class Store extends EventTarget {
-  constructor(getSdk = () => globalThis.puter) {
+  constructor(getSdk = () => globalThis.everything) {
     super();
     this.getSdk = getSdk;
     this.settings = { ...DEFAULT_SETTINGS };

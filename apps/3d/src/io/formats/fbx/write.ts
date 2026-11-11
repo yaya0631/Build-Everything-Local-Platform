@@ -674,7 +674,7 @@ export function writeFbx(scene: ExportScene, opts: FbxWriteOptions = {}): { byte
 
   // ------------------------------------------------------------ document
   const timeMode = fpsMode(fps);
-  const creator = opts.creator ?? 'Puter 3D FBX exporter';
+  const creator = opts.creator ?? 'Everything 3D FBX exporter';
   // FBX axis system: UpAxis/FrontAxis/CoordAxis in the file's coordinates (doc axes expressed in file space)
   const docUp = new Vector3(A[2], A[5], A[8]); // doc +Z in file coords
   const docFront = new Vector3(-A[1], -A[4], -A[7]); // FBX FrontAxis convention: −(doc +Y)

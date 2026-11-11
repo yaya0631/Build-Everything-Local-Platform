@@ -400,7 +400,7 @@ describe('the floating meeting window', () => {
   });
 });
 
-describe('inside the Puter desktop (a hosted window)', () => {
+describe('inside the Everything desktop (a hosted window)', () => {
   /*
    * On the desktop the app is a frame, and browsers refuse Document PiP
    * from a frame. The desktop opens the window instead, loads our pip.html
@@ -413,7 +413,7 @@ describe('inside the Puter desktop (a hosted window)', () => {
   let realTop;
 
   /**
-   * The desktop's side of puter.ui.requestPictureInPicture(): open a
+   * The desktop's side of everything.ui.requestPictureInPicture(): open a
    * window, load pip.html, which looks us up by the token in its URL and
    * hands over its window a moment later.
    */
@@ -446,14 +446,14 @@ describe('inside the Puter desktop (a hosted window)', () => {
     realTop = Object.getOwnPropertyDescriptor(window, 'top');
     Object.defineProperty(window, 'top', { value: {}, configurable: true });
     desktop = fakeDesktop();
-    window.puter = { env: 'app', ui: desktop };
+    window.everything = { env: 'app', ui: desktop };
     pip = new PictureInPicture({ media, onLeave: vi.fn() });
   });
 
   afterEach(() => {
     if (realTop) Object.defineProperty(window, 'top', realTop);
     else delete window.top;
-    delete window.puter;
+    delete window.everything;
     delete window.__pmPipAttach;
   });
 
@@ -479,9 +479,9 @@ describe('inside the Puter desktop (a hosted window)', () => {
   });
 
   it('is not offered off the desktop, in someone else’s frame', () => {
-    window.puter = { env: 'web', ui: desktop };
+    window.everything = { env: 'web', ui: desktop };
     expect(hostedPipSupported()).toBe(false);
-    delete window.puter;
+    delete window.everything;
     expect(hostedPipSupported()).toBe(false);
   });
 
@@ -532,7 +532,7 @@ describe('inside the Puter desktop (a hosted window)', () => {
     const refusal = new Error('no Document PiP here');
     refusal.name = 'NotSupportedError';
     desktop = fakeDesktop({ reject: refusal });
-    window.puter = { env: 'app', ui: desktop };
+    window.everything = { env: 'app', ui: desktop };
     const request = vi.fn().mockResolvedValue({});
     Object.defineProperty(document, 'pictureInPictureEnabled', { value: true, configurable: true });
     window.HTMLVideoElement.prototype.requestPictureInPicture = request;
@@ -551,7 +551,7 @@ describe('inside the Puter desktop (a hosted window)', () => {
     const refusal = new Error('no gesture');
     refusal.name = 'NotAllowedError';
     desktop = fakeDesktop({ reject: refusal });
-    window.puter = { env: 'app', ui: desktop };
+    window.everything = { env: 'app', ui: desktop };
     pip.update({ tiles: [tile('a')] });
     await expect(pip.open()).rejects.toBe(refusal);
     expect(pip.active).toBe(false);
@@ -561,7 +561,7 @@ describe('inside the Puter desktop (a hosted window)', () => {
     vi.useFakeTimers();
     try {
       desktop = fakeDesktop({ arrives: false });
-      window.puter = { env: 'app', ui: desktop };
+      window.everything = { env: 'app', ui: desktop };
       pip.update({ tiles: [tile('a')] });
       const opening = pip.open();
       const outcome = expect(opening).rejects.toThrow(/did not load/);

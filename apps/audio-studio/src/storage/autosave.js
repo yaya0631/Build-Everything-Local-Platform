@@ -1,5 +1,5 @@
 // Autosave and crash recovery. Unsaved audio documents are written to the
-// origin private file system (OPFS, never puter.kv) as 32-bit float WAV plus
+// origin private file system (OPFS, never everything.kv) as 32-bit float WAV plus
 // a small JSON manifest, periodically and when the page is hidden. On start
 // the app offers to recover files left by a session that is no longer
 // running (each running tab holds a Web Lock named after its session).
@@ -29,7 +29,7 @@ export function buildManifest(doc, { session, key, now = Date.now() }) {
     bitDepth: doc.info?.bitDepth ?? 32,
     format: doc.info?.format || 'wav',
     exportOptions: doc.info?.exportOptions || null,
-    source: doc.source?.type === 'puter' ? { type: 'puter', path: doc.source.path, uid: doc.source.uid } : { type: doc.source?.type || 'new' },
+    source: doc.source?.type === 'everything' ? { type: 'everything', path: doc.source.path, uid: doc.source.uid } : { type: doc.source?.type || 'new' },
     markers: doc.state.markers.map(({ id, ...m }) => m),
     meta: doc.state.meta || {},
     savedAt: now,

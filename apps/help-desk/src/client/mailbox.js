@@ -1,12 +1,12 @@
 /**
- * The email channel. Every Puter account has an address, <username>@puter.email,
+ * The email channel. Every Everything account has an address, <username>@everything.email,
  * whose mail is stored in the account's own drive. When the owner turns this
  * on, their browser checks that mailbox while the app is open and hands new
  * messages to the help desk, which opens tickets or threads replies (see
  * server/email.js). Notification emails set Reply-To to this address, so
  * customer replies come back the same way.
  */
-import { sdk, currentUser } from './puter.js';
+import { sdk, currentUser } from './everything.js';
 
 const CHECK_EVERY = 2 * 60 * 1000;
 const MAX_PER_RUN = 40;
@@ -15,7 +15,7 @@ const ATTACHMENT_LIMIT = 20 * 1024 * 1024;
 
 export async function mailboxAddress() {
   const u = await currentUser();
-  return `${u.username}@puter.email`;
+  return `${u.username}@everything.email`;
 }
 
 function stateKey(ref) {
@@ -137,7 +137,7 @@ async function runImport(app, { onProgress } = {}) {
       continue;
     }
     // Your own notification copies and mail from no sender are not requests.
-    if (!message.from?.address || /@apps\.puter\.email$/i.test(message.from.address)) {
+    if (!message.from?.address || /@apps\.everything\.email$/i.test(message.from.address)) {
       summary.skipped++;
       done(item);
       continue;
@@ -156,7 +156,7 @@ async function runImport(app, { onProgress } = {}) {
     try {
       const res = await api.post('/email/import', {
         messages: [{
-          messageId: message.messageId || `${item.id}@puter-mailbox`,
+          messageId: message.messageId || `${item.id}@everything-mailbox`,
           from: message.from,
           cc: message.cc || [],
           subject: message.subject || item.subject,

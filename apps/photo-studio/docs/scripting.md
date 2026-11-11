@@ -5,7 +5,7 @@ change, export and close documents, work with layers, pixels, text and
 selections, run any menu command with the same settings recorded actions use,
 and ask for input with simple dialogs.
 
-- **File → Scripts** lists installed scripts; **Browse…** and **Browse Puter…** run
+- **File → Scripts** lists installed scripts; **Browse…** and **Browse Everything…** run
   a `.js` file once (and offer to install it).
 - **Window → Scripts** opens the Scripts panel: run, edit, enable or disable,
   assign a shortcut, install, save as a file or delete scripts, and read their output.
@@ -24,7 +24,7 @@ Scripts are programs you install, so they run apart from the app:
 - Each run gets a hidden `<iframe sandbox="allow-scripts">` (an opaque origin)
   whose content security policy is `default-src 'none'; script-src 'unsafe-inline' blob:; worker-src blob:`.
   The script runs in a dedicated worker started by that iframe. It cannot reach
-  Photo Studio's page, DOM, cookies, local storage, IndexedDB or the Puter
+  Photo Studio's page, DOM, cookies, local storage, IndexedDB or the Everything
   session, and it has no network access (`fetch`, `XMLHttpRequest`, WebSocket and
   remote imports are blocked).
 - The only way out is the `studio` API: structured-clone messages that Photo
@@ -94,7 +94,7 @@ pixels; opacity is 0–100; colors are `"#rrggbb"` strings or `[r, g, b]` arrays
 | `studio.documents.list()` | Every open document |
 | `studio.documents.get(id)` | A document by ID |
 | `studio.documents.create({ name, width, height, resolution, background })` | New document; `background` is `"white"`, `"black"`, `"transparent"` or a color |
-| `studio.documents.open({ multiple })` | Shows a file chooser (device or Puter) and opens the chosen files |
+| `studio.documents.open({ multiple })` | Shows a file chooser (device or Everything) and opens the chosen files |
 
 A document has `id`, `name`, `width`, `height`, `resolution` (pixels per inch),
 `mode`, `bitsPerChannel`, `active`, `saved` and `fileName`, and these methods:
@@ -192,8 +192,8 @@ Form fields are `{ name, label, type, value, min, max, step, options }` with
 
 | Method | Description |
 | --- | --- |
-| `studio.files.open({ accept, multiple })` | Shows a chooser (device or Puter); returns `[{ name, type, data }]` with `data` a `Uint8Array` |
-| `studio.files.save(name, data, type?)` | Offers to download the file or save it to Puter; `data` is a string, `ArrayBuffer` or `Uint8Array` |
+| `studio.files.open({ accept, multiple })` | Shows a chooser (device or Everything); returns `[{ name, type, data }]` with `data` a `Uint8Array` |
+| `studio.files.save(name, data, type?)` | Offers to download the file or save it to Everything; `data` is a string, `ArrayBuffer` or `Uint8Array` |
 | `studio.files.saveAll(files, zipName)` | Several `{ name, data }` files as one ZIP |
 | `studio.image.create(width, height, fill?)` | A blank (or filled) `{ width, height, data }` image |
 | `studio.image.encode(image, { format, quality, width, height, scale })` | Encode RGBA pixels |
@@ -233,14 +233,14 @@ await doc.addLayer({ kind: 'text', text: doc.name, size: 18, x: 12, y: 12 });
 
 ## Other automation
 
-- **File → Scripts → Statistics…** combines images (files, Puter files or open
+- **File → Scripts → Statistics…** combines images (files, Everything files or open
   documents), optionally aligned first, into one embedded object with a stack
   mode (mean, median, …), which can be changed later.
 - **File → Automate → Lens Correction…** corrects many photos at once. Automatic
   settings measure each photo: the rotation that makes strong near-vertical and
   near-horizontal edges straight (filling the frame afterwards) and the darkening
   of the corners. Custom settings apply the Lens Correction filter's values to
-  every photo. Results download as a ZIP or go to a Puter folder.
+  every photo. Results download as a ZIP or go to an Everything folder.
 - **File → Automate → Create Batch Link…** makes a link (or bookmark) that opens
   Photo Studio ready to run a recorded action on the photos dropped into it and
   download the results as a ZIP. The link carries the action's steps and output

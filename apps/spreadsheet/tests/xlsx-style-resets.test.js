@@ -9,7 +9,7 @@ async function saved(wb) {
   const bytes = new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer());
   const zip = X.CFB.read(bytes, { type: 'array' });
   const part = X.CFB.find(zip, '/xl/workbook.xml');
-  part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   part.size = part.content.length;
   return { native: await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'native.xlsx'),
     own: await workbookFromFile(bytes, 'own.xlsx'), xml: new TextDecoder().decode(X.CFB.find(zip, '/xl/worksheets/sheet1.xml').content) };

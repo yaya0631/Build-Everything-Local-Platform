@@ -1,7 +1,7 @@
 /**
  * Script to video: turn a written script into scenes (narration plus a
  * picture description), and lay the generated voices, pictures, captions
- * and music out on a timeline. The generation itself (Puter AI speech and
+ * and music out on a timeline. The generation itself (Everything AI speech and
  * pictures) is passed in as services so the whole flow runs with fakes in
  * tests.
  *
@@ -54,7 +54,7 @@ export const FALLBACK_BACKDROPS = ['dusk', 'ocean', 'slate', 'forest', 'peach'];
 
 // ---- Chat replies ------------------------------------------------------------
 
-/** The text of a Puter AI chat reply (a string, or a message object). */
+/** The text of an Everything AI chat reply (a string, or a message object). */
 export function chatText(reply) {
   if (typeof reply === 'string') return reply;
   const c = reply?.message?.content;

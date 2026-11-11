@@ -3,11 +3,11 @@ import { draftKey, saveDraft, loadDraft } from '../src/lib/drafts.js';
 import { Doc } from '../src/lib/doc.js';
 import { Workbook } from '../src/core/workbook.js';
 import { memoryStorage } from './helpers/memory-storage.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 
 let mock;
-beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); mock = installMockPuter(); });
-afterEach(() => { delete globalThis.puter; });
+beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); mock = installMockEverything(); });
+afterEach(() => { delete globalThis.everything; });
 
 const path = 'Spreadsheets/Budget.xlsx';
 const text = (draft) => draft?.workbook.sheets[0].cells['0,0'].v;
@@ -51,11 +51,11 @@ it('still offers a draft when the file was written since, saying it may be older
 it('offers a draft when the file cannot be checked, and drops it once it is saved', async () => {
   await place(1000);
   await typeAndClose('unsaved');
-  const stat = puter.fs.stat;
-  puter.fs.stat = async () => { throw new Error('Network request failed'); };
+  const stat = everything.fs.stat;
+  everything.fs.stat = async () => { throw new Error('Network request failed'); };
   const reopened = await Doc.fromPath(path);
   expect(text(reopened.recoverable)).toBe('unsaved');
-  puter.fs.stat = stat;
+  everything.fs.stat = stat;
   expect(reopened.restoreDraft()).toBe(true);
   expect(await reopened.forceSave()).toBe(true);
   expect(loadDraft(draftKey(path))).toBeNull();

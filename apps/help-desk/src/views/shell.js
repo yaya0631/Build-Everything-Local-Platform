@@ -11,7 +11,7 @@ import { bind, label as keyLabel } from '../ui/shortcuts.js';
 import { applyTheme, savedTheme } from '../ui/theme.js';
 import { onRoute, go, current, confirmLeave } from '../ui/router.js';
 import { app } from '../app.js';
-import { canSignOut, signOut } from '../client/puter.js';
+import { canSignOut, signOut } from '../client/everything.js';
 import { LOCAL } from '../client/api.js';
 import { showShortcuts } from './shortcuts-dialog.js';
 import { notifications } from './notifications.js';
@@ -20,7 +20,7 @@ import { watchMailbox } from '../client/mailbox.js';
 import { toast } from '../ui/toast.js';
 import { forgetLocalData } from '../client/cache.js';
 
-export const REPO_URL = 'https://github.com/heyputer/everything';
+export const REPO_URL = 'https://github.com/yaya0631/Build-Everything-Local-Platform';
 
 const VIEWS = {
   home: () => import('./home.js'),

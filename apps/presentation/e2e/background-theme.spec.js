@@ -10,10 +10,10 @@ test("backgrounds retain each owning master theme through canvas, slideshow and 
   const original = expected.map((uri) =>
     decodeURIComponent(uri.slice(uri.indexOf(",") + 1)),
   );
-  await page.route("**/sdk/puter.js", (route) =>
+  await page.route("**/sdk/everything.js", (route) =>
     route.fulfill({
       contentType: "application/javascript",
-      body: 'window.puter={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',
+      body: 'window.everything={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',
     }),
   );
   await page.goto("/#/home");

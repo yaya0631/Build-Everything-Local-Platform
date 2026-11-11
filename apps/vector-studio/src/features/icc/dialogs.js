@@ -144,7 +144,7 @@ export async function profilesDialog(app) {
   });
   const off = registryEvents.on('change', render);
   render();
-  const where = { cloud: 'your Puter cloud', local: 'this browser', memory: 'this session only' }[app.iccProfiles?.location] || 'this browser';
+  const where = { cloud: 'your Everything cloud', local: 'this browser', memory: 'this session only' }[app.iccProfiles?.location] || 'this browser';
   try {
     await app.dialogs.open({
       title: 'Color Profiles',

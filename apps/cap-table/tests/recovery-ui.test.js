@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { JSDOM } from 'jsdom';
 import { sampleDataset } from '../src/lib/sample.js';
-import { puterBackend } from './helpers/puter-kv.js';
+import { everythingBackend } from './helpers/everything-kv.js';
 
 /* The screen main.js shows when store.init() fails on a record, driven over
    the real Store and an in-memory backend: the store and the view are
@@ -15,7 +15,7 @@ beforeEach(async () => {
     vi.stubGlobal(name, dom.window[name]);
   }
   vi.stubGlobal('matchMedia', () => ({ matches: true, addEventListener() {}, removeEventListener() {} }));
-  backend = puterBackend();
+  backend = everythingBackend();
   backend.install();
   ({ Store, store } = await import('../src/lib/store.js'));
   ({ recoveryView } = await import('../src/views/recovery.js'));

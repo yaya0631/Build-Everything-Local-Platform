@@ -9,7 +9,7 @@ import { h } from './lib/dom.js';
 import { icon } from './lib/icons.js';
 import { applyTheme } from './ui/prefs.js';
 import { Workspace } from './data/workspace.js';
-import { puterBackend, puterKv, indexedDbBackend, localKv } from './data/backend.js';
+import { everythingBackend, everythingKv, indexedDbBackend, localKv } from './data/backend.js';
 import { indexedDbCache, memoryCache } from './data/cache.js';
 import { App } from './ui/app.js';
 import { call, deploy, refreshDeployment } from './collab/api.js';
@@ -40,10 +40,10 @@ function signInScreen(onSignedIn, inviting) {
   const error = h('p.field-error', { role: 'alert' });
   btn.addEventListener('click', async () => {
     btn.disabled = true;
-    btn.textContent = 'Waiting for Puter...';
+    btn.textContent = 'Waiting for Everything...';
     error.textContent = '';
     try {
-      await puter.auth.signIn();
+      await everything.auth.signIn();
       onSignedIn();
     } catch (err) {
       btn.disabled = false;
@@ -56,7 +56,7 @@ function signInScreen(onSignedIn, inviting) {
   screen(
     logo(),
     h('h1.splash-title', inviting ? 'You are invited to a shared space' : 'Wiki'),
-    h('p.splash-sub', inviting ? 'Sign in with Puter to open it.' : 'Docs, notes and databases for you and your team.'),
+    h('p.splash-sub', inviting ? 'Sign in with Everything to open it.' : 'Docs, notes and databases for you and your team.'),
     inviting
       ? null
       : h(
@@ -64,7 +64,7 @@ function signInScreen(onSignedIn, inviting) {
           feature('pencil', 'Write with blocks: headings, lists, to-dos, tables, code and images'),
           feature('database', 'Track anything with tables, boards, lists and calendars'),
           feature('users', 'Share pages and edit together in real time'),
-          feature('cloud', 'Stored as files in your own Puter cloud'),
+          feature('cloud', 'Stored as files in your own Everything cloud'),
         ),
     btn,
     error,
@@ -74,7 +74,7 @@ function signInScreen(onSignedIn, inviting) {
 
 async function profilePicture() {
   try {
-    return (await puter.auth.getProfilePicture?.()) || null;
+    return (await everything.auth.getProfilePicture?.()) || null;
   } catch {
     return null;
   }
@@ -90,7 +90,7 @@ async function start({ backend, kv, cache, user, env, collab, onSignOut, picture
     errorScreen('Could not open your wiki', 'Check your connection and try again.', () => location.reload());
     return;
   }
-  const app = new App(root, { ws, user, env, onSignOut, picture: null, puter: typeof puter === 'undefined' ? null : puter });
+  const app = new App(root, { ws, user, env, onSignOut, picture: null, everything: typeof everything === 'undefined' ? null : everything });
   window.wikiApp = app;
   await app.start();
   Promise.resolve(picture).then((p) => p && app.setPicture(p));
@@ -113,7 +113,7 @@ async function boot() {
   const link = inviteFromHash();
   const params = new URLSearchParams(location.search);
   if (import.meta.env.DEV && params.has('local')) {
-    // Development sandbox: everything stays in this browser, no Puter account.
+    // Development sandbox: everything stays in this browser, no Everything account.
     // Sharing runs on a local copy of the collaboration service; add &as=<name>
     // in another tab to be someone else.
     const { localCollab, devUser } = await import('./dev/local-collab.js');
@@ -123,39 +123,39 @@ async function boot() {
     start({ backend, kv: localKv(`wiki-local${ns}:`), cache: memoryCache(), user, env: 'web', collab: localCollab(user), onSignOut: null, picture: null, link });
     return;
   }
-  if (typeof puter === 'undefined') {
-    errorScreen('Could not reach Puter', 'Wiki keeps your pages in your Puter cloud. Check your connection and try again.', () => location.reload());
+  if (typeof everything === 'undefined') {
+    errorScreen('Could not reach Everything', 'Wiki keeps your pages in your Everything cloud. Check your connection and try again.', () => location.reload());
     return;
   }
-  const env = puter.env;
+  const env = everything.env;
   const begin = async () => {
     loading();
     let user = null;
     try {
-      user = await puter.auth.getUser();
+      user = await everything.auth.getUser();
     } catch {
       /* pages still load; the avatar falls back to initials */
     }
     const collab = {
-      request: (server, op, data) => call(puter, server, { op, ...data }),
-      deploy: (progress) => deploy(puter, progress),
-      refresh: (server) => refreshDeployment(puter, server),
-      events: puter.events || null,
-      grantEvents: (space) => grantEvents(puter, space),
+      request: (server, op, data) => call(everything, server, { op, ...data }),
+      deploy: (progress) => deploy(everything, progress),
+      refresh: (server) => refreshDeployment(everything, server),
+      events: everything.events || null,
+      grantEvents: (space) => grantEvents(everything, space),
     };
     start({
-      backend: puterBackend(puter),
-      kv: puterKv(puter),
+      backend: everythingBackend(everything),
+      kv: everythingKv(everything),
       cache: await indexedDbCache(),
       user,
       env,
       collab,
-      // Inside the Puter desktop the session is Puter's, so no sign-out is offered.
+      // Inside the Everything desktop the session is Everything's, so no sign-out is offered.
       onSignOut:
         env === 'app'
           ? null
           : async () => {
-              await puter.auth.signOut();
+              await everything.auth.signOut();
               location.hash = '';
               location.reload();
             },
@@ -163,7 +163,7 @@ async function boot() {
       link,
     });
   };
-  if (env === 'app' || puter.auth.isSignedIn()) begin();
+  if (env === 'app' || everything.auth.isSignedIn()) begin();
   else signInScreen(begin, !!link);
 }
 

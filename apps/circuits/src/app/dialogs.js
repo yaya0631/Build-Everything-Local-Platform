@@ -9,7 +9,7 @@ import { arcToPoints, bboxOfFlat, polyArea } from '../core/geom.js';
 import { planSync, applySync } from '../model/sync.js';
 import { planAnnotation } from '../model/annotate.js';
 import { listProjects, locationLabel, deleteProject } from './storage.js';
-import { cloudAvailable } from './puter.js';
+import { cloudAvailable } from './everything.js';
 import { sharedWithMe } from './share.js';
 
 const lengthField = (key, label, value, units, extra = {}) => ({
@@ -399,10 +399,10 @@ export function aboutDialog(app) {
   openDialog({
     title: 'About Circuits',
     body: [
-      h('p', h('strong', 'Circuits'), ' is a free, open-source app for schematic capture and printed circuit board layout. It is part of the Everything project and runs on Puter.'),
+      h('p', h('strong', 'Circuits'), ' is a free, open-source app for schematic capture and printed circuit board layout. It is part of the Everything project and runs on Everything.'),
       h('p', 'Rendering uses WebGL2. Copper pours, design rule checks and autorouting run in a WebAssembly engine written in Rust, in a background worker so the editor stays responsive.'),
       h('p.muted', 'This is an early alpha. Check fabrication files carefully before ordering boards.'),
-      h('p', h('a', { href: 'https://github.com/heyputer/everything', target: '_blank', rel: 'noopener noreferrer' }, 'Source code on GitHub'), ' . ', h('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener noreferrer' }, 'Built on Puter')),
+      h('p', h('a', { href: 'https://github.com/yaya0631/Build-Everything-Local-Platform', target: '_blank', rel: 'noopener noreferrer' }, 'Source code on GitHub'), ' . ', h('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener noreferrer' }, 'Built on Everything')),
     ],
   });
 }
@@ -426,7 +426,7 @@ export async function openProjectDialog(app) {
       listHost.append(h('h3', { style: { fontSize: 'var(--fs-md)', margin: '0 0 6px' } }, 'Shared with me'), ul, h('h3', { style: { fontSize: 'var(--fs-md)', margin: '0 0 6px' } }, 'My projects'));
     }
     if (!items.length) {
-      listHost.append(h('p.muted', cloudAvailable() ? 'You have no saved projects yet.' : 'No projects are stored in this browser yet. Sign in to see projects saved in your Puter cloud.'));
+      listHost.append(h('p.muted', cloudAvailable() ? 'You have no saved projects yet.' : 'No projects are stored in this browser yet. Sign in to see projects saved in your Everything cloud.'));
       return;
     }
     const ul = h('ul.recent-list');
@@ -450,7 +450,7 @@ export async function openProjectDialog(app) {
     body: listHost,
     actions: [
       { label: 'Open from this device...', left: true, run: () => { app.importFromDevice(); return true; } },
-      cloudAvailable() ? { label: 'Browse Puter files...', left: true, run: () => { app.openFromCloudPicker(); return true; } } : null,
+      cloudAvailable() ? { label: 'Browse Everything files...', left: true, run: () => { app.openFromCloudPicker(); return true; } } : null,
       { label: 'Close' },
     ].filter(Boolean),
   });

@@ -1,5 +1,5 @@
 /**
- * Write with AI: ask Puter AI for titles, hooks, captions or calls to action
+ * Write with AI: ask Everything AI for titles, hooks, captions or calls to action
  * (from a description or from the project's transcript) and add the one you
  * like as a text clip.
  */
@@ -34,7 +34,7 @@ export function writePrompt({ kind, tone, topic, transcript, count = 6 }) {
   ].filter(Boolean).join('\n');
 }
 
-export function textAiPanel(ctx, { chat = (p) => puter.ai.chat(p) } = {}) {
+export function textAiPanel(ctx, { chat = (p) => everything.ai.chat(p) } = {}) {
   const { store, actions } = ctx;
   let kind = 'title';
   let tone = 'Friendly';
@@ -89,7 +89,7 @@ export function textAiPanel(ctx, { chat = (p) => puter.ai.chat(p) } = {}) {
   }
 
   const form = h('div.cap-form.ai-form',
-    h('p.asset-hint', 'Get ideas for text from Puter AI, then click one to add it at the playhead.'),
+    h('p.asset-hint', 'Get ideas for text from Everything AI, then click one to add it at the playhead.'),
     h('div.field', h('span.field-label', 'Write'), kindSel),
     h('div.field', h('span.field-label', 'Tone'), toneSel),
     topic,
@@ -101,8 +101,8 @@ export function textAiPanel(ctx, { chat = (p) => puter.ai.chat(p) } = {}) {
     get el() {
       transcriptRow.hidden = !transcriptWords(store.project).length;
       if (!aiAvailable(ctx) && !ctx.textAiChat) {
-        const btn = ctx.account?.onSignIn ? h('button.btn.primary', { type: 'button', onclick: () => ctx.account.onSignIn() }, icon('cloud', 16), 'Sign in to Puter') : null;
-        return emptyState('user', 'Sign in to write with AI', 'Writing suggestions come from Puter AI, so they need a Puter account.', btn);
+        const btn = ctx.account?.onSignIn ? h('button.btn.primary', { type: 'button', onclick: () => ctx.account.onSignIn() }, icon('cloud', 16), 'Sign in to Everything') : null;
+        return emptyState('user', 'Sign in to write with AI', 'Writing suggestions come from Everything AI, so they need an Everything account.', btn);
       }
       return form;
     },

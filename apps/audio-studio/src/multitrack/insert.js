@@ -161,7 +161,7 @@ export async function insertDocs(app, session, docs, { trackId, at, range } = {}
   return ids;
 }
 
-/** Opens local files or Puter items (without activating them) and inserts them. */
+/** Opens local files or Everything items (without activating them) and inserts them. */
 export async function insertFiles(app, session, items, opts = {}) {
   const docs = await openFiles(app, items, { activate: false });
   if (app.active !== session) app.activate(session);

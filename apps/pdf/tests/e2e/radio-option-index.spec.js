@@ -9,7 +9,7 @@ for (const inheritedOptions of [false, true])
       test(`radio choices keep their widget indices (${mode}, inherited=${inheritedOptions}, default=${defaultOnly})`, async ({
         page,
       }) => {
-        await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
+        await page.route('**/sdk/everything.js', (route) => route.fulfill({ body: '' }));
         await page.goto('/#library');
         const { doc, field } = await incompleteRadioPdf({ inheritedOptions, defaultOnly });
         const name = field.getName();

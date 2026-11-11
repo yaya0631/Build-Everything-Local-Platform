@@ -83,7 +83,7 @@ it.each([1, 2])('writes the correct native result for destination version %s', a
   for (let cycle = 0; cycle < 2; cycle++) {
     const zip = X.CFB.read(new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()), { type: 'array' });
     const part = X.CFB.find(zip, '/xl/workbook.xml');
-    X.CFB.utils.cfb_add(zip, '/xl/workbook.xml', new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')));
+    X.CFB.utils.cfb_add(zip, '/xl/workbook.xml', new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')));
     wb = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }));
     expect(wb.calculationCompatibility.version).toBe(version);
     expect(value(wb)).toEqual(expected);

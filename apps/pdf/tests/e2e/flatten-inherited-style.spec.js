@@ -29,7 +29,7 @@ for (const kind of ['text', 'dropdown', 'list', 'alignment', 'comb'])
     test(`flatten preserves inherited ${kind} styling through export and undo (stale=${stale})`, async ({
       page,
     }) => {
-      await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
+      await page.route('**/sdk/everything.js', (route) => route.fulfill({ body: '' }));
       await page.goto('/#library');
       const { doc: source } =
         kind === 'alignment'

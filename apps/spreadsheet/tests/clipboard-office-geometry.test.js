@@ -82,7 +82,7 @@ it('retains separate editable cells and real merges through external HTML and na
   expect(w.getValue(id, 0, 1)).toBe('Independent edit');
   w.undo(); expect(w.getValue(id, 0, 1)).toBeNull(); w.redo();
   const zip=X.CFB.read(new Uint8Array(await(await workbookToXlsx(w)).arrayBuffer()),{type:'array'}),book=X.CFB.find(zip,'/xl/workbook.xml');
-  book.content=new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,''));book.size=book.content.length;
+  book.content=new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,''));book.size=book.content.length;
   const back=await workbookFromFile(X.CFB.write(zip,{type:'array',fileType:'zip'}),'native-only.xlsx');
   expect(back.activeSheet.merges).toEqual(parsed.merges);
   expect(back.getValue(back.activeSheetId,0,1)).toBe('Independent edit');

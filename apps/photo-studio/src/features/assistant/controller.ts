@@ -5,7 +5,7 @@ import type { Editor } from '../../editor';
 import type { DocumentSession } from '../../app/session';
 import { commands, findCommand, menuContributions, panels, tools } from '../../app/registry';
 import { menuSkeleton } from '../../app/menus';
-import { chatWithTools, toAIError } from '../../imaging/ai/puter-ai';
+import { chatWithTools, toAIError } from '../../imaging/ai/everything-ai';
 import { Catalog, commandParams } from './catalog';
 import { describeDocument, previewImage } from './describe';
 import { converse, type ChatFn, type Turn } from './model';
@@ -135,7 +135,7 @@ export async function ask(active: Editor, request: string) {
   const prior = history(c);
   c.messages.push({ id: newId(), role: 'user', text, image: seeImage });
   const abort = new AbortController();
-  c.pending = { abort, status: 'Connecting to Puter…' };
+  c.pending = { abort, status: 'Connecting to Everything…' };
   changed();
   const status = (s: string) => {
     if (c.pending?.abort === abort) {

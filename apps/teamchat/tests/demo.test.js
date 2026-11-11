@@ -14,7 +14,7 @@ beforeEach(async () => {
   const runtime = await boot();
   account = createMemoryKv();
   exec = vi.fn((url, init) => runtime.dispatch(url, init, USERS.alice));
-  vi.stubGlobal('puter', { kv: account, workers: { exec } });
+  vi.stubGlobal('everything', { kv: account, workers: { exec } });
   vi.stubGlobal('location', { hash: '#/' });
   store.identity = USERS.alice;
   store.user = {

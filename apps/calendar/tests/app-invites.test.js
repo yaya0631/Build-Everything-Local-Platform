@@ -64,7 +64,7 @@ async function mount({ series = false, guests = true, booking = false, otherGues
     }),
     onUpdate: (cb) => { listeners.add(cb); return () => listeners.delete(cb); },
   };
-  const invites = createInvites({ kv, store, rsvp, user: HOST, getPuter: () => ({ workers: { exec } }), blocked: () => false });
+  const invites = createInvites({ kv, store, rsvp, user: HOST, getEverything: () => ({ workers: { exec } }), blocked: () => false });
   await invites.start();
   await invites.send(master);
   exec.mockClear();

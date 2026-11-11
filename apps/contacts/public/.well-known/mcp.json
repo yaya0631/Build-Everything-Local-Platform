@@ -2,10 +2,10 @@
   "name": "contacts",
   "title": "Contacts",
   "version": "1.0.0",
-  "description": "The signed-in Puter user's private address book.",
+  "description": "The signed-in Everything user's private address book.",
   "protocolVersion": "2025-06-18",
   "transport": {
-    "type": "puter-app-connection",
+    "type": "everything-app-connection",
     "launch": {
       "name": "contacts",
       "args": {

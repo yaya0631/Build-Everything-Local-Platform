@@ -2,7 +2,7 @@
 // classes) and settings other features read at the time they are used.
 import type { Editor } from '../../editor';
 import { canvasColorValue, CHECKER_SIZES, checkerColors, HIGHLIGHTS } from '../../model/preferences';
-import { fileNaming } from '../../persistence/puter';
+import { fileNaming } from '../../persistence/everything';
 
 const FONT_ZOOM = { small: 0.92, medium: 1, large: 1.12 } as const;
 

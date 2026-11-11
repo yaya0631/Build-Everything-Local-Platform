@@ -26,7 +26,7 @@ async function setup(r = 0, c = 0) {
 function meta(zip, fn) {
   const bytes = X.CFB.write(zip, { type: 'array', fileType: 'zip' });
   const book = X.read(bytes, { type: 'array' });
-  const value = JSON.parse(book.Sheets._puter_meta.A1.v);
+  const value = JSON.parse(book.Sheets._everything_meta.A1.v);
   fn(value.sheets.Sheet1);
   edit(zip, '/xl/worksheets/sheet2.xml', xml => xml.replace(/<sheetData>[\s\S]*?<\/sheetData>/,
     `<sheetData><row r="1"><c r="A1" t="str"><v>${xmlText(JSON.stringify(value))}</v></c></row></sheetData>`));
@@ -102,7 +102,7 @@ it('does not resurrect a removed table or filter from new private metadata', asy
 
 it('reads renamed tables, native themes and changed banding', async () => {
   const { zip } = await setup();
-  edit(zip, '/xl/tables/table1.xml', xml => xml.replaceAll('Items', 'Renamed').replace(/name="PuterTableStyle\d+"/, 'name="TableStyleMedium7"').replace('showRowStripes="1"', 'showRowStripes="0"'));
+  edit(zip, '/xl/tables/table1.xml', xml => xml.replaceAll('Items', 'Renamed').replace(/name="EverythingTableStyle\d+"/, 'name="TableStyleMedium7"').replace('showRowStripes="1"', 'showRowStripes="0"'));
   edit(zip, '/xl/worksheets/sheet1.xml', xml => xml.replaceAll('Items', 'Renamed'));
   const back = await read(zip), sheet = back.activeSheet;
   expect(sheet.tables[0]).toMatchObject({ name: 'Renamed', style: 'green', banded: false });

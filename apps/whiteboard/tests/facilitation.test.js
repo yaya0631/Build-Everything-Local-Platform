@@ -1139,7 +1139,7 @@ test("a device that missed the switch to anonymous input saves its note and reac
   let state,
     remade = null;
   const session = new CollaborationSession({
-    puter: env.sdk(editor),
+    everything: env.sdk(editor),
     server: "http://whiteboard-test.localhost:8443",
     room,
     user: editor,
@@ -2652,7 +2652,7 @@ test("the voting tab counts its minutes left down with the banner", (t) => {
 
 // Built application harness, as in app.test.js.
 const code = await appBundle();
-async function setup(puter) {
+async function setup(everything) {
   const dom = new JSDOM('<div id="app"></div><div id="toast"></div>', {
     url: "https://whiteboard.test",
     runScripts: "outside-only",
@@ -2665,7 +2665,7 @@ async function setup(puter) {
   Object.defineProperty(w.crypto, "subtle", { value: crypto.subtle });
   w.indexedDB = new IDBFactory();
   w.matchMedia = () => ({ matches: false, addEventListener() {} });
-  w.puter = puter;
+  w.everything = everything;
   const downloads = [];
   w.URL.createObjectURL = (blob) => {
     downloads.push(blob);

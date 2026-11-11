@@ -14,7 +14,7 @@ import {
   DISPLAY_NAME_MAX,
 } from '../src/js/booking.js';
 import { startOfDay, endOfDay, addDays } from '../src/js/date-utils.js';
-import { makeKv, makeFakePuter, bridgeFetch } from './helpers/worker-harness.js';
+import { makeKv, makeFakeEverything, bridgeFetch } from './helpers/worker-harness.js';
 
 if (!globalThis.crypto || !globalThis.crypto.subtle) {
   Object.defineProperty(globalThis, 'crypto', { value: webcrypto, configurable: true });
@@ -29,7 +29,7 @@ const tick = () => new Promise((resolve) => setTimeout(resolve, 5));
 const instances = [];
 
 /**
- * A full world: real store, fake Puter, and the real rsvp-links module whose
+ * A full world: real store, fake Everything, and the real rsvp-links module whose
  * admin channel the booking module rides — so the first booking sync genuinely
  * deploys the (real, instantiated) worker, and guests can be simulated by
  * calling that worker directly.
@@ -37,13 +37,13 @@ const instances = [];
 function makeWorld({ user = HOST, moduleOpts = {} } = {}) {
   const kv = makeKv();
   const store = createStore(kv);
-  const fakePuter = makeFakePuter();
-  const fetchFn = vi.fn(bridgeFetch(fakePuter));
+  const fakeEverything = makeFakeEverything();
+  const fetchFn = vi.fn(bridgeFetch(fakeEverything));
   const rsvp = createRsvpLinks({
     kv,
     store,
     user,
-    getPuter: () => fakePuter,
+    getEverything: () => fakeEverything,
     fetchFn,
     blocked: () => false,
     requestUser: async () => user,
@@ -65,7 +65,7 @@ function makeWorld({ user = HOST, moduleOpts = {} } = {}) {
     ...moduleOpts,
   });
   instances.push(booking);
-  return { kv, store, fakePuter, rsvp, booking, toast, fetchFn };
+  return { kv, store, fakeEverything, rsvp, booking, toast, fetchFn };
 }
 
 async function settle(booking) {
@@ -78,7 +78,7 @@ async function settle(booking) {
 /** The live worker instance the world deployed (throws if none). */
 function workerOf(world) {
   const origin = world.kv.map.get('cal:rsvp:cfg').url;
-  return world.fakePuter.workersByUrl.get(origin).instance;
+  return world.fakeEverything.workersByUrl.get(origin).instance;
 }
 
 /** Book a slot as an anonymous guest, straight against the worker. */
@@ -313,13 +313,13 @@ describe('booking: share links and worker versions', () => {
     world.kv.map.set('cal:rsvp:cfg', { ...cfg, version: '6' });
     const fetchFn = vi.fn(async (url, init) => {
       if (String(url).includes('/admin/booking/sync')) throw new Error('network');
-      return bridgeFetch(world.fakePuter)(url, init);
+      return bridgeFetch(world.fakeEverything)(url, init);
     });
     const rsvp = createRsvpLinks({
       kv: world.kv,
       store: world.store,
       user: { ...HOST, username: 'nariman' },
-      getPuter: () => world.fakePuter,
+      getEverything: () => world.fakeEverything,
       fetchFn,
       blocked: () => false,
       requestUser: async () => HOST,
@@ -350,8 +350,8 @@ describe('booking: share links and worker versions', () => {
       expect.stringContaining('/admin/booking/sync'),
       expect.anything(),
     ); // the announcement really did not come from a successful sync
-    expect(seen.filter(Boolean)[0]).toMatch(/^https:\/\/calendar\.puter\.com\/#\/nariman\//);
-    expect(booking.linkFor(booking.getPages()[0].id)).toMatch(/^https:\/\/calendar\.puter\.com\/#\/nariman\//);
+    expect(seen.filter(Boolean)[0]).toMatch(/^https:\/\/calendar\.everything\.com\/#\/nariman\//);
+    expect(booking.linkFor(booking.getPages()[0].id)).toMatch(/^https:\/\/calendar\.everything\.com\/#\/nariman\//);
   });
 
   /** A booking module over a stubbed rsvp whose worker origin the test controls;
@@ -439,7 +439,7 @@ describe('booking: share links and worker versions', () => {
     expect(world.rsvp.workerOrigin()).toBe('http://cal-rsvp-new.localhost:8443');
     // And the (version-gated) upgrade path never rewrites its source.
     await world.rsvp.whenIdle();
-    expect(world.fakePuter.fs.write).not.toHaveBeenCalled();
+    expect(world.fakeEverything.fs.write).not.toHaveBeenCalled();
   });
 });
 
@@ -451,12 +451,12 @@ describe('booking: pages and the worker', () => {
     await world.store.load();
     await world.booking.start();
     await settle(world.booking);
-    expect(world.fakePuter.workers.create).not.toHaveBeenCalled(); // nothing to serve yet
+    expect(world.fakeEverything.workers.create).not.toHaveBeenCalled(); // nothing to serve yet
 
     const page = await world.booking.savePage({ title: 'Coffee chat', durationMin: 30 });
     await settle(world.booking);
 
-    expect(world.fakePuter.workers.create).toHaveBeenCalledTimes(1);
+    expect(world.fakeEverything.workers.create).toHaveBeenCalledTimes(1);
     // Both halves of the link read: the host's name fronts it, and the page's
     // own title is its last segment — on the app's origin, not the worker's.
     expect(page.id).toBe('coffee-chat');
@@ -671,11 +671,11 @@ describe('booking: pages and the worker', () => {
     // must not be what guests are told.
     await world.booking.savePage({ title: 'Intro call' });
     await settle(world.booking);
-    expect(world.fakePuter.created).toEqual([]);
+    expect(world.fakeEverything.created).toEqual([]);
 
     await world.store.load();
     await settle(world.booking);
-    expect(world.fakePuter.created.length).toBe(1);
+    expect(world.fakeEverything.created.length).toBe(1);
     const cfg = workerOf(world).kv.map.get('bookw:cfg');
     expect(Object.keys(cfg.pages)).toHaveLength(1);
   });
@@ -800,13 +800,13 @@ describe('booking: pulling bookings into the calendar', () => {
     expect(world.toast).toHaveBeenCalledWith(expect.stringContaining('New booking: Ada Lovelace'), expect.anything());
   });
 
-  it('attaches the worker-minted Puter Meetings link to the created event', async () => {
+  it('attaches the worker-minted Everything Meetings link to the created event', async () => {
     const { world, out } = await worldWithBooking();
     await settle(world.booking);
 
     // The worker minted the room at booking time (pages default meet: true)…
     expect(out.booking.meetingUrl).toMatch(
-      /^https:\/\/meetings\.puter\.com\/#\/m\/[a-z]{4}-[a-z]{4}-[a-z]{4}$/,
+      /^https:\/\/meetings\.everything\.com\/#\/m\/[a-z]{4}-[a-z]{4}-[a-z]{4}$/,
     );
     // …and the pull carried it onto the calendar event, so the details card
     // shows the same Join link the guest's confirmation email carries.
@@ -829,7 +829,7 @@ describe('booking: pulling bookings into the calendar', () => {
     expect('meeting' in world.store.getEvent(out.booking.id)).toBe(false);
   });
 
-  it('refuses a pulled link that is not a Puter Meetings room URL (tampered worker record)', async () => {
+  it('refuses a pulled link that is not an Everything Meetings room URL (tampered worker record)', async () => {
     const world = makeWorld();
     await world.store.load();
     await world.booking.start();
@@ -920,7 +920,7 @@ describe('booking: pulling bookings into the calendar', () => {
   }
 
   it('coming back to the calendar window pulls, without waiting for the poll', async () => {
-    // Inside the Puter desktop, moving between app windows never hides the tab,
+    // Inside the Everything desktop, moving between app windows never hides the tab,
     // so `visibilitychange` never fires there — `focus` is the event that says
     // "the host is looking at the calendar again", and the moment to have their
     // bookings. The poll here is effectively switched off, so only the focus
@@ -1170,7 +1170,7 @@ describe('booking: the orphan safety net', () => {
     await settle(world.booking);
     expect(world.store.getEvent(out.booking.id)).toBeTruthy();
 
-    // One key listing that silently drops the booking's event. puter.kv.list
+    // One key listing that silently drops the booking's event. everything.kv.list
     // does exactly this on large result sets, and the store's own shard
     // fan-out is a mitigation, not a guarantee — so the calendar in memory can
     // be missing an event the cloud still holds.
@@ -1539,7 +1539,7 @@ describe("booking: the host's profile picture", () => {
   const PIC = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUg==';
 
   /** A world whose profile reads are scripted, so the sync can be watched
-   *  without a Puter drive behind it. */
+   *  without an Everything drive behind it. */
   function pictureWorld(results) {
     const answers = [].concat(results);
     const readPicture = vi.fn(async () => (answers.length > 1 ? answers.shift() : answers[0]));
@@ -1567,7 +1567,7 @@ describe("booking: the host's profile picture", () => {
 
   it('publishes the SDK picture through the real sync path only on opted-in pages', async () => {
     const getProfilePicture = vi.fn().mockResolvedValue(PIC);
-    vi.stubGlobal('puter', { auth: { getProfilePicture } });
+    vi.stubGlobal('everything', { auth: { getProfilePicture } });
     try {
       const world = makeWorld();
       await world.store.load();
@@ -1647,7 +1647,7 @@ describe("booking: the host's profile picture", () => {
     await settle(world.booking);
     expect(cfgOf(world).organizerPicture).toBe(PIC);
 
-    // The host removed it in Puter. The next read that is due says so, and the
+    // The host removed it in Everything. The next read that is due says so, and the
     // page follows — but only because the answer was authoritative.
     vi.useFakeTimers({ toFake: ['Date'] });
     try {

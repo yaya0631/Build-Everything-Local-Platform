@@ -12,7 +12,7 @@ async function imported(value = 77) {
   const text = String(value?.error ?? (typeof value === 'boolean' ? Number(value) : value)).replaceAll('&', '&amp;').replaceAll('<', '&lt;');
   const cached = value == null ? '' : `<v>${text}</v>`;
   const get = path => new TextDecoder().decode(X.CFB.find(zip, path).content);
-  X.CFB.utils.cfb_add(zip, '/xl/workbook.xml', new TextEncoder().encode(get('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')));
+  X.CFB.utils.cfb_add(zip, '/xl/workbook.xml', new TextEncoder().encode(get('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')));
   X.CFB.utils.cfb_add(zip, '/xl/worksheets/sheet1.xml', new TextEncoder().encode(get('/xl/worksheets/sheet1.xml')
     .replace(/<c\b[^>]*r="A1"[^>]*>[\s\S]*?<\/c>/, `<c r="A1" t="${type}"><f>${formula}</f>${cached}</c>`)));
   return workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }));
@@ -78,7 +78,7 @@ it.each([0, false, '', 'text & <data>', { error: '#N/A' }, null])('retains the s
     expect(wb.getValue(wb.activeSheetId, 0, 0)).toEqual(value);
     const zip = X.CFB.read(new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()), { type: 'array' });
     const path = '/xl/workbook.xml', xml = new TextDecoder().decode(X.CFB.find(zip, path).content);
-    X.CFB.utils.cfb_add(zip, path, new TextEncoder().encode(xml.replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')));
+    X.CFB.utils.cfb_add(zip, path, new TextEncoder().encode(xml.replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')));
     wb = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }));
   }
   expect(wb.getValue(wb.activeSheetId, 0, 0)).toEqual(value);

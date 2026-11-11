@@ -131,7 +131,7 @@ export function coauthorSection({ doc, onStarted }) {
     try { url = await invitationLink(client, role); } catch (e) { toast(e?.message || 'Could not make an invitation', { icon: 'alert' }); return; }
     try {
       await navigator.clipboard.writeText(url);
-      toast(role ? `Invitation copied: anyone signed in to Puter with it ${role === 'editor' ? 'can edit' : 'can view'} for 7 days` : 'Link copied: it opens this workbook for the people in it', { icon: 'link', duration: 3500 });
+      toast(role ? `Invitation copied: anyone signed in to Everything with it ${role === 'editor' ? 'can edit' : 'can view'} for 7 days` : 'Link copied: it opens this workbook for the people in it', { icon: 'link', duration: 3500 });
     } catch {
       await promptDialog({ title: 'Invitation link', label: 'Address (copy it from here)', value: url, confirmLabel: 'Done' });
     }
@@ -162,7 +162,7 @@ export function coauthorSection({ doc, onStarted }) {
         control);
     }));
   }
-  const inviteName = el('input.input', { type: 'text', placeholder: 'Puter username', 'aria-label': 'Puter username to invite', autocomplete: 'off', autocapitalize: 'off', spellcheck: false });
+  const inviteName = el('input.input', { type: 'text', placeholder: 'Everything username', 'aria-label': 'Everything username to invite', autocomplete: 'off', autocapitalize: 'off', spellcheck: false });
   const inviteRole = el('select.select.share-mode', { 'aria-label': 'Access for the invited person' }, el('option', { value: 'editor' }, 'Can edit'), el('option', { value: 'viewer' }, 'Can view'));
   const inviteForm = el('form.share-add', {
     onsubmit: async (e) => {
@@ -188,7 +188,7 @@ export function coauthorSection({ doc, onStarted }) {
   }, 'Stop editing together');
   box.append(...[heading,
     el('p.collab-share-text', {}, owner
-      ? 'This spreadsheet is live: everyone in it sees changes as they happen. Send an invitation link, or invite people by their Puter username.'
+      ? 'This spreadsheet is live: everyone in it sees changes as they happen. Send an invitation link, or invite people by their Everything username.'
       : 'This spreadsheet is live: everyone in it sees changes as they happen. Its owner decides who has access.'),
     owner ? el('div.row.collab-link-row', {}, roleSel, el('button.btn.btn-outline', { type: 'button', html: icon('link', 16), onclick: () => copy(roleSel.value) }, el('span', {}, 'Copy invitation link'))) : el('div.row.collab-link-row', {}, el('button.btn.btn-outline', { type: 'button', html: icon('link', 16), onclick: () => copy(null) }, el('span', {}, 'Copy link'))),
     owner && inviteForm,

@@ -43,7 +43,7 @@ beforeEach(() => {
 
 afterEach(() => {
   document.body.replaceChildren();
-  delete globalThis.puter;
+  delete globalThis.everything;
 });
 
 describe('text details', () => {
@@ -199,7 +199,7 @@ describe('text details', () => {
   it('shows the sign-in state for speech when signed out', () => {
     tab('Speech').click();
     expect(env.el.querySelector('.text-speech').textContent).toContain('Sign in to use text to speech');
-    button('Sign in to Puter').click();
+    button('Sign in to Everything').click();
     expect(env.ctx.account.onSignIn).toHaveBeenCalled();
   });
 });
@@ -207,9 +207,9 @@ describe('text details', () => {
 describe('text speech', () => {
   it('adds speech aligned to the text clip and fits the clip to it', async () => {
     document.body.replaceChildren();
-    globalThis.puter = { ai: { txt2speech: vi.fn(async () => ({ src: 'blob:speech' })) } };
+    globalThis.everything = { ai: { txt2speech: vi.fn(async () => ({ src: 'blob:speech' })) } };
     const fetchSpy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('abc', { headers: { 'content-type': 'audio/mpeg' } }));
-    env = setup({ backendKind: 'puter' });
+    env = setup({ backendKind: 'everything' });
     const asset = { id: 'sp', kind: 'audio', name: 'Speech', duration: 2.5 * US, hasAudio: true, width: 0, height: 0, fps: 0 };
     env.ctx.actions.importFiles = vi.fn(async () => {
       env.store.update('import', (p) => {
@@ -224,7 +224,7 @@ describe('text speech', () => {
     const audio = T.allClips(env.store.project).find((c) => c.type === 'audio');
     expect(audio.start).toBe(1 * US);
     await vi.waitFor(() => expect(clip().duration).toBe(2.5 * US));
-    expect(globalThis.puter.ai.txt2speech).toHaveBeenCalledWith('Hello world', expect.any(Object));
+    expect(globalThis.everything.ai.txt2speech).toHaveBeenCalledWith('Hello world', expect.any(Object));
     expect(env.store.selected.clip.id).toBe(env.text.id);
     fetchSpy.mockRestore();
   });

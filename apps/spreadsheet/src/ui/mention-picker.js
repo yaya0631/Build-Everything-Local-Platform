@@ -1,7 +1,7 @@
 /**
  * The people picker of a comment box: typing @ at the start of a word lists the people who can be mentioned
  * (the co-authors of a shared workbook, the people the file is shared with, the workbook's other commenters),
- * narrowed as more is typed; an email address or a Puter username typed in full is offered too. Choosing one
+ * narrowed as more is typed; an email address or an Everything username typed in full is offered too. Choosing one
  * (Enter, Tab or a click) writes "@Name " into the text and remembers the person, so the comment can say whom
  * it mentions when it is posted (findMentions in core/mentions.js).
  */
@@ -40,7 +40,7 @@ export function matchPeople(people, query) {
   if (isEmail(query) && !known((p) => p.email === q)) list.push({ name: q, email: q, typed: true, hint: 'Email address' });
   // A username is offered once nobody listed matches: until then they are the likelier pick.
   else if (query.length >= 2 && isUsername(query) && !list.length) {
-    list.push({ name: query, user: query, typed: true, hint: 'Puter username' });
+    list.push({ name: query, user: query, typed: true, hint: 'Everything username' });
   }
   return list;
 }
@@ -99,7 +99,7 @@ export function attachMentionPicker(area, { people }) {
     el('span.mention-avatar', { 'aria-hidden': 'true' }, p.typed ? '@' : authorInitials(p.name)),
     el('span.mention-who', {}, el('span.mention-name', {}, p.typed ? `Mention ${p.name}` : p.name),
       el('span.mention-hint', {}, p.hint || (p.email && p.email !== p.name ? p.email : p.user && p.user !== p.name ? `@${p.user}` : ''))))));
-    if (!items.length) list.append(el('li.mention-empty', { role: 'presentation' }, 'Type a Puter username or an email address'));
+    if (!items.length) list.append(el('li.mention-empty', { role: 'presentation' }, 'Type an Everything username or an email address'));
     area.setAttribute('aria-activedescendant', items.length ? `${listId}-${active}` : '');
   }
 

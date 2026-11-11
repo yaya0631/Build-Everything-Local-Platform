@@ -33,7 +33,7 @@ against the computer or in pass and play is saved as you go, so a reload or a
 closed tab picks up where you left off, clocks included.
 
 Games against the computer and pass and play games run entirely on your device.
-Online games connect the two players directly and are set up through a Puter
+Online games connect the two players directly and are set up through an Everything
 sign in.
 
 ## Key features

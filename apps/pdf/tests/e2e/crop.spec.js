@@ -2,10 +2,10 @@ import { test, expect } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { PDFDocument, PDFName, PDFNumber, StandardFonts } from 'pdf-lib';
 
-const PUTER_MOCK = `window.puter = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async () => ({}) }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
-async function mockPuter(page) {
-  await page.route('**/sdk/puter.js', (route) =>
-    route.fulfill({ contentType: 'application/javascript', body: PUTER_MOCK }),
+const EVERYTHING_MOCK = `window.everything = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async () => ({}) }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
+async function mockEverything(page) {
+  await page.route('**/sdk/everything.js', (route) =>
+    route.fulfill({ contentType: 'application/javascript', body: EVERYTHING_MOCK }),
   );
 }
 async function openPdf(page, doc) {
@@ -55,7 +55,7 @@ async function squarePages() {
 test('dragging a crop area crops the page, Remove crop restores it, and Escape leaves the mode', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await squarePages());
   await menu(page, 'Crop pages…');
@@ -116,7 +116,7 @@ test('dragging a crop area crops the page, Remove crop restores it, and Escape l
 });
 
 test('typed margins crop every page and undo brings the pages back', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await squarePages());
   await menu(page, 'Crop pages…');
@@ -157,7 +157,7 @@ test('typed margins crop every page and undo brings the pages back', async ({ pa
 });
 
 test('typed margins for some of the pages say how many were cropped', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await squarePages();
   doc.addPage([400, 400]);
@@ -175,7 +175,7 @@ test('typed margins for some of the pages say how many were cropped', async ({ p
 });
 
 test('typed crop margins retain their point sizes on a scaled PDF page', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const source = await squarePages();
   source.getPages().forEach((p) => p.node.set(PDFName.of('UserUnit'), PDFNumber.of(2)));
@@ -194,7 +194,7 @@ test('typed crop margins retain their point sizes on a scaled PDF page', async (
 });
 
 test('an empty crop margin stays editable without modifying the PDF', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await squarePages());
   await menu(page, 'Crop pages…');

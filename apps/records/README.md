@@ -3,9 +3,9 @@
 An open-source alternative to Airtable. Records is a relational database
 that feels like a spreadsheet: tables of typed fields, records linked across
 tables, and views that show the same data as a grid, board, calendar,
-gallery, timeline, list or form. It runs on [Puter](https://localhost:8443) and
-keeps everything in your own Puter cloud. No framework and no server of its
-own: vanilla JavaScript, Vite and Puter.js.
+gallery, timeline, list or form. It runs on [Everything](https://localhost:8443) and
+keeps everything in your own Everything cloud. No framework and no server of its
+own: vanilla JavaScript, Vite and Everything.js.
 
 > Records is in early development (alpha). Features may change and data
 > could be lost, so do not rely on it for important work yet. Use **Download
@@ -71,7 +71,7 @@ own: vanilla JavaScript, Vite and Puter.js.
 
 ## Where your data lives
 
-All files go to the app's folder in your Puter cloud (`~/AppData/<app>/records/`):
+All files go to the app's folder in your Everything cloud (`~/AppData/<app>/records/`):
 
 - `index.json` lists your bases (name, color, starred, trash).
 - `bases/<id>/base.json` holds a base's tables, fields and views.
@@ -80,15 +80,15 @@ All files go to the app's folder in your Puter cloud (`~/AppData/<app>/records/`
 - `bases/<id>/files/<attachment>/` hold attachments and their thumbnails.
 
 Saves are batched (under a second after you stop typing) and kept under
-Puter's write rate limit. Each change is first written to a journal in the
+Everything's write rate limit. Each change is first written to a journal in the
 browser (IndexedDB), so closing the tab or going offline right after an edit
 loses nothing: the journal is replayed the next time the base opens. When the
 window regains focus, a base that another device saved is reloaded.
 
-`puter.kv` is only used for small preferences, never for records or files.
-Inside the Puter desktop (`puter.env === 'app'`) there is no sign-out, because
-the session belongs to Puter. Profile pictures come from
-`puter.auth.getProfilePicture()`.
+`everything.kv` is only used for small preferences, never for records or files.
+Inside the Everything desktop (`everything.env === 'app'`) there is no sign-out, because
+the session belongs to Everything. Profile pictures come from
+`everything.auth.getProfilePicture()`.
 
 ## Performance
 
@@ -110,12 +110,12 @@ memoized per change.
 
 ```sh
 npm install
-npm run dev     # http://records.puter.localhost:5261/
+npm run dev     # http://records.localhost:8443/
 npm test        # Vitest with jsdom
 npm run build   # checks dependency licenses, then builds into dist/
 ```
 
-Add `?local` to the dev URL to use the app without a Puter account. Bases are
+Add `?local` to the dev URL to use the app without an Everything account. Bases are
 then kept in IndexedDB in that browser. It only works in development builds.
 
 ### Layout

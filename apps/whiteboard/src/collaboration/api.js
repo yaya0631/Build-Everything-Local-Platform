@@ -3,20 +3,20 @@ import { authorize, refuseCredential } from "./auth.js";
 
 const workerKey = "whiteboard-collaboration-worker-v1";
 const deploymentChecks = new WeakMap();
-function checksFor(puter) {
-  let entry = deploymentChecks.get(puter);
-  if (!entry || entry.auth !== puter.authToken) {
-    entry = { auth: puter.authToken, servers: new Map() };
-    deploymentChecks.set(puter, entry);
+function checksFor(everything) {
+  let entry = deploymentChecks.get(everything);
+  if (!entry || entry.auth !== everything.authToken) {
+    entry = { auth: everything.authToken, servers: new Map() };
+    deploymentChecks.set(everything, entry);
   }
   return entry.servers;
 }
 
-export function refreshDeployment(puter, server) {
+export function refreshDeployment(everything, server) {
   server = workerURL(server);
-  const checks = checksFor(puter);
+  const checks = checksFor(everything);
   if (!checks.has(server)) {
-    const pending = deploy(puter, () => {}, server);
+    const pending = deploy(everything, () => {}, server);
     checks.set(server, pending);
     pending.catch(() => {
       if (checks.get(server) === pending) checks.delete(server);
@@ -28,7 +28,7 @@ export function refreshDeployment(puter, server) {
 // The slowest upload a request is given time for: a large batch of edits
 // made offline still goes up over a congested venue connection.
 const SLOW_UPLOAD = 50_000;
-export async function call(puter, server, input) {
+export async function call(everything, server, input) {
   const controller = new AbortController();
   const bodyText = JSON.stringify(input);
   const timer = setTimeout(
@@ -40,7 +40,7 @@ export async function call(puter, server, input) {
   );
   try {
     server = workerURL(server);
-    let headers = await authorize(puter, server, bodyText);
+    let headers = await authorize(everything, server, bodyText);
     // Network failures and timeouts carry the browser's own wording, such
     // as "Failed to fetch"; people see a message they can act on instead.
     const unreachable = () =>
@@ -50,7 +50,7 @@ export async function call(puter, server, input) {
     const send = async () => {
       try {
         controller.signal.throwIfAborted();
-        return await puter.workers.exec(server + "/api", {
+        return await everything.workers.exec(server + "/api", {
           method: "POST",
           headers: { "Content-Type": "application/json", ...headers },
           body: bodyText,
@@ -64,8 +64,8 @@ export async function call(puter, server, input) {
     let res = await send();
     // A credential that stopped working is replaced and the request sent
     // once more.
-    if (res.status === 401 && refuseCredential(puter, headers)) {
-      headers = await authorize(puter, server, bodyText);
+    if (res.status === 401 && refuseCredential(everything, headers)) {
+      headers = await authorize(everything, server, bodyText);
       res = await send();
     }
     // A gateway error page is not JSON; its status still counts.
@@ -85,15 +85,15 @@ export async function call(puter, server, input) {
   }
 }
 
-export async function deploy(puter, progress = () => {}, expectedServer) {
-  const account = puter.authToken;
+export async function deploy(everything, progress = () => {}, expectedServer) {
+  const account = everything.authToken;
   const checkAccount = () => {
-    if (puter.authToken !== account)
-      throw Error("Your Puter account changed. Reopen the shared board.");
+    if (everything.authToken !== account)
+      throw Error("Your Everything account changed. Reopen the shared board.");
   };
   // A room URL alone never authorizes deployment. Only update an existing
   // worker that this account previously created and recorded in private KV.
-  let config = await puter.kv.get(workerKey);
+  let config = await everything.kv.get(workerKey);
   checkAccount();
   if (
     expectedServer &&
@@ -114,13 +114,13 @@ export async function deploy(puter, progress = () => {}, expectedServer) {
   if (!config) {
     const name =
       "whiteboard-" + crypto.randomUUID().replaceAll("-", "").slice(0, 20);
-    const file = await puter.fs.write(
+    const file = await everything.fs.write(
       "whiteboard/whiteboard-worker.js",
       source,
       { overwrite: true, dedupeName: false, createMissingParents: true },
     );
     checkAccount();
-    const deployed = await puter.workers.create(name, file.path);
+    const deployed = await everything.workers.create(name, file.path);
     checkAccount();
     config = {
       name,
@@ -129,28 +129,28 @@ export async function deploy(puter, progress = () => {}, expectedServer) {
       build,
       builtAt,
     };
-    await puter.kv.set(workerKey, config);
+    await everything.kv.set(workerKey, config);
   } else if (config.build !== build && !(config.builtAt > builtAt)) {
-    await puter.fs.write(config.path, source, {
+    await everything.fs.write(config.path, source, {
       overwrite: true,
       dedupeName: false,
     });
     checkAccount();
     config.build = build;
     config.builtAt = builtAt;
-    await puter.kv.set(workerKey, config);
+    await everything.kv.set(workerKey, config);
   }
   checkAccount();
   progress("Starting collaboration…");
   for (let attempt = 0; attempt < 20; attempt++) {
     try {
-      const res = await puter.workers.exec(
+      const res = await everything.workers.exec(
         workerURL(config.server) + "/health",
-        { headers: { "x-puter-no-auth": "1" }, redirect: "error" },
+        { headers: { "x-everything-no-auth": "1" }, redirect: "error" },
       );
       if (res.ok && (await res.json()).build === config.build) {
         checkAccount();
-        checksFor(puter).set(config.server, Promise.resolve(config.server));
+        checksFor(everything).set(config.server, Promise.resolve(config.server));
         return config.server;
       }
     } catch {

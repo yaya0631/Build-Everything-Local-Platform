@@ -95,6 +95,6 @@ it('only reports the failure when the save serves an operation rather than a dep
   window.dispatchEvent(new CustomEvent('app:before-signout', { detail: { waitUntil: (p) => pending.push(p) } }));
   expect(await pending[0]).toBe(false);
   expect(dialog()).toBeNull();
-  expect(notify.mock.calls.some(([message]) => message.startsWith('Could not save to Puter'))).toBe(true);
+  expect(notify.mock.calls.some(([message]) => message.startsWith('Could not save to Everything'))).toBe(true);
   expect(doc.wb.dirty).toBe(true);
 });

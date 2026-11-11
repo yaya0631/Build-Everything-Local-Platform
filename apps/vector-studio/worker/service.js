@@ -1,12 +1,12 @@
 /**
  * DocService: the collaboration server for shared Vector Studio documents,
- * running as a Puter worker in the owner's account. Everything is stored
- * with the owner's resources (`me.puter`): KV for small records and files
+ * running as an Everything worker in the owner's account. Everything is stored
+ * with the owner's resources (`me.everything`): KV for small records and files
  * for document snapshots and large edits.
  *
  *   vs:<room>:meta              owner, name, room signing keys, closed time
  *   vs:<room>:member:<uuid>     role (owner, editor, commenter, viewer, removed)
- *   vs:<room>:named:<username>  role for a Puter user invited by name
+ *   vs:<room>:named:<username>  role for an Everything user invited by name
  *   vs:<room>:invite:<hash>     link invitation: role, review link, expiry
  *   vs:<room>:seq               the last edit's sequence number (atomic counter)
  *   vs:<room>:log:<seq>         one edit batch, or a file reference when large
@@ -48,33 +48,33 @@ const usernameKey = (v) => {
   const s = String(v || '')
     .trim()
     .replace(/^@/, '');
-  if (!/^[A-Za-z0-9_][A-Za-z0-9_.-]{0,63}$/.test(s)) fail(400, 'Enter a Puter username.');
+  if (!/^[A-Za-z0-9_][A-Za-z0-9_.-]{0,63}$/.test(s)) fail(400, 'Enter an Everything username.');
   return s.toLowerCase();
 };
 
 const bytes = (value) => new TextEncoder().encode(typeof value === 'string' ? value : JSON.stringify(value)).length;
 
 export class DocService {
-  constructor(puter, { now = () => Date.now() } = {}) {
-    this.puter = puter;
-    this.kv = puter.kv;
+  constructor(everything, { now = () => Date.now() } = {}) {
+    this.everything = everything;
+    this.kv = everything.kv;
     this.now = now;
   }
 
   async owner() {
-    if (!this.ownerPromise) this.ownerPromise = this.puter.auth.getUser();
+    if (!this.ownerPromise) this.ownerPromise = this.everything.auth.getUser();
     return this.ownerPromise;
   }
 
   async readFile(path) {
-    return (await this.puter.fs.read(path)).text();
+    return (await this.everything.fs.read(path)).text();
   }
 
   async writeFile(path, text) {
-    await this.puter.fs.write(path, text, { overwrite: true, dedupeName: false, createMissingParents: true });
+    await this.everything.fs.write(path, text, { overwrite: true, dedupeName: false, createMissingParents: true });
   }
 
-  /** Several keys in one request, as Puter counts them. */
+  /** Several keys in one request, as Everything counts them. */
   async getMany(keys) {
     if (!keys.length) return [];
     if (keys.length === 1) return [await this.kv.get(keys[0])];
@@ -95,7 +95,7 @@ export class DocService {
   }
 
   async call(user, input) {
-    if (!user?.uuid) fail(401, 'Sign in with Puter to continue.');
+    if (!user?.uuid) fail(401, 'Sign in with Everything to continue.');
     if (!input || typeof input !== 'object') fail(400, 'Invalid request.');
     const op = input.op;
     if (op === 'create') return this.create(user, input);

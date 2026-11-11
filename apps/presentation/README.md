@@ -1,8 +1,8 @@
 # Presentation
 
-A full-featured, open-source alternative to Microsoft PowerPoint that runs in the browser, built with vanilla JavaScript and Vite. Create, edit, present, record, and export real .pptx files. Puter.js is the only backend.
+A full-featured, open-source alternative to Microsoft PowerPoint that runs in the browser, built with vanilla JavaScript and Vite. Create, edit, present, record, and export real .pptx files. Everything.js is the only backend.
 
-Nobody has to sign in to work: the app opens straight into a new presentation, and Puter asks for a sign-in at the first action that needs the cloud, such as saving or opening a cloud file. The library of presentations has its own address, `#/home`, reached from the editor's back arrow.
+Nobody has to sign in to work: the app opens straight into a new presentation, and Everything asks for a sign-in at the first action that needs the cloud, such as saving or opening a cloud file. The library of presentations has its own address, `#/home`, reached from the editor's back arrow.
 
 ## Run locally
 
@@ -20,7 +20,7 @@ npm run test:e2e
 npm run build
 ```
 
-The production build is a static application in `dist/`. Serve it over HTTPS, including from Puter hosting. No application server, API key, environment variable, or database setup is required. The official Puter SDK loads from `/sdk/puter.js`.
+The production build is a static application in `dist/`. Serve it over HTTPS, including from Everything hosting. No application server, API key, environment variable, or database setup is required. The official Everything SDK loads from `/sdk/everything.js`.
 
 ## App branding
 
@@ -40,7 +40,7 @@ primary brand color for initial browser and app metadata.
 
 ## Features
 
-- A file library (`#/home`) with search, sorting, import, cloud open, rename, download, and confirmed deletion. Dropping a `.pptx` file anywhere on the window opens it, from the library or the editor. Presentations opened from elsewhere on the Puter drive (the desktop, "Open with", the Open dialog) are listed beside the Presentations folder with the folder they live in, and are followed by their file id when they are moved or renamed.
+- A file library (`#/home`) with search, sorting, import, cloud open, rename, download, and confirmed deletion. Dropping a `.pptx` file anywhere on the window opens it, from the library or the editor. Presentations opened from elsewhere on the Everything drive (the desktop, "Open with", the Open dialog) are listed beside the Presentations folder with the folder they live in, and are followed by their file id when they are moved or renamed.
 - A menu bar (File, Edit, View, Insert, Format, Arrange, Slide, Tools, Slide Show, Help) with the shortcuts beside its items, a ribbon (Home, Insert, Draw, Design, Transitions, Animations, Slide Show, Record, Review, View, plus contextual tabs for shapes, pictures, tables, charts, SmartArt, media, equations, and master views), and a Format pane. Phones fold the menus into the File options button.
 - New presentations open on a Title Slide (or a blank slide, a preference under Appearance), and two five-slide starter decks are built on real layouts.
 - Add, duplicate, hide, and delete slides, and reorder them by dragging their thumbnails along the navigator or from the slide menu. Hidden slides are marked in the navigator and skipped when presenting and printing.
@@ -59,11 +59,11 @@ primary brand color for initial browser and app metadata.
 - Speaker notes, undo/redo, print-to-PDF through the browser, and the current slide or every slide downloaded as PNG images (all slides arrive in a ZIP). Presentation mode has keyboard and swipe navigation, fullscreen, a panel with the speaker notes and the next slide from the toolbar, next/previous navigation with N/P, an elapsed-time counter, a black or white screen (B / W), and typing a slide number followed by Enter to jump to it.
 - The slide fits the window, or zooms from 25% to 400% with the footer control, Ctrl+= and Ctrl+-, Ctrl and the wheel, a pinch, or the View menu; Ctrl+0 fits it again. The zoom carries over to the next presentation.
 - System appearance by default, with persistent light and dark overrides. Presentation artwork keeps its authored colors.
-- Local recovery drafts in IndexedDB, separated by Puter account. Guest drafts remain local until saved to an account; the presentation the app opens with gets a draft only once it is edited.
-- Explicit first cloud save followed by debounced autosave. A guest's save button reads "Sign in to save" and opens Puter's sign-in before the save; sign-ins the SDK performs on its own are picked up too. Inside the Puter desktop the first save opens Puter's Save dialog, which chooses the folder and name (closing it saves nothing); elsewhere it goes to the Presentations folder. Autosave and its retries never open the dialog. Writes are serialized, first saves to the Presentations folder deduplicate names, and failed saves retain the local draft. Save a copy to Puter (Ctrl/⌘+Shift+S) stores the presentation under a new name and continues in the copy; inside the Puter desktop, Puter's Save dialog chooses its folder too. Ctrl/⌘+O opens Puter's Open dialog.
+- Local recovery drafts in IndexedDB, separated by Everything account. Guest drafts remain local until saved to an account; the presentation the app opens with gets a draft only once it is edited.
+- Explicit first cloud save followed by debounced autosave. A guest's save button reads "Sign in to save" and opens Everything's sign-in before the save; sign-ins the SDK performs on its own are picked up too. Inside the Everything desktop the first save opens Everything's Save dialog, which chooses the folder and name (closing it saves nothing); elsewhere it goes to the Presentations folder. Autosave and its retries never open the dialog. Writes are serialized, first saves to the Presentations folder deduplicate names, and failed saves retain the local draft. Save a copy to Everything (Ctrl/⌘+Shift+S) stores the presentation under a new name and continues in the copy; inside the Everything desktop, Everything's Save dialog chooses its folder too. Ctrl/⌘+O opens Everything's Open dialog.
 - Before writing over a file, a save checks that it is as the presentation last saw it. A file saved from another tab or device since asks whether to replace it, open the other version, or save a copy; a file renamed or moved elsewhere is followed by its id; a deleted one offers to save the edits as a new file. Autosave holds off until the question is answered.
-- A failed autosave shows in the save status ("Offline" or "Not saved to Puter") and is retried after 8 seconds, then at doubling intervals up to five minutes, and as soon as the connection returns. Leaving the editor saves a Puter file's pending edits first; when that save fails or finds a conflict, the person can keep editing, try again, or leave with the edits kept in a recovery draft.
-- Puter desktop integration: a presentation launched with the app (a double-click, "Open with") is the first screen, without a blank deck before it; files and images dragged in from the desktop or a folder window open or land on the slide; the window title follows the presentation; and the window's close button saves pending edits first, or asks whether to save a presentation never saved to Puter. The app environment never shows or invokes logout. Exports and downloads go to this device there too, the reverse of importing from it; Save is what puts a file in Puter.
+- A failed autosave shows in the save status ("Offline" or "Not saved to Everything") and is retried after 8 seconds, then at doubling intervals up to five minutes, and as soon as the connection returns. Leaving the editor saves an Everything file's pending edits first; when that save fails or finds a conflict, the person can keep editing, try again, or leave with the edits kept in a recovery draft.
+- Everything desktop integration: a presentation launched with the app (a double-click, "Open with") is the first screen, without a blank deck before it; files and images dragged in from the desktop or a folder window open or land on the slide; the window title follows the presentation; and the window's close button saves pending edits first, or asks whether to save a presentation never saved to Everything. The app environment never shows or invokes logout. Exports and downloads go to this device there too, the reverse of importing from it; Save is what puts a file in Everything.
 
 ## Desktop-editor features
 
@@ -86,16 +86,16 @@ The full plan and status are in [docs/roadmap.md](docs/roadmap.md).
 
 ## AI assistant
 
-**Ask AI** in the top bar, View → AI assistant, an object's right-click menu, or Ctrl/⌘+J opens a chat beside the slide in which Puter's AI (Claude Opus 5.5, through `puter.ai.chat`) answers questions about the presentation and changes it. It reads the deck through tools — an outline of every slide, one slide's objects with their ids, positions, text and formats, and a search — and changes it through others: adding, copying, moving, hiding, and deleting slides; adding text boxes, shapes, lines, and tables; rewriting text (each paragraph keeping its formatting), filling table cells, formatting text, restyling, arranging and deleting objects; speaker notes, backgrounds, transitions, find and replace, and the palette.
+**Ask AI** in the top bar, View → AI assistant, an object's right-click menu, or Ctrl/⌘+J opens a chat beside the slide in which Everything's AI (Claude Opus 5.5, through `everything.ai.chat`) answers questions about the presentation and changes it. It reads the deck through tools — an outline of every slide, one slide's objects with their ids, positions, text and formats, and a search — and changes it through others: adding, copying, moving, hiding, and deleting slides; adding text boxes, shapes, lines, and tables; rewriting text (each paragraph keeping its formatting), filling table cells, formatting text, restyling, arranging and deleting objects; speaker notes, backgrounds, transitions, find and replace, and the palette.
 
 - Each message carries a short snapshot of the deck, the current slide, and the selection, which the chip above the message box names. Replies stream in, each tool call is a line linked to what it touched, and "slide 3" in a reply goes to that slide.
 - Every change is one step in the editor's undo history, and a reply that changed the deck ends with an Undo for its own changes only, which turns off once anything else has changed the deck. A change that deletes slides or objects waits for Allow; the panel's menu can ask before every change, or never.
 - The deck's text is data, never instructions: the model is told so, replies are rendered node by node with pictures never loaded and links to web and mail addresses only, and the tools neither fetch anything nor open links.
-- Messages and the slides the assistant reads are sent to Puter's AI service. The chat belongs to the open presentation and is not saved; the panel's width, approval mode, and whether it is open are kept in localStorage.
+- Messages and the slides the assistant reads are sent to Everything's AI service. The chat belongs to the open presentation and is not saved; the panel's width, approval mode, and whether it is open are kept in localStorage.
 
 ## Storage and privacy
 
-Cloud presentations are ordinary `.pptx` files written through `puter.fs.write` under `Presentations/`. Files opened elsewhere are saved back to their existing path. Presentation data is never stored in `puter.kv`. This application does not use KV at all.
+Cloud presentations are ordinary `.pptx` files written through `everything.fs.write` under `Presentations/`. Files opened elsewhere are saved back to their existing path. Presentation data is never stored in `everything.kv`. This application does not use KV at all.
 
 Local recovery files use IndexedDB. Theme preference, the assistant panel's settings, and the list of presentations opened from elsewhere on the drive (paths and file ids, per account) use localStorage. Clearing browser data removes local drafts. The page must have loaded before offline editing is available; this is not an offline-installable PWA. Unsaved work remains local until the user chooses Save. Imported files are parsed in the browser and are not uploaded automatically.
 
@@ -113,9 +113,9 @@ Automatic date/time fields use the document's opening date and refresh when pres
 
 ## Tests
 
-`npm run typecheck` checks the library source. Vitest also runs the inherited XML, OPC, and PresentationML unit tests, and exercises real PPTX save/load cycles, slide relationships, chart preservation, notes, preview escaping, archive guards, history branching, filename normalization, and the Puter storage boundary.
+`npm run typecheck` checks the library source. Vitest also runs the inherited XML, OPC, and PresentationML unit tests, and exercises real PPTX save/load cycles, slide relationships, chart preservation, notes, preview escaping, archive guards, history branching, filename normalization, and the Everything storage boundary.
 
-Playwright tests run the application at desktop, tablet, and phone sizes. They cover editing, native PPTX downloads, import, keyboard presentation navigation, recovery after reload, cloud success/failure, system/dark appearance, Puter app logout rules, and axe accessibility checks. Puter is mocked at the SDK boundary for deterministic tests. Real account authorization and production Puter integration still require a manual signed-in smoke test.
+Playwright tests run the application at desktop, tablet, and phone sizes. They cover editing, native PPTX downloads, import, keyboard presentation navigation, recovery after reload, cloud success/failure, system/dark appearance, Everything app logout rules, and axe accessibility checks. Everything is mocked at the SDK boundary for deterministic tests. Real account authorization and production Everything integration still require a manual signed-in smoke test.
 
 CI runs unit tests, the production build, and Chromium browser tests. Browser traces are retained on failure.
 

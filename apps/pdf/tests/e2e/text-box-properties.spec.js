@@ -6,7 +6,7 @@ import { addTextBox, listAnnotations } from '../../src/core/annotations.js';
 const settled = (page) => expect(page.locator('.editor')).toHaveAttribute('aria-busy', 'false');
 
 async function open(page) {
-  await page.route('**/sdk/puter.js', (route) => route.abort());
+  await page.route('**/sdk/everything.js', (route) => route.abort());
   const doc = await PDFDocument.create();
   doc.addPage([400, 500]);
   await addTextBox(doc, 0, { rect: { x: 40, y: 380, width: 180, height: 50 }, text: 'Framed' });

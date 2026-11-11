@@ -15,7 +15,7 @@ const set = (zip, path, xml) => {
 async function native(wb) {
   const zip = X.CFB.read(new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()), { type: 'array' });
   const xml = get(zip, '/xl/drawings/drawing1.xml');
-  set(zip, '/xl/workbook.xml', get(zip, '/xl/workbook.xml').replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  set(zip, '/xl/workbook.xml', get(zip, '/xl/workbook.xml').replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   return { xml, back: await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'external.xlsx') };
 }
 
@@ -31,7 +31,7 @@ async function twoCellDrawing(type, editAs, anchorName = 'twoCellAnchor') {
     .replace('</xdr:oneCellAnchor>', `</xdr:${anchorName}>`);
   if (anchorName === 'twoCellAnchor') xml = xml.replace(/<xdr:ext\b[^>]*\/>/, '<xdr:to><xdr:col>5</xdr:col><xdr:colOff>47625</xdr:colOff><xdr:row>6</xdr:row><xdr:rowOff>142875</xdr:rowOff></xdr:to>');
   set(zip, part, xml);
-  set(zip, '/xl/workbook.xml', get(zip, '/xl/workbook.xml').replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  set(zip, '/xl/workbook.xml', get(zip, '/xl/workbook.xml').replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   return workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'external.xlsx');
 }
 

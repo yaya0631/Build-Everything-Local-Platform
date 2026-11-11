@@ -3,10 +3,10 @@
 //   draft: the whole session (project, file, dirty flag) to this device's
 //          IndexedDB about 2 s after the last edit. Cheap and local, so a
 //          reload or a crash never loses work. Restored on the next start.
-//   cloud: when the project has a Puter path and the preference is on, the
+//   cloud: when the project has an Everything path and the preference is on, the
 //          project file itself, 60 s after the last edit (at most 5 min after
 //          the first unsaved one), and when the page is hidden. Never per
-//          keystroke: Puter writes cost the user's allowance.
+//          keystroke: Everything writes cost the user's allowance.
 //
 // Gesture previews (drags in progress) are skipped; their commit follows.
 

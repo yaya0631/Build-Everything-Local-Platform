@@ -1,5 +1,5 @@
 /**
- * Direct peer links between the people in a shared document (Puter's
+ * Direct peer links between the people in a shared document (Everything's
  * peer service, WebRTC), for live cursors, selections, views and prompt
  * "an edit was saved" notices. Saved edits never travel here: they go
  * through the server, which orders them.
@@ -17,8 +17,8 @@ const CONNECT_TIMEOUT = 12000;
 const RETRY_MS = 5000;
 
 export class PeerMesh {
-  constructor({ puter, session, keys, roomKey, room, receive, changed = () => {}, now = () => Date.now() }) {
-    Object.assign(this, { puter, session, keys, roomKey, room, receive, changed, now });
+  constructor({ everything, session, keys, roomKey, room, receive, changed = () => {}, now = () => Date.now() }) {
+    Object.assign(this, { everything, session, keys, roomKey, room, receive, changed, now });
     this.links = new Map(); // session -> conn (authorized) or a pending placeholder
     this.roster = [];
     this.ticket = null;
@@ -27,7 +27,7 @@ export class PeerMesh {
   }
 
   get available() {
-    return Boolean(this.puter?.peer?.serve && this.puter.peer.connect);
+    return Boolean(this.everything?.peer?.serve && this.everything.peer.connect);
   }
 
   /** Start accepting links; resolves to the invite code others dial. */
@@ -38,7 +38,7 @@ export class PeerMesh {
       this.serving = (async () => {
         let timer;
         try {
-          const server = await Promise.race([this.puter.peer.serve(), new Promise((_, reject) => (timer = setTimeout(() => reject(new Error('Peer service timed out.')), CONNECT_TIMEOUT)))]);
+          const server = await Promise.race([this.everything.peer.serve(), new Promise((_, reject) => (timer = setTimeout(() => reject(new Error('Peer service timed out.')), CONNECT_TIMEOUT)))]);
           if (this.closed) {
             server.close?.();
             return null;
@@ -99,7 +99,7 @@ export class PeerMesh {
         if (this.links.get(peer.session) === pending) this.links.delete(peer.session);
       }, CONNECT_TIMEOUT);
       Promise.resolve()
-        .then(() => this.puter.peer.connect(peer.invite))
+        .then(() => this.everything.peer.connect(peer.invite))
         .then((conn) => {
           clearTimeout(timer);
           if (expired || this.closed || !this.wanted().has(peer.session)) {

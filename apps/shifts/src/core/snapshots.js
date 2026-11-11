@@ -215,14 +215,14 @@ export function watchForDailySnapshot(store, snapshots, { today = isoToday, onli
 }
 
 /**
- * Snapshot storage backed by Puter's filesystem, which the share
+ * Snapshot storage backed by Everything's filesystem, which the share
  * feature already depends on. Missing folders read as empty rather than
  * as an error: the first snapshot creates the folder on the way in.
  */
-export function createPuterSnapshotFS(puterInstance) {
+export function createEverythingSnapshotFS(everythingInstance) {
   const fs = () => {
-    const p = puterInstance ?? globalThis.puter;
-    if (!p?.fs) throw new Error('Puter storage is not available.');
+    const p = everythingInstance ?? globalThis.everything;
+    if (!p?.fs) throw new Error('Everything storage is not available.');
     return p.fs;
   };
   /**

@@ -2,7 +2,7 @@
 // getting-started help.
 
 import { listParts, locationLabel, recentParts } from '../platform/files';
-import { cloudAvailable, storageError } from '../platform/puter';
+import { cloudAvailable, storageError } from '../platform/everything';
 import { h } from '../ui/dom';
 import { icon } from '../ui/icons';
 import { attachTooltip } from '../ui/overlay';
@@ -128,7 +128,7 @@ export function renderHelp(body: HTMLElement) {
     ['3. Constrain', 'Use Smart Dimension (D) to set sizes, and add relations from the PropertyManager. Blue geometry can still move; black is fully defined; red conflicts.'],
     ['4. Build', 'Exit the sketch and use Extruded Boss, Revolved Boss or a Cut. Then add fillets, chamfers, holes, shells and patterns.'],
     ['5. Change', 'Double-click a feature in the design tree or a face in the model to edit it. Everything after it rebuilds.'],
-    ['6. Save and share', 'Save to your Puter cloud (or this browser), or export STEP and STL files.'],
+    ['6. Save and share', 'Save to your Everything cloud (or this browser), or export STEP and STL files.'],
   ];
   for (const [t, d] of steps) body.append(h('div', {}, h('div', { style: { fontWeight: '600' } }, t), h('div', { class: 'field-label' }, d)));
   body.append(h('div', { class: 'field-label' }, 'Navigate: middle or right drag to rotate, Ctrl + middle or Shift + right drag to pan, wheel to zoom, F to fit. Press F1 for all shortcuts.'));

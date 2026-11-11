@@ -1,6 +1,6 @@
 /**
  * Workspace archives: walking the worker's paged export, writing it into the
- * user's own Puter drive as JSON plus readable HTML, and replaying an archive
+ * user's own Everything drive as JSON plus readable HTML, and replaying an archive
  * into a worker (an import, or the second half of a transfer). Everything
  * reports progress through a callback and can be resumed by cursor.
  */
@@ -89,9 +89,9 @@ export async function writeArchiveToDrive(ref, archive, { onProgress, pause = RE
   // found later with an index whose pages were not all there.
   const write = async (path, data, type) => {
     try {
-      return await puter.fs.write(`${folder}/${path}`, data instanceof Blob ? data : new Blob([data], { type }), { overwrite: true, dedupeName: false, createMissingParents: true });
+      return await everything.fs.write(`${folder}/${path}`, data instanceof Blob ? data : new Blob([data], { type }), { overwrite: true, dedupeName: false, createMissingParents: true });
     } catch (e) {
-      throw new Error(`could not write ${path} into "${folder}" in your Puter drive (${driveReason(e)}); what was written before it is in that folder`);
+      throw new Error(`could not write ${path} into "${folder}" in your Everything drive (${driveReason(e)}); what was written before it is in that folder`);
     }
   };
   onProgress?.({ phase: 'write', label: 'Writing messages.json' });

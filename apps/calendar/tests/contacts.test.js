@@ -69,7 +69,7 @@ function makeService({ contacts = [], answer = null, ready = true } = {}) {
     },
   };
 
-  const puter = {
+  const everything = {
     env: 'app',
     ui: {
       launchApp: vi.fn(async (options) => {
@@ -81,7 +81,7 @@ function makeService({ contacts = [], answer = null, ready = true } = {}) {
     },
   };
 
-  return { service, connection, puter };
+  return { service, connection, everything };
 }
 
 const PEOPLE = [
@@ -107,9 +107,9 @@ const PEOPLE = [
 
 /** A client wired to a fake service, with timings short enough to test. */
 function harness(opts = {}) {
-  const { service, puter, connection } = makeService(opts);
+  const { service, everything, connection } = makeService(opts);
   const contacts = createContacts({
-    getPuter: () => puter,
+    getEverything: () => everything,
     idleCloseMs: 5,
     requestTimeoutMs: 30,
     launchTimeoutMs: 40,
@@ -117,7 +117,7 @@ function harness(opts = {}) {
     ...(opts.clientOptions || {}),
   });
   clients.push(contacts);
-  return { contacts, service, puter, connection };
+  return { contacts, service, everything, connection };
 }
 
 /** jsdom 29 ships a localStorage without clear(); this is enough for these tests. */
@@ -138,17 +138,17 @@ function stubStorage() {
 
 describe('contacts client — availability', () => {
   it('is unavailable on the open web, where there is no app to launch', () => {
-    const contacts = createContacts({ getPuter: () => ({ env: 'web', ui: {} }) });
+    const contacts = createContacts({ getEverything: () => ({ env: 'web', ui: {} }) });
     expect(contacts.available()).toBe(false);
     expect(contacts.suggest('ada')).toEqual([]);
   });
 
-  it('is unavailable with no Puter SDK at all', () => {
-    const contacts = createContacts({ getPuter: () => null });
+  it('is unavailable with no Everything SDK at all', () => {
+    const contacts = createContacts({ getEverything: () => null });
     expect(contacts.available()).toBe(false);
   });
 
-  it('is available inside the Puter desktop', () => {
+  it('is available inside the Everything desktop', () => {
     const { contacts } = harness();
     expect(contacts.available()).toBe(true);
   });
@@ -162,7 +162,7 @@ describe('contacts client — reading the directory', () => {
 
   it('launches Contacts hidden, in service mode, and reads the directory once', async () => {
     await h.contacts.warm();
-    expect(h.puter.ui.launchApp).toHaveBeenCalledTimes(1);
+    expect(h.everything.ui.launchApp).toHaveBeenCalledTimes(1);
     expect(h.service.launches[0]).toEqual({
       name: 'contacts',
       args: { service: 'contacts-api' },
@@ -173,7 +173,7 @@ describe('contacts client — reading the directory', () => {
 
     // A second warm with a fresh snapshot launches nothing.
     await h.contacts.warm();
-    expect(h.puter.ui.launchApp).toHaveBeenCalledTimes(1);
+    expect(h.everything.ui.launchApp).toHaveBeenCalledTimes(1);
   });
 
   it('lets the service window close once it has gone quiet', async () => {
@@ -424,7 +424,7 @@ describe('contacts client — the stored snapshot', () => {
     // A new page load: same storage, a brand-new client.
     const second = withUser();
     await second.contacts.warm();
-    expect(second.puter.ui.launchApp).not.toHaveBeenCalled();
+    expect(second.everything.ui.launchApp).not.toHaveBeenCalled();
     expect(second.contacts.suggest('ada')[0].email).toBe('ada@analytical.co');
   });
 
@@ -545,7 +545,7 @@ describe('contacts client — the stored snapshot', () => {
     stored.set('cal:contacts:dir:user-1', JSON.stringify({ v: 0, entries: [{}] }));
     const h = withUser();
     await h.contacts.warm();
-    expect(h.puter.ui.launchApp).toHaveBeenCalledTimes(1);
+    expect(h.everything.ui.launchApp).toHaveBeenCalledTimes(1);
     expect(h.contacts.suggest('ada')).toHaveLength(1);
   });
 
@@ -662,7 +662,7 @@ describe('contacts client — staying usable when Contacts is not', () => {
   it('keeps suggesting from the snapshot while a launch is failing', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     let launches = 0;
-    const puter = {
+    const everything = {
       env: 'app',
       ui: {
         launchApp: vi.fn(async () => {
@@ -691,7 +691,7 @@ describe('contacts client — staying usable when Contacts is not', () => {
         ],
       }),
     );
-    const contacts = createContacts({ getPuter: () => puter, userKey: 'user-1' });
+    const contacts = createContacts({ getEverything: () => everything, userKey: 'user-1' });
     clients.push(contacts);
 
     // The guest field asks `ready()`, not `available()`: matching is local, so a
@@ -715,14 +715,14 @@ describe('contacts client — staying usable when Contacts is not', () => {
           : { ok: true, result: {} },
     });
     await h.contacts.warm();
-    expect(h.puter.ui.launchApp).toHaveBeenCalledTimes(1);
+    expect(h.everything.ui.launchApp).toHaveBeenCalledTimes(1);
     // Contacts opened but could not answer: that costs it its availability for
     // a while too. Without this, only failed launches backed off, and a service
     // that opens but cannot answer would be relaunched at every safe moment.
     expect(h.contacts.available()).toBe(false);
     await h.contacts.revalidate({ maxAgeMs: 0 });
     await h.contacts.warm();
-    expect(h.puter.ui.launchApp).toHaveBeenCalledTimes(1);
+    expect(h.everything.ui.launchApp).toHaveBeenCalledTimes(1);
     warn.mockRestore();
   });
 
@@ -749,18 +749,18 @@ describe('contacts client — staying usable when Contacts is not', () => {
   it('takes an empty address book as an answer, within its short trust window', async () => {
     const h = harness({ contacts: [], clientOptions: { userKey: 'user-1' } });
     await h.contacts.warm();
-    expect(h.puter.ui.launchApp).toHaveBeenCalledTimes(1);
+    expect(h.everything.ui.launchApp).toHaveBeenCalledTimes(1);
     expect(h.contacts.suggest('ada')).toEqual([]);
     // Just read: nothing to be gained from launching Contacts again this second
     // to be told "still nobody".
     await h.contacts.warm();
     await h.contacts.revalidate();
-    expect(h.puter.ui.launchApp).toHaveBeenCalledTimes(1);
+    expect(h.everything.ui.launchApp).toHaveBeenCalledTimes(1);
 
     // A session that starts inside the window reads the same answer off disk.
     const second = harness({ contacts: [], clientOptions: { userKey: 'user-1' } });
     await second.contacts.warm();
-    expect(second.puter.ui.launchApp).not.toHaveBeenCalled();
+    expect(second.everything.ui.launchApp).not.toHaveBeenCalled();
   });
 
   it('re-checks an empty book on the next open, so a first import is not missed', async () => {
@@ -783,7 +783,7 @@ describe('contacts client — staying usable when Contacts is not', () => {
     // "Nobody yet" has outlived its trust: warm() must re-read, not serve the
     // stored empty book for the rest of the hour.
     await second.contacts.warm();
-    expect(second.puter.ui.launchApp).toHaveBeenCalledTimes(1);
+    expect(second.everything.ui.launchApp).toHaveBeenCalledTimes(1);
     expect(second.contacts.suggest('ada')).toHaveLength(1);
   });
 
@@ -805,7 +805,7 @@ describe('contacts client — staying usable when Contacts is not', () => {
   });
 
   it('has nothing to offer, and says so, with no snapshot and no desktop', () => {
-    const contacts = createContacts({ getPuter: () => ({ env: 'web', ui: {} }) });
+    const contacts = createContacts({ getEverything: () => ({ env: 'web', ui: {} }) });
     expect(contacts.ready()).toBe(false);
     expect(contacts.suggest('ada')).toEqual([]);
   });
@@ -830,7 +830,7 @@ describe('contacts client — staying usable when Contacts is not', () => {
     expect(h.contacts.suggest('ada')).toHaveLength(1); // served, like any snapshot
     clock += 1001; // past the trust window measured from the restore, not the bogus stamp
     await h.contacts.warm();
-    expect(h.puter.ui.launchApp).toHaveBeenCalledTimes(1);
+    expect(h.everything.ui.launchApp).toHaveBeenCalledTimes(1);
   });
 
   it('repairs a snapshot that is missing its derived fields', async () => {
@@ -851,7 +851,7 @@ describe('contacts client — staying usable when Contacts is not', () => {
     const h = harness({ contacts: PEOPLE, clientOptions: { userKey: 'user-1' } });
     // Matched on a rebuilt haystack, from disk, without launching anything.
     expect(h.contacts.suggest('lovelace')[0].email).toBe('ada@analytical.co');
-    expect(h.puter.ui.launchApp).not.toHaveBeenCalled();
+    expect(h.everything.ui.launchApp).not.toHaveBeenCalled();
     expect(h.contacts.suggest('no address')).toEqual([]);
   });
 
@@ -953,7 +953,7 @@ describe('contacts client — the rest of the API', () => {
       throw new Error('app not found');
     });
     const contacts = createContacts({
-      getPuter: () => ({ env: 'app', ui: { launchApp } }),
+      getEverything: () => ({ env: 'app', ui: { launchApp } }),
       retryAfterMs: 10_000,
     });
     await expect(contacts.call('ping')).rejects.toThrow('app not found');
@@ -1021,7 +1021,7 @@ describe('contacts client — the rest of the API', () => {
     await h.contacts.warm();
     h.connection.close();
     await h.contacts.search('ada');
-    expect(h.puter.ui.launchApp).toHaveBeenCalledTimes(2);
+    expect(h.everything.ui.launchApp).toHaveBeenCalledTimes(2);
   });
 
   it('closes the service and forgets the snapshot on dispose', async () => {

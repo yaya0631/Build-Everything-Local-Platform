@@ -6,7 +6,7 @@
  * counts as rendered when it is connected and not under a [hidden]
  * ancestor). Every test boots a fresh DOM and a fresh module registry, so
  * the listeners the modules hang on window and document never outlive their
- * test. Puter is faked at `puter.workers.exec`, as in tests/store.test.js.
+ * test. Everything is faked at `everything.workers.exec`, as in tests/store.test.js.
  */
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
@@ -43,7 +43,7 @@ async function boot({ hash = '', width = 1280, routes = {}, ...env } = {}) {
   dom = installDom({ hash, width, ...env });
   vi.resetModules();
   const calls = [];
-  globalThis.puter = {
+  globalThis.everything = {
     workers: {
       exec: async (url, init = {}) => {
         const u = new URL(url);
@@ -86,7 +86,7 @@ async function boot({ hash = '', width = 1280, routes = {}, ...env } = {}) {
 afterEach(() => {
   dom?.uninstall();
   dom = null;
-  delete globalThis.puter;
+  delete globalThis.everything;
 });
 
 /** The shell at a route, opened and settled. */
@@ -554,11 +554,11 @@ describe('the tab rows over the search results and the Directory', () => {
   });
 });
 
-describe('the app opened without a network and without the Puter SDK', () => {
+describe('the app opened without a network and without the Everything SDK', () => {
   /** Wait for a condition rather than a fixed pause, up to a generous bound. */
   const until = async (fn, ms = 12_000) => { const t0 = Date.now(); while (!fn()) { if (Date.now() - t0 > ms) throw new Error('timed out'); await dom.tick(25); } };
 
-  it('lands on "Could not reach Puter" quickly, asks for the SDK again when the network is back, and comes up without a reload', async () => {
+  it('lands on "Could not reach Everything" quickly, asks for the SDK again when the network is back, and comes up without a reload', async () => {
     dom?.uninstall();
     dom = installDom({ hash: '' });
     vi.resetModules();
@@ -568,14 +568,14 @@ describe('the app opened without a network and without the Puter SDK', () => {
     document.body.append(app);
     // The page's own SDK tag, which failed to load.
     const tag = document.createElement('script');
-    tag.setAttribute('src', '/sdk/puter.js');
+    tag.setAttribute('src', '/sdk/everything.js');
     document.head.append(tag);
     dom.navigator.onLine = false;
-    delete globalThis.puter;
+    delete globalThis.everything;
     const quiet = vi.spyOn(console, 'error').mockImplementation(() => {});
     const t0 = Date.now();
     await import('../src/main.js');
-    await until(() => app.querySelector('.auth-title')?.textContent === 'Could not reach Puter');
+    await until(() => app.querySelector('.auth-title')?.textContent === 'Could not reach Everything');
     expect(Date.now() - t0).toBeLessThan(5500); // offline, the wait for a script that cannot load is short (it was six seconds)
     expect(document.querySelectorAll('.offline-banner').length).toBe(1);
     expect(document.querySelector('.offline-banner').textContent).toBe('You are offline.');
@@ -586,10 +586,10 @@ describe('the app opened without a network and without the Puter SDK', () => {
     await dom.tick(5);
     const tags = document.querySelectorAll('script[src*="js.localhost:8443"]');
     expect(tags.length).toBe(2);
-    expect(tags[1].getAttribute('src')).toBe('/sdk/puter.js');
-    expect(app.querySelector('.auth-title')?.textContent).toBe('Could not reach Puter'); // still waiting for it
+    expect(tags[1].getAttribute('src')).toBe('/sdk/everything.js');
+    expect(app.querySelector('.auth-title')?.textContent).toBe('Could not reach Everything'); // still waiting for it
     // It loads: the app comes up in the page's place.
-    globalThis.puter = { auth: { isSignedIn: async () => true, getUser: async () => ({ uuid: 'u-me', username: 'me' }) }, kv: { get: async () => null } };
+    globalThis.everything = { auth: { isSignedIn: async () => true, getUser: async () => ({ uuid: 'u-me', username: 'me' }) }, kv: { get: async () => null } };
     await until(() => !!app.querySelector('.app-frame'));
     expect(dom.location.reloads).toBe(0);
     // The network flickering again asks for nothing more.
@@ -598,7 +598,7 @@ describe('the app opened without a network and without the Puter SDK', () => {
     expect(app.querySelectorAll('.app-frame').length).toBe(1);
     expect(document.querySelectorAll('script[src*="js.localhost:8443"]').length).toBe(2);
     quiet.mockRestore();
-    delete globalThis.puter;
+    delete globalThis.everything;
   }, 15_000);
 });
 

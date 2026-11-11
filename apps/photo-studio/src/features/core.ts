@@ -58,7 +58,7 @@ export function installCore(e: Editor) {
     e.command('Revert', (d) => replaceDocument(d, saved));
   }, { shortcut: 'F12', enabled: (e) => !!e.saved && e.doc !== e.saved });
   cmd('file.export-original-psd', 'Download Original PSD', () => performAction(e, 'save-original-psd'), { enabled: (e) => !!e.doc.psdOriginal, recordable: false });
-  cmd('app.account', 'Puter Account', () => performAction(e, 'account'), { hidden: true, recordable: false });
+  cmd('app.account', 'Everything Account', () => performAction(e, 'account'), { hidden: true, recordable: false });
 
   // ----- Edit -----
   cmd('edit.undo', 'Undo', () => performAction(e, 'undo'), { shortcut: 'Mod+Z', enabled: (e) => e.history.canUndo || e.transform.active, recordable: false });
@@ -294,7 +294,7 @@ export function installCore(e: Editor) {
   for (const s of ['dark', 'medium', 'light', 'system'])
     cmd(`window.theme-${s}`, `${s[0].toUpperCase() + s.slice(1)} Theme`, () => e.setTheme(s), { menu: 'window.theme', checked: () => document.documentElement.dataset.theme === s, recordable: false });
   cmd('help.shortcuts', 'Keyboard Shortcuts', () => shortcutsDialog(e), { shortcut: 'Mod+Shift+/', recordable: false });
-  cmd('help.about', 'About Photo Studio', () => information('Photo Studio', `${appIcon(64, 'about-logo')}<p>An open-source image editor that runs in your browser, built on WebGPU with a WebGL2 fallback. Documents stay on your device unless you save them to Puter.</p><p>Photo Studio is an independent open-source project.</p>`), { recordable: false });
+  cmd('help.about', 'About Photo Studio', () => information('Photo Studio', `${appIcon(64, 'about-logo')}<p>An open-source image editor that runs in your browser, built on WebGPU with a WebGL2 fallback. Documents stay on your device unless you save them to Everything.</p><p>Photo Studio is an independent open-source project.</p>`), { recordable: false });
   cmd('help.legal', 'Open-Source Licenses', () => information('Licenses', `<p>Photo Studio is MIT licensed. Third-party components: ag-psd (MIT), Lucide icons (ISC), pako (MIT/Zlib), PathKit (BSD-3-Clause), Rust png crate (MIT/Apache-2.0). Bundled fonts are licensed under the SIL Open Font License 1.1. See THIRD_PARTY_NOTICES.txt for full texts.</p>`), { recordable: false });
 
   // ----- Colors -----

@@ -1,10 +1,10 @@
 /**
  * User settings: defaults in code, the user's choices in localStorage (so
  * the app starts instantly and works signed out) and, when signed in, in a
- * single Puter key-value record updated by dotted paths. Only changed
+ * single Everything key-value record updated by dotted paths. Only changed
  * settings are stored, so new defaults reach existing users.
  */
-import { puterAvailable, isSignedIn } from './platform.js';
+import { everythingAvailable, isSignedIn } from './platform.js';
 
 const LOCAL_KEY = 'bd.settings';
 const KV_KEY = 'settings';
@@ -74,32 +74,32 @@ export class Settings {
 
   /** Push changed settings to the cloud record (one write for many changes). */
   async flush() {
-    if (!this.pending.size || !puterAvailable()) return;
+    if (!this.pending.size || !everythingAvailable()) return;
     if (!(await isSignedIn())) return;
     const patch = {};
     for (const [k, v] of this.pending) patch[k] = v;
     this.pending.clear();
     try {
-      if (typeof puter.kv.update === 'function') {
+      if (typeof everything.kv.update === 'function') {
         try {
-          await puter.kv.update(KV_KEY, patch);
+          await everything.kv.update(KV_KEY, patch);
           return;
         } catch {
           // The record does not exist yet: fall through and create it.
         }
       }
-      const cur = (await puter.kv.get(KV_KEY)) || {};
-      await puter.kv.set(KV_KEY, { ...(typeof cur === 'object' ? cur : {}), ...patch });
+      const cur = (await everything.kv.get(KV_KEY)) || {};
+      await everything.kv.set(KV_KEY, { ...(typeof cur === 'object' ? cur : {}), ...patch });
     } catch {
       /* settings sync is best effort */
     }
   }
 
   async syncFromCloud() {
-    if (!puterAvailable()) return;
+    if (!everythingAvailable()) return;
     try {
       if (!(await isSignedIn())) return;
-      const cloud = await puter.kv.get(KV_KEY);
+      const cloud = await everything.kv.get(KV_KEY);
       if (cloud && typeof cloud === 'object') {
         this.saved = { ...cloud, ...this.saved };
         this.values = merge(DEFAULTS, this.saved);

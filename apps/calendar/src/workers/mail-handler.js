@@ -1,5 +1,5 @@
 /**
- * Published Puter events handler for `fs:~/.mail/objects/**:add`. Runs on the
+ * Published Everything events handler for `fs:~/.mail/objects/**:add`. Runs on the
  * app's events worker and, in-page, as the foreground/rescan path via
  * mailbox.js's `new Function` instantiation of this same source — one
  * implementation, one hash.
@@ -8,13 +8,13 @@
  * no statement before or after it (a leading comment is fine). Everything it
  * needs is declared INSIDE the function — it cannot close over anything, and
  * the publish-time free-variable scan refuses any global outside a fixed
- * allowlist (fetch/crypto/atob/TextDecoder/… — no `puter`, no `me`).
+ * allowlist (fetch/crypto/atob/TextDecoder/… — no `everything`, no `me`).
  *
  * It only ever extracts and records; it never writes `cal:evt:` — every
  * calendar mutation happens in-app (mail-intake.js), where contacts,
  * settings, the recurrence engine and the offline gate exist.
  *
- * Message reading is `user.email.get({ id })` (puter.email API) — no
+ * Message reading is `user.email.get({ id })` (everything.email API) — no
  * hand-written MIME parsing here. The iCalendar allowlist filter below is
  * what bounds and sanitizes what actually gets stored.
  */
@@ -117,7 +117,7 @@ async function calendarMailHandler({ event, ctx, user, fetch, ack }) {
    * Only the FIRST Authentication-Results header counts — the topmost one,
    * which is the one our own MX prepended. A sender can put anything they
    * like in the body of the message they submit, `Authentication-Results:
-   * x; dkim=pass header.d=puter.email` included; honouring every occurrence
+   * x; dkim=pass header.d=everything.email` included; honouring every occurrence
    * would let that forged line supply the verdict and the signing domain.
    */
   function parseAuthResults(value) {
@@ -509,7 +509,7 @@ async function calendarMailHandler({ event, ctx, user, fetch, ack }) {
     // trust decision. Sender: is kept for display only.
     const fromEmail = normalizeEmail(msg.from && msg.from.address);
     const fromDomain = domainOf(fromEmail);
-    const isPuterDomain = fromDomain === 'puter.email' || fromDomain === 'puterstaging.email';
+    const isEverythingDomain = fromDomain === 'everything.email' || fromDomain === 'everythingstaging.email';
     const authResults = parseAuthResults(authHeader && authHeader.value);
 
     const from = { email: fromEmail, name: sanitizeText(msg.from && msg.from.name, 100) };
@@ -518,7 +518,7 @@ async function calendarMailHandler({ event, ctx, user, fetch, ack }) {
     const subject = sanitizeText(msg.subject, 200);
     const date = parseDateMs(msg.date);
     const auth = {
-      internal: isPuterDomain && !received && !hasAuthResults,
+      internal: isEverythingDomain && !received && !hasAuthResults,
       dkim: authResults.dkim,
       dkimAligned: authResults.dkim === 'pass' && domainMatches(authResults.dkimDomain, fromDomain),
       spf: authResults.spf,

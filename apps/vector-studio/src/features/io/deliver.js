@@ -1,13 +1,13 @@
 /**
  * Delivering exported files: download to the device (always available) or
- * save to the user's Puter cloud through Puter's own file pickers when the
- * app runs with Puter and the user is signed in. Files always go to
- * puter.fs (never key-value storage).
+ * save to the user's Everything cloud through Everything's own file pickers when the
+ * app runs with Everything and the user is signed in. Files always go to
+ * everything.fs (never key-value storage).
  */
 import { createZip } from './zip.js';
 
-export function canSaveToPuter(app) {
-  return Boolean(app?.puter?.ui?.showSaveFilePicker && app.user);
+export function canSaveToEverything(app) {
+  return Boolean(app?.everything?.ui?.showSaveFilePicker && app.user);
 }
 
 export function downloadBlob(blob, name) {
@@ -25,7 +25,7 @@ export function downloadBlob(blob, name) {
 
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
-/** A Puter picker promise that resolves undefined on cancel where the SDK supports it (otherwise it never settles). */
+/** An Everything picker promise that resolves undefined on cancel where the SDK supports it (otherwise it never settles). */
 const cancellable = (p) => (p && p.undefinedOnCancel ? p.undefinedOnCancel : p);
 
 /** Strip characters that file systems reject. */
@@ -35,9 +35,9 @@ export function safeFileName(name, fallback = 'Untitled') {
 }
 
 /**
- * Deliver files [{ name, blob }] to 'device' or 'puter'. Several files go
+ * Deliver files [{ name, blob }] to 'device' or 'everything'. Several files go
  * to the device as separate downloads (or one zip with `zip: true`), and to
- * Puter into a folder the user picks.
+ * Everything into a folder the user picks.
  * Resolves to a short status message (or null when the user cancelled).
  */
 export async function deliverFiles(app, files, { dest = 'device', zip = false, zipName = 'Export.zip' } = {}) {
@@ -46,22 +46,22 @@ export async function deliverFiles(app, files, { dest = 'device', zip = false, z
     const blob = await createZip(files.map((f) => ({ name: f.name, data: f.blob })));
     files = [{ name: zipName, blob }];
   }
-  if (dest === 'puter' && canSaveToPuter(app)) {
-    const ui = app.puter.ui;
+  if (dest === 'everything' && canSaveToEverything(app)) {
+    const ui = app.everything.ui;
     if (files.length === 1) {
       const item = await cancellable(ui.showSaveFilePicker(files[0].blob, files[0].name));
-      return item ? `Saved ${item.name || files[0].name} to Puter.` : null;
+      return item ? `Saved ${item.name || files[0].name} to Everything.` : null;
     }
-    if (ui.showDirectoryPicker && app.puter.fs?.write) {
+    if (ui.showDirectoryPicker && app.everything.fs?.write) {
       let dir = await cancellable(ui.showDirectoryPicker());
       if (Array.isArray(dir)) dir = dir[0];
       if (!dir?.path) return null;
-      for (const f of files) await app.puter.fs.write(`${dir.path}/${f.name}`, f.blob, { dedupeName: true });
-      return `Saved ${files.length} files to ${dir.name || 'Puter'}.`;
+      for (const f of files) await app.everything.fs.write(`${dir.path}/${f.name}`, f.blob, { dedupeName: true });
+      return `Saved ${files.length} files to ${dir.name || 'Everything'}.`;
     }
     const blob = await createZip(files.map((f) => ({ name: f.name, data: f.blob })));
     const item = await cancellable(ui.showSaveFilePicker(blob, zipName));
-    return item ? `Saved ${item.name || zipName} to Puter.` : null;
+    return item ? `Saved ${item.name || zipName} to Everything.` : null;
   }
   for (let i = 0; i < files.length; i++) {
     downloadBlob(files[i].blob, files[i].name);

@@ -19,7 +19,7 @@ function fixture(options = {}, transform = xml => xml) {
 }
 async function native(wb) {
   const zip = X.CFB.read(new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()), { type: 'array' });
-  edit(zip, '/xl/workbook.xml', xml => xml.replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  edit(zip, '/xl/workbook.xml', xml => xml.replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   return { wb: await workbookFromFile(bytes(zip)), xml: new TextDecoder().decode(X.CFB.find(zip, '/xl/drawings/drawing1.xml').content) };
 }
 

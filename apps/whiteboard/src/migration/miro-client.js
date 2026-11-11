@@ -1,5 +1,5 @@
 // Paging client for the Miro REST API v2. The host injects a fetch-compatible
-// function (puter.net.fetch in production, which bypasses browser CORS) and a
+// function (everything.net.fetch in production, which bypasses browser CORS) and a
 // bearer token. The token is only sent to the Miro API origin and never logged.
 
 export const MIRO_API = "https://api.miro.com";

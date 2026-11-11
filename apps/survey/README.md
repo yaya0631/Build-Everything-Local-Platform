@@ -1,11 +1,11 @@
 # Surveys
 
 An open-source alternative to SurveyMonkey, Google Forms and Typeform, built on
-[Puter](https://localhost:8443). Build a survey, share it with a link, and analyze
-the results as they come in. Surveys and responses live in your own Puter
+[Everything](https://localhost:8443). Build a survey, share it with a link, and analyze
+the results as they come in. Surveys and responses live in your own Everything
 account. People answering a survey need no account at all.
 
-No framework and no backend of its own: plain JavaScript, Vite, and Puter.js.
+No framework and no backend of its own: plain JavaScript, Vite, and Everything.js.
 
 > Surveys is in alpha. Things will change, and data created now might not
 > carry over to later versions.
@@ -54,7 +54,7 @@ No framework and no backend of its own: plain JavaScript, Vite, and Puter.js.
 - 27 original templates in 7 categories: customer feedback, employees,
   events, education, market research, health and community, and everyday
   polls and forms.
-- Describe what you want to learn and let AI draft the survey (Puter AI).
+- Describe what you want to learn and let AI draft the survey (Everything AI).
 - Import: paste questions from a document, or open a survey file exported
   from Surveys.
 
@@ -94,7 +94,7 @@ No framework and no backend of its own: plain JavaScript, Vite, and Puter.js.
 
 ### Respondents and the collector worker
 
-A survey is answered by people without a Puter account, who cannot reach the
+A survey is answered by people without an Everything account, who cannot reach the
 creator's storage. So the first time you share a survey, the app deploys a
 small [serverless worker](http://localhost:8443/Workers/) into your own
 account (`sv-<username>.localhost:8443`, source in
@@ -119,7 +119,7 @@ surveys and stores responses in your account's key-value store.
 
 ### Storage
 
-Puter's key-value store is DynamoDB-backed: reads are billed per 4 KB, writes
+Everything's key-value store is DynamoDB-backed: reads are billed per 4 KB, writes
 per 1 KB of the whole entry, and there are no secondary indexes. The layout
 follows from that:
 
@@ -152,13 +152,13 @@ is new.
 
 ```sh
 npm install
-npm run dev      # http://survey.puter.localhost:5263/
+npm run dev      # http://survey.localhost:8443/
 npm test
 npm run build
 ```
 
 Add `?local` to the URL (`http://localhost:5263/?local`) for **local demo
-mode**: no Puter account, everything is kept in this browser, and the
+mode**: no Everything account, everything is kept in this browser, and the
 collector worker runs inside the page. Share links work in other tabs of the
 same browser, so you can try the whole build, share, answer and analyze loop
 offline.
@@ -172,7 +172,7 @@ src/views/                 home, survey frame, builder/, collect, analyze/, dial
 src/respond/               respondent page and the survey renderer (shared with preview)
 src/shared/runtime.js      answer checks and logic, shared with the worker
 src/worker/collector.js    the collector worker
-src/data/                  Puter and local backends, repository, sessions, worker client, response cache
+src/data/                  Everything and local backends, repository, sessions, worker client, response cache
 src/model/                 survey model, edits, templates, text import, AI prompts
 src/analysis/              aggregation, filters, export
 tests/                     Vitest suites

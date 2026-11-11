@@ -1,9 +1,9 @@
 # Calendar
 
 A modern, minimal calendar web app. Vanilla JavaScript (no framework), built with
-Vite, and backed entirely by **[Puter.js](http://localhost:8443/)** for
+Vite, and backed entirely by **[Everything.js](http://localhost:8443/)** for
 authentication and storage — no server of your own to run, and every user's data
-lives in their own Puter storage.
+lives in their own Everything storage.
 
 <p align="center"><em>Month · Week · Day · List views, with light &amp; dark themes.</em></p>
 
@@ -59,17 +59,17 @@ lives in their own Puter storage.
 - **Import &amp; export** — back up every event to an iCalendar (`.ics`) or JSON file,
   and import events from an `.ics`/`.json` file. Recurring series round-trip via
   `RRULE`/`EXDATE`, including per-occurrence exceptions.
-- **Context menus** — right-click an event or an empty slot. Uses Puter's native
-  `puter.ui.contextMenu` inside the Puter desktop, with a pixel-matched,
+- **Context menus** — right-click an event or an empty slot. Uses Everything's native
+  `everything.ui.contextMenu` inside the Everything desktop, with a pixel-matched,
   keyboard-navigable fallback for standalone web deployments.
-- **Guest suggestions from your address book** — inside the Puter desktop, typing a
+- **Guest suggestions from your address book** — inside the Everything desktop, typing a
   name into an event's guest field suggests people from the
   [Contacts](http://contacts.localhost:8443) app, so you don't have to remember anyone's
   email address. See [Contacts integration](#contacts-integration).
 - **Emailed invitations with self-serve RSVP** — every guest gets a personal
   Yes / No / Maybe link; saving an event offers to mail it to them, with the event
   attached as an `.ics`. Answers come back into the calendar on their own. Guests
-  need no Puter account, and no calendar of their own. See
+  need no Everything account, and no calendar of their own. See
   [Invitations &amp; RSVP](#invitations--rsvp).
 - **Booking links (Calendly-style)** — share a link that lets anyone book time
   with you. You set the meeting length, weekly hours, buffers, notice and
@@ -78,11 +78,11 @@ lives in their own Puter storage.
   events, both sides get confirmation email, and either side can cancel with
   notice. See [Booking links](#booking-links).
 - **Meeting links (Google Meet-style)** — one click in the event editor puts a
-  [Puter Meetings](http://meetings.localhost:8443) video-call link on the event.
+  [Everything Meetings](http://meetings.localhost:8443) video-call link on the event.
   It shows as **Join meeting** on the details card, rides along in invitation
   emails and the attached `.ics`, and never expires — one link serves a whole
   recurring series. See [Meeting links](#meeting-links).
-- **An API other apps can use** — inside the Puter desktop, another app can read and
+- **An API other apps can use** — inside the Everything desktop, another app can read and
   write the user's events over an `AppConnection` instead of keeping a calendar of
   its own. See [App-to-app API](#app-to-app-api).
 - **Categories** — toggle event colors on and off from the sidebar, and rename any
@@ -103,40 +103,40 @@ lives in their own Puter storage.
 - **Accessible & fast** — semantic roles, focus management, reduced-motion support,
   and a compact, dependency-free bundle.
 
-## Powered by Puter.js
+## Powered by Everything.js
 
-Puter is the only backend. It is loaded from the CDN in `index.html`:
+Everything is the only backend. It is loaded from the CDN in `index.html`:
 
 ```html
-<script src="/sdk/puter.js"></script>
+<script src="/sdk/everything.js"></script>
 ```
 
-| Concern | Puter API |
+| Concern | Everything API |
 | --- | --- |
-| Sign-in / sign-out / current user | `puter.auth` |
-| Event & settings storage | `puter.kv` (one key per event under `cal:evt:`, settings under `cal:settings`) |
-| Right-click menus | `puter.ui.contextMenu` (with a local fallback) |
-| Guest suggestions from Contacts | `puter.ui.launchApp` + [`AppConnection`](http://localhost:8443/Objects/AppConnection/) |
-| Serving the calendar to other apps | `puter.ui.parentApp()` + the same `AppConnection` |
-| Guest RSVP links + booking pages | `puter.workers.create` (a worker per user, in their own account) |
-| Emailing invitations | `puter.workers.exec` + `puter.email.sendTransactional` (billed to the sender) |
-| Reading the user's mailbox | `puter.email.list` / `puter.email.get` (parsed messages, no MIME code of our own) |
-| Answering an invitation by email | `puter.email.send` from the user's own `@puter.email` address |
-| Noticing mail while the app is closed | `puter.events.onPersistent` + `puter.events.handlers` (a handler published against the app) |
+| Sign-in / sign-out / current user | `everything.auth` |
+| Event & settings storage | `everything.kv` (one key per event under `cal:evt:`, settings under `cal:settings`) |
+| Right-click menus | `everything.ui.contextMenu` (with a local fallback) |
+| Guest suggestions from Contacts | `everything.ui.launchApp` + [`AppConnection`](http://localhost:8443/Objects/AppConnection/) |
+| Serving the calendar to other apps | `everything.ui.parentApp()` + the same `AppConnection` |
+| Guest RSVP links + booking pages | `everything.workers.create` (a worker per user, in their own account) |
+| Emailing invitations | `everything.workers.exec` + `everything.email.sendTransactional` (billed to the sender) |
+| Reading the user's mailbox | `everything.email.list` / `everything.email.get` (parsed messages, no MIME code of our own) |
+| Answering an invitation by email | `everything.email.send` from the user's own `@everything.email` address |
+| Noticing mail while the app is closed | `everything.events.onPersistent` + `everything.events.handlers` (a handler published against the app) |
 
-There is no API key to manage — Puter uses a "user pays" model, so each signed-in
+There is no API key to manage — Everything uses a "user pays" model, so each signed-in
 user's events are stored in and billed to their own account.
 
 ## Contacts integration
 
-Inside the Puter desktop, the guest field reads the user's own address book from
-the [Contacts](https://github.com/HeyPuter/contacts) app rather than keeping its
+Inside the Everything desktop, the guest field reads the user's own address book from
+the [Contacts](https://github.com/yaya0631/Build-Everything-Local-Platform) app rather than keeping its
 own. `src/js/contacts.js` launches Contacts in service mode — no UI, and
 `background: true` so the desktop never puts a window on screen — then talks to it
-over the `AppConnection` that `puter.ui.launchApp` returns:
+over the `AppConnection` that `everything.ui.launchApp` returns:
 
 ```js
-const contacts = await puter.ui.launchApp({
+const contacts = await everything.ui.launchApp({
   name: 'contacts',
   args: { service: 'contacts-api' },
   background: true,
@@ -178,13 +178,13 @@ nothing.
 This is strictly an enhancement. On the open web there is no desktop to launch
 anything into, and Contacts may not be installed or reachable; in every one of
 those cases the guest field is exactly what it was before — type an email address
-and press Enter. `background` needs a Puter desktop that supports it; an older one
+and press Enter. `background` needs an Everything desktop that supports it; an older one
 ignores the flag and shows a window, which Contacts then hides itself.
 
 ## Invitations &amp; RSVP
 
-A guest usually has no Puter account, so they cannot be handed a key to the host's
-`puter.kv`. Two serverless [Workers](http://localhost:8443/Workers/) close that
+A guest usually has no Everything account, so they cannot be handed a key to the host's
+`everything.kv`. Two serverless [Workers](http://localhost:8443/Workers/) close that
 gap — deployed by different people, on purpose:
 
 | Worker | Source | Deployed | Runs in the account of |
@@ -201,8 +201,8 @@ an email. Answers are pulled back and merged into the host's calendar by
 `src/js/rsvp-links.js`.
 
 **Sending.** `src/js/invites.js` hands those links to the email worker through
-[`puter.workers.exec()`](http://localhost:8443/Workers/exec/), which forwards the
-signed-in user's Puter token. That token is what the worker bills: **the host pays
+[`everything.workers.exec()`](http://localhost:8443/Workers/exec/), which forwards the
+signed-in user's Everything token. That token is what the worker bills: **the host pays
 for their own invitations**, never the app owner, even though the app owner's
 worker is what authorizes the send.
 
@@ -227,7 +227,7 @@ Every invitation names its host. The mail's Reply-To and the .ics `ORGANIZER` ar
 the signed-in account's email — what the guest's calendar shows as the organizer
 (Google Calendar files an event without one under
 `unknownorganizer@calendar.google.com`) and where their mail client's own RSVP
-buttons answer. Puter withholds that address until the user allows the app to
+buttons answer. Everything withholds that address until the user allows the app to
 read it, so a send that doesn't know it asks — on a press of **Email
 invitations**, never from the after-save send, which the editor has just asked
 for — and if there is still no address, nothing is sent and the toast says why.
@@ -262,7 +262,7 @@ occurrences. Failed deliveries keep their invitation records; successful full
 removals clear only those guests' records so adding them again offers a fresh
 invitation. Updates for remaining guests are offered separately after this choice.
 
-Because that worker is app-owned and reachable by any signed-in Puter user, it is
+Because that worker is app-owned and reachable by any signed-in Everything user, it is
 not a relay: callers hand it an *event*, never a message. It composes the subject
 and body itself, escapes everything the host typed, and puts no clickable link in
 the mail except the guest's own `*.localhost:8443` RSVP URL (a cancellation carries no
@@ -270,58 +270,58 @@ link at all) — with per-request and per-user-per-day recipient caps on top. It
 storage holds only hashes: no address, event id, or title ever lands in the app
 owner's account.
 
-### Deploying the email worker
+### The email worker
 
-Invitations are the one feature that needs a deploy step of its own. With the
-[Puter CLI](http://localhost:8443/cli/):
+The local server registers this worker automatically at startup as
+`calendar-email`, using `src/workers/email-worker.js`. There is no deploy step;
+it is reachable at `http://calendar-email.localhost:8443`:
 
 ```bash
-npm install -g @heyputer/cli
-puter login
-npm run deploy:email-worker   # puter worker deploy src/workers/email-worker.js calendar-email
-curl http://calendar-email.localhost:8443/health   # {"ok":true,"version":"11","runtime":"2.6.2+63f857ce3"}
+curl http://calendar-email.localhost:8443/health   # {"ok":true,"version":"11",...}
 ```
 
-The version in `/health` is `WORKER_VERSION` from the source — bump it in any
-deploy that changes behavior, and check it after deploying. A deployment older
+The version in `/health` is `WORKER_VERSION` from the source — bump it whenever
+the worker changes, and check it after restarting the server. A worker older
 than `4` has no `/cancellations` route: deleting an invited event then reports
 that the email service needs an update, and sends nothing. Older than `11` has
 no `/replies`, so answering a mail-received invitation reports the same thing
-when `puter.email.send` cannot carry the reply itself.
+when `everything.email.send` cannot carry the reply itself.
 
-`runtime` is the puter.js build Puter baked into the worker at deploy time; it
-only changes when the source is redeployed. When puter.js changes under the
-worker (as `email.send` becoming `email.sendTransactional` did), bump
-`WORKER_VERSION` and redeploy, then check `runtime` moved. Bump
-`RSVP_WORKER_VERSION` in `src/js/rsvp-links.js` too: the app rewrites each
-user's RSVP worker on their next visit and verifies it over `/admin/ping`.
+`runtime` is the everything.js build loaded by the local worker runtime when the
+server started; it changes on the next start after everything.js changes. When
+everything.js changes under the worker (as `email.send` becoming
+`email.sendTransactional` did), bump `WORKER_VERSION` and restart, then check
+`runtime` moved. Bump `RSVP_WORKER_VERSION` in `src/js/rsvp-links.js` too: the
+app rewrites each user's RSVP worker on their next visit and verifies it over
+`/admin/ping`.
 
 If sending ever comes back `sign_in_required` from a signed-in browser, open
-`/whoami` through `puter.workers.exec()`: it reports whether the session reached
+`/whoami` through `everything.workers.exec()`: it reports whether the session reached
 the worker at all (`sawAuthHeader`), which context property it was bound to, and
 whether the caller could be pinned to a person — names and booleans only, never a
 token or an address. That distinguishes a browser/transport problem from a
 runtime that moved the caller somewhere this worker doesn't look yet.
 
-Re-running it replaces the code at the same URL. Forking this calendar? Deploy the
-worker under a name of your own and point `EMAIL_WORKER_URL` in `src/js/invites.js`
+The code is reloaded from the same source every time the server starts. Forking
+this calendar? Register the worker under a name of your own in
+`platform/server/index.js` and point `EMAIL_WORKER_URL` in `src/js/invites.js`
 at it. Until something answers there, a press reports that the invitation service
 is unavailable — and the copy-the-links buttons carry on exactly as before, so
 nothing else about the app depends on this worker existing.
 
 ## Mailbox invitations
 
-Every Puter account has a mailbox — `<username>@puter.email`, stored as raw
+Every Everything account has a mailbox — `<username>@everything.email`, stored as raw
 messages under `~/.mail`. Connect it and an invitation that arrives there shows
 up on the calendar: the message is read where it lands, its iCalendar attachment
 parsed, and the event added — or held back, depending on who sent it.
 
 **It runs while the calendar is closed.** `src/workers/mail-handler.js` is a
 published [events handler](http://localhost:8443/Events/handlers/). The app
-subscribes once, with `puter.events.onPersistent()`, to
-`fs:~/.mail/objects/**:add`, and Puter runs that handler in the app's events
+subscribes once, with `everything.events.onPersistent()`, to
+`fs:~/.mail/objects/**:add`, and Everything runs that handler in the app's events
 worker whenever mail arrives — no tab open, no polling. The handler reads the
-message with [`puter.email.get()`](http://localhost:8443/Email/get/), which
+message with [`everything.email.get()`](http://localhost:8443/Email/get/), which
 parses it for us, keeps the calendar attachments, and writes a small record into
 the user's own key-value store. It never writes an event: every decision about
 the calendar is made in the app, where the contacts, the settings and the
@@ -334,11 +334,11 @@ page never registers the handler in-page, so an open calendar tab declines each
 delivery and the events worker runs it right away.
 
 **Only people you have already dealt with.** An invitation is added
-automatically when the sender is *authenticated* — delivered inside Puter, or
+automatically when the sender is *authenticated* — delivered inside Everything, or
 carrying a DKIM signature aligned with its From domain — and *known*, meaning
 you have interacted with them before: they are in your address book, on one of
 your own events, someone whose invitation you accepted previously, or **someone
-you have emailed from your Puter mailbox** (read once a day from the sent
+you have emailed from your Everything mailbox** (read once a day from the sent
 folder, bounded, and kept as a list of addresses at `cal:mail:corr`).
 
 Known but unauthenticated lands in the sidebar's **Invitations** list with
@@ -349,7 +349,7 @@ has a switch, off by default, for "Show invitations from people I haven't
 interacted with". The one exception is a cancellation or a proposed new time
 for an event already on the calendar: that concerns your own data, so it is
 shown — a cancellation with no button to act on it unless it comes from the
-event's organizer. A `@puter.email` address counts as authenticated but never as
+event's organizer. A `@everything.email` address counts as authenticated but never as
 known on that basis alone; anyone can register a username.
 
 Who the sender is comes from the message's own `From` header, never from the
@@ -368,7 +368,7 @@ names. `REPLY` updates one guest's Yes / No / Maybe on an event you host, and
 only for the address that sent it. `PUBLISH` adds a plain event with no RSVP.
 `COUNTER` is never applied — a proposed new time is shown for you to decide on.
 `REFRESH` and `DECLINECOUNTER` are ignored. One of your own invitations coming
-back through a guest's Puter mailbox is recognized and dropped silently.
+back through a guest's Everything mailbox is recognized and dropped silently.
 
 **Nothing from a message is ever rendered as markup.** The HTML part is never
 read at all; the handler keeps an allowlist of iCalendar properties and
@@ -387,8 +387,8 @@ did.
 **Answering by email.** An event that arrived by mail offers to send a real iTIP
 `REPLY` to its organizer when you press Yes, No or Maybe — and only when you then
 press **Send**. It goes out with
-[`puter.email.send()`](http://localhost:8443/Email/) from your own
-`<username>@puter.email` (which needs write access to `~/.mail`, asked for the
+[`everything.email.send()`](http://localhost:8443/Email/) from your own
+`<username>@everything.email` (which needs write access to `~/.mail`, asked for the
 first time you send one), carrying a `text/calendar; method=REPLY` attachment. It
 uses the UID the organizer assigned and answers as the address they invited,
 which is what lets their calendar match it to a participant. Where that cannot
@@ -398,7 +398,7 @@ the way it composes every other one.
 
 **Catching up.** `fs:` subjects keep no log, so anything that arrived while the
 subscription was suspended — or before you connected — is found with
-[`puter.email.list()`](http://localhost:8443/Email/list/), newest first, down to
+[`everything.email.list()`](http://localhost:8443/Email/list/), newest first, down to
 the last message already seen. That same scan is what runs when the calendar
 cannot subscribe in the background at all: without an app identity, or without
 `events:background`, the feature keeps working while the calendar is open and
@@ -410,8 +410,8 @@ Like the email worker, this needs a deploy step of its own — a handler is
 published once, by the app owner, against the app.
 
 ```bash
-PUTER_TOKEN=<a token for the account that owns the app> \
-PUTER_APP_UID=<the app's uid> \
+EVERYTHING_TOKEN=<a token for the account that owns the app> \
+EVERYTHING_APP_UID=<the app's uid> \
 npm run publish:mail-handler
 ```
 
@@ -426,7 +426,7 @@ line in the Mailbox invitations dialog; nothing else about the app is affected.
 ## Booking links
 
 The sidebar's **Booking links** section is a Calendly-style scheduler: create a
-link ("30 minute meeting"), share it, and anyone — no Puter account — can book
+link ("30 minute meeting"), share it, and anyone — no Everything account — can book
 one of your free slots.
 
 **What the link looks like.** `http://calendar.localhost:8443/#/<username>/<slug>`
@@ -441,7 +441,7 @@ central to go down, and no server in the path but the host's own worker. Both
 halves are settled once and never move: a worker cannot be renamed (so changing
 your username changes nothing, for links already sent or new ones), and a slug
 outlives the title it came from, because re-slugging a renamed page would break
-every link already sent. Worker names are global across Puter, so a host whose
+every link already sent. Worker names are global across Everything, so a host whose
 name is taken gets `<username>-<4 hex>`; pages created before slugs, and titles
 with no Latin letters to slug (Cyrillic, CJK, emoji), keep their random hex ids.
 The worker's own `https://cal-<username>.localhost:8443/book/<slug>` links — the form
@@ -458,7 +458,7 @@ deleted.
 say otherwise: the editor's **Your name** field sets the name shown on every one
 of your booking links, and in the emails the worker sends — it is a calendar
 setting, so it follows you across devices, and left blank it is your username
-again. A page can also lead with your Puter profile picture,
+again. A page can also lead with your Everything profile picture,
 switched on per link (the editor previews exactly what guests would get). It is
 opt-in: a page saved before the switch existed never starts showing it, because
 its link is already out there. The app publishes a copy small enough to belong
@@ -479,7 +479,7 @@ guest sees and the validator that accepts their booking are the same function,
 so they cannot drift apart.
 
 **Booking.** The guest picks a slot, leaves a name/email/optional note, and the
-worker records the booking. `puter.kv` has no transactions, so the write order
+worker records the booking. `everything.kv` has no transactions, so the write order
 is what settles a race: the booking is *reserved* before availability is
 checked, which means every request's check runs against a store that already
 holds its own reservation — and two overlapping bookings then cannot both
@@ -520,14 +520,14 @@ calendar unbounded nor drain your email allowance.
 
 ## Meeting links
 
-**Add Puter Meetings link** in the event editor attaches a video-meeting link
+**Add Everything Meetings link** in the event editor attaches a video-meeting link
 to an event, Google Meet-style: one click and the link is there — on the
 details card as **Join meeting**, in invitation emails as a `Join` line, and
 in the event's exported `.ics` as its `URL` property, which is where other
 calendars read a joinable link from.
 
 There is no API behind that click.
-[Puter Meetings](http://meetings.localhost:8443) publishes a stateless recipe for
+[Everything Meetings](http://meetings.localhost:8443) publishes a stateless recipe for
 other apps: an *open room code* is 12 crypto-random lowercase letters
 (`abcd-efgh-ijkl`) wrapped in `http://meetings.localhost:8443/#/m/<code>`, and
 nothing is created anywhere until someone opens the link and starts the
@@ -537,7 +537,7 @@ properties the calendar leans on:
 - **Minting is local, instant, and free.** It works on the open web, offline,
   and without the Meetings app installed — and a link discarded before saving
   simply never existed, so there is nothing to release or clean up.
-- **First to start it, owns it.** The first Puter account to press *Start this
+- **First to start it, owns it.** The first Everything account to press *Start this
   meeting* in the link's lobby claims the room permanently (concurrent
   starters race safely). Practically: start your own meetings — early guests
   wait in the lobby and join automatically the moment you do.
@@ -549,7 +549,7 @@ in guests' hands keeps working (attach a fresh one if you want a clean
 slate). The link lives on the series master, like the guest list: editing a
 single occurrence can't give it a different link.
 
-The other direction exists too: inside the Puter desktop, the Meetings app's
+The other direction exists too: inside the Everything desktop, the Meetings app's
 home screen lists the day's meetings from this calendar — with a Join button
 on each — by asking the [app-to-app API](#app-to-app-api) for events that
 have a meeting link (`list` with `has: ['meeting']`), and nothing else.
@@ -567,7 +567,7 @@ picker. Nothing to edit, nothing to delete.
 
 **Computed, not fetched, not stored.** `src/js/holidays.js` derives holidays from
 a rule set at render time. That one decision is what makes the feature cheap
-everywhere else: there is no data to sync, no `puter.kv` write, nothing to
+everywhere else: there is no data to sync, no `everything.kv` write, nothing to
 reconcile when you change country or scroll to a year you have never opened, no
 holiday to edit by accident, nothing that leaks into an `.ics` export as if it
 were yours, and no reminder that can fire on one. Every year works offline —
@@ -646,16 +646,16 @@ to `tests/holidays.test.js`. Nothing else needs to change.
 
 ## App-to-app API
 
-The calendar answers the same kind of connection it makes: other Puter apps can
+The calendar answers the same kind of connection it makes: other Everything apps can
 read and write the user's events instead of keeping a calendar of their own.
 Contacts uses it to put a birthday on the calendar and to show what is coming up
 with the person on screen.
 
-**How a caller connects.** Inside the Puter desktop, launch the calendar in
+**How a caller connects.** Inside the Everything desktop, launch the calendar in
 service mode and talk to the connection you get back:
 
 ```js
-const calendar = await puter.ui.launchApp({
+const calendar = await everything.ui.launchApp({
   name: 'calendar',
   args: { service: 'calendar-api' },
   background: true, // no window on screen; older desktops ignore this
@@ -681,7 +681,7 @@ A service-mode instance mounts no UI, and starts no reminder scheduler, RSVP
 sync or address-book client — it is one caller's question answered, not a second
 calendar running in the background. It closes itself after a few idle minutes,
 and closing the connection closes it immediately. Pass `background: true` to the
-launch as well: the Puter desktop creates and shows an app's window *before* the
+launch as well: the Everything desktop creates and shows an app's window *before* the
 app's own code runs, so without it a service window briefly appears on screen no
 matter how early the app hides itself.
 
@@ -753,7 +753,7 @@ granted on one condition, which Contacts meets: the caller puts the change in
 front of the user before making it, and `delete` is there so that Undo works.
 
 A grant can also be *scoped* — the object form pins a `has` filter (the same
-names `list` and `search` accept) to everything the caller does. [Puter
+names `list` and `search` accept) to everything the caller does. [Everything
 Meetings](http://meetings.localhost:8443) shows the day's video calls on its home
 screen with a Join button, which takes `list`; nothing about that needs the
 dentist appointment, so its grant reaches only events that carry a meeting
@@ -762,14 +762,14 @@ nothing outside it however they are phrased, an event outside it is
 `not_found` by id, and a create that would fall outside it is refused. The
 `ready` notice carries `scope` so a caller can see the slice it was given.
 
-The caller's identity comes from the `puter.source_app.name` launch parameter,
-which the Puter desktop stamps onto the app window from the *calling process*: an
+The caller's identity comes from the `everything.source_app.name` launch parameter,
+which the Everything desktop stamps onto the app window from the *calling process*: an
 app cannot claim to be Contacts, and cannot set that parameter for a window it did
 not launch. Worth being plain about the limit of that: the iframe/postMessage
 model gives a child window no way to cryptographically verify its parent, so these
-checks hold inside a genuine Puter desktop session — the environment they are
+checks hold inside a genuine Everything desktop session — the environment they are
 written for — and are not a defence against a page that embeds this app itself and
-forges launch parameters. The API is never served outside `puter.env === 'app'`.
+forges launch parameters. The API is never served outside `everything.env === 'app'`.
 
 ## Getting started
 
@@ -782,25 +782,25 @@ npm test         # run the unit tests once
 npm run coverage # run tests with a coverage report
 ```
 
-Open the app and click **Sign in** to use your free Puter account.
+Open the app and click **Sign in** to use your free Everything account.
 
 ## Project structure
 
 ```
-index.html                 # entry; loads puter.js + the app
+index.html                 # entry; loads everything.js + the app
 src/
   main.js                  # bootstrap: auth flow, store init, app mount
   styles/                  # design tokens, base primitives, layout, views
   js/
     app.js                 # controller: shell, navigation, views, shortcuts
-    store.js               # data layer over puter.kv (injectable backend)
+    store.js               # data layer over everything.kv (injectable backend)
     date-utils.js          # dependency-free date math & formatting
     holidays.js            # public holidays, computed from rules (no network)
     event-layout.js        # column layout for overlapping events
     modal.js               # event editor (incl. guests + contact suggestions)
     sidebar.js             # mini-calendar + category filters
     category-dialog.js     # renaming a category (a label, never the color key)
-    context-menu.js        # puter.ui.contextMenu + fallback
+    context-menu.js        # everything.ui.contextMenu + fallback
     contacts.js            # the Contacts app's address book, over AppConnection
     rsvp-links.js          # the host's RSVP worker: deploy, links, answer sync
     invites.js             # emailing those links, via the shared email worker
@@ -811,14 +811,14 @@ src/
     windows-zones.js       # Windows/Mozilla TZID names -> IANA
     booking.js             # booking links: configs, busy-time push, booking pull
     booking-dialog.js      # the booking-link editor (hours, rules, share URL)
-    meetings.js            # Puter Meetings links, minted statelessly (no API)
+    meetings.js            # Everything Meetings links, minted statelessly (no API)
     colors.js  icons.js  dom.js  toast.js  auth.js
     api/                   # the calendar, served to other apps
       protocol.js          #   wire format + who may call what
       methods.js           #   the operations, transport-free
       server.js            #   dispatch over one AppConnection
     views/                 # month, week, day, agenda (+ shared timegrid)
-  workers/                 # serverless Puter Workers (not part of the bundle)
+  workers/                 # serverless Everything Workers (not part of the bundle)
     rsvp-worker.js         #   deployed per user: guest RSVP + booking endpoint
     email-worker.js        #   deployed once by the app owner: sends invitations
     mail-handler.js        #   published events handler: reads arriving mail
@@ -838,11 +838,11 @@ most important to keep correct:
 - `date-utils` — arithmetic, week/month boundaries, ranges, and formatting.
 - `event-layout` — overlap clustering and column assignment.
 - `store` — event normalization, range queries, filtering, and persistence against
-  an in-memory stand-in for `puter.kv`.
+  an in-memory stand-in for `everything.kv`.
 - `holidays` — Easter, weekend substitution and the year bounds, checked against
   independently known dates, plus the overlay where it meets the store and views.
 - `mail-handler` — the published handler, run the way the events worker runs it,
-  over parsed messages from `puter.email.get`: Google, Outlook and Apple
+  over parsed messages from `everything.email.get`: Google, Outlook and Apple
   invitation shapes, cancellations, replies, and malformed input.
 - `mail-intake` — who counts as known, what each iTIP method does, and what is
   hidden rather than shown.
@@ -854,16 +854,16 @@ npm test
 ## Deploying
 
 `npm run build` produces a static `dist/` you can host anywhere, including
-[Puter hosting](http://localhost:8443/). The context menu automatically uses
-Puter's native menu when the app runs inside the Puter GUI and the styled fallback
+[Everything hosting](http://localhost:8443/). The context menu automatically uses
+Everything's native menu when the app runs inside the Everything GUI and the styled fallback
 everywhere else.
 
-Two pieces live outside that bundle, both deployed once by hand: the email worker
-that sends invitations (`npm run deploy:email-worker` — see
-[Deploying the email worker](#deploying-the-email-worker)) and the events handler
-that reads arriving mail (`npm run publish:mail-handler` — see
-[Deploying the mail handler](#deploying-the-mail-handler)). The RSVP worker needs
-nothing from you; the app deploys it into each user's own account.
+Two pieces live outside that bundle: the email worker, which the local server
+registers automatically (see [The email worker](#the-email-worker)), and the
+events handler that reads arriving mail, which is published with
+`npm run publish:mail-handler` and needs the Events API of a hosted deployment
+(see [Deploying the mail handler](#deploying-the-mail-handler)). The RSVP worker
+needs nothing from you; the app creates it in each user's own account.
 
 ## Populate a demo
 

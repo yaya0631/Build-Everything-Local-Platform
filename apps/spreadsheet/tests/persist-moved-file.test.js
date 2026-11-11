@@ -3,13 +3,13 @@ import { Doc } from '../src/lib/doc.js';
 import { draftKey, loadDraft } from '../src/lib/drafts.js';
 import { listVersions } from '../src/lib/versions.js';
 import { memoryStorage } from './helpers/memory-storage.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 
 let mock;
 // SheetJS is loaded on first use with a real dynamic import; warm it up so no test waits on it.
 beforeAll(async () => { await Doc.blank().toXlsxBlob(); });
-beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); mock = installMockPuter(); vi.useFakeTimers(); });
-afterEach(() => { vi.useRealTimers(); delete globalThis.puter; });
+beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); mock = installMockEverything(); vi.useFakeTimers(); });
+afterEach(() => { vi.useRealTimers(); delete globalThis.everything; });
 
 const cellA1 = (doc) => doc.wb.getValue(doc.wb.activeSheetId, 0, 0);
 
@@ -29,7 +29,7 @@ it('follows a file renamed elsewhere while it is open and saves it there, record
   const oldPath = doc.path;
   await doc.saveVersion('mark');
   doc.distrustExternal();
-  await puter.fs.rename(oldPath, 'Plan.xlsx');
+  await everything.fs.rename(oldPath, 'Plan.xlsx');
   const paths = [];
   const conflicts = [];
   doc.addEventListener('path', (e) => paths.push(e.detail));
@@ -85,7 +85,7 @@ it('names the kind of conflict when the file changed elsewhere', async () => {
   const conflicts = [];
   doc.addEventListener('conflict', (e) => conflicts.push(e.detail));
   await vi.advanceTimersByTimeAsync(2000);
-  await puter.fs.write(doc.path, new Blob(['written by another tab']));
+  await everything.fs.write(doc.path, new Blob(['written by another tab']));
   doc.wb.setInput(doc.wb.activeSheetId, 0, 0, 'mine');
   try {
     expect(await doc.save()).toBe(false);

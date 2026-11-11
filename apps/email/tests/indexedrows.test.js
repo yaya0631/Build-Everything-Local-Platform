@@ -71,7 +71,7 @@ afterEach(() => {
 });
 
 const SENT = [
-  'From: tester@puter.email',
+  'From: tester@everything.email',
   'To: Ana Petrova <ana@example.com>, Leo Tanaka <leo@example.com>',
   'Subject: Printer quote',
   'Date: Mon, 17 Aug 2026 10:30:00 GMT',

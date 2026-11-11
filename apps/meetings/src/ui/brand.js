@@ -17,6 +17,6 @@ export function brandLockup() {
     'div',
     { class: 'home-brand' },
     brandMark(),
-    el('span', { class: 'home-wordmark' }, el('b', {}, 'Puter'), ' Meetings')
+    el('span', { class: 'home-wordmark' }, el('b', {}, 'Everything'), ' Meetings')
   );
 }

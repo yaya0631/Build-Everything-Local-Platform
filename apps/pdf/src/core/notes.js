@@ -82,7 +82,7 @@ export function parsePdfDate(value) {
 }
 
 /** Marks the icon streams this app draws, so a page turn can re-orient only those. */
-const ICON_KEY = name('PuterNoteIcon');
+const ICON_KEY = name('EverythingNoteIcon');
 /**
  * The matrix that keeps the icon upright on a page the reader turns by `rotation` degrees
  * clockwise: the drawing is turned the same amount the other way. Readers fit the turned

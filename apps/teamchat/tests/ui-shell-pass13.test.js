@@ -5,7 +5,7 @@
  * focus, a hash location that fires hashchange on the next tick, matchMedia
  * by viewport). Every test boots a fresh DOM and a fresh module registry, so
  * the listeners the shell hangs on window and document never outlive their
- * test. Puter is faked at `puter.workers.exec`, as in tests/store.test.js;
+ * test. Everything is faked at `everything.workers.exec`, as in tests/store.test.js;
  * the conversation column and the huddle window are stubbed (their own
  * tests cover them).
  */
@@ -38,7 +38,7 @@ async function boot({ hash = '', width = 1280, routes = {}, ...env } = {}) {
   dom = installDom({ hash, width, ...env });
   vi.resetModules();
   const calls = [];
-  globalThis.puter = {
+  globalThis.everything = {
     workers: {
       exec: async (url, init = {}) => {
         const u = new URL(url);
@@ -84,7 +84,7 @@ async function boot({ hash = '', width = 1280, routes = {}, ...env } = {}) {
 afterEach(() => {
   dom?.uninstall();
   dom = null;
-  delete globalThis.puter;
+  delete globalThis.everything;
 });
 
 /** The shell at a route, opened and settled. */
@@ -638,7 +638,7 @@ describe('toasts piling up', () => {
 });
 
 describe('the offline strip when the app itself cannot start', () => {
-  /** The app booted from main.js with Puter faked: signed in, but the account cannot be read. */
+  /** The app booted from main.js with Everything faked: signed in, but the account cannot be read. */
   async function startApp({ online }) {
     dom?.uninstall();
     dom = installDom({ hash: '' });
@@ -649,7 +649,7 @@ describe('the offline strip when the app itself cannot start', () => {
     document.body.append(app);
     dom.navigator.onLine = online;
     let asked = 0;
-    globalThis.puter = { auth: { isSignedIn: async () => true, getUser: async () => { asked++; throw new TypeError('Failed to fetch'); } }, kv: { get: async () => null } };
+    globalThis.everything = { auth: { isSignedIn: async () => true, getUser: async () => { asked++; throw new TypeError('Failed to fetch'); } }, kv: { get: async () => null } };
     const quiet = vi.spyOn(console, 'error').mockImplementation(() => {});
     await import('../src/main.js');
     await dom.tick(30);
@@ -690,7 +690,7 @@ describe('the offline strip when the app itself cannot start', () => {
     expect(app.querySelector('.auth-title')?.textContent).toBe('Could not load your account');
     expect([...app.querySelectorAll('button')].map((b) => b.textContent)).toContain('Try again');
     // The account answers now: the app comes up in the page's place, without a reload.
-    globalThis.puter.auth.getUser = async () => { asked(); return { uuid: 'u-me', username: 'me' }; };
+    globalThis.everything.auth.getUser = async () => { asked(); return { uuid: 'u-me', username: 'me' }; };
     window.dispatchEvent(new Event('online'));
     await dom.tick(50);
     expect(app.querySelector('.auth-title')?.textContent).not.toBe('Could not load your account');
@@ -707,8 +707,8 @@ describe('the offline strip when the app itself cannot start', () => {
     const { app, quiet, asked } = await startApp({ online: false });
     expect(app.querySelector('.auth-title')?.textContent).toBe('Could not load your account');
     // The network is back but the session lapsed meanwhile: the retry ends on the sign-in page.
-    globalThis.puter.auth.getUser = async () => null;
-    globalThis.puter.auth.signOut = async () => {};
+    globalThis.everything.auth.getUser = async () => null;
+    globalThis.everything.auth.signOut = async () => {};
     window.dispatchEvent(new Event('online'));
     await dom.tick(30);
     expect(app.querySelector('.auth-title')?.textContent).not.toBe('Could not load your account');

@@ -145,7 +145,7 @@ describe('contractEvents', () => {
     expect(new Set(uids).size).toBe(uids.length);
     // Same input, same uids: re-importing updates instead of duplicating.
     expect(contractEvents(contract(), opts).map((e) => e.uid)).toEqual(uids);
-    for (const u of uids) expect(u).toContain('@contract-manager.puter');
+    for (const u of uids) expect(u).toContain('@contract-manager.everything');
   });
 
   it('emits one end event for a fixed term', () => {

@@ -48,9 +48,9 @@
     />
     <meta
       name="keywords"
-      content="calendar, web calendar, calendar app, scheduling, events, recurring events, reminders, agenda, ical, ics, puter"
+      content="calendar, web calendar, calendar app, scheduling, events, recurring events, reminders, agenda, ical, ics, everything"
     />
-    <meta name="author" content="Puter" />
+    <meta name="author" content="Everything" />
     <meta name="robots" content="index, follow" />
     <link rel="canonical" href="http://calendar.localhost:8443/" />
     <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
@@ -117,11 +117,11 @@
     <meta name="twitter:image" content="http://calendar.localhost:8443/og-image.png" />
     <meta name="twitter:image:alt" content="The Calendar app showing a colorful month view." />
 
-    <!-- Puter.js: the only backend dependency (auth, key-value storage, context menu). -->
-    <script src="/sdk/puter.js"></script>
+    <!-- Everything.js: the only backend dependency (auth, key-value storage, context menu). -->
+    <script src="/sdk/everything.js"></script>
 
-    <!-- When another Puter app launches the calendar as its headless API (see
-         src/js/api/protocol.js) there is nothing to show. The Puter desktop
+    <!-- When another Everything app launches the calendar as its headless API (see
+         src/js/api/protocol.js) there is nothing to show. The Everything desktop
          creates and shows an app's window before the app itself loads, so hide
          it here — the earliest moment the SDK exists — rather than waiting for
          the app bundle, which would flash an empty window on screen. main.js
@@ -129,11 +129,11 @@
     <script>
       (function () {
         try {
-          var raw = new URLSearchParams(location.search).get('puter.args') || '';
+          var raw = new URLSearchParams(location.search).get('everything.args') || '';
           // Keep in step with SERVICE_ARGS in src/js/api/protocol.js.
           if (!/"service"\s*:\s*"calendar-api"/.test(raw)) return;
-          if (window.puter && puter.ui && typeof puter.ui.hideWindow === 'function') {
-            puter.ui.hideWindow();
+          if (window.everything && everything.ui && typeof everything.ui.hideWindow === 'function') {
+            everything.ui.hideWindow();
           }
         } catch (_e) {
           /* main.js will hide the window a moment later */

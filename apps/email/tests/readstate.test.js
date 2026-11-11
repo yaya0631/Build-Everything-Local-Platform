@@ -34,7 +34,7 @@ describe('remote image consent', () => {
 
   it('still requires consent after trimming the store or recovering corrupt storage', () => {
     const storage = memoryStorage();
-    storage.setItem('puter-mail:images:user', '{invalid');
+    storage.setItem('everything-mail:images:user', '{invalid');
     const state = createImageState('user', storage);
     expect(state.allows('constructor')).toBe(false);
     for (let i = 0; i < 501; i++) state.allow(`sender${i}@example.com`);
@@ -70,7 +70,7 @@ describe('createReadState', () => {
     expect(writes).toBe(0);
     await written();
     expect(writes).toBe(1);
-    expect(Object.keys(stored(storage, 'puter-mail:read:user'))).toHaveLength(300);
+    expect(Object.keys(stored(storage, 'everything-mail:read:user'))).toHaveLength(300);
   });
 
   it('scopes state per account', () => {
@@ -92,7 +92,7 @@ describe('createReadState', () => {
     state.markRead('m1');
     state.markRead('');
     await written();
-    expect(Object.keys(stored(storage, 'puter-mail:read:user'))).toEqual(['m1']);
+    expect(Object.keys(stored(storage, 'everything-mail:read:user'))).toEqual(['m1']);
   });
 
   it('keys flags by the uuid part of the filename, not the whole name', async () => {
@@ -100,14 +100,14 @@ describe('createReadState', () => {
     const state = createReadState('user', storage);
     state.markRead('0198d3cb-b700-777c-abf5-8204667dff5b--SGVsbG8');
     await written();
-    expect(Object.keys(stored(storage, 'puter-mail:read:user')))
+    expect(Object.keys(stored(storage, 'everything-mail:read:user')))
       .toEqual(['0198d3cb-b700-777c-abf5-8204667dff5b']);
     expect(state.isRead('0198d3cb-b700-777c-abf5-8204667dff5b--SGVsbG8')).toBe(true);
   });
 
   it('reads the id-list format an earlier version stored', () => {
     const storage = memoryStorage();
-    storage.setItem('puter-mail:read:user', JSON.stringify(['m1--x', 'm2--y']));
+    storage.setItem('everything-mail:read:user', JSON.stringify(['m1--x', 'm2--y']));
     const state = createReadState('user', storage);
     expect(state.isRead('m1--x')).toBe(true);
     expect(state.isRead('m3--z')).toBe(false);
@@ -121,7 +121,7 @@ describe('createReadState', () => {
     expect(state.isRead('m0')).toBe(false);
     expect(state.isRead('m1')).toBe(true);
     expect(state.isRead('m5000')).toBe(true);
-    expect(Object.keys(stored(storage, 'puter-mail:read:user'))).toHaveLength(5000);
+    expect(Object.keys(stored(storage, 'everything-mail:read:user'))).toHaveLength(5000);
     // A store reopened over a full set stamps its next change after every
     // stamp it holds, so what it drops is still the oldest change -- not the
     // one just made.
@@ -130,7 +130,7 @@ describe('createReadState', () => {
     await written();
     expect(again.isRead('m1')).toBe(false);
     expect(again.isRead('m5001')).toBe(true);
-    expect(Object.keys(stored(storage, 'puter-mail:read:user'))).toHaveLength(5000);
+    expect(Object.keys(stored(storage, 'everything-mail:read:user'))).toHaveLength(5000);
   });
 
   it('marks a message unread again, and remembers that', () => {
@@ -145,7 +145,7 @@ describe('createReadState', () => {
 
   it('tolerates corrupt stored state', () => {
     const storage = memoryStorage();
-    storage.setItem('puter-mail:read:user', '{not json');
+    storage.setItem('everything-mail:read:user', '{not json');
     const state = createReadState('user', storage);
     expect(state.isRead('m1')).toBe(false);
     state.markRead('m1');
@@ -241,7 +241,7 @@ describe('createOriginState', () => {
     expect(setItem).not.toHaveBeenCalled();
     await new Promise((resolve) => setTimeout(resolve, 300));
     expect(setItem).toHaveBeenCalledTimes(1);
-    expect(JSON.parse(storage.getItem('puter-mail:origin:me'))['m1999--x']).toBe('inbox');
+    expect(JSON.parse(storage.getItem('everything-mail:origin:me'))['m1999--x']).toBe('inbox');
   });
 
   it('writes on flush, and never lets an old store write over a newer one', () => {
@@ -260,9 +260,9 @@ describe('createOriginState', () => {
 
   it('ignores stored junk rather than throwing', () => {
     const storage = memoryStorage();
-    storage.setItem('puter-mail:origin:me', '["not", "an", "object"]');
+    storage.setItem('everything-mail:origin:me', '["not", "an", "object"]');
     expect(createOriginState('me', storage).get('a--x')).toBe('inbox');
-    storage.setItem('puter-mail:origin:me', 'not json at all');
+    storage.setItem('everything-mail:origin:me', 'not json at all');
     expect(createOriginState('me', storage).get('a--x')).toBe('inbox');
   });
 });
@@ -338,7 +338,7 @@ describe('mergeFlags', () => {
 });
 
 describe('flags against an account store', () => {
-  // A fake puter.kv: one string per key, with the calls it received.
+  // A fake everything.kv: one string per key, with the calls it received.
   const fakeKv = (initial = {}) => {
     const values = { ...initial };
     const calls = { get: [], set: [] };
@@ -353,7 +353,7 @@ describe('flags against an account store', () => {
   it('does not let a slow write-back land over a newer change', async () => {
     vi.useFakeTimers();
     try {
-      const values = { 'puter-mail:read:user': JSON.stringify({ other: 100 }) };
+      const values = { 'everything-mail:read:user': JSON.stringify({ other: 100 }) };
       let slow = null;
       const remote = {
         get: async (key) => values[key] ?? null,
@@ -371,21 +371,21 @@ describe('flags against an account store', () => {
         },
       };
       const storage = memoryStorage();
-      storage.setItem('puter-mail:read:user', JSON.stringify({ local: 50 }));
+      storage.setItem('everything-mail:read:user', JSON.stringify({ local: 50 }));
       const state = createReadState('user', storage, { remote });
       state.pull();
       await vi.advanceTimersByTimeAsync(10);
       // A message read while the pull is still writing back.
       state.markRead('m1');
       await vi.advanceTimersByTimeAsync(12000);
-      expect(JSON.parse(values['puter-mail:read:user']).m1).toBeGreaterThan(0);
+      expect(JSON.parse(values['everything-mail:read:user']).m1).toBeGreaterThan(0);
     } finally {
       vi.useRealTimers();
     }
   });
 
   it('joins calls made while one is waiting, rather than queueing each', async () => {
-    const remote = fakeKv({ 'puter-mail:read:user': JSON.stringify({ m1: 500 }) });
+    const remote = fakeKv({ 'everything-mail:read:user': JSON.stringify({ m1: 500 }) });
     const state = createReadState('user', memoryStorage(), { remote });
     await Promise.all([state.pull(), state.pull(), state.pull(), state.pull()]);
     // None had started when the others were asked for, so they are one.
@@ -426,7 +426,7 @@ describe('flags against an account store', () => {
   });
 
   it('pulls the account state into the local cache and reports the change', async () => {
-    const remote = fakeKv({ 'puter-mail:read:user': JSON.stringify({ m1: 500 }) });
+    const remote = fakeKv({ 'everything-mail:read:user': JSON.stringify({ m1: 500 }) });
     let notified = 0;
     const state = createReadState('user', memoryStorage(), { remote, onChange: () => { notified++; } });
     expect(state.isRead('m1')).toBe(false);
@@ -440,7 +440,7 @@ describe('flags against an account store', () => {
     const state = createStarState('user', memoryStorage(), { remote });
     state.toggle('m1--x');
     await state.pull();
-    expect(JSON.parse(remote.values['puter-mail:star:user']).m1).toBeGreaterThan(0);
+    expect(JSON.parse(remote.values['everything-mail:star:user']).m1).toBeGreaterThan(0);
   });
 
   it('says nothing changed when both sides already agree', async () => {
@@ -448,7 +448,7 @@ describe('flags against an account store', () => {
     const first = createReadState('user', storage, { remote: fakeKv() });
     first.markRead('m1');
     await written();
-    const remote = fakeKv({ 'puter-mail:read:user': storage.getItem('puter-mail:read:user') });
+    const remote = fakeKv({ 'everything-mail:read:user': storage.getItem('everything-mail:read:user') });
     const state = createReadState('user', storage, { remote });
     expect(await state.pull()).toBe(false);
     expect(remote.calls.set).toEqual([]);
@@ -479,11 +479,11 @@ describe('flags against an account store', () => {
     state.markRead('m1');
     await state.pull();
     // The other device is still holding the older "read" stamp.
-    const stale = JSON.parse(remote.values['puter-mail:read:user']);
+    const stale = JSON.parse(remote.values['everything-mail:read:user']);
     state.markUnread('m1');
-    remote.values['puter-mail:read:user'] = JSON.stringify(stale);
+    remote.values['everything-mail:read:user'] = JSON.stringify(stale);
     await state.pull();
     expect(state.isRead('m1')).toBe(false);
-    expect(JSON.parse(remote.values['puter-mail:read:user']).m1).toBeLessThan(0);
+    expect(JSON.parse(remote.values['everything-mail:read:user']).m1).toBeLessThan(0);
   });
 });

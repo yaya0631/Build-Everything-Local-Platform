@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeAll, vi } from 'vitest';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 
 let reminderFireAt, missedReminders, describeReminder, catchUpMissedReminders,
   scheduleTaskReminders, normalizeTask;
 
 beforeAll(async () => {
-  installMockPuter();
+  installMockEverything();
   ({ reminderFireAt, missedReminders, describeReminder, catchUpMissedReminders, scheduleTaskReminders } =
     await import('../src/lib/reminders.js'));
   ({ normalizeTask } = await import('../src/lib/store.js'));

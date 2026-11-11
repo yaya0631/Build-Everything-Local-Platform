@@ -7,7 +7,7 @@ import { contactName } from './core/format.js';
 
 export const app = {
   store: null,
-  user: null, // { username, uuid } of the Puter account, or null in the demo
+  user: null, // { username, uuid } of the Everything account, or null in the demo
   demo: false,
   env: 'web',
   avatarUrl: null,
@@ -20,13 +20,13 @@ export const app = {
 };
 
 /**
- * Which firm user is "me": the one linked to this Puter username, else the
+ * Which firm user is "me": the one linked to this Everything username, else the
  * first active lawyer (a solo practitioner's own record).
  */
 export function meId() {
   const users = app.store.all('users');
   if (app.user?.username) {
-    const linked = users.find((u) => u.puterUsername && u.puterUsername.toLowerCase() === app.user.username.toLowerCase());
+    const linked = users.find((u) => u.everythingUsername && u.everythingUsername.toLowerCase() === app.user.username.toLowerCase());
     if (linked) return linked.id;
   }
   const first = users.filter((u) => u.active !== false).sort((a, b) => String(a.createdAt).localeCompare(String(b.createdAt)));

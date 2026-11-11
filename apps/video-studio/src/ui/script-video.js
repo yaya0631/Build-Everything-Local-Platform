@@ -1,11 +1,11 @@
 /**
- * Script to video dialog: write or paste a script (or have Puter AI write
+ * Script to video dialog: write or paste a script (or have Everything AI write
  * one), check the scenes and their picture descriptions, then generate a
  * narrated video with pictures, captions and music. From the home screen it
  * becomes a new project; in the editor it is added at the playhead as one
  * undo step.
  *
- * Every AI call goes through `services` (see puterServices) so tests and
+ * Every AI call goes through `services` (see everythingServices) so tests and
  * browser checks can pass fakes.
  */
 import { h, announce } from '../lib/dom.js';
@@ -29,20 +29,20 @@ import {
 import '../styles/ai-create.css';
 
 /**
- * Puter AI can be used: signed in to Puter, or (development builds only) a
+ * Everything AI can be used: signed in to Everything, or (development builds only) a
  * stand-in installed as globalThis.__vsAiStub for browser checks.
  */
 export function aiReady(env) {
   return aiAvailable(env) || Boolean(import.meta.env.DEV && globalThis.__vsAiStub);
 }
 
-/** Explain that a tool needs a Puter account, with a sign-in button when possible. */
+/** Explain that a tool needs an Everything account, with a sign-in button when possible. */
 export function needAiDialog(account, what) {
   const close = h('button.btn', { type: 'button' }, 'Close');
-  const signIn = account?.onSignIn ? h('button.btn.primary', { type: 'button' }, icon('cloud', 16), 'Sign in to Puter') : null;
+  const signIn = account?.onSignIn ? h('button.btn.primary', { type: 'button' }, icon('cloud', 16), 'Sign in to Everything') : null;
   const d = openDialog({
     title: 'Sign in to use AI',
-    body: h('p.dialog-text', `${what} uses Puter AI, so it needs a Puter account. Sign in, then try again.`),
+    body: h('p.dialog-text', `${what} uses Everything AI, so it needs an Everything account. Sign in, then try again.`),
     actions: [close, signIn].filter(Boolean),
     className: 'small',
     labelledBody: true,
@@ -69,7 +69,7 @@ async function backdropFile(index, width, height) {
   return new File([blob], `Scene ${index + 1} backdrop.png`, { type: 'image/png' });
 }
 
-/** Timed words heard in a voice asset (seconds), through Puter speech to text. */
+/** Timed words heard in a voice asset (seconds), through Everything speech to text. */
 async function heardWords(library, asset, { signal } = {}) {
   const clip = makeClip('audio', { assetId: asset.id, duration: asset.duration });
   const mini = { settings: { width: 16, height: 9, fps: 30 }, assets: { [asset.id]: asset }, tracks: [{ id: 'voice', kind: 'audio', locked: false, hidden: false, muted: false, clips: [clip] }] };
@@ -77,10 +77,10 @@ async function heardWords(library, asset, { signal } = {}) {
   return transcribePiece(mix, STT_RATE, { signal });
 }
 
-/** The real services: Puter AI for words, speech and pictures; media stored in the library. */
-export function puterServices(library) {
+/** The real services: Everything AI for words, speech and pictures; media stored in the library. */
+export function everythingServices(library) {
   return {
-    chat: (p) => puter.ai.chat(p),
+    chat: (p) => everything.ai.chat(p),
     speech: (text, voice) => synthesize(text, voice),
     image: async (prompt, { aspect, style }) => (await generateImage(prompt, { aspect, style })).blob,
     words: (asset, blob, opts) => heardWords(library, asset, opts),
@@ -112,10 +112,10 @@ const field = (label, control, hint) => h('label.aic-field', h('span.aic-label',
 /**
  * Open the dialog.
  *  env       { library, account, store? }  store present = add to the open project
- *  services  defaults to puterServices(env.library)
+ *  services  defaults to everythingServices(env.library)
  *  onProject (projectId) called after a new project is saved (home screen)
  */
-export function openScriptDialog(env, { services = puterServices(env.library), onProject } = {}) {
+export function openScriptDialog(env, { services = everythingServices(env.library), onProject } = {}) {
   const { library, store } = env;
   const opts = savedOpts();
   const save = () => setPref('scriptVideo', { tone: opts.tone, length: opts.length, ratio: opts.ratio, voice: opts.voice, style: opts.style, captions: opts.captions, music: opts.music });
@@ -373,7 +373,7 @@ export function openScriptDialog(env, { services = puterServices(env.library), o
   return { ...d, run, get scenes() { return scenes; }, show };
 }
 
-/** Open the dialog from the editor, or explain that it needs a Puter account. */
+/** Open the dialog from the editor, or explain that it needs an Everything account. */
 export function openScriptVideo(ctx, extra = {}) {
   if (!aiReady(ctx)) return needAiDialog(ctx.account, 'Script to video');
   return openScriptDialog({ library: ctx.library, account: ctx.account, store: ctx.store }, extra);

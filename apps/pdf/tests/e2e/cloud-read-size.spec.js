@@ -9,14 +9,14 @@ for (const source of ['picker', 'desktop'])
       const doc = await PDFDocument.create();
       doc.addPage([200, 200]);
       const bytes = Buffer.from(await doc.save()).toString('base64');
-      await page.route('**/sdk/puter.js', (route) =>
+      await page.route('**/sdk/everything.js', (route) =>
         route.fulfill({
           contentType: 'application/javascript',
           body: `
         window.cloudItem = {path:'PDF Editor/large.pdf', name:'large.pdf', ${metadata === 'stale' ? 'size:1,' : ''}};
         window.cloudBuffers = 0;
         window.cloudMode = 'large';
-        window.puter = {
+        window.everything = {
           env:'app', auth:{getUser:async()=>({username:'test-user'})},
           fs:{readdir:async()=>[], read:async()=>window.cloudMode === 'large' ? {
             size:100*1024*1024+1,
@@ -30,7 +30,7 @@ for (const source of ['picker', 'desktop'])
       await expect.poll(() => page.evaluate(() => typeof window.openItems)).toBe('function');
       const open = async () => {
         if (source === 'picker')
-          await page.getByRole('button', { name: 'Open from Puter', exact: true }).click();
+          await page.getByRole('button', { name: 'Open from Everything', exact: true }).click();
         else await page.evaluate(() => window.openItems([window.cloudItem]));
       };
       await open();

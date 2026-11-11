@@ -8,9 +8,9 @@ import { store } from '../store.js'
 import { mountApp } from './app.js'
 import { contactKey } from '../model.js'
 
-function stubPuter() {
+function stubEverything() {
   const kv = new Map()
-  window.puter = {
+  window.everything = {
     env: 'web',
     auth: { isSignedIn: () => true, getUser: async () => ({}) },
     kv: {
@@ -39,7 +39,7 @@ function shiftClick(el) {
 }
 
 async function boot() {
-  const kv = stubPuter()
+  const kv = stubEverything()
   // Sorted first-name order is Ann, Bea, Cal.
   kv.set(contactKey('a'), { id: 'a', firstName: 'Ann' })
   kv.set(contactKey('b'), { id: 'b', firstName: 'Bea' })

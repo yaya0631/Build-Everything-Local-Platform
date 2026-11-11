@@ -30,7 +30,7 @@ describe('server keys', () => {
   });
 
   it('only resolves a host outside localhost:8443 once the app was told about it', () => {
-    // exec() attaches the user's Puter token to whatever URL it is given, so
+    // exec() attaches the user's Everything token to whatever URL it is given, so
     // a link must not be able to point the app at an arbitrary host.
     expect(isTrustedServer('teamchat-abc')).toBe(true);
     expect(isTrustedServer('api.example.com')).toBe(false);

@@ -1,4 +1,4 @@
-// Assisted editing: Generate Image and Edit with Prompt (Puter AI, only when
+// Assisted editing: Generate Image and Edit with Prompt (Everything AI, only when
 // invoked), Upscale (Enhanced Upscale offline, optional AI detail layer), Mask
 // All Objects and Harmonize. Denoise and Sharpen Details are filters (see the
 // filter catalog). Dialog modules load on first use.
@@ -17,8 +17,8 @@ export function installAssist(e: Editor) {
   const lazy = <M,>(load: () => Promise<M>, pick: (m: M) => Command['run']): Command['run'] => async (ed, arg) => pick(await load())(ed, arg);
   const generate = () => import('./generate');
   registerCommand(
-    { id: 'edit.generate-image', label: 'Generate Image…', enabled: (ed) => ed.hasDocument, run: lazy(generate, (m) => m.generateImageDialog), recordable: false, description: 'Create a new layer from a text prompt with Puter AI (needs a Puter account).' },
-    { id: 'edit.edit-with-prompt', label: 'Edit with Prompt…', enabled: (ed) => ed.hasDocument, run: lazy(generate, (m) => m.editWithPromptDialog), recordable: false, description: 'Change the selection or layer by describing the edit, with Puter AI (needs a Puter account).' },
+    { id: 'edit.generate-image', label: 'Generate Image…', enabled: (ed) => ed.hasDocument, run: lazy(generate, (m) => m.generateImageDialog), recordable: false, description: 'Create a new layer from a text prompt with Everything AI (needs an Everything account).' },
+    { id: 'edit.edit-with-prompt', label: 'Edit with Prompt…', enabled: (ed) => ed.hasDocument, run: lazy(generate, (m) => m.editWithPromptDialog), recordable: false, description: 'Change the selection or layer by describing the edit, with Everything AI (needs an Everything account).' },
     { id: 'image.upscale', label: 'Upscale…', shortcut: 'Mod+Alt+Shift+U', enabled: (ed) => ed.hasDocument, run: lazy(() => import('./upscale'), (m) => m.upscaleDialog), description: 'Enlarge the whole image with edge-directed Enhanced Upscale (works offline); optional AI detail layer.' },
     { id: 'layer.mask-all-objects', label: 'Mask All Objects…', enabled: (ed) => ed.hasDocument, run: lazy(() => import('./objects'), (m) => m.maskAllObjectsDialog), description: 'Find each distinct object and create a masked layer, group or saved selection for it.' },
     { id: 'layer.harmonize', label: 'Harmonize…', enabled: (ed) => ed.hasDocument && canHarmonize(ed.layer), run: lazy(() => import('./harmonize'), (m) => m.harmonizeDialog), description: 'Match the layer’s color and tone to the layers beneath it.' },

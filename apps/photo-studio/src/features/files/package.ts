@@ -3,7 +3,7 @@
 // when possible, otherwise from the copy kept in the project.
 import type { Editor } from '../../editor';
 import { serialize } from '../../model/serialization';
-import { download } from '../../persistence/puter';
+import { download } from '../../persistence/everything';
 import { readLinkedFile } from '../embedded/linked';
 import { uniqueName, zipStore, type ZipEntry } from './zip';
 

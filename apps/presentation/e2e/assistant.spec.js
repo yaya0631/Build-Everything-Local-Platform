@@ -2,14 +2,14 @@ import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { addText, ribbonButton, themeDialog } from "./editor-commands.js";
 
-// Puter with a scripted AI: each request takes the next reply from
+// Everything with a scripted AI: each request takes the next reply from
 // window.__replies (a list of stream parts) and is kept in window.__requests.
 // A { type: "gate" } part holds the reply until the test calls window.__gate.
-async function mockPuter(page) {
-  await page.route("**/sdk/puter.js", (route) =>
+async function mockEverything(page) {
+  await page.route("**/sdk/everything.js", (route) =>
     route.fulfill({
       contentType: "application/javascript",
-      body: `(()=>{window.__requests=[];window.__replies=[];window.puter={env:"web",auth:{isSignedIn:async()=>false,getUser:async()=>null,signIn:async()=>{},signOut:async()=>{}},fs:{readdir:async()=>[],write:async()=>({})},ui:{onLaunchedWithItems:()=>{}},ai:{chat:async(messages,options)=>{window.__requests.push({messages:JSON.parse(JSON.stringify(messages)),options:{...options,tools:options.tools?.length}});const parts=window.__replies.shift()||[{type:"text",text:"Done."}];return (async function*(){for(const part of parts){if(part.type==="gate"){await new Promise(r=>window.__gate=r);continue;}await new Promise(r=>setTimeout(r,20));yield part;}})();}}};})();`,
+      body: `(()=>{window.__requests=[];window.__replies=[];window.everything={env:"web",auth:{isSignedIn:async()=>false,getUser:async()=>null,signIn:async()=>{},signOut:async()=>{}},fs:{readdir:async()=>[],write:async()=>({})},ui:{onLaunchedWithItems:()=>{}},ai:{chat:async(messages,options)=>{window.__requests.push({messages:JSON.parse(JSON.stringify(messages)),options:{...options,tools:options.tools?.length}});const parts=window.__replies.shift()||[{type:"text",text:"Done."}];return (async function*(){for(const part of parts){if(part.type==="gate"){await new Promise(r=>window.__gate=r);continue;}await new Promise(r=>setTimeout(r,20));yield part;}})();}}};})();`,
     }),
   );
 }
@@ -25,7 +25,7 @@ const toolCall = (name, input, id = `call_${name}`) => ({
 // Specs start with the assistant closed (playwright.config.js), the way the
 // user who closed it last time finds it.
 test.beforeEach(async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto("/");
   await expect(
     page.getByRole("button", { name: "Present", exact: true }),
@@ -289,9 +289,9 @@ test("a failed request says what to do and can be tried again", async ({
 }, info) => {
   test.skip(info.project.name !== "desktop", "one layout covers the flow");
   await page.evaluate(() => {
-    const chat = window.puter.ai.chat;
+    const chat = window.everything.ai.chat;
     let failed = false;
-    window.puter.ai.chat = async (...args) => {
+    window.everything.ai.chat = async (...args) => {
       if (!failed) {
         failed = true;
         throw { error: { message: "Too many requests", code: "rate_limited" } };
@@ -317,9 +317,9 @@ test("changes made before a failure keep their Undo when tried again", async ({
   test.skip(info.project.name !== "desktop", "one layout covers the flow");
   // The request after the tool call fails once.
   await page.evaluate(() => {
-    const chat = window.puter.ai.chat;
+    const chat = window.everything.ai.chat;
     let calls = 0;
-    window.puter.ai.chat = async (...args) => {
+    window.everything.ai.chat = async (...args) => {
       if (++calls === 2)
         throw { error: { message: "Too many requests", code: "rate_limited" } };
       return chat(...args);

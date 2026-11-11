@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { installPuterMock } from './helpers/puter-mock.js';
+import { installEverythingMock } from './helpers/everything-mock.js';
 import { Store } from '../src/lib/store.js';
 import {
   validateBackup, prepareImportedProject, describeBackup, parseBackupFile,
@@ -12,7 +12,7 @@ let store;
 
 beforeEach(async () => {
   vi.useFakeTimers();
-  mock = installPuterMock({ username: 'nadia' });
+  mock = installEverythingMock({ username: 'nadia' });
   store = new Store();
   await store.init();
 });

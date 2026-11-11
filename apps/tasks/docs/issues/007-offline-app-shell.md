@@ -11,8 +11,8 @@ The app has a manifest, icons, and iOS meta tags (`index.html`,
 localStorage mirror, dirty-write flushing, an offline banner. But there is
 no service worker anywhere in the project, so the app *shell* cannot load
 offline: an installed PWA or a browser tab opened without a connection
-gets a network error (or the explicit "Could not reach Puter" screen from
-`src/main.js`, since the Puter SDK loads from `/sdk/`).
+gets a network error (or the explicit "Could not reach Everything" screen from
+`src/main.js`, since the Everything SDK loads from `/sdk/`).
 All the offline plumbing exists, yet the one scenario it's for — opening
 your tasks with no signal — fails at the front door. Chromium also gates
 installability on a fetch-handling service worker.
@@ -22,7 +22,7 @@ installability on a fetch-handling service worker.
 - Add a small hand-rolled service worker (no workbox needed at this size):
   precache the built shell (HTML/JS/CSS/icons) at install,
   stale-while-revalidate for same-origin assets, cache-first with
-  background refresh for the Puter SDK script.
+  background refresh for the Everything SDK script.
 - Offline boot path in `main.js`: when the SDK is unreachable but a
   localStorage mirror exists, start read-write against the mirror instead
   of showing the error screen — the store already queues failed writes and

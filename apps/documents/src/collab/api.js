@@ -19,7 +19,7 @@ export class CollabError extends Error {
 
 const isDevServer = server => /^https?:\/\/(127\.0\.0\.1|localhost|[a-z0-9.-]+\.localhost)(:\d+)?\/__collab/.test(server);
 
-export async function call(puter, server, input) {
+export async function call(everything, server, input) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), input.op === 'create' || input.op === 'base' ? 120_000 : 30_000);
   try {
@@ -27,17 +27,17 @@ export async function call(puter, server, input) {
     const body = JSON.stringify(input);
     let res;
     if (isDevServer(server)) {
-      const user = await puter.auth.getUser();
+      const user = await everything.auth.getUser();
       try { res = await fetch(`${server}/api`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-collab-dev-user': JSON.stringify({ uuid: user.uuid, username: user.username }) }, body, signal: controller.signal }); }
       catch { throw new CollabError('Could not reach the shared document. Check your connection; changes are kept and sent when it returns.'); }
     } else {
-      let headers = await authorize(puter, server, body);
+      let headers = await authorize(everything, server, body);
       const send = async () => {
-        try { return await puter.workers.exec(`${server}/api`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...headers }, body, signal: controller.signal, redirect: 'error' }); }
+        try { return await everything.workers.exec(`${server}/api`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...headers }, body, signal: controller.signal, redirect: 'error' }); }
         catch { throw new CollabError('Could not reach the shared document. Check your connection; changes are kept and sent when it returns.'); }
       };
       res = await send();
-      if (res.status === 401 && refuseCredential(puter, headers)) { headers = await authorize(puter, server, body); res = await send(); }
+      if (res.status === 401 && refuseCredential(everything, headers)) { headers = await authorize(everything, server, body); res = await send(); }
     }
     const data = await res.json().catch(() => null);
     if (res.ok && !data) throw new CollabError('The shared document did not answer. Try again shortly.');
@@ -51,11 +51,11 @@ export async function call(puter, server, input) {
  * a worker this account created and recorded in its private KV is updated; an
  * invitation link never triggers a deployment. The mock SDK names the dev server.
  */
-export async function deploy(puter, progress = () => {}, fetchBundle = defaultBundle) {
-  if (puter.collabDevServer) return puter.collabDevServer;
-  const account = puter.authToken;
-  const check = () => { if (puter.authToken !== account) throw new Error('Your Puter account changed. Try again.'); };
-  let config = await puter.kv.get(WORKER_KEY);
+export async function deploy(everything, progress = () => {}, fetchBundle = defaultBundle) {
+  if (everything.collabDevServer) return everything.collabDevServer;
+  const account = everything.authToken;
+  const check = () => { if (everything.authToken !== account) throw new Error('Your Everything account changed. Try again.'); };
+  let config = await everything.kv.get(WORKER_KEY);
   check();
   progress('Preparing the collaboration server…');
   const source = await fetchBundle();
@@ -64,22 +64,22 @@ export async function deploy(puter, progress = () => {}, fetchBundle = defaultBu
   check();
   if (!config) {
     const name = `documents-${crypto.randomUUID().replaceAll('-', '').slice(0, 20)}`;
-    const file = await puter.fs.write('documents-collab/documents-worker.js', source, { overwrite: true, dedupeName: false, createMissingParents: true });
+    const file = await everything.fs.write('documents-collab/documents-worker.js', source, { overwrite: true, dedupeName: false, createMissingParents: true });
     check();
-    const deployed = await puter.workers.create(name, file.path);
+    const deployed = await everything.workers.create(name, file.path);
     check();
     config = { name, server: workerURL(deployed.url || `http://${name}.localhost:8443`), path: file.path, build };
-    await puter.kv.set(WORKER_KEY, config);
+    await everything.kv.set(WORKER_KEY, config);
   } else if (config.build !== build) {
-    await puter.fs.write(config.path, source, { overwrite: true, dedupeName: false });
+    await everything.fs.write(config.path, source, { overwrite: true, dedupeName: false });
     check();
     config = { ...config, build };
-    await puter.kv.set(WORKER_KEY, config);
+    await everything.kv.set(WORKER_KEY, config);
   }
   progress('Starting the collaboration server…');
   for (let attempt = 0; attempt < 20; attempt++) {
     try {
-      const res = await puter.workers.exec(`${workerURL(config.server)}/health`, { headers: { 'x-puter-no-auth': '1' }, redirect: 'error' });
+      const res = await everything.workers.exec(`${workerURL(config.server)}/health`, { headers: { 'x-everything-no-auth': '1' }, redirect: 'error' });
       if (res.ok && (await res.json()).build === config.build) return workerURL(config.server);
     } catch { /* still starting */ }
     check();

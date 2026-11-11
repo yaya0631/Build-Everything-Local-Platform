@@ -1,24 +1,24 @@
 /**
  * Wire protocol and access control for the Contacts app-to-app API.
  *
- * Contacts exposes a small RPC surface to *other Puter apps* over an
+ * Contacts exposes a small RPC surface to *other Everything apps* over an
  * AppConnection (http://localhost:8443/Objects/AppConnection/). A caller
- * launches us with `puter.ui.launchApp('contacts', { service: 'contacts-api' })`
+ * launches us with `everything.ui.launchApp('contacts', { service: 'contacts-api' })`
  * and then talks to the returned connection with `postMessage`; we answer on the
- * connection we get back from `puter.ui.parentApp()`.
+ * connection we get back from `everything.ui.parentApp()`.
  *
  * ── Access control ───────────────────────────────────────────────────────────
  * The address book is private data, so the API is closed by default: only the
  * apps in ALLOWED_CALLERS may use it, and each one only gets the methods its
  * entry grants. The caller's identity is NOT taken from the message — a caller
- * could claim anything — but from the `puter.source_app.name` query parameter,
- * which the Puter desktop stamps onto our iframe URL from the *calling
+ * could claim anything — but from the `everything.source_app.name` query parameter,
+ * which the Everything desktop stamps onto our iframe URL from the *calling
  * process*. An app cannot set it for a window it did not launch, and cannot
  * change ours after the fact.
  *
  * Residual limitation, stated plainly: the iframe/postMessage model gives a
  * child no way to cryptographically verify its parent, so these checks hold
- * inside a genuine Puter desktop session (the environment they're written for)
+ * inside a genuine Everything desktop session (the environment they're written for)
  * and are not a defence against a page that embeds this app itself and forges
  * launch parameters. The env guard in `readLaunchContext` is what keeps the API
  * from being served on the open web at all.
@@ -68,7 +68,7 @@ export const READ_METHODS = ['ping', 'list', 'search', 'suggest', 'get']
 
 /**
  * Which apps may call us, and what each may do. `'*'` grants every method in
- * METHODS; an array grants exactly those methods. Keys are Puter app *names*
+ * METHODS; an array grants exactly those methods. Keys are Everything app *names*
  * (as published, e.g. `calendar` for calendar.localhost:8443).
  *
  * This is the only gate, and it governs both protocols: a grant is a set of
@@ -125,31 +125,31 @@ export function grantedMethods(appName, allowed = ALLOWED_CALLERS) {
 }
 
 /**
- * Read who launched us and how, from the launch parameters the Puter desktop
+ * Read who launched us and how, from the launch parameters the Everything desktop
  * put on our URL (see the access-control note above).
  *
- * @returns {{ callerApp: string, serviceMode: boolean, inPuterApp: boolean }}
+ * @returns {{ callerApp: string, serviceMode: boolean, inEverythingApp: boolean }}
  */
 export function readLaunchContext(win = typeof window !== 'undefined' ? window : undefined) {
-  const empty = { callerApp: '', serviceMode: false, inPuterApp: false }
+  const empty = { callerApp: '', serviceMode: false, inEverythingApp: false }
   if (!win) return empty
-  const puter = win.puter
-  // `env === 'app'` means we're an app window inside the Puter desktop, which
+  const everything = win.everything
+  // `env === 'app'` means we're an app window inside the Everything desktop, which
   // is the only place an AppConnection exists. On the open web (or in the
   // desktop's own GUI context) there is no parent app and no API to serve.
-  const inPuterApp = Boolean(puter && puter.env === 'app')
-  if (!inPuterApp) return empty
+  const inEverythingApp = Boolean(everything && everything.env === 'app')
+  if (!inEverythingApp) return empty
 
   let callerApp = ''
   try {
     const params = new URLSearchParams(win.location.search)
-    callerApp = (params.get('puter.source_app.name') || '').trim().toLowerCase()
+    callerApp = (params.get('everything.source_app.name') || '').trim().toLowerCase()
   } catch (_e) {
     /* no readable location — treat as an unidentified caller */
   }
 
-  const args = (puter && puter.args) || {}
-  return { callerApp, serviceMode: SERVICE_ARGS.includes(args.service), inPuterApp }
+  const args = (everything && everything.args) || {}
+  return { callerApp, serviceMode: SERVICE_ARGS.includes(args.service), inEverythingApp }
 }
 
 /** True when `msg` looks like a request on our channel. */

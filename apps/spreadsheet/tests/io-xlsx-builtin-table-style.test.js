@@ -14,11 +14,11 @@ async function excelTable(style) {
   wb.addTable(id, { r1: 0, c1: 0, r2: 3, c2: 2 }, {});
   const zip = X.CFB.read(await saved(wb), { type: 'array' });
   const edit = (path, fn) => { const e = X.CFB.find(zip, path); e.content = new TextEncoder().encode(fn(new TextDecoder().decode(e.content))); e.size = e.content.length; };
-  edit('/xl/tables/table1.xml', (xml) => xml.replace(/name="PuterTableStyle1"/, `name="${style}"`));
+  edit('/xl/tables/table1.xml', (xml) => xml.replace(/name="EverythingTableStyle1"/, `name="${style}"`));
   edit('/xl/styles.xml', (xml) => xml.replace(/<tableStyles\b[\s\S]*?<\/tableStyles>/, ''));
   // Without this app's own record of the book, as a file from Excel has none.
   const book = X.read(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), { type: 'array' });
-  edit(`/xl/worksheets/sheet${book.SheetNames.indexOf('_puter_meta') + 1}.xml`, (xml) => xml.replace(/<sheetData>[\s\S]*<\/sheetData>/, '<sheetData/>'));
+  edit(`/xl/worksheets/sheet${book.SheetNames.indexOf('_everything_meta') + 1}.xml`, (xml) => xml.replace(/<sheetData>[\s\S]*<\/sheetData>/, '<sheetData/>'));
   return new Uint8Array(X.CFB.write(zip, { type: 'array', fileType: 'zip' }));
 }
 
@@ -31,7 +31,7 @@ it('saves a table in an Excel built-in style with that style, through repeated s
   for (let round = 0; round < 2; round++) {
     const bytes = await saved(wb);
     expect(part(bytes, '/xl/tables/table1.xml')).toMatch(/<tableStyleInfo name="TableStyleMedium9"/);
-    expect(part(bytes, '/xl/styles.xml')).not.toContain('PuterTableStyle');
+    expect(part(bytes, '/xl/styles.xml')).not.toContain('EverythingTableStyle');
     wb = await workbookFromFile(bytes, 'tables.xlsx');
   }
   const id = wb.activeSheetId, table = wb.sheet(id).tables[0];
@@ -45,7 +45,7 @@ it('replaces the built-in style with one chosen here', async () => {
   const id = wb.activeSheetId, table = wb.sheet(id).tables[0];
   wb.updateTable(id, table.id, { style: table.style, customStyle: null });
   const bytes = await saved(wb);
-  expect(part(bytes, '/xl/tables/table1.xml')).toMatch(/<tableStyleInfo name="PuterTableStyle1"/);
+  expect(part(bytes, '/xl/tables/table1.xml')).toMatch(/<tableStyleInfo name="EverythingTableStyle1"/);
   wb.undo();
   expect(part(await saved(wb), '/xl/tables/table1.xml')).toMatch(/<tableStyleInfo name="TableStyleLight15"/);
 });

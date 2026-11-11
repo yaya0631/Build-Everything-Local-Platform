@@ -46,7 +46,7 @@ export function installAssistant(e: Editor) {
       label: 'Describe an Edit…',
       shortcut: 'Mod+Alt+Shift+D',
       recordable: false,
-      description: 'Describe a change in words; the Assistant plans it with real commands for you to review and run (Puter AI).',
+      description: 'Describe a change in words; the Assistant plans it with real commands for you to review and run (Everything AI).',
       run: (ed, arg) => openAssistant(ed, arg && typeof arg === 'object' && typeof (arg as { prompt?: unknown }).prompt === 'string' ? (arg as { prompt: string }).prompt : undefined),
       prefetch: panel.prefetch,
     },

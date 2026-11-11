@@ -7,8 +7,8 @@
  *  - Fill Bleed extends an image that reaches the artboard edges out to
  *    the document bleed, so it prints to the trimmed edge
  *
- * With Puter AI (signed in, online) the new areas are generated: the
- * padded image and a mask of the new areas go to puter.ai.txt2img as
+ * With Everything AI (signed in, online) the new areas are generated: the
+ * padded image and a mask of the new areas go to everything.ai.txt2img as
  * input images and only the masked margins of the answer are kept. Without
  * it, or when chosen, the image is extended on this device (outpaint.js:
  * a mirror fill refined by patch search). The image object keeps its
@@ -106,7 +106,7 @@ export function expandPrompt(prompt) {
   );
 }
 
-/** Generated margins from Puter AI, blended over a local fill. */
+/** Generated margins from Everything AI, blended over a local fill. */
 async function aiExpansion(client, px, by, prompt, { signal, onProgress }) {
   const { image, mask } = composeExpansion(px, by);
   const s = Math.min(1, AI_SIDE / Math.max(image.width, image.height));
@@ -192,7 +192,7 @@ export async function expandDialog(app, { title, margins = false } = {}) {
         label: 'Fill new areas',
         value: prev.method === 'local' ? 'local' : 'ai',
         options: [
-          { value: 'ai', label: 'Generate with Puter AI' },
+          { value: 'ai', label: 'Generate with Everything AI' },
           { value: 'local', label: 'Continue the edges on this device' },
         ],
       },
@@ -200,7 +200,7 @@ export async function expandDialog(app, { title, margins = false } = {}) {
     );
   }
   const description = aiOk
-    ? 'Puter AI paints the new areas to continue the picture; the original pixels stay as they are. On this device the edges are mirrored and refined with matching patches of the image.'
+    ? 'Everything AI paints the new areas to continue the picture; the original pixels stay as they are. On this device the edges are mirrored and refined with matching patches of the image.'
     : `${st.message} The image is extended on this device instead: its edges are mirrored and refined with matching patches of the image.`;
   const v = await app.dialogs.form({ title, description, okLabel: 'Expand', fields });
   if (!v) return null;
@@ -210,7 +210,7 @@ export async function expandDialog(app, { title, margins = false } = {}) {
   return out;
 }
 
-/** Run an expansion with progress, Puter AI first when chosen (offering the local fill if it fails). */
+/** Run an expansion with progress, Everything AI first when chosen (offering the local fill if it fails). */
 async function runExpansion(app, imageId, target, opts, label) {
   let client = null;
   if (opts.method === 'ai') {

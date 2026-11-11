@@ -1,8 +1,8 @@
-// Saving native projects to Puter, opening from Puter, and Open Recent.
+// Saving native projects to Everything, opening from Everything, and Open Recent.
 import type { Editor } from '../../editor';
 import type { DocumentSession } from '../../app/session';
 import { serialize } from '../../model/serialization';
-import { download } from '../../persistence/puter';
+import { download } from '../../persistence/everything';
 import { cloudRead, cloudSaveAs, cloudWrite, pickCloudFiles } from './cloud';
 import { openFile } from './open';
 import { noteRecent, setRecentOpener, storedBlob, type RecentSource } from './recent';
@@ -16,13 +16,13 @@ function markSaved(e: Editor, s: DocumentSession, doc: DocumentSession['saved'],
   s.fileName = item.name;
   // Edits made while the picker was open stay dirty relative to what was written.
   s.saved = doc;
-  noteRecent(e, item.name, { kind: 'puter', path: item.path });
+  noteRecent(e, item.name, { kind: 'everything', path: item.path });
   for (const hook of e.saveHooks) hook(s, blob);
   e.update();
   void emitAppEvent('after-save', s);
 }
 
-/** Save the project to its Puter path, or ask where to save it the first time. */
+/** Save the project to its Everything path, or ask where to save it the first time. */
 export async function save(e: Editor) {
   if (e.session.saveHandler) return e.session.saveHandler();
   await emitAppEvent('before-save', e.session);
@@ -32,23 +32,23 @@ export async function save(e: Editor) {
   if (s.storage.path) {
     const item = await cloudWrite(s.storage.path, blob);
     markSaved(e, s, doc, item, blob);
-    e.message(`Saved ${item.name} to Puter`);
+    e.message(`Saved ${item.name} to Everything`);
     return;
   }
   saveAsWith(e, s, doc, blob);
 }
 function saveAsWith(e: Editor, s: DocumentSession, doc: NonNullable<DocumentSession['saved']>, blob: Blob, copy = false) {
-  // The Puter picker never settles when dismissed: do not hold the editor busy.
+  // The Everything picker never settles when dismissed: do not hold the editor busy.
   e.release();
   void cloudSaveAs(blob, projectName(s.fileName?.replace(/\.[^.]+$/, '') || doc.name))
     .then(async (item) => {
       if (copy) {
-        noteRecent(e, item.name, { kind: 'puter', path: item.path });
+        noteRecent(e, item.name, { kind: 'everything', path: item.path });
         e.message(`Saved a copy as ${item.name}`);
         return;
       }
       markSaved(e, s, doc, item, blob);
-      e.message(`Saved ${item.name} to Puter`);
+      e.message(`Saved ${item.name} to Everything`);
     })
     .catch((error) => e.message(errorText(error)));
 }
@@ -77,7 +77,7 @@ export function openFromCloud(e: Editor) {
   void pickCloudFiles(true)
     .then((items) =>
       e.run(async () => {
-        for (const item of items) await openFile(e, await item.read(), item.name, false, { source: { kind: 'puter', path: item.path } });
+        for (const item of items) await openFile(e, await item.read(), item.name, false, { source: { kind: 'everything', path: item.path } });
       }),
     )
     .catch((error) => e.message(errorText(error)));
@@ -86,7 +86,7 @@ export function openFromCloud(e: Editor) {
 /** Open a file from the recent list. */
 export async function openRecentEntry(e: Editor, entry: { name: string; source: RecentSource }) {
   const src = entry.source;
-  const blob = src.kind === 'puter' ? await cloudRead(src.path) : src.kind === 'stored' ? await storedBlob(src.key) : src.blob;
+  const blob = src.kind === 'everything' ? await cloudRead(src.path) : src.kind === 'stored' ? await storedBlob(src.key) : src.blob;
   await openFile(e, blob, entry.name, false, { source: src });
 }
 export function installRecentOpener() {

@@ -65,7 +65,7 @@ describe('service worker after an update', () => {
     // What the previous build left behind.
     const old = await storage.api.open('fleet-previous');
     await old.put('./index.html', new Response('<!doctype html>old build'));
-    await old.put('/sdk/puter.js', new Response('old sdk'));
+    await old.put('/sdk/everything.js', new Response('old sdk'));
 
     let online = true;
     const sw = loadWorker(async (u) => {
@@ -81,6 +81,6 @@ describe('service worker after an update', () => {
 
     online = false;
     expect(await (await sw.request('/', { mode: 'navigate' })).text()).toBe('<!doctype html>new build');
-    expect(await (await sw.request('/sdk/puter.js')).text()).toBe('new sdk');
+    expect(await (await sw.request('/sdk/everything.js')).text()).toBe('new sdk');
   });
 });

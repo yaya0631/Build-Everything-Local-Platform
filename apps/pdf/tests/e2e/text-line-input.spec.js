@@ -7,7 +7,7 @@ for (const paragraph of [false, true]) {
     }) => {
       const errors = [];
       page.on('pageerror', (error) => errors.push(error.message));
-      await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
+      await page.route('**/sdk/everything.js', (route) => route.fulfill({ body: '' }));
       await page.goto('/#library');
       await page.evaluate(
         async ({ paragraph, position }) => {
@@ -73,7 +73,7 @@ for (const acrossFragments of [false, true]) {
   test(`moving selected text ${acrossFragments ? 'across fragments' : 'within a fragment'} preserves styles and native undo`, async ({
     page,
   }) => {
-    await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
+    await page.route('**/sdk/everything.js', (route) => route.fulfill({ body: '' }));
     await page.goto('/#library');
     const points = await page.evaluate(async (acrossFragments) => {
       const { textLineInput } = await import('/src/text-line-input.js');
@@ -183,7 +183,7 @@ for (const acrossFragments of [false, true]) {
 test('dragged text without source wrappers follows later size and color edits', async ({
   page,
 }) => {
-  await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
+  await page.route('**/sdk/everything.js', (route) => route.fulfill({ body: '' }));
   await page.goto('/#library');
   const points = await page.evaluate(async () => {
     const { textLineInput } = await import('/src/text-line-input.js');

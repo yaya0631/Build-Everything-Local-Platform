@@ -6,7 +6,7 @@ import { homeView } from '../src/views/home.js';
 import { closeMenu } from '../src/ui/menu.js';
 import { Workbook } from '../src/core/workbook.js';
 import * as S from '../src/core/selection.js';
-import * as P from '../src/lib/puter.js';
+import * as P from '../src/lib/everything.js';
 
 vi.mock('../src/lib/session.js', () => ({ session: { settings: {}, username: 'Test user', signedOut: false, addEventListener() {}, removeEventListener() {} } }));
 vi.mock('../src/lib/recent.js', () => ({ refreshRecent: async () => [], recentFiles: () => [], forgetRecent() {} }));

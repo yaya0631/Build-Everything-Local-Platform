@@ -71,7 +71,7 @@ export interface EncodedFrame {
 /** Build a complete WebM file from encoded frames. */
 export function muxWebM(frames: EncodedFrame[], opts: { width: number; height: number; codec: 'V_VP8' | 'V_VP9'; duration: number }): Uint8Array[] {
   const header = element(0x1a45dfa3, [...uintEl(0x4286, 1), ...uintEl(0x42f7, 1), ...uintEl(0x42f2, 4), ...uintEl(0x42f3, 8), ...strEl(0x4282, 'webm'), ...uintEl(0x4287, 2), ...uintEl(0x4285, 2)]);
-  const info = element(0x1549a966, [...uintEl(0x2ad7b1, 1000000), ...strEl(0x4d80, 'puter-3d'), ...strEl(0x5741, 'puter-3d'), ...floatEl(0x4489, opts.duration)]);
+  const info = element(0x1549a966, [...uintEl(0x2ad7b1, 1000000), ...strEl(0x4d80, 'everything-3d'), ...strEl(0x5741, 'everything-3d'), ...floatEl(0x4489, opts.duration)]);
   const video = element(0xe0, [...uintEl(0xb0, opts.width), ...uintEl(0xba, opts.height)]);
   const track = element(0xae, [...uintEl(0xd7, 1), ...uintEl(0x73c5, 1), ...uintEl(0x9c, 0), ...strEl(0x86, opts.codec), ...uintEl(0x83, 1), ...video]);
   const tracks = element(0x1654ae6b, track);

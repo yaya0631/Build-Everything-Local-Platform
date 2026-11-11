@@ -324,7 +324,7 @@ export class HomePage {
   }
 
   async purge(b) {
-    const ok = await confirmDialog({ title: `Delete ${b.name} forever?`, message: 'The base, its records and its attachments are deleted from your Puter cloud. This cannot be undone.', confirmLabel: 'Delete forever', danger: true });
+    const ok = await confirmDialog({ title: `Delete ${b.name} forever?`, message: 'The base, its records and its attachments are deleted from your Everything cloud. This cannot be undone.', confirmLabel: 'Delete forever', danger: true });
     if (ok) await this.store.purgeBase(b.id);
   }
 

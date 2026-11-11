@@ -11,10 +11,10 @@ afterEach(() => { for (const c of open.splice(0)) c.close(); });
 async function setup() {
   const env = environment();
   const wb = new Workbook({ sheets: [{ name: 'Budget' }] });
-  const room = await RoomClient.create({ puter: env.sdk(owner), server: SERVER, wb, name: 'Budget', file: null });
+  const room = await RoomClient.create({ everything: env.sdk(owner), server: SERVER, wb, name: 'Budget', file: null });
   const token = (await call(env.sdk(owner), SERVER, { op: 'invite', room, role: 'editor' })).token;
   const join = async (user, store) => {
-    const client = new RoomClient({ puter: env.sdk(user), server: SERVER, room, token: user === owner ? undefined : token, store, poll: 50, noPeers: true });
+    const client = new RoomClient({ everything: env.sdk(user), server: SERVER, room, token: user === owner ? undefined : token, store, poll: 50, noPeers: true });
     open.push(client);
     await client.open();
     return client;

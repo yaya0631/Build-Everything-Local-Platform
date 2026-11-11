@@ -71,7 +71,7 @@ export class Editor extends Emitter {
   constructor(doc, { file = null, prefs } = {}) {
     super();
     this.doc = doc;
-    this.file = file; // { path, name, kind: 'puter'|'local'|null }
+    this.file = file; // { path, name, kind: 'everything'|'local'|null }
     this.prefs = prefs;
     this.view = new Viewport();
     this.selection = new SelectionSet();

@@ -1,10 +1,10 @@
 // Account control in the app bar: a sign-in button when signed out, the
 // user's profile picture with a menu when signed in. Sign-out is hidden when
-// running inside the Puter desktop (puter.env === 'app').
+// running inside the Everything desktop (everything.env === 'app').
 
 import { h } from '../lib/dom.js';
 import { icon } from './icons.js';
-import * as puter from '../storage/puter.js';
+import * as everything from '../storage/everything.js';
 
 export function createAccount(app) {
   const el = h('div.account');
@@ -13,19 +13,19 @@ export function createAccount(app) {
 
   const render = () => {
     el.replaceChildren();
-    if (!puter.sdk()) return;
-    if (!puter.isSignedIn()) {
+    if (!everything.sdk()) return;
+    if (!everything.isSignedIn()) {
       el.append(
         h(
           'button.btn.account-signin',
           {
             type: 'button',
-            title: 'Sign in to Puter to save projects to your cloud',
+            title: 'Sign in to Everything to save projects to your cloud',
             onclick: async () => {
               try {
-                if (await puter.signIn()) await refresh();
+                if (await everything.signIn()) await refresh();
               } catch (err) {
-                // Puter rejects with { error, msg }; closing the popup is not a failure.
+                // Everything rejects with { error, msg }; closing the popup is not a failure.
                 if (err?.error !== 'auth_window_closed') app.notify(err?.msg || err?.message || 'Sign in failed.', { error: true });
               }
             },
@@ -46,14 +46,14 @@ export function createAccount(app) {
     btn.addEventListener('click', () => {
       const r = btn.getBoundingClientRect();
       const items = [{ type: 'cmd', label: `Signed in as ${name}`, enabled: false }];
-      if (puter.canSignOut()) {
+      if (everything.canSignOut()) {
         items.push({ type: 'sep' });
         items.push({
           type: 'cmd',
           label: 'Sign Out',
           enabled: true,
           run: async () => {
-            await puter.signOut();
+            await everything.signOut();
             user = null;
             picture = null;
             render();
@@ -67,8 +67,8 @@ export function createAccount(app) {
   };
 
   const refresh = async () => {
-    if (puter.isSignedIn()) {
-      [user, picture] = await Promise.all([puter.getUser(), puter.getProfilePicture()]);
+    if (everything.isSignedIn()) {
+      [user, picture] = await Promise.all([everything.getUser(), everything.getProfilePicture()]);
     }
     render();
     app.emit('account');

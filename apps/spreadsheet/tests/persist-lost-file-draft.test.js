@@ -3,17 +3,17 @@ import { Doc } from '../src/lib/doc.js';
 import { draftKey, saveDraft, loadDraft, listDrafts } from '../src/lib/drafts.js';
 import { Workbook } from '../src/core/workbook.js';
 import { memoryStorage } from './helpers/memory-storage.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 
 let mock;
 // SheetJS is loaded on first use with a real dynamic import; warm it up so no test waits on it.
 beforeAll(async () => { await Doc.blank().toXlsxBlob(); });
-beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); mock = installMockPuter(); vi.useFakeTimers(); });
-afterEach(() => { vi.useRealTimers(); delete globalThis.puter; });
+beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); mock = installMockEverything(); vi.useFakeTimers(); });
+afterEach(() => { vi.useRealTimers(); delete globalThis.everything; });
 
 const text = (json) => json?.sheets[0].cells['0,0'].v;
 
-/** A saved file with a draft of later edits that never reached Puter, as a closed tab leaves behind. */
+/** A saved file with a draft of later edits that never reached Everything, as a closed tab leaves behind. */
 async function fileWithDraft() {
   const original = Doc.blank();
   original.wb.setInput(original.wb.activeSheetId, 0, 0, 'saved');
@@ -54,7 +54,7 @@ it('opens the edits made to a file since deleted elsewhere as a new spreadsheet'
 
 it('follows a file renamed elsewhere to where it is now and offers the draft there', async () => {
   const path = await fileWithDraft();
-  await puter.fs.rename(path, 'Plan.xlsx');
+  await everything.fs.rename(path, 'Plan.xlsx');
   const doc = await Doc.fromPath(path);
   try {
     expect(doc.path).toBe('Spreadsheets/Plan.xlsx');
@@ -83,8 +83,8 @@ it('recovers a draft written before the file id was kept as a new spreadsheet', 
 it('still reports a missing file that has no draft, and other failures as they are', async () => {
   await expect(Doc.fromPath('Spreadsheets/Nothing.xlsx')).rejects.toMatchObject({ code: 'subject_does_not_exist' });
   const path = await fileWithDraft();
-  puter.fs.read = async () => { throw new Error('network down'); };
-  puter.fs.stat = async () => { throw new Error('network down'); };
+  everything.fs.read = async () => { throw new Error('network down'); };
+  everything.fs.stat = async () => { throw new Error('network down'); };
   await expect(Doc.fromPath(path)).rejects.toThrow('network down');
   expect(loadDraft(draftKey(path))).not.toBeNull();
 });

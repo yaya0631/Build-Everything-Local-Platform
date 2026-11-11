@@ -17,12 +17,12 @@ async function setup(page) {
       });
     };
   });
-  await page.route('**/sdk/puter.js', (route) =>
+  await page.route('**/sdk/everything.js', (route) =>
     route.fulfill({
       contentType: 'application/javascript',
       body: `
         window.pendingReads = {};
-        window.puter = {
+        window.everything = {
           env: 'app',
           auth: { getUser: async () => ({ username: 'test-user' }) },
           fs: {

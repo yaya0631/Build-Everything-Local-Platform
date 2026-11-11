@@ -1,4 +1,4 @@
-// File → Open Recent and the start screen's recent files. Puter paths persist
+// File → Open Recent and the start screen's recent files. Everything paths persist
 // in localStorage; files opened from this device are kept in browser storage
 // (up to a size and count limit) so they can be reopened after a reload, and
 // each entry keeps a thumbnail captured when it was opened or saved.
@@ -6,7 +6,7 @@ import type { Editor } from '../../editor';
 import { commands, registerCommand } from '../../app/registry';
 import { localStore } from '../../persistence/local-store';
 
-export type RecentSource = { kind: 'puter'; path: string } | { kind: 'local'; blob: Blob } | { kind: 'stored'; key: string };
+export type RecentSource = { kind: 'everything'; path: string } | { kind: 'local'; blob: Blob } | { kind: 'stored'; key: string };
 export type RecentEntry = { name: string; source: RecentSource; time?: number };
 type Entry = RecentEntry;
 const KEY = 'photo-studio-recent';
@@ -24,7 +24,7 @@ function load(): Entry[] {
       for (const s of saved) {
         if (typeof s?.name !== 'string') continue;
         const time = typeof s.time === 'number' ? s.time : undefined;
-        if (typeof s.path === 'string') entries.push({ name: s.name, source: { kind: 'puter', path: s.path }, time });
+        if (typeof s.path === 'string') entries.push({ name: s.name, source: { kind: 'everything', path: s.path }, time });
         else if (typeof s.stored === 'string') entries.push({ name: s.name, source: { kind: 'stored', key: s.stored }, time });
       }
   } catch {
@@ -35,7 +35,7 @@ function load(): Entry[] {
 function persist() {
   try {
     const kept = load().flatMap((x): { name: string; path?: string; stored?: string; time?: number }[] =>
-      x.source.kind === 'puter' ? [{ name: x.name, path: x.source.path, time: x.time }] : x.source.kind === 'stored' ? [{ name: x.name, stored: x.source.key, time: x.time }] : [],
+      x.source.kind === 'everything' ? [{ name: x.name, path: x.source.path, time: x.time }] : x.source.kind === 'stored' ? [{ name: x.name, stored: x.source.key, time: x.time }] : [],
     );
     localStorage.setItem(KEY, JSON.stringify(kept));
   } catch {
@@ -43,10 +43,10 @@ function persist() {
   }
 }
 const same = (a: RecentSource, b: RecentSource) =>
-  a.kind === 'puter' ? b.kind === 'puter' && a.path === b.path : a.kind === 'stored' ? b.kind === 'stored' && a.key === b.key : b.kind === 'local' && a.blob === b.blob;
+  a.kind === 'everything' ? b.kind === 'everything' && a.path === b.path : a.kind === 'stored' ? b.kind === 'stored' && a.key === b.key : b.kind === 'local' && a.blob === b.blob;
 
 /** Key of an entry's thumbnail in browser storage. */
-export const thumbKey = (s: RecentSource) => (s.kind === 'puter' ? `puter:${s.path}` : s.kind === 'stored' ? `stored:${s.key}` : '');
+export const thumbKey = (s: RecentSource) => (s.kind === 'everything' ? `everything:${s.path}` : s.kind === 'stored' ? `stored:${s.key}` : '');
 
 export function recentEntries() {
   return load();
@@ -62,7 +62,7 @@ export function onRecentNoted(f: (entry: Entry) => void) {
   notedListeners.push(f);
 }
 export function noteRecent(e: Editor, name: string, source: RecentSource) {
-  const list = load().filter((x) => !same(x.source, source) && !(source.kind !== 'puter' && x.source.kind !== 'puter' && x.name === name));
+  const list = load().filter((x) => !same(x.source, source) && !(source.kind !== 'everything' && x.source.kind !== 'everything' && x.name === name));
   const entry: Entry = { name, source, time: Date.now() };
   list.unshift(entry);
   entries = list;
@@ -133,11 +133,11 @@ export function syncRecentCommands(e: Editor) {
   list.forEach((entry, i) =>
     registerCommand({
       id: `file.recent.${i}`,
-      label: entry.source.kind === 'puter' ? `${entry.name}  —  ${entry.source.path.replace(/\/[^/]*$/, '') || '/'}` : `${entry.name}  (this device)`,
+      label: entry.source.kind === 'everything' ? `${entry.name}  —  ${entry.source.path.replace(/\/[^/]*$/, '') || '/'}` : `${entry.name}  (this device)`,
       menu: 'file.recent',
       order: i,
       recordable: false,
-      description: entry.source.kind === 'puter' ? entry.source.path : 'Opened from this device',
+      description: entry.source.kind === 'everything' ? entry.source.path : 'Opened from this device',
       run: () => opener?.(e, entry),
     }),
   );

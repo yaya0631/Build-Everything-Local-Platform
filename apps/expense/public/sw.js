@@ -1,4 +1,4 @@
-/* Expenses service worker: app-shell caching. Puter API calls are never cached. */
+/* Expenses service worker: app-shell caching. Everything API calls are never cached. */
 const VERSION = 'expenses-v2';
 const SHELL_CACHE = `${VERSION}-shell`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
@@ -18,8 +18,8 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   if (request.method !== 'GET') return;
   const url = new URL(request.url);
-  const isPuterSdk = url.origin === '/sdk/';
-  if (!isPuterSdk && url.origin !== self.location.origin) return;
+  const isEverythingSdk = url.origin === '/sdk/';
+  if (!isEverythingSdk && url.origin !== self.location.origin) return;
 
   if (request.mode === 'navigate') {
     event.respondWith(

@@ -225,8 +225,8 @@ describe('every workspace screen renders on the sample portfolio', () => {
     const { composeEmail } = await import('../src/views/compose.js');
     const store = ctx.app.store;
     const payloads = [];
-    const saved = { puter: globalThis.puter, demo: ctx.app.demo };
-    globalThis.puter = {
+    const saved = { everything: globalThis.everything, demo: ctx.app.demo };
+    globalThis.everything = {
       workers: {
         exec: async (url, init) => {
           const p = JSON.parse(init.body);
@@ -245,7 +245,7 @@ describe('every workspace screen renders on the sample portfolio', () => {
       expect(msg).toMatchObject({ id: 'msg-earlier', kind: 'announcement', status: 'sent' });
       expect(store.get('messages', 'msg-earlier').results.map((r) => r.status)).toEqual(['sent', 'sent']);
     } finally {
-      globalThis.puter = saved.puter;
+      globalThis.everything = saved.everything;
       ctx.app.demo = saved.demo;
     }
   });

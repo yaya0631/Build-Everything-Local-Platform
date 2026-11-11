@@ -11,7 +11,7 @@ import { LINK_RECOVERY_BUDGET_MS } from '../src/net/rtc.js';
 import * as P from '../src/lib/protocol.js';
 
 /* ------------------------------------------------------------------ *
- * In-memory mock of the Puter Peer API + just enough WebRTC surface   *
+ * In-memory mock of the Everything Peer API + just enough WebRTC surface   *
  * for RoomSession's mesh logic to run under node.                     *
  * ------------------------------------------------------------------ */
 
@@ -53,7 +53,7 @@ class MockConn extends MockEventTarget {
     this.#watchTransport(pc);
   }
 
-  /** Mirrors puter.peer: transport state becomes a link-health signal. */
+  /** Mirrors everything.peer: transport state becomes a link-health signal. */
   #watchTransport(pc) {
     pc?.addEventListener?.('connectionstatechange', () => {
       const state = { connected: 'connected', disconnected: 'unstable', failed: 'recovering' }[
@@ -140,7 +140,7 @@ class MockConn extends MockEventTarget {
   close(reason) {
     if (this.closed) return;
     this.closed = true;
-    // Mirror puter's Zn.#O(): closing a connection closes its underlying
+    // Mirror everything's Zn.#O(): closing a connection closes its underlying
     // RTCPeerConnection (and the far end's, once the datachannel close
     // propagates).
     this.peerconnection?.close();
@@ -159,7 +159,7 @@ class MockServer extends MockEventTarget {
   static count = 0;
   inviteCode = `invite-${++MockServer.count}`;
   closed = false;
-  // Mirror puter's Kn: the server tracks every accepted connection...
+  // Mirror everything's Kn: the server tracks every accepted connection...
   connections = new Set();
   close() {
     this.closed = true;
@@ -169,7 +169,7 @@ class MockServer extends MockEventTarget {
   }
 }
 
-function installMockPuter() {
+function installMockEverything() {
   const registry = new Map();
   const pairs = [];
   // Who is signed in is a property of the page, not of a session, so tests
@@ -257,7 +257,7 @@ function installMockPuter() {
         return dialer;
       },
     },
-    // Make a served invite unreachable, as puter's signaller does when a
+    // Make a served invite unreachable, as everything's signaller does when a
     // host's socket dies: the code stays advertised but no one can dial it.
     _killInvite: (inviteCode, { explicit = false } = {}) => {
       registry.delete(inviteCode);
@@ -267,7 +267,7 @@ function installMockPuter() {
     _blockTransport: (inviteCode, opts = {}) => {
       blocked.set(inviteCode, { hostSees: true, failAfterMs: 100, ...opts });
     },
-    // What newer puter.js does when the signaller socket dies under a
+    // What newer everything.js does when the signaller socket dies under a
     // server: it reopens the socket and creates the server again, which the
     // signaller answers with a NEW invite code — the old one is dead from
     // then on. The library then fires 'reconnect' with the new code.
@@ -391,7 +391,7 @@ afterAll(() => {
 });
 
 beforeEach(() => {
-  globalThis.window = { puter: installMockPuter() };
+  globalThis.window = { everything: installMockEverything() };
   FakeRTCPeerConnection.instances = [];
 });
 
@@ -402,13 +402,13 @@ function makeSession(name, options = {}) {
   return s;
 }
 
-/** Run a host()/join() as a visitor with no Puter session. */
+/** Run a host()/join() as a visitor with no Everything session. */
 function asAnonymous(start) {
-  window.puter._state.signedIn = false;
+  window.everything._state.signedIn = false;
   try {
     return start();
   } finally {
-    window.puter._state.signedIn = true;
+    window.everything._state.signedIn = true;
   }
 }
 
@@ -467,7 +467,7 @@ describe('RoomSession mesh', () => {
   });
 
   it('rides out a negotiation error without pulling the link down', async () => {
-    // puter.peer reports a description the browser refused and carries on;
+    // everything.peer reports a description the browser refused and carries on;
     // when a connection is really finished it closes instead.
     const host = makeSession('Host');
     const code = await host.host();
@@ -477,7 +477,7 @@ describe('RoomSession mesh', () => {
 
     const linkEvents = [];
     host.on('peer-link', (event) => linkEvents.push(event));
-    const { listener } = window.puter.peer._pairs.at(-1);
+    const { listener } = window.everything.peer._pairs.at(-1);
     listener.dispatch('error', { error: new Error('Failed to set remote answer sdp') });
     await new Promise((resolve) => setTimeout(resolve, 20));
 
@@ -526,9 +526,9 @@ describe('RoomSession mesh', () => {
     expect(host.peerCount).toBe(2);
     expect(g1.peerCount).toBe(2);
     expect(g2.peerCount).toBe(2);
-    // g1 and g2 get their own Puter peer connection, negotiated via the host.
-    await waitFor(() => window.puter.peer._pairs.length === 3);
-    expect(window.puter.peer._pairs).toHaveLength(3);
+    // g1 and g2 get their own Everything peer connection, negotiated via the host.
+    await waitFor(() => window.everything.peer._pairs.length === 3);
+    expect(window.everything.peer._pairs).toHaveLength(3);
     expect(g1.roster.get(g2.selfId)).toBeTruthy();
     expect(g2.roster.get(g1.selfId)).toBeTruthy();
   });
@@ -780,7 +780,7 @@ describe('RoomSession mesh', () => {
     // over. We have no link to them — all we get is the flooded claim.
     const successor = makeSession('Successor');
     const newCode = await successor.host();
-    const { dialer } = window.puter.peer._pairs[0]; // our link to the old host
+    const { dialer } = window.everything.peer._pairs[0]; // our link to the old host
     dialer.dispatch('message', {
       data: P.encode(P.makeHostClaim({ hostId: successor.selfId, term: 1, invite: newCode })),
     });
@@ -805,7 +805,7 @@ describe('RoomSession mesh', () => {
     await waitFor(() => host.peerCount === 1);
 
     // The guest's link to us broke one-sidedly and it declared us gone.
-    const { listener } = window.puter.peer._pairs[0]; // our side of that link
+    const { listener } = window.everything.peer._pairs[0]; // our side of that link
     listener.dispatch('message', {
       data: P.encode(P.makeHostClaim({ hostId: guest.selfId, term: 1, invite: 'invite-elsewhere' })),
     });
@@ -824,7 +824,7 @@ describe('RoomSession mesh', () => {
     await waitFor(() => host.peerCount === 1);
 
     // Same term, higher id ('~' sorts after every character a uuid uses).
-    const { dialer } = window.puter.peer._pairs[0];
+    const { dialer } = window.everything.peer._pairs[0];
     dialer.dispatch('message', {
       data: P.encode(P.makeHostClaim({ hostId: '~~~~', term: 0, invite: 'invite-nope' })),
     });
@@ -843,7 +843,7 @@ describe('RoomSession mesh', () => {
 
     // Simulate a guest whose WELCOME was lost: it would re-send HELLO
     // on its existing connection. The host must answer again.
-    const { dialer } = window.puter.peer._pairs[0];
+    const { dialer } = window.everything.peer._pairs[0];
     const welcomes = [];
     dialer.addEventListener('message', (event) => {
       const msg = JSON.parse(event.data);
@@ -860,10 +860,10 @@ describe('RoomSession mesh', () => {
     expect(welcomes[0].peer.id).toBe(host.selfId);
   });
 
-  it('guests use temporary Puter peer servers for guest-guest direct links', async () => {
+  it('guests use temporary Everything peer servers for guest-guest direct links', async () => {
     let serveCalls = 0;
-    const realServe = window.puter.peer.serve;
-    window.puter.peer.serve = async (...args) => {
+    const realServe = window.everything.peer.serve;
+    window.everything.peer.serve = async (...args) => {
       serveCalls++;
       return realServe(...args);
     };
@@ -876,13 +876,13 @@ describe('RoomSession mesh', () => {
     await g2.join(code);
     await waitFor(() => [host, g1, g2].every((s) => s.roster.size === 3));
 
-    await waitFor(() => window.puter.peer._pairs.length === 3);
+    await waitFor(() => window.everything.peer._pairs.length === 3);
     expect(serveCalls).toBe(2);
   });
 
   it('guest<->guest media survives temp-server cleanup (regression: addTrack on closed pc)', async () => {
     // Repro of the 3-party bug: the guest that *serves* the direct link used
-    // to close its temp Puter server the moment the peer connected. Puter's
+    // to close its temp Everything server the moment the peer connected. Everything's
     // server.close() closes every accepted connection, which closed the
     // just-accepted RTCPeerConnection — so the next addTrack threw
     // InvalidStateError and the two guests never exchanged media (while the
@@ -896,7 +896,7 @@ describe('RoomSession mesh', () => {
     await waitFor(() => [host, g1, g2].every((s) => s.roster.size === 3));
 
     // host<->g1, host<->g2, g1<->g2 => 3 connection pairs => 6 pc endpoints.
-    await waitFor(() => window.puter.peer._pairs.length === 3);
+    await waitFor(() => window.everything.peer._pairs.length === 3);
     await waitFor(() => FakeRTCPeerConnection.instances.length === 6);
 
     // Every endpoint must be live (none torn down by a premature server close)
@@ -914,7 +914,7 @@ describe('RoomSession mesh', () => {
     const host = makeSession('Host');
     const code = await host.host();
 
-    const conn = await window.puter.peer.connect(code);
+    const conn = await window.everything.peer.connect(code);
     await waitFor(() => conn.isOpen);
 
     // A version-mismatch frame inflated past the ceiling. Reading it to
@@ -940,7 +940,7 @@ describe('RoomSession mesh', () => {
     const host = makeSession('Host');
     const code = await host.host();
 
-    const conn = await window.puter.peer.connect(code);
+    const conn = await window.everything.peer.connect(code);
     await waitFor(() => conn.isOpen);
 
     conn.send(JSON.stringify({ v: P.PROTOCOL_VERSION + 1, t: P.MSG.HELLO }));
@@ -970,7 +970,7 @@ describe('RoomSession mesh', () => {
 describe('what a failed dial says', () => {
   it('tags a connect() that never reached the signaller, whatever it rejected with', async () => {
     // The current library rejects with the WebSocket's error event: no message at all.
-    window.puter.peer.connect = async () => {
+    window.everything.peer.connect = async () => {
       throw { type: 'error' };
     };
     const error = await makeSession('Guest').join('invite-x').then(
@@ -984,7 +984,7 @@ describe('what a failed dial says', () => {
   });
 
   it('leaves an invalid invite an older library rejects with as what it is', async () => {
-    window.puter.peer.connect = async () => {
+    window.everything.peer.connect = async () => {
       throw new Error('Invalid invite code');
     };
     const error = await makeSession('Guest').join('invite-x').then(
@@ -1001,7 +1001,7 @@ describe('what a failed dial says', () => {
     // The signaller took the dial; nothing ever comes back on the connection
     // — no answer to the offer, no channel. A host that is gone, not a
     // network that blocks.
-    window.puter.peer.connect = async () => Object.assign(new MockConn(), { peerconnection: new FakeRTCPeerConnection() });
+    window.everything.peer.connect = async () => Object.assign(new MockConn(), { peerconnection: new FakeRTCPeerConnection() });
     const failed = makeSession('Guest').join('invite-x').then(
       () => null,
       (e) => e
@@ -1018,7 +1018,7 @@ describe('what a failed dial says', () => {
       'Could not reach the signaller',
       'Connection closed unexpectedly',
       'Connection closed unexpectedly before peer offer was sent',
-      'Failed to get signaller info from Puter.',
+      'Failed to get signaller info from Everything.',
     ]) {
       expect(isSignallerUnreachableError(new Error(message))).toBe(true);
     }
@@ -1042,8 +1042,8 @@ describe('a dial whose transport never comes up', () => {
     const host = makeSession('Host');
     const code = await host.host();
     let seenByHost = 0;
-    window.puter._calls.find((c) => c.op === 'serve').server.addEventListener('connection', () => seenByHost++);
-    window.puter._blockTransport(code, { failAfterMs: 100 });
+    window.everything._calls.find((c) => c.op === 'serve').server.addEventListener('connection', () => seenByHost++);
+    window.everything._blockTransport(code, { failAfterMs: 100 });
 
     const failed = makeSession('Guest').join(code).then(
       () => null,
@@ -1063,7 +1063,7 @@ describe('a dial whose transport never comes up', () => {
     vi.useFakeTimers();
     const host = makeSession('Host');
     const code = await host.host();
-    window.puter._blockTransport(code, { hostSees: false, failAfterMs: Infinity });
+    window.everything._blockTransport(code, { hostSees: false, failAfterMs: Infinity });
 
     const failed = makeSession('Guest').join(code).then(
       () => null,
@@ -1077,7 +1077,7 @@ describe('a dial whose transport never comes up', () => {
 
   it('tags nothing when the channel opened and the host simply never answered', async () => {
     vi.useFakeTimers();
-    window.puter.peer.connect = async () => {
+    window.everything.peer.connect = async () => {
       const conn = new MockConn();
       conn.peerconnection = new FakeRTCPeerConnection();
       conn.peerconnection.remoteDescription = { type: 'answer', sdp: '' };
@@ -1097,7 +1097,7 @@ describe('a dial whose transport never comes up', () => {
 
   it('tags nothing when the far side closed the connection for a reason of its own', async () => {
     vi.useFakeTimers();
-    window.puter.peer.connect = async () => {
+    window.everything.peer.connect = async () => {
       const conn = new MockConn();
       conn.peerconnection = new FakeRTCPeerConnection();
       conn.peerconnection.remoteDescription = { type: 'answer', sdp: '' };
@@ -1116,13 +1116,13 @@ describe('a dial whose transport never comes up', () => {
   });
 });
 
-describe('guests without a Puter account', () => {
+describe('guests without an Everything account', () => {
   it('a host with an account mints a guest grant and hands it out in WELCOME', async () => {
     const host = makeSession('Host');
     const code = await host.host();
     expect(host.guestGrant).toMatch(/^pg1\./);
     // The host itself joins nothing anonymously — its account speaks.
-    expect(window.puter._calls.find((c) => c.op === 'serve').opts).toEqual({ recoveryTimeout: LINK_RECOVERY_BUDGET_MS });
+    expect(window.everything._calls.find((c) => c.op === 'serve').opts).toEqual({ recoveryTimeout: LINK_RECOVERY_BUDGET_MS });
 
     const guest = makeSession('Guest');
     await asAnonymous(() => guest.join(code));
@@ -1130,7 +1130,7 @@ describe('guests without a Puter account', () => {
 
     // Nothing came with the link, so the first dial went out with the token
     // alone; the grant WELCOME brought is what every later dial rides on.
-    const dial = window.puter._calls.find((c) => c.op === 'connect' && c.invite === code);
+    const dial = window.everything._calls.find((c) => c.op === 'connect' && c.invite === code);
     expect(dial.opts).toEqual({ recoveryTimeout: LINK_RECOVERY_BUDGET_MS, anonToken: expect.stringMatching(UUID) });
   });
 
@@ -1140,7 +1140,7 @@ describe('guests without a Puter account', () => {
     const guest = makeSession('Guest', { grant: host.guestGrant });
     await asAnonymous(() => guest.join(code));
 
-    const dial = window.puter._calls.find((c) => c.op === 'connect' && c.invite === code);
+    const dial = window.everything._calls.find((c) => c.op === 'connect' && c.invite === code);
     expect(dial.opts).toEqual({ recoveryTimeout: LINK_RECOVERY_BUDGET_MS, anonToken: expect.stringMatching(UUID), turnGrant: host.guestGrant });
     await waitFor(() => host.roster.size === 2);
     expect(host.roster.get(guest.selfId).name).toBe('Guest');
@@ -1152,7 +1152,7 @@ describe('guests without a Puter account', () => {
     const guest = makeSession('Guest', { grant: host.guestGrant });
     await guest.join(code);
 
-    const dial = window.puter._calls.find((c) => c.op === 'connect' && c.invite === code);
+    const dial = window.everything._calls.find((c) => c.op === 'connect' && c.invite === code);
     expect(dial.opts).toEqual({ recoveryTimeout: LINK_RECOVERY_BUDGET_MS });
   });
 
@@ -1168,7 +1168,7 @@ describe('guests without a Puter account', () => {
     await waitFor(() => g1.connectedPeerIds().length === 2 && g2.connectedPeerIds().length === 2);
 
     const grant = host.guestGrant;
-    const link = window.puter._calls.filter((c) => c.invite !== code);
+    const link = window.everything._calls.filter((c) => c.invite !== code);
     const served = link.filter((c) => c.op === 'serve');
     const dialed = link.filter((c) => c.op === 'connect');
     expect(served.length).toBeGreaterThan(0);
@@ -1239,14 +1239,14 @@ describe('guests without a Puter account', () => {
     await waitFor(() => other.hostId === successor.selfId && !other.isHost);
     // No account to mint on: the room is served anonymously, on the grant the
     // old host gave out, and that grant is still what newcomers are handed.
-    const takeover = window.puter._calls.filter((c) => c.op === 'serve').at(-1);
+    const takeover = window.everything._calls.filter((c) => c.op === 'serve').at(-1);
     expect(takeover.opts).toEqual({ recoveryTimeout: LINK_RECOVERY_BUDGET_MS, anonToken: expect.stringMatching(UUID), turnGrant: grant });
     expect(successor.guestGrant).toBe(grant);
   });
 });
 
 /**
- * Anonymous guests reach Puter's relays only through the host's guest
+ * Anonymous guests reach Everything's relays only through the host's guest
  * grant. A mint that fails — an API hiccup, a host briefly offline — used
  * to get a console.warn and a flat minute's wait, and nobody in the meeting
  * knew why a guest was stuck outside.
@@ -1255,7 +1255,7 @@ describe('a guest grant that cannot be minted', () => {
   /** A createGuestGrant that fails while `broken.now` is set, counting attempts. */
   function flakyMint() {
     const broken = { now: true, attempts: 0 };
-    window.puter.peer.createGuestGrant = async () => {
+    window.everything.peer.createGuestGrant = async () => {
       broken.attempts++;
       if (broken.now) throw new Error('503 from /peer/turn-grant');
       return { grant: `pg1.late-${broken.attempts}`, expiresAt: Math.floor(Date.now() / 1000) + 3600 };
@@ -1293,7 +1293,7 @@ describe('a guest grant that cannot be minted', () => {
     expect(failures.map((f) => f.retryInMs)).toEqual([5000, 15_000, 60_000, 60_000, 60_000]);
     expect(failures.every((f) => f.inForce === false)).toBe(true);
 
-    // Puter is back: the next try lands, guests hear of it, the alerts stop.
+    // Everything is back: the next try lands, guests hear of it, the alerts stop.
     broken.now = false;
     await vi.advanceTimersByTimeAsync(60_000);
     expect(broken.attempts).toBe(6);
@@ -1317,7 +1317,7 @@ describe('a guest grant that cannot be minted', () => {
     const first = host.guestGrant;
     expect(first).toMatch(/^pg1\./);
 
-    // Puter goes away before the half-life renewal.
+    // Everything goes away before the half-life renewal.
     const broken = flakyMint();
     await vi.advanceTimersByTimeAsync(31 * 60_000);
     expect(broken.attempts).toBeGreaterThanOrEqual(1);
@@ -1382,7 +1382,7 @@ describe('host self-probe (a dead invite while waiting alone)', () => {
     expect(codes).toEqual([]);
     // The probe dials its own invite but must never enter the roster.
     expect(host.roster.size).toBe(1);
-    const serves = window.puter._calls.filter((c) => c.op === 'serve');
+    const serves = window.everything._calls.filter((c) => c.op === 'serve');
     expect(serves).toHaveLength(1);
   });
 
@@ -1392,9 +1392,9 @@ describe('host self-probe (a dead invite while waiting alone)', () => {
     await host.host();
     const grant = host.guestGrant;
     expect(grant).toBeTruthy(); // the host minted one, and real dials carry it
-    window.puter._calls.length = 0;
+    window.everything._calls.length = 0;
     await vi.advanceTimersByTimeAsync(SELF_PROBE_INTERVAL_MS + 100);
-    const probes = window.puter._calls.filter((c) => c.op === 'connect');
+    const probes = window.everything._calls.filter((c) => c.op === 'connect');
     expect(probes.length).toBeGreaterThanOrEqual(1);
     for (const probe of probes) {
       expect(probe.opts.turnGrant).toBeUndefined();
@@ -1411,7 +1411,7 @@ describe('host self-probe (a dead invite while waiting alone)', () => {
 
     // The host's signaller socket dies: the invite is still advertised but
     // no one can dial it any more.
-    window.puter._killInvite(code);
+    window.everything._killInvite(code);
 
     // One miss isn't enough — a passing hiccup shouldn't rotate the invite.
     await vi.advanceTimersByTimeAsync(SELF_PROBE_INTERVAL_MS + SELF_PROBE_SEEN_TIMEOUT_MS + 500);
@@ -1441,7 +1441,7 @@ describe('host self-probe (a dead invite while waiting alone)', () => {
     const guest = makeSession('Guest');
     await asAnonymous(() => guest.join(code));
     await vi.advanceTimersByTimeAsync(0);
-    const pairsAfterJoin = window.puter.peer._pairs.length;
+    const pairsAfterJoin = window.everything.peer._pairs.length;
     const events = [];
     host.on('peer-left', (e) => events.push(['host', 'peer-left', e.participant.id]));
     guest.on('peer-left', (e) => events.push(['guest', 'peer-left', e.participant.id]));
@@ -1450,7 +1450,7 @@ describe('host self-probe (a dead invite while waiting alone)', () => {
     // A connected guest says nothing about the invite (their link outlives
     // the socket that minted it), so the probe keeps dialing...
     await vi.advanceTimersByTimeAsync(SELF_PROBE_INTERVAL_MS * 3 + 1000);
-    expect(window.puter.peer._pairs.length).toBeGreaterThan(pairsAfterJoin);
+    expect(window.everything.peer._pairs.length).toBeGreaterThan(pairsAfterJoin);
     // ...and, the invite being reachable, changes nothing: same code, same
     // two people, the probe's own connections never entering the roster.
     expect(host.code).toBe(code);
@@ -1459,7 +1459,7 @@ describe('host self-probe (a dead invite while waiting alone)', () => {
     expect(guest.hostId).toBe(host.selfId);
     expect(guest.roster.get(host.selfId)?.reconnecting).toBeFalsy();
     expect(events).toEqual([]);
-    expect(window.puter._calls.filter((c) => c.op === 'serve')).toHaveLength(1);
+    expect(window.everything._calls.filter((c) => c.op === 'serve')).toHaveLength(1);
   });
 });
 
@@ -1501,8 +1501,8 @@ describe('the served invite changing under a live call', () => {
     vi.useFakeTimers();
     const { host, guest, code, codes, disturbed } = await callInProgress();
 
-    // The socket dies and puter.js brings the server back under a new code.
-    const next = window.puter._reconnectServer(code);
+    // The socket dies and everything.js brings the server back under a new code.
+    const next = window.everything._reconnectServer(code);
     await vi.advanceTimersByTimeAsync(0);
 
     // The new invite is the meeting's address now — announced for
@@ -1515,7 +1515,7 @@ describe('the served invite changing under a live call', () => {
     expect(guest.hostId).toBe(host.selfId);
     expect(guest.roster.get(host.selfId)?.reconnecting).toBeFalsy();
     expect(disturbed).toEqual([]);
-    expect(window.puter._calls.filter((c) => c.op === 'serve')).toHaveLength(1);
+    expect(window.everything._calls.filter((c) => c.op === 'serve')).toHaveLength(1);
     // Chat still flows over the untouched link.
     const heard = [];
     guest.on('chat', (m) => heard.push(m.text));
@@ -1531,9 +1531,9 @@ describe('the served invite changing under a live call', () => {
     vi.useFakeTimers();
     const { host, guest, code, codes, disturbed } = await callInProgress();
 
-    // The socket dies under an older puter.js: nothing reopens it, the
+    // The socket dies under an older everything.js: nothing reopens it, the
     // published invite is simply dead, and the call carries on unaware.
-    window.puter._killInvite(code);
+    window.everything._killInvite(code);
 
     // One miss is a hiccup; two are the invite gone for good.
     await vi.advanceTimersByTimeAsync(SELF_PROBE_INTERVAL_MS + SELF_PROBE_SEEN_TIMEOUT_MS + 500);
@@ -1559,7 +1559,7 @@ describe('the served invite changing under a live call', () => {
 
     // The live signaller's answer for a code whose socket is gone comes in
     // ~100ms and is definitive — no second miss to wait for.
-    window.puter._killInvite(code, { explicit: true });
+    window.everything._killInvite(code, { explicit: true });
     await vi.advanceTimersByTimeAsync(SELF_PROBE_INTERVAL_MS + 500);
 
     const next = host.code;
@@ -1568,7 +1568,7 @@ describe('the served invite changing under a live call', () => {
     expect(guest.code).toBe(next);
     expect(disturbed).toEqual([]);
     expect(host.roster.size).toBe(2);
-    expect(window.puter._calls.filter((c) => c.op === 'serve')).toHaveLength(2);
+    expect(window.everything._calls.filter((c) => c.op === 'serve')).toHaveLength(2);
 
     await newcomerJoinsAt(next, host, 2);
   });
@@ -1579,7 +1579,7 @@ describe('the served invite changing under a live call', () => {
     vi.useFakeTimers();
     const { host, guest, code, codes, disturbed } = await callInProgress();
 
-    window.puter._resumeServer(code);
+    window.everything._resumeServer(code);
     await vi.advanceTimersByTimeAsync(0);
 
     expect(host.code).toBe(code);
@@ -1595,14 +1595,14 @@ describe('the served invite changing under a live call', () => {
     vi.useFakeTimers();
     const { host, code, codes } = await callInProgress();
 
-    window.puter._killInvite(code);
+    window.everything._killInvite(code);
     await vi.advanceTimersByTimeAsync(2 * (SELF_PROBE_INTERVAL_MS + SELF_PROBE_SEEN_TIMEOUT_MS + 500));
     const next = host.code;
     expect(next).not.toBe(code);
 
     // The retired server (kept alive for the guest on it) comes back under
     // yet another code — that is not the meeting's address.
-    const serves = window.puter._calls.filter((c) => c.op === 'serve');
+    const serves = window.everything._calls.filter((c) => c.op === 'serve');
     expect(serves).toHaveLength(2);
     const retired = serves[0].server;
     retired.inviteCode = 'invite-stale';

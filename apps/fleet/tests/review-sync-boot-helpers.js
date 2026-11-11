@@ -1,5 +1,5 @@
 /**
- * Helpers for booting main.js against a fake Puter SDK (jsdom tests).
+ * Helpers for booting main.js against a fake Everything SDK (jsdom tests).
  */
 import 'fake-indexeddb/auto';
 import { beforeAll, vi } from 'vitest';
@@ -23,8 +23,8 @@ beforeAll(() => {
 
 export const settle = (ms = 30) => new Promise((r) => setTimeout(r, ms));
 
-/** A Puter SDK stand-in with an in-memory KV. */
-export function fakePuter({ kvGet, exec } = {}) {
+/** An Everything SDK stand-in with an in-memory KV. */
+export function fakeEverything({ kvGet, exec } = {}) {
   const kv = new Map();
   return {
     kv: {
@@ -72,11 +72,11 @@ export function teamExec(state) {
   };
 }
 
-export async function boot(puter, hash = '#/') {
+export async function boot(everything, hash = '#/') {
   vi.resetModules();
   document.body.innerHTML = '<div id="app"></div>';
   history.replaceState(null, '', `/${hash}`);
-  globalThis.puter = puter;
+  globalThis.everything = everything;
   await import('../src/main.js');
   const { app } = await import('../src/app.js');
   for (let i = 0; i < 40 && !app.store && !document.querySelector('.welcome'); i++) await settle(10);

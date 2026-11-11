@@ -1,8 +1,8 @@
 # Inventory
 
-Inventory management on [Puter](https://localhost:8443): products, per-location stock, barcodes, photos, purchase cost, low-stock alerts, supplier orders, history, reports, and CSV import/export.
+Inventory management on [Everything](https://localhost:8443): products, per-location stock, barcodes, photos, purchase cost, low-stock alerts, supplier orders, history, reports, and CSV import/export.
 
-Built with vanilla JavaScript (no frameworks), [Puter.js](http://localhost:8443) for auth and storage, [Lucide](https://lucide.dev) icons, and [Vite](https://vite.dev).
+Built with vanilla JavaScript (no frameworks), [Everything.js](http://localhost:8443) for auth and storage, [Lucide](https://lucide.dev) icons, and [Vite](https://vite.dev).
 
 ## Features
 
@@ -30,7 +30,7 @@ Built with vanilla JavaScript (no frameworks), [Puter.js](http://localhost:8443)
 - **CSV import/export**: column auto-detection (including shelf codes, per-location stock and bins), SKU matching (update, add to stock, or skip), losslessly re-importable exports
 - **Safety net**: undo on delete, full JSON backup/restore, and automatic snapshots before anything destructive
 - **Design**: responsive app shell (sidebar on desktop, tab bar on mobile), light/dark/system theme, keyboard- and screen-reader-friendly
-- **Storage**: everything lives in the user's own Puter account via `puter.kv` and `puter.fs`; no server of our own
+- **Storage**: everything lives in the user's own Everything account via `everything.kv` and `everything.fs`; no server of our own
 
 ## Development
 
@@ -39,7 +39,7 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:5174/` for the real Puter SDK, or `http://localhost:5174/mock.html` for a local in-memory mock of Puter (no account needed; data persists in localStorage).
+Open `http://localhost:5174/` for the real Everything SDK, or `http://localhost:5174/mock.html` for a local in-memory mock of Everything (no account needed; data persists in localStorage).
 
 ## Tests
 
@@ -47,7 +47,7 @@ Open `http://localhost:5174/` for the real Puter SDK, or `http://localhost:5174/
 npm test
 ```
 
-Vitest unit tests cover the CSV parser/serializer and column mapping, inventory logic (stock status, stats, filtering, import merge), per-location stock and its migration, units and pack sizes, the activity log, reorder maths, demand rates and the thresholds they imply, take-out baskets, per-location minimums and the transfers they imply, supplier sources and their price lists, shelf codes and the walk they imply, variant families and their totals, kept counts and their bounded history, kit recipes and what they can make, report maths, backup validation, and the store's persistence paths against a fake Puter SDK.
+Vitest unit tests cover the CSV parser/serializer and column mapping, inventory logic (stock status, stats, filtering, import merge), per-location stock and its migration, units and pack sizes, the activity log, reorder maths, demand rates and the thresholds they imply, take-out baskets, per-location minimums and the transfers they imply, supplier sources and their price lists, shelf codes and the walk they imply, variant families and their totals, kept counts and their bounded history, kit recipes and what they can make, report maths, backup validation, and the store's persistence paths against a fake Everything SDK.
 
 `tests/integrity.test.js` reproduces GitHub issues #34–#38 using independent
 store sessions and injected storage failures. It checks concurrent and offline
@@ -97,7 +97,7 @@ Static output lands in `dist/`.
 
 The signed-out home page is a static, crawlable landing page, inspired by the
 sibling `cap-table` project. Signed-in visitors continue into the existing app.
-Public help is available without a Puter session or JavaScript:
+Public help is available without an Everything session or JavaScript:
 
 - `/docs/`: 25 product walkthroughs, from setup and importing to stocktakes, printing,
   settings, troubleshooting, and a reference section covering the CSV columns, the

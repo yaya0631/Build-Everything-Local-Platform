@@ -15,7 +15,7 @@ const AVATAR_COLORS = [
   '#5f6368', // gray
 ];
 
-/** Up to two initials: "Ada Lovelace" -> "AL", "puter" -> "P". */
+/** Up to two initials: "Ada Lovelace" -> "AL", "everything" -> "P". */
 export function initials(name) {
   const parts = String(name ?? '')
     .trim()

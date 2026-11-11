@@ -1,9 +1,9 @@
-// Sharing a cloud part with other Puter users. Sharing is per file: the other
+// Sharing a cloud part with other Everything users. Sharing is per file: the other
 // person opens it from "Shared with me" in the Open dialog; with edit access
 // their saves update the same file.
 
 import { EXT, type FileEntry } from '../platform/files';
-import { cloudAvailable, puter, signIn, storageError, toMs } from '../platform/puter';
+import { cloudAvailable, everything, signIn, storageError, toMs } from '../platform/everything';
 import { h, clear } from '../ui/dom';
 import { icon } from '../ui/icons';
 import { showDialog, toast } from '../ui/overlay';
@@ -37,20 +37,20 @@ interface SharedItem {
   owner?: string | { username?: string };
 }
 
-const fsx = () => puter()?.fs as unknown as ShareFS | undefined;
+const fsx = () => everything()?.fs as unknown as ShareFS | undefined;
 const recipient = (v: string) => (v.includes('@') ? { email: v } : { username: v });
 const holderName = (s: ShareRecord) => (typeof s.holder === 'string' ? s.holder : s.holder?.username || s.holder?.email || s.recipientEmail || '');
 
 export async function shareDialog(app: App, files: FileOps) {
   const fs = fsx();
   if (!fs?.share) {
-    toast({ kind: 'warning', message: 'Sharing needs Puter, which could not be loaded. Check your connection and reload.' });
+    toast({ kind: 'warning', message: 'Sharing needs Everything, which could not be loaded. Check your connection and reload.' });
     return;
   }
   if (!cloudAvailable()) {
     toast({
       title: 'Share',
-      message: 'Sign in to Puter to save this part to your cloud and share it with others.',
+      message: 'Sign in to Everything to save this part to your cloud and share it with others.',
       actions: [{ label: 'Sign in', primary: true, run: () => void signIn().then(() => shareDialog(app, files)).catch((e) => toast({ kind: 'error', message: (e as Error).message })) }],
       timeout: 9000,
     });
@@ -59,12 +59,12 @@ export async function shareDialog(app: App, files: FileOps) {
   if (app.location?.type !== 'cloud' || app.store.dirty) {
     const ok = await files.save();
     if (!ok || app.location?.type !== 'cloud') {
-      toast({ title: 'Share', message: 'Save the part to your Puter cloud first, then share it.' });
+      toast({ title: 'Share', message: 'Save the part to your Everything cloud first, then share it.' });
       return;
     }
   }
   const path = (app.location as { path: string }).path;
-  const who = h('input', { class: 'input', placeholder: 'Puter username or email', 'aria-label': 'Person to share with', autocomplete: 'off', spellcheck: 'false' }) as HTMLInputElement;
+  const who = h('input', { class: 'input', placeholder: 'Everything username or email', 'aria-label': 'Person to share with', autocomplete: 'off', spellcheck: 'false' }) as HTMLInputElement;
   const mode = h('select', { class: 'input', 'aria-label': 'Access', style: { width: 'auto' } }, MODES.map(([v, l]) => h('option', { value: v }, l))) as HTMLSelectElement;
   const status = h('div', { class: 'field-label', role: 'status', style: { minHeight: '18px' } });
   const list = h('div');
@@ -105,7 +105,7 @@ export async function shareDialog(app: App, files: FileOps) {
       void render();
     } catch (e) {
       const code = (e as { code?: string })?.code;
-      status.textContent = code === 'user_does_not_exist' ? `There is no Puter user called ${v}.` : code === 'cannot_share_with_self' ? 'You already own this part.' : `Could not share: ${storageError(e)}`;
+      status.textContent = code === 'user_does_not_exist' ? `There is no Everything user called ${v}.` : code === 'cannot_share_with_self' ? 'You already own this part.' : `Could not share: ${storageError(e)}`;
     }
   };
   who.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); void add(); } });

@@ -11,10 +11,10 @@ import {
   toHex,
 } from '../../src/core/security.js';
 import { addNote, listNotes } from '../../src/core/notes.js';
-const PUTER_MOCK = `window.puter = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async () => ({}) }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
-async function mockPuter(page) {
-  await page.route('**/sdk/puter.js', (route) =>
-    route.fulfill({ contentType: 'application/javascript', body: PUTER_MOCK }),
+const EVERYTHING_MOCK = `window.everything = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async () => ({}) }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
+async function mockEverything(page) {
+  await page.route('**/sdk/everything.js', (route) =>
+    route.fulfill({ contentType: 'application/javascript', body: EVERYTHING_MOCK }),
   );
 }
 const fixture = (name) => readFile(new URL(`../fixtures/security/${name}.pdf`, import.meta.url));
@@ -87,7 +87,7 @@ async function restricted(bits = 0, open = 'reader') {
   return Buffer.from(await raw.save({ useObjectStreams: false, updateFieldAppearances: false }));
 }
 async function openRestricted(page, bytes, password = 'reader') {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await chooseFile(page, bytes);
   if (password !== '') {
@@ -350,7 +350,7 @@ test('extracted and split PDFs retain both passwords and restrictions', async ({
 test('importing pages from a copy-restricted source requires its owner password', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/');
   await expect(page.locator('.page-caption')).toHaveText('Page 1 of 1');
   const chooser = page.waitForEvent('filechooser');
@@ -435,7 +435,7 @@ test('opening with the owner password grants access despite every user permissio
 test('damaged encrypted permissions are reported without replacing the open document', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/');
   await expect(page.locator('.page-caption')).toHaveText('Page 1 of 1');
   const raw = await PDFDocument.load(await restricted(0, ''), {

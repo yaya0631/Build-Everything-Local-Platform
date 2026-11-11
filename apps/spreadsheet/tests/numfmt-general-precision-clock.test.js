@@ -67,7 +67,7 @@ it('retains raw values through edit/undo, external HTML and metadata-free XLSX',
   });
   const zip = X.CFB.read(bytes, { type: 'array' }), part = X.CFB.find(zip, '/xl/workbook.xml');
   part.content = new TextEncoder().encode(new TextDecoder().decode(part.content)
-    .replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+    .replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   part.size = part.content.length;
   const restored = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'precision.xlsx');
   for (const [r, [value, code, display]] of cases.entries()) {

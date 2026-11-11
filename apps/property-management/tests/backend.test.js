@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { createPuterBackend, PREFIX } from '../src/core/backend.js';
+import { createEverythingBackend, PREFIX } from '../src/core/backend.js';
 import { createStore } from '../src/core/store.js';
 
 /**
- * kv.incr on a path map, as Puter documents it: dots in a path nest
+ * kv.incr on a path map, as Everything documents it: dots in a path nest
  * ("a.b" -> { a: { b } }) and ["a.b"] names one field with a dot in it.
  */
 function incrPaths(cur, paths) {
@@ -19,7 +19,7 @@ function incrPaths(cur, paths) {
 }
 
 /**
- * A small stand-in for puter.kv with the behaviour the backend relies on:
+ * A small stand-in for everything.kv with the behaviour the backend relies on:
  * prefix list with paging (pattern ends in ':' or '*'), batch set, and incr
  * on nested paths. Counts calls so tests can check the access pattern.
  */
@@ -63,10 +63,10 @@ function fakeKV({ pageSize = 3 } = {}) {
   };
 }
 
-describe('Puter KV backend', () => {
+describe('Everything KV backend', () => {
   it('stores one key per record and pages through a whole collection', async () => {
     const kv = fakeKV({ pageSize: 2 });
-    const b = createPuterBackend({ kv });
+    const b = createEverythingBackend({ kv });
     await b.putRecords('tenants', [1, 2, 3, 4, 5].map((n) => ({ id: `t${n}`, n })));
     expect([...kv.raw.keys()].filter((k) => k.startsWith(`${PREFIX}r:tenants:`))).toHaveLength(5);
     const back = await b.loadCollection('tenants');
@@ -76,7 +76,7 @@ describe('Puter KV backend', () => {
 
   it('keeps ledger months apart so one month loads on its own', async () => {
     const kv = fakeKV({ pageSize: 100 });
-    const b = createPuterBackend({ kv });
+    const b = createEverythingBackend({ kv });
     await b.putRecords('tx.2026-09', [{ id: 'a', date: '2026-09-30' }]);
     await b.putRecords('tx.2026-10', [{ id: 'b', date: '2026-10-01' }, { id: 'c', date: '2026-10-02' }]);
     expect((await b.loadCollection('tx.2026-10')).map((r) => r.id).sort()).toEqual(['b', 'c']);
@@ -85,7 +85,7 @@ describe('Puter KV backend', () => {
 
   it('does not confuse collections that share a prefix', async () => {
     const kv = fakeKV();
-    const b = createPuterBackend({ kv });
+    const b = createEverythingBackend({ kv });
     await b.putRecords('team', [{ id: 'm1' }]);
     await b.putRecords('tenants', [{ id: 't1' }]);
     expect((await b.loadCollection('team')).map((r) => r.id)).toEqual(['m1']);
@@ -93,7 +93,7 @@ describe('Puter KV backend', () => {
 
   it('bumps versions atomically and hands out numbers past ones in use', async () => {
     const kv = fakeKV();
-    const b = createPuterBackend({ kv });
+    const b = createEverythingBackend({ kv });
     expect(await b.bumpVersions(['leases', 'tx.2026-10'])).toEqual({ leases: 1, 'tx.2026-10': 1 });
     expect(await b.bumpVersions(['leases'])).toEqual({ leases: 2, 'tx.2026-10': 1 });
     expect(await b.nextNumber('workOrder')).toBe(1);
@@ -104,7 +104,7 @@ describe('Puter KV backend', () => {
   it('reads ledger versions an earlier build stored as nested paths', async () => {
     const kv = fakeKV();
     kv.raw.set(`${PREFIX}meta`, { leases: 2, tx: { '2026-09': 4, '2026-10': 3 } });
-    const b = createPuterBackend({ kv });
+    const b = createEverythingBackend({ kv });
     expect(await b.loadMeta()).toEqual({ leases: 2, 'tx.2026-09': 4, 'tx.2026-10': 3 });
     // The next write moves each version up by exactly one.
     expect(await b.bumpVersions(['tx.2026-10'])).toEqual({ leases: 2, 'tx.2026-09': 4, 'tx.2026-10': 4 });
@@ -113,8 +113,8 @@ describe('Puter KV backend', () => {
 
   it('runs the whole store on top of KV across two devices', async () => {
     const kv = fakeKV({ pageSize: 50 });
-    const a = createStore({ backend: createPuterBackend({ kv }), flushDelay: 0, timeoutMs: 0 });
-    const c = createStore({ backend: createPuterBackend({ kv }), flushDelay: 0, timeoutMs: 0 });
+    const a = createStore({ backend: createEverythingBackend({ kv }), flushDelay: 0, timeoutMs: 0 });
+    const c = createStore({ backend: createEverythingBackend({ kv }), flushDelay: 0, timeoutMs: 0 });
     await a.init();
     await c.init();
     a.put('transactions', { id: 'p1', date: '2026-10-03', kind: 'payment', lines: [] });

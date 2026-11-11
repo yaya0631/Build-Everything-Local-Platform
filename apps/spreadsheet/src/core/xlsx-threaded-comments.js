@@ -6,7 +6,7 @@
  * io.js), authored "tc={first comment id}", so a reader that knows only notes still shows it.
  *
  * A comment that @mentions people lists them in its <mentions> element: each mention names a person of the
- * person list (where a Puter user is known by username, anyone else by email address) and where in the
+ * person list (where an Everything user is known by username, anyone else by email address) and where in the
  * text the "@Name" stands (startIndex and length, in UTF-16 code units).
  */
 import { cellKey, cellName, parseKey } from './cell.js';
@@ -40,7 +40,7 @@ function fileTime(iso) {
 export function createPersonList() {
   const people = new Map();
   return {
-    /** The person someone mentions: known by email address where there is one, else by Puter username. */
+    /** The person someone mentions: known by email address where there is one, else by Everything username. */
     idForMention(m) {
       return this.idFor({ author: m.name, userId: m.email || m.user || m.name, providerId: 'None' });
     },
@@ -97,7 +97,7 @@ export function writeXlsxThreadedComments(sheet, index, persons, { get, set, con
   contentType(path, THREADED_TYPE);
   const relPath = `/xl/worksheets/_rels/sheet${index}.xml.rels`;
   const rels = get(relPath);
-  set(relPath, addRelationship(rels, { Id: 'puterThreadedComments', Type: THREADED_REL, Target: `../threadedComments/threadedComment${index}.xml` }));
+  set(relPath, addRelationship(rels, { Id: 'everythingThreadedComments', Type: THREADED_REL, Target: `../threadedComments/threadedComment${index}.xml` }));
   // Each thread's legacy note names its thread by uid as well as by its "tc=" author, as files from Excel do.
   const legacy = [...(rels || '').matchAll(/<Relationship\b[^>]*>/g)].map((m) => m[0])
     .find((rel) => /\/relationships\/comments"/.test(rel));
@@ -132,7 +132,7 @@ export function writeXlsxPersons(persons, { get, set, contentType }) {
   if (!persons.size) return;
   set('/xl/persons/person.xml', persons.xml());
   contentType('/xl/persons/person.xml', PERSON_TYPE);
-  set('/xl/_rels/workbook.xml.rels', addRelationship(get('/xl/_rels/workbook.xml.rels'), { Id: 'puterPersons', Type: PERSON_REL, Target: 'persons/person.xml' }));
+  set('/xl/_rels/workbook.xml.rels', addRelationship(get('/xl/_rels/workbook.xml.rels'), { Id: 'everythingPersons', Type: PERSON_REL, Target: 'persons/person.xml' }));
 }
 
 /* ---------- Reading ---------- */
@@ -196,7 +196,7 @@ const EMAIL_IN = /[^\s@:<>()",;\\[\]]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+/;
 
 /**
  * The mentions of one threadedComment (its inner XML): who, from the person list, and where. A person's
- * userId says who they are: an email address in it is theirs; a bare name with no provider is a Puter
+ * userId says who they are: an email address in it is theirs; a bare name with no provider is an Everything
  * username (how this app writes one). The text check is left to the model (normalizeMentions).
  */
 function readMentions(inner, persons) {

@@ -1118,20 +1118,20 @@ export function mountShell(appRoot) {
 
   /* ---- store events ---------------------------------------------------- */
 
-  // Puter could not say who is asking: the sign-in behind every request
-  // (a token the worker asks Puter about on each one) revoked by a sign-out
-  // elsewhere, lapsed, or Puter not answering the worker for a moment. The
+  // Everything could not say who is asking: the sign-in behind every request
+  // (a token the worker asks Everything about on each one) revoked by a sign-out
+  // elsewhere, lapsed, or Everything not answering the worker for a moment. The
   // worker answers each poll and each send 401, and nothing on the screen
   // said why nothing arrived any more and every send came back "not sent"
-  // with "Your Puter session is not valid". Said once, kept until acted on
+  // with "Your Everything session is not valid". Said once, kept until acted on
   // (a reload finds the account out of reach and leads to the sign-in page;
-  // see main.js boot), or put away: a moment's failure at Puter mends
+  // see main.js boot), or put away: a moment's failure at Everything mends
   // itself, and the words allow for it.
   let signInSaid = false;
   store.on('error', (e) => {
     if (signInSaid || !(e instanceof ApiError && e.status === 401)) return;
     signInSaid = true;
-    toast('Puter could not confirm your sign-in, so nothing is being sent or received. If this keeps up, sign in again.', {
+    toast('Everything could not confirm your sign-in, so nothing is being sent or received. If this keeps up, sign in again.', {
       icon: 'alert', duration: Infinity, dismissible: true,
       action: { label: 'Sign in again', onClick: () => location.reload() },
     });
@@ -1237,7 +1237,7 @@ export function mountShell(appRoot) {
   async function maybeOfferEventsConsent() {
     const wsId = store.wsId;
     if (!wsId || evConsentAskedFor === wsId) return;
-    if (typeof puter?.perms?.request !== 'function') return;
+    if (typeof everything?.perms?.request !== 'function') return;
     if (evConsentTried?.ws === wsId && Date.now() - evConsentTried.at < EV_CONSENT_RECHECK_MS) return;
     evConsentTried = { ws: wsId, at: Date.now() };
     const url = parseRef(wsId)?.url;
@@ -1273,8 +1273,8 @@ export function mountShell(appRoot) {
         label: 'Turn on',
         onClick: async () => {
           try {
-            const granted = await puter.perms.request('permission', { permission: evGrantPermission(store.uuid, events.appUid) });
-            // Declined in Puter's own dialog: nothing to record, the
+            const granted = await everything.perms.request('permission', { permission: evGrantPermission(store.uuid, events.appUid) });
+            // Declined in Everything's own dialog: nothing to record, the
             // evConsent: 'declined' pref belongs to the toast's own dismiss button.
             if (!granted) return;
             await api.updateServer(url, { events: true });
@@ -1293,7 +1293,7 @@ export function mountShell(appRoot) {
    * of it now, six before this change: `events_kv_handle_not_delegated` is
    * cached worker-wide (see worker/events.js), and nothing but this same PUT
    * clears it early. A grant made anywhere but Teamchat's own two buttons —
-   * from inside the Puter GUI, from another device, from a session closed
+   * from inside the Everything GUI, from another device, from a session closed
    * since — left the whole workspace refusing every member until the window
    * ran out, with nothing able to notice; that cost three manual clears in
    * one afternoon getting a single real workspace subscribed.
@@ -1321,10 +1321,10 @@ export function mountShell(appRoot) {
    */
   async function healEventsVerdict(wsId, url, appUid) {
     if (evHealed.has(wsId)) return true;
-    if (typeof puter?.perms?.check !== 'function') return false;
+    if (typeof everything?.perms?.check !== 'function') return false;
     let held = false;
     try {
-      held = !!(await puter.perms.check('permission', { permission: evGrantPermission(store.uuid, appUid) }));
+      held = !!(await everything.perms.check('permission', { permission: evGrantPermission(store.uuid, appUid) }));
     } catch {
       return false;
     }

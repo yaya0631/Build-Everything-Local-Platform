@@ -1,16 +1,16 @@
 /**
  * The user's own scripts, apart from any workbook, and the user's trust in scripts that came inside files.
  *
- * My Scripts: each script is a .js file in the Scripts folder beside the app's spreadsheets on the user's Puter
+ * My Scripts: each script is a .js file in the Scripts folder beside the app's spreadsheets on the user's Everything
  * drive, named after the script, so it can be run on any workbook (and is a plain file the user can see, back up
  * or share like any other).
  *
  * Trust: a script that arrives inside a workbook could have been written by anyone, so it runs only once the user
  * says so. What the user has written, edited, saved or allowed is remembered by its code's fingerprint, kept with
- * the account (puter.kv, so every device knows it) and copied in this browser; a script whose code changes is a new
+ * the account (everything.kv, so every device knows it) and copied in this browser; a script whose code changes is a new
  * script and is asked about again.
  */
-import * as P from './puter.js';
+import * as P from './everything.js';
 import { storageScope, accountStorageKey } from './account-storage.js';
 import { scriptFingerprint } from '../core/scripts.js';
 

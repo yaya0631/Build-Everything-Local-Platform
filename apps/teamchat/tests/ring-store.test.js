@@ -5,7 +5,7 @@
  * in the window, the activity and the typing state without the requests a
  * poll would make, while anything the entries cannot carry still polls.
  *
- * Puter Events is faked at `puter.events.onLocal`; a test delivers to the
+ * Everything Events is faked at `everything.events.onLocal`; a test delivers to the
  * ring shard exactly the slot values the worker wrote.
  */
 import {
@@ -70,7 +70,7 @@ function resetStore() {
   store._evNoValues = false;
   store.openConv = null;
   store.openThread = null;
-  delete globalThis.puter;
+  delete globalThis.everything;
   delete globalThis.document;
 }
 
@@ -90,7 +90,7 @@ describe('which subscriptions a holder takes', () => {
   beforeEach(() => {
     ev = fakeEvents();
     globalThis.document = { hidden: false };
-    globalThis.puter = { appID: APP, events: ev, workers: { exec: async () => new Response('{}', { status: 404 }) } };
+    globalThis.everything = { appID: APP, events: ev, workers: { exec: async () => new Response('{}', { status: 404 }) } };
     store.wsId = REF;
     store.profile = { uuid: 'u-me', username: 'me', prefs: {} };
     store._timer = setTimeout(() => {}, 999_000);
@@ -148,7 +148,7 @@ describe('which subscriptions a holder takes', () => {
   it('a shared channel\'s host: its entries land under the local id, with no request', async () => {
     const HOST = 'hostws0001@teamchat-test';
     const requests = [];
-    globalThis.puter.workers.exec = async (url) => { requests.push(url); return new Response('{}', { status: 404 }); };
+    globalThis.everything.workers.exec = async (url) => { requests.push(url); return new Response('{}', { status: 404 }); };
     store.ws = { id: WS, name: 'Acme', channels: { lc1: { id: 'lc1', name: 'shared', shared: { ref: HOST, ch: 'hc1' } } }, members: { 'u-me': {} } };
     store.me = { dms: {}, channels: ['lc1'], reads: {}, mentions: {}, threads: {}, notify: {} };
     store.act = { c: { lc1: { s: 1, t: 1 } }, p: {}, w: 0, u: 0 };
@@ -235,7 +235,7 @@ describe('entries from the real worker', () => {
     calls = [];
     scheduled = [];
     globalThis.document = { hidden: false };
-    globalThis.puter = {
+    globalThis.everything = {
       appID: APP,
       events: ev,
       workers: {

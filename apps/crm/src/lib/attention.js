@@ -4,7 +4,7 @@
  * Every meeting, call, email, and note already carries a date, so "when
  * did I last talk to this person?" is derivable - it was just never
  * derived. These are pure functions over plain records plus a lookup for
- * last-activity dates, so they test without Puter or a DOM.
+ * last-activity dates, so they test without Everything or a DOM.
  */
 
 import { todayISO, daysBetween } from './util.js';

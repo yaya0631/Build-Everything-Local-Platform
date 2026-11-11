@@ -361,9 +361,9 @@ describe('createSearchIndex', () => {
 
   it('ignores stored junk rather than throwing', () => {
     const storage = memoryStorage();
-    storage.setItem('puter-mail:index:me', '["not","an","object"]');
+    storage.setItem('everything-mail:index:me', '["not","an","object"]');
     expect(createSearchIndex('me', storage).size).toBe(0);
-    storage.setItem('puter-mail:index:me', 'not json');
+    storage.setItem('everything-mail:index:me', 'not json');
     expect(createSearchIndex('me', storage).size).toBe(0);
   });
 });

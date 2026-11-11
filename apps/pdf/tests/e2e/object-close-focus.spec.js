@@ -10,7 +10,7 @@ for (const kind of ['image', 'shape'])
       test(`closing a ${pending ? 'pending' : 'unchanged'} ${kind} ${moved ? 'preserves newer focus' : 'restores object focus'}`, async ({
         page,
       }) => {
-        await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
+        await page.route('**/sdk/everything.js', (route) => route.fulfill({ body: '' }));
         await page.goto('/#library');
         const doc = await PDFDocument.create();
         const sheet = doc.addPage([400, 500]);
@@ -107,7 +107,7 @@ for (const kind of ['image', 'shape'])
     test(`deleting a ${kind} with the ${how} keeps the keyboard focus on the page`, async ({
       page,
     }) => {
-      await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
+      await page.route('**/sdk/everything.js', (route) => route.fulfill({ body: '' }));
       await page.goto('/#library');
       const doc = await PDFDocument.create();
       const sheet = doc.addPage([400, 500]);

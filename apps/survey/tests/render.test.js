@@ -641,7 +641,7 @@ describe('theme', () => {
 
 describe('text direction', () => {
   it('follows the language the survey is written in', () => {
-    expect(textDirection('האם תמליץ עלינו? Puter')).toBe('rtl');
+    expect(textDirection('האם תמליץ עלינו? Everything')).toBe('rtl');
     expect(textDirection('هل توصي بنا؟')).toBe('rtl');
     expect(textDirection('Would you recommend us? (עברית)')).toBe('ltr');
     expect(textDirection('')).toBe('ltr');

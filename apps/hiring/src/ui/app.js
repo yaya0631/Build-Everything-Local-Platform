@@ -71,7 +71,7 @@ const THEMES = [
 
 function getTheme() {
   // Storage can throw inside iframes with third-party storage blocked
-  // (the app runs embedded in Puter); the theme toggle must still work
+  // (the app runs embedded in Everything); the theme toggle must still work
   // for the session even when the preference cannot persist.
   let t = null;
   try {
@@ -1004,7 +1004,7 @@ export function startApp({ store, user, canSignOut, onSignOut }) {
         ),
         snapshotNote
       ),
-      el('p', { class: 'muted small' }, 'The backup file holds every job, candidate, interview, scorecard, offer, and setting. Attachments live in your Puter cloud and are not part of it. The app also keeps its own dated snapshots in your drive, including one taken before anything irreversible.')
+      el('p', { class: 'muted small' }, 'The backup file holds every job, candidate, interview, scorecard, offer, and setting. Attachments live in your Everything cloud and are not part of it. The app also keeps its own dated snapshots in your drive, including one taken before anything irreversible.')
     );
   }
 
@@ -1108,7 +1108,7 @@ export function startApp({ store, user, canSignOut, onSignOut }) {
           'div',
           { class: 'powered' },
           'Powered by ',
-          el('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noreferrer' }, 'Puter')
+          el('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noreferrer' }, 'Everything')
         )
       )
     );

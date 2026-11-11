@@ -11,7 +11,7 @@ for (const [shape, width, height, rotation] of [
   test(`the ${shape} thumbnail shows the actual paper boundary without false white margins`, async ({
     page,
   }, testInfo) => {
-    await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
+    await page.route('**/sdk/everything.js', (route) => route.fulfill({ body: '' }));
     await page.goto('/#library');
     const doc = await PDFDocument.create(),
       sheet = doc.addPage([width, height]);

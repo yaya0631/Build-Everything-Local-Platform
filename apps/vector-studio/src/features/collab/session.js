@@ -43,13 +43,13 @@ export class CollabSession extends Emitter {
    * transport: { call(input) } sends one request to the document's server.
    * user: { uuid, username } of this browser's account.
    */
-  constructor({ transport, server, room, user, puter = null, outbox = null, timers = true }) {
+  constructor({ transport, server, room, user, everything = null, outbox = null, timers = true }) {
     super();
     this.transport = transport;
     this.server = server;
     this.room = room;
     this.user = user;
-    this.puter = puter;
+    this.everything = everything;
     this.outbox = outbox;
     this.timers = timers;
     this.sessionId = uid('ss').replace(/[^A-Za-z0-9_-]/g, '');
@@ -469,9 +469,9 @@ export class CollabSession extends Emitter {
   async checkIn() {
     if (this.closed) return;
     if (!this.sessionKeys) this.sessionKeys = await keyPair();
-    if (!this.peers && this.puter?.peer?.serve && this.roomKey) {
+    if (!this.peers && this.everything?.peer?.serve && this.roomKey) {
       this.peers = new PeerMesh({
-        puter: this.puter,
+        everything: this.everything,
         session: this.sessionId,
         keys: this.sessionKeys,
         roomKey: this.roomKey,

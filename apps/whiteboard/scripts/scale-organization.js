@@ -2,17 +2,17 @@ import { environment } from "../tests/collaboration-helpers.js";
 import { adminCall } from "../worker/admin.js";
 import { normalizePolicy } from "../worker/org.js";
 
-// The real organization worker with the same in-memory Puter SDK used by
+// The real organization worker with the same in-memory Everything SDK used by
 // integration tests. This fixture has no credentials or live cloud connection.
 export function scaleOrganization(sample) {
   const env = environment();
   env.now = sample.now;
   const boards = env.service,
     org = boards.org,
-    puter = boards.puter;
-  puter.auth.getUser = async () => sample.owner;
+    everything = boards.everything;
+  everything.auth.getUser = async () => sample.owner;
   // Use realistic KV pages rather than the intentionally tiny test pages.
-  puter.kv.list = async ({
+  everything.kv.list = async ({
     pattern,
     cursor,
     limit = 1000,

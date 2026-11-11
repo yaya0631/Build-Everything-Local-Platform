@@ -8,7 +8,7 @@ const call = (method, args) => new Promise((resolve, reject) => {
   pending.set(request, { resolve, reject });
   parentPort.postMessage({ type: 'kv', request, method, args });
 });
-globalThis.puter = {
+globalThis.everything = {
   kv: Object.fromEntries(['get', 'set', 'add', 'del'].map((method) => [method, (...args) => call(method, args)])),
   auth: { getUser: async () => ({ uuid: 'test', username: 'test' }) },
 };

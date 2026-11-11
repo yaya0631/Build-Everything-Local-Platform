@@ -1,4 +1,4 @@
-/** Shared small utilities. Pure functions only, no DOM and no Puter. */
+/** Shared small utilities. Pure functions only, no DOM and no Everything. */
 
 /** Collision-safe id: time-sortable prefix + 8 random hex chars. */
 export function uid() {
@@ -140,7 +140,7 @@ export function debounce(fn, ms) {
   return wrapped;
 }
 
-/** puter.kv values may come back as parsed objects or JSON strings. */
+/** everything.kv values may come back as parsed objects or JSON strings. */
 export function coerce(value) {
   if (value == null) return null;
   if (typeof value === 'string') {

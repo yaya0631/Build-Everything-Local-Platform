@@ -9,7 +9,7 @@ import { openPlanForm, openPlanLedger, openTransferReserveForm } from '../src/ui
 import { openExerciseForm, openCertifyForm, openCancelForm, openGrantActions } from '../src/ui/grantactions.js';
 import { openDepartureFlow } from '../src/ui/departure.js';
 import { store } from '../src/lib/store.js';
-import { puterBackend } from './helpers/puter-kv.js';
+import { everythingBackend } from './helpers/everything-kv.js';
 
 let dom;
 let holder;
@@ -20,7 +20,7 @@ beforeEach(async () => {
   for (const name of ['window', 'document', 'location', 'Node', 'Element', 'HTMLElement', 'HTMLInputElement', 'requestAnimationFrame']) {
     vi.stubGlobal(name, dom.window[name]);
   }
-  puterBackend().install();
+  everythingBackend().install();
   await store.init();
   const cls = await store.addClass({ name: 'Common Stock', kind: 'common' });
   holder = await store.addStakeholder({ name: 'Grace', kind: 'employee' });

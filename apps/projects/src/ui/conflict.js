@@ -57,7 +57,7 @@ export function openConflictDialog(projectId) {
       // The document this project's undo stack was aimed at is gone.
       clearHistory(projectId);
       modal.close();
-      toast('Reloaded the version from your Puter account', { icon: 'cloud' });
+      toast('Reloaded the version from your Everything account', { icon: 'cloud' });
     } catch (err) {
       console.error(err);
       busy(false);

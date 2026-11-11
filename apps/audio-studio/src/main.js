@@ -15,8 +15,8 @@ for (const install of FEATURES) install(app);
 createShell(app, document.getElementById('app'));
 app.setStatus(`Launched in ${(performance.now() / 1000).toFixed(2)} seconds`);
 
-// Files handed to the app by the Puter desktop ("Open with").
-const p = typeof window !== 'undefined' ? window.puter : null;
+// Files handed to the app by the Everything desktop ("Open with").
+const p = typeof window !== 'undefined' ? window.everything : null;
 if (p?.ui?.onLaunchedWithItems) {
   p.ui.onLaunchedWithItems((items) => openFiles(app, items));
 }

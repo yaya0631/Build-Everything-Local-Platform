@@ -7,8 +7,8 @@
  *   remove(path)                         (missing files are not an error)
  *   list(dir) -> [{ name, isDir, modified }]
  *
- * Paths are relative, so with Puter they resolve inside the app's own
- * folder in the user's cloud. Every note lives in a file there; puter.kv
+ * Paths are relative, so with Everything they resolve inside the app's own
+ * folder in the user's cloud. Every note lives in a file there; everything.kv
  * is never used for content.
  */
 
@@ -18,13 +18,13 @@ function isMissing(err) {
   return code === 'subject_does_not_exist' || code === 'not_found' || code === 'dest_does_not_exist' || err?.status === 404 || /does not exist|not found|no such/i.test(msg);
 }
 
-export function puterBackend(puter, root = 'notes') {
+export function everythingBackend(everything, root = 'notes') {
   const p = (path) => `${root}/${path}`;
   return {
-    kind: 'puter',
+    kind: 'everything',
     async readJSON(path) {
       try {
-        const blob = await puter.fs.read(p(path));
+        const blob = await everything.fs.read(p(path));
         const text = await blob.text();
         return text ? JSON.parse(text) : null;
       } catch (err) {
@@ -33,29 +33,29 @@ export function puterBackend(puter, root = 'notes') {
       }
     },
     async writeJSON(path, value) {
-      await puter.fs.write(p(path), JSON.stringify(value), { overwrite: true, createMissingParents: true });
+      await everything.fs.write(p(path), JSON.stringify(value), { overwrite: true, createMissingParents: true });
     },
     async readBlob(path) {
       try {
-        return await puter.fs.read(p(path));
+        return await everything.fs.read(p(path));
       } catch (err) {
         if (isMissing(err)) return null;
         throw err;
       }
     },
     async writeBlob(path, blob) {
-      await puter.fs.write(p(path), blob, { overwrite: true, createMissingParents: true });
+      await everything.fs.write(p(path), blob, { overwrite: true, createMissingParents: true });
     },
     async remove(path) {
       try {
-        await puter.fs.delete(p(path));
+        await everything.fs.delete(p(path));
       } catch (err) {
         if (!isMissing(err)) throw err;
       }
     },
     async list(dir) {
       try {
-        const items = await puter.fs.readdir(p(dir));
+        const items = await everything.fs.readdir(p(dir));
         return items.map((it) => ({ name: it.name, isDir: Boolean(it.is_dir), modified: it.modified }));
       } catch (err) {
         if (isMissing(err)) return [];
@@ -63,7 +63,7 @@ export function puterBackend(puter, root = 'notes') {
       }
     },
     async readURL(path, expiresIn) {
-      return puter.fs.getReadURL(p(path), expiresIn);
+      return everything.fs.getReadURL(p(path), expiresIn);
     },
   };
 }

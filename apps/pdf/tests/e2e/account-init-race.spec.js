@@ -6,14 +6,14 @@ for (const view of ['editor', 'library'])
       test(`${view} initial ${stage} respects a newer ${newer}`, async ({ page }) => {
         const errors = [];
         page.on('pageerror', (error) => errors.push(error.message));
-        await page.route('**/sdk/puter.js', (route) =>
+        await page.route('**/sdk/everything.js', (route) =>
           route.fulfill({
             contentType: 'application/javascript',
             body: `
           window.mockAccount={username:'Alice'};
           window.profileReads=0;window.sessionReads=0;
           const markFinished=()=>setTimeout(()=>{window.initialAccountFinished=true;},0);
-          window.puter={env:'web',auth:{
+          window.everything={env:'web',auth:{
             isSignedIn:()=>${JSON.stringify(stage)}==='session check' && ++window.sessionReads===1
               ? new Promise(resolve=>{window.releaseInitialAccount=()=>{
                   resolve(${newer === 'sign-out'});markFinished();
@@ -42,12 +42,12 @@ for (const view of ['editor', 'library'])
         if (newer === 'SDK sign-in')
           await page.evaluate(() => {
             window.mockAccount = { username: 'Bob' };
-            window.puter.onAuth(window.mockAccount);
+            window.everything.onAuth(window.mockAccount);
           });
         else {
           await page.getByRole('button', { name: 'Settings', exact: true }).click();
           const settings = page.getByRole('dialog', { name: 'Settings', exact: true });
-          await settings.getByRole('button', { name: 'Sign in with Puter', exact: true }).click();
+          await settings.getByRole('button', { name: 'Sign in with Everything', exact: true }).click();
           await expect(settings).toHaveCount(0);
           if (newer === 'sign-out') {
             await page.getByRole('button', { name: 'Settings', exact: true }).click();
@@ -75,7 +75,7 @@ for (const view of ['editor', 'library'])
           ).toHaveValue('report');
         } else
           await expect(
-            page.getByRole('button', { name: 'Save to Puter', exact: true }),
+            page.getByRole('button', { name: 'Save to Everything', exact: true }),
           ).toBeVisible();
         await page.getByRole('button', { name: 'Settings', exact: true }).click();
         const settings = page.getByRole('dialog', { name: 'Settings', exact: true });
@@ -86,7 +86,7 @@ for (const view of ['editor', 'library'])
         await expect(page.getByRole('dialog')).toHaveCount(1);
         await expect(
           settings.getByRole('button', {
-            name: newer === 'sign-out' ? 'Sign in with Puter' : 'Sign out',
+            name: newer === 'sign-out' ? 'Sign in with Everything' : 'Sign out',
             exact: true,
           }),
         ).toBeVisible();

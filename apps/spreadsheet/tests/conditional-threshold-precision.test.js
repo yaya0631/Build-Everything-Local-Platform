@@ -18,7 +18,7 @@ const make=type=>{
 };
 async function native(w){
  const zip=X.CFB.read(new Uint8Array(await(await workbookToXlsx(w)).arrayBuffer()),{type:'array'}),p=X.CFB.find(zip,'/xl/workbook.xml');
- p.content=new TextEncoder().encode(new TextDecoder().decode(p.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,''));p.size=p.content.length;
+ p.content=new TextEncoder().encode(new TextDecoder().decode(p.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,''));p.size=p.content.length;
  return workbookFromFile(X.CFB.write(zip,{type:'array',fileType:'zip'}),'precision.xlsx');
 }
 it.each(['percent','percentile'])('preserves %s cutoffs in live formulas, native saves and partial copies',async type=>{

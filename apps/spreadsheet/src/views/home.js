@@ -2,7 +2,7 @@
  * Home: the list of spreadsheets in the app folder, with new / import / open
  * actions. Rows open the editor; a per-row menu renames, shares, duplicates,
  * downloads, or deletes. Spreadsheets other people shared with the user are
- * listed on their own. The list lives in the Puter cloud, so without a
+ * listed on their own. The list lives in the Everything cloud, so without a
  * session the screen offers the sign-in instead of the list.
  */
 
@@ -17,7 +17,7 @@ import { templateThumbnail } from '../ui/template-thumbnail.js';
 import { openShareDialog } from '../ui/share.js';
 import { TEMPLATES } from '../core/templates.js';
 import { session } from '../lib/session.js';
-import * as P from '../lib/puter.js';
+import * as P from '../lib/everything.js';
 import { stripExtension } from '../core/io.js';
 import { IMPORT_EXTENSIONS } from '../core/filetypes.js';
 import { recentFiles, forgetRecent, refreshRecent } from '../lib/recent.js';
@@ -359,7 +359,7 @@ export function homeView({ openPath, openFile, newDoc, sampleDoc, templateDoc, i
           el('h2.home-h2', { id: ids.start }, 'Start a new spreadsheet'),
           el('div.home-actions', {},
             el('button.btn.btn-outline.btn-sm', { type: 'button', html: icon('upload', 16), onclick: pickDevice }, el('span', {}, 'Import file')),
-            P.canPickFiles() && el('button.btn.btn-outline.btn-sm', { type: 'button', html: icon('folderOpen', 16), onclick: openFromPuter }, el('span', {}, 'Open from Puter')))),
+            P.canPickFiles() && el('button.btn.btn-outline.btn-sm', { type: 'button', html: icon('folderOpen', 16), onclick: openFromEverything }, el('span', {}, 'Open from Everything')))),
         startTiles()),
       draftsWrap,
       sharedWrap,
@@ -389,7 +389,7 @@ export function homeView({ openPath, openFile, newDoc, sampleDoc, templateDoc, i
       more > 0 && tile('.start-more', { name: 'All templates', sub: `${more} more`, glyph: icon('layers', 22), onclick: fromTemplate }));
   }
 
-  async function openFromPuter() {
+  async function openFromEverything() {
     if (session.signedOut && (!await session.signIn() || destroyed)) return;
     const picked = await P.pickFile();
     if (picked && !destroyed) openPath(picked.path);
@@ -415,7 +415,7 @@ export function homeView({ openPath, openFile, newDoc, sampleDoc, templateDoc, i
     loadShared(requestId);
     refreshRecent().then(() => { if (!destroyed && requestId === loadId) renderRecent(); }, () => {}); // files moved or renamed since are listed where they are now
     try {
-      // With the app folder's files, those the app made elsewhere on the drive (Puter's Save dialog put them where the
+      // With the app folder's files, those the app made elsewhere on the drive (Everything's Save dialog put them where the
       // user chose): listed among the user's spreadsheets, not left to fall out of the eight opened elsewhere.
       const [folder, made] = await Promise.all([P.listFiles(), madeFiles().catch(() => [])]);
       if (destroyed || requestId !== loadId) return;
@@ -425,7 +425,7 @@ export function homeView({ openPath, openFile, newDoc, sampleDoc, templateDoc, i
     } catch (e) {
       if (destroyed || requestId !== loadId) return;
       console.error(e);
-      error = navigator.onLine ? 'Could not load your files from Puter.' : 'You are offline. Connect to see your files.';
+      error = navigator.onLine ? 'Could not load your files from Everything.' : 'You are offline. Connect to see your files.';
     }
     loading = false;
     renderList();
@@ -520,7 +520,7 @@ export function homeView({ openPath, openFile, newDoc, sampleDoc, templateDoc, i
   }
 
   async function remove(file) {
-    const ok = await confirmDialog({ title: `Delete "${stripExtension(file.name)}"?`, message: 'The file is removed from your Puter cloud. This cannot be undone.', confirmLabel: 'Delete' });
+    const ok = await confirmDialog({ title: `Delete "${stripExtension(file.name)}"?`, message: 'The file is removed from your Everything cloud. This cannot be undone.', confirmLabel: 'Delete' });
     if (!ok) return;
     try {
       await P.deleteFile(file.path);
@@ -560,9 +560,9 @@ export function homeView({ openPath, openFile, newDoc, sampleDoc, templateDoc, i
       list.append(el('div.empty', {},
         el('div.empty-icon', { html: icon('cloud', 26) }),
         el('h3', {}, 'Sign in to see your spreadsheets'),
-        el('p', {}, 'Spreadsheets are saved as .xlsx files in your own Puter cloud. Sign in to open them here, or start working without an account.'),
+        el('p', {}, 'Spreadsheets are saved as .xlsx files in your own Everything cloud. Sign in to open them here, or start working without an account.'),
         el('div.row', { style: { justifyContent: 'center', marginTop: '18px', flexWrap: 'wrap' } },
-          el('button.btn.btn-primary', { type: 'button', html: icon('login', 16, 2.2), onclick: () => session.signIn() }, el('span', {}, 'Sign in to Puter')),
+          el('button.btn.btn-primary', { type: 'button', html: icon('login', 16, 2.2), onclick: () => session.signIn() }, el('span', {}, 'Sign in to Everything')),
           el('button.btn.btn-outline', { type: 'button', html: icon('plus', 16, 2.2), onclick: newDoc }, el('span', {}, 'New spreadsheet')))));
       return;
     }

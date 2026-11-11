@@ -1,5 +1,5 @@
 /**
- * Data layer on top of Puter.
+ * Data layer on top of Everything.
  *
  * Storage design:
  *
@@ -288,7 +288,7 @@ export function contractStats(contracts, today = todayISO()) {
  * A contract's id names a folder in the user's cloud (`docs/<id>/`), so it has
  * to be a single safe path segment. `contracts.json` is normally written only
  * by this app, but a restored export is a file the user was handed: an id of
- * `../..` would aim a purge's recursive delete at their whole Puter home.
+ * `../..` would aim a purge's recursive delete at their whole Everything home.
  */
 const SAFE_ID = /^[A-Za-z0-9_-]{1,64}$/;
 
@@ -624,7 +624,7 @@ export function isMissingFileError(err) {
 
 async function readJSON(path, fallback) {
   try {
-    const blob = await puter.fs.read(path);
+    const blob = await everything.fs.read(path);
     const text = await blob.text();
     return text.trim() ? JSON.parse(text) : fallback;
   } catch (err) {
@@ -672,10 +672,10 @@ export class Store extends EventTarget {
 
   async init() {
     const [settings, contractList, contactList, user] = await Promise.all([
-      puter.kv.get(KV_SETTINGS),
+      everything.kv.get(KV_SETTINGS),
       readJSON(CONTRACTS_PATH, []),
       readJSON(CONTACTS_PATH, []),
-      Promise.resolve(puter.auth.getUser()).catch(() => null),
+      Promise.resolve(everything.auth.getUser()).catch(() => null),
     ]);
     this.settings = normalizeSettings(settings);
     this.#setContracts(Array.isArray(contractList) ? contractList : []);
@@ -709,7 +709,7 @@ export class Store extends EventTarget {
    */
   #persist(path, read) {
     return this.#enqueue(path, () =>
-      puter.fs.write(path, JSON.stringify(read()), { createMissingParents: true }));
+      everything.fs.write(path, JSON.stringify(read()), { createMissingParents: true }));
   }
 
   /* Deleted records are part of the file: the trash outlives a reload. */
@@ -735,7 +735,7 @@ export class Store extends EventTarget {
     this.settings = next;
     this.#emit();
     try {
-      await puter.kv.set(KV_SETTINGS, this.settings);
+      await everything.kv.set(KV_SETTINGS, this.settings);
     } catch (err) {
       if (this.settings === next) {
         this.settings = prev;
@@ -784,7 +784,7 @@ export class Store extends EventTarget {
 
   /**
    * Deleting a contract moves it to the trash: it leaves every list, count
-   * and query at once, but its documents stay in Puter FS so a restore brings
+   * and query at once, but its documents stay in Everything FS so a restore brings
    * the signed agreement back with it.
    */
   deleteContract(id) {
@@ -931,13 +931,13 @@ export class Store extends EventTarget {
     if (!this.contractById(contractId)) throw new Error(`No contract ${contractId}`);
     const safeName = file.name.replace(/[/\\]/g, '_');
     const path = `${docDir(contractId)}/${Date.now()}-${safeName}`;
-    await puter.fs.write(path, file, { createMissingParents: true });
+    await everything.fs.write(path, file, { createMissingParents: true });
     // Re-read after the upload: another attach may have landed during the
     // await, and building on the stale snapshot would drop its pointer.
     const contract = this.contractById(contractId);
     if (!contract) {
       // Deleted while uploading; don't leave the file orphaned.
-      puter.fs.delete(path).catch(() => {});
+      everything.fs.delete(path).catch(() => {});
       throw new Error(`No contract ${contractId}`);
     }
     const doc = {
@@ -950,14 +950,14 @@ export class Store extends EventTarget {
       });
     } catch (err) {
       // The pointer was never saved; don't leave the uploaded file orphaned.
-      puter.fs.delete(path).catch(() => {});
+      everything.fs.delete(path).catch(() => {});
       throw err;
     }
     return doc;
   }
 
   async readDocument(doc) {
-    return puter.fs.read(doc.path);
+    return everything.fs.read(doc.path);
   }
 
   /** To the trash, file included: the only copy of a signed PDF may be here. */
@@ -1181,10 +1181,10 @@ export class Store extends EventTarget {
     }
     for (const c of contracts) {
       if ((c.documents || []).length) {
-        puter.fs.delete(docDir(c.id), { recursive: true }).catch(() => {});
+        everything.fs.delete(docDir(c.id), { recursive: true }).catch(() => {});
       }
     }
-    for (const { doc } of documents) puter.fs.delete(doc.path).catch(() => {});
+    for (const { doc } of documents) everything.fs.delete(doc.path).catch(() => {});
   }
 
   /* --- bulk (sample data, export) --- */
@@ -1258,7 +1258,7 @@ export class Store extends EventTarget {
     this.#emit();
     try {
       await Promise.all([
-        puter.kv.set(KV_SETTINGS, this.settings),
+        everything.kv.set(KV_SETTINGS, this.settings),
         this.#saveContracts(),
         this.#saveContacts(),
       ]);

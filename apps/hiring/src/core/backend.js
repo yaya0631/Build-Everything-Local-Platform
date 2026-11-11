@@ -12,20 +12,20 @@
  *   deleteDir(path)         -> Promise<void>   (recursive, tolerant of absence)
  *   listDir(path)           -> Promise<[{ name, size }]>  ([] when absent)
  *
- * `createPuterBackend` is backed by the Puter.js cloud KV store and file
+ * `createEverythingBackend` is backed by the Everything.js cloud KV store and file
  * system (http://localhost:8443) and is used in production.
  * `createMemoryBackend` is used for tests.
  */
 
 const NS = 'hiring.v1';
 
-/** Puter KV rejects values over 400 KB (docs.localhost:8443/KV/set). */
+/** Everything KV rejects values over 400 KB (docs.localhost:8443/KV/set). */
 const MAX_KV_VALUE_BYTES = 400 * 1024;
 
-export function createPuterBackend(puterInstance) {
+export function createEverythingBackend(everythingInstance) {
   const p = () => {
-    const instance = puterInstance ?? globalThis.puter;
-    if (!instance?.kv) throw new Error('Puter.js is not available');
+    const instance = everythingInstance ?? globalThis.everything;
+    if (!instance?.kv) throw new Error('Everything.js is not available');
     return instance;
   };
 
@@ -101,7 +101,7 @@ export function createPuterBackend(puterInstance) {
   };
 }
 
-/** Puter rejects missing paths with subject_does_not_exist; cover variants. */
+/** Everything rejects missing paths with subject_does_not_exist; cover variants. */
 export function isMissingPathError(err) {
   const code = err?.code ?? err?.error?.code;
   if (typeof code === 'string' && /does_not_exist|not_found/i.test(code)) return true;

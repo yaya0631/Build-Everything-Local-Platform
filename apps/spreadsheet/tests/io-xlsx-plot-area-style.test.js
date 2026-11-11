@@ -19,7 +19,7 @@ async function source(properties) {
 const draw = wb => { const s = wb.sheets[0], ch = s.charts[0]; return doc(renderChartSvg(chartData(wb, s.id, ch), ch, 700, 400)); };
 async function save(wb) {
   const zip = X.CFB.read(new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()), { type: 'array' });
-  patch(zip, '/xl/workbook.xml', read(zip, '/xl/workbook.xml').replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  patch(zip, '/xl/workbook.xml', read(zip, '/xl/workbook.xml').replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   const chart = doc(read(zip, '/xl/charts/chart1_1.xml'));
   const plot = chart.getElementsByTagNameNS('*', 'plotArea')[0];
   return { properties: get(plot, 'spPr'), back: await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'native.xlsx') };

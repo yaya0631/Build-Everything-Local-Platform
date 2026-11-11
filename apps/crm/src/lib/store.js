@@ -1,5 +1,5 @@
 /**
- * Data layer on top of Puter.
+ * Data layer on top of Everything.
  *
  * Everything lives in KV, one key per collection - small, hot, single-key
  * reads and no kv.list() scans. A founder-scale CRM (hundreds of contacts,
@@ -30,7 +30,7 @@
  *                         spawnedId }]
  *   crm:templates:v1   [{ id, name, subject, body, createdAt }]
  *   crm:attachments:v1 [{ id, name, path, size, type, contactId, companyId,
- *                         dealId, uploadedAt }]  (bytes live in puter.fs)
+ *                         dealId, uploadedAt }]  (bytes live in everything.fs)
  *   crm:trash:v1       [{ id, kind, at, name, record, refs }]  (30-day undo)
  *   crm:backup:v1      { at, reason, data }  (pre-import safety snapshot)
  *
@@ -167,11 +167,11 @@ const DEFAULT_SETTINGS = {
   // Offer to schedule the next step after completing a follow-up, logging
   // an activity, or moving a deal, when the record has nothing else booked.
   nextStepNudges: true,
-  // Days between automatic backups to Puter FS (0 = off). See lib/backups.js.
+  // Days between automatic backups to Everything FS (0 = off). See lib/backups.js.
   autoBackupDays: 7,
-  // AI assist (paste to create, draft an email, catch me up) on Puter's
+  // AI assist (paste to create, draft an email, catch me up) on Everything's
   // built-in models. See lib/ai.js: false turns every control off, and so
-  // does a platform without puter.ai.
+  // does a platform without everything.ai.
   aiAssist: true,
 };
 
@@ -433,7 +433,7 @@ class Store extends EventTarget {
   tasks = [];
   /** Reusable email templates, edited in Settings. */
   templates = [];
-  /** Attachment metadata; the bytes live in puter.fs under attachments/. */
+  /** Attachment metadata; the bytes live in everything.fs under attachments/. */
   attachments = [];
   /** Recently deleted records, newest first. See TRASH_TTL. */
   trash = [];
@@ -451,8 +451,8 @@ class Store extends EventTarget {
   #outbox = createOutbox({
     storage: idbStorage(),
     kv: {
-      get: (key) => puter.kv.get(key),
-      set: (key, payload) => puter.kv.set(key, payload),
+      get: (key) => everything.kv.get(key),
+      set: (key, payload) => everything.kv.set(key, payload),
     },
   });
 
@@ -560,10 +560,10 @@ class Store extends EventTarget {
     this.#lastContact = null;
     this.#links = null;
     // The signed-in user, remembered locally: an offline start can't ask
-    // the platform who this is, and "Puter user" in the sidebar of your own
+    // the platform who this is, and "Everything user" in the sidebar of your own
     // CRM reads like a different account.
     try {
-      this.user = await puter.auth.getUser();
+      this.user = await everything.auth.getUser();
       await this.#outbox.mirror(KV_USER, JSON.stringify(this.user)).catch(() => {});
     } catch {
       this.user = parseStored(await this.#outbox.localValue(KV_USER).catch(() => null));
@@ -699,7 +699,7 @@ class Store extends EventTarget {
    * collection in memory with the empty value of a key never written.
    */
   async #readRemote(key) {
-    const raw = await puter.kv.get(key);
+    const raw = await everything.kv.get(key);
     await this.#outbox.mirror(key, raw).catch(() => {});
     return parseStored(raw);
   }
@@ -743,7 +743,7 @@ class Store extends EventTarget {
     const next = prev.catch(() => {}).then(async () => {
       await this.#outbox.stage(key, payload).catch(() => {});
       try {
-        await puter.kv.set(key, payload);
+        await everything.kv.set(key, payload);
       } catch {
         await this.#outbox.queue(key, payload).catch(() => {});
         this.#markOffline(true);
@@ -2266,7 +2266,7 @@ class Store extends EventTarget {
       activities: this.activities,
       tasks: this.tasks,
       templates: this.templates,
-      // The manifest only: the files themselves stay in Puter FS, and the
+      // The manifest only: the files themselves stay in Everything FS, and the
       // paths here say exactly where.
       attachments: this.attachments,
     };

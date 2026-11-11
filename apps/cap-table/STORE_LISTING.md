@@ -14,7 +14,7 @@ Prepare for your next raise with a clear picture of how new funding changes owne
 
 Run one equity incentive plan or several side by side, each with its own reserve, adoption date and rules for where cancelled, expired or exercised shares go. Grant options and restricted stock units from the plan they belong to, map planned roles and grants against what each plan has available, and see when a reserve could run out. Track vesting, review upcoming equity deadlines and explore how a potential sale could distribute proceeds.
 
-Every change is kept in a permanent history that records who made it, when, and how each record read before and after, filterable, exportable and kept through imports and restores. Built for founders, startup operators and finance teams, Cap Table keeps individual equity statements and exportable reports close at hand. Manage multiple companies, work across desktop, tablet and mobile, and keep your records in your own Puter account.
+Every change is kept in a permanent history that records who made it, when, and how each record read before and after, filterable, exportable and kept through imports and restores. Built for founders, startup operators and finance teams, Cap Table keeps individual equity statements and exportable reports close at hand. Manage multiple companies, work across desktop, tablet and mobile, and keep your records in your own Everything account.
 
 ## Key features
 

@@ -1,5 +1,5 @@
 /**
- * Document files live in the app's own Puter folder, never in KV. A document
+ * Document files live in the app's own Everything folder, never in KV. A document
  * record keeps only a small reference: { path, name, type, size }.
  *
  *   docs/<matterId or "firm">/<id>-<name>
@@ -34,12 +34,12 @@ export async function saveFile(file, { folder = 'firm', name } = {}) {
   if (app.team?.url && file.size > TEAM_MAX_BYTES) throw new Error(`${fileName} is larger than 8 MB, the limit for files in a shared firm.`);
   const path = `docs/${safeName(folder)}/${newId()}-${safeName(fileName)}`;
   const type = file.type || guessType(fileName);
-  if (app.demo || typeof puter === 'undefined') {
+  if (app.demo || typeof everything === 'undefined') {
     memory.set(path, file);
   } else if (app.team?.url) {
     await call(app.team.url, 'fileWrite', { path, data: await toBase64(file), type }, { timeoutMs: 120000 });
   } else {
-    await puter.fs.write(path, file, { createMissingParents: true, overwrite: true });
+    await everything.fs.write(path, file, { createMissingParents: true, overwrite: true });
   }
   return { path, name: fileName, type, size: file.size };
 }
@@ -48,18 +48,18 @@ export async function readFile(ref) {
   let blob = memory.get(ref.path);
   if (!blob && typeof ref.demoText === 'string') blob = new Blob([ref.demoText], { type: 'text/plain' });
   if (!blob) {
-    if (app.demo || typeof puter === 'undefined') throw new Error('This file is not available in the demo.');
+    if (app.demo || typeof everything === 'undefined') throw new Error('This file is not available in the demo.');
     if (app.team?.url) {
       const out = await call(app.team.url, 'fileRead', { path: ref.path }, { timeoutMs: 120000 });
       blob = new Blob([fromBase64(out.data)], { type: ref.type || out.type || '' });
-    } else blob = await puter.fs.read(ref.path);
+    } else blob = await everything.fs.read(ref.path);
   }
   if (ref.type && blob.type !== ref.type) blob = new Blob([blob], { type: ref.type });
   return blob;
 }
 
 // Object URLs share the app's origin, so opening one as a page (in a frame or
-// a new tab) runs its scripts with the person's Puter session. Only passive
+// a new tab) runs its scripts with the person's Everything session. Only passive
 // types keep their type; SVG becomes a data: URL, which has no origin.
 const PASSIVE_TYPES = /^(image\/(png|jpeg|gif|webp|avif)|application\/pdf)$/i;
 
@@ -83,13 +83,13 @@ export async function deleteFile(ref) {
   if (url?.startsWith('blob:')) URL.revokeObjectURL(url);
   urlCache.delete(ref.path);
   // Sample documents carry their text and have no stored file.
-  if (app.demo || typeof puter === 'undefined' || typeof ref.demoText === 'string') return;
+  if (app.demo || typeof everything === 'undefined' || typeof ref.demoText === 'string') return;
   if (app.team?.url) {
     await call(app.team.url, 'fileDelete', { path: ref.path });
     return;
   }
   try {
-    await puter.fs.delete(ref.path);
+    await everything.fs.delete(ref.path);
   } catch (err) {
     // Already gone is fine.
     if (!/not.?found|subject_does_not_exist/i.test(String(err?.code || err?.message || err))) throw err;

@@ -35,8 +35,8 @@ describe('the word lists', () => {
   });
 
   it('take the person’s own words', () => {
-    const own = createSpeller({ words: new Set(['cat']), noSuggest: new Set() }, { custom: ['Puter', 'xlsx'] });
-    expect(own.check('Puter')).toBe(true);
+    const own = createSpeller({ words: new Set(['cat']), noSuggest: new Set() }, { custom: ['Everything', 'xlsx'] });
+    expect(own.check('Everything')).toBe(true);
     expect(own.check('XLSX')).toBe(true);
     expect(own.check('dog')).toBe(false);
   });

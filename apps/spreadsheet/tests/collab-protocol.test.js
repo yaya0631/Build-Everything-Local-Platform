@@ -133,13 +133,13 @@ describe('worker permission checks', () => {
   async function room() {
     const env = environment();
     const wb = new Workbook({ sheets: [{ name: 'S' }] });
-    const id = await RoomClient.create({ puter: env.sdk(owner), server: SERVER, wb, name: 'S' });
+    const id = await RoomClient.create({ everything: env.sdk(owner), server: SERVER, wb, name: 'S' });
     return { env, id };
   }
 
   it('lets only its owner create rooms on a worker', async () => {
     const { env } = await room();
-    await expect(RoomClient.create({ puter: env.sdk(editor), server: SERVER, wb: new Workbook(), name: 'x' })).rejects.toMatchObject({ status: 403 });
+    await expect(RoomClient.create({ everything: env.sdk(editor), server: SERVER, wb: new Workbook(), name: 'x' })).rejects.toMatchObject({ status: 403 });
   });
 
   it('refuses expired and revoked invitations, but not to existing members', async () => {

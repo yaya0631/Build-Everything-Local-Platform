@@ -2,7 +2,7 @@
  * OCR text layers: recognized words written onto a scanned page as invisible text (render mode
  * 3), the way Acrobat makes scans searchable. Each word starts at its box on the image and is
  * stretched with horizontal scaling to the box's width, so search hits and selections line up
- * with the picture. The layer sits in its own content stream inside a `/PuterOCR` marked-content
+ * with the picture. The layer sits in its own content stream inside a `/EverythingOCR` marked-content
  * sequence, so running OCR again or removing it later touches nothing else on the page.
  *
  * The recognizer itself lives in `src/ocr-engine.js`; this module only needs its result:
@@ -15,7 +15,7 @@ import { pageRotation, pageUserUnit } from './structure.js';
 import { pageSource, parseContent, setPageSource } from './text-edit.js';
 
 /** Marked-content tag and stream-dictionary key that identify a layer this app wrote. */
-export const OCR_TAG = 'PuterOCR';
+export const OCR_TAG = 'EverythingOCR';
 const MARK = PDFName.of(OCR_TAG),
   CONTENTS = PDFName.of('Contents'),
   RESOURCES = PDFName.of('Resources'),

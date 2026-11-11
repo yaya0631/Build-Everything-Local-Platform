@@ -1,8 +1,8 @@
 /**
  * The help desk backend: every route the app and the help center call. It
- * is written against small injected services (a Puter KV store, a file
+ * is written against small injected services (an Everything KV store, a file
  * store, an email sender and an identity lookup) so the same code runs in
- * three places: the Puter worker an owner deploys, the owner's own browser
+ * three places: the Everything worker an owner deploys, the owner's own browser
  * before any worker exists, and the tests.
  */
 import { deskKeys, idFromKey, PRESENCE_TTL_SECONDS } from '../shared/keys.js';
@@ -43,7 +43,7 @@ export function createBackend(options) {
 
   async function identity(req) {
     const who = await req.who?.();
-    if (!who || !who.uuid) fail(401, 'unauthorized', 'Sign in with Puter to continue');
+    if (!who || !who.uuid) fail(401, 'unauthorized', 'Sign in with Everything to continue');
     return who;
   }
 
@@ -444,7 +444,7 @@ export function createBackend(options) {
   });
 
   /**
-   * Received email, read from the owner's Puter mailbox by their browser.
+   * Received email, read from the owner's Everything mailbox by their browser.
    * A message whose subject carries a request number continues that request
    * when it comes from its requester or a CC; anything else opens a new one.
    * Each message is imported once.
@@ -617,7 +617,7 @@ export function createBackend(options) {
     if (!user) return { ok: true };
     const page = await store.page(c.K.requesterPrefix(id), { limit: 1 });
     if (page.items.length) fail(409, 'has_tickets', 'This customer has tickets. Delete or reassign them first.');
-    await store.delMany([user.email ? c.K.userByEmail(user.email) : null, user.puter ? c.K.userByUuid(user.puter) : null].filter(Boolean));
+    await store.delMany([user.email ? c.K.userByEmail(user.email) : null, user.everything ? c.K.userByUuid(user.everything) : null].filter(Boolean));
     await store.del(c.K.user(id));
     await store.commit(c.K, [], { k: 'u', id, v: null, by: c.who.uuid });
     return { ok: true };
@@ -924,14 +924,14 @@ export function createBackend(options) {
     };
   }
 
-  /** The requester behind a help center call: a link key or their Puter account. */
+  /** The requester behind a help center call: a link key or their Everything account. */
   async function requestAccess(req, p, id) {
     const ticket = await store.get(p.K.ticket(id));
     if (!ticket || ticket.deleted || ticket.spam) fail(404, 'not_found', 'We could not find that request');
     const key = String(req.query?.key || req.body?.key || '');
     if (key && key.length >= 16 && key === ticket.key) return ticket;
     const who = await req.who?.().catch(() => null);
-    if (who?.uuid && ticket.submitterPuter && ticket.submitterPuter === who.uuid) return ticket;
+    if (who?.uuid && ticket.submitterEverything && ticket.submitterEverything === who.uuid) return ticket;
     fail(403, 'forbidden', 'This link is not valid for that request');
   }
 
@@ -1018,7 +1018,7 @@ export function createBackend(options) {
       via: 'portal',
       fields,
       unverified,
-      submitterPuter: who?.uuid || null,
+      submitterEverything: who?.uuid || null,
       // Accepted as usual so a suspended sender learns nothing, but filed as spam.
       spam: !!requester.suspended,
     }, actor);
@@ -1059,7 +1059,7 @@ export function createBackend(options) {
         comment: { html: textToHtml(`${text}\n\n(Follow-up to request #${ticket.id})`), public: true },
         via: 'portal',
         tags: ['follow_up'],
-        submitterPuter: ticket.submitterPuter,
+        submitterEverything: ticket.submitterEverything,
         unverified: ticket.unverified,
       }, actor);
       const original = await writeTicket(store, p.K, id, { followUp: res.ticket.id });
@@ -1109,7 +1109,7 @@ export function createBackend(options) {
     const tickets = await store.getMany(ids.map((i) => p.K.ticket(i)));
     return {
       // The index can outlive a change of requester; the ticket has the final say.
-      requests: tickets.filter((t) => t && !t.deleted && !t.spam && t.submitterPuter === who.uuid).map((t) => ({ ...publicTicket(t, p.meta), key: t.key })).sort((a, b) => b.updatedAt - a.updatedAt),
+      requests: tickets.filter((t) => t && !t.deleted && !t.spam && t.submitterEverything === who.uuid).map((t) => ({ ...publicTicket(t, p.meta), key: t.key })).sort((a, b) => b.updatedAt - a.updatedAt),
     };
   });
 

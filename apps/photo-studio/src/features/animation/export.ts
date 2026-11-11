@@ -4,7 +4,7 @@
 // mixed in (audio-export.ts) or written alone as a WAV file.
 import type { Editor } from '../../editor';
 import type { RGBA8 } from '../../imaging/types';
-import { download } from '../../persistence/puter';
+import { download } from '../../persistence/everything';
 import type { PhotoDocument } from '../../model/document';
 import { frameDocument, gifLoop, loopLabel, sampleFrames, totalDuration, type FrameAnimation } from '../../model/animation';
 import { fpsLabel, timecode, timeDocument, workArea } from '../../model/video-timeline-ops';

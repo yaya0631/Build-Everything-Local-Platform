@@ -58,7 +58,7 @@ it('preserves General signs and conditions through edit/undo, HTML and metadata-
   const blob=await workbookToXlsx(wb);
   const bytes=await new Promise(resolve=>{const reader=new FileReader();reader.onload=()=>resolve(new Uint8Array(reader.result));reader.readAsArrayBuffer(blob);});
   const zip=X.CFB.read(bytes,{type:'array'}),part=X.CFB.find(zip,'/xl/workbook.xml');
-  part.content=new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,''));part.size=part.content.length;
+  part.content=new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,''));part.size=part.content.length;
   const restored=await workbookFromFile(X.CFB.write(zip,{type:'array',fileType:'zip'}),'general.xlsx');
   for(const [r,[value,code,display]] of cases.entries()){
     expect(restored.getValue(restored.activeSheetId,r,0)).toBe(value);

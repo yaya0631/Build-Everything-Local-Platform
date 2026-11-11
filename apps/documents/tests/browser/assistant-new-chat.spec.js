@@ -5,7 +5,7 @@ test('New chat while a reply is on its way starts afresh at once', async ({ page
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/mock.html#/new');
   await expect(page.getByRole('button', { name: 'Bold', exact: true })).toBeEnabled({ timeout: 20000 });
-  await page.evaluate(() => { const chat = puter.ai.chat.bind(puter.ai); window.prompts = []; puter.ai.chat = (prompt, ...rest) => { window.prompts.push(prompt); return chat(prompt, ...rest); }; });
+  await page.evaluate(() => { const chat = everything.ai.chat.bind(everything.ai); window.prompts = []; everything.ai.chat = (prompt, ...rest) => { window.prompts.push(prompt); return chat(prompt, ...rest); }; });
   await page.getByRole('textbox', { name: 'Document text' }).fill('Plans for the old project.');
   await page.locator('.as-title-button').click();
   const pane = page.getByRole('complementary', { name: 'Assistant pane' });
@@ -53,7 +53,7 @@ test('A reply that echoes a note reference puts no invisible object character in
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/mock.html#/new');
   await expect(page.getByRole('button', { name: 'Bold', exact: true })).toBeEnabled({ timeout: 20000 });
-  await page.evaluate(() => { const chat = puter.ai.chat.bind(puter.ai); window.prompts = []; puter.ai.chat = (prompt, ...rest) => { window.prompts.push(prompt); return chat(prompt, ...rest); }; });
+  await page.evaluate(() => { const chat = everything.ai.chat.bind(everything.ai); window.prompts = []; everything.ai.chat = (prompt, ...rest) => { window.prompts.push(prompt); return chat(prompt, ...rest); }; });
   const text = page.getByRole('textbox', { name: 'Document text' });
   await text.focus();
   await page.keyboard.type('First claim. Second claim.');
@@ -78,7 +78,7 @@ test('A reply with bullets and numbers goes in as list paragraphs, not as text w
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/mock.html#/new');
   await expect(page.getByRole('button', { name: 'Bold', exact: true })).toBeEnabled({ timeout: 20000 });
-  await page.evaluate(() => { puter.ai.chat = async () => ({ message: { content: 'TEXT:\nKey points:\n\n- Faster saves\n- New templates\n\nNext steps:\n\n1. Install\n2. Restart' } }); });
+  await page.evaluate(() => { everything.ai.chat = async () => ({ message: { content: 'TEXT:\nKey points:\n\n- Faster saves\n- New templates\n\nNext steps:\n\n1. Install\n2. Restart' } }); });
   const text = page.getByRole('textbox', { name: 'Document text' });
   await text.focus();
   await page.keyboard.type('Release notes');

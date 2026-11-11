@@ -5,9 +5,9 @@
  *   - navigations: network-first, falling back to the cached shell —
  *     updates flow when online, the stockroom basement still opens the
  *     app when not;
- *   - same-origin assets and the Puter SDK script: stale-while-
+ *   - same-origin assets and the Everything SDK script: stale-while-
  *     revalidate — served instantly from cache, refreshed behind;
- *   - everything else (the Puter API itself): untouched. Data offline
+ *   - everything else (the Everything API itself): untouched. Data offline
  *     is the app's own IndexedDB mirror's job, not a cache's.
  *
  * Bump the version to retire old caches on deploy.
@@ -15,8 +15,8 @@
 
 const CACHE = 'inv-shell-v5';
 
-/** The one cross-origin URL worth caching: the Puter SDK bundle. */
-const SDK_URL = '/sdk/puter.js';
+/** The one cross-origin URL worth caching: the Everything SDK bundle. */
+const SDK_URL = '/sdk/everything.js';
 
 const PRECACHE = [
   './',
@@ -90,7 +90,7 @@ self.addEventListener('fetch', (event) => {
   if (url.origin === self.location.origin || request.url === SDK_URL) {
     event.respondWith(staleWhileRevalidate(event));
   }
-  // Anything else — the Puter API above all — goes straight through.
+  // Anything else — the Everything API above all — goes straight through.
 });
 
 /** The paths that really are the app shell — nothing else may become it. */

@@ -6,7 +6,7 @@ import { unnamedParentPdf } from '../fixtures/unnamed-form-parent.js';
 for (const parentName of [undefined, ''])
   for (const mode of ['on page', 'dialog', 'literal name'])
     test(`edits fields with unnamed parents (${mode}, parent=${parentName})`, async ({ page }) => {
-      await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
+      await page.route('**/sdk/everything.js', (route) => route.fulfill({ body: '' }));
       await page.goto('/#library');
       const { doc } = await unnamedParentPdf({ parentName });
       const name = parentName === undefined ? 'Name' : '.Name';

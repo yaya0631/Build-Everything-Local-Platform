@@ -2,18 +2,18 @@ import { afterEach, beforeAll, beforeEach, expect, it, vi } from 'vitest';
 import { Doc } from '../src/lib/doc.js';
 import { memoryStorage } from './helpers/memory-storage.js';
 import { workbookToXlsx } from '../src/core/io.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 
 let mock;
 // SheetJS is loaded on first use with a real dynamic import; warm it up so no test waits on it.
 beforeAll(async () => { await Doc.blank().toXlsxBlob(); });
 beforeEach(() => {
   Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true });
-  mock = installMockPuter();
+  mock = installMockEverything();
   vi.useFakeTimers();
   vi.setSystemTime(1_700_000_000_000); // the clock stands still: every write lands within one second
 });
-afterEach(() => { vi.useRealTimers(); delete globalThis.puter; });
+afterEach(() => { vi.useRealTimers(); delete globalThis.everything; });
 
 async function savedDocument() {
   const doc = Doc.blank();
@@ -114,7 +114,7 @@ it('reads the file back before overwriting a same-size write made in the second 
 // must not put the question to the user instead, or a flaky connection would ask on every save.
 it('saves as it would have when the file cannot be read back to be compared', async () => {
   const doc = await savedDocument();
-  puter.fs.read = async () => { throw new Error('Network request failed'); };
+  everything.fs.read = async () => { throw new Error('Network request failed'); };
   doc.wb.setInput(doc.wb.activeSheetId, 0, 0, 'mine again');
   try {
     expect(await doc.save()).toBe(true);
@@ -124,8 +124,8 @@ it('saves as it would have when the file cannot be read back to be compared', as
 
 it('goes by the modification time alone when the drive reports no size', async () => {
   const doc = await savedDocument();
-  const stat = puter.fs.stat;
-  puter.fs.stat = async (p) => ({ ...(await stat(p)), size: null });
+  const stat = everything.fs.stat;
+  everything.fs.stat = async (p) => ({ ...(await stat(p)), size: null });
   doc.wb.setInput(doc.wb.activeSheetId, 0, 0, 'mine again');
   try {
     expect(await doc.save()).toBe(true);

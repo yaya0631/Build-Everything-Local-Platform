@@ -1,7 +1,7 @@
 {
   "name": "wiki",
   "version": "1.0.0",
-  "description": "Wiki: pages, docs and databases for you and your team, stored in your own Puter cloud.",
+  "description": "Wiki: pages, docs and databases for you and your team, stored in your own Everything cloud.",
   "type": "module",
   "private": true,
   "scripts": {

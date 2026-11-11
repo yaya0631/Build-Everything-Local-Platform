@@ -1,7 +1,7 @@
 /**
  * The account menu shared by the home screen and the editor: theme,
- * shortcuts, about, and (outside the Puter desktop) sign in or out. Inside a
- * Puter app window the desktop owns the session, so neither is offered there.
+ * shortcuts, about, and (outside the Everything desktop) sign in or out. Inside a
+ * Everything app window the desktop owns the session, so neither is offered there.
  */
 
 import { el } from './dom.js';
@@ -16,7 +16,7 @@ import { UNITS, recallUnit, rememberUnit, unitLabel } from '../lib/units.js';
 import { autocorrectEnabled, setAutocorrectEnabled, capitalizeSentencesEnabled, setCapitalizeSentencesEnabled } from '../lib/autocorrect.js';
 import { autolinkEnabled, setAutolinkEnabled } from '../lib/linkify.js';
 import { session } from '../lib/session.js';
-import * as P from '../lib/puter.js';
+import * as P from '../lib/everything.js';
 
 export function openAppMenu(anchor, { extraItems = [] } = {}) {
   let opened = null;
@@ -48,7 +48,7 @@ export function openAppMenu(anchor, { extraItems = [] } = {}) {
   ];
   if (!P.isApp()) {
     items.push({ separator: true });
-    if (session.signedOut) items.push({ label: 'Sign in to Puter', icon: 'login', hint: 'Save documents to your own cloud', onSelect: () => session.signIn() });
+    if (session.signedOut) items.push({ label: 'Sign in to Everything', icon: 'login', hint: 'Save documents to your own cloud', onSelect: () => session.signIn() });
     else items.push({ label: 'Sign out', icon: 'logout', onSelect: confirmSignOut });
   }
   opened = openMenu({ anchor, items: items.filter(Boolean), align: 'end', label: 'Account', minWidth: 250 });
@@ -103,7 +103,7 @@ export function openUnitsMenu(anchor) {
 export async function confirmSignOut() {
   const ok = await confirmDialog({
     title: 'Sign out?',
-    message: 'Your documents stay in your Puter account. Any unsaved change in an open document is saved first.',
+    message: 'Your documents stay in your Everything account. Any unsaved change in an open document is saved first.',
     confirmLabel: 'Sign out', danger: false,
   });
   if (!ok) return;
@@ -129,10 +129,10 @@ export function openAbout() {
   openModal({
     title: 'Documents',
     content: el('div', {},
-      el('p.modal-text', {}, 'A private word processor with an original canvas editor. Files are saved as .docx in your own Puter cloud.'),
+      el('p.modal-text', {}, 'A private word processor with an original canvas editor. Files are saved as .docx in your own Everything cloud.'),
       el('p.modal-text', {}, 'This version supports text and paragraph formatting, selection, undo, and DOCX downloads. Advanced document features are not supported yet.'),
       el('p.small.muted', {}, 'Built with vanilla JavaScript, Vite, Lucide icons, fflate, Noto Sans, and ',
-        el('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Puter'), '.'),
+        el('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Everything'), '.'),
       el('p.small.muted', {}, el('a', { href: `${import.meta.env.BASE_URL}licenses/THIRD_PARTY.txt`, target: '_blank', rel: 'noopener' }, 'Third-party licenses')),
       el('p.small.muted', { lang: 'ko' }, '본 제품은 한글과컴퓨터의 한글 문서 파일(.hwp) 공개 문서를 참고하여 개발하였습니다.')),
   });

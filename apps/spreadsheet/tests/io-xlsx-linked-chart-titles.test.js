@@ -70,7 +70,7 @@ it('exports native live title references with fresh caches and formatting, indep
   expect(xml).toContain('<c:f>Data!$D$4</c:f>');
   expect(xml).toContain('sz="1800" b="1"');
   const book = X.CFB.find(zip, '/xl/workbook.xml');
-  book.content = new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  book.content = new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   book.size = book.content.length;
   const back = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'native.xlsx');
   expect(back.sheets[1].charts[0]).toMatchObject({ titleRef: chart().titleRef, xTitleRef: chart().xTitleRef, yTitleRef: chart().yTitleRef });

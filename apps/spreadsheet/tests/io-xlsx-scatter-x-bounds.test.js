@@ -30,7 +30,7 @@ it('reads them back, from the app\'s own file and from the chart Excel sees', as
   // Without the app's own copy of the chart, as after Excel saves the file.
   const zip = X.CFB.read(new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()), { type: 'array' });
   const entry = X.CFB.find(zip, '/xl/workbook.xml');
-  entry.content = new TextEncoder().encode(new TextDecoder().decode(entry.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  entry.content = new TextEncoder().encode(new TextDecoder().decode(entry.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   entry.size = entry.content.length;
   const native = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'native.xlsx');
   expect(chartXBounds(native.activeSheet.charts[0])).toEqual({ min: 2, max: 4 });

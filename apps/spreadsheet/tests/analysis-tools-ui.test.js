@@ -4,7 +4,7 @@ import { Workbook } from '../src/core/workbook.js';
 import { openDataAnalysis, openAnalysisTool } from '../src/ui/analysis-tools.js';
 import { closeAllModals } from '../src/ui/modal.js';
 import { toast } from '../src/ui/toast.js';
-import * as P from '../src/lib/puter.js';
+import * as P from '../src/lib/everything.js';
 
 vi.mock('../src/ui/toast.js', () => ({ toast: vi.fn() }));
 beforeEach(() => {

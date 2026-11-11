@@ -44,7 +44,7 @@ const until = async (fn, ms = 5000) => {
 /** Route each call by the end of its path (first match wins); a handler gets the query and the request init. */
 function worker(routes) {
   const calls = [];
-  globalThis.puter = {
+  globalThis.everything = {
     workers: {
       exec: async (url, init = {}) => {
         const u = new URL(url);
@@ -84,7 +84,7 @@ function resetStore() {
   store.act = { c: {}, p: {}, w: 0, u: 0 };
   for (const t of store._readTimers.values()) clearTimeout(t);
   store._readTimers.clear();
-  delete globalThis.puter;
+  delete globalThis.everything;
 }
 
 const msg = (seq, text, extra = {}) => ({ seq, user: 'u-me', text, ts: seq * 1000, kind: 'msg', attachments: [], mentions: [], reactions: {}, replyCount: 0, ...extra });
@@ -408,14 +408,14 @@ describe('a shared channel entry whose connection is over, which the member has 
     await dom?.tick(5);
     dom?.uninstall();
     dom = null;
-    delete globalThis.puter;
+    delete globalThis.everything;
     vi.restoreAllMocks();
   });
 
   it('is offered nowhere to join (not counted, not a row of Browse channels), while one the member is in is still listed to open', async () => {
     dom = installDom({});
     vi.resetModules();
-    globalThis.puter = { workers: { exec: async () => json({ code: 'not_found', message: 'nope' }, 404) } };
+    globalThis.everything = { workers: { exec: async () => json({ code: 'not_found', message: 'nope' }, 404) } };
     const { store: s } = await import('../src/lib/store.js');
     const { ApiError } = await import('../src/lib/api.js');
     const lost = new ApiError(410, 'connection_ended', 'Acme ended the connection');
@@ -453,7 +453,7 @@ describe('a shared channel entry whose connection is over, which the member has 
   it('is not a row of the Directory\'s Channels tab either, where every other public channel is, the joined lost one to open', async () => {
     dom = installDom({});
     vi.resetModules();
-    globalThis.puter = { workers: { exec: async () => json({ code: 'not_found', message: 'nope' }, 404) } };
+    globalThis.everything = { workers: { exec: async () => json({ code: 'not_found', message: 'nope' }, 404) } };
     const { store: s } = await import('../src/lib/store.js');
     const { ApiError } = await import('../src/lib/api.js');
     const lost = new ApiError(410, 'connection_ended', 'Acme ended the connection');

@@ -230,7 +230,7 @@ test('drawing canvas, ruler, hide ink, replay and the toggle drawing shortcut', 
 
 test('pen settings persist, pens can be added and removed, and Ink to Math inserts an equation', async ({ page }) => {
   test.setTimeout(90000);
-  await page.addInitScript(() => { window.puter = { ai: { chat: async (prompt, image) => (String(image).startsWith('data:image/png') ? 'x^2+y^2=r^2' : '') } }; });
+  await page.addInitScript(() => { window.everything = { ai: { chat: async (prompt, image) => (String(image).startsWith('data:image/png') ? 'x^2+y^2=r^2' : '') } }; });
   const { input, errors, ribbon, box } = await start(page);
   const pens = ribbon.locator('.draw-pen');
   await pens.first().click();

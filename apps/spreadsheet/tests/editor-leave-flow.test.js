@@ -6,7 +6,7 @@ import { Doc } from '../src/lib/doc.js';
 import { session } from '../src/lib/session.js';
 import { closeAllModals } from '../src/ui/modal.js';
 import { closeMenu } from '../src/ui/menu.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 import { workbookToXlsx } from '../src/core/io.js';
 import { Workbook } from '../src/core/workbook.js';
 
@@ -23,12 +23,12 @@ beforeEach(async () => {
   Object.defineProperty(HTMLElement.prototype, 'clientHeight', { configurable: true, get: () => 400 });
   vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({ measureText: (t) => ({ width: t.length * 7 }), font: '' });
   document.body.innerHTML = '<div id="app"></div>';
-  installMockPuter();
-  puter._signedIn = false;
-  puter.auth = {
-    isSignedIn: () => puter._signedIn,
-    signIn: vi.fn(async () => { puter._signedIn = true; }),
-    getUser: async () => (puter._signedIn ? { username: 'nariman', uuid: 'u-1' } : null),
+  installMockEverything();
+  everything._signedIn = false;
+  everything.auth = {
+    isSignedIn: () => everything._signedIn,
+    signIn: vi.fn(async () => { everything._signedIn = true; }),
+    getUser: async () => (everything._signedIn ? { username: 'nariman', uuid: 'u-1' } : null),
   };
   await session.init();
 });
@@ -41,7 +41,7 @@ afterEach(() => {
   session.user = null;
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
-  delete globalThis.puter;
+  delete globalThis.everything;
   document.body.replaceChildren();
 });
 
@@ -77,7 +77,7 @@ describe('leaving and reaching out while signed out', () => {
     item.click();
     await vi.waitFor(() => expect(document.querySelector('.modal-panel[aria-label^="Copy"]')).not.toBeNull());
     expect(leaveDialog).not.toHaveBeenCalled();
-    expect(puter.auth.signIn).toHaveBeenCalledTimes(1);
+    expect(everything.auth.signIn).toHaveBeenCalledTimes(1);
   });
 });
 

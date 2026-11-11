@@ -11,7 +11,7 @@
 <link rel="icon" href="/favicon-32x32.png" type="image/png" sizes="32x32">
 <link rel="icon" href="/favicon-16x16.png" type="image/png" sizes="16x16">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">
-<title>RSVP — Puter Calendar</title>
+<title>RSVP — Everything Calendar</title>
 <style>
   /* Status colors are picked per scheme for WCAG AA contrast (≥4.5:1) as
      16px text on the card and banner backgrounds — not shared across modes. */
@@ -109,7 +109,7 @@
  * Standalone RSVP page. The guest lands here from a worker link
  * (…localhost:8443/rsvp/<token> redirects to /rsvp.html#w=<worker>&t=<token>);
  * everything below talks to the worker's JSON API (GET/POST /api/rsvp/<token>)
- * — the worker itself serves no HTML. Needs no Puter sign-in and no SDK.
+ * — the worker itself serves no HTML. Needs no Everything sign-in and no SDK.
  *
  * All data is rendered with textContent (never markup), so nothing the host
  * or a guest typed can inject into this page.
@@ -511,7 +511,7 @@
     }
 
     /** A "Join" row rendering the event's meeting link as a real anchor. The
-     *  worker only serves exact Puter Meetings room links, and this page (which
+     *  worker only serves exact Everything Meetings room links, and this page (which
      *  must never become a relay to arbitrary origins) re-checks the shape
      *  before turning worker data into an href. */
     function joinRow(url) {
@@ -568,7 +568,7 @@
       mark.width = 18;
       mark.height = 18;
       link.append(mark);
-      link.append(document.createTextNode('Puter Calendar'));
+      link.append(document.createTextNode('Everything Calendar'));
       link.href = 'http://localhost:8443/app/calendar';
       link.rel = 'noopener';
       foot.append(link);

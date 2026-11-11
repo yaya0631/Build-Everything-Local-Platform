@@ -2,7 +2,7 @@ import { convertMiroBoard, reportTotals } from "./miro-convert.js";
 import { abortableSleep } from "./miro-client.js";
 
 // Migration planning, execution and validation logs. Board creation, deletion
-// and log storage are injected by the host; this module never calls Puter.
+// and log storage are injected by the host; this module never calls Everything.
 
 export const BOARD_ROLES = [
   "owner",

@@ -34,7 +34,7 @@ it.each([
     }
     const zip = X.CFB.read(new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()), { type: 'array' });
     const p = X.CFB.find(zip, '/xl/workbook.xml');
-    p.content = new TextEncoder().encode(new TextDecoder().decode(p.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')); p.size = p.content.length;
+    p.content = new TextEncoder().encode(new TextDecoder().decode(p.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')); p.size = p.content.length;
     wb = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'native.xlsx');
   }
 });

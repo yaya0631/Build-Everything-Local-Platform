@@ -3,9 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <title>Calendar — local demo (mock Puter)</title>
+    <title>Calendar — local demo (mock Everything)</title>
     <script>
-      // ---- Mock Puter SDK (local preview only — DELETE THIS FILE before shipping).
+      // ---- Mock Everything SDK (local preview only — DELETE THIS FILE before shipping).
       // Backed by localStorage so seeded data survives reloads.
       (function () {
         const LS = window.localStorage;
@@ -16,12 +16,12 @@
         }
 
         // ?noemail simulates production-before-grant: getUser() has NO `email`
-        // until puter.perms.request() is granted via a confirm() dialog.
+        // until everything.perms.request() is granted via a confirm() dialog.
         // NOTE: don't open the ?noemail variant under browser automation — the
         // confirm() blocks the CDP session.
         let emailGranted = !new URLSearchParams(location.search).has('noemail');
 
-        window.puter = {
+        window.everything = {
           env: 'web',
           auth: {
             isSignedIn: () => true,
@@ -36,13 +36,13 @@
             request: async (perm) => {
               if (emailGranted) return true;
               emailGranted = window.confirm(
-                `[mock Puter permission prompt]\n\nCalendar wants: ${perm}\n(read your email address). Allow?`,
+                `[mock Everything permission prompt]\n\nCalendar wants: ${perm}\n(read your email address). Allow?`,
               );
               return emailGranted;
             },
           },
           kv: {
-            // Real puter.kv.set also accepts an array of {key, value} pairs.
+            // Real everything.kv.set also accepts an array of {key, value} pairs.
             set: async (key, value) => {
               if (Array.isArray(key)) {
                 for (const e of key) setOne(e.key, e.value);

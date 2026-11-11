@@ -9,7 +9,7 @@ reopens, and goes through the editor's transactions (undo, read-only rules, prot
 **Proofing**
 - Editor pane (ribbon *Editor*): spelling issues grouped by word with Change, Change All, Ignore,
   Ignore All and Add to Dictionary; a *Check One by One* walkthrough (F7, the existing Spelling
-  pane). Grammar and refinements from Puter AI (grammar, punctuation, clarity, conciseness,
+  pane). Grammar and refinements from Everything AI (grammar, punctuation, clarity, conciseness,
   formality, inclusive language): off until turned on, marked *AI*, nothing sent until *Check with
   AI*; suggestions drawn as blue double underlines, Accept/Ignore. Statistics and readability
   computed locally: words, characters, paragraphs, sentences, averages, Flesch Reading Ease (with a
@@ -35,7 +35,7 @@ reopens, and goes through the editor's transactions (undo, read-only rules, prot
 
 **Language**
 - Translate selection (pane with Insert, which marks the text's language, and Copy) and Translate
-  Document (a new document) through Puter AI; Set Document Translation Language.
+  Document (a new document) through Everything AI; Set Document Translation Language.
 - Language dialog: proofing language for the selection (`w:lang`), *Do not check spelling or
   grammar* (`w:noProof`), *Detect language automatically*, *Set As Default* (docDefaults).
   `w.proofingLanguage()` for the status bar.
@@ -64,7 +64,7 @@ reopens, and goes through the editor's transactions (undo, read-only rules, prot
   and stop tracking; Previous/Next change; balloons have accept/reject buttons.
 
 **Compare**
-- Compare Documents: original and revised from this document, the device or Puter; label for
+- Compare Documents: original and revised from this document, the device or Everything; label for
   changes (defaults to the revised file's last author); word or character level; formatting, case,
   white space and table options. The result shows the original, compared and revised text side by
   side with synchronized scrolling, then opens as a new document or downloads.
@@ -92,7 +92,7 @@ Synonyms, Translate, New Comment, accept/reject and comment actions.
 
 ## Approximations
 
-- Grammar and style checking needs Puter AI (no local grammar engine); spelling is English only.
+- Grammar and style checking needs Everything AI (no local grammar engine); spelling is English only.
 - Passive voice and syllables are estimates from patterns; readability formulas are the standard
   English ones.
 - Thesaurus coverage is WordNet's: some common senses are missing (single-word synsets are dropped

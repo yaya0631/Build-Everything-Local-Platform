@@ -1,6 +1,6 @@
 /**
  * Client library (lead, review pass 24): the store driven in node as
- * tests/store.test.js drives it, with Puter faked at `puter.workers.exec`.
+ * tests/store.test.js drives it, with Everything faked at `everything.workers.exec`.
  */
 import { describe, it, expect, afterEach, vi } from 'vitest';
 
@@ -11,7 +11,7 @@ let store = null;
 async function boot() {
   vi.resetModules();
   const urls = [];
-  globalThis.puter = { workers: { exec: async (url) => { urls.push(new URL(url)); return new Response(JSON.stringify({ now: Date.now() - 2000, ts: Date.now(), c: {}, p: {}, w: 0, u: 0 }), { status: 200, headers: { 'Content-Type': 'application/json' } }); } } };
+  globalThis.everything = { workers: { exec: async (url) => { urls.push(new URL(url)); return new Response(JSON.stringify({ now: Date.now() - 2000, ts: Date.now(), c: {}, p: {}, w: 0, u: 0 }), { status: 200, headers: { 'Content-Type': 'application/json' } }); } } };
   ({ store } = await import('../src/lib/store.js'));
   store.wsId = REF;
   store.identity = { uuid: 'u-me' };
@@ -33,7 +33,7 @@ afterEach(() => {
   }
   store = null;
   delete globalThis.document;
-  delete globalThis.puter;
+  delete globalThis.everything;
 });
 
 describe('presence from a tab put away', () => {

@@ -21,7 +21,7 @@ async function shared() {
   return { env, room, orphan, look };
 }
 
-// Removals used to forget a handle without revoking it, so Puter kept handles no record names, each holding one of
+// Removals used to forget a handle without revoking it, so Everything kept handles no record names, each holding one of
 // the owner's limited handle slots for good.
 it('revokes handles no member record names, but not one minted moments ago', async () => {
   const { env, orphan, look } = await shared();

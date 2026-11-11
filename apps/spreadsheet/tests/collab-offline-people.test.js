@@ -14,10 +14,10 @@ afterEach(() => { for (const c of open.splice(0)) c.close(); });
 it("takes the others' selections off the grid soon once this browser cannot reach the room", async () => {
   const env = environment();
   const wb = new Workbook({ sheets: [{ name: 'Plan' }] });
-  const room = await RoomClient.create({ puter: env.sdk(owner), server: SERVER, wb, name: 'Plan' });
+  const room = await RoomClient.create({ everything: env.sdk(owner), server: SERVER, wb, name: 'Plan' });
   const token = (await call(env.sdk(owner), SERVER, { op: 'invite', room, role: 'editor' })).token;
   const join = async (user, invite) => {
-    const client = new RoomClient({ puter: env.sdk(user), server: SERVER, room, token: invite, store: memoryOutbox(), poll: 60_000, noPeers: true });
+    const client = new RoomClient({ everything: env.sdk(user), server: SERVER, room, token: invite, store: memoryOutbox(), poll: 60_000, noPeers: true });
     open.push(client);
     await client.open();
     return client;
@@ -44,10 +44,10 @@ it("takes the others' selections off the grid soon once this browser cannot reac
 it('keeps someone who checked in a while ago while the room answers', async () => {
   const env = environment();
   const wb = new Workbook({ sheets: [{ name: 'Plan' }] });
-  const room = await RoomClient.create({ puter: env.sdk(owner), server: SERVER, wb, name: 'Plan' });
+  const room = await RoomClient.create({ everything: env.sdk(owner), server: SERVER, wb, name: 'Plan' });
   const token = (await call(env.sdk(owner), SERVER, { op: 'invite', room, role: 'editor' })).token;
-  const alice = new RoomClient({ puter: env.sdk(owner), server: SERVER, room, store: memoryOutbox(), poll: 60_000, noPeers: true });
-  const bob = new RoomClient({ puter: env.sdk(editor), server: SERVER, room, token, store: memoryOutbox(), poll: 60_000, noPeers: true });
+  const alice = new RoomClient({ everything: env.sdk(owner), server: SERVER, room, store: memoryOutbox(), poll: 60_000, noPeers: true });
+  const bob = new RoomClient({ everything: env.sdk(editor), server: SERVER, room, token, store: memoryOutbox(), poll: 60_000, noPeers: true });
   open.push(alice, bob);
   await alice.open();
   await bob.open();

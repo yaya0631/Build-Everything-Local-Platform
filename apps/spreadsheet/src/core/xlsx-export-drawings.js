@@ -723,7 +723,7 @@ function groupAnchorXml(sheet, group, items, id, recordGroup) {
 
 /** Save projections of the emitted drawings, without another ZIP/cell parse. */
 export async function updateDrawingMetadata(X, zip, book, wb, records, { get, set, groups = new Map() }) {
-  const meta = book.PuterExportMeta;
+  const meta = book.EverythingExportMeta;
   if (!meta) return;
   const files = Object.create(null), root = zip.FullPaths[0];
   zip.FullPaths.forEach((path, i) => { files[path.slice(root.length)] = zip.FileIndex[i]; });

@@ -37,7 +37,7 @@ import { Backgammon, opponent } from './engine/backgammon.js';
 import { canDeriveFairly, rollDice } from './engine/dice.js';
 import { LEVELS, choosePlay, shouldDouble, shouldTake } from './engine/ai.js';
 import { BoardView, nameOf } from './ui/boardView.js';
-import { OnlineSession, loadPuter } from './net/online.js';
+import { OnlineSession, loadEverything } from './net/online.js';
 import {
   clearGame,
   eventsFrom,
@@ -2122,9 +2122,9 @@ function enterOnlineIdle({ inviteCode = null } = {}) {
   if (inviteCode) els.joinBtn.focus();
   // Warm up the SDK and TURN relays so create/join feels instant. Only when
   // already signed in — never trigger an auth prompt just by opening the tab.
-  loadPuter()
-    .then((puter) => {
-      if (puter.auth?.isSignedIn?.()) return puter.peer.ensureTurnRelays?.();
+  loadEverything()
+    .then((everything) => {
+      if (everything.auth?.isSignedIn?.()) return everything.peer.ensureTurnRelays?.();
       return null;
     })
     .catch(() => {});
@@ -2216,8 +2216,8 @@ async function joinGame(rawCode) {
  */
 async function attemptAutoJoin(code) {
   try {
-    const puter = await loadPuter();
-    if (!puter.auth?.isSignedIn?.()) return;
+    const everything = await loadEverything();
+    if (!everything.auth?.isSignedIn?.()) return;
   } catch {
     return; // SDK unavailable; the manual Join path is still on screen
   }

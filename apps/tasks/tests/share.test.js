@@ -80,7 +80,7 @@ describe('share payload round-trip', () => {
 
 describe('share links', () => {
   it('packs the read URL into the app hash and back', () => {
-    const url = 'https://api.puter.example/read?path=%2Fshares%2Fl1.json&x=1';
+    const url = 'https://api.everything.example/read?path=%2Fshares%2Fl1.json&x=1';
     const link = shareLink(url, 'https://tasks.example/');
     expect(link.startsWith('https://tasks.example/#/shared?u=')).toBe(true);
     const hash = link.slice(link.indexOf('#'));

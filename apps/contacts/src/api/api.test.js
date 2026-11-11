@@ -13,9 +13,9 @@ import {
   readLaunchContext,
 } from './protocol.js'
 
-function stubPuter() {
+function stubEverything() {
   const kv = new Map()
-  window.puter = {
+  window.everything = {
     kv: {
       list: async () => [...kv.entries()].map(([key, value]) => ({ key, value })),
       set: async (k, v) => {
@@ -92,22 +92,22 @@ describe('api/protocol — access control', () => {
 
   it('reads the caller from the desktop-stamped launch parameter, not the message', () => {
     const win = {
-      puter: { env: 'app', args: { service: 'contacts-api' } },
-      location: { search: '?puter.source_app.name=Calendar&puter.app_instance_id=abc' },
+      everything: { env: 'app', args: { service: 'contacts-api' } },
+      location: { search: '?everything.source_app.name=Calendar&everything.app_instance_id=abc' },
     }
     expect(readLaunchContext(win)).toEqual({
       callerApp: 'calendar',
       serviceMode: true,
-      inPuterApp: true,
+      inEverythingApp: true,
     })
   })
 
-  it('reports no caller outside the Puter desktop', () => {
+  it('reports no caller outside the Everything desktop', () => {
     const win = {
-      puter: { env: 'web', args: { service: 'contacts-api' } },
-      location: { search: '?puter.source_app.name=calendar' },
+      everything: { env: 'web', args: { service: 'contacts-api' } },
+      location: { search: '?everything.source_app.name=calendar' },
     }
-    expect(readLaunchContext(win)).toEqual({ callerApp: '', serviceMode: false, inPuterApp: false })
+    expect(readLaunchContext(win)).toEqual({ callerApp: '', serviceMode: false, inEverythingApp: false })
   })
 })
 
@@ -115,7 +115,7 @@ describe('api/methods', () => {
   let methods
 
   beforeEach(async () => {
-    stubPuter()
+    stubEverything()
     resetStore()
     methods = createMethods({ store })
     await seed([
@@ -268,8 +268,8 @@ describe('api/methods', () => {
 
     it('reports a partial failure rather than hiding the deletes that worked', async () => {
       const [ada, grace] = store.all
-      const del = window.puter.kv.del
-      window.puter.kv.del = async (key) => {
+      const del = window.everything.kv.del
+      window.everything.kv.del = async (key) => {
         if (key.endsWith(grace.id)) throw new Error('offline')
         return del(key)
       }
@@ -281,7 +281,7 @@ describe('api/methods', () => {
 
     it('raises a batch that deleted nothing as a storage error', async () => {
       const [ada, grace] = store.all
-      window.puter.kv.del = async () => {
+      window.everything.kv.del = async () => {
         throw new Error('offline')
       }
       await expect(methods.delete({ ids: [ada.id, grace.id] })).rejects.toMatchObject({
@@ -334,12 +334,12 @@ describe('api/methods', () => {
   it('reports a storage failure as such, and retries on the next call', async () => {
     resetStore()
     const failing = createMethods({ store })
-    window.puter.kv.list = async () => {
+    window.everything.kv.list = async () => {
       throw new Error('offline')
     }
     await expect(failing.list({})).rejects.toMatchObject({ code: ERRORS.STORAGE })
 
-    window.puter.kv.list = async () => []
+    window.everything.kv.list = async () => []
     await expect(failing.list({})).resolves.toMatchObject({ total: 0 })
   })
 
@@ -354,7 +354,7 @@ describe('api/methods', () => {
     /** Add a contact the way another window would: straight to the cloud. */
     const addBehindOurBack = async (contact) => {
       const c = createContact(contact)
-      await window.puter.kv.set(`contact:${c.id}`, c)
+      await window.everything.kv.set(`contact:${c.id}`, c)
       return c
     }
 
@@ -385,8 +385,8 @@ describe('api/methods', () => {
 
     it('reads once for a burst of calls, so paging stays consistent', async () => {
       let reads = 0
-      const inner = window.puter.kv.list
-      window.puter.kv.list = async (...args) => {
+      const inner = window.everything.kv.list
+      window.everything.kv.list = async (...args) => {
         reads += 1
         return inner(...args)
       }
@@ -403,7 +403,7 @@ describe('api/methods', () => {
     it('answers from the book it has when the re-read fails', async () => {
       store.loadedAt = Date.now() - 60_000
       let reads = 0
-      window.puter.kv.list = async () => {
+      window.everything.kv.list = async () => {
         reads += 1
         throw new Error('offline')
       }
@@ -424,12 +424,12 @@ describe('api/methods', () => {
     it('tries the cloud again once the retry window has passed', async () => {
       const stale = createMethods({ store, retryAfterMs: 0 })
       store.loadedAt = Date.now() - 60_000
-      window.puter.kv.list = async () => {
+      window.everything.kv.list = async () => {
         throw new Error('offline')
       }
       await expect(stale.list({})).resolves.toMatchObject({ total: 4 })
 
-      window.puter.kv.list = async () => []
+      window.everything.kv.list = async () => []
       store.loadedAt = Date.now() - 60_000
       await expect(stale.list({})).resolves.toMatchObject({ total: 0 })
     })
@@ -441,7 +441,7 @@ describe('api/server', () => {
   let methods
 
   beforeEach(() => {
-    stubPuter()
+    stubEverything()
     resetStore()
     store.loaded = true
     methods = createMethods({ store })
@@ -623,7 +623,7 @@ describe('api/server', () => {
 
       // Another window adds someone; our next freshness re-read picks it up.
       const c = createContact({ firstName: 'Nadia' })
-      await window.puter.kv.set(`contact:${c.id}`, c)
+      await window.everything.kv.set(`contact:${c.id}`, c)
       await store.reload()
       await vi.advanceTimersByTimeAsync(400)
       expect(notices()).toHaveLength(2)
@@ -633,7 +633,7 @@ describe('api/server', () => {
     it('stays quiet when an optimistic write rolls back inside the debounce', async () => {
       vi.useFakeTimers()
       serve()
-      window.puter.kv.set = async () => {
+      window.everything.kv.set = async () => {
         throw new Error('offline')
       }
       const failed = store.save(createContact({ firstName: 'Ghost' })).catch(() => {})

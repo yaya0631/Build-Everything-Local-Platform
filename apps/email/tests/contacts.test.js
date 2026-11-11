@@ -161,14 +161,14 @@ describe('the index as an address book', () => {
     const store = index();
     store.add({
       name: 'b--y',
-      from: { name: 'Me', email: 'me@puter.email' },
+      from: { name: 'Me', email: 'me@everything.email' },
       to: [{ name: 'Sam Okafor', email: 'sam@example.com' }, { name: '', email: 'ravi@example.com' }],
       date: new Date(3_000_000 * 1000),
-      messageId: '<b@puter.email>',
+      messageId: '<b@everything.email>',
       references: [],
     }, { outgoing: true });
     expect(store.addresses()).toEqual([
-      { name: 'Me', email: 'me@puter.email', seconds: 3_000_000, written: false },
+      { name: 'Me', email: 'me@everything.email', seconds: 3_000_000, written: false },
       { name: 'Sam Okafor', email: 'sam@example.com', seconds: 3_000_000, written: true },
       { name: '', email: 'ravi@example.com', seconds: 3_000_000, written: true },
     ]);
@@ -181,25 +181,25 @@ describe('the index as an address book', () => {
     store.add({
       name: 'c--z',
       from: { name: 'Leo Tanaka', email: 'leo@localhost:8443' },
-      to: [{ name: '', email: 'me@puter.email' }, { name: 'Sam Okafor', email: 'sam@example.com' }],
+      to: [{ name: '', email: 'me@everything.email' }, { name: 'Sam Okafor', email: 'sam@example.com' }],
       date: new Date(4_000_000 * 1000),
       messageId: '<c@localhost:8443>',
       references: [],
     });
     expect(store.addresses()).toEqual([
       { name: 'Leo Tanaka', email: 'leo@localhost:8443', seconds: 4_000_000, written: false },
-      { name: '', email: 'me@puter.email', seconds: 4_000_000, written: false },
+      { name: '', email: 'me@everything.email', seconds: 4_000_000, written: false },
       { name: 'Sam Okafor', email: 'sam@example.com', seconds: 4_000_000, written: false },
     ]);
   });
 
   it('reads recipients recorded before the sent mark existed as received mail\'s', () => {
     const storage = memoryStorage();
-    storage.setItem('puter-mail:index:who', JSON.stringify({
-      'e--v': ['Me', 'me@puter.email', 'hi', 0, 1234, [['Sam', 'sam@example.com']], '<e@x.co>', []],
+    storage.setItem('everything-mail:index:who', JSON.stringify({
+      'e--v': ['Me', 'me@everything.email', 'hi', 0, 1234, [['Sam', 'sam@example.com']], '<e@x.co>', []],
     }));
     expect(createSearchIndex('who', storage).addresses()).toEqual([
-      { name: 'Me', email: 'me@puter.email', seconds: 1234, written: false },
+      { name: 'Me', email: 'me@everything.email', seconds: 1234, written: false },
       { name: 'Sam', email: 'sam@example.com', seconds: 1234, written: false },
     ]);
   });
@@ -211,7 +211,7 @@ describe('the index as an address book', () => {
   it('survives an entry from an older shape of the cache', () => {
     const storage = memoryStorage();
     // Sender and snippet only: what the index held before it kept recipients.
-    storage.setItem('puter-mail:index:who', JSON.stringify({
+    storage.setItem('everything-mail:index:who', JSON.stringify({
       'c--z': ['Ana', 'ana@example.com', 'hello', 0, 1234],
       'd--w': 'not an entry at all',
     }));

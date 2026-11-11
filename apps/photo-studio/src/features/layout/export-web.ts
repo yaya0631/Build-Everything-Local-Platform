@@ -2,7 +2,7 @@
 // Optimized, 2-Up and 4-Up previews, encoded sizes and download times, saved
 // as a ZIP with an optional HTML table that reassembles the slices.
 import type { Editor } from '../../editor';
-import { download } from '../../persistence/puter';
+import { download } from '../../persistence/everything';
 import { escapeXML } from '../../model/assets';
 import type { Rect } from '../../model/document';
 import { partitionSlices, pieceNames, sliceTableHtml, type Slice, type SliceFormat, type SlicePiece } from '../../model/slices';

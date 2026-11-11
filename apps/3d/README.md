@@ -93,7 +93,7 @@ first use), Text Editor with run script, Python Console, script-registered opera
 
 **AI assistant.** A sidebar (open by default; the topbar's Assistant button or Window › AI Assistant
 shows and hides it, and the choice is remembered) where you describe what to build or change. It runs
-on Puter AI: it reads the scene, writes and runs scripts against the `bpy`-style API (a failing script
+on Everything AI: it reads the scene, writes and runs scripts against the `bpy`-style API (a failing script
 is rolled back), looks up the API, takes viewport screenshots to check its work, and reads attached
 reference images, PDFs and text files. Everything it changes for one message is a single undo step.
 

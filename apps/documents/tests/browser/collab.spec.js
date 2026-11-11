@@ -78,7 +78,7 @@ test('a view-only link keeps the document read-only', async ({ context }) => {
   await shot(viewer, 'view-only');
 });
 
-test('two Puter accounts edit one document through the room server', async ({ browser }) => {
+test('two Everything accounts edit one document through the room server', async ({ browser }) => {
   test.setTimeout(120000);
   // Separate contexts: separate in-memory drives, as for two people.
   const ownerContext = await browser.newContext({ viewport: { width: 1440, height: 900 } });
@@ -121,7 +121,7 @@ test('restores a named version from Version History', async ({ page }) => {
   await expect(page.getByRole('button', { name: 'Bold', exact: true })).toBeEnabled();
   await text(page).fill('First version.');
   await text(page).press('ControlOrMeta+s');
-  await expect(page.locator('.canvas-save-status')).toHaveAttribute('aria-label', 'Saved to Puter');
+  await expect(page.locator('.canvas-save-status')).toHaveAttribute('aria-label', 'Saved to Everything');
   await page.locator('.ed-menubar').getByRole('menuitem', { name: 'File', exact: true }).click();
   await page.getByRole('menuitem', { name: 'Browse Version History', exact: true }).click();
   const pane = page.getByRole('complementary', { name: 'Version History pane' });
@@ -132,7 +132,7 @@ test('restores a named version from Version History', async ({ page }) => {
   await expect(pane.getByRole('listitem').first()).toContainText('Clean draft');
   await text(page).fill('Second version, much changed.');
   await text(page).press('ControlOrMeta+s');
-  await expect(page.locator('.canvas-save-status')).toHaveAttribute('aria-label', 'Saved to Puter');
+  await expect(page.locator('.canvas-save-status')).toHaveAttribute('aria-label', 'Saved to Everything');
   // Open it beside the document, read-only.
   await pane.getByRole('button', { name: /Clean draft/ }).click();
   await expect(page.getByRole('complementary', { name: 'Earlier version (read only)' })).toBeVisible();
@@ -176,7 +176,7 @@ test('Version History opened before the first save lists the versions once the d
   await expect(pane).toContainText('Versions are kept once the document is saved');
   await expect(pane.getByRole('button', { name: 'Save a Version Now' })).toBeDisabled();
   await text(page).fill('First words.');
-  await expect(page.locator('.canvas-save-status')).toHaveAttribute('aria-label', 'Saved to Puter');
+  await expect(page.locator('.canvas-save-status')).toHaveAttribute('aria-label', 'Saved to Everything');
   await expect(pane.getByRole('button', { name: 'Save a Version Now' })).toBeEnabled();
   await expect(pane).not.toContainText('Versions are kept once the document is saved');
 });

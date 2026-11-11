@@ -4,11 +4,11 @@ import { store, DEFAULT_SETTINGS } from '../src/lib/store.js';
 import { reminderNote } from '../src/lib/reminders.js';
 import { copyItems } from '../src/lib/doc.js';
 
-/* A stand-in for the parts of Puter the store touches, so the real
+/* A stand-in for the parts of Everything the store touches, so the real
    importAll/exportAll pair can be exercised end to end. */
 const kv = new Map();
 const files = new Map();
-globalThis.puter = {
+globalThis.everything = {
   auth: { getUser: async () => ({ username: 'test' }) },
   kv: {
     get: async (k) => (kv.has(k) ? kv.get(k) : null),
@@ -399,8 +399,8 @@ describe('retireSharePages', () => {
       files.set(`invoicing-data/public/${token}.html`, 'page');
       files.set(`invoicing-data/public/${token}/a1.pdf`, 'pdf');
     }
-    const remove = puter.fs.delete;
-    puter.fs.delete = async (path, options) => {
+    const remove = everything.fs.delete;
+    everything.fs.delete = async (path, options) => {
       if (path === `invoicing-data/public/${tokens[0]}`) throw new Error('deletion denied');
       return remove(path, options);
     };
@@ -409,7 +409,7 @@ describe('retireSharePages', () => {
       for (const token of tokens) expect(files.has(`invoicing-data/public/${token}.html`)).toBe(false);
       expect(files.has(`invoicing-data/public/${tokens[1]}/a1.pdf`)).toBe(false);
     } finally {
-      puter.fs.delete = remove;
+      everything.fs.delete = remove;
     }
   });
 

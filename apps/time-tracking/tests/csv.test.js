@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { csvField, toCSVLine, entriesToCSV, CSV_HEADER } from '../src/lib/csv.js';
 import { isoOf } from '../src/lib/time.js';
 import { createStore } from '../src/lib/store.js';
-import { createPuterMock } from './puter-mock.js';
+import { createEverythingMock } from './everything-mock.js';
 
 describe('csvField', () => {
   it('passes plain values through', () => {
@@ -34,7 +34,7 @@ describe('entriesToCSV', () => {
   let project;
 
   beforeEach(async () => {
-    globalThis.puter = createPuterMock();
+    globalThis.everything = createEverythingMock();
     store = createStore();
     await store.init();
     await store.updateSettings({ currency: 'USD', defaultRate: 50, rounding: 0 });

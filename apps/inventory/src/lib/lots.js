@@ -11,7 +11,7 @@
  * "date unknown" (stock from before tracking, or receipts that didn't
  * say). FEFO order is earliest date first, unknown-date last.
  *
- * Pure — no DOM, no Puter; unit-tested.
+ * Pure — no DOM, no Everything; unit-tested.
  */
 
 import { asList } from './util.js';

@@ -11,7 +11,7 @@ import { parse, go } from './ui/router.js';
 import { toast, toastError } from './ui/toast.js';
 import { h } from './ui/dom.js';
 import { app } from './app.js';
-import { sdk, isSignedIn, signIn, currentUser } from './client/puter.js';
+import { sdk, isSignedIn, signIn, currentUser } from './client/everything.js';
 import { serverApi, LOCAL } from './client/api.js';
 import { rememberDesk } from './client/userdoc.js';
 import { signInScreen, createDeskScreen, joinScreen, errorScreen, loadingScreen } from './views/start.js';
@@ -37,7 +37,7 @@ function waitForSdk(limit = 15000) {
         resolve();
       } else if (waited > limit) {
         clearInterval(t);
-        reject(new Error('Puter could not be loaded. Check your connection and reload.'));
+        reject(new Error('Everything could not be loaded. Check your connection and reload.'));
       }
     }, 50);
   });
@@ -77,7 +77,7 @@ async function start() {
     // customer installing the help center would land on the agent sign-in.
     document.querySelector('link[rel="manifest"]')?.remove();
     const { mountPortal } = await import('./portal/portal.js');
-    // Customers who are not signed in never need Puter: when it cannot be
+    // Customers who are not signed in never need Everything: when it cannot be
     // loaded, show the help center after a moment rather than a blank page.
     await waitForSdk(1500).catch(() => {});
     mountPortal(root, route);

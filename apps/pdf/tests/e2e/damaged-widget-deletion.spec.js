@@ -8,7 +8,7 @@ for (const type of ['text', 'checkbox', 'radio'])
     test(`deleting page ${removed + 1} preserves readable widgets in a damaged ${type} form`, async ({
       page,
     }) => {
-      await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
+      await page.route('**/sdk/everything.js', (route) => route.fulfill({ body: '' }));
       await page.goto('/#library');
       const original = await damagedWidgetsPdf(type),
         opening = page.waitForEvent('filechooser');

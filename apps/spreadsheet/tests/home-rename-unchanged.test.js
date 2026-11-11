@@ -9,7 +9,7 @@ import { Workbook } from '../src/core/workbook.js';
 import { toast } from '../src/ui/toast.js';
 import { promptDialog } from '../src/ui/modal.js';
 import { memoryStorage } from './helpers/memory-storage.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 
 vi.mock('../src/lib/session.js', () => ({ session: { settings: {}, username: 'Test user', signedOut: false, addEventListener() {}, removeEventListener() {} } }));
 vi.mock('../src/lib/recent.js', () => ({ refreshRecent: async () => [], recentFiles: () => [], forgetRecent: vi.fn(), rememberRecent() {} }));
@@ -23,8 +23,8 @@ if (!Blob.prototype.arrayBuffer) {
 }
 
 let mock;
-beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); mock = installMockPuter(); toast.mockClear(); document.body.replaceChildren(); });
-afterEach(() => { closeMenu(); vi.restoreAllMocks(); document.body.replaceChildren(); delete globalThis.puter; });
+beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); mock = installMockEverything(); toast.mockClear(); document.body.replaceChildren(); });
+afterEach(() => { closeMenu(); vi.restoreAllMocks(); document.body.replaceChildren(); delete globalThis.everything; });
 
 const settle = async (n) => { for (let i = 0; i < n; i++) await new Promise((r) => setTimeout(r, 0)); };
 const consentKey = (path) => `${accountStorageKey('spreadsheet:external')}${path}`;

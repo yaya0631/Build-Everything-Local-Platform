@@ -4,11 +4,11 @@ import { Workbook } from '../src/core/workbook.js';
 import { addComment, getThread } from '../src/core/comments.js';
 import { findMentions, mentionedPeople } from '../src/core/mentions.js';
 import { createMentionNotifier } from '../src/ui/mention-notify.js';
-import * as P from '../src/lib/puter.js';
+import * as P from '../src/lib/everything.js';
 import * as T from '../src/ui/toast.js';
 
 // A .csv opened from the drive keeps no comments, and its edits go to an .xlsx made at the first save (inside the
-// Puter desktop, where the user picks it). Mentioning someone in a comment there, before that save, shared the .csv
+// Everything desktop, where the user picks it). Mentioning someone in a comment there, before that save, shared the .csv
 // with them and mailed a link to it: they opened a file without the comment, or without any of the edits.
 afterEach(() => { vi.restoreAllMocks(); });
 

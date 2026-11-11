@@ -1,11 +1,11 @@
 /**
- * Each workspace owner runs the Teamchat worker in their own Puter account.
+ * Each workspace owner runs the Teamchat worker in their own Everything account.
  * This module puts it there: it fetches the bundle the app ships
  * (public/worker/teamchat-worker.js), writes it to the user's drive, and
- * creates a worker from it with puter.workers.create(). The worker's KV is
+ * creates a worker from it with everything.workers.create(). The worker's KV is
  * then the database for every workspace the user owns, paid for by them.
  *
- * Updating is overwriting the same file (Puter redeploys at the same URL):
+ * Updating is overwriting the same file (Everything redeploys at the same URL):
  * when the bundle's build id differs from the one a user's worker reports,
  * the app rewrites the file the next time that user opens it.
  */
@@ -40,7 +40,7 @@ const FILE_NAME = 'teamchat-worker.js';
 
 async function writeBundle(path, source) {
   const blob = new Blob([source], { type: 'application/javascript' });
-  const item = await puter.fs.write(path, blob, { overwrite: true, dedupeName: false, createMissingParents: true });
+  const item = await everything.fs.write(path, blob, { overwrite: true, dedupeName: false, createMissingParents: true });
   return item?.path || path;
 }
 
@@ -69,7 +69,7 @@ async function waitForBuild(url, build, { attempts = 20, delay = 1000 } = {}) {
 export async function deployOwnWorker({ onProgress } = {}) {
   onProgress?.('Preparing your workspace server');
   const { source, build } = await fetchBundle();
-  onProgress?.('Copying the server to your Puter drive');
+  onProgress?.('Copying the server to your Everything drive');
   const path = await writeBundle(FILE_NAME, source);
   let lastError = null;
   for (let attempt = 0; attempt < 4; attempt++) {
@@ -77,7 +77,7 @@ export async function deployOwnWorker({ onProgress } = {}) {
     onProgress?.(attempt ? 'Trying another server name' : 'Starting your workspace server');
     let dep = null;
     try {
-      dep = await puter.workers.create(name, path);
+      dep = await everything.workers.create(name, path);
     } catch (e) {
       lastError = e;
       // The call failed, yet the worker may have been made all the same (the
@@ -92,13 +92,13 @@ export async function deployOwnWorker({ onProgress } = {}) {
     await waitForBuild(url, build);
     return { name, url, path: dep?.file_path || path, build, createdAt: Date.now() };
   }
-  throw new Error(`Could not create a worker in your Puter account: ${lastError?.message || lastError}`);
+  throw new Error(`Could not create a worker in your Everything account: ${lastError?.message || lastError}`);
 }
 
 /** The user's own worker of exactly this name, from the account's list, or null (never another account's: names are global, the list is ours). */
 async function ownWorkerNamed(name) {
   try {
-    const list = await puter.workers.list();
+    const list = await everything.workers.list();
     const items = Array.isArray(list) ? list : list?.items || [];
     return items.find((w) => w && w.name === name) || null;
   } catch {
@@ -112,7 +112,7 @@ async function ownWorkerNamed(name) {
  */
 export async function findOwnWorker() {
   try {
-    const list = await puter.workers.list();
+    const list = await everything.workers.list();
     const items = Array.isArray(list) ? list : list?.items || [];
     const mine = items.filter((w) => String(w.name || '').startsWith(WORKER_NAME_PREFIX))
       .sort((a, b) => String(a.created_at || '').localeCompare(String(b.created_at || '')));
@@ -153,7 +153,7 @@ export async function updateOwnWorker(worker, reportedBuild, reportedBuiltAt = 0
     if (builtAt && Number(reportedBuiltAt) > builtAt) return null;
     let path = worker.path;
     if (!path && worker.name) {
-      const info = await puter.workers.get(worker.name);
+      const info = await everything.workers.get(worker.name);
       path = info?.file_path || null;
     }
     if (!path) return null;

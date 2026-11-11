@@ -91,11 +91,11 @@ describe('a channel bookmark in an archive whose address the channel route would
 });
 
 describe('a refusal the server answers after a long upload', () => {
-  const hadPuter = Object.hasOwn(globalThis, 'puter') ? globalThis.puter : undefined;
+  const hadEverything = Object.hasOwn(globalThis, 'everything') ? globalThis.everything : undefined;
   afterEach(() => {
     vi.useRealTimers();
-    if (hadPuter === undefined) delete globalThis.puter;
-    else globalThis.puter = hadPuter;
+    if (hadEverything === undefined) delete globalThis.everything;
+    else globalThis.everything = hadEverything;
   });
 
   it('is read in the worker’s own words, its small body given the plain time, rather than cut off as "Request failed (413)"', async () => {
@@ -105,7 +105,7 @@ describe('a refusal the server answers after a long upload', () => {
     const form = new FormData();
     form.append('file', file, file.name);
     const budget = timeoutFor(form);
-    globalThis.puter = { workers: { exec: async (url, init) => {
+    globalThis.everything = { workers: { exec: async (url, init) => {
       // The upload takes all but the last moment of its budget, and the
       // refusal's few bytes arrive a moment after that.
       await new Promise((r) => setTimeout(r, budget - 50));

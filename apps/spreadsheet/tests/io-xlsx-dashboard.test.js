@@ -10,7 +10,7 @@ async function nativeCopy(wb) {
   const data = new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer());
   const zip = X.CFB.read(data, { type: 'array' });
   const file = X.CFB.find(zip, '/xl/workbook.xml');
-  file.content = new TextEncoder().encode(new TextDecoder().decode(file.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  file.content = new TextEncoder().encode(new TextDecoder().decode(file.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   file.size = file.content.length;
   return { wb: await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' })), zip };
 }

@@ -80,7 +80,7 @@ it.each([false, true])('exports native axis settings without private metadata (r
   expect(axis.getElementsByTagNameNS('*', 'tickLblPos')[0].getAttribute('val')).toBe('high');
   expect(axis.getElementsByTagNameNS('*', 'majorTickMark')[0].getAttribute('val')).toBe('out');
   expect(axis.getElementsByTagNameNS('*', 'crosses')[0].getAttribute('val')).toBe(reversed ? 'autoZero' : 'max');
-  setPart(zip, '/xl/workbook.xml', partText(zip, '/xl/workbook.xml').replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  setPart(zip, '/xl/workbook.xml', partText(zip, '/xl/workbook.xml').replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   const back = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'external.xlsx');
   expect(back.activeSheet.charts[0].appearance).toMatchObject({ yPosition: 't', yLabelPosition: 'high', valueTicks: true });
   expect(ticks(svgFor(back)).map(n => +n.getAttribute('y'))).toEqual(ticks(svgFor(wb)).map(n => +n.getAttribute('y')));

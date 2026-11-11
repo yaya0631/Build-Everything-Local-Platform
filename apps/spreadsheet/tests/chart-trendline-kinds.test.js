@@ -156,7 +156,7 @@ describe('the workbook file', () => {
   // The file as Excel saves it: without this app's own record of the workbook.
   const asExcelFile = (zip, edit = xml => xml) => {
     const book = X.CFB.find(zip, '/xl/workbook.xml');
-    book.content = new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+    book.content = new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
     book.size = book.content.length;
     const part = chartPart(zip);
     part.content = new TextEncoder().encode(edit(new TextDecoder().decode(part.content)));

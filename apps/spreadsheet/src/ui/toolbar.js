@@ -412,12 +412,12 @@ export function createToolbar(ctx, { ribbon = false, ribbonExtras = {} } = {}) {
       anchor: e.currentTarget, label: 'Insert image',
       items: [
         { label: 'From this device…', icon: 'image', onSelect: () => ctx.run('insertImage') },
-        ctx.flags?.()?.pick && { label: 'From Puter…', icon: 'folderOpen', onSelect: () => ctx.run('insertImagePuter') },
+        ctx.flags?.()?.pick && { label: 'From Everything…', icon: 'folderOpen', onSelect: () => ctx.run('insertImageEverything') },
         { label: 'From a URL…', icon: 'external', onSelect: () => ctx.run('insertImageUrl') },
         { separator: true },
         { label: 'Place in Cell', icon: 'placeInCell', submenu: [
           { label: 'From this device…', icon: 'image', onSelect: () => ctx.run('insertImage', 'cell') },
-          ctx.flags?.()?.pick && { label: 'From Puter…', icon: 'folderOpen', onSelect: () => ctx.run('insertImagePuter', 'cell') },
+          ctx.flags?.()?.pick && { label: 'From Everything…', icon: 'folderOpen', onSelect: () => ctx.run('insertImageEverything', 'cell') },
           { label: 'From a URL…', icon: 'external', onSelect: () => ctx.run('insertImageUrl', 'cell') },
         ].filter(Boolean) },
       ],

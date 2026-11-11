@@ -2,7 +2,7 @@
 
 A fast, friendly register for small shops. Product catalog, checkout, receipts,
 refunds, cash reconciliation, and sales reports, with all data stored in the
-user's own [Puter](https://localhost:8443) cloud. No server of your own, no payment
+user's own [Everything](https://localhost:8443) cloud. No server of your own, no payment
 processor required.
 
 Built with vanilla JavaScript and Vite. No frameworks.
@@ -45,7 +45,7 @@ Built with vanilla JavaScript and Vite. No frameworks.
   receipt in a local outbox, the cashier sees the normal success screen, and the
   queue drains itself when the connection returns — exactly once per sale.
   The register also *opens* offline: a service worker keeps the app shell and
-  the Puter SDK cached, and a signed-in device boots from its last-known local
+  the Everything SDK cached, and a signed-in device boots from its last-known local
   copy of settings and catalog — selling works, history and edits say they
   need a connection.
 - **Refunds**: return a sale in full or line by line, with the customer owed
@@ -128,7 +128,7 @@ Built with vanilla JavaScript and Vite. No frameworks.
   range.
 - **Automatic restore points**: a snapshot once a day, at every day close, and
   before anything destructive — a restore, a catalog import, a posted stocktake,
-  a sample-data wipe. Written to the shop's own Puter storage with the same
+  a sample-data wipe. Written to the shop's own Everything storage with the same
   exporter the backup button uses, and restored through the same previewed,
   validated path. Settings lists them with what each holds and what they cost in
   storage; retention keeps the newest few plus one a week and prunes the rest,
@@ -141,12 +141,12 @@ Built with vanilla JavaScript and Vite. No frameworks.
 
 ## Storage design
 
-Everything lives in the signed-in user's Puter account:
+Everything lives in the signed-in user's Everything account:
 
 | Where | What | Why |
 |---|---|---|
-| `puter.kv` | settings, products, categories, taxes, discount presets, customers, the store-credit ledger, held sales, the open cart, the open stocktake, month indexes | small, hot, single-key reads |
-| `puter.fs` | `pos-data/sales-YYYY-MM.json`, `drawer-`, `stock-` and `stocktake-YYYY-MM.json`, one file per month; `pos-data/snapshots/` | history grows unbounded; reads scale with the months a report looks at, and a restore point is a whole dataset |
+| `everything.kv` | settings, products, categories, taxes, discount presets, customers, the store-credit ledger, held sales, the open cart, the open stocktake, month indexes | small, hot, single-key reads |
+| `everything.fs` | `pos-data/sales-YYYY-MM.json`, `drawer-`, `stock-` and `stocktake-YYYY-MM.json`, one file per month; `pos-data/snapshots/` | history grows unbounded; reads scale with the months a report looks at, and a restore point is a whole dataset |
 | `localStorage` | the offline outbox (account-scoped), theme, this device's printer, the boot snapshot of settings + catalog | must survive with no network, be durable before the success screen paints, or describe this device rather than the shop |
 
 Receipts store copies of names, prices, costs, chosen options, rates, and
@@ -158,11 +158,11 @@ at read time.
 
 ```bash
 npm install
-npm run dev        # http://localhost:5174 (real Puter SDK, requires sign-in)
+npm run dev        # http://localhost:5174 (real Everything SDK, requires sign-in)
 ```
 
-For UI work without a Puter account, open `/mock.html` on the dev server. It
-installs an in-memory Puter mock persisted to localStorage
+For UI work without an Everything account, open `/mock.html` on the dev server. It
+installs an in-memory Everything mock persisted to localStorage
 (`localStorage.removeItem('pos:mock')` resets it).
 
 ```bash
@@ -175,7 +175,7 @@ npm run preview    # serve the production build
 
 ```
 src/
-  lib/       totals.js (cart math), store.js (Puter data layer),
+  lib/       totals.js (cart math), store.js (Everything data layer),
              options.js, refunds.js, drawer.js, payments.js, profit.js,
              loyalty.js, outbox.js, sync.js, csv.js, product-csv.js,
              tax-report.js, backup.js, snapshots.js, receipt-doc.js,
@@ -188,13 +188,13 @@ src/
              sync status, dom helpers
   views/     register, products, receipts, reports, settings, auth
   styles/    tokens (light/dark), base, components, views, print
-test/        vitest suites + in-memory Puter mock
-dev/         browser Puter mock for mock.html
+test/        vitest suites + in-memory Everything mock
+dev/         browser Everything mock for mock.html
 ```
 
 ## Notes
 
-- When running inside a Puter app window (`puter.env === 'app'`), the app hides
+- When running inside an Everything app window (`everything.env === 'app'`), the app hides
   sign-out; the platform owns the session.
 - Sales are recorded without integrated payment processing; card payments are
   recorded as taken on an external terminal.
@@ -207,7 +207,7 @@ dev/         browser Puter mock for mock.html
 - CSV exports mark any cell that would otherwise be read as a spreadsheet
   formula as text; amounts and quantities stay numbers.
 - The customer directory, like everything else, lives only in the
-  shopkeeper's own Puter account — no third party ever sees it.
+  shopkeeper's own Everything account — no third party ever sees it.
 
 ## License
 

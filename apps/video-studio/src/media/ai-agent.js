@@ -8,7 +8,7 @@
  * model. (Adapted from the Spreadsheet app's assistant, which works the
  * same way on a workbook.)
  *
- * The transcript is kept in the shape Puter's AI takes (OpenAI's): user,
+ * The transcript is kept in the shape Everything's AI takes (OpenAI's): user,
  * assistant (with its tool_calls), and one tool message answering each
  * call. Every call gets an answer, even one the user declined or stopped,
  * or the next request would be refused as malformed.
@@ -17,7 +17,7 @@ import { toolSpecs, TOOL_NAMES, changesProject, costly } from './ai-tools.js';
 import { catalogBrief } from './edit-assistant.js';
 import { attachmentsIntro, attachmentsGone, attachmentWeight, attachmentsFit, sentBytes, ATTACHMENT_TURNS } from './ai-attach.js';
 
-/** The model the assistant runs on, through Puter's AI. */
+/** The model the assistant runs on, through Everything's AI. */
 export const AI_MODEL = 'claude-opus-5-5';
 
 /** When the assistant asks before changing the project: before every change, before making video, or never. */
@@ -47,7 +47,7 @@ const cutText = (text, max) => {
   return s.length > max ? s.slice(0, max).replace(/[\uD800-\uDBFF]$/, '') : s;
 };
 
-export const SYSTEM_PROMPT = `You are the AI assistant built into Video Studio, a multi-track video editor in the browser. You help the user make and edit the video project open beside this chat: you generate video clips, pictures and voiceovers with Puter AI, and you edit the timeline with the editor's own tools.
+export const SYSTEM_PROMPT = `You are the AI assistant built into Video Studio, a multi-track video editor in the browser. You help the user make and edit the video project open beside this chat: you generate video clips, pictures and voiceovers with Everything AI, and you edit the timeline with the editor's own tools.
 
 How to work
 - Each message comes with a short state of the project: settings, tracks and clips with their ids, the selection and the playhead. Use the ids exactly as given; never invent them. Call get_project after changes when you need the new ids, and list_media for the media library.
@@ -60,7 +60,7 @@ How to work
 Making media
 - generate_video makes a clip from a description. Write a vivid, concrete prompt: subject, action, setting, camera movement, lighting, mood and style, in one or two sentences. Keep the look consistent across clips meant to go together (same characters, palette, time of day).
 - To start a clip from a picture (image to video) pass first_frame: an attached picture's media id, an image clip, or a frame of a video clip. animate_image does this in place for an image clip. extend_clip continues a shot from its last frame. generate_transition bridges two base track clips with a shot that morphs from one into the other.
-- Video costs the user Puter credits by its length and takes from half a minute to a few minutes per clip, so make only what was asked for: one clip unless more were requested, at the default length unless a length was asked for. Several clips are made one after another.
+- Video costs the user Everything credits by its length and takes from half a minute to a few minutes per clip, so make only what was asked for: one clip unless more were requested, at the default length unless a length was asked for. Several clips are made one after another.
 - generate_image makes a still (a backdrop, a title card, a picture to animate next); edit_image changes a picture as described. add_voiceover speaks a script.
 - By default new clips go to the end of the base track. Use place=overlay for something over other clips, after_selected or playhead to insert, media to only add it to the library.
 

@@ -1,5 +1,5 @@
 /**
- * Signing endpoint, a Puter serverless worker deployed into the document
+ * Signing endpoint, an Everything serverless worker deployed into the document
  * owner's own account (see src/lib/signlinks.js for the deploy/sync side).
  *
  * Signers hold capability URLs: /sign/<token>, one unguessable 160-bit token
@@ -7,7 +7,7 @@
  * leak of this worker's KV reveals no usable links; the raw token exists only
  * in the link itself (and in the owner's document record in the app).
  *
- * This worker serves NO HTML. It is a JSON API plus a redirect (Puter
+ * This worker serves NO HTML. It is a JSON API plus a redirect (Everything
  * guidance: workers as API-like endpoints). The human-facing signing page is
  * the app's own sign.html at PAGE_URL, which calls this API from the signer's
  * browser. The worker origin and token travel in the URL FRAGMENT, which
@@ -43,7 +43,7 @@
  * `Authorization: Bearer <secret>`. Only SHA-256(secret) is baked into this
  * source, so the deployed file itself contains no credential.
  *
- * The owner also gets told. This worker runs inside their own Puter account
+ * The owner also gets told. This worker runs inside their own Everything account
  * and is the only piece that is awake when the app is closed, so when a
  * signer signs, declines, or a document completes it mails the owner from
  * their own account (see notifyOwner). Every attempt is recorded, success or
@@ -100,10 +100,10 @@ function ownerOf(ctx) {
 }
 
 function kvOf(ctx) {
-  return ownerOf(ctx).puter.kv;
+  return ownerOf(ctx).everything.kv;
 }
 
-/** puter.kv values may come back as parsed objects or JSON strings. */
+/** everything.kv values may come back as parsed objects or JSON strings. */
 function coerce(value) {
   if (value == null) return null;
   if (typeof value === 'string') {
@@ -461,7 +461,7 @@ async function notifyOwner(ctx, kv, record, docId, kind, signerName, signerId) {
     const record_ = { at: Date.now(), kind, signerId: signerId || '', ok: false, error: '' };
     try {
       const owner = ownerOf(ctx);
-      const email = owner && owner.puter && owner.puter.email;
+      const email = owner && owner.everything && owner.everything.email;
       if (!email || typeof email.send !== 'function') throw new Error('email_unavailable');
       await email.send({ to: notify.email, subject, text, html });
       record_.ok = true;
@@ -947,7 +947,7 @@ router.get('/api/sign/:token/pdf', async (ctx) => {
   const path = hit.record.doc.pdfPath;
   if (!path) return json({ error: 'file_unavailable' }, 404);
   try {
-    const blob = await ownerOf(ctx).puter.fs.read(path);
+    const blob = await ownerOf(ctx).everything.fs.read(path);
     const bytes = blob && typeof blob.arrayBuffer === 'function' ? await blob.arrayBuffer() : blob;
     return new Response(bytes, {
       headers: {

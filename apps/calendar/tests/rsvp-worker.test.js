@@ -92,12 +92,12 @@ describe('rsvp worker: admin auth', () => {
     expect((await res.json()).runtime).toBeNull();
 
     // Read per request: the same worker reports a preamble that arrives later.
-    globalThis.__PUTER_PREAMBLE_VERSION__ = '2.6.2+63f857ce3';
+    globalThis.__EVERYTHING_PREAMBLE_VERSION__ = '2.6.2+63f857ce3';
     try {
       const res2 = await worker.call('GET', '/admin/ping', { headers: AUTH });
       expect((await res2.json()).runtime).toBe('2.6.2+63f857ce3');
     } finally {
-      delete globalThis.__PUTER_PREAMBLE_VERSION__;
+      delete globalThis.__EVERYTHING_PREAMBLE_VERSION__;
     }
   });
 });
@@ -427,7 +427,7 @@ describe('rsvp worker: JSON API (/api/rsvp)', () => {
     expect(data.allowedStatuses).toEqual(['accepted', 'declined', 'tentative']);
   });
 
-  it('serves the synced meeting link — held to the exact Puter Meetings shape', async () => {
+  it('serves the synced meeting link — held to the exact Everything Meetings shape', async () => {
     const join = 'http://meetings.localhost:8443/#/m/abcd-efgh-ijkl';
     await sync(worker, {
       event: eventPayload({ meetingUrl: join }),
@@ -437,7 +437,7 @@ describe('rsvp worker: JSON API (/api/rsvp)', () => {
     expect(data.event.meetingUrl).toBe(join);
   });
 
-  it('drops a meeting link that is not a Puter Meetings room URL (imported foreign links stay off the page)', async () => {
+  it('drops a meeting link that is not an Everything Meetings room URL (imported foreign links stay off the page)', async () => {
     for (const bad of [
       'https://evil.example/#/m/abcd-efgh-ijkl',
       'http://meetings.localhost:8443.evil.example/#/m/abcd-efgh-ijkl',
@@ -589,7 +589,7 @@ describe('rsvp worker: guest suggestions', () => {
   });
 
   it('the admin pull survives kv.list truncating the flat suggestion scan', async () => {
-    // Live puter.kv silently truncates big flat lists; the event scan already
+    // Live everything.kv silently truncates big flat lists; the event scan already
     // fans out per hex char, and the suggestion scan must too, or pending
     // suggestions silently vanish from the per-minute pull.
     const kv = makeKv();

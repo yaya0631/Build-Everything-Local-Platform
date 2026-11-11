@@ -3,7 +3,7 @@
 // a favorite, encode, write), so the logic is testable without workers.
 //
 // Item: { id, name, source: { type: 'doc', doc } | { type: 'local', file } |
-//         { type: 'puter', path, item } | { type: 'range', doc, start, end, name },
+//         { type: 'everything', path, item } | { type: 'range', doc, start, end, name },
 //         status, progress, message, output }  (range: part of an open file, from the Markers panel)
 // status: 'ready' | 'waiting' | 'running' | 'done' | 'error' | 'cancelled' | 'skipped'
 
@@ -25,7 +25,7 @@ export const STATUS_LABELS = {
 export function sourceIdentity(source) {
   if (source.type === 'doc') return `doc:${source.doc.id}`;
   if (source.type === 'range') return `range:${source.doc.id}:${source.start}:${source.end}`;
-  if (source.type === 'puter') return `puter:${source.path}`;
+  if (source.type === 'everything') return `everything:${source.path}`;
   const f = source.file;
   return `local:${f.name}:${f.size}:${f.lastModified || 0}`;
 }

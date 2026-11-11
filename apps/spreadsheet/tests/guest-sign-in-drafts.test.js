@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { memoryStorage } from './helpers/memory-storage.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 import { Doc } from '../src/lib/doc.js';
 import { session } from '../src/lib/session.js';
 import { listDrafts, loadDraft, draftKey } from '../src/lib/drafts.js';
@@ -12,12 +12,12 @@ const settle = () => new Promise((resolve) => setTimeout(resolve, 5));
 
 beforeEach(async () => {
   globalThis.localStorage = memoryStorage();
-  installMockPuter();
-  puter._signedIn = false;
-  puter.auth = {
-    isSignedIn: () => puter._signedIn,
-    signIn: async () => { puter._signedIn = true; },
-    getUser: async () => (puter._signedIn ? { username: 'nariman', uuid: 'u-1' } : null),
+  installMockEverything();
+  everything._signedIn = false;
+  everything.auth = {
+    isSignedIn: () => everything._signedIn,
+    signIn: async () => { everything._signedIn = true; },
+    getUser: async () => (everything._signedIn ? { username: 'nariman', uuid: 'u-1' } : null),
   };
   await session.init();
   expect(storageScope()).toBe('guest');
@@ -25,7 +25,7 @@ beforeEach(async () => {
 afterEach(() => {
   session.state = 'unknown';
   session.user = null;
-  delete globalThis.puter;
+  delete globalThis.everything;
 });
 
 // Work done before signing in is kept in this browser under a guest scope.
@@ -91,15 +91,15 @@ describe('a sign-in whose identity lookup fails', () => {
     doc.wb.setInput(doc.wb.activeSheetId, 0, 0, 'typed as a guest');
     expect(doc.writeDraft()).toBe(true);
     expect(guestKeys()).toHaveLength(1);
-    const lookup = puter.auth.getUser;
-    puter.auth.getUser = async () => null; // whoami failed
+    const lookup = everything.auth.getUser;
+    everything.auth.getUser = async () => null; // whoami failed
     expect(await session.signIn()).toBe(true);
     expect(storageScope()).toMatch(/^session:/);
     // Nothing moved into the throwaway scope, and the open document keeps drafting as a guest.
     expect(guestKeys()).toHaveLength(1);
     expect(doc.draftKey).toContain(':account:guest:');
     expect(localStorage.keys().filter((key) => key.includes('session%3A'))).toEqual([]);
-    puter.auth.getUser = lookup;
+    everything.auth.getUser = lookup;
     await session.refresh();
     expect(storageScope()).toBe('uuid:u-1');
     expect(guestKeys()).toEqual([]);

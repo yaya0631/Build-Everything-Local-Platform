@@ -1,10 +1,10 @@
 /**
  * Team access. A business owner turns it on once: the app copies the team
- * worker (public/worker/field-service-team-worker.js) into their Puter drive
- * and deploys it with puter.workers.create, so the worker runs in, and stores
+ * worker (public/worker/field-service-team-worker.js) into their Everything drive
+ * and deploys it with everything.workers.create, so the worker runs in, and stores
  * data in, the owner's own account. The owner's records are copied into it,
  * and from then on everyone in the business (owner included) reads and
- * writes through it with puter.workers.exec, which forwards each person's
+ * writes through it with everything.workers.exec, which forwards each person's
  * own session for the worker to check.
  *
  * Which business a signed-in person is working in is stored in their own KV:
@@ -43,9 +43,9 @@ export function normalizeWorkerUrl(url) {
 }
 
 /** One API call to a team worker. Throws TeamError with a readable message. */
-export async function call(url, op, payload = {}, { timeoutMs = 30000, getPuter = () => globalThis.puter } = {}) {
-  const p = getPuter();
-  if (!p?.workers?.exec) throw new TeamError(0, 'no_sdk', 'Team access needs Puter. Reload and try again.');
+export async function call(url, op, payload = {}, { timeoutMs = 30000, getEverything = () => globalThis.everything } = {}) {
+  const p = getEverything();
+  if (!p?.workers?.exec) throw new TeamError(0, 'no_sdk', 'Team access needs Everything. Reload and try again.');
   const ctl = typeof AbortController === 'function' ? new AbortController() : null;
   const timer = setTimeout(() => ctl?.abort(), timeoutMs);
   let res;
@@ -187,7 +187,7 @@ export async function enableTeam({ store, onProgress = () => {} }) {
   onProgress('Preparing your team server');
   const { source, build } = await fetchBundle();
   const blob = new Blob([source], { type: 'application/javascript' });
-  const item = await puter.fs.write(WORKER_FILE, blob, { overwrite: true, dedupeName: false, createMissingParents: true });
+  const item = await everything.fs.write(WORKER_FILE, blob, { overwrite: true, dedupeName: false, createMissingParents: true });
   const path = item?.path || WORKER_FILE;
   let dep = null;
   let name = null;
@@ -196,7 +196,7 @@ export async function enableTeam({ store, onProgress = () => {} }) {
     name = randomName();
     onProgress(attempt ? 'Trying another server name' : 'Starting your team server');
     try {
-      dep = await puter.workers.create(name, path);
+      dep = await everything.workers.create(name, path);
       if (dep && dep.success === false) {
         lastErr = new Error((dep.errors || []).join(', ') || 'The worker could not be created.');
         dep = null;
@@ -205,13 +205,13 @@ export async function enableTeam({ store, onProgress = () => {} }) {
       lastErr = err;
     }
   }
-  if (!dep) throw new Error(`Could not create the team server in your Puter account. ${lastErr?.message || ''}`.trim());
+  if (!dep) throw new Error(`Could not create the team server in your Everything account. ${lastErr?.message || ''}`.trim());
   const url = normalizeWorkerUrl(dep.url || `http://${name}.localhost:8443`);
   // A setup that fails from here on removes the half-made server, so a
   // retry does not leave another one behind in the owner's account.
   const discard = async (err) => {
     try {
-      await puter.workers.delete(name);
+      await everything.workers.delete(name);
     } catch {}
     throw err;
   };
@@ -250,7 +250,7 @@ export async function enableTeam({ store, onProgress = () => {} }) {
   for (const att of files) {
     onProgress(`Copying files (${++copied} of ${files.length})`);
     try {
-      const blob = await puter.fs.read(att.path);
+      const blob = await everything.fs.read(att.path);
       if (blob.size > 8 * 1024 * 1024) {
         skipped.push(`${att.name} (over 8 MB)`);
         continue;
@@ -309,7 +309,7 @@ export async function updateWorkerIfNeeded(own) {
     // Only ever move forward: an older app (or a cached bundle) on another
     // device must not put an old worker back.
     if (!build || (health?.build && !(Number(build) > Number(health.build)))) return false;
-    await puter.fs.write(own.path, new Blob([source], { type: 'application/javascript' }), { overwrite: true, dedupeName: false });
+    await everything.fs.write(own.path, new Blob([source], { type: 'application/javascript' }), { overwrite: true, dedupeName: false });
     return true;
   } catch {
     return false;
@@ -336,12 +336,12 @@ export function parseJoin(query) {
 /** Save the business list, or say why nothing happened. */
 async function saveOrReport(ws) {
   try {
-    await saveWorkspaces(globalThis.puter.kv, ws);
+    await saveWorkspaces(globalThis.everything.kv, ws);
     return true;
   } catch (err) {
     console.warn('[field-service] could not save the business list', err);
     const { toast } = await import('./ui/toast.js');
-    toast('Could not reach Puter, so nothing was changed. Check your connection and try again.', { type: 'error' });
+    toast('Could not reach Everything, so nothing was changed. Check your connection and try again.', { type: 'error' });
     return false;
   }
 }

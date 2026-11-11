@@ -1,7 +1,7 @@
 /**
  * Conversation UI (review pass 16), driven in node through
  * tests/helpers/dom.js as the pass-15 file is: a fresh DOM and a fresh
- * module registry for every test, Puter faked at `puter.workers.exec`, the
+ * module registry for every test, Everything faked at `everything.workers.exec`, the
  * toast, the theme, the modal layer and navigation mocked.
  */
 import { describe, it, expect, afterEach, vi } from 'vitest';
@@ -33,7 +33,7 @@ async function boot({ width = 1280, ...env } = {}) {
   dom?.uninstall();
   dom = installDom({ width, ...env });
   vi.resetModules();
-  globalThis.puter = { workers: { exec: async () => json({ code: 'not_found', message: 'nope' }, 404) } };
+  globalThis.everything = { workers: { exec: async () => json({ code: 'not_found', message: 'nope' }, 404) } };
   ({ store } = await import('../src/lib/store.js'));
   const { api } = await import('../src/lib/api.js');
   store.wsId = REF;
@@ -65,7 +65,7 @@ afterEach(async () => {
   store = null;
   dom?.uninstall();
   dom = null;
-  delete globalThis.puter;
+  delete globalThis.everything;
   vi.restoreAllMocks();
 });
 

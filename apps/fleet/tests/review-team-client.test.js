@@ -22,7 +22,7 @@ beforeEach(() => {
   userKV = fakeKV();
 });
 afterEach(() => {
-  delete globalThis.puter;
+  delete globalThis.everything;
   app.user = null;
   app.workspaces = null;
   app.team = null;
@@ -36,7 +36,7 @@ async function join(role, user) {
 describe('leaving a fleet', () => {
   it('takes the person off the team, not only off their own list', async () => {
     await join('member', SAM);
-    globalThis.puter = { kv: userKV, workers: { exec: w.exec(SAM) } };
+    globalThis.everything = { kv: userKV, workers: { exec: w.exec(SAM) } };
     app.user = { uuid: 'user-2', username: 'sam' };
     app.workspaces = { current: URL_, own: {}, joined: [{ url: URL_, business: 'Acme', role: 'member' }] };
     await team.leaveWorkspace(URL_);
@@ -45,7 +45,7 @@ describe('leaving a fleet', () => {
   });
 
   it('still leaves when the team server cannot be reached', async () => {
-    globalThis.puter = {
+    globalThis.everything = {
       kv: userKV,
       workers: {
         exec: async () => {
@@ -68,7 +68,7 @@ describe('worker upgrades', () => {
 
   function setup(serverBuild, bundleBuild) {
     const writes = [];
-    globalThis.puter = { fs: { write: async (p) => writes.push(p) } };
+    globalThis.everything = { fs: { write: async (p) => writes.push(p) } };
     globalThis.fetch = async (url) => {
       if (String(url).endsWith('/health')) return new Response(JSON.stringify({ ok: true, build: serverBuild }));
       return new Response(`// fleet-team-worker build=${bundleBuild}\nrouter;`);
@@ -105,15 +105,15 @@ describe('turning on team access', () => {
     return store;
   }
 
-  /** Puter as the owner's app sees it, with the worker behind exec. */
-  function ownerPuter({ failOp = null, files = {} } = {}) {
+  /** Everything as the owner's app sees it, with the worker behind exec. */
+  function ownerEverything({ failOp = null, files = {} } = {}) {
     const deleted = [];
     const exec = w.exec(OWNER);
     globalThis.fetch = async (url) => {
       if (String(url).endsWith('/health')) return new Response(JSON.stringify(await w.health()));
       return new Response('// fleet-team-worker build=3\nrouter;');
     };
-    globalThis.puter = {
+    globalThis.everything = {
       kv: userKV,
       fs: {
         write: async (p) => ({ path: `/olivia/AppData/app/${p}` }),
@@ -136,7 +136,7 @@ describe('turning on team access', () => {
 
   it('removes the half-made server when the data cannot be copied', async () => {
     const store = await ownerStore({ vehicles: [{ id: 'v1', name: 'Van' }] });
-    const { deleted } = ownerPuter({ failOp: 'put' });
+    const { deleted } = ownerEverything({ failOp: 'put' });
     await expect(team.enableTeam({ store })).rejects.toThrow();
     expect(deleted).toHaveLength(1);
     expect(deleted[0]).toMatch(/^fleet-/);
@@ -144,7 +144,7 @@ describe('turning on team access', () => {
 
   it('stops, and removes the server, when it never comes online', async () => {
     const store = await ownerStore({ vehicles: [{ id: 'v1', name: 'Van' }] });
-    const { deleted } = ownerPuter();
+    const { deleted } = ownerEverything();
     globalThis.fetch = async (url) => (String(url).endsWith('/health') ? new Response('', { status: 503 }) : new Response('// fleet-team-worker build=3\nrouter;'));
     vi.useFakeTimers();
     try {
@@ -160,7 +160,7 @@ describe('turning on team access', () => {
 
   it('carries the issue, work order, and purchase order numbers over', async () => {
     const store = await ownerStore({ issues: [{ id: 'i1', number: 7 }], workOrders: [{ id: 'w1', number: 3 }] }, { numbering: { purchaseOrder: 120 } });
-    ownerPuter();
+    ownerEverything();
     await team.enableTeam({ store });
     await join('driver', SAM);
     // A driver cannot move the counter ahead, so it must already be there.
@@ -171,7 +171,7 @@ describe('turning on team access', () => {
 
   it('says why a file was not copied', async () => {
     const store = await ownerStore({ vehicles: [{ id: 'v1', name: 'Van', photo: { name: 'van.jpg', path: 'files/vehicles/x-van.jpg', type: 'image/jpeg' } }] });
-    ownerPuter();
+    ownerEverything();
     const { skipped } = await team.enableTeam({ store });
     expect(skipped).toEqual(['van.jpg (could not be copied)']);
   });
@@ -182,7 +182,7 @@ describe('role changes', () => {
     await join('driver', SAM);
     await w.api(OWNER, { op: 'setRole', uuid: 'user-2', role: 'admin' });
     await w.api(OWNER, { op: 'saveSettings', settings: { company: { name: 'Acme Haulage' } } });
-    globalThis.puter = { kv: userKV, workers: { exec: w.exec(SAM) } };
+    globalThis.everything = { kv: userKV, workers: { exec: w.exec(SAM) } };
     app.user = { uuid: 'user-2', username: 'sam' };
     app.workspaces = { current: URL_, own: {}, joined: [{ url: URL_, business: 'Acme', role: 'driver' }] };
     app.team = { url: URL_, role: 'driver', business: 'Acme' };
@@ -195,7 +195,7 @@ describe('role changes', () => {
 describe('reading which fleet to open', () => {
   const failing = { get: async () => Promise.reject(new Error('KV unavailable')), set: async () => true };
 
-  it('falls back to this device’s copy when Puter cannot be read', async () => {
+  it('falls back to this device’s copy when Everything cannot be read', async () => {
     app.user = { uuid: 'owner-1', username: 'olivia' };
     const ws = { current: 'own', own: { url: URL_ }, joined: [{ url: 'http://fleet-b.localhost:8443', business: 'B', role: 'member' }] };
     await userKV.set('fl1:workspaces', ws);
@@ -214,13 +214,13 @@ describe('opening a teammate’s file', () => {
   it('never opens it as a page that runs in the app', async () => {
     // A driver uploads HTML and records it as an inspection photo of type
     // text/html (or SVG). Opened as is, its script would run with the app's
-    // origin and could read the owner's Puter session.
+    // origin and could read the owner's Everything session.
     await join('driver', SAM);
     const html = Buffer.from('<script>steal()</script>').toString('base64');
     await w.api(SAM, { op: 'fileWrite', path: 'files/inspections/x-photo.html', data: html, type: 'text/html' });
     await w.api(SAM, { op: 'fileWrite', path: 'files/inspections/y-photo.svg', data: html, type: 'image/svg+xml' });
     await w.api(SAM, { op: 'fileWrite', path: 'files/inspections/z-photo.html', data: html, type: 'text/html' });
-    globalThis.puter = { workers: { exec: w.exec(OWNER) } };
+    globalThis.everything = { workers: { exec: w.exec(OWNER) } };
     app.team = { url: URL_, role: 'owner', business: '' };
     const made = [];
     const orig = URL.createObjectURL;
@@ -240,7 +240,7 @@ describe('opening a teammate’s file', () => {
     const png = Buffer.from('png').toString('base64');
     await w.api(OWNER, { op: 'fileWrite', path: 'files/fuel/a.png', data: png, type: 'image/png' });
     await w.api(OWNER, { op: 'fileWrite', path: 'files/fuel/b.pdf', data: png, type: 'application/pdf' });
-    globalThis.puter = { workers: { exec: w.exec(OWNER) } };
+    globalThis.everything = { workers: { exec: w.exec(OWNER) } };
     app.team = { url: URL_, role: 'owner', business: '' };
     const made = [];
     const orig = URL.createObjectURL;
@@ -263,7 +263,7 @@ describe('team access turned on from another device', () => {
     const store = createStore({ backend: createMemoryBackend(), flushDelay: 0 });
     await store.init();
     await userKV.set('fl1:workspaces', { current: 'own', own: {}, joined: [] });
-    globalThis.puter = { kv: userKV, workers: { exec: w.exec(OWNER) } };
+    globalThis.everything = { kv: userKV, workers: { exec: w.exec(OWNER) } };
     app.user = { uuid: 'owner-1', username: 'olivia' };
     app.workspaces = { current: 'own', own: {}, joined: [] };
     expect(await team.checkTeamTurnedOn(userKV, store)).toBe(false);
@@ -291,7 +291,7 @@ describe('team access turned on from another device', () => {
     store.put('fuel', { id: 'f1', date: '2026-10-11', volume: 40 });
     store.remove('fuel', 'f0');
 
-    globalThis.puter = { kv: userKV, workers: { exec: w.exec(OWNER) } };
+    globalThis.everything = { kv: userKV, workers: { exec: w.exec(OWNER) } };
     app.user = { uuid: 'owner-1', username: 'olivia' };
     app.workspaces = { current: 'own', own: {}, joined: [] };
     app.team = null;
@@ -312,7 +312,7 @@ describe('switching fleets', () => {
     const backend = createMemoryBackend({}, { bucketOf });
     const store = createStore({ backend, flushDelay: 60000 });
     await store.init();
-    globalThis.puter = { kv: userKV };
+    globalThis.everything = { kv: userKV };
     app.user = { uuid: 'user-2', username: 'sam' };
     app.workspaces = { current: URL_, own: {}, joined: [{ url: URL_, business: 'Acme', role: 'driver' }] };
     app.store = store;

@@ -23,7 +23,7 @@ it.each(Object.keys(writers).flatMap((format) => [
   ['ROW(Sales[@Value])+COLUMN(Sales[@Value])', [3, 4]],
   ['SUM((Sales[@Value],Sales[@Price]))', [12, 23]],
   ['LET(ROW,LAMBDA(99),OFFSET,LAMBDA(99),SUM(Sales[@Value]))', [10, 20]],
-  ['LET(_puter_rowref_1,5,_puter_rowref_1+SUM(Sales[@Value]))', [15, 25]],
+  ['LET(_everything_rowref_1,5,_everything_rowref_1+SUM(Sales[@Value]))', [15, 25]],
   ['LAMBDA(ROW,SUM(Sales[@Value]))(99)', [10, 20]],
 ].map(([ref, expected]) => ({ format, ref, expected }))))(
   'exports $ref with the calling row intact in $format', async ({ format, ref, expected }) => {

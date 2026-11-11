@@ -13,7 +13,7 @@ async function boot({ hash = '', routes = {} } = {}) {
   dom?.uninstall();
   dom = installDom({ width: 1280, hash });
   vi.resetModules();
-  globalThis.puter = {
+  globalThis.everything = {
     workers: {
       exec: async (url) => {
         const u = new URL(url);
@@ -124,7 +124,7 @@ describe('appending a message to a block on a store whose add answers with somet
   }
   const withKv = async (kv, fn) => {
     const before = globalThis.me;
-    globalThis.me = { puter: { kv, fs: {} } };
+    globalThis.me = { everything: { kv, fs: {} } };
     try {
       return await fn();
     } finally {
@@ -161,7 +161,7 @@ describe('carrying a workspace\'s revocations to the hosts of its shared channel
   it('posts each signed word to its host, skips a malformed one, and swallows a host that fails', async () => {
     const { dom: d } = await boot();
     const calls = [];
-    globalThis.puter = {
+    globalThis.everything = {
       workers: {
         exec: async (url, init = {}) => {
           calls.push({ url, body: init.body ? JSON.parse(init.body) : null });

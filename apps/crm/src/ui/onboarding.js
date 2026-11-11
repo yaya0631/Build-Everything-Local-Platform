@@ -53,7 +53,7 @@ export function openOnboarding() {
       el('div.empty.onboard-hero', {},
         el('img.onboard-mark', { src: './icon-192.png', width: 58, height: 58, alt: '' }),
         el('h3', {}, 'Your pipeline, your cloud'),
-        el('p', {}, 'Track leads, companies, deals, and follow-ups, and see a forecast you can trust. Stored in your own Puter account, never sold or shared.')
+        el('p', {}, 'Track leads, companies, deals, and follow-ups, and see a forecast you can trust. Stored in your own Everything account, never sold or shared.')
       ),
       el('button.btn.btn-primary.btn-block.btn-tall', {
         type: 'button',

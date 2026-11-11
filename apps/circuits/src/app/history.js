@@ -5,7 +5,7 @@
 
 import { h, clear } from '../ui/dom.js';
 import { openDialog, confirmDialog } from '../ui/dialog.js';
-import { puter, isMissing, toMs } from './puter.js';
+import { everything, isMissing, toMs } from './everything.js';
 import { parseProject } from '../model/project.js';
 
 const KEEP = 40;
@@ -29,7 +29,7 @@ export async function listVersions(location, projectId) {
   const out = [];
   if (location?.type === 'cloud') {
     try {
-      const items = await puter().fs.readdir(`${CLOUD_DIR}/${projectId}`);
+      const items = await everything().fs.readdir(`${CLOUD_DIR}/${projectId}`);
       for (const it of items) if (it.name.endsWith('.circuits')) out.push({ name: it.name, date: toMs(it.modified) || Date.parse(nameToIso(it.name)), size: it.size, ref: it.path });
     } catch (err) { if (!isMissing(err)) throw err; }
   } else {
@@ -52,7 +52,7 @@ function nameToIso(name) {
 }
 
 async function readVersion(location, projectId, v) {
-  if (location?.type === 'cloud') return (await puter().fs.read(v.ref)).text();
+  if (location?.type === 'cloud') return (await everything().fs.read(v.ref)).text();
   const dir = await localDir(projectId, false);
   return (await (await dir.getFileHandle(v.ref)).getFile()).text();
 }
@@ -68,7 +68,7 @@ export async function recordVersion(location, projectId, text, { auto = false, l
   const name = `${stamp()}.circuits`;
   try {
     if (location.type === 'cloud') {
-      await puter().fs.write(`${CLOUD_DIR}/${projectId}/${name}`, text, { createMissingParents: true });
+      await everything().fs.write(`${CLOUD_DIR}/${projectId}/${name}`, text, { createMissingParents: true });
     } else {
       const dir = await localDir(projectId, true);
       if (!dir) return lastAt;
@@ -88,7 +88,7 @@ async function prune(location, projectId) {
   const list = await listVersions(location, projectId);
   for (const v of list.slice(KEEP)) {
     try {
-      if (location.type === 'cloud') await puter().fs.delete(v.ref);
+      if (location.type === 'cloud') await everything().fs.delete(v.ref);
       else await (await localDir(projectId, false))?.removeEntry(v.ref);
     } catch { /* already gone */ }
   }

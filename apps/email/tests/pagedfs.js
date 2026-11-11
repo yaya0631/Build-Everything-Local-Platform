@@ -1,4 +1,4 @@
-/** A keyset-paged filesystem honoring Puter's name ordering for both listing modes. */
+/** A keyset-paged filesystem honoring Everything's name ordering for both listing modes. */
 export function pagedFs(objectsPath, tree, { pageCap = Infinity } = {}) {
   const calls = [];
   const fs = {

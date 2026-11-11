@@ -5,7 +5,7 @@
  * Latency here is not the number of calls, it is how many of them are in a
  * row. Three things decide that, and each has a test below:
  *
- *   - Identifying the caller is an HTTP call to Puter, not a store read, so
+ *   - Identifying the caller is an HTTP call to Everything, not a store read, so
  *     it runs beside the first read rather than in front of it.
  *   - Keys that do not depend on one another are read together: kv.get takes
  *     a list (see getMany), so the caller's own document, the conversation's
@@ -97,7 +97,7 @@ beforeEach(async () => { rt = await boot(); });
 afterEach(() => { if (p) p.restore(); p = null; });
 
 describe('identifying the caller runs beside the first read, not in front of it', () => {
-  it('the workspace read is already in flight while Puter is still answering who is asking', async () => {
+  it('the workspace read is already in flight while Everything is still answering who is asking', async () => {
     const { wsId, general } = await workspaceWith(alice, [bob]);
     p = probe();
     p.reset();

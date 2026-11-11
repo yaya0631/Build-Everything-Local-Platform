@@ -4,10 +4,10 @@ import { boot, canvasClick, downloadFrom, historyLabels, idle, openProject, pane
 import { layer, newDocument } from "../../src/model/document";
 
 test.beforeEach(async ({ page }) => {
-  await page.route("**/sdk/puter.js", (r) =>
+  await page.route("**/sdk/everything.js", (r) =>
     r.fulfill({
       contentType: "application/javascript",
-      body: "window.puter={};",
+      body: "window.everything={};",
     }),
   );
 });
@@ -519,7 +519,7 @@ for (const fallback of [false, true]) {
   test(`pixel mask density, linking, painting and undo controls (${fallback ? "WebGL" : "WebGPU"})`, async ({
     page,
   }) => {
-    await boot(page, fallback ? "WebGL" : "WebGPU", "window.puter={};");
+    await boot(page, fallback ? "WebGL" : "WebGPU", "window.everything={};");
     const doc = newDocument(160, 120, "Mask controls"),
       l = layer("solid", "Mask target", 160, 120);
     l.color = "#ff0000";

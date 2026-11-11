@@ -39,7 +39,7 @@ it('adopts a pasted calculated column and preserves it through XLSX',async()=>{
   expect(wb.getValue(id,4,3)).toBe(6);
   const data=new Uint8Array(await(await workbookToXlsx(wb)).arrayBuffer());
   const zip=X.CFB.read(data,{type:'array'}),part=X.CFB.find(zip,'/xl/workbook.xml');
-  part.content=new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,''));part.size=part.content.length;
+  part.content=new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,''));part.size=part.content.length;
   const saved=await workbookFromFile(X.CFB.write(zip,{type:'array',fileType:'zip'}),'columns.xlsx');
   expect(saved.activeSheet.tables[0].range).toEqual(parseRange('B3:D5'));
   expect(saved.getValue(saved.activeSheetId,4,3)).toBe(6);

@@ -6,7 +6,7 @@ Reviewed 2026-09-08. Scope: recipient entry, editing, MIME serialization, attach
 
 The composer is materially more capable and safer after this change, but **it does not yet meet or exceed Gmail across the complete feature set**. Several gaps need server capabilities absent from this repository; others remain client work. No live email was sent during this review. The backend behavior described below is the contract documented by this repository, not a new production-server verification.
 
-The most valuable existing strengths are local contact completion without a separate sync request, explicit recipient validation, sanitized outgoing markup, readable plain-text alternatives, Puter file attachments, and accessible recipient editing. These are useful product strengths, not evidence of blanket superiority to Gmail.
+The most valuable existing strengths are local contact completion without a separate sync request, explicit recipient validation, sanitized outgoing markup, readable plain-text alternatives, Everything file attachments, and accessible recipient editing. These are useful product strengths, not evidence of blanket superiority to Gmail.
 
 ## Capability comparison
 
@@ -24,7 +24,7 @@ The most valuable existing strengths are local contact completion without a sepa
 | Draft autosave | Text saves on debounce, close, page hide, and backgrounding. Status distinguishes saving, saved, and failed states. Separate app instances merge current stored drafts when saving unrelated messages. Same-draft cross-window conflict resolution remains missing. |
 | Attachment drafts | Added account-scoped IndexedDB byte storage, reload recovery, file-only draft preservation, removal cleanup, and Undo discard snapshots. Storage failure warns before close. |
 | Draft sync across devices | **Missing.** Text and attachment drafts are local to this browser and can be removed by browser storage clearing/eviction. |
-| Local and Puter attachments | Existing; oversized files with known sizes are rejected before reading. The client retains its conservative 18 MiB attachment cap; Gmail documents 25 MB for personal accounts and Drive fallback. |
+| Local and Everything attachments | Existing; oversized files with known sizes are rejected before reading. The client retains its conservative 18 MiB attachment cap; Gmail documents 25 MB for personal accounts and Drive fallback. |
 | Missing-attachment reminder | Added a conservative English phrase check, excluding quoted replies, signatures, and forwarded content. Missing stored files also require explicit acknowledgement before sending. This is not multilingual semantic detection. |
 | Send safety | Duplicate submit events and reopening a pending draft are guarded in this app session. Fields and attachment controls lock during delivery. The text draft is flushed before the request. |
 | Failed send recovery | Draft remains available. A failure after close offers to reopen the message with its in-memory files, including when file storage failed. |
@@ -76,4 +76,4 @@ Completed: **819 unit/DOM tests across 50 files, 12 Chromium tests, and the prod
 - `npx playwright install chromium` then `npm run test:browser`: real Chromium editing/undo, unsafe link rejection, attachment bytes after an actual reload, mocked multipart delivery, formatting persistence, and desktop/phone/short-dark layouts. Test fixture uses a fake account and intercepted delivery; it cannot send real mail.
 - Screenshots are written under ignored `test-results/`. Browser tests import production composer modules through a test-only Vite fixture; the fixture is not an entry point in the production build.
 
-Limitations: no live Puter delivery, cross-client Gmail/Outlook rendering, Safari/Firefox, real mobile keyboards, screen-reader session, or cross-device sync test was performed. `document.execCommand` remains deprecated; Chromium behavior was verified, but replacing the editing engine requires a separate migration plan. Network loss after server acceptance remains ambiguous until the backend supports idempotency and send reconciliation.
+Limitations: no live Everything delivery, cross-client Gmail/Outlook rendering, Safari/Firefox, real mobile keyboards, screen-reader session, or cross-device sync test was performed. `document.execCommand` remains deprecated; Chromium behavior was verified, but replacing the editing engine requires a separate migration plan. Network loss after server acceptance remains ambiguous until the backend supports idempotency and send reconciliation.

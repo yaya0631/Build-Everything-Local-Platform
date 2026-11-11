@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Puter Mail boot harness</title>
+  <title>Everything Mail boot harness</title>
   <script type="module">
-    // The real start-up path (src/main.js) over a fake Puter SDK and the
+    // The real start-up path (src/main.js) over a fake Everything SDK and the
     // sample mailbox. `?mode=` picks how the SDK answers:
     //   ok        everything works
     //   statnet   the access check gets no answer until __netUp() is called
@@ -25,7 +25,7 @@
       if (mode === 'noperm') throw { message: 'Permission denied.', code: 'forbidden' };
       return stat(path);
     };
-    window.puter = {
+    window.everything = {
       env: 'web',
       APIOrigin: `${location.origin}/test-api`,
       authToken: 'fixture',
@@ -42,7 +42,7 @@
       ui: {},
       perms: { request: async (permission) => { window.__log.push(`perm:${permission}`); return false; } },
     };
-    localStorage.setItem('puter-mail:onboarded', '1');
+    localStorage.setItem('everything-mail:onboarded', '1');
     await import('/src/main.js');
   </script>
 </head>

@@ -26,7 +26,7 @@ it('round-trips Version 1 surrogate results, formula literals, and text without 
     const raw = X.read(bytes), sheet = raw.Sheets[raw.SheetNames[0]];
     formulas.forEach((f, r) => { expect(sheet[`A${r + 1}`].f).toBe(f); expect(sheet[`A${r + 1}`].v).toBe(expected[r]); });
     const zip = X.CFB.read(bytes, { type: 'array' }), part = X.CFB.find(zip, '/xl/workbook.xml');
-    part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')); part.size = part.content.length;
+    part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')); part.size = part.content.length;
     wb = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'native.xlsx');
     expected.forEach((v, r) => expect(wb.getValue(wb.activeSheetId, r, 0)).toBe(v));
   }

@@ -5,7 +5,7 @@
  *
  * The store is a pure function over an injectable storage, like readstate.js
  * -- localStorage in the app, a Map in the tests. That is also
- * what makes the move to `puter.kv` (app-scoped per user, so a draft started
+ * what makes the move to `everything.kv` (app-scoped per user, so a draft started
  * on a phone can be finished on a desktop) a change of one argument rather
  * than a change to the dialog.
  *
@@ -52,7 +52,7 @@ const clean = (draft) => {
 };
 
 export function createDraftStore(scope, storage = window.localStorage, now = () => Date.now()) {
-  const key = `puter-mail:drafts:${scope}`;
+  const key = `everything-mail:drafts:${scope}`;
   const files = createDraftFileStore(scope);
 
   const load = () => {

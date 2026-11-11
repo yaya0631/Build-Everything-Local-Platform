@@ -1,19 +1,19 @@
 /**
- * The room service: what the owner's Puter worker runs for shared documents.
+ * The room service: what the owner's Everything worker runs for shared documents.
  * It keeps each room's Yjs edit log, memberships, invitations, presence and
  * the document the room started from in the owner's key-value store and
  * files, and checks every request: membership, and role (viewers cannot
  * commit; commenters can change only comments).
  *
  * The design follows the Whiteboard and Photo Studio room workers in this
- * repository; the service takes its Puter (`me.puter` in the worker, a fake in
+ * repository; the service takes its Everything (`me.everything` in the worker, a fake in
  * tests and in the dev server) as a parameter.
  *
  * KV layout (room = a random id):
  *   doc:<room>:meta                 owner, name, created, closed?, base file, schema
  *   doc:<room>:member:<uuid>        { uuid, username, role, joined }
  *   doc:<room>:invite:<sha256>      invitation link: { role, expires, createdBy }
- *   doc:<room>:named:<username>     invitation by Puter username: { role, expires }
+ *   doc:<room>:named:<username>     invitation by Everything username: { role, expires }
  *   doc:<room>:seq, doc:<room>:log:<n>   numbered accepted updates
  *   doc:<room>:cp                   checkpoint { seq, path } every 100 updates
  *   doc:<room>:presence:<session>   presence entry (expires)
@@ -37,10 +37,10 @@ const ROOMS = new Map();
 const LOCKS = new WeakMap();
 
 export class RoomService {
-  constructor(puter, { now = Date.now, rooms = ROOMS } = {}) {
-    this.puter = puter; this.kv = puter.kv; this.fs = puter.fs; this.now = now; this.rooms = rooms;
+  constructor(everything, { now = Date.now, rooms = ROOMS } = {}) {
+    this.everything = everything; this.kv = everything.kv; this.fs = everything.fs; this.now = now; this.rooms = rooms;
   }
-  owner() { return (this.accountOwner ||= this.puter.auth.getUser()); }
+  owner() { return (this.accountOwner ||= this.everything.auth.getUser()); }
   path(room, name) { return `documents-collab/${room}/${name}`; }
   async readText(path) { return (await this.fs.read(path)).text(); }
   async writeText(path, text) { await this.fs.write(path, text, { overwrite: true, dedupeName: false, createMissingParents: true }); }
@@ -126,7 +126,7 @@ export class RoomService {
   /* ---------- Requests ---------- */
 
   async call(user, input) {
-    if (!user?.uuid) fail(401, 'Sign in with Puter to continue.');
+    if (!user?.uuid) fail(401, 'Sign in with Everything to continue.');
     if (!input || typeof input !== 'object') fail(400, 'Invalid request.');
     const room = id(input.room);
     const op = input.op;
@@ -253,7 +253,7 @@ export class RoomService {
     }
     if (input.op === 'invite-user') {
       const name = typeof input.username === 'string' ? input.username.trim().replace(/^@/, '') : '';
-      if (!/^[A-Za-z0-9._-]{1,64}$/.test(name)) fail(400, 'Enter a Puter username.');
+      if (!/^[A-Za-z0-9._-]{1,64}$/.test(name)) fail(400, 'Enter an Everything username.');
       const role = input.role ?? 'editor';
       if (!INVITE_ROLES.includes(role)) fail(400, 'Choose a role an invitation can give.');
       const expires = this.now() + days * DAY;

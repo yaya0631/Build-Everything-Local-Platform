@@ -419,7 +419,7 @@ test("comments committed at once beyond the limits keep the board saveable, show
   ]);
   const { BoardService: Other } =
     await import("../worker/service.js?instance=comments");
-  const other = new Other(env.service.puter, {
+  const other = new Other(env.service.everything, {
     now: () => env.now,
     org: env.service.org,
   });

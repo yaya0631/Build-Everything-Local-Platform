@@ -47,7 +47,7 @@ export function openOnboarding(store) {
         el(
           'p',
           {},
-          'Plan schedules, approve swaps, and track attendance. Everything is stored in your own Puter account, never sold or shared.'
+          'Plan schedules, approve swaps, and track attendance. Everything is stored in your own Everything account, never sold or shared.'
         )
       ),
       el('button', { class: 'btn btn-primary btn-block', onClick: renderFirstEmployee }, 'Set up my team'),

@@ -88,16 +88,16 @@ export function parseCookies(cookieHeader) {
 }
 
 export function extractToken(req, url) {
-  const signedOut = req?.headers?.['x-puter-signed-out'];
+  const signedOut = req?.headers?.['x-everything-signed-out'];
   if (signedOut === '1' || signedOut === 'true') return 'SIGNED_OUT';
   const auth = req?.headers?.['authorization'] || '';
   if (auth.toLowerCase().startsWith('bearer ')) return auth.slice(7).trim();
-  const xTok = req?.headers?.['x-puter-token'] || req?.headers?.['puter-auth'];
+  const xTok = req?.headers?.['x-everything-token'] || req?.headers?.['everything-auth'];
   if (xTok) return String(xTok).trim();
-  const qTok = url?.searchParams?.get('token') || url?.searchParams?.get('puter_token');
+  const qTok = url?.searchParams?.get('token') || url?.searchParams?.get('everything_token');
   if (qTok) return String(qTok).trim();
   const cookies = parseCookies(req?.headers?.cookie);
-  if (cookies.puter_auth_token) return cookies.puter_auth_token;
+  if (cookies.everything_auth_token) return cookies.everything_auth_token;
   return null;
 }
 
@@ -124,7 +124,7 @@ export function resolveUser(db, req, url, { allowDefault = true } = {}) {
     const found = resolveUserByToken(db, token);
     if (found) return found;
   }
-  const qUser = url?.searchParams?.get('user') || req?.headers?.['x-puter-user'];
+  const qUser = url?.searchParams?.get('user') || req?.headers?.['x-everything-user'];
   if (qUser) return ensureUser(db, qUser);
   return allowDefault ? ensureUser(db, 'local') : null;
 }
@@ -158,7 +158,7 @@ export async function handleAuth(ctx, req, res, url, body, sendJson) {
     const username = body?.username || body?.user || url.searchParams.get('user') || 'local';
     const user = ensureUser(db, username, body?.email);
     const token = createSession(db, user);
-    res.setHeader('Set-Cookie', `puter_auth_token=${encodeURIComponent(token)}; Path=/; SameSite=Lax`);
+    res.setHeader('Set-Cookie', `everything_auth_token=${encodeURIComponent(token)}; Path=/; SameSite=Lax`);
     return sendJson(res, 200, {
       ok: true,
       token,
@@ -172,7 +172,7 @@ export async function handleAuth(ctx, req, res, url, body, sendJson) {
     if (token && token !== 'SIGNED_OUT' && !token.startsWith('tok-local')) {
       db.prepare('DELETE FROM sessions WHERE token = ?').run(token);
     }
-    res.setHeader('Set-Cookie', 'puter_auth_token=; Path=/; Max-Age=0; SameSite=Lax');
+    res.setHeader('Set-Cookie', 'everything_auth_token=; Path=/; Max-Age=0; SameSite=Lax');
     return sendJson(res, 200, { ok: true });
   }
 

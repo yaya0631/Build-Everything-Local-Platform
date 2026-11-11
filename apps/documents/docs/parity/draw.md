@@ -2,7 +2,7 @@
 
 The Draw tab sits after Insert. It writes and sketches on the page with pens, pencils and
 highlighters, erases, selects ink with a lasso, draws against a ruler, converts ink to shapes and
-(with Puter's AI) to equations, replays ink, hides it and inserts drawing canvases. The Edit menu has
+(with Everything's AI) to equations, replays ink, hides it and inserts drawing canvases. The Edit menu has
 Toggle Drawing (Cmd+Ctrl+Z on macOS, Ctrl+Alt+Z elsewhere), the Insert menu Drawing Canvas, the View
 menu Hide Ink; right-clicking ink offers Convert to Shape, Bring to Front, Send to Back and Delete Ink.
 Review's Hide Ink calls `toggleInk()` / `inkHidden()`.
@@ -43,7 +43,7 @@ details: [conformance.md](../conformance.md#draw-tab-ink-drawing-canvases-and-in
 - **Ink to Shape**: a toggle that turns each new pen stroke into a line, arrow, rectangle, oval or
   triangle when it is recognised (other strokes stay ink), and a command on a lasso selection or a
   right-clicked ink drawing. Rotated rectangles and ovals keep their angle (snapped under 10°).
-- **Ink to Math**: a writing pad (pre-filled from selected ink) whose picture is read by Puter's AI
+- **Ink to Math**: a writing pad (pre-filled from selected ink) whose picture is read by Everything's AI
   into a linear-format equation, editable with a live preview, then inserted through the Insert tab's
   equation dialog. Hidden when the AI or the equation command is unavailable.
 - **Ink Replay** redraws all ink stroke by stroke (Stop or Esc ends it). **Hide Ink** hides ink on

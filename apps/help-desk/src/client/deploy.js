@@ -1,10 +1,10 @@
 /**
- * Puts the help desk server (a Puter worker) into the owner's own account.
+ * Puts the help desk server (an Everything worker) into the owner's own account.
  * The bundle ships with the app at worker/help-desk-worker.js; it is written
- * to the owner's drive and deployed with puter.workers.create(). Updating is
+ * to the owner's drive and deployed with everything.workers.create(). Updating is
  * rewriting the same file, which redeploys at the same URL.
  */
-import { sdk } from './puter.js';
+import { sdk } from './everything.js';
 import { serverApi } from './api.js';
 import { randomId } from '../shared/ids.js';
 
@@ -74,7 +74,7 @@ export async function findOwnServer() {
 export async function deployServer({ onProgress } = {}) {
   onProgress?.('Preparing the server');
   const { source, build } = await fetchBundle();
-  onProgress?.('Copying the server to your Puter drive');
+  onProgress?.('Copying the server to your Everything drive');
   const path = await writeBundle(FILE_NAME, source);
   let lastError = null;
   for (let attempt = 0; attempt < 4; attempt++) {
@@ -93,8 +93,8 @@ export async function deployServer({ onProgress } = {}) {
     return { name, path: dep?.file_path || path, build };
   }
   const msg = lastError?.message || String(lastError || 'unknown error');
-  const hint = /verif/i.test(msg) ? ' Confirm your Puter account email address, then try again.' : '';
-  throw new Error(`Could not create the server in your Puter account: ${msg}.${hint}`);
+  const hint = /verif/i.test(msg) ? ' Confirm your Everything account email address, then try again.' : '';
+  throw new Error(`Could not create the server in your Everything account: ${msg}.${hint}`);
 }
 
 /**

@@ -820,7 +820,7 @@ export async function addText(
     page.pushOperators(
       pushGraphicsState(),
       PDFOperator.of('BDC', [
-        PDFName.of('PuterParagraph'),
+        PDFName.of('EverythingParagraph'),
         doc.context.obj({
           V: 1,
           Frame: [0, 0, width * c, width * s, -leading * s, leading * c],
@@ -841,7 +841,7 @@ export async function addText(
   });
   if (underline || strikethrough) {
     page.pushOperators(
-      PDFOperator.of('BMC', [PDFName.of('PuterTextDecoration')]),
+      PDFOperator.of('BMC', [PDFName.of('EverythingTextDecoration')]),
       pushGraphicsState(),
       setFillingColor(color(hex)),
     );
@@ -1201,7 +1201,7 @@ export async function samplePdf() {
     [
       '03',
       'Take your work with you',
-      'Download a PDF to your device, or save a copy to Puter.\nYour files stay in your own cloud.',
+      'Download a PDF to your device, or save a copy to Everything.\nYour files stay in your own cloud.',
     ],
   ];
   sections.forEach(([n, title, body], i) => {

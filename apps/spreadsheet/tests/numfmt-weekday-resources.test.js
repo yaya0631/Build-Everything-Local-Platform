@@ -51,7 +51,7 @@ it('retains date values and weekday formats through edits, Undo, external HTML a
   const blob = await workbookToXlsx(wb);
   const bytes = await new Promise(resolve => {const r = new FileReader(); r.onload = () => resolve(new Uint8Array(r.result)); r.readAsArrayBuffer(blob);});
   const zip = X.CFB.read(bytes, {type:'array'}), part = X.CFB.find(zip, '/xl/workbook.xml');
-  part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   part.size = part.content.length;
   const back = await workbookFromFile(X.CFB.write(zip, {type:'array', fileType:'zip'}), 'weekdays.xlsx');
   for (const [r, [value, code, display]] of cases.entries()) {

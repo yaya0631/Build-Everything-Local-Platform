@@ -1,11 +1,11 @@
 /**
- * Puter worker entry. Each help desk owner deploys this bundle into their own
- * Puter account (the app does it for them), so the desk's data lives in the
+ * Everything worker entry. Each help desk owner deploys this bundle into their own
+ * Everything account (the app does it for them), so the desk's data lives in the
  * owner's key-value store and files, and every agent and help center visitor
  * reaches it through this worker.
  *
  * The runtime provides two globals: `router`, to register routes, and `me`,
- * the owner's Puter context (available inside handlers only).
+ * the owner's Everything context (available inside handlers only).
  */
 import { createBackend } from '../src/server/backend.js';
 import { sha256 } from '../src/shared/ids.js';
@@ -28,12 +28,12 @@ let ownerPromise = null;
 function getBackend() {
   if (backend) return backend;
   backend = createBackend({
-    kv: me.puter.kv,
-    fs: me.puter.fs,
-    email: (msg) => me.puter.email.sendTransactional(msg),
+    kv: me.everything.kv,
+    fs: me.everything.fs,
+    email: (msg) => me.everything.email.sendTransactional(msg),
     ownerUuid: () => {
       // Only a known owner is remembered; a failed or empty lookup is retried.
-      ownerPromise ||= me.puter.auth.getUser().then((u) => u?.uuid || null).catch(() => null).then((uuid) => {
+      ownerPromise ||= me.everything.auth.getUser().then((u) => u?.uuid || null).catch(() => null).then((uuid) => {
         if (!uuid) ownerPromise = null;
         return uuid;
       });
@@ -45,16 +45,16 @@ function getBackend() {
   return backend;
 }
 
-/** Who is calling, from the Puter session puter.workers.exec() attaches. */
+/** Who is calling, from the Everything session everything.workers.exec() attaches. */
 async function identify(user) {
-  if (!user || !user.puter) return null;
-  const token = user.puter.authToken;
+  if (!user || !user.everything) return null;
+  const token = user.everything.authToken;
   const key = token ? await sha256(token) : null;
   const hit = key && identities.get(key);
   if (hit && hit.until > Date.now()) return hit.who;
   let info = null;
   try {
-    info = await user.puter.auth.getUser();
+    info = await user.everything.auth.getUser();
   } catch {
     return null;
   }
@@ -100,7 +100,7 @@ function register(method, pattern) {
     let raw = null;
     if (method === 'POST' && /\/files$/.test(url.pathname)) {
       // Uploads are for signed-in agents only; do not read the bytes otherwise.
-      if (!user || !user.puter) return json(401, { error: 'unauthorized', message: 'Sign in with Puter to continue' });
+      if (!user || !user.everything) return json(401, { error: 'unauthorized', message: 'Sign in with Everything to continue' });
       const bytes = await readBody(request, FILE_LIMIT);
       if (!bytes) return json(413, { error: 'too_large', message: 'Files can be up to 20 MB' });
       raw = new Blob([bytes], { type: request.headers.get('content-type') || 'application/octet-stream' });

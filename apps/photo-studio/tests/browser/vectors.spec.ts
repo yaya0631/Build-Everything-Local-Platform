@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import { boot } from "./helpers";
 
 test.beforeEach(async ({ page }) => {
-  await boot(page, "default", "window.puter={};");
+  await boot(page, "default", "window.everything={};");
 });
 
 test("compound operations resolve geometry before antialiasing, including identical cubic edges", async ({

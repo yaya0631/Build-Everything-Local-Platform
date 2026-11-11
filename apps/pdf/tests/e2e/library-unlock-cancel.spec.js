@@ -3,13 +3,13 @@ import { readFile } from 'node:fs/promises';
 
 test('cancelling a password prompt keeps the library as it was', async ({ page }) => {
   const locked = (await readFile('tests/fixtures/security/aes-256-r5.pdf')).toString('base64');
-  await page.route('**/sdk/puter.js', (route) =>
+  await page.route('**/sdk/everything.js', (route) =>
     route.fulfill({
       contentType: 'application/javascript',
       body: `
       const bytes = Uint8Array.from(atob(${JSON.stringify(locked)}), (c) => c.charCodeAt(0));
       window.listings = 0;
-      window.puter = {
+      window.everything = {
         env: 'web',
         auth: { isSignedIn: async () => true, getUser: async () => ({ username: 'test' }) },
         fs: {

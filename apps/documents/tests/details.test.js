@@ -34,7 +34,7 @@ describe('document details', () => {
     const rows = detailRows({ name: 'Report', path: 'Documents/Report.docx', size: 2048, created: (now - 86400000) / 1000, modified: (now - 3600000) / 1000, lastSaved: now - 60000, pages: 3, words: 1204, publishedUrl: null }, { now });
     expect(rows.map((r) => r.label)).toEqual(['Name', 'Location', 'Size', 'Created', 'Modified', 'Last saved here', 'Length', 'Published']);
     expect(rows[0].value).toBe('Report.docx');
-    expect(rows[1].value).toBe('Documents/ on your Puter drive');
+    expect(rows[1].value).toBe('Documents/ on your Everything drive');
     expect(rows[2].value).toBe('2.0 KB');
     expect(rows[3].value).toMatch(/\(1 day ago\)/);
     expect(rows[6].value).toBe('3 pages, 1,204 words');

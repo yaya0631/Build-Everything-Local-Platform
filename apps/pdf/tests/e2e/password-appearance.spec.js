@@ -30,7 +30,7 @@ for (const inherited of [false, true])
     test(`password appearances stay masked after ${action} (inherited=${inherited})`, async ({
       page,
     }) => {
-      await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
+      await page.route('**/sdk/everything.js', (route) => route.fulfill({ body: '' }));
       await page.goto('/#library');
       const { doc, secret } = await passwordFormPdf({ inherited });
       if (action === 'flatten-missing')

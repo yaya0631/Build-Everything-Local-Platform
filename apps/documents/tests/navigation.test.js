@@ -9,7 +9,7 @@ vi.mock('../src/lib/engine.js', () => ({ loadEngine: () => new Promise(() => {})
 
 it('keeps the editor and its unsaved content when saving before navigation fails', async () => {
   stubEditorBrowser();
-  vi.stubGlobal('puter', {
+  vi.stubGlobal('everything', {
     auth: { isSignedIn: () => true, getUser: async () => ({ username: 'test' }) },
     fs: { readdir: async () => [], mkdir: async () => {}, stat: async () => null, write: vi.fn() },
   });
@@ -23,7 +23,7 @@ it('keeps the editor and its unsaved content when saving before navigation fails
   const destroy = vi.spyOn(view, 'destroy');
   doc.attach(async () => new Blob(['unsaved work']));
   doc.changed();
-  puter.fs.write.mockRejectedValueOnce(new Error('offline'));
+  everything.fs.write.mockRejectedValueOnce(new Error('offline'));
 
   location.hash = '#/home';
   await vi.waitFor(() => expect(doc.status).toBe('error'));
@@ -37,7 +37,7 @@ it('keeps the editor and its unsaved content when saving before navigation fails
   await new Promise((resolve) => setTimeout(resolve, 0));
 
   // Retrying after the connection recovers saves and navigates normally.
-  puter.fs.write.mockResolvedValue({});
+  everything.fs.write.mockResolvedValue({});
   location.hash = '#/home';
   await vi.waitFor(() => expect(window.__docs.current?.kind).toBe('home'));
   expect(doc.dirty).toBe(false);

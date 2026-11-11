@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
-vi.mock('../src/lib/puter.js', async (importOriginal) => {
+vi.mock('../src/lib/everything.js', async (importOriginal) => {
   const real = await importOriginal();
   const fs = new Map();
   const writeFile = async (path, blob) => { fs.set(path, blob); return { path, modified: 1 }; };
@@ -18,7 +18,7 @@ vi.mock('../src/lib/puter.js', async (importOriginal) => {
 });
 
 const { Doc, versioning, publishing } = await import('../src/lib/doc.js');
-const P = await import('../src/lib/puter.js');
+const P = await import('../src/lib/everything.js');
 const { rememberedRoom, rememberRoom, moveRoom, forgetRoom } = await import('../src/collab/room-memory.js');
 const { rememberDocumentRoot } = await import('../src/lib/document-paths.js');
 const { hash } = await import('../src/collab/protocol.js');
@@ -30,7 +30,7 @@ describe('the room a shared file rejoins', () => {
     versioning.enabled = false; publishing.enabled = false;
     P.__fs.clear();
     const kv = new Map();
-    vi.stubGlobal('puter', { kv: { get: async k => kv.get(k) ?? null, set: async (k, v) => { kv.set(k, v); return true; }, del: async k => kv.delete(k) } });
+    vi.stubGlobal('everything', { kv: { get: async k => kv.get(k) ?? null, set: async (k, v) => { kv.set(k, v); return true; }, del: async k => kv.delete(k) } });
     vi.stubGlobal('navigator', { onLine: true });
   });
   afterEach(() => vi.unstubAllGlobals());
@@ -45,7 +45,7 @@ describe('the room a shared file rejoins', () => {
   });
 
   it('is not joined by a file renamed to the name of a shared one deleted elsewhere', async () => {
-    // Shared, then deleted in the Puter desktop: the app never heard of it, and the memory stayed.
+    // Shared, then deleted in the Everything desktop: the app never heard of it, and the memory stayed.
     await rememberRoom('Documents/Plan.docx', ROOM);
     P.__fs.set('Documents/Notes.docx', new Blob(['x']));
     const doc = new Doc({ name: 'Notes', path: 'Documents/Notes.docx' });
@@ -77,7 +77,7 @@ describe('the room a shared file rejoins', () => {
 
   it('is the same room whether the file is spelled from the app folder or, as the document list does, from the root', async () => {
     const root = '/ada/AppData/app-1/Documents';
-    rememberDocumentRoot(root, globalThis.puter);
+    rememberDocumentRoot(root, globalThis.everything);
     // Shared after its first save (spelled from the app folder), reopened from the list (spelled from the root).
     await rememberRoom('Documents/Plan.docx', ROOM);
     expect(await rememberedRoom(`${root}/Plan.docx`)).toEqual(ROOM);
@@ -92,8 +92,8 @@ describe('the room a shared file rejoins', () => {
 
   it('still finds a room remembered under the path spelled from the root', async () => {
     const root = '/ada/AppData/app-1/Documents';
-    rememberDocumentRoot(root, globalThis.puter);
-    await globalThis.puter.kv.set(`documents-collab-room:${await hash(`${root}/Plan.docx`)}`, ROOM);
+    rememberDocumentRoot(root, globalThis.everything);
+    await globalThis.everything.kv.set(`documents-collab-room:${await hash(`${root}/Plan.docx`)}`, ROOM);
     expect(await rememberedRoom('Documents/Plan.docx')).toEqual(ROOM);
     await forgetRoom('Documents/Plan.docx');
     expect(await rememberedRoom(`${root}/Plan.docx`)).toBeNull();

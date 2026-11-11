@@ -76,13 +76,13 @@ describe('spilled arrays', () => {
 
 describe('links', () => {
   it('recognizes HYPERLINK formulas and plain addresses', () => {
-    const b = book({ A1: '=HYPERLINK("http://localhost:8443","Puter")', A2: 'www.example.com', A3: 'me@example.com', A4: 'not a link', A5: '=HYPERLINK("localhost:8443/docs")' });
-    expect(b.wb.linkAt(b.id, 0, 0)).toEqual({ url: 'http://localhost:8443', label: 'Puter' });
+    const b = book({ A1: '=HYPERLINK("http://localhost:8443","Everything")', A2: 'www.example.com', A3: 'me@example.com', A4: 'not a link', A5: '=HYPERLINK("localhost:8443/docs")' });
+    expect(b.wb.linkAt(b.id, 0, 0)).toEqual({ url: 'http://localhost:8443', label: 'Everything' });
     expect(b.wb.linkAt(b.id, 1, 0)).toEqual({ url: 'https://www.example.com', label: 'www.example.com' });
     expect(b.wb.linkAt(b.id, 2, 0)).toEqual({ url: 'mailto:me@example.com', label: 'me@example.com' });
     expect(b.wb.linkAt(b.id, 3, 0)).toBeNull();
     expect(b.wb.linkAt(b.id, 4, 0)).toEqual({ url: 'http://localhost:8443/docs', label: 'localhost:8443/docs' });
-    expect(b.show('A1')).toBe('Puter');
+    expect(b.show('A1')).toBe('Everything');
   });
 
   it.each(['javascript:alert(1)', 'JaVaScRiPt:alert(1)', 'java\nscript:alert(1)', 'data:text/html,<script>alert(1)</script>', 'vbscript:msgbox(1)'])('does not expose executable hyperlink URLs: %s', (url) => {

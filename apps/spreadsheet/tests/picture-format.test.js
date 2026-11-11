@@ -142,7 +142,7 @@ describe('Picture Format in the file', () => {
     expect(back.sheets[0].charts[0]).toMatchObject(expected);
     // Without this app's own record the drawing alone carries the same picture.
     const z = X.CFB.read(bytes, { type: 'array' });
-    X.CFB.utils.cfb_add(z, '/xl/workbook.xml', new TextEncoder().encode(xml(z, '/xl/workbook.xml').replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')));
+    X.CFB.utils.cfb_add(z, '/xl/workbook.xml', new TextEncoder().encode(xml(z, '/xl/workbook.xml').replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')));
     const native = await workbookFromFile(X.CFB.write(z, { type: 'array', fileType: 'zip' }), 'native.xlsx');
     const obj = native.sheets[0].charts[0];
     expect(obj.adjust.brightness).toBeCloseTo(0.2, 6); expect(obj.adjust.contrast).toBeCloseTo(0.4, 6);

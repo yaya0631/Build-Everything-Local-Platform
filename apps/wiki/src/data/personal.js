@@ -1,5 +1,5 @@
 /**
- * Private pages, saved as files in the user's own Puter cloud:
+ * Private pages, saved as files in the user's own Everything cloud:
  *
  *   wiki/tree.ywk            the page tree
  *   wiki/pages/<id>.ywk      one file per page (Yjs state)
@@ -26,7 +26,7 @@ const RETRY = [3000, 6000, 15000, 30000, 60000];
 const LOAD = 'load';
 
 /**
- * What identifies one saved version of a file. Puter reports modification
+ * What identifies one saved version of a file. Everything reports modification
  * times in whole seconds, so the size is part of it too.
  */
 const versionOf = (info) => (info ? `${info.modified ?? ''}|${info.size ?? ''}` : null);

@@ -4,7 +4,7 @@
  * between tests; the worker module itself only ever loads once.
  *
  * The fake runtime runs "in alice's account" by default: she is what
- * me.puter.auth.getUser() answers, so she is the one who may create
+ * me.everything.auth.getUser() answers, so she is the one who may create
  * workspaces (pass { owner: null } for a runtime that cannot say).
  */
 import { createMemoryKv, createMemoryFs, createWorkerRuntime, fakeAuthToken } from '../../dev/worker-runtime.js';

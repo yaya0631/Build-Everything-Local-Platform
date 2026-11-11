@@ -1,7 +1,7 @@
 /**
  * Report maths: the daily snapshot series, movement from the activity
  * log, dead stock, value breakdowns, and margins. Pure — no DOM, no
- * Puter; unit-tested.
+ * Everything; unit-tested.
  *
  * Everything except the value-over-time series is derived from data the
  * app already keeps. Movement figures can only see as far back as the

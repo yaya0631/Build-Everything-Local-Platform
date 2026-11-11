@@ -1,5 +1,5 @@
 /**
- * Where bases live. Layout in the app's folder of the person's Puter cloud:
+ * Where bases live. Layout in the app's folder of the person's Everything cloud:
  *
  *   records/index.json                      list of bases (name, color, starred, trash)
  *   records/bases/<baseId>/base.json        schema: tables, fields, views
@@ -8,7 +8,7 @@
  *
  * Records are split into chunks so a save rewrites only the chunks that
  * changed, never the whole table. Saves are debounced and rate limited
- * (Puter allows a limited number of writes per minute), and every change
+ * (Everything allows a limited number of writes per minute), and every change
  * is journaled locally first so nothing is lost between saves.
  */
 import { Emitter } from '../lib/emitter.js';
@@ -45,8 +45,8 @@ export async function pool(items, limit, fn) {
 export class Store extends Emitter {
   constructor({ backend, kv, journal, user = '', now = () => Date.now(), writesPerMinute }) {
     super();
-    // Puter limits writes per minute; local storage has no such limit.
-    this.writesPerMinute = writesPerMinute ?? (backend.kind === 'puter' ? WRITES_PER_MINUTE : Infinity);
+    // Everything limits writes per minute; local storage has no such limit.
+    this.writesPerMinute = writesPerMinute ?? (backend.kind === 'everything' ? WRITES_PER_MINUTE : Infinity);
     this.backend = backend;
     this.kv = kv;
     this.journal = journal;
@@ -913,7 +913,7 @@ export class BaseSession extends Emitter {
       // Put the changes back so the next try includes them.
       this.requeue(u);
       const offline = typeof navigator !== 'undefined' && navigator.onLine === false;
-      this.setStatus(offline ? 'offline' : 'error', isQuota(err) ? 'Your Puter storage is full. Free up space to keep saving.' : err?.message || String(err));
+      this.setStatus(offline ? 'offline' : 'error', isQuota(err) ? 'Your Everything storage is full. Free up space to keep saving.' : err?.message || String(err));
       const wait = RETRY[Math.min(this.retry, RETRY.length - 1)];
       this.retry++;
       this.schedule(wait, { retry: true });

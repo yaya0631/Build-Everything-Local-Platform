@@ -58,7 +58,7 @@ const set = (zip, path, text) => X.CFB.utils.cfb_add(zip, path, new TextEncoder(
 /** The workbook as Excel saves it, with a Months slicer and a Category slicer beside the report. */
 async function excelFile(options) {
   const zip = X.CFB.read(new Uint8Array(await (await workbookToXlsx(fixture(options))).arrayBuffer()), { type: 'array' });
-  set(zip, '/xl/workbook.xml', get(zip, '/xl/workbook.xml').replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')
+  set(zip, '/xl/workbook.xml', get(zip, '/xl/workbook.xml').replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')
     .replace('</extLst>', `<ext uri="{BBE1A952-AA13-448E-AADC-164F8A28A991}"><x:slicerCaches xmlns:x="${X14}" xmlns:r="${R}"><x:slicerCache r:id="sMonths"/><x:slicerCache r:id="sCategory"/></x:slicerCaches></ext></extLst>`));
   set(zip, '/xl/_rels/workbook.xml.rels', get(zip, '/xl/_rels/workbook.xml.rels').replace('</Relationships>',
     `<Relationship Id="sMonths" Type="${S}/slicerCache" Target="slicerCaches/months.xml"/><Relationship Id="sCategory" Type="${S}/slicerCache" Target="slicerCaches/category.xml"/></Relationships>`));

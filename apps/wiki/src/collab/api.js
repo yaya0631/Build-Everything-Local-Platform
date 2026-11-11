@@ -2,7 +2,7 @@
  * Talking to a collaboration worker, and deploying one. Adapted from the
  * Whiteboard app (src/whiteboard/src/collaboration/api.js).
  *
- * Every person who shares a space runs their own worker on their own Puter
+ * Every person who shares a space runs their own worker on their own Everything
  * account; the shared pages live there. People they invite call that worker
  * with a restricted credential (see auth.js).
  */
@@ -12,11 +12,11 @@ import { authorize, refuseCredential } from './auth.js';
 const WORKER_KEY = 'wiki-collaboration-worker-v1';
 const deploymentChecks = new WeakMap();
 
-function checksFor(puter) {
-  let entry = deploymentChecks.get(puter);
-  if (!entry || entry.auth !== puter.authToken) {
-    entry = { auth: puter.authToken, servers: new Map() };
-    deploymentChecks.set(puter, entry);
+function checksFor(everything) {
+  let entry = deploymentChecks.get(everything);
+  if (!entry || entry.auth !== everything.authToken) {
+    entry = { auth: everything.authToken, servers: new Map() };
+    deploymentChecks.set(everything, entry);
   }
   return entry.servers;
 }
@@ -29,11 +29,11 @@ export class RequestError extends Error {
 }
 
 /** Keeps the owner's worker up to date with this build, once per session. */
-export function refreshDeployment(puter, server) {
+export function refreshDeployment(everything, server) {
   server = workerURL(server);
-  const checks = checksFor(puter);
+  const checks = checksFor(everything);
   if (!checks.has(server)) {
-    const pending = deploy(puter, () => {}, server);
+    const pending = deploy(everything, () => {}, server);
     checks.set(server, pending);
     pending.catch(() => {
       if (checks.get(server) === pending) checks.delete(server);
@@ -42,18 +42,18 @@ export function refreshDeployment(puter, server) {
   return checks.get(server);
 }
 
-export async function call(puter, server, input) {
+export async function call(everything, server, input) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), input.op?.startsWith('asset') ? 120000 : 30000);
   try {
     server = workerURL(server);
     const bodyText = JSON.stringify(input);
-    let headers = await authorize(puter, server, bodyText);
+    let headers = await authorize(everything, server, bodyText);
     const unreachable = () => new RequestError('Could not reach the shared space. Check your connection and try again.', 0);
     const send = async () => {
       try {
         controller.signal.throwIfAborted();
-        return await puter.workers.exec(`${server}/api`, {
+        return await everything.workers.exec(`${server}/api`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', ...headers },
           body: bodyText,
@@ -66,8 +66,8 @@ export async function call(puter, server, input) {
     };
     let res = await send();
     // A credential that stopped working is replaced and the request sent once more.
-    if (res.status === 401 && refuseCredential(puter, headers)) {
-      headers = await authorize(puter, server, bodyText);
+    if (res.status === 401 && refuseCredential(everything, headers)) {
+      headers = await authorize(everything, server, bodyText);
       res = await send();
     }
     const body = await res.json().catch(() => null);
@@ -96,12 +96,12 @@ async function bundle() {
  * never causes a deployment: only a worker this account created and
  * recorded in its own private KV is ever updated.
  */
-export async function deploy(puter, progress = () => {}, expectedServer) {
-  const account = puter.authToken;
+export async function deploy(everything, progress = () => {}, expectedServer) {
+  const account = everything.authToken;
   const checkAccount = () => {
-    if (puter.authToken !== account) throw new Error('Your Puter account changed. Reopen the shared space.');
+    if (everything.authToken !== account) throw new Error('Your Everything account changed. Reopen the shared space.');
   };
-  let config = await puter.kv.get(WORKER_KEY);
+  let config = await everything.kv.get(WORKER_KEY);
   checkAccount();
   if (expectedServer && (!config || workerURL(config.server) !== expectedServer)) return null;
   progress('Preparing sharing...');
@@ -109,27 +109,27 @@ export async function deploy(puter, progress = () => {}, expectedServer) {
   checkAccount();
   if (!config) {
     const name = `wiki-${crypto.randomUUID().replaceAll('-', '').slice(0, 20)}`;
-    const file = await puter.fs.write('wiki/wiki-worker.js', source, { overwrite: true, dedupeName: false, createMissingParents: true });
+    const file = await everything.fs.write('wiki/wiki-worker.js', source, { overwrite: true, dedupeName: false, createMissingParents: true });
     checkAccount();
-    const deployed = await puter.workers.create(name, file.path);
+    const deployed = await everything.workers.create(name, file.path);
     checkAccount();
     config = { name, server: workerURL(deployed.url || `http://${name}.localhost:8443`), path: file.path, build, builtAt };
-    await puter.kv.set(WORKER_KEY, config);
+    await everything.kv.set(WORKER_KEY, config);
   } else if (config.build !== build && !(config.builtAt > builtAt)) {
-    await puter.fs.write(config.path, source, { overwrite: true, dedupeName: false });
+    await everything.fs.write(config.path, source, { overwrite: true, dedupeName: false });
     checkAccount();
     config.build = build;
     config.builtAt = builtAt;
-    await puter.kv.set(WORKER_KEY, config);
+    await everything.kv.set(WORKER_KEY, config);
   }
   checkAccount();
   progress('Starting the sharing server...');
   for (let attempt = 0; attempt < 20; attempt++) {
     try {
-      const res = await puter.workers.exec(`${workerURL(config.server)}/health`, { headers: { 'x-puter-no-auth': '1' }, redirect: 'error' });
+      const res = await everything.workers.exec(`${workerURL(config.server)}/health`, { headers: { 'x-everything-no-auth': '1' }, redirect: 'error' });
       if (res.ok && (await res.json()).build === config.build) {
         checkAccount();
-        checksFor(puter).set(config.server, Promise.resolve(config.server));
+        checksFor(everything).set(config.server, Promise.resolve(config.server));
         return config.server;
       }
     } catch {
@@ -142,7 +142,7 @@ export async function deploy(puter, progress = () => {}, expectedServer) {
 }
 
 /** This account's own worker address, if it has one. */
-export async function ownServer(puter) {
-  const config = await puter.kv.get(WORKER_KEY);
+export async function ownServer(everything) {
+  const config = await everything.kv.get(WORKER_KEY);
   return config?.server ? workerURL(config.server) : null;
 }

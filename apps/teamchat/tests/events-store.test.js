@@ -5,8 +5,8 @@
  * (_evMiss). See docs/systemDesignDocs/teamchatEventsSignaling.md, sections
  * 4 and 12.
  *
- * Puter is faked at `puter.workers.exec` (the sync protocol, as in
- * tests/store.test.js) and `puter.events.onLocal` (the subscription).
+ * Everything is faked at `everything.workers.exec` (the sync protocol, as in
+ * tests/store.test.js) and `everything.events.onLocal` (the subscription).
  * `store.poll()`/`store.refreshWorkspace()` are driven directly against the
  * singleton `store`, following the stubbing shape of tests/store.test.js
  * (roughly its lines 390-1700): fields are set by hand rather than going
@@ -30,7 +30,7 @@ const OTHER_REF = 'zzz999zzz9@teamchat-test';
 const json = (data, status = 200) => new Response(JSON.stringify(data), { status, headers: { 'Content-Type': 'application/json' } });
 
 /**
- * A fake `puter.events.onLocal`: tracks every subscription made against it so
+ * A fake `everything.events.onLocal`: tracks every subscription made against it so
  * a test can deliver to one (`deliver`), fail it the way the SDK's onError
  * does (`fail`), refuse the very next subscribe attempt (`refuseNext`), or
  * have it resolve nothing at all (`resolveNothingNext`), as a misbehaving SDK
@@ -84,7 +84,7 @@ beforeEach(() => {
   remintAnswer = () => ({}); // an old worker: no `events` key, nothing to offer
   remintCalls = [];
   globalThis.document = { hidden: false };
-  globalThis.puter = {
+  globalThis.everything = {
     appID: 'app-teamchat-test',
     events: ev,
     workers: {
@@ -165,7 +165,7 @@ afterEach(() => {
   store.me = null;
   store.links = new Map();
   store.convs.clear();
-  delete globalThis.puter;
+  delete globalThis.everything;
   delete globalThis.document;
 });
 
@@ -193,12 +193,12 @@ async function settle() {
 }
 
 describe('no events support at all', () => {
-  it('no puter.events: cadence stays exactly POLL_VISIBLE_MS', async () => {
-    delete globalThis.puter.events;
+  it('no everything.events: cadence stays exactly POLL_VISIBLE_MS', async () => {
+    delete globalThis.everything.events;
     bootstrapEvents = { mode: 'own', appUid: 'app-teamchat-test', key: `tc:ws:${WS_ID}:ev:s0`, shards: EV_SHARDS, shard: 0 };
     await store.refreshWorkspace();
     await settle();
-    expect(store.ev.state).toBe('off'); // typeof puter.events.onLocal !== 'function'
+    expect(store.ev.state).toBe('off'); // typeof everything.events.onLocal !== 'function'
     expect(ev.subs.length).toBe(0);
     const timers = vi.spyOn(store, '_schedule');
     await store.poll();
@@ -235,7 +235,7 @@ describe('subscribing', () => {
   });
 
   it('mode: own is refused when this client\'s own app uid does not match events.appUid', async () => {
-    globalThis.puter.appID = 'app-someone-elses';
+    globalThis.everything.appID = 'app-someone-elses';
     bootstrapEvents = { mode: 'own', appUid: 'app-teamchat-test', key: `tc:ws:${WS_ID}:ev:s0`, shards: EV_SHARDS, shard: 0 };
     await store.refreshWorkspace();
     await settle();
@@ -316,26 +316,26 @@ describe('subscribing', () => {
   // store.appUid() must agree with the worker's own reading of the same
   // token (see src/shared/events.js), or own mode refuses the owner their
   // own subscription with nothing said (see appUid()'s docstring).
-  it('with no puter.appID at all, own mode subscribes on the token\'s uid', async () => {
-    delete globalThis.puter.appID;
-    globalThis.puter.authToken = fakeAuthToken('app-teamchat-test');
+  it('with no everything.appID at all, own mode subscribes on the token\'s uid', async () => {
+    delete globalThis.everything.appID;
+    globalThis.everything.authToken = fakeAuthToken('app-teamchat-test');
     bootstrapEvents = { mode: 'own', appUid: 'app-teamchat-test', key: `tc:ws:${WS_ID}:ev:s0`, shards: EV_SHARDS, shard: 0 };
     await store.refreshWorkspace();
     await settle();
     expect(store.ev.state).toBe('on');
   });
 
-  it('a puter.appID with no app- prefix is not trusted; own mode falls back to the token', async () => {
+  it('an everything.appID with no app- prefix is not trusted; own mode falls back to the token', async () => {
     const uuid = '4b1d9c20-7e3a-4f56-9a08-2c6d5e1f8b34';
-    globalThis.puter.appID = uuid; // not the shape appUidFromToken ever produces
-    globalThis.puter.authToken = fakeAuthToken(`app-${uuid}`);
+    globalThis.everything.appID = uuid; // not the shape appUidFromToken ever produces
+    globalThis.everything.authToken = fakeAuthToken(`app-${uuid}`);
     bootstrapEvents = { mode: 'own', appUid: `app-${uuid}`, key: `tc:ws:${WS_ID}:ev:s0`, shards: EV_SHARDS, shard: 0 };
     await store.refreshWorkspace();
     await settle();
     expect(store.ev.state).toBe('on');
   });
 
-  it('a proper app-... puter.appID is used as it is', () => {
+  it('a proper app-... everything.appID is used as it is', () => {
     expect(store.appUid()).toBe('app-teamchat-test'); // set by this file's beforeEach
   });
 });
@@ -913,8 +913,8 @@ describe('event scheduling regressions', () => {
   });
 
   it('keeps the two-second floor for deliveries during a poll', async () => {
-    const exec = puter.workers.exec;
-    puter.workers.exec = async (...args) => {
+    const exec = everything.workers.exec;
+    everything.workers.exec = async (...args) => {
       ev.deliver('kv:kvh-race:s0');
       return exec(...args);
     };
@@ -924,8 +924,8 @@ describe('event scheduling regressions', () => {
   });
 
   it('preserves a user poke when a signal arrives during the same poll', async () => {
-    const exec = puter.workers.exec;
-    puter.workers.exec = async (...args) => {
+    const exec = everything.workers.exec;
+    everything.workers.exec = async (...args) => {
       store.pokeSync();
       ev.deliver('kv:kvh-race:s0');
       return exec(...args);
@@ -943,8 +943,8 @@ describe('event scheduling regressions', () => {
   });
 
   it('does not speed up a tab hidden while its sync was in flight', async () => {
-    const exec = puter.workers.exec;
-    puter.workers.exec = async (...args) => {
+    const exec = everything.workers.exec;
+    everything.workers.exec = async (...args) => {
       ev.deliver('kv:kvh-race:s0');
       document.hidden = true;
       return exec(...args);
@@ -1132,8 +1132,8 @@ describe('shared-host degradation', () => {
   });
 
   it('restores the classic cadence through actual linked sync requests', async () => {
-    const exec = puter.workers.exec;
-    puter.workers.exec = async (url, ...args) => {
+    const exec = everything.workers.exec;
+    everything.workers.exec = async (url, ...args) => {
       if (new URL(url).pathname === '/api/ws/zzz999zzz9/sync') {
         const ts = link.evSyncAt + 1;
         return json({ now: ts - 2000, ts, c: { general: { s: 1, t: ts } }, p: {}, w: 0, u: 0 });

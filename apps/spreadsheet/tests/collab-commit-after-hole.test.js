@@ -13,8 +13,8 @@ afterEach(() => { for (const c of open.splice(0)) c.close(); });
 it('sends a change again shortly while the room\'s next place is held, and delivers it once the room gives it up', async () => {
   const env = environment();
   const wb = new Workbook({ sheets: [{ name: 'Plan' }] });
-  const room = await RoomClient.create({ puter: env.sdk(owner), server: SERVER, wb, name: 'Plan' });
-  const alice = new RoomClient({ puter: env.sdk(owner), server: SERVER, room, store: memoryOutbox(), poll: 50, noPeers: true });
+  const room = await RoomClient.create({ everything: env.sdk(owner), server: SERVER, wb, name: 'Plan' });
+  const alice = new RoomClient({ everything: env.sdk(owner), server: SERVER, room, store: memoryOutbox(), poll: 50, noPeers: true });
   open.push(alice);
   await alice.open();
   await env.kv.incr(`ss:${room}:claim:000000000001`); // a commit elsewhere claimed revision 1 and never wrote it

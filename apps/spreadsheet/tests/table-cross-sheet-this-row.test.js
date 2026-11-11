@@ -40,7 +40,7 @@ it('preserves cross-sheet table row references in native XLSX', async () => {
   const own = await workbookFromFile(bytes, 'own.xlsx');
   expect(values(own, own.sheetByName('Forecast').id)).toEqual(values(wb, target));
   const zip = X.CFB.read(new Uint8Array(bytes), { type: 'array' }), part = X.CFB.find(zip, '/xl/workbook.xml');
-  part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   part.size = part.content.length;
   const external = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'external.xlsx');
   expect(values(external, external.sheetByName('Forecast').id)).toEqual(values(wb, target));

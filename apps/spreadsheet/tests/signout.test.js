@@ -2,7 +2,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { confirmSignOut } from '../src/ui/appmenu.js';
 import { closeAllModals } from '../src/ui/modal.js';
-import * as P from '../src/lib/puter.js';
+import * as P from '../src/lib/everything.js';
 import { accountStorageKey, setStorageUser, setGuestStorage } from '../src/lib/account-storage.js';
 
 function memoryStorage() {

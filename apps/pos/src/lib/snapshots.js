@@ -9,7 +9,7 @@
  * thought to take. Shopkeepers do not think to take backups.
  *
  * So the app takes them: once a day, at day close, and before anything
- * destructive - written to the shop's own Puter storage with the exporter that
+ * destructive - written to the shop's own Everything storage with the exporter that
  * already exists, and restored through the same previewed, validated path a
  * file restore uses.
  *

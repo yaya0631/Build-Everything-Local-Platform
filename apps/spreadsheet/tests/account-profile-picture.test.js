@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import * as P from '../src/lib/puter.js';
+import * as P from '../src/lib/everything.js';
 import { session } from '../src/lib/session.js';
 import { renderAccountButton } from '../src/ui/appmenu.js';
 
@@ -9,7 +9,7 @@ const user = { username: 'demo', uuid: 'u-1' };
 let auth, images;
 beforeEach(() => {
   auth = { getProfilePicture: vi.fn().mockResolvedValue(picture), signOut: vi.fn() };
-  vi.stubGlobal('puter', { auth });
+  vi.stubGlobal('everything', { auth });
   session.state = 'in';
   session.user = user;
   images = [];
@@ -62,7 +62,7 @@ describe('profile picture cache', () => {
     await P.getProfilePicture({ username: 'other', uuid: 'u-2' });
     expect(auth.getProfilePicture).toHaveBeenCalledTimes(2);
     const replacement = { getProfilePicture: vi.fn().mockResolvedValue(null), signOut: vi.fn() };
-    vi.stubGlobal('puter', { auth: replacement });
+    vi.stubGlobal('everything', { auth: replacement });
     expect(await P.getProfilePicture(user)).toBeNull();
     P.signOut();
     expect(await P.getProfilePicture(user)).toBeNull();
@@ -73,9 +73,9 @@ describe('profile picture cache', () => {
   it('does not ask without an identity and tolerates an absent or older SDK', async () => {
     expect(await P.getProfilePicture(null)).toBeNull();
     expect(auth.getProfilePicture).not.toHaveBeenCalled();
-    vi.stubGlobal('puter', { auth: {} });
+    vi.stubGlobal('everything', { auth: {} });
     expect(await P.getProfilePicture(user)).toBeNull();
-    vi.stubGlobal('puter', null);
+    vi.stubGlobal('everything', null);
     expect(await P.getProfilePicture(user)).toBeNull();
   });
 });

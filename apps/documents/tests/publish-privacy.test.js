@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
-import * as P from '../src/lib/puter.js';
+import * as P from '../src/lib/everything.js';
 import { findSite, publishDir, publishPage, unpublishPage, movePublication, unpublishAt, PUBLISH_FOLDER } from '../src/lib/publish.js';
 
 let files, hosting;

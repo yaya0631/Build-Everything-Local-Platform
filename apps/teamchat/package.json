@@ -1,7 +1,7 @@
 {
   "name": "teamchat",
   "version": "1.0.0",
-  "description": "Team messaging on Puter: workspaces, channels, threads, and direct messages",
+  "description": "Team messaging on Everything: workspaces, channels, threads, and direct messages",
   "type": "module",
   "private": true,
   "scripts": {
@@ -16,7 +16,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/HeyPuter/teamchat.git"
+    "url": "git+https://github.com/yaya0631/Build-Everything-Local-Platform"
   },
   "devDependencies": {
     "vite": "^8.2.0",

@@ -328,10 +328,10 @@ describe('booking editor dialog', () => {
     expect(payload.hours[2]).toEqual([{ start: 600, end: 720 }]);
   });
 
-  it('offers the Puter Meetings toggle — on for new pages, honoring the page when editing', async () => {
+  it('offers the Everything Meetings toggle — on for new pages, honoring the page when editing', async () => {
     const findToggle = () =>
       [...dialog().querySelectorAll('.inline-field')]
-        .find((row) => row.textContent.includes('Puter Meetings'))
+        .find((row) => row.textContent.includes('Everything Meetings'))
         .querySelector('input[type="checkbox"]');
 
     // New page: on by default, and saved as such.

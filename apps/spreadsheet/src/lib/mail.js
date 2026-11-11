@@ -1,8 +1,8 @@
 /**
  * Email from the spreadsheet: the app's side of src/workers/email-worker.js. Send a Copy (the workbook as an
  * attachment), Send a Link (a link that opens it) and comment @mentions (a note to the person mentioned) all go
- * through the app's one shared email worker at EMAIL_WORKER_URL. The call goes through puter.workers.exec(),
- * which forwards the signed-in user's Puter session: that is what lets the worker send at all, and what bills
+ * through the app's one shared email worker at EMAIL_WORKER_URL. The call goes through everything.workers.exec(),
+ * which forwards the signed-in user's Everything session: that is what lets the worker send at all, and what bills
  * the send to the person sending, never the app owner. No token or credential of the user's is ever put in a
  * request body here; the worker names the sender from the session it receives.
  *
@@ -10,7 +10,7 @@
  */
 import { sheetsToPdf } from '../core/sheet-pdf.js';
 import { rangeToCsv } from '../core/io.js';
-import * as P from './puter.js';
+import * as P from './everything.js';
 
 /** The one shared, app-owned worker (see src/workers/email-worker.js). */
 export const EMAIL_WORKER_URL = 'http://spreadsheet-email.localhost:8443';
@@ -157,7 +157,7 @@ export function describeResult(out, { noun = 'email' } = {}) {
 /** A refused request in words. */
 export function failureMessage(status, data) {
   const code = data?.error || '';
-  if (status === 401 || code === 'sign_in_required') return 'Sign in to Puter again to send email.';
+  if (status === 401 || code === 'sign_in_required') return 'Sign in to Everything again to send email.';
   if (status === 429 || code === 'daily_limit') return "You've reached today's email limit. Try again tomorrow.";
   if (status === 413 || code === 'attachment_too_large') return `The attachment is too large to email (at most ${formatSize(MAX_ATTACHMENT_BYTES)}).`;
   if (code === 'too_many_recipients') return `You can send to at most ${MAX_RECIPIENTS} people at a time.`;
@@ -173,19 +173,19 @@ export function failureMessage(status, data) {
 /**
  * The mailer: { available(), sendCopy, sendLink, sendMentions }. Each send resolves the worker's summary
  * ({ sent, failed, suppressed, skipped, results }) or throws an Error whose message is for the sender.
- * `getPuter` and `workerUrl` are for tests and the dev mock.
+ * `getEverything` and `workerUrl` are for tests and the dev mock.
  */
-export function createMailer({ getPuter = () => globalThis.puter, workerUrl = EMAIL_WORKER_URL } = {}) {
+export function createMailer({ getEverything = () => globalThis.everything, workerUrl = EMAIL_WORKER_URL } = {}) {
   function available() {
-    const p = getPuter();
+    const p = getEverything();
     return Boolean(p && p.workers && typeof p.workers.exec === 'function');
   }
 
   async function post(route, body) {
-    if (!available()) throw new Error('Email is not available here. Open the spreadsheet in Puter to send email.');
+    if (!available()) throw new Error('Email is not available here. Open the spreadsheet in Everything to send email.');
     let res;
     try {
-      res = await getPuter().workers.exec(`${workerUrl}${route}`, {
+      res = await getEverything().workers.exec(`${workerUrl}${route}`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify(body),

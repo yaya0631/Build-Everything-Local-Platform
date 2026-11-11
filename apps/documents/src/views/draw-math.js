@@ -1,5 +1,5 @@
 /**
- * Ink to Math: write an equation by hand (or start from ink selected with the lasso), have Puter's AI
+ * Ink to Math: write an equation by hand (or start from ink selected with the lasso), have Everything's AI
  * read the picture as an equation in linear format, check and correct it against a live preview, and
  * insert it through the Insert tab's equation path.
  */

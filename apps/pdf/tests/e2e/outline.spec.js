@@ -2,10 +2,10 @@ import { test, expect } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { PDFDocument, PDFName, PDFHexString, PDFNull } from 'pdf-lib';
 
-const PUTER_MOCK = `window.puter = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async () => ({}) }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
-async function mockPuter(page) {
-  await page.route('**/sdk/puter.js', (route) =>
-    route.fulfill({ contentType: 'application/javascript', body: PUTER_MOCK }),
+const EVERYTHING_MOCK = `window.everything = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async () => ({}) }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
+async function mockEverything(page) {
+  await page.route('**/sdk/everything.js', (route) =>
+    route.fulfill({ contentType: 'application/javascript', body: EVERYTHING_MOCK }),
   );
 }
 async function openPdf(page, doc, name = 'test.pdf') {
@@ -93,7 +93,7 @@ async function menu(page, name) {
 }
 
 test('an outlined PDF gets an Outline tab whose items jump to their pages', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await outlinedPdf());
   await showPanel(page);
@@ -134,7 +134,7 @@ test('an outlined PDF gets an Outline tab whose items jump to their pages', asyn
 test('bookmarks and links bring the place they point to to the top of the view', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   for (let i = 0; i < 3; i++) doc.addPage([400, 1400]);
@@ -186,7 +186,7 @@ test('bookmarks and links bring the place they point to to the top of the view',
 test('collapsing the focused outline branch keeps a visible keyboard entry point', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await outlinedPdf());
   await showPanel(page);
@@ -213,7 +213,7 @@ test('collapsing the focused outline branch keeps a visible keyboard entry point
 });
 
 test("a group collapsed without taking focus hands it the tree's tab stop", async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   for (let i = 0; i < 2; i++) doc.addPage([400, 400]);
@@ -248,7 +248,7 @@ for (const state of ['expanded', 'collapsed', 'leaf']) {
   test(`bookmark context menus preserve the ${state} tree item's expansion semantics`, async ({
     page,
   }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     await openPdf(page, await outlinedPdf());
     await showPanel(page);
@@ -283,7 +283,7 @@ for (const state of ['expanded', 'collapsed', 'leaf']) {
 test('bookmarks that lead nowhere stay in the keyboard path and keep their menu', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   for (let i = 0; i < 2; i++) doc.addPage([400, 400]);
@@ -336,7 +336,7 @@ test('bookmarks that lead nowhere stay in the keyboard path and keep their menu'
 });
 
 test('the View menu switches between the pages and outline panels', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await outlinedPdf());
   const view = async (name) => {
@@ -360,7 +360,7 @@ test('the View menu switches between the pages and outline panels', async ({ pag
 });
 
 test('a PDF without an outline keeps the plain Pages heading', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([400, 400]);
@@ -380,7 +380,7 @@ test('a PDF without an outline keeps the plain Pages heading', async ({ page }) 
 });
 
 test('bookmarks can be added for the current page, renamed, and removed', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([300, 300]);
@@ -450,7 +450,7 @@ test('bookmarks can be added for the current page, renamed, and removed', async 
 });
 
 test('the side panel tabs name their panels and answer Home and End', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await outlinedPdf());
   await showPanel(page);
@@ -491,7 +491,7 @@ test('the side panel tabs name their panels and answer Home and End', async ({ p
 });
 
 test("the side panel's close button names the panel that is open", async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await outlinedPdf());
   await showPanel(page);
@@ -509,7 +509,7 @@ test("the side panel's close button names the panel that is open", async ({ page
 });
 
 test('a PDF with more bookmarks than the tree holds says so', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   for (let i = 0; i < 4; i++) doc.addPage([300, 300]);
@@ -531,7 +531,7 @@ test('a PDF with more bookmarks than the tree holds says so', async ({ page }) =
 test('deleting a bookmarked page keeps its nested outline navigable through export and undo/redo', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await outlinedPdf());
   await page.getByRole('button', { name: 'Next page', exact: true }).click();
@@ -596,7 +596,7 @@ for (const fallback of [false, true])
       });
     const errors = [];
     page.on('pageerror', (error) => errors.push(error.message));
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     const doc = await PDFDocument.create();
     doc.addPage([400, 400]);
@@ -622,7 +622,7 @@ for (const kind of ['missing', 'stale']) {
   test(`adding a bookmark preserves the imported outline with a ${kind} Last pointer`, async ({
     page,
   }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     const doc = await outlinedPdf();
     const root = doc.catalog.lookup(PDFName.of('Outlines'));
@@ -674,7 +674,7 @@ for (const nested of [false, true]) {
   test(`removing a bookmark with a missing Prev preserves its siblings (nested=${nested})`, async ({
     page,
   }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     const doc = await PDFDocument.create();
     for (let i = 0; i < 3; i++) doc.addPage([300, 300]);

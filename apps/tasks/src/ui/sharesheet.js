@@ -7,7 +7,7 @@ import { inviteLink } from '../lib/collab.js';
 
 /**
  * Share a list, two ways:
- *  - Collaborate: invite people who can add and edit tasks — by Puter
+ *  - Collaborate: invite people who can add and edit tasks — by Everything
  *    username (KV shares), or where those aren't available through the
  *    two-link handshake (invite out, confirmation back). See collab.js.
  *  - Read-only link: publishes a live snapshot anyone can view.
@@ -56,7 +56,7 @@ export function openShareSheet(list) {
       const byName = store.collabMode() === 'kv';
       section.append(el('div.card', { style: { padding: '16px' } },
         el('p.small.muted', { style: { marginBottom: '12px' } }, byName
-          ? 'Invite people by their Puter username to add, edit, and complete tasks with you. You can remove anyone at any time.'
+          ? 'Invite people by their Everything username to add, edit, and complete tasks with you. You can remove anyone at any time.'
           : 'Invite people who can add, edit, and complete tasks with you. You approve each person before their changes join the list.'),
         el('button.btn.btn-primary.btn-block', {
           html: icon('users', 15, 2.2),
@@ -147,7 +147,7 @@ export function openShareSheet(list) {
     }
 
     const input = el('input.input', {
-      id: 'invite-name', placeholder: 'Puter username', autocomplete: 'off', autocapitalize: 'none',
+      id: 'invite-name', placeholder: 'Everything username', autocomplete: 'off', autocapitalize: 'none',
     });
     const submit = el('button.btn.btn-primary', { type: 'submit' }, 'Invite');
     const form = el('form', {
@@ -172,7 +172,7 @@ export function openShareSheet(list) {
         }
       },
     }, el('div.field', {},
-      el('label', { for: 'invite-name' }, 'Invite by Puter username'),
+      el('label', { for: 'invite-name' }, 'Invite by Everything username'),
       el('div.row', {}, input, submit)
     ));
 
@@ -182,7 +182,7 @@ export function openShareSheet(list) {
       form,
       membersCard(fresh, {
         removeMessage: 'They lose access right away and keep a private copy of the list as it is now.',
-        emptyMessage: 'No one yet. Invite someone by their Puter username.',
+        emptyMessage: 'No one yet. Invite someone by their Everything username.',
       }),
       stopButton(fresh, 'Everyone loses access right away and keeps a private copy of the list as it is now.')
     );

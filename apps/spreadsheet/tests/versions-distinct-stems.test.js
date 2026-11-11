@@ -1,9 +1,9 @@
 import { afterEach, beforeEach, expect, it } from 'vitest';
 import { versionsFolder, saveVersion, listVersions, removeVersions } from '../src/lib/versions.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 
-beforeEach(() => { installMockPuter(); });
-afterEach(() => { delete globalThis.puter; });
+beforeEach(() => { installMockEverything(); });
+afterEach(() => { delete globalThis.everything; });
 
 // File names may hold characters a folder name is stripped of, so "Q3: Forecast.xlsx"
 // and "Q3 Forecast.xlsx" used to share one .versions folder: their histories mixed,

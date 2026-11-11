@@ -7,7 +7,7 @@ vi.mock('../src/ui/modal.js', () => ({ openModal: vi.fn((options) => { calls.mod
 const rooms = vi.hoisted(() => ({ forgotten: [] }));
 vi.mock('../src/collab/room-memory.js', () => ({ forgetRoom: vi.fn(async (path) => { rooms.forgotten.push(path); }) }));
 vi.mock('../src/lib/session.js', () => ({ session: { signedOut: false, signIn: async () => true } }));
-vi.mock('../src/lib/puter.js', async (importOriginal) => {
+vi.mock('../src/lib/everything.js', async (importOriginal) => {
   const actual = await importOriginal();
   return {
     ...actual,
@@ -65,7 +65,7 @@ it('opens the first of several text files without asking a signed-out user to si
     signIn.mockResolvedValue(false);
     await importFiles([docx('Good.docx'), text('c.md')], { openFile });
     expect(signIn).toHaveBeenCalled();
-    expect(calls.toasts.map(([message]) => message)).toContain('Sign in to Puter to import several files at once');
+    expect(calls.toasts.map(([message]) => message)).toContain('Sign in to Everything to import several files at once');
   } finally { session.signedOut = false; signIn.mockRestore(); }
 });
 

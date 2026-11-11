@@ -2,7 +2,7 @@
 
 Free, open-source legal practice management for solo lawyers and small firms. An open-source alternative to Clio, MyCase, and PracticePanther.
 
-Built with vanilla JavaScript, Vite, [Lucide](https://lucide.dev) icons, and [Puter.js](http://localhost:8443) as the only backend. There is no framework and no server of its own.
+Built with vanilla JavaScript, Vite, [Lucide](https://lucide.dev) icons, and [Everything.js](http://localhost:8443) as the only backend. There is no framework and no server of its own.
 
 > **Early alpha.** Features may change and data could be lost. Please do not use it for real client matters, trust funds, or billing yet.
 
@@ -42,7 +42,7 @@ Built with vanilla JavaScript, Vite, [Lucide](https://lucide.dev) icons, and [Pu
   - Document templates with merge fields (`{{client.name}}`, `{{matter.number}}`, and more) generate letters straight into the matter.
 - **Communications.** Log phone calls, emails, meetings, and internal messages on a matter. Optionally record the time spent as a time entry in the same step.
 - **Reports.** Revenue billed and collected, receivables aging, client ledgers, billable hours and utilization by person, activity by category, matters by practice area and stage, new and closed matters, matter profitability, and trust balances. Each report has a chart, a table, CSV export, and print.
-- **Firm users and team sign-in.** Firm users carry roles, hourly rates, monthly targets, and calendar colors. The owner can invite colleagues with single-use links so everyone works on the same firm with their own Puter account.
+- **Firm users and team sign-in.** Firm users carry roles, hourly rates, monthly targets, and calendar colors. The owner can invite colleagues with single-use links so everyone works on the same firm with their own Everything account.
 - **Throughout the app:**
   - global search and command palette (`/` or Ctrl+K)
   - a Create new menu (`N`)
@@ -57,7 +57,7 @@ Built with vanilla JavaScript, Vite, [Lucide](https://lucide.dev) icons, and [Pu
 
 ```sh
 npm install
-npm run dev      # http://legal.puter.localhost:5173/
+npm run dev      # http://legal.localhost:8443/
 npm test         # unit and view tests (Vitest)
 npm run build    # production build in dist/
 ```
@@ -70,12 +70,12 @@ Open `/?demo` to go straight to the sample firm without the welcome screen.
 src/
   main.js            boot: sign-in, sample firm, welcome screen
   app.js             shared runtime context
-  platform.js        Puter auth, environment, profile picture
-  files.js           document files in the app's Puter folder
+  platform.js        Everything auth, environment, profile picture
+  files.js           document files in the app's Everything folder
   team.js            team sign-in: worker deploy, worker backend, invitations
   core/              framework-free logic (unit tested)
     store.js           local-first store and sync engine
-    backend.js         Puter KV and in-memory backends
+    backend.js         Everything KV and in-memory backends
     cache.js           IndexedDB snapshot cache
     finance.js         time values, bills, payments, trust ledger rules
     duration.js        parsing and rounding time entries
@@ -92,7 +92,7 @@ tests/               Vitest tests
 
 ### Storage design
 
-Puter KV is backed by DynamoDB, so the layout follows DynamoDB practice: small items, writes that touch only what changed, and prefix queries instead of scans. There are no secondary indexes, so every lookup the app needs is either a direct key or one collection prefix.
+Everything KV is backed by DynamoDB, so the layout follows DynamoDB practice: small items, writes that touch only what changed, and prefix queries instead of scans. There are no secondary indexes, so every lookup the app needs is either a direct key or one collection prefix.
 
 | Key | Holds |
 | --- | --- |
@@ -107,17 +107,17 @@ How sync works:
 - **Changed data only:** when the tab regains focus, and every two minutes, a device reads `lg1:meta` (one read) and re-reads only the collections whose version moved.
 - **Detecting other writers:** when a device bumps a version and gets back anything other than its own last version plus one, another device or colleague wrote in between, so it refreshes that collection.
 - **Local first:** writes apply locally first, then go out in debounced batches of up to 100 items, with retry and backoff. An IndexedDB snapshot, including writes not yet sent, makes the app open instantly and keeps working offline.
-- **Files never go in KV:** documents live in the app's Puter folder (`docs/<matter>/...`). Records keep only a small reference.
+- **Files never go in KV:** documents live in the app's Everything folder (`docs/<matter>/...`). Records keep only a small reference.
 
 ### Team sign-in
 
-Puter KV and files are private to each account, so a shared firm runs through a [Puter worker](http://localhost:8443/Workers/) in the **owner's own account**. Its source is `public/worker/legal-team-worker.js`.
+Everything KV and files are private to each account, so a shared firm runs through a [Everything worker](http://localhost:8443/Workers/) in the **owner's own account**. Its source is `public/worker/legal-team-worker.js`.
 
-- **Turning it on:** when the owner turns on team sign-in, the app writes the worker to their drive and deploys it with `puter.workers.create`. It then copies the firm's records and document files into it.
-- **After that:** everyone, owner included, reads and writes through `puter.workers.exec`, which forwards each person's own session.
+- **Turning it on:** when the owner turns on team sign-in, the app writes the worker to their drive and deploys it with `everything.workers.create`. It then copies the firm's records and document files into it.
+- **After that:** everyone, owner included, reads and writes through `everything.workers.exec`, which forwards each person's own session.
 - **Access checks:** the worker identifies the caller from that session, never from the request body, and checks membership on every request. Managing the team requires the owner or an admin.
 - **Invitations:** tokens are stored only as SHA-256 hashes, work once, and expire after 7 days. They stop working if the person who sent them is removed.
-- **Joining asks first:** joining sends your Puter session to that firm's worker, so the app always asks before joining.
+- **Joining asks first:** joining sends your Everything session to that firm's worker, so the app always asks before joining.
 - **Same key layout:** the worker uses the same KV layout as a single account, so the store and sync engine run unchanged on top of it. The owner pays for the storage, and the data stays in their account.
 
 ### Performance notes
@@ -134,7 +134,7 @@ This is a records, forms, and calendar app, so the right tools are plain DOM, CS
 
 ## Data and privacy
 
-Each firm's data lives in its owner's Puter account (KV and files). The app has no server of its own. In a shared firm, colleagues reach the owner's data only through the owner's firm server, which checks membership on every request.
+Each firm's data lives in its owner's Everything account (KV and files). The app has no server of its own. In a shared firm, colleagues reach the owner's data only through the owner's firm server, which checks membership on every request.
 
 ## License
 

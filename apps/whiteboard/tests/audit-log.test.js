@@ -6,7 +6,7 @@ import { environment, owner } from "./collaboration-helpers.js";
 test("concurrent requests retry every refused audit record without dropping or delivering duplicates", async () => {
   const { service } = environment();
   const org = service.org;
-  const other = new OrgService(org.puter, { now: org.now });
+  const other = new OrgService(org.everything, { now: org.now });
   const set = org.kv.set.bind(org.kv);
   org.kv.set = async () => {
     throw Error("storage unavailable");

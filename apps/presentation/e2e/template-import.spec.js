@@ -20,10 +20,10 @@ for (const kind of [
   test(`native template transfer retains ${kind} in browser rendering, return copy and app download`, async ({
     page,
   }) => {
-    await page.route("**/sdk/puter.js", (route) =>
+    await page.route("**/sdk/everything.js", (route) =>
       route.fulfill({
         contentType: "application/javascript",
-        body: 'window.puter={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',
+        body: 'window.everything={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',
       }),
     );
     await page.goto("/#/home");

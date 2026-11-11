@@ -1,7 +1,7 @@
 {
   "name": "Wiki",
   "short_name": "Wiki",
-  "description": "Docs, notes and databases for you and your team, stored in your own Puter cloud.",
+  "description": "Docs, notes and databases for you and your team, stored in your own Everything cloud.",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#ffffff",

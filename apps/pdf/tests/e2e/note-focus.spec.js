@@ -4,9 +4,9 @@ import { readFile } from 'node:fs/promises';
 import { addNote, listNotes } from '../../src/core/notes.js';
 
 async function prepare(page, text = 'Updated note') {
-  await page.route('**/sdk/puter.js', (route) =>
+  await page.route('**/sdk/everything.js', (route) =>
     route.fulfill({
-      body: `window.puter = {
+      body: `window.everything = {
       env: 'web',
       auth: { isSignedIn: () => true, getUser: async () => ({ username: 'test-user' }) },
       fs: { readdir: async () => [], write: async (path, blob) => {
@@ -58,7 +58,7 @@ for (const action of ['keyboard', 'close', 'download', 'save', 'tool'])
           };
         }, fails);
         const download = page.getByRole('button', { name: 'Download', exact: true });
-        const save = page.getByRole('button', { name: /^Save(?: to Puter)?$/, exact: true });
+        const save = page.getByRole('button', { name: /^Save(?: to Everything)?$/, exact: true });
         const pending = action === 'download' && !fails ? page.waitForEvent('download') : null;
         if (action === 'keyboard') await input.press('ControlOrMeta+Enter');
         else {
@@ -80,7 +80,7 @@ for (const action of ['keyboard', 'close', 'download', 'save', 'tool'])
         let bytes;
         if (pending) bytes = await readFile(await (await pending).path());
         if (action === 'save' && !fails) {
-          await expect(page.locator('.save-status')).toHaveText('Saved to Puter');
+          await expect(page.locator('.save-status')).toHaveText('Saved to Everything');
           bytes = new Uint8Array(await page.evaluate(() => window.savedNotePdf));
         }
         await expect(page.locator('.editor')).toHaveAttribute('aria-busy', 'false');

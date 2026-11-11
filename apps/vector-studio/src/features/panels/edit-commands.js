@@ -56,7 +56,7 @@ async function exportSettings(app) {
   const data = exportSettingsData(app.prefs);
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const { deliverFiles } = await import('../io/deliver.js');
-  const msg = await deliverFiles(app, [{ name: 'Vector Studio Settings.json', blob }], { dest: app.user && app.puter?.ui ? 'puter' : 'device' });
+  const msg = await deliverFiles(app, [{ name: 'Vector Studio Settings.json', blob }], { dest: app.user && app.everything?.ui ? 'everything' : 'device' });
   if (msg) app.notify(msg, { polite: true });
 }
 

@@ -11,7 +11,7 @@ import { renderApp } from '../../src/ui/app.js';
 const params = new URLSearchParams(location.search);
 if (params.has('dark')) document.documentElement.dataset.theme = 'dark';
 const calendar = [
-  'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Puter//Calendar fixture//EN',
+  'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Everything//Calendar fixture//EN',
   `METHOD:${params.has('cancel') ? 'CANCEL' : 'REQUEST'}`, 'BEGIN:VEVENT',
   'UID:review@example.com', 'DTSTAMP:20260918T170000Z', 'SUMMARY:Product design review',
   'DTSTART;TZID=America/Vancouver:20260921T100000',

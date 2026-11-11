@@ -14,7 +14,7 @@ async function until(fn) {
   assert.ok(fn(), "Peer protocol completed before deadline");
 }
 test("signed peer packets cross relay groups, survive a primary departure, and reject forged identities", async () => {
-  const puter = createPeerHub(),
+  const everything = createPeerHub(),
     roomKey = await keyPair(),
     received = new Map(),
     networks = [];
@@ -23,7 +23,7 @@ test("signed peer packets cross relay groups, survive a primary departure, and r
       const session = String(i).padStart(3, "0"),
         keys = await keyPair();
       const network = new PeerNetwork({
-        puter,
+        everything,
         session,
         keys,
         roomKey: roomKey.publicKey,
@@ -56,11 +56,11 @@ test("signed peer packets cross relay groups, survive a primary departure, and r
         [...n.wanted].every((id) => n.links.get(id)?.whiteboardAuthorized),
       ),
     );
-    puter.stats.sends = 0;
+    everything.stats.sends = 0;
     await networks[10].broadcast("presence", { cursor: { x: 42, y: 55 } });
     await until(() => received.size === 64);
     assert.ok(
-      puter.stats.sends < 300,
+      everything.stats.sends < 300,
       "Relay traffic is bounded instead of flooding the relay mesh",
     );
     for (const messages of received.values()) {
@@ -88,7 +88,7 @@ test("signed peer packets cross relay groups, survive a primary departure, and r
   }
 });
 test("packets reach everyone through lasting peer groups, also after a primary relay leaves", async () => {
-  const puter = createPeerHub(),
+  const everything = createPeerHub(),
     roomKey = await keyPair(),
     received = new Map(),
     networks = [];
@@ -97,7 +97,7 @@ test("packets reach everyone through lasting peer groups, also after a primary r
       const session = crypto.randomUUID(),
         keys = await keyPair();
       const network = new PeerNetwork({
-        puter,
+        everything,
         session,
         keys,
         roomKey: roomKey.publicKey,
@@ -136,10 +136,10 @@ test("packets reach everyone through lasting peer groups, also after a primary r
     );
     assert.ok(networks[0].isRelay && networks[1].isRelay);
     assert.ok(!networks[40].isRelay);
-    puter.stats.sends = 0;
+    everything.stats.sends = 0;
     await networks[40].broadcast("presence", { cursor: { x: 1, y: 2 } });
     await until(() => received.size === 64);
-    assert.ok(puter.stats.sends < 300, `${puter.stats.sends} sends`);
+    assert.ok(everything.stats.sends < 300, `${everything.stats.sends} sends`);
     for (const messages of received.values()) assert.equal(messages.length, 1);
     received.clear();
     // The first group's primary relay leaves; its other relay takes over.
@@ -154,7 +154,7 @@ test("packets reach everyone through lasting peer groups, also after a primary r
 // `refuse` stands in for a session that refuses a packet, as one past its
 // sender's limit.
 async function peerRoom(count, bounds, related, refuse) {
-  const puter = createPeerHub(),
+  const everything = createPeerHub(),
     roomKey = await keyPair(),
     received = new Map(),
     networks = [];
@@ -162,7 +162,7 @@ async function peerRoom(count, bounds, related, refuse) {
     const session = String(i).padStart(3, "0");
     received.set(session, []);
     const network = new PeerNetwork({
-      puter,
+      everything,
       session,
       keys: await keyPair(),
       roomKey: roomKey.publicKey,
@@ -207,7 +207,7 @@ async function peerRoom(count, bounds, related, refuse) {
       .get(session)
       .filter((m) => m.kind === "presence" && m.from === from)
       .map((m) => m.data.step);
-  return { networks, received, steps, puter, roomKey };
+  return { networks, received, steps, everything, roomKey };
 }
 // Cameras 10,000 apart, so no view is near another's.
 const camera = (i) => ({ x: i * 10000, y: 0, w: 1000, h: 800 });
@@ -797,7 +797,7 @@ test("a follower's relays pass on in full the presence where the followed person
 });
 test("views wait while a link is behind, and edits do not", () => {
   const network = new PeerNetwork({
-    puter: { peer: {} },
+    everything: { peer: {} },
     session: "a",
     keys: {},
     roomKey: {},
@@ -841,18 +841,18 @@ test("rooms of up to eight pass on all presence whatever the views", async () =>
   }
 });
 test("a failed handshake releases the connection slot so reconnect can retry", async () => {
-  const puter = createPeerHub(),
+  const everything = createPeerHub(),
     keys = await keyPair(),
     roomKey = await keyPair();
   const network = new PeerNetwork({
-    puter,
+    everything,
     session: "a",
     keys,
     roomKey: roomKey.publicKey,
     room: "r",
     receive() {},
   });
-  const remote = await puter.peer.serve();
+  const remote = await everything.peer.serve();
   remote.addEventListener("connection", (event) =>
     setTimeout(() => event.conn.close(), 0),
   );
@@ -881,7 +881,7 @@ test("a failed handshake releases the connection slot so reconnect can retry", a
 });
 
 test("disconnecting during identity verification cannot resurrect a dead link", async () => {
-  const puter = createPeerHub(),
+  const everything = createPeerHub(),
     roomKey = await keyPair(),
     networks = [],
     received = [];
@@ -890,7 +890,7 @@ test("disconnecting during identity verification cannot resurrect a dead link", 
   try {
     for (const session of ["a", "b"]) {
       const n = new PeerNetwork({
-        puter,
+        everything,
         session,
         keys: await keyPair(),
         roomKey: roomKey.publicKey,
@@ -950,12 +950,12 @@ test("disconnecting during identity verification cannot resurrect a dead link", 
 });
 
 test("a participant cannot relay another peer's challenge answer to take over their link", async () => {
-  const puter = createPeerHub(),
+  const everything = createPeerHub(),
     roomKey = await keyPair(),
     received = [];
   const make = async (session, receive = () => {}) => {
     const network = new PeerNetwork({
-      puter,
+      everything,
       session,
       keys: await keyPair(),
       roomKey: roomKey.publicKey,
@@ -992,8 +992,8 @@ test("a participant cannot relay another peer's challenge answer to take over th
     await until(() => v.links.get("b")?.whiteboardAuthorized);
     const genuine = v.links.get("b");
     // The attacker passes V's challenge to B and B's answer back to V.
-    const toV = await puter.peer.connect(v.server.inviteCode),
-      toB = await puter.peer.connect(b.server.inviteCode);
+    const toV = await everything.peer.connect(v.server.inviteCode),
+      toB = await everything.peer.connect(b.server.inviteCode);
     const opened = new Promise((resolve) =>
       toB.addEventListener("open", resolve),
     );
@@ -1026,11 +1026,11 @@ test("a participant cannot relay another peer's challenge answer to take over th
 });
 
 test("a network rebuilt for the same session numbers its packets above the previous one", async () => {
-  const puter = createPeerHub(),
+  const everything = createPeerHub(),
     roomKey = await keyPair(),
     received = [];
   const b = new PeerNetwork({
-    puter,
+    everything,
     session: "b",
     keys: await keyPair(),
     roomKey: roomKey.publicKey,
@@ -1040,7 +1040,7 @@ test("a network rebuilt for the same session numbers its packets above the previ
   await b.serve();
   const connect = async () => {
     const a = new PeerNetwork({
-      puter,
+      everything,
       session: "a",
       keys: await keyPair(),
       roomKey: roomKey.publicKey,
@@ -1084,7 +1084,7 @@ test("a network rebuilt for the same session numbers its packets above the previ
 });
 
 test("peers on a device whose clock runs ahead still accept current tickets", async () => {
-  const puter = createPeerHub(),
+  const everything = createPeerHub(),
     roomKey = await keyPair(),
     networks = [];
   // Tickets carry the server's expiry; this device's clock is 70 s ahead.
@@ -1095,7 +1095,7 @@ test("peers on a device whose clock runs ahead still accept current tickets", as
       ["b", 70_000],
     ]) {
       const network = new PeerNetwork({
-        puter,
+        everything,
         session,
         keys: await keyPair(),
         roomKey: roomKey.publicKey,
@@ -1145,12 +1145,12 @@ test("peers on a device whose clock runs ahead still accept current tickets", as
 
 test("a slow peer service does not make each reconnection pass check in again", async () => {
   let resolve;
-  const puter = {
+  const everything = {
     peer: { serve: () => new Promise((r) => (resolve = r)) },
   };
   let changes = 0;
   const network = new PeerNetwork({
-    puter,
+    everything,
     session: "a",
     keys: await keyPair(),
     roomKey: (await keyPair()).publicKey,
@@ -1182,7 +1182,7 @@ test("a slow peer service does not make each reconnection pass check in again", 
 
 test("a dial refused while connections are full is tried again later", async () => {
   const network = new PeerNetwork({
-    puter: { peer: {} },
+    everything: { peer: {} },
     session: "a",
     keys: await keyPair(),
     roomKey: (await keyPair()).publicKey,
@@ -1212,7 +1212,7 @@ test("packets sent before this end has checked the sender's hello wait for it in
     received = [];
   const make = async (session) =>
     new PeerNetwork({
-      puter: { peer: {} },
+      everything: { peer: {} },
       session,
       keys: await keyPair(),
       roomKey: roomKey.publicKey,
@@ -1284,7 +1284,7 @@ test("a viewer's notice of a save is ignored rather than making everyone synchro
     received = [];
   const make = async (session) =>
     new PeerNetwork({
-      puter: { peer: {} },
+      everything: { peer: {} },
       session,
       keys: await keyPair(),
       roomKey: roomKey.publicKey,
@@ -1356,7 +1356,7 @@ test("members accept a participant who checked in after their roster, but not on
   const roomKey = await keyPair(),
     now = Date.now();
   const network = new PeerNetwork({
-    puter: { peer: {} },
+    everything: { peer: {} },
     session: "m",
     keys: await keyPair(),
     roomKey: roomKey.publicKey,
@@ -1414,9 +1414,9 @@ test("members accept a participant who checked in after their roster, but not on
   }
 });
 test("a newcomer's edits reach members of a large room before their next check-in", async () => {
-  const { networks, received, puter, roomKey } = await peerRoom(40);
+  const { networks, received, everything, roomKey } = await peerRoom(40);
   const newcomer = new PeerNetwork({
-    puter,
+    everything,
     session: "040",
     keys: await keyPair(),
     roomKey: roomKey.publicKey,

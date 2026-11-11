@@ -128,7 +128,7 @@ export function encodeModePng(doc: PhotoDocument, img: RGBA8): ModeFile {
 }
 
 async function save(e: Editor, f: ModeFile) {
-  const { download } = await import('../../persistence/puter');
+  const { download } = await import('../../persistence/everything');
   const name = `${e.doc.name.replace(/[\\/:*?"<>|]+/g, '_') || 'Untitled'}.${f.extension}`;
   download(new Blob([f.bytes as Uint8Array<ArrayBuffer>], { type: f.mime }), name);
   e.message(`Exported ${name}: ${f.description}.`);

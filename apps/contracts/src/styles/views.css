@@ -773,7 +773,7 @@
 }
 
 /* Sign out is a fixed column after the name, and on a narrow phone it left
-   "Synced with your Puter cloud" about 105px to say itself in. The button
+   "Synced with your Everything cloud" about 105px to say itself in. The button
    takes a line of its own there, kept right, the way the document and trash
    rows do. */
 @media (max-width: 380px) {
@@ -830,7 +830,7 @@
 
 /*
  * The two links in the app that sit inside a sentence rather than being a
- * row, a chip or a button — "Built on Puter" here, "Powered by Puter" on the
+ * row, a chip or a button — "Built on Everything" here, "Powered by Everything" on the
  * sign-in page. Both were marked only by their colour, which is 1.13:1
  * against the ink around them: no difference at all to anyone who does not
  * read hue, and next to none for anyone who does. An underline says it in

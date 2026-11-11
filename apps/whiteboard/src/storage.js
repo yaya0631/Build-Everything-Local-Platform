@@ -826,8 +826,8 @@ const fileVersion = (file) =>
     ? `${file.modified}:${file.size}`
     : null;
 export class CloudStore {
-  constructor(puter) {
-    this.puter = puter;
+  constructor(everything) {
+    this.everything = everything;
     this.queue = Promise.resolve();
     this.catalog = null;
     this.catalogRequest = null;
@@ -844,7 +844,7 @@ export class CloudStore {
   async readCatalog() {
     let text;
     try {
-      text = await (await this.puter.fs.read("whiteboard/catalog.json")).text();
+      text = await (await this.everything.fs.read("whiteboard/catalog.json")).text();
     } catch (e) {
       if (!missing(e)) throw e;
       // Recover older files if the index was never written or its first write failed.
@@ -862,7 +862,7 @@ export class CloudStore {
       // The rows that are still sound go with the error, so a save can
       // rebuild the index around them.
       throw Object.assign(
-        Error("The cloud board index is invalid. Your files remain in Puter."),
+        Error("The cloud board index is invalid. Your files remain in Everything."),
         { rows: Array.isArray(data) ? data.filter(valid) : [] },
       );
     return (this.catalog = data);
@@ -871,7 +871,7 @@ export class CloudStore {
   async recoverCatalog(rows = []) {
     let files;
     try {
-      files = await this.puter.fs.readdir("whiteboard");
+      files = await this.everything.fs.readdir("whiteboard");
     } catch (error) {
       if (!missing(error)) throw error;
       files = [];
@@ -899,19 +899,19 @@ export class CloudStore {
   }
   async read(path) {
     return validateBoard(
-      JSON.parse(await (await this.puter.fs.read(path)).text()),
+      JSON.parse(await (await this.everything.fs.read(path)).text()),
     );
   }
-  // What Puter tells of a file without reading it, which changes whenever
+  // What Everything tells of a file without reading it, which changes whenever
   // it is written: its time and size, or null where it does not say.
   async version(path) {
     try {
-      return fileVersion(await this.puter.fs.stat(path));
+      return fileVersion(await this.everything.fs.stat(path));
     } catch {
       return null;
     }
   }
-  // Resolves with the version of the file written, where Puter tells it.
+  // Resolves with the version of the file written, where Everything tells it.
   save(b) {
     const snapshot = JSON.stringify(b);
     const id = b.id,
@@ -924,7 +924,7 @@ export class CloudStore {
         // be read or written leaves the board saved, and a later save adds
         // the entry.
         const version = fileVersion(
-          await this.puter.fs.write(`whiteboard/${id}.json`, snapshot, {
+          await this.everything.fs.write(`whiteboard/${id}.json`, snapshot, {
             createMissingParents: true,
             overwrite: true,
           }),
@@ -947,7 +947,7 @@ export class CloudStore {
             ...stored.filter((entry) => entry.id !== id),
             { id, title },
           ];
-          await this.puter.fs.write(
+          await this.everything.fs.write(
             "whiteboard/catalog.json",
             JSON.stringify(next),
             { createMissingParents: true, overwrite: true },

@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeEach, beforeAll } from 'vitest';
-import { installMockPuter, createMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything, createMockEverything } from './helpers/mock-everything.js';
 
 let mock;
 let Store, KV_KEYS;
 
 beforeAll(async () => {
-  mock = installMockPuter();
+  mock = installMockEverything();
   ({ Store, KV_KEYS } = await import('../src/lib/store.js'));
 });
 
@@ -55,7 +55,7 @@ describe('offline write queue durability', () => {
     const list = await s1.addList({ name: 'L' });
     await s1.addTask({ listId: list.id, title: 'synced before drop' });
 
-    const restore = cutNetwork(puter);
+    const restore = cutNetwork(everything);
     await s1.addTask({ listId: list.id, title: 'written offline' });
     expect(s1.pendingWrites()).toBeGreaterThan(0);
     restore();
@@ -69,7 +69,7 @@ describe('offline write queue durability', () => {
 
     // And it reaches the cloud, not just this device.
     await settled(s2);
-    const raw = await puter.kv.get(KV_KEYS.items);
+    const raw = await everything.kv.get(KV_KEYS.items);
     expect(JSON.stringify(raw)).toContain('written offline');
   });
 
@@ -78,7 +78,7 @@ describe('offline write queue durability', () => {
     await s1.init();
     const list = await s1.addList({ name: 'L' });
 
-    const restore = cutNetwork(puter);
+    const restore = cutNetwork(everything);
     await s1.addTask({ listId: list.id, title: 'offline on A' });
     restore();
 
@@ -102,7 +102,7 @@ describe('offline write queue durability', () => {
     await s1.init();
     const list = await s1.addList({ name: 'Old world' });
 
-    const restore = cutNetwork(puter);
+    const restore = cutNetwork(everything);
     await s1.addTask({ listId: list.id, title: 'old-world straggler' });
     restore();
 
@@ -135,7 +135,7 @@ describe('offline write queue durability', () => {
     const seen = [];
     s.addEventListener('sync-state', (e) => seen.push(e.detail.pending));
 
-    const restore = cutNetwork(puter);
+    const restore = cutNetwork(everything);
     await s.addTask({ listId: list.id, title: 'queued' });
     expect(seen.at(-1)).toBeGreaterThan(0); // queue filled
     restore();
@@ -150,13 +150,13 @@ describe('offline write queue durability', () => {
     await s.init();
     const list = await s.addList({ name: 'L' });
 
-    const origSet = puter.kv.set;
-    puter.kv.set = async () => { throw new Error('storage quota exceeded'); };
+    const origSet = everything.kv.set;
+    everything.kv.set = async () => { throw new Error('storage quota exceeded'); };
     // The store keeps the task and queues the write, so the error it hands
     // back must say so: a form told "could not save" re-offers its input,
     // and the user files the same task twice.
     const err = await s.addTask({ listId: list.id, title: 'over quota' }).catch((e) => e);
-    puter.kv.set = origSet;
+    everything.kv.set = origSet;
 
     expect(err.quota).toBe(true);
     expect(err.message).not.toMatch(/could not|failed/i);
@@ -172,7 +172,7 @@ describe('offline write queue durability', () => {
     const t = await s1.addTask({ listId: list.id, title: 'base' });
 
     // Queue an edit while the network is down.
-    const restore = cutNetwork(puter);
+    const restore = cutNetwork(everything);
     await s1.updateTask(t.id, { title: 'stale edit from the queue' });
     expect(s1.pendingWrites()).toBeGreaterThan(0);
     restore();
@@ -188,22 +188,22 @@ describe('offline write queue durability', () => {
 
     // Reads fail (transient server trouble) while writes would succeed:
     // flushing now would overwrite B's edit with the stale queue.
-    const origGet = puter.kv.get;
-    puter.kv.get = async () => { throw new Error('read outage'); };
+    const origGet = everything.kv.get;
+    everything.kv.get = async () => { throw new Error('read outage'); };
     try {
       expect(await s1.flushPending()).toBeGreaterThan(0); // kept, not written
     } finally {
-      puter.kv.get = origGet;
+      everything.kv.get = origGet;
     }
 
-    let raw = await puter.kv.get(KV_KEYS.items);
+    let raw = await everything.kv.get(KV_KEYS.items);
     expect(JSON.stringify(raw)).toContain('newer from B');
     expect(JSON.stringify(raw)).not.toContain('stale edit');
 
     // Once reads work again, the queue merges (B's edit is newer and wins).
     expect(await s1.flushPending()).toBe(0);
     expect(s1.taskById(t.id).title).toBe('newer from B');
-    raw = await puter.kv.get(KV_KEYS.items);
+    raw = await everything.kv.get(KV_KEYS.items);
     expect(JSON.stringify(raw)).toContain('newer from B');
   });
 
@@ -211,19 +211,19 @@ describe('offline write queue durability', () => {
     // Alice uses the app on this browser and ends up with unsynced edits;
     // her session then ends without an in-app sign-out (expired token,
     // account switch, shared machine), so her mirror is still here.
-    const alice = createMockPuter({ username: 'alice' });
+    const alice = createMockEverything({ username: 'alice' });
     const a = new Store();
-    a.cloud = alice.puter;
+    a.cloud = alice.everything;
     await a.init();
     const list = await a.addList({ name: 'Alice private list' });
-    const restore = cutNetwork(alice.puter);
+    const restore = cutNetwork(alice.everything);
     await a.addTask({ listId: list.id, title: 'alice secret' });
     restore();
 
     // Bob signs in on the same browser with a brand-new, empty account.
-    const bob = createMockPuter({ username: 'bob' });
+    const bob = createMockEverything({ username: 'bob' });
     const b = new Store();
-    b.cloud = bob.puter;
+    b.cloud = bob.everything;
     await b.init();
     await settled(b);
 
@@ -237,7 +237,7 @@ describe('offline write queue durability', () => {
     // A session that only ever ran against an empty-but-reachable cloud
     // whose writes all failed: everything lives in the mirror.
     const s1 = new Store();
-    const restore = cutNetwork(puter);
+    const restore = cutNetwork(everything);
     // init() itself fails to fetch; the store boots from nothing, writes queue.
     await s1.init().catch(() => {});
     const list = await s1.addList({ name: 'Mirror only' }).catch(() => null);
@@ -248,7 +248,7 @@ describe('offline write queue durability', () => {
     const s2 = new Store();
     await s2.init();
     await settled(s2);
-    const raw = await puter.kv.get(KV_KEYS.lists);
+    const raw = await everything.kv.get(KV_KEYS.lists);
     expect(JSON.stringify(raw)).toContain('Mirror only');
   });
 });

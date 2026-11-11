@@ -54,7 +54,7 @@ describe('finding mentions in comment text', () => {
     const [m] = findMentions('@ana', [ANA]);
     expect(mentionIsOf(m, { username: 'Ana' })).toBe(true);
     expect(mentionIsOf(m, { username: 'bob' })).toBe(false);
-    expect(mentionAddress(m)).toBe('ana@puter.email');
+    expect(mentionAddress(m)).toBe('ana@everything.email');
     const [b] = findMentions('@Ben Ode', [BEN]);
     expect(mentionIsOf(b, { email: 'BEN@example.com' })).toBe(true);
     expect(mentionAddress(b)).toBe('ben@example.com');

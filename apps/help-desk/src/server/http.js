@@ -1,5 +1,5 @@
 /**
- * A tiny route table that both the Puter worker and the in-browser backend
+ * A tiny route table that both the Everything worker and the in-browser backend
  * dispatch through. Handlers receive a context and return plain data (sent
  * as JSON) or a Response; they signal failure by throwing HttpError.
  */
@@ -71,7 +71,7 @@ export function errorBody(e) {
     return { status: e.status, body };
   }
   if (e && e.code === 'too_many_requests') return { status: 429, body: { error: 'rate_limited', message: 'Too many requests. Try again in a moment.' } };
-  if (e && e.code === 'insufficient_funds') return { status: 402, body: { error: 'insufficient_funds', message: 'The help desk owner has run out of Puter usage credit.' } };
+  if (e && e.code === 'insufficient_funds') return { status: 402, body: { error: 'insufficient_funds', message: 'The help desk owner has run out of Everything usage credit.' } };
   return { status: 500, body: { error: 'server_error', message: 'Something went wrong on the help desk server.' } };
 }
 

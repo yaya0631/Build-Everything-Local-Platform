@@ -8,7 +8,7 @@ import {
 } from '../src/js/store.js';
 import { DEFAULT_COLOR, MAX_CATEGORY_NAME } from '../src/js/colors.js';
 
-/** In-memory stand-in matching the subset of puter.kv the store uses. */
+/** In-memory stand-in matching the subset of everything.kv the store uses. */
 function makeKv(initial = {}) {
   const map = new Map(Object.entries(initial));
   const globToRe = (glob) =>
@@ -20,7 +20,7 @@ function makeKv(initial = {}) {
   return {
     map,
     set: vi.fn(async (k, v) => {
-      // Mirrors puter.kv.set's two forms: (key, value) or a batch array of
+      // Mirrors everything.kv.set's two forms: (key, value) or a batch array of
       // { key, value } items.
       const items = Array.isArray(k) ? k : [{ key: k, value: v }];
       for (const { key, value } of items) map.set(key, JSON.parse(JSON.stringify(value)));
@@ -436,8 +436,8 @@ describe('createStore', () => {
     expect(s.getAllEvents().map((e) => e.id)).toEqual(['ok']);
   });
 
-  it('load survives puter.kv.list silently truncating a big flat result', async () => {
-    // Live puter.kv returned 1,085 of 2,139 stored keys for one flat list —
+  it('load survives everything.kv.list silently truncating a big flat result', async () => {
+    // Live everything.kv returned 1,085 of 2,139 stored keys for one flat list —
     // deterministically, with no error. Simulate a cut at 550 (the guards sit
     // at half the observed live cut point, so a big flat result always lands
     // in suspect territory). The store must shard by id prefix and see all 600.
@@ -538,7 +538,7 @@ describe('createStore', () => {
   });
 
   it('importEvents batches writes into a few sequential requests', async () => {
-    // puter.kv 429s an import fired as one request per event; batch-set instead.
+    // everything.kv 429s an import fired as one request per event; batch-set instead.
     let inflight = 0;
     let maxInflight = 0;
     kv.set.mockImplementation(async (items) => {
@@ -579,7 +579,7 @@ describe('createStore', () => {
   it('importEvents retries rate-limited batches and still lands them', async () => {
     vi.useFakeTimers();
     try {
-      // puter.kv rejects with a plain object, not an Error — match that shape.
+      // everything.kv rejects with a plain object, not an Error — match that shape.
       const rateLimit = { error: 'Too many requests.', message: 'Too many requests.', code: 'too_many_requests' };
       let failures = 1;
       kv.set.mockImplementation(async (items) => {
@@ -1479,7 +1479,7 @@ describe('out of office', () => {
   });
 
   it('persists the declines in batched writes, not one request per event', async () => {
-    // puter.kv 429s a burst of one-request-per-event writes (the reason
+    // everything.kv 429s a burst of one-request-per-event writes (the reason
     // importEvents batches); a wide OOO over a busy calendar must not fire one.
     const ooo = await store.saveEvent({ title: 'OOO', start: day, end: day + 24 * H, ooo: true });
     const insiders = [];

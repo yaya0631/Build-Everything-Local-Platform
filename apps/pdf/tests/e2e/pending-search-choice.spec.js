@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { PDFDocument, PDFName, PDFString } from 'pdf-lib';
 
 async function prepare(page, phase) {
-  await page.route('**/sdk/puter.js', (route) => route.abort());
+  await page.route('**/sdk/everything.js', (route) => route.abort());
   const doc = await PDFDocument.create();
   for (const words of ['apple', 'banana banana', 'cherry', 'banana banana', 'date'])
     doc.addPage([400, 400]).drawText(words, { x: 40, y: 300, size: 18 });

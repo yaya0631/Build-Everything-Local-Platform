@@ -273,7 +273,7 @@ function builtinSections(app) {
           type: 'select',
           options: [
             { value: 'vector-studio', label: 'Your files (with Choose Location)' },
-            { value: 'puter', label: 'The Puter file dialog' },
+            { value: 'everything', label: 'The Everything file dialog' },
           ],
         },
         { key: 'filesUseDocuments', label: 'Keep Your files in Documents/Vector Studio', type: 'checkbox', help: 'Asks once for access to your Documents folder. Otherwise files stay in the app folder.' },

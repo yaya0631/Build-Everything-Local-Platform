@@ -731,7 +731,7 @@ export function readUsd(bytes: Uint8Array, opts: UsdReadOptions = {}): IRScene {
     const cd = f.customData ?? {};
     // any exporter's "generated" marker dictionary, or a stage documented as written by an application ("App v1.2")
     if (Object.values(cd as Record<string, unknown>).some((d) => !!(d as { generated?: unknown } | null)?.generated)) return true;
-    return /^(\S+ v\d+\.\d+|Puter 3D)/.test(String(root.documentation ?? root.doc ?? ''));
+    return /^(\S+ v\d+\.\d+|Everything 3D)/.test(String(root.documentation ?? root.doc ?? ''));
   };
   for (const c of rootPrims) {
     if (isGeneratedRoot(c)) for (const k of childPaths(c)) visit(k, -1);

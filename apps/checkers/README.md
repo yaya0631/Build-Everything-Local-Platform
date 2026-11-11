@@ -8,9 +8,9 @@ No frameworks — just vanilla JavaScript, HTML, and CSS, built with Vite.
 - **Player vs. Computer** with three difficulty levels (Easy / Medium / Hard)
 - **Pass & Play** — two players sharing one device
 - **Online play** — private peer-to-peer games over the
-  [Puter Peer API](http://localhost:8443/Peer/) (WebRTC): create a game,
+  [Everything Peer API](http://localhost:8443/Peer/) (WebRTC): create a game,
   share the invite code or link, and play with resign and rematch support.
-  The Puter SDK is loaded only when online mode is opened.
+  The Everything SDK is loaded only when online mode is opened.
 - **Clocks** — Bullet, Blitz, and Rapid time controls with a Fischer
   increment, or no limit at all. The clock starts with the first move, so a
   board nobody has touched yet costs nothing. Running out of time loses the
@@ -107,7 +107,7 @@ which touch the DOM:
   bare position would lose.
 - `pdn.js` — building the PDN export.
 
-`src/net/online.js` wraps one private online game over the Puter Peer API: a
+`src/net/online.js` wraps one private online game over the Everything Peer API: a
 host serves an invite code, exactly one guest may connect, and a jump chain
 crosses the wire as a single message (the whole path, not one message per
 hop) so the position, the turn, and the clock handover stay atomic.

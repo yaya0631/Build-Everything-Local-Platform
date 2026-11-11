@@ -9,7 +9,7 @@ const OBJECTS = '/user/.mail/objects';
 
 /**
  * Minimal fs over `{ day: { filename: rawMessage } }`, mirroring the shape
- * puter.fs.readdir/read return for the emailrx mailbox layout.
+ * everything.fs.readdir/read return for the emailrx mailbox layout.
  */
 const makeFs = (tree, { failDays = [] } = {}) => ({
   async readdir(path) {
@@ -342,7 +342,7 @@ describe('enrichMessage', () => {
     // been through a few hops.
     const filler = Array.from({ length: 12 }, (unused, i) => `ARC-Seal-${i}: ${'x'.repeat(900)}`);
     const raw = [
-      'Received: from relay.example by mx.puter.email',
+      'Received: from relay.example by mx.everything.email',
       ...filler,
       'From: Ana Petrova <ana@example.com>',
       'To: you@localhost:8443',
@@ -387,7 +387,7 @@ describe('enrichMessage', () => {
 
   it('parses the recipient list, for folders that show who a message went to', async () => {
     const raw = [
-      'From: alice@puter.email',
+      'From: alice@everything.email',
       'To: "Doe, Jane" <jane@x.co>, bob@y.co',
       'Subject: Hello',
       'Content-Type: text/plain; charset=utf-8',
@@ -488,7 +488,7 @@ describe('dayFolder', () => {
 
 describe('fileSentCopy', () => {
   const date = new Date('2026-08-22T09:30:00Z');
-  const raw = 'From: alice@puter.email\r\nSubject: Hi\r\n\r\nbody\r\n';
+  const raw = 'From: alice@everything.email\r\nSubject: Hi\r\n\r\nbody\r\n';
 
   const spyFs = (over = {}) => {
     const writes = [];
@@ -605,7 +605,7 @@ describe('moveMessage', () => {
   const message = { name: 'a1--x', day: '2026-08-17', path: `${OBJECTS}/2026-08-17/a1--x` };
 
   /**
-   * Stands in for puter.fs, which will not move a file into a folder that is
+   * Stands in for everything.fs, which will not move a file into a folder that is
    * not there: `move` refuses a destination it cannot stat, and `mkdir` is
    * what makes one -- and refuses a folder that already exists.
    */

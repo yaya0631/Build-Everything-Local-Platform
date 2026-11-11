@@ -29,7 +29,7 @@ describe('opening a new invitation to a fleet already in the list', () => {
 
     const kv = fakeKV();
     await kv.set('fl1:workspaces', { current: 'own', own: {}, joined: [{ url: URL_, business: 'Acme', role: 'member' }] });
-    globalThis.puter = {
+    globalThis.everything = {
       kv,
       auth: { isSignedIn: () => true, getUser: async () => ({ uuid: 'user-2', username: 'sam' }), getProfilePicture: async () => null },
       workers: { exec: w.exec(SAM) },

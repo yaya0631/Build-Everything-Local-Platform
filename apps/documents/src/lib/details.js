@@ -53,7 +53,7 @@ export function detailRows({ name, path, size, created, modified, lastSaved, pag
   // with nowhere to live yet is named for the file it is about to become.
   rows.push({ label: 'Name', value: fileNameOf(path) || `${name || 'Untitled document'}.docx` });
   const folder = folderOf(path);
-  rows.push({ label: 'Location', value: path ? (folder ? `${folder}/ on your Puter drive` : 'The root of your Puter drive') : 'Not saved yet' });
+  rows.push({ label: 'Location', value: path ? (folder ? `${folder}/ on your Everything drive` : 'The root of your Everything drive') : 'Not saved yet' });
   if (path && size != null) rows.push({ label: 'Size', value: formatBytes(size) });
   if (path && created) rows.push({ label: 'Created', value: whenText(created, now) });
   if (path && modified) rows.push({ label: 'Modified', value: whenText(modified, now) });

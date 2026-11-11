@@ -38,7 +38,7 @@ function batch(changes, limit) {
 
 export class RoomClient extends EventTarget {
   /**
-   * o: { puter, server, room, token?, store (outbox.js), poll (ms without live links), noPeers, toXlsx(wb) → bytes? }
+   * o: { everything, server, room, token?, store (outbox.js), poll (ms without live links), noPeers, toXlsx(wb) → bytes? }
    * Events: 'status', 'people', 'remote' ({ structural }), 'role', 'refused' ({ message }), 'closed' ({ message }).
    */
   constructor(o) {
@@ -66,7 +66,7 @@ export class RoomClient extends EventTarget {
   }
 
   request(input) {
-    return call(this.o.puter, this.o.server, { room: this.room, ...input });
+    return call(this.o.everything, this.o.server, { room: this.room, ...input });
   }
 
   /** Run work on the replica one piece at a time (responses must land in the order of the log). */
@@ -84,10 +84,10 @@ export class RoomClient extends EventTarget {
   /* ---------- Creating, joining and opening ---------- */
 
   /** Create the room for a workbook (its owner, on their own worker). Returns the room ID. */
-  static async create({ puter, server, wb, name, file = null }) {
+  static async create({ everything, server, wb, name, file = null }) {
     const room = crypto.randomUUID().replaceAll('-', '');
     const state = await packState(new Replica(new Workbook(wb.toJSON())).checkpoint());
-    await call(puter, server, { op: 'create', room, name, state, file });
+    await call(everything, server, { op: 'create', room, name, state, file });
     return room;
   }
 
@@ -152,10 +152,10 @@ export class RoomClient extends EventTarget {
 
   /**
    * The owner's consent for this app to give the people they share with a handle on the room's change signal;
-   * without it, they hear of changes only by polling. Puter remembers the answer, so it prompts at most once.
+   * without it, they hear of changes only by polling. Everything remembers the answer, so it prompts at most once.
    */
   async allowLiveUpdates() {
-    const { perms, appID } = this.o.puter;
+    const { perms, appID } = this.o.everything;
     const app = this.events?.app;
     if (this.role !== 'owner' || !app || app !== appID || typeof perms?.request !== 'function') return false;
     const granted = await (perms.Resource?.KV_SHARE
@@ -168,14 +168,14 @@ export class RoomClient extends EventTarget {
   connectedPeers() { return this.peers?.connectedSessions.length ?? 0; }
 
   async subscribe(events) {
-    const on = this.o.puter.events?.onLocal;
+    const on = this.o.everything.events?.onLocal;
     if (!events || !on || this.closed) return;
     const subject = events.handle ? `kv:${events.handle}:${events.key}` : `kv:${events.app}:${events.key}`;
     try {
       // A notice of a change this copy already holds (its own, or one a peer link brought) needs nothing. Any other
-      // notice prompts a synchronization and a check-in; one without its value (Puter leaves out large ones) too.
+      // notice prompts a synchronization and a check-in; one without its value (Everything leaves out large ones) too.
       // An author's own notice can arrive before the answer to its commit, so it is looked at again after a moment.
-      this.subscription = await this.o.puter.events.onLocal(subject, ({ event } = {}) => {
+      this.subscription = await this.o.everything.events.onLocal(subject, ({ event } = {}) => {
         const rev = event?.value?.rev;
         const held = () => Number.isInteger(rev) && this.replica && rev <= this.replica.rev;
         if (held()) return;
@@ -377,9 +377,9 @@ export class RoomClient extends EventTarget {
     if (this.checkingIn) return this.checkingIn;
     this.checkingIn = (async () => {
       this.keys ??= await keyPair();
-      if (!this.o.noPeers && this.o.puter.peer && !this.peers) {
+      if (!this.o.noPeers && this.o.everything.peer && !this.peers) {
         this.peers = new PeerNetwork({
-          peer: this.o.puter.peer, session: this.session, keys: this.keys, roomKey: this.roomKey, room: this.room,
+          peer: this.o.everything.peer, session: this.session, keys: this.keys, roomKey: this.roomKey, room: this.room,
           // Tickets expire by the worker's clock.
           now: () => Date.now() - (this.skew ?? 0),
           receive: (kind, data, ticket) => this.receivePeer(kind, data, ticket),

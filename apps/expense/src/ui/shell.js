@@ -99,7 +99,7 @@ export function mountShell(appRoot) {
   }
 
   /* Sidebar (desktop) */
-  const username = store.user?.username || 'Puter user';
+  const username = store.user?.username || 'Everything user';
   const sidebarNav = el('div', { style: { display: 'contents' } });
   const sidebar = el('nav.sidebar', { 'aria-label': 'Main navigation' },
     el('div.brand', {}, el('img', { src: './icons/icon-192.png', width: 28, height: 28, alt: '' }), 'Expenses'),

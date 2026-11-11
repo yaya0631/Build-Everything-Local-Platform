@@ -10,7 +10,7 @@ for (const rotation of [0, 90, 270])
   test(`links and form fields placed at the page center read across a page turned ${rotation} degrees`, async ({
     page,
   }) => {
-    await page.route('**/sdk/puter.js', (route) => route.abort());
+    await page.route('**/sdk/everything.js', (route) => route.abort());
     const doc = await PDFDocument.create();
     doc.addPage([612, 792]).setRotation(degrees(rotation));
     await page.goto('/#library');

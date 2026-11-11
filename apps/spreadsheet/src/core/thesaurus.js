@@ -1,5 +1,5 @@
 /**
- * The thesaurus's pure parts: the question Puter's AI is asked about a word, reading its answer into senses
+ * The thesaurus's pure parts: the question Everything's AI is asked about a word, reading its answer into senses
  * (a part of speech, a short meaning, synonyms and antonyms), and putting a chosen word into a cell's text.
  */
 

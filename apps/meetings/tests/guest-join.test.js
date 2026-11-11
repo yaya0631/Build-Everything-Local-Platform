@@ -4,10 +4,10 @@ import * as P from '../src/lib/protocol.js';
 import { LINK_RECOVERY_BUDGET_MS } from '../src/net/rtc.js';
 
 /*
- * Joining a meeting link needs no Puter session at all: the guest goes in
+ * Joining a meeting link needs no Everything session at all: the guest goes in
  * anonymously, on the guest grant the host published next to the invite. A
  * one-time link from an older deploy has no room to carry a grant, so a
- * visitor without a session on one of those still gets a session — Puter
+ * visitor without a session on one of those still gets a session — Everything
  * creates the account, and the guest never sees a form. The account it hands
  * back is a full one; these cases only check who we end up signed in as (or
  * not), and that a username nobody chose doesn't become the name the meeting
@@ -32,13 +32,13 @@ class FakeMediaStream {
 }
 
 /**
- * A Puter that can sign in. `signIn` records its options and lands on the kind
+ * An Everything that can sign in. `signIn` records its options and lands on the kind
  * of account they asked for, as the real popup does: `attempt_temp_user_creation`
- * comes back as an account Puter made (`is_temp`), the sign-in window as one
+ * comes back as an account Everything made (`is_temp`), the sign-in window as one
  * its owner made. Deliberately no `peer`, so a join fails right after the
  * sign-in step — that failure is the signal the step is behind us.
  */
-function fakePuter({ signedIn = false, isTemp = false, username = 'ada-42' } = {}) {
+function fakeEverything({ signedIn = false, isTemp = false, username = 'ada-42' } = {}) {
   const state = { signedIn, isTemp, username };
   const signIn = vi.fn(async (opts = {}) => {
     Object.assign(state, { signedIn: true, isTemp: !!opts.attempt_temp_user_creation });
@@ -114,7 +114,7 @@ const errorLine = () => root.querySelector('.prejoin-error');
 
 beforeEach(async () => {
   localStorage.clear();
-  delete window.puter;
+  delete window.everything;
   globalThis.MediaStream = FakeMediaStream;
   Object.defineProperty(navigator, 'mediaDevices', {
     value: {
@@ -169,7 +169,7 @@ describe('joining a meeting link', () => {
 
   /** Click Join on a room link and wait for the dial to the host. */
   async function joinRoom(connect) {
-    window.puter.peer = { connect };
+    window.everything.peer = { connect };
     mount({ mode: 'join', code: 'abc-defg-hij' });
     nameField().value = 'Ada';
     root.querySelector('.btn-primary').click();
@@ -177,15 +177,15 @@ describe('joining a meeting link', () => {
   }
 
   it('lets a visitor with no session in anonymously, on the host’s grant — no sign-in', async () => {
-    window.puter = fakePuter();
+    window.everything = fakeEverything();
     liveRoom({ grant: 'pg1.host.grant' });
     const connect = vi.fn(async () => {
       throw new Error('no such meeting');
     });
     await joinRoom(connect);
 
-    expect(window.puter.signIn).not.toHaveBeenCalled();
-    expect(window.puter.state.signedIn).toBe(false);
+    expect(window.everything.signIn).not.toHaveBeenCalled();
+    expect(window.everything.state.signedIn).toBe(false);
     expect(connect).toHaveBeenCalledWith('invite-live', {
       recoveryTimeout: LINK_RECOVERY_BUDGET_MS,
       anonToken: expect.stringMatching(UUID),
@@ -194,77 +194,77 @@ describe('joining a meeting link', () => {
   });
 
   it('still goes in anonymously when the host published no grant (direct connections only)', async () => {
-    window.puter = fakePuter();
+    window.everything = fakeEverything();
     liveRoom();
     const connect = vi.fn(async () => {
       throw new Error('no such meeting');
     });
     await joinRoom(connect);
 
-    expect(window.puter.signIn).not.toHaveBeenCalled();
+    expect(window.everything.signIn).not.toHaveBeenCalled();
     expect(connect).toHaveBeenCalledWith('invite-live', { recoveryTimeout: LINK_RECOVERY_BUDGET_MS, anonToken: expect.stringMatching(UUID) });
   });
 
   it('joins on the visitor’s own account when they are signed in', async () => {
-    window.puter = fakePuter({ signedIn: true });
+    window.everything = fakeEverything({ signedIn: true });
     liveRoom({ grant: 'pg1.host.grant' });
     const connect = vi.fn(async () => {
       throw new Error('no such meeting');
     });
     await joinRoom(connect);
 
-    expect(window.puter.signIn).not.toHaveBeenCalled();
+    expect(window.everything.signIn).not.toHaveBeenCalled();
     expect(connect).toHaveBeenCalledWith('invite-live', { recoveryTimeout: LINK_RECOVERY_BUDGET_MS });
   });
 });
 
 describe('joining a one-time link from an older deploy', () => {
-  it('has Puter make an account for a visitor who is not signed in', async () => {
-    window.puter = fakePuter();
+  it('has Everything make an account for a visitor who is not signed in', async () => {
+    window.everything = fakeEverything();
     await join();
 
-    expect(window.puter.signIn).toHaveBeenCalledTimes(1);
-    expect(window.puter.signIn).toHaveBeenCalledWith({ attempt_temp_user_creation: true });
-    expect(window.puter.state.signedIn).toBe(true);
+    expect(window.everything.signIn).toHaveBeenCalledTimes(1);
+    expect(window.everything.signIn).toHaveBeenCalledWith({ attempt_temp_user_creation: true });
+    expect(window.everything.state.signedIn).toBe(true);
   });
 
   it('asks nothing of someone already signed in', async () => {
-    window.puter = fakePuter({ signedIn: true });
+    window.everything = fakeEverything({ signedIn: true });
     await join();
 
-    expect(window.puter.signIn).not.toHaveBeenCalled();
+    expect(window.everything.signIn).not.toHaveBeenCalled();
   });
 
-  it('asks nothing of a guest whose account Puter made earlier', async () => {
-    window.puter = fakePuter({ signedIn: true, isTemp: true });
+  it('asks nothing of a guest whose account Everything made earlier', async () => {
+    window.everything = fakeEverything({ signedIn: true, isTemp: true });
     await join();
 
-    expect(window.puter.signIn).not.toHaveBeenCalled();
+    expect(window.everything.signIn).not.toHaveBeenCalled();
   });
 
-  it('leaves a puter.js with no accounts to the peer API', async () => {
+  it('leaves an everything.js with no accounts to the peer API', async () => {
     // A stub, or a build that doesn't do accounts. Sign-in used to be skipped
     // wholesale in that case, and still is — failing here on the peer API's
     // behalf would be inventing a problem it may not have.
-    window.puter = { kv: { get: async () => null, set: async () => true } };
+    window.everything = { kv: { get: async () => null, set: async () => true } };
     await join();
 
-    expect(errorLine().textContent).not.toMatch(/Puter window/i);
+    expect(errorLine().textContent).not.toMatch(/Everything window/i);
   });
 
-  it('says what happened when the Puter window is blocked', async () => {
-    window.puter = fakePuter();
+  it('says what happened when the Everything window is blocked', async () => {
+    window.everything = fakeEverything();
     // The real rejection is a plain object, not an Error — reading only
     // `.message` off it used to show the user "[object Object]".
-    window.puter.signIn.mockRejectedValueOnce({ error: 'popup_blocked', msg: 'The sign-in popup was blocked.' });
+    window.everything.signIn.mockRejectedValueOnce({ error: 'popup_blocked', msg: 'The sign-in popup was blocked.' });
     await join();
 
-    expect(errorLine().textContent).toMatch(/blocked the Puter window/i);
+    expect(errorLine().textContent).toMatch(/blocked the Everything window/i);
   });
 
-  it('says what happened when the Puter window is closed', async () => {
-    window.puter = fakePuter();
-    window.puter.signIn.mockRejectedValueOnce({ error: 'auth_window_closed', msg: 'Window was closed.' });
+  it('says what happened when the Everything window is closed', async () => {
+    window.everything = fakeEverything();
+    window.everything.signIn.mockRejectedValueOnce({ error: 'auth_window_closed', msg: 'Window was closed.' });
     await join();
 
     expect(errorLine().textContent).toMatch(/closed before we could get you in/i);
@@ -273,28 +273,28 @@ describe('joining a one-time link from an older deploy', () => {
 
 describe('starting a meeting', () => {
   it('asks the visitor to sign in rather than making them an account', async () => {
-    window.puter = fakePuter();
+    window.everything = fakeEverything();
     await join({ mode: 'create' });
 
-    expect(window.puter.signIn).toHaveBeenCalledTimes(1);
-    expect(window.puter.signIn.mock.calls[0][0]).not.toHaveProperty('attempt_temp_user_creation');
+    expect(window.everything.signIn).toHaveBeenCalledTimes(1);
+    expect(window.everything.signIn.mock.calls[0][0]).not.toHaveProperty('attempt_temp_user_creation');
   });
 
   it('asks nothing of someone already signed in', async () => {
-    window.puter = fakePuter({ signedIn: true });
+    window.everything = fakeEverything({ signedIn: true });
     await join({ mode: 'create' });
 
-    expect(window.puter.signIn).not.toHaveBeenCalled();
+    expect(window.everything.signIn).not.toHaveBeenCalled();
   });
 });
 
 /**
- * Enough Puter for a start to get as far as serving; serving then fails,
+ * Enough Everything for a start to get as far as serving; serving then fails,
  * which ends the attempt right after the point under test instead of
  * leaving a heartbeat running.
  */
 function armStart() {
-  window.puter.peer = {
+  window.everything.peer = {
     serve: vi.fn(async () => {
       throw new Error('no peer in this test');
     }),
@@ -329,84 +329,84 @@ describe('joining a room where nothing is running', () => {
   it('has a signed-in visitor start the meeting on the spot — no waiting room, no second button', async () => {
     // The complaint this answers: someone opens a link, clicks Join, and is
     // told to wait for a host — when the host could simply be them.
-    window.puter = fakePuter({ signedIn: true });
+    window.everything = fakeEverything({ signedIn: true });
     clickJoin();
 
-    await vi.waitFor(() => expect(window.puter.peer.serve).toHaveBeenCalled());
+    await vi.waitFor(() => expect(window.everything.peer.serve).toHaveBeenCalled());
     // The room was claimed in the directory — with no invite yet — before
     // anything was served, so nobody else starts it in the same breath.
     expect(dir.claims()).toHaveLength(1);
     expect(dir.claims()[0].body).toMatchObject({ host: 'Ada', invite: null });
     expect(typeof dir.claims()[0].body.secret).toBe('string');
-    expect(orderOf(dir, dir.claims()[0])).toBeLessThan(window.puter.peer.serve.mock.invocationCallOrder[0]);
-    expect(window.puter.signIn).not.toHaveBeenCalled();
+    expect(orderOf(dir, dir.claims()[0])).toBeLessThan(window.everything.peer.serve.mock.invocationCallOrder[0]);
+    expect(window.everything.signIn).not.toHaveBeenCalled();
     expect(joinBtn().textContent).not.toMatch(/Waiting for the host/);
     expect(startBtn().style.display).toBe('none');
   });
 
   it('starts a link nobody has ever started — minted elsewhere or here, nothing has to exist first', async () => {
-    window.puter = fakePuter({ signedIn: true });
+    window.everything = fakeEverything({ signedIn: true });
     clickJoin('abcd-efgh-ijkl');
 
-    await vi.waitFor(() => expect(window.puter.peer.serve).toHaveBeenCalled());
+    await vi.waitFor(() => expect(window.everything.peer.serve).toHaveBeenCalled());
     expect(dir.claims()).toHaveLength(1);
     expect(joinBtn().textContent).not.toMatch(/Waiting for the host/);
   });
 
   it('waits, rather than starting, while the directory cannot be reached', async () => {
     // A claim needs the directory; without one a start could only fork.
-    window.puter = fakePuter({ signedIn: true });
+    window.everything = fakeEverything({ signedIn: true });
     dir.state.unreachable = true;
     clickJoin();
 
     await vi.waitFor(() => expect(joinBtn().textContent).toMatch(/Waiting for the host/));
     expect(startBtn().style.display).toBe('');
-    expect(window.puter.peer.serve).not.toHaveBeenCalled();
+    expect(window.everything.peer.serve).not.toHaveBeenCalled();
     expect(dir.claims()).toHaveLength(0);
   });
 
   it('keeps a visitor with no session in the waiting room, with Start on offer', async () => {
     // Hosting takes an account, and the sign-in is a popup only a click may
     // open — so the wait, and the button, stay for them.
-    window.puter = fakePuter();
+    window.everything = fakeEverything();
     clickJoin();
 
     await vi.waitFor(() => expect(joinBtn().textContent).toMatch(/Waiting for the host/));
     expect(startBtn().style.display).toBe('');
-    expect(root.querySelector('.prejoin-sub').textContent).toMatch(/sign in with Puter to start it/i);
-    expect(window.puter.signIn).not.toHaveBeenCalled();
-    expect(window.puter.peer.serve).not.toHaveBeenCalled();
+    expect(root.querySelector('.prejoin-sub').textContent).toMatch(/sign in with Everything to start it/i);
+    expect(window.everything.signIn).not.toHaveBeenCalled();
+    expect(window.everything.peer.serve).not.toHaveBeenCalled();
     expect(dir.claims()).toHaveLength(0);
   });
 
   it('joins the meeting someone else started in the same breath, instead of hosting a second one', async () => {
-    window.puter = fakePuter({ signedIn: true });
+    window.everything = fakeEverything({ signedIn: true });
     // Nothing running when we look; by the time we claim, someone has.
     dir.state.room = () => (dir.claims().length ? entry({ invite: 'invite-theirs', host: 'Bob' }) : null);
     dir.state.claim = 'held';
     const connect = vi.fn(() => new Promise(() => {})); // the dial is in flight
     clickJoin();
-    window.puter.peer.connect = connect;
+    window.everything.peer.connect = connect;
 
     await vi.waitFor(() => expect(connect).toHaveBeenCalledTimes(1));
     expect(connect.mock.calls[0][0]).toBe('invite-theirs');
-    expect(window.puter.peer.serve).not.toHaveBeenCalled();
+    expect(window.everything.peer.serve).not.toHaveBeenCalled();
     expect(dir.claims()).toHaveLength(1);
   });
 
   it('does not start over a meeting someone is starting this very moment', async () => {
-    window.puter = fakePuter({ signedIn: true });
+    window.everything = fakeEverything({ signedIn: true });
     dir.state.room = entry({ invite: null, host: 'Bob' });
     clickJoin();
 
     await vi.waitFor(() => expect(joinBtn().textContent).toBe('Connecting…'));
     expect(root.textContent).toMatch(/The meeting is starting/);
-    expect(window.puter.peer.serve).not.toHaveBeenCalled();
+    expect(window.everything.peer.serve).not.toHaveBeenCalled();
     expect(dir.claims()).toHaveLength(0);
   });
 
   it('frees the link again when serving fails right after the claim', async () => {
-    window.puter = fakePuter({ signedIn: true });
+    window.everything = fakeEverything({ signedIn: true });
     clickJoin();
 
     await vi.waitFor(() => expect(errorLine().textContent).not.toBe(''));
@@ -436,48 +436,48 @@ describe('starting a room meeting from the waiting room', () => {
   }
 
   it('asks a visitor with no session to sign in — from the click, before anything is claimed', async () => {
-    window.puter = fakePuter();
+    window.everything = fakeEverything();
     await clickStart();
 
-    await vi.waitFor(() => expect(window.puter.signIn).toHaveBeenCalledTimes(1));
-    // The account is theirs to make, not one Puter makes for them: hosting is
+    await vi.waitFor(() => expect(window.everything.signIn).toHaveBeenCalledTimes(1));
+    // The account is theirs to make, not one Everything makes for them: hosting is
     // the flow someone came here to own.
-    expect(window.puter.signIn.mock.calls[0][0]).not.toHaveProperty('attempt_temp_user_creation');
-    expect(window.puter.state.signedIn).toBe(true);
+    expect(window.everything.signIn.mock.calls[0][0]).not.toHaveProperty('attempt_temp_user_creation');
+    expect(window.everything.state.signedIn).toBe(true);
     // Only now does the start go ahead, on the account just signed into.
     await vi.waitFor(() => expect(dir.claims()).toHaveLength(1));
-    expect(window.puter.signIn.mock.invocationCallOrder[0]).toBeLessThan(orderOf(dir, dir.claims()[0]));
+    expect(window.everything.signIn.mock.invocationCallOrder[0]).toBeLessThan(orderOf(dir, dir.claims()[0]));
   });
 
   it('hands the button back, saying why, when the sign-in window is closed', async () => {
-    window.puter = fakePuter();
-    window.puter.signIn.mockRejectedValueOnce({ error: 'auth_window_closed', msg: 'Window was closed.' });
+    window.everything = fakeEverything();
+    window.everything.signIn.mockRejectedValueOnce({ error: 'auth_window_closed', msg: 'Window was closed.' });
     await clickStart();
 
     await vi.waitFor(() => expect(errorLine().textContent).toMatch(/closed before we could get you in/i));
     expect(startBtn().disabled).toBe(false);
     expect(startBtn().textContent).toBe('Start this meeting');
-    expect(window.puter.state.signedIn).toBe(false);
+    expect(window.everything.state.signedIn).toBe(false);
     // Nothing was claimed or served on a visitor who never signed in.
     expect(dir.claims()).toHaveLength(0);
-    expect(window.puter.peer.serve).not.toHaveBeenCalled();
+    expect(window.everything.peer.serve).not.toHaveBeenCalled();
     // Still waiting: a meeting that starts elsewhere would still be joined.
     expect(root.querySelector('.btn-primary').textContent).toMatch(/Waiting for the host/);
   });
 });
 
 describe('the name a guest is introduced by', () => {
-  it('never falls back to a username Puter generated', async () => {
-    window.puter = fakePuter({ signedIn: true, isTemp: true, username: 'temp-8f21c0' });
+  it('never falls back to a username Everything generated', async () => {
+    window.everything = fakeEverything({ signedIn: true, isTemp: true, username: 'temp-8f21c0' });
     prefs.syncPrefsFromCloud();
     mount({ mode: 'join', code: 'inv-9f2a' });
 
-    await vi.waitFor(() => expect(window.puter.auth.getUser).toHaveBeenCalled());
+    await vi.waitFor(() => expect(window.everything.auth.getUser).toHaveBeenCalled());
     expect(nameField().value).toBe('');
   });
 
   it('still falls back to the username of an account its owner made', async () => {
-    window.puter = fakePuter({ signedIn: true, username: 'ada-42' });
+    window.everything = fakeEverything({ signedIn: true, username: 'ada-42' });
     prefs.syncPrefsFromCloud();
     mount({ mode: 'join', code: 'inv-9f2a' });
 
@@ -539,7 +539,7 @@ class FakeConn {
     this.peerconnection = new FakePC();
   }
 
-  /** Mirrors puter.peer: transport state becomes a link-health signal. */
+  /** Mirrors everything.peer: transport state becomes a link-health signal. */
   #watchTransport(pc) {
     pc?.addEventListener?.('connectionstatechange', () => {
       const state = { connected: 'connected', disconnected: 'unstable', failed: 'recovering' }[
@@ -614,8 +614,8 @@ describe('a meeting that is running but out of reach', () => {
   }
 
   async function joinAs(connect) {
-    window.puter = fakePuter(); // no session: a plain guest
-    window.puter.peer = { connect };
+    window.everything = fakeEverything(); // no session: a plain guest
+    window.everything.peer = { connect };
     mount({ mode: 'join', code: 'abc-defg-hij' });
     nameField().value = 'Ada';
     joinBtn().click();
@@ -733,7 +733,7 @@ describe('a meeting that is running but out of reach', () => {
     // The entry is fresh, so the meeting is running — and the trouble is
     // named for what it is, not blamed on the host's link.
     expect(root.textContent).toMatch(/The meeting is running/);
-    expect(root.querySelector('.prejoin-sub').textContent).toMatch(/Can’t reach Puter’s connection service/);
+    expect(root.querySelector('.prejoin-sub').textContent).toMatch(/Can’t reach Everything’s connection service/);
 
     // Dialed again after the first backoff step, not before...
     await vi.advanceTimersByTimeAsync(SIGNALLER_RETRY_MS[0] - 1000);
@@ -790,7 +790,7 @@ describe('a meeting that is running but out of reach', () => {
     // Nothing running: the plain wait.
     dir = directory();
     const polls = () => dir.reads().length;
-    window.puter = fakePuter();
+    window.everything = fakeEverything();
     mount({ mode: 'join', code: 'abc-defg-hij' });
     nameField().value = 'Ada';
     joinBtn().click();
@@ -900,7 +900,7 @@ describe('a meeting that is running but out of reach', () => {
 
   it('offers no "Try again" while nothing is running', async () => {
     dir = directory();
-    window.puter = fakePuter();
+    window.everything = fakeEverything();
     mount({ mode: 'join', code: 'abc-defg-hij' });
     nameField().value = 'Ada';
     joinBtn().click();
@@ -924,6 +924,6 @@ describe('a meeting that is running but out of reach', () => {
     await vi.advanceTimersByTimeAsync(12_000);
     expect(root.textContent).toMatch(/The meeting is running/);
     expect(root.textContent).not.toMatch(/Waiting for the host/);
-    expect(root.querySelector('.prejoin-sub').textContent).toMatch(/Can’t reach Puter’s connection service/);
+    expect(root.querySelector('.prejoin-sub').textContent).toMatch(/Can’t reach Everything’s connection service/);
   });
 });

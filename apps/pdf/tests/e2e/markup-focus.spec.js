@@ -9,9 +9,9 @@ for (const [kind, { label }] of Object.entries(MARKUP_KINDS))
       test(`${label} ${action} ${moved ? 'preserves newer focus' : 'restores editor focus'}`, async ({
         page,
       }) => {
-        await page.route('**/sdk/puter.js', (route) =>
+        await page.route('**/sdk/everything.js', (route) =>
           route.fulfill({
-            body: `window.puter = {env:'web',auth:{isSignedIn:()=>true,getUser:async()=>({username:'test-user'})},fs:{readdir:async()=>[]},ui:{onLaunchedWithItems(){},onItemsOpened(){}}};`,
+            body: `window.everything = {env:'web',auth:{isSignedIn:()=>true,getUser:async()=>({username:'test-user'})},fs:{readdir:async()=>[]},ui:{onLaunchedWithItems(){},onItemsOpened(){}}};`,
           }),
         );
         await page.goto('/#library');

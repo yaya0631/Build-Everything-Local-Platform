@@ -1,5 +1,5 @@
 /**
- * A snapshot-caching wrapper around `puter.kv`.
+ * A snapshot-caching wrapper around `everything.kv`.
  *
  * It has the exact `{ list, get, set, del }` shape `store.js` expects, so the
  * store is created over it with NO change to store.js. Its only job is to make
@@ -9,7 +9,7 @@
  *
  * Sync safety: the snapshot is READ-ONLY as far as the cloud is concerned. It is
  * only ever written FROM the cloud (on a successful read) or kept in step with a
- * write that already reached the cloud. It is never replayed back to `puter.kv`,
+ * write that already reached the cloud. It is never replayed back to `everything.kv`,
  * so it can never cause a divergent or clobbering write. The cloud stays the
  * single source of truth.
  *
@@ -34,7 +34,7 @@ function readBlob() {
   }
 }
 
-export function createOfflineKv(puterKv) {
+export function createOfflineKv(everythingKv) {
   // Reachability for the current load(): reset to true by resetReachable(), then
   // any read that falls back to cache sets it false and it STAYS false for the
   // rest of that load. Reads never set it back to true, so with concurrent boot
@@ -67,12 +67,12 @@ export function createOfflineKv(puterKv) {
 
   async function list(pattern, returnValues) {
     try {
-      const result = await puterKv.list(pattern, returnValues);
+      const result = await everythingKv.list(pattern, returnValues);
       const prefix = prefixOf(pattern);
       const entries = Array.isArray(result) ? result : [];
       // Replace the whole prefix namespace so an event deleted on another device
       // (absent from the fresh list) doesn't linger and reappear offline — but
-      // ONLY for a result small enough to be the complete truth. puter.kv
+      // ONLY for a result small enough to be the complete truth. everything.kv
       // silently truncates big flat lists (the reason store.js shards them),
       // and replacing on one would poison the last good snapshot with a
       // partial calendar before the shard fan-out repairs it — permanently, if
@@ -105,7 +105,7 @@ export function createOfflineKv(puterKv) {
 
   async function get(key) {
     try {
-      const value = await puterKv.get(key);
+      const value = await everythingKv.get(key);
       writeBlob((blob) => {
         blob.entries[key] = value;
       });
@@ -126,10 +126,10 @@ export function createOfflineKv(puterKv) {
   async function set(key, value) {
     // Cloud write first; its result is what the caller sees. Only touch the
     // snapshot afterwards, best-effort, so cache trouble can't fail a real save.
-    // Mirrors puter.kv.set's two signatures: `(key, value)` or a batch array of
+    // Mirrors everything.kv.set's two signatures: `(key, value)` or a batch array of
     // `{ key, value }` items (used by importEvents) — the snapshot then tracks
     // every item of the batch, exactly like the per-key form.
-    const result = await puterKv.set(key, value);
+    const result = await everythingKv.set(key, value);
     writeBlob((blob) => {
       if (Array.isArray(key)) {
         for (const item of key) {
@@ -143,7 +143,7 @@ export function createOfflineKv(puterKv) {
   }
 
   async function del(key) {
-    const result = await puterKv.del(key);
+    const result = await everythingKv.del(key);
     writeBlob((blob) => {
       delete blob.entries[key];
     });

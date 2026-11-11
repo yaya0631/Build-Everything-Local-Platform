@@ -21,7 +21,7 @@ async function download(page) {
   return PDFDocument.load(await readFile(await (await pending).path()));
 }
 async function prepare(page, options = {}) {
-  await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
+  await page.route('**/sdk/everything.js', (route) => route.fulfill({ body: '' }));
   await page.goto('/#library');
   const { doc, field } = await editableChoicePdf(options);
   field.addToPage(doc.getPage(0), { x: 30, y: 45, width: 240, height: 30 });

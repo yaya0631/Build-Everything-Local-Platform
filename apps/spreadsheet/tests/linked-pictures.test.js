@@ -115,7 +115,7 @@ describe('a linked picture', () => {
     const back = await workbookFromFile(bytes, 'linked.xlsx');
     expect(back.sheets[0].charts[0].pictureRef).toBe('Sheet1!$A$1:$B$3');
     // Read natively, without this app's record, the drawing alone keeps the link.
-    X.CFB.utils.cfb_add(z, '/xl/workbook.xml', new TextEncoder().encode(xml(z, '/xl/workbook.xml').replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')));
+    X.CFB.utils.cfb_add(z, '/xl/workbook.xml', new TextEncoder().encode(xml(z, '/xl/workbook.xml').replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')));
     const native = await workbookFromFile(X.CFB.write(z, { type: 'array', fileType: 'zip' }), 'native.xlsx');
     expect(native.sheets[0].charts[0].pictureRef).toBe('Sheet1!$A$1:$B$3');
   });

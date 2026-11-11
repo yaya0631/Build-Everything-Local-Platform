@@ -1,7 +1,7 @@
 /**
- * Silence one benign, unavoidable console error from puter.js's peer layer.
+ * Silence one benign, unavoidable console error from everything.js's peer layer.
  *
- * `PuterPeerConnection` applies the SDP answer during its initial handshake
+ * `EverythingPeerConnection` applies the SDP answer during its initial handshake
  * without awaiting or catching it — `this.setRemoteDescription(answer)`,
  * bare. When a connection is torn down before that answer lands, the browser
  * rejects the call with an uncaught `InvalidStateError` because the

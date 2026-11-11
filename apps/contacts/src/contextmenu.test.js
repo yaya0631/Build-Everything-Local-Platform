@@ -4,7 +4,7 @@ import { showContextMenu } from './contextmenu.js'
 
 beforeEach(() => {
   document.body.innerHTML = ''
-  delete window.puter // force the DOM fallback rather than puter.ui.contextMenu
+  delete window.everything // force the DOM fallback rather than everything.ui.contextMenu
 })
 
 function clickEl(el) {

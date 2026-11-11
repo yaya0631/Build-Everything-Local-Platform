@@ -51,7 +51,7 @@ describe('editor delete confirmation (stacked dialog)', () => {
   })
 
   it('treats removing a filled row as an unsaved edit (discard guard fires)', async () => {
-    window.puter = { env: 'web', kv: { set: async () => true }, ui: {} }
+    window.everything = { env: 'web', kv: { set: async () => true }, ui: {} }
     store.loaded = true
     const c = normalizeContact({
       id: 'row1',
@@ -78,7 +78,7 @@ describe('editor delete confirmation (stacked dialog)', () => {
   })
 
   it('closing without edits never asks to discard (empty rows are not edits)', async () => {
-    window.puter = { env: 'web', kv: { set: async () => true }, ui: {} }
+    window.everything = { env: 'web', kv: { set: async () => true }, ui: {} }
     store.loaded = true
 
     openEditor() // brand-new, untouched contact
@@ -93,7 +93,7 @@ describe('editor delete confirmation (stacked dialog)', () => {
   })
 
   it('ignores a backdrop "click" from a drag that started inside the panel', async () => {
-    window.puter = { env: 'web', kv: { set: async () => true }, ui: {} }
+    window.everything = { env: 'web', kv: { set: async () => true }, ui: {} }
     store.loaded = true
 
     openEditor()
@@ -119,7 +119,7 @@ describe('editor delete confirmation (stacked dialog)', () => {
   })
 
   it('saves on a bare Enter from a single-line input', async () => {
-    window.puter = { env: 'web', kv: { set: async () => true }, ui: {} }
+    window.everything = { env: 'web', kv: { set: async () => true }, ui: {} }
     store.loaded = true
 
     openEditor() // new contact
@@ -138,7 +138,7 @@ describe('editor delete confirmation (stacked dialog)', () => {
   })
 
   it('shows and persists an editable nickname', async () => {
-    window.puter = { env: 'web', kv: { set: async () => true }, ui: {} }
+    window.everything = { env: 'web', kv: { set: async () => true }, ui: {} }
     store.loaded = true
     const c = normalizeContact({ id: 'nick1', firstName: 'Margaret', nickname: 'Peggy' })
     store.contacts.set(c.id, c)
@@ -159,7 +159,7 @@ describe('editor delete confirmation (stacked dialog)', () => {
   })
 
   it('preserves a year-less birthday through an edit (no data loss)', async () => {
-    window.puter = { env: 'web', kv: { set: async () => true }, ui: {} }
+    window.everything = { env: 'web', kv: { set: async () => true }, ui: {} }
     store.loaded = true
     const c = normalizeContact({ id: 'b1', firstName: 'Ada', birthday: '0000-04-15' })
     store.contacts.set(c.id, c)
@@ -177,7 +177,7 @@ describe('editor delete confirmation (stacked dialog)', () => {
   })
 
   it('labels the birthday field without nesting labels (valid HTML)', async () => {
-    window.puter = { env: 'web', kv: { set: async () => true }, ui: {} }
+    window.everything = { env: 'web', kv: { set: async () => true }, ui: {} }
     store.loaded = true
 
     openEditor()
@@ -200,7 +200,7 @@ describe('editor delete confirmation (stacked dialog)', () => {
   })
 
   it('names every repeat-row value input for assistive tech', async () => {
-    window.puter = { env: 'web', kv: { set: async () => true }, ui: {} }
+    window.everything = { env: 'web', kv: { set: async () => true }, ui: {} }
     store.loaded = true
 
     openEditor()
@@ -221,7 +221,7 @@ describe('editor delete confirmation (stacked dialog)', () => {
   })
 
   it('stores a year-less birthday when "Hide year" is checked', async () => {
-    window.puter = { env: 'web', kv: { set: async () => true }, ui: {} }
+    window.everything = { env: 'web', kv: { set: async () => true }, ui: {} }
     store.loaded = true
 
     openEditor() // new contact

@@ -77,7 +77,7 @@ export async function loadAccountAvatar(avatar, user, auth) {
       fallback();
       if (picture === null) remember(null);
     }
-    // Puter also returns null on request failure; retain a cached picture
+    // Everything also returns null on request failure; retain a cached picture
     // in that case rather than flashing initials during an outage.
   } catch {
     if (!hasPicture) fallback();

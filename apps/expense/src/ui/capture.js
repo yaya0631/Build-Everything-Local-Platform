@@ -1,5 +1,5 @@
 /**
- * Receipt capture: choose or shoot an image, run OCR through Puter AI while
+ * Receipt capture: choose or shoot an image, run OCR through Everything AI while
  * the preview shows progress, then hand the result to the expense form for
  * confirmation. Several files at once queue up and are confirmed one by one.
  */

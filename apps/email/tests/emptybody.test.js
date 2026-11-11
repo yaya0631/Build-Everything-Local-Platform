@@ -18,7 +18,7 @@ const NAME = '019965b0-0000-7000-8000-000000000001--UGhvdG8';
 
 const RAW = new TextEncoder().encode([
   'From: Ana Petrova <ana@meridianlabs.example>',
-  'To: sample@puter.email',
+  'To: sample@everything.email',
   'Subject: Photo',
   'Date: Mon, 14 Sep 2026 09:00:00 +0000',
   'Message-ID: <photo-1@meridianlabs.example>',

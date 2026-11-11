@@ -4,14 +4,14 @@ import { Doc } from '../src/lib/doc.js';
 import { homeView } from '../src/views/home.js';
 import { madeFiles, rememberMade } from '../src/lib/made.js';
 import { setStorageUser } from '../src/lib/account-storage.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 import { memoryStorage } from './helpers/memory-storage.js';
 import { workbookToXlsx } from '../src/core/io.js';
 import { Workbook } from '../src/core/workbook.js';
 
 vi.mock('../src/lib/session.js', () => ({ session: { settings: {}, username: 'demo', signedOut: false, signedIn: true, user: { uuid: 'u-1' }, addEventListener() {}, removeEventListener() {} } }));
 
-// Inside the Puter desktop a new spreadsheet, and a copy, are saved where the user picks them in Puter's Save dialog,
+// Inside the Everything desktop a new spreadsheet, and a copy, are saved where the user picks them in Everything's Save dialog,
 // outside the app folder the home screen lists as "Your spreadsheets". They showed only among the eight files kept as
 // opened elsewhere: the ninth pushed the first out, and nothing on the home screen found it again.
 let mock;
@@ -20,9 +20,9 @@ beforeEach(() => {
   vi.stubGlobal('localStorage', memoryStorage());
   vi.stubGlobal('matchMedia', () => ({ matches: true, addEventListener() {}, removeEventListener() {} }));
   setStorageUser({ uuid: 'u-1' });
-  mock = installMockPuter();
-  globalThis.puter.env = 'app';
-  globalThis.puter.ui.showSaveFilePicker = vi.fn((blob, suggested) => {
+  mock = installMockEverything();
+  globalThis.everything.env = 'app';
+  globalThis.everything.ui.showSaveFilePicker = vi.fn((blob, suggested) => {
     const path = `~/Desktop/${suggested.replace(/^Untitled spreadsheet/, `Plan ${mock.fs.size + 1}`)}`;
     mock.fs.set(path, { blob, size: blob.size, modified: Date.now() / 1000, uid: `uid-${path}` });
     const saved = Promise.resolve({ name: path.split('/').pop(), path, uid: `uid-${path}` });
@@ -30,7 +30,7 @@ beforeEach(() => {
   });
   document.body.replaceChildren();
 });
-afterEach(() => { vi.unstubAllGlobals(); delete globalThis.puter; document.body.replaceChildren(); });
+afterEach(() => { vi.unstubAllGlobals(); delete globalThis.everything; document.body.replaceChildren(); });
 
 const until = async (test) => { for (let i = 0; i < 400 && !test(); i++) await new Promise((r) => setTimeout(r, 5)); return test(); };
 

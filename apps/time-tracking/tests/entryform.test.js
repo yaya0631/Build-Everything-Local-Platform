@@ -2,13 +2,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { store } from '../src/lib/store.js';
 import { openEntryForm } from '../src/ui/entryform.js';
-import { createPuterMock } from './puter-mock.js';
+import { createEverythingMock } from './everything-mock.js';
 
 let billableProject;
 let internalProject;
 
 beforeEach(async () => {
-  vi.stubGlobal('puter', createPuterMock());
+  vi.stubGlobal('everything', createEverythingMock());
   vi.stubGlobal('matchMedia', () => ({ matches: true }));
   document.body.innerHTML = '<main id="app"></main>';
   await store.init();

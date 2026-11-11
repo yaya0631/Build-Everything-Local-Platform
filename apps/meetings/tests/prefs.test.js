@@ -2,13 +2,13 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 /*
- * Preferences live in localStorage and sync through puter.kv. The rule is
+ * Preferences live in localStorage and sync through everything.kv. The rule is
  * that the cloud only fills in blanks: a choice made on this device is
  * never replaced by one made on another.
  */
 
-/** A puter double whose kv holds the given already-encoded entries. */
-function fakePuter(kv = {}, { signedIn = true } = {}) {
+/** An everything double whose kv holds the given already-encoded entries. */
+function fakeEverything(kv = {}, { signedIn = true } = {}) {
   const writes = [];
   return {
     writes,
@@ -31,7 +31,7 @@ let prefs;
 
 beforeEach(async () => {
   localStorage.clear();
-  delete window.puter;
+  delete window.everything;
   vi.resetModules(); // the cloud pull is memoized per module instance
   prefs = await import('../src/lib/prefs.js');
 });
@@ -56,7 +56,7 @@ describe('preferences', () => {
 
   it('fills in only the preferences this device has never set', async () => {
     prefs.setLocalPref('micId', 'mine');
-    window.puter = fakePuter({
+    window.everything = fakeEverything({
       'meet:pref:micId': JSON.stringify('theirs'),
       'meet:pref:camId': JSON.stringify('theirs'),
     });
@@ -67,29 +67,29 @@ describe('preferences', () => {
 
   it('keeps the theme this device chose when another device chose differently', async () => {
     prefs.setThemePref('dark');
-    window.puter = fakePuter({ 'meet:pref:theme': JSON.stringify('light') });
+    window.everything = fakeEverything({ 'meet:pref:theme': JSON.stringify('light') });
     await prefs.syncPrefsFromCloud();
     expect(prefs.getThemePref()).toBe('dark');
   });
 
   it('keeps a theme stored by an older build, whose format it cannot parse', async () => {
     localStorage.setItem('pm.theme', 'dark'); // the bare form we used to write
-    window.puter = fakePuter({ 'meet:pref:theme': JSON.stringify('light') });
+    window.everything = fakeEverything({ 'meet:pref:theme': JSON.stringify('light') });
     await prefs.syncPrefsFromCloud();
     expect(prefs.getThemePref()).toBe('dark');
   });
 
   it('pulls the cloud theme onto a device that has never chosen one', async () => {
-    window.puter = fakePuter({ 'meet:pref:theme': JSON.stringify('dark') });
+    window.everything = fakeEverything({ 'meet:pref:theme': JSON.stringify('dark') });
     await prefs.syncPrefsFromCloud();
     expect(prefs.getThemePref()).toBe('dark');
   });
 
   it('pulls once however many callers ask', async () => {
-    window.puter = fakePuter({ 'meet:pref:camId': JSON.stringify('theirs') });
+    window.everything = fakeEverything({ 'meet:pref:camId': JSON.stringify('theirs') });
     let gets = 0;
-    const inner = window.puter.kv.get;
-    window.puter.kv.get = (key) => {
+    const inner = window.everything.kv.get;
+    window.everything.kv.get = (key) => {
       gets++;
       return inner(key);
     };
@@ -99,11 +99,11 @@ describe('preferences', () => {
   });
 
   it('does not touch kv while signed out', async () => {
-    const puter = fakePuter({ 'meet:pref:camId': JSON.stringify('theirs') }, { signedIn: false });
-    window.puter = puter;
+    const everything = fakeEverything({ 'meet:pref:camId': JSON.stringify('theirs') }, { signedIn: false });
+    window.everything = everything;
     await prefs.syncPrefsFromCloud();
     prefs.setPref('camId', 'mine');
-    expect(puter.writes).toEqual([]);
+    expect(everything.writes).toEqual([]);
     expect(prefs.getPref('camId')).toBe('mine'); // still stored locally
   });
 

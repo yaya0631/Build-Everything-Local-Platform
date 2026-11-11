@@ -61,7 +61,7 @@ it('preserves resolved row alignment through two native-only XLSX round trips an
   for(let pass=0;pass<2;pass++) {
     const blob=await workbookToXlsx(wb), bytes=await new Promise(resolve=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.readAsArrayBuffer(blob);});
     const zip=X.CFB.read(new Uint8Array(bytes),{type:'array'}),part=X.CFB.find(zip,'/xl/workbook.xml');
-    part.content=new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,''));part.size=part.content.length;
+    part.content=new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,''));part.size=part.content.length;
     wb=await workbookFromFile(X.CFB.write(zip,{type:'array',fileType:'zip'}),'vertical.xlsx');
     expect([0,1,2].map(c=>wb.styleAt(wb.activeSheetId,0,c).valign)).toEqual(['top','middle','bottom']);
   }

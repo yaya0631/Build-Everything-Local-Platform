@@ -1,8 +1,8 @@
 /**
- * An in-process stand-in for the Puter worker runtime, used by the tests and
+ * An in-process stand-in for the Everything worker runtime, used by the tests and
  * by the browser dev harness (mock.html). It provides the two globals a
  * worker sees, `router` and `me`, and a dispatcher that turns a fetch-style
- * call into a route invocation the way puter.workers.exec() would, including
+ * call into a route invocation the way everything.workers.exec() would, including
  * the `user` context for authenticated callers.
  *
  * The fake KV implements the same operations the real store offers (set, get,
@@ -51,8 +51,8 @@ function deleteAt(obj, parts) {
  * createMemoryKv({ strictAdd, strictPaths, storage })
  *   strictAdd: make add() reject on a missing key, to exercise the worker's
  *              fallback path.
- *   strictPaths: refuse what puter.js's kv module refuses before any request
- *              goes out (src/puter-js/src/modules/kv/{update,incr,add,remove}.js,
+ *   strictPaths: refuse what everything.js's kv module refuses before any request
+ *              goes out (src/everything-js/src/modules/kv/{update,incr,add,remove}.js,
  *              and the backend after it): a path map with no entries
  *              (`path_map_invalid`, "pathAndValueMap cannot be empty") for
  *              update/incr/add, and for remove a call with no path
@@ -225,7 +225,7 @@ export function createMemoryKv({ strictAdd = false, strictPaths = false, strictS
       sync();
       calls.ops++;
       if (strictPaths) {
-        // As puter.js's remove(key, ...paths) has it: separate string
+        // As everything.js's remove(key, ...paths) has it: separate string
         // arguments, at least one; an array handed as the one path is refused.
         if (!paths.length) throw refuse('At least one path is required', 'arguments_required');
         if (paths.length === 1 && Array.isArray(paths[0])) throw refuse('Paths must be provided as separate arguments', 'paths_invalid');
@@ -270,7 +270,7 @@ export function createMemoryKv({ strictAdd = false, strictPaths = false, strictS
 /**
  * A view of a KV that prefixes every key, so several fake workers (one per
  * mock user) can share one persisted store while seeing separate data, the
- * way separate Puter accounts would. `prefix()` is read per call, so the
+ * way separate Everything accounts would. `prefix()` is read per call, so the
  * harness can point it at whichever worker is handling the current request.
  */
 export function namespacedKv(kv, prefix) {
@@ -340,7 +340,7 @@ export function createMemoryFs({ storage = null } = {}) {
     },
     async delete(path, { recursive = true } = {}) {
       await ready;
-      // Puter deletes a directory with everything under it (`recursive`
+      // Everything deletes a directory with everything under it (`recursive`
       // defaults to true there too); the fake has no directories of its own,
       // so a path is a directory when files sit below it.
       files.delete(path);
@@ -415,7 +415,7 @@ function packAppUid(appUid) {
 }
 
 /**
- * A workable fake of a Puter worker's own auth token: a three-part JWT whose
+ * A workable fake of an Everything worker's own auth token: a three-part JWT whose
  * payload carries the app uid the way a real one does (see
  * src/shared/events.js `appUidFromToken`). `claim: 'au'`, the default, mints
  * the packed shape every v2 token actually carries; `claim: 'app_uid'` mints
@@ -431,7 +431,7 @@ export function fakeAuthToken(appUid = 'app-4b1d9c20-7e3a-4f56-9a08-2c6d5e1f8b34
 /**
  * Install the globals and return a dispatcher. `loadWorker` imports the
  * worker module once the globals are in place. `owner` is what
- * `me.puter.auth.getUser()` answers: the account the worker runs in (a
+ * `me.everything.auth.getUser()` answers: the account the worker runs in (a
  * `{ uuid, username }`, a function returning one, or null for a runtime that
  * cannot say, in which case the first creator claims the worker). `authToken`
  * defaults to null (a user-scoped worker, as most of the test suite wants:
@@ -439,14 +439,14 @@ export function fakeAuthToken(appUid = 'app-4b1d9c20-7e3a-4f56-9a08-2c6d5e1f8b34
  * call), and `apiOrigin` to a placeholder host meaningful only once a test
  * stubs `globalThis.fetch` (see tests/push.test.js for the pattern).
  */
-export async function createWorkerRuntime({ kv, fs, loadWorker, owner = null, authToken = null, apiOrigin = 'https://api.puter.test' }) {
+export async function createWorkerRuntime({ kv, fs, loadWorker, owner = null, authToken = null, apiOrigin = 'https://api.everything.test' }) {
   const router = createRouter();
   const stores = { kv, fs, owner, authToken, apiOrigin, onAnswered: null };
   globalThis.router = router;
   // Getters, so a test can swap in a fresh store without re-importing the
   // worker module (modules only evaluate once).
   globalThis.me = {
-    puter: {
+    everything: {
       get kv() { return stores.kv; },
       get fs() { return stores.fs; },
       get authToken() { return stores.authToken; },
@@ -464,9 +464,9 @@ export async function createWorkerRuntime({ kv, fs, loadWorker, owner = null, au
 
   /**
    * dispatch(url, init, caller): caller is { uuid, username } for an
-   * authenticated request (what user.puter.auth.getUser() would return),
-   * optionally with `authToken` (what puter.workers.exec forwards as
-   * user.puter.authToken) or `onIdentify` (run while getUser is answering),
+   * authenticated request (what user.everything.auth.getUser() would return),
+   * optionally with `authToken` (what everything.workers.exec forwards as
+   * user.everything.authToken) or `onIdentify` (run while getUser is answering),
    * or null for a plain fetch.
    */
   async function dispatch(url, init = {}, caller = null) {
@@ -474,7 +474,7 @@ export async function createWorkerRuntime({ kv, fs, loadWorker, owner = null, au
     const u = new URL(request.url);
     const found = router.find(request.method.toUpperCase(), u.pathname);
     if (!found) return new Response(JSON.stringify({ error: 'not_found' }), { status: 404 });
-    // `onIdentify` stands in for the round trip to Puter that identifying a
+    // `onIdentify` stands in for the round trip to Everything that identifying a
     // caller really is: it runs before getUser answers, so a test can see
     // what the worker had already set going while it waited.
     const { authToken: callerToken = null, onIdentify = null, ...info } = caller || {};
@@ -483,7 +483,7 @@ export async function createWorkerRuntime({ kv, fs, loadWorker, owner = null, au
       return { ...info };
     };
     const user = caller
-      ? { puter: { authToken: callerToken, auth: { getUser }, getUser } }
+      ? { everything: { authToken: callerToken, auth: { getUser }, getUser } }
       : undefined;
     // The real runtime's event carries waitUntil (see worker/lib.js's
     // settleDeferred): work handed to it runs after the answer goes out. Here

@@ -43,7 +43,7 @@ for (const phase of [
       room: initial.id,
       update: encode(seed.update()),
     });
-    const puter = env.sdk(owner),
+    const everything = env.sdk(owner),
       store = memoryStore();
     // The startup flush uploads an edit queued while offline.
     if (phase === "flush") {
@@ -73,8 +73,8 @@ for (const phase of [
       reached.resolve();
       await release.promise;
     };
-    const exec = puter.workers.exec;
-    puter.workers.exec = async (url, options) => {
+    const exec = everything.workers.exec;
+    everything.workers.exec = async (url, options) => {
       const { op } = JSON.parse(options.body);
       await pause(op === "commit" ? "flush" : op);
       return exec(url, options);
@@ -86,7 +86,7 @@ for (const phase of [
     };
     let peers = 0,
       subscriptions = 0;
-    puter.peer = {
+    everything.peer = {
       serve: async () => {
         await pause("peer");
         peers++;
@@ -101,7 +101,7 @@ for (const phase of [
         };
       },
     };
-    puter.events.onLocal = async () => {
+    everything.events.onLocal = async () => {
       await pause("subscribe");
       subscriptions++;
       let closed = false;
@@ -114,7 +114,7 @@ for (const phase of [
     };
     let changes = 0;
     const session = new CollaborationSession({
-      puter,
+      everything,
       store,
       room: initial.id,
       server: "http://whiteboard-test.localhost:8443",
@@ -191,7 +191,7 @@ test("a failed check-in is tried again before presence can expire", async (t) =>
   });
   seed.destroy();
   const session = new CollaborationSession({
-    puter: env.sdk(owner),
+    everything: env.sdk(owner),
     store: memoryStore(),
     room: initial.id,
     server: "http://whiteboard-test.localhost:8443",
@@ -255,10 +255,10 @@ for (const status of [429, 503, 403])
       update: encode(seed.update()),
     });
     seed.destroy();
-    const puter = env.sdk(owner),
-      exec = puter.workers.exec;
+    const everything = env.sdk(owner),
+      exec = everything.workers.exec;
     let fail = true;
-    puter.workers.exec = async (url, options) => {
+    everything.workers.exec = async (url, options) => {
       if (JSON.parse(options.body).op === "presence" && fail) {
         fail = false;
         return Response.json({ message: "Busy" }, { status });
@@ -267,7 +267,7 @@ for (const status of [429, 503, 403])
     };
     let ready = false;
     const session = new CollaborationSession({
-      puter,
+      everything,
       store: memoryStore(),
       room: initial.id,
       server: "http://whiteboard-test.localhost:8443",
@@ -308,7 +308,7 @@ test("offline edits larger than one commit are sent in several and all saved", a
   });
   seed.destroy();
   const session = new CollaborationSession({
-    puter: env.sdk(owner),
+    everything: env.sdk(owner),
     server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: owner,
@@ -361,17 +361,17 @@ test("offline edits too large to send in time over a slow connection go up in sm
     update: encode(seed.update()),
   });
   seed.destroy();
-  const puter = env.sdk(owner);
+  const everything = env.sdk(owner);
   // Requests carrying more than about 1 MB never complete in time.
-  const exec = puter.workers.exec;
-  puter.workers.exec = (url, options) =>
+  const exec = everything.workers.exec;
+  everything.workers.exec = (url, options) =>
     (options.body?.length || 0) > 1_000_000
       ? Promise.reject(
           new DOMException("The operation was aborted.", "AbortError"),
         )
       : exec(url, options);
   const session = new CollaborationSession({
-    puter,
+    everything,
     server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: owner,
@@ -429,7 +429,7 @@ test("archiving makes open sessions read-only, and peers return after access doe
   });
   await env.service.call(editor, { op: "join", room: b.id, token });
   const session = new CollaborationSession({
-    puter: { ...env.sdk(editor), peer: hub.peer },
+    everything: { ...env.sdk(editor), peer: hub.peer },
     server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: editor,
@@ -481,7 +481,7 @@ test("a member left without peer links catches up on edits, and again when one r
   });
   seed.destroy();
   const session = new CollaborationSession({
-    puter: { ...env.sdk(owner), peer: hub.peer },
+    everything: { ...env.sdk(owner), peer: hub.peer },
     server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: owner,
@@ -531,7 +531,7 @@ test("a member left without peer links catches up on edits, and again when one r
   });
   seed.destroy();
   const session = new CollaborationSession({
-    puter: { ...env.sdk(owner), peer: hub.peer },
+    everything: { ...env.sdk(owner), peer: hub.peer },
     server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: owner,
@@ -587,7 +587,7 @@ test("a role change keeps a member's live board events", async () => {
   await env.service.call(editor, { op: "join", room: b.id, token });
   let state;
   const session = new CollaborationSession({
-    puter: env.sdk(editor),
+    everything: env.sdk(editor),
     server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: editor,
@@ -661,7 +661,7 @@ test("a burst of edits does not make every participant check in each time", asyn
   await env.service.call(editor, { op: "join", room: b.id, token });
   let state;
   const session = new CollaborationSession({
-    puter: env.sdk(editor),
+    everything: env.sdk(editor),
     server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: editor,
@@ -719,7 +719,7 @@ test("switching tabs checks in only when the last check-in is old, and hiding se
   const previous = globalThis.document;
   globalThis.document = page;
   const session = new CollaborationSession({
-    puter: env.sdk(owner),
+    everything: env.sdk(owner),
     server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: owner,
@@ -784,7 +784,7 @@ test("a commenter's comment is saved even when their device measured text differ
   await env.service.call(viewer, { op: "join", room: b.id, token });
   let state;
   const session = new CollaborationSession({
-    puter: env.sdk(viewer),
+    everything: env.sdk(viewer),
     server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: viewer,
@@ -839,7 +839,7 @@ test("an open session whose board is deleted becomes read-only and says so, and 
   await env.service.call(editor, { op: "join", room: b.id, token });
   const statuses = [];
   const session = new CollaborationSession({
-    puter: env.sdk(editor),
+    everything: env.sdk(editor),
     server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: editor,
@@ -916,7 +916,7 @@ test("edits the worker keeps refusing as out of order are made again on its stat
   seed.destroy();
   const statuses = [];
   const session = new CollaborationSession({
-    puter: env.sdk(owner),
+    everything: env.sdk(owner),
     server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: owner,
@@ -995,7 +995,7 @@ test("an edit refused as out of order that cannot be made again on the worker's 
   seed.destroy();
   const rejections = [];
   const session = new CollaborationSession({
-    puter: env.sdk(owner),
+    everything: env.sdk(owner),
     server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: owner,
@@ -1068,7 +1068,7 @@ test("a board holding what only a newer app writes asks for a reload instead of 
   seed.destroy();
   const statuses = [];
   const session = new CollaborationSession({
-    puter: env.sdk(owner),
+    everything: env.sdk(owner),
     server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: owner,
@@ -1125,7 +1125,7 @@ test("what only a newer app writes is noticed when a later synchronization bring
   seed.destroy();
   const statuses = [];
   const session = new CollaborationSession({
-    puter: env.sdk(owner),
+    everything: env.sdk(owner),
     server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: owner,
@@ -1181,7 +1181,7 @@ for (const path of ["a peer", "a save's response"])
     seed.destroy();
     const statuses = [];
     const session = new CollaborationSession({
-      puter: env.sdk(owner),
+      everything: env.sdk(owner),
       server: "http://whiteboard-test.localhost:8443",
       room: b.id,
       user: owner,
@@ -1248,7 +1248,7 @@ test("a queued edit that no longer fits the board is uploaded and settled before
   const store = memoryStore();
   const make = () =>
     new CollaborationSession({
-      puter: env.sdk(owner),
+      everything: env.sdk(owner),
       server: "http://whiteboard-test.localhost:8443",
       room: b.id,
       user: owner,
@@ -1318,7 +1318,7 @@ test("an upload keeps the shared state on this device once", async () => {
     return put(row);
   };
   const session = new CollaborationSession({
-    puter: env.sdk(owner),
+    everything: env.sdk(owner),
     server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: owner,
@@ -1371,7 +1371,7 @@ test("a device that cannot keep its copy of the board still saves, shows others'
   const open = (user, rows = store) => {
     const statuses = [];
     const session = new CollaborationSession({
-      puter: env.sdk(user),
+      everything: env.sdk(user),
       server: "http://whiteboard-test.localhost:8443",
       room: b.id,
       user,
@@ -1462,7 +1462,7 @@ test("a session continuing under a new ID publishes its new peer invite at once"
     await env.service.call(user, { op: "join", room: b.id, token });
   }
   const session = new CollaborationSession({
-    puter: { ...env.sdk(editor), peer: hub.peer },
+    everything: { ...env.sdk(editor), peer: hub.peer },
     server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: editor,
@@ -1515,7 +1515,7 @@ test("an editor demoted to viewer while edits wait is told they stay on this dev
   await env.service.call(editor, { op: "join", room: b.id, token });
   const statuses = [];
   const session = new CollaborationSession({
-    puter: env.sdk(editor),
+    everything: env.sdk(editor),
     server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: editor,
@@ -1560,7 +1560,7 @@ test("edits arriving steadily on a slow board are shown in fewer redraws, and qu
   let cost = 0,
     shown = 0;
   const session = new CollaborationSession({
-    puter: {},
+    everything: {},
     server: "http://whiteboard-test.localhost:8443",
     room: "slow-board",
     user: owner,
@@ -1611,7 +1611,7 @@ test("a resting cursor survives one lost repeat, and a crashed participant's sel
   });
   seed.destroy();
   const session = new CollaborationSession({
-    puter: env.sdk(owner),
+    everything: env.sdk(owner),
     store: memoryStore(),
     room: initial.id,
     server: "http://whiteboard-test.localhost:8443",

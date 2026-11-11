@@ -1,7 +1,7 @@
 /**
  * Where scripts run in the app: a worker started inside a hidden, sandboxed frame. The frame is sandboxed without
  * allow-same-origin, so it and its worker have an opaque origin of their own: none of the app's storage, cookies,
- * Puter session or page is theirs to reach, and the frame's content security policy refuses them the network. The
+ * Everything session or page is theirs to reach, and the frame's content security policy refuses them the network. The
  * worker runs the script off the page's thread, so a script stuck in a loop never freezes the app; taking the frame
  * away stops it at once.
  *

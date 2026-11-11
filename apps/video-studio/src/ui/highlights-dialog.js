@@ -1,6 +1,6 @@
 /**
  * Find highlights dialog: transcribe a long video clip (or reuse the
- * project transcript), let Puter AI pick its most engaging moments, preview
+ * project transcript), let Everything AI pick its most engaging moments, preview
  * them in the player, and turn the chosen ones into short projects (with
  * optional auto reframe to a vertical frame) or compound clips at the end
  * of this project.
@@ -301,7 +301,7 @@ export function openHighlightsDialog(ctx, { clipId, chat } = {}) {
   return { ...d, search, make, get found() { return found; }, get words() { return words; } };
 }
 
-/** Open the dialog from the editor, or explain that it needs a Puter account. */
+/** Open the dialog from the editor, or explain that it needs an Everything account. */
 export function openHighlights(ctx, extra = {}) {
   if (!aiReady(ctx) && !extra.chat) return needAiDialog(ctx.account, 'Find highlights');
   return openHighlightsDialog(ctx, extra);

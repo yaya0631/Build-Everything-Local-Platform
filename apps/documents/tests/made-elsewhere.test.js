@@ -10,7 +10,7 @@ import { closeAllModals } from '../src/ui/modal.js';
 vi.mock('../src/ui/toast.js', () => ({ toast: vi.fn() }));
 
 /**
- * Inside the Puter desktop a new document, and a copy, are saved where the user puts them in Puter's Save dialog,
+ * Inside the Everything desktop a new document, and a copy, are saved where the user puts them in Everything's Save dialog,
  * outside the app folder the home screen lists. The app remembers the files it made that way and lists them too.
  */
 
@@ -18,7 +18,7 @@ const notFound = () => Object.assign(new Error('does not exist'), { code: 'subje
 let files, uids;
 const entry = (path) => ({ path, name: path.split('/').pop(), size: files.get(path).size, modified: 5, uid: uids.get(path) });
 
-function installPuter() {
+function installEverything() {
   files = new Map();
   uids = new Map();
   const put = (path, blob) => { files.set(path, blob); if (!uids.has(path)) uids.set(path, `uid-${uids.size + 1}`); };
@@ -53,7 +53,7 @@ function installPuter() {
       return saved;
     }),
   };
-  vi.stubGlobal('puter', { env: 'app', fs, ui, auth: { isSignedIn: () => true } });
+  vi.stubGlobal('everything', { env: 'app', fs, ui, auth: { isSignedIn: () => true } });
 }
 
 beforeEach(() => {
@@ -61,7 +61,7 @@ beforeEach(() => {
   versioning.enabled = false;
   publishing.enabled = false;
   vi.stubGlobal('matchMedia', () => ({ matches: true }));
-  installPuter();
+  installEverything();
 });
 afterEach(() => {
   closeAllModals();
@@ -116,14 +116,14 @@ describe('documents made elsewhere on the drive', () => {
     files.delete('/alice/Desktop/C.docx');
     expect((await madeFiles()).map((f) => f.path)).toEqual(['/alice/Work/A2.docx']);
     // The record followed A: the next listing reads its new folder.
-    puter.fs.stat.mockClear();
+    everything.fs.stat.mockClear();
     expect((await madeFiles()).map((f) => f.path)).toEqual(['/alice/Work/A2.docx']);
-    expect(puter.fs.stat).not.toHaveBeenCalled();
+    expect(everything.fs.stat).not.toHaveBeenCalled();
   });
 
   it('keeps the record of a file whose folder cannot be read just now', async () => {
     rememberMade({ path: '/alice/Desktop/A.docx', uid: 'uid-a' });
-    puter.fs.readdir.mockRejectedValueOnce(new Error('offline'));
+    everything.fs.readdir.mockRejectedValueOnce(new Error('offline'));
     const made = await madeFiles();
     expect([...made]).toEqual([]);
     expect(made.unreachable).toEqual(['/alice/Desktop/A.docx']);

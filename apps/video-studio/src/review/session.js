@@ -10,9 +10,9 @@ import { randomId } from './protocol.js';
 import { applyChanges, pendingComment } from './comments.js';
 
 export class ReviewSession extends Emitter {
-  constructor({ puter, server, review, call = callWorker, interval = 8000 }) {
+  constructor({ everything, server, review, call = callWorker, interval = 8000 }) {
     super();
-    this.puter = puter;
+    this.everything = everything;
     this.server = server;
     this.id = review;
     this._call = call;
@@ -50,7 +50,7 @@ export class ReviewSession extends Emitter {
   }
 
   call(op, fields = {}) {
-    return this._call(this.puter, this.server, { op, review: this.id, ...fields });
+    return this._call(this.everything, this.server, { op, review: this.id, ...fields });
   }
 
   /** Join with an invite token (or check membership without one) and load the review. */

@@ -1,6 +1,6 @@
 /**
  * Demand: how fast stock actually leaves, and what that implies for
- * thresholds and order quantities. Pure — no DOM, no Puter;
+ * thresholds and order quantities. Pure — no DOM, no Everything;
  * unit-tested.
  *
  * Everything here is one division and one multiplication over numbers

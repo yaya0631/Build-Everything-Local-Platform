@@ -19,10 +19,10 @@ function storyDeck() {
 }
 
 async function mock(page, { signedIn = false, files = [] } = {}) {
-  await page.route("**/sdk/puter.js", (r) =>
+  await page.route("**/sdk/everything.js", (r) =>
     r.fulfill({
       contentType: "application/javascript",
-      body: `window.puter={env:"web",auth:{isSignedIn:async()=>${signedIn},getUser:async()=>({username:"tester",uuid:"u1"})},fs:{readdir:async()=>${JSON.stringify(files)},write:async(path,blob)=>({path,name:path.split('/').pop(),modified:Date.now()/1000})},ui:{onLaunchedWithItems:()=>{}}};`,
+      body: `window.everything={env:"web",auth:{isSignedIn:async()=>${signedIn},getUser:async()=>({username:"tester",uuid:"u1"})},fs:{readdir:async()=>${JSON.stringify(files)},write:async(path,blob)=>({path,name:path.split('/').pop(),modified:Date.now()/1000})},ui:{onLaunchedWithItems:()=>{}}};`,
     }),
   );
 }

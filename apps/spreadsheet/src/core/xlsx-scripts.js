@@ -1,5 +1,5 @@
 /**
- * A workbook's scripts in an .xlsx: one JSON part of the app's own, /puter/scripts.json, reached from the package's
+ * A workbook's scripts in an .xlsx: one JSON part of the app's own, /everything/scripts.json, reached from the package's
  * relationships by a relationship type of the app's own. A program that does not know the type leaves the part
  * alone (the package format says a consumer ignores relationships it does not understand), so the file opens
  * everywhere as it would without it, and this app reads its scripts back.
@@ -7,9 +7,9 @@
 import { normalizeScripts, serializeScripts } from './scripts.js';
 
 export const SCRIPTS_RELATIONSHIP = 'http://localhost:8443/spreadsheet/relationships/scripts';
-export const SCRIPTS_PART = '/puter/scripts.json';
-export const SCRIPTS_CONTENT_TYPE = 'application/vnd.puter.spreadsheet.scripts+json';
-const FORMAT = 'puter-spreadsheet-scripts';
+export const SCRIPTS_PART = '/everything/scripts.json';
+export const SCRIPTS_CONTENT_TYPE = 'application/vnd.everything.spreadsheet.scripts+json';
+const FORMAT = 'everything-spreadsheet-scripts';
 
 const escapeAttr = (text) => String(text).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
 
@@ -21,8 +21,8 @@ export function writeXlsxScripts(wb, { get, set, contentType }) {
   const rels = get('/_rels/.rels');
   if (!rels || rels.includes(SCRIPTS_RELATIONSHIP)) return;
   const taken = new Set([...rels.matchAll(/\bId="([^"]*)"/g)].map((m) => m[1]));
-  let id = 'rIdPuterScripts';
-  for (let n = 2; taken.has(id); n++) id = `rIdPuterScripts${n}`;
+  let id = 'rIdEverythingScripts';
+  for (let n = 2; taken.has(id); n++) id = `rIdEverythingScripts${n}`;
   const rel = `<Relationship Id="${escapeAttr(id)}" Type="${SCRIPTS_RELATIONSHIP}" Target="${SCRIPTS_PART.slice(1)}"/>`;
   set('/_rels/.rels', rels.replace('</Relationships>', `${rel}</Relationships>`));
 }

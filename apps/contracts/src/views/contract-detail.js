@@ -407,7 +407,7 @@ export function contractDetailView({ param }) {
             if (store.settings.ocrConsent) return true;
             const ok = await confirmDialog({
               title: 'Read the pages with AI?',
-              message: 'This document has no text in it, so it can only be read as images by Puter\'s AI. PDFs that do contain text are read here in your browser and never leave your device. Agreeing covers scans from now on, so this is not asked per document. Settings can turn it back into a question.',
+              message: 'This document has no text in it, so it can only be read as images by Everything\'s AI. PDFs that do contain text are read here in your browser and never leave your device. Agreeing covers scans from now on, so this is not asked per document. Settings can turn it back into a question.',
               confirmLabel: 'Read it',
               danger: false,
             });
@@ -600,7 +600,7 @@ export function contractDetailView({ param }) {
 
     if (!docs.length) {
       section.append(el('p.quiet-note', {},
-        'Attach the signed agreement, amendments, and related files. They are stored in your Puter cloud.'));
+        'Attach the signed agreement, amendments, and related files. They are stored in your Everything cloud.'));
       return section;
     }
 

@@ -167,7 +167,7 @@ export function toCsv(survey, responses, collectors = {}) {
 export function toJson(survey, responses, collectors = {}) {
   return JSON.stringify(
     {
-      format: 'puter-survey-responses',
+      format: 'everything-survey-responses',
       version: 1,
       exportedAt: new Date().toISOString(),
       survey: { id: survey.id, title: survey.title, pages: survey.pages },

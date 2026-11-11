@@ -1,5 +1,5 @@
 // Shared pieces of the multi-image commands: a dialog that collects source
-// images (this device, Puter or open documents) plus command settings, image
+// images (this device, Everything or open documents) plus command settings, image
 // loading, and opening results as new documents.
 import type { Editor } from '../../editor';
 import type { DocumentSession } from '../../app/session';
@@ -38,7 +38,7 @@ export function inputsDialog(e: Editor, title: string, settings: string, opts: {
   dialog.innerHTML = `<form method="dialog">
     <h2>${escapeXML(title)}</h2>
     <section class="processor-step"><h3><span>1</span>Source images</h3>
-      <div class="processor-buttons"><button type="button" data-act="local">Add from this device…</button><button type="button" data-act="cloud">Add from Puter…</button>${hasOpen ? '<button type="button" data-act="open">Add open documents</button>' : ''}<button type="button" data-act="clear">Clear</button></div>
+      <div class="processor-buttons"><button type="button" data-act="local">Add from this device…</button><button type="button" data-act="cloud">Add from Everything…</button>${hasOpen ? '<button type="button" data-act="open">Add open documents</button>' : ''}<button type="button" data-act="clear">Clear</button></div>
       <ul class="processor-list" aria-label="Source images"></ul>
     </section>
     ${settings}

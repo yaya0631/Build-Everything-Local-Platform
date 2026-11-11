@@ -33,7 +33,7 @@ it('displays native EMF artwork and exports its original vectors without private
     const image = zip.FullPaths.find(p => p.endsWith('.emf'));
     expect(new Uint8Array(X.CFB.find(zip, image).content)).toEqual(vectorEmf());
     const part = X.CFB.find(zip, '/xl/workbook.xml');
-    part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+    part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
     part.size = part.content.length;
     wb = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'native.xlsx');
   }

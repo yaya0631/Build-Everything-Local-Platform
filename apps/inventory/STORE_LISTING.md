@@ -14,7 +14,7 @@ Look beyond the total. Track quantities and shelf codes at each location, set lo
 
 Make routine work easier. Scan barcodes with a compatible scanner or phone camera, gather sales or job materials in a single take-out basket, and record the whole batch together. Manage sizes and colours as product families, track the parts inside kits, and keep dated lots in view. Save stocktakes with count differences and their value at cost.
 
-Understand the results with reports on stock value, top movers, recorded sales, gross profit, and slow-moving products. Bring in an existing spreadsheet with CSV import and export your records when you need them. Your data lives in your Puter account, with backups, automatic safety snapshots, and offline changes that sync when you reconnect. A Puter account is required.
+Understand the results with reports on stock value, top movers, recorded sales, gross profit, and slow-moving products. Bring in an existing spreadsheet with CSV import and export your records when you need them. Your data lives in your Everything account, with backups, automatic safety snapshots, and offline changes that sync when you reconnect. An Everything account is required.
 
 ## Key features
 

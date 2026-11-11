@@ -8,7 +8,7 @@ async function native(wb) {
   const zip = X.CFB.read(new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()), { type: 'array' });
   const tables = zip.FullPaths.flatMap((path, i) => /\/tables\/table\d+\.xml$/.test(path) ? [text(zip.FileIndex[i])] : []);
   const part = X.CFB.find(zip, '/xl/workbook.xml');
-  part.content = new TextEncoder().encode(text(part).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  part.content = new TextEncoder().encode(text(part).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   part.size = part.content.length;
   const sheetXml = text(X.CFB.find(zip, '/xl/worksheets/sheet1.xml'));
   return { tables, sheetXml, wb: await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'native.xlsx') };

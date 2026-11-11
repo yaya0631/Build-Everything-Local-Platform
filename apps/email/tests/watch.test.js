@@ -33,7 +33,7 @@ const LATE = [
   'One more thing before the quarter closes.',
 ].join('\r\n');
 
-/** A fake `puter.events`: records subscriptions and lets a test fire events. */
+/** A fake `everything.events`: records subscriptions and lets a test fire events. */
 const fakeEvents = () => {
   const calls = [];
   const events = {

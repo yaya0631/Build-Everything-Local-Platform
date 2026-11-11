@@ -1,8 +1,8 @@
 // The AI options of Portrait & Restore (AI colors, AI style, Scene Changer):
-// instructions for Puter's image-to-image service. Requests run only from the
+// instructions for Everything's image-to-image service. Requests run only from the
 // buttons in the workspace, which say what is sent before anything is.
 import { SCENE_PRESETS, type RestoreEntry } from '../../imaging/restore/defs';
-import { toAIError, transformImage } from '../../imaging/ai/puter-ai';
+import { toAIError, transformImage } from '../../imaging/ai/everything-ai';
 import type { RGBA8 } from '../../imaging/types';
 import { ensureSignedIn } from '../retouch/ai';
 
@@ -39,7 +39,7 @@ export type AIRunOptions = { reference?: RGBA8; signal?: AbortSignal; onStatus?:
 /** Sign in when needed, then send the image and instruction. */
 export async function runAI(image: RGBA8, instruction: string, o: AIRunOptions = {}): Promise<RGBA8> {
   try {
-    o.onStatus?.('Connecting to Puter…');
+    o.onStatus?.('Connecting to Everything…');
     await ensureSignedIn();
     o.onStatus?.('Generating… this can take a little while.');
     return await transformImage(image, instruction, { reference: o.reference, signal: o.signal });

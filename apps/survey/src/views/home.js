@@ -237,7 +237,7 @@ export async function mount(container, route, app) {
   async function exportSurvey(sid) {
     try {
       const doc = await repo.loadSurvey(sid);
-      downloadText(`${slugify(doc.title)}.survey.json`, JSON.stringify({ format: 'puter-survey', version: 1, survey: doc }, null, 2), 'application/json');
+      downloadText(`${slugify(doc.title)}.survey.json`, JSON.stringify({ format: 'everything-survey', version: 1, survey: doc }, null, 2), 'application/json');
     } catch {
       toastError('Could not export the survey.');
     }
@@ -344,7 +344,7 @@ export async function mount(container, route, app) {
       folderRows.length ? folderRows : h('p', { class: 'side-hint' }, 'Group related surveys into folders.'),
       h('div', { class: 'side-foot' },
         h('a', { href: REPO_URL, target: '_blank', rel: 'noopener' }, githubMark(13), 'Open source on GitHub'),
-        h('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Powered by Puter')),
+        h('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Powered by Everything')),
     );
   }
 

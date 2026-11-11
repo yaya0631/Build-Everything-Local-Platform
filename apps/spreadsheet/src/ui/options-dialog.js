@@ -26,7 +26,7 @@ export const OPTION_SECTIONS = [
   { id: 'edit', title: 'Editing', icon: 'pencil', about: 'Typing into cells, moving the selection, and working with the fill handle.' },
   { id: 'view', title: 'View', icon: 'eye', about: 'What the window shows around the sheet, and how comments and objects appear.' },
   { id: 'proofing', title: 'Proofing', icon: 'spell', about: 'AutoCorrect and spelling.', keywords: 'autocorrect spelling dictionary typo correct' },
-  { id: 'save', title: 'Save', icon: 'save', about: 'Saving to Puter as you work, and the recovery copy kept in this browser.', keywords: 'autosave autorecover draft recovery' },
+  { id: 'save', title: 'Save', icon: 'save', about: 'Saving to Everything as you work, and the recovery copy kept in this browser.', keywords: 'autosave autorecover draft recovery' },
   { id: 'accessibility', title: 'Accessibility', icon: 'accessibility', about: 'Making the selection easier to see, and the screen calmer.', keywords: 'contrast motion animation selection' },
   { id: 'privacy', title: 'Privacy', icon: 'lock', about: 'Whether features that send your data to an AI service are offered.', keywords: 'ai artificial intelligence assistant' },
   { id: 'ribbon', title: 'Customize Ribbon', icon: 'customizeRibbon', about: 'Show, hide, rename and reorder tabs, and build tabs and groups of your own.', keywords: 'ribbon tab group custom commands' },
@@ -158,7 +158,7 @@ export function openOptionsDialog(ctx, { section = 'general' } = {}) {
           number('newSheets', 'Sheets in a new workbook', null, { min: 1, max: 255 }),
           choose('newView', 'Open new sheets in', 'Also used for sheets added to any workbook.')),
         group('Your name',
-          text('userName', 'Name shown on your comments and changes', account ? `Leave blank to use your Puter account name, ${account}.` : 'Leave blank to use your Puter account name.', { placeholder: account })),
+          text('userName', 'Name shown on your comments and changes', account ? `Leave blank to use your Everything account name, ${account}.` : 'Leave blank to use your Everything account name.', { placeholder: account })),
       ];
     },
 
@@ -283,7 +283,7 @@ export function openOptionsDialog(ctx, { section = 'general' } = {}) {
 
     save() {
       return [
-        group('Saving to Puter',
+        group('Saving to Everything',
           check('autoSave', 'Turn AutoSave on by default', 'Saves your changes a moment after you make them. The switch beside the title turns it off for this device.', { onChange: (on) => ctx.setAutoSave?.(on) })),
         group('Recovery',
           choose('draftDelay', 'Keep a recovery copy of unsaved edits in this browser', 'If the tab closes or the connection drops before a save, the edits come back from this copy.')),
@@ -303,7 +303,7 @@ export function openOptionsDialog(ctx, { section = 'general' } = {}) {
     privacy() {
       return [
         group('AI features',
-          check('aiFeatures', 'Offer AI features', 'The AI assistant, Write a formula with AI and the AI() function send the cells and words you give them to Puter’s AI service. Off: they are hidden and nothing is sent.')),
+          check('aiFeatures', 'Offer AI features', 'The AI assistant, Write a formula with AI and the AI() function send the cells and words you give them to Everything’s AI service. Off: they are hidden and nothing is sent.')),
       ];
     },
 

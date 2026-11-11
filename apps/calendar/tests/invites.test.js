@@ -7,7 +7,7 @@ import { createStore } from '../src/js/store.js';
 import { materializeOccurrence, expandOccurrences } from '../src/js/recurrence.js';
 import { createRsvpLinks } from '../src/js/rsvp-links.js';
 import { createInvites, digest, describeWhen, describeResult, describeCancelResult, EMAIL_WORKER_URL } from '../src/js/invites.js';
-import { instantiateWorker, makeKv, makeFakePuter, bridgeFetch } from './helpers/worker-harness.js';
+import { instantiateWorker, makeKv, makeFakeEverything, bridgeFetch } from './helpers/worker-harness.js';
 
 // rsvp-links (and the worker it deploys) use WebCrypto; jsdom doesn't ship it.
 if (!globalThis.crypto || !globalThis.crypto.subtle) {
@@ -34,7 +34,7 @@ async function settle(rsvp) {
 /**
  * The whole path in one place: a store, the user's own RSVP worker (which
  * mints the links), and the app-owned email worker the invitations go
- * through — with `puter.workers.exec` bridged to it the way the real SDK
+ * through — with `everything.workers.exec` bridged to it the way the real SDK
  * bridges it, caller session and all.
  */
 const STUB_LINK = 'http://cal-rsvp-stub01.localhost:8443/rsvp/' + 'c1d2'.repeat(10);
@@ -66,7 +66,7 @@ function stubRsvpLinks() {
 /**
  * `user`, `requestUser` and `requestEmail` shape what invites knows about the
  * host (the RSVP worker always knows HOST): who boot said I was, what a fresh
- * getUser() says, and what Puter's permission prompt would answer.
+ * getUser() says, and what Everything's permission prompt would answer.
  */
 function makeWorld({
   offline = false,
@@ -78,15 +78,15 @@ function makeWorld({
 } = {}) {
   const kv = makeKv();
   const store = createStore(kv);
-  const fakePuter = makeFakePuter();
+  const fakeEverything = makeFakeEverything();
   const rsvp = stubRsvp
     ? stubRsvpLinks()
     : createRsvpLinks({
         kv,
         store,
         user: HOST,
-        getPuter: () => fakePuter,
-        fetchFn: bridgeFetch(fakePuter),
+        getEverything: () => fakeEverything,
+        fetchFn: bridgeFetch(fakeEverything),
         blocked: () => false,
         requestUser: async () => HOST,
         syncDelayMs: 0,
@@ -100,7 +100,7 @@ function makeWorld({
   const emailKv = makeKv();
   const emailWorker = instantiateWorker(EMAIL_WORKER_SRC, {
     kv: emailKv,
-    me: { puter: { kv: emailKv, authToken: 'owner-token', email: { send } } },
+    me: { everything: { kv: emailKv, authToken: 'owner-token', email: { send } } },
   });
   let status = null; // when set, exec answers with this instead of the worker
   const exec = vi.fn(async (url, init = {}) => {
@@ -115,7 +115,7 @@ function makeWorld({
     return emailWorker.call(init.method || 'GET', parsed.pathname + parsed.search, {
       headers: init.headers || {},
       body: init.body,
-      user: { ...HOST, puter: { authToken: 'caller-token' } },
+      user: { ...HOST, everything: { authToken: 'caller-token' } },
     });
   });
 
@@ -128,7 +128,7 @@ function makeWorld({
     user,
     requestUser,
     requestEmail,
-    getPuter: () => ({ ...fakePuter, workers: { ...fakePuter.workers, exec } }),
+    getEverything: () => ({ ...fakeEverything, workers: { ...fakeEverything.workers, exec } }),
     blocked: () => blocked,
     toast: (message, opts) => toasts.push({ message, variant: (opts && opts.variant) || 'default' }),
     readyTimeoutMs,
@@ -220,7 +220,7 @@ describe('invites: what needs sending', () => {
     expect(plan.pending).toHaveLength(1);
     expect(plan.waiting).toBe(0);
     expect(plan.lastSentAt).toBe(0);
-    expect(plan.ready[0].rsvpUrl).toMatch(/^https:\/\/cal-rsvp-[0-9a-f]+\.puter\.work\/rsvp\/[0-9a-f]{40}$/);
+    expect(plan.ready[0].rsvpUrl).toMatch(/^https:\/\/cal-rsvp-[0-9a-f]+\.everything\.work\/rsvp\/[0-9a-f]{40}$/);
   });
 
   it('counts a guest whose link is not minted yet as waiting, not sendable', async () => {
@@ -585,7 +585,7 @@ describe('invites: sending once the links exist', () => {
   });
 
   it('never lets two sends for one event overlap on the wire', async () => {
-    // puter.kv has no transactions: two requests arriving together can both
+    // everything.kv has no transactions: two requests arriving together can both
     // pass the worker's already-sent check before either has recorded a
     // send. So the app itself puts the second behind the first — whatever
     // the network does to their timing. Make the worker slow enough that an
@@ -668,7 +668,7 @@ describe('invites: refusals', () => {
 
   it('turns the worker\'s refusals into something a person can act on', async () => {
     world.setStatus(401);
-    await expect(world.invites.send(event)).rejects.toThrow(/Sign in to Puter/);
+    await expect(world.invites.send(event)).rejects.toThrow(/Sign in to Everything/);
     world.setStatus(429);
     await expect(world.invites.send(event)).rejects.toThrow(/invitation limit/);
   });
@@ -694,7 +694,7 @@ describe('invites: refusals', () => {
       store: world.store,
       rsvp: world.rsvp,
       user: HOST,
-      getPuter: () => null,
+      getEverything: () => null,
       blocked: () => false,
     });
     await reboot.start();
@@ -707,11 +707,11 @@ describe('invites: refusals', () => {
       store: world.store,
       rsvp: world.rsvp,
       user: HOST,
-      getPuter: () => ({ workers: {} }),
+      getEverything: () => ({ workers: {} }),
       blocked: () => false,
     });
     expect(bare.available()).toBe(false);
-    await expect(bare.send(event)).rejects.toThrow(/Puter SDK/);
+    await expect(bare.send(event)).rejects.toThrow(/Everything SDK/);
     expect(bare.cancellationFor(event)).toBeNull();
   });
 });
@@ -1199,7 +1199,7 @@ describe('invites: cancelling a deleted event', () => {
     world.setBlocked(false);
 
     world.setStatus(401);
-    await expect(world.invites.sendCancellation(cancel)).rejects.toThrow(/Sign in to Puter/);
+    await expect(world.invites.sendCancellation(cancel)).rejects.toThrow(/Sign in to Everything/);
     world.setStatus(429);
     await expect(world.invites.sendCancellation(cancel)).rejects.toThrow(/email limit/);
     world.setStatus(null);
@@ -1287,7 +1287,7 @@ describe('invites: a guest the daily cap skipped was not invited', () => {
 });
 
 describe('invites: an invitation names its host', () => {
-  // Puter withholds the account's email until the user grants it: boot's user
+  // Everything withholds the account's email until the user grants it: boot's user
   // object has none, and neither does a fresh getUser() until the grant lands.
   const NOBODY = { uuid: HOST.uuid };
 
@@ -1362,7 +1362,7 @@ describe('invites: an invitation names its host', () => {
       if (resource !== 'email') throw new Error('Expected the email resource');
       return permission;
     });
-    vi.stubGlobal('puter', {
+    vi.stubGlobal('everything', {
       auth: { getUser: vi.fn(async () => NOBODY) },
       perms: { request },
     });

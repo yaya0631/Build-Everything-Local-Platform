@@ -2,7 +2,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Workbook } from '../src/core/workbook.js';
 import * as IO from '../src/core/io.js';
-import * as P from '../src/lib/puter.js';
+import * as P from '../src/lib/everything.js';
 import { openCopySheetDialog } from '../src/ui/copysheet.js';
 import { closeAllModals } from '../src/ui/modal.js';
 import { toast } from '../src/ui/toast.js';
@@ -43,7 +43,7 @@ describe('copying a sheet to a new file', () => {
       files.set(path, blob);
       return { path: `/user/${path}`, name: path.split('/').pop() };
     });
-    vi.stubGlobal('puter', { fs: { mkdir: vi.fn(), write } });
+    vi.stubGlobal('everything', { fs: { mkdir: vi.fn(), write } });
     const run = vi.fn();
     const modal = openCopySheetDialog({ wb, grid: { focus() {} }, run }, wb.activeSheetId);
     modal.panel.querySelector('form').dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));

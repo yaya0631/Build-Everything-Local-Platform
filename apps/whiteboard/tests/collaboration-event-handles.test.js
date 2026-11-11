@@ -65,13 +65,13 @@ test("a refusal about one member holds back only them", async () => {
 });
 
 // The grant was asked for the board's owner, who in an organization is not
-// the account the worker runs as: Puter refused it without a prompt, or it
+// the account the worker runs as: Everything refused it without a prompt, or it
 // went to an account whose consent the worker never uses.
 test("asks the worker account for the consent, and tells the board", async () => {
   const asked = [],
     sent = [];
   const session = { request: async (op, data) => sent.push({ op, ...data }) };
-  const puter = {
+  const everything = {
     appID: "app-wb",
     perms: { request: async (...a) => (asked.push(a), true) },
   };
@@ -79,13 +79,13 @@ test("asks the worker account for the consent, and tells the board", async () =>
     events: { app: "app-wb", key: "wb:r:ev:signal", owner: owner.uuid },
     owner: editor.uuid,
   };
-  assert.equal(await allowLiveUpdates(session, puter, own), true);
+  assert.equal(await allowLiveUpdates(session, everything, own), true);
   assert.deepEqual(asked, [
     ["permission", { permission: `manage:kv-share:${owner.uuid}:app-wb:wb` }],
   ]);
   assert.deepEqual(sent, [{ op: "events", consented: true }]);
-  puter.perms.Resource = { KV_SHARE: "kvShare" };
-  await allowLiveUpdates(session, puter, own);
+  everything.perms.Resource = { KV_SHARE: "kvShare" };
+  await allowLiveUpdates(session, everything, own);
   assert.deepEqual(asked.at(-1), [
     "kvShare",
     { prefix: "wb:", access: "watch" },
@@ -95,12 +95,12 @@ test("asks the worker account for the consent, and tells the board", async () =>
 test("does not ask anyone but the worker account, or from another app", async () => {
   let asked = 0;
   const session = { request: async () => {} };
-  const puter = {
+  const everything = {
     appID: "app-wb",
     perms: { request: async () => (asked++, true) },
   };
   assert.equal(
-    await allowLiveUpdates(session, puter, {
+    await allowLiveUpdates(session, everything, {
       events: null,
       owner: editor.uuid,
       app: "app-wb",
@@ -109,7 +109,7 @@ test("does not ask anyone but the worker account, or from another app", async ()
   );
   const own = { events: { app: "app-wb", key: "k", owner: owner.uuid } };
   assert.equal(
-    await allowLiveUpdates(session, { ...puter, appID: "app-other" }, own),
+    await allowLiveUpdates(session, { ...everything, appID: "app-other" }, own),
     false,
   );
   assert.equal(asked, 0);

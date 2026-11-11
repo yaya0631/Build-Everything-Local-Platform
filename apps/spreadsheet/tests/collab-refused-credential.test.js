@@ -10,11 +10,11 @@ afterEach(() => { for (const c of open.splice(0)) c.close(); });
 it('recovers from a request the room could not verify once, sending the change it held back', async () => {
   const env = environment();
   const wb = new Workbook({ sheets: [{ name: 'Plan' }] });
-  const room = await RoomClient.create({ puter: env.sdk(owner), server: SERVER, wb, name: 'Plan' });
-  const client = new RoomClient({ puter: env.sdk(owner), server: SERVER, room, store: memoryOutbox(), poll: 50, noPeers: true });
+  const room = await RoomClient.create({ everything: env.sdk(owner), server: SERVER, wb, name: 'Plan' });
+  const client = new RoomClient({ everything: env.sdk(owner), server: SERVER, room, store: memoryOutbox(), poll: 50, noPeers: true });
   open.push(client);
   await client.open();
-  // Puter could not confirm the caller's credential for a moment (the worker answers 401), twice in a row, as
+  // Everything could not confirm the caller's credential for a moment (the worker answers 401), twice in a row, as
   // a retry with a fresh credential meets the same moment.
   let refusals = 2;
   env.route = () => ({

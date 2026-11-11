@@ -13,11 +13,11 @@ async function plainSource() {
 }
 
 async function prepare(page, signedIn = false) {
-  await page.route('**/sdk/puter.js', (route) =>
+  await page.route('**/sdk/everything.js', (route) =>
     route.fulfill({
       contentType: 'application/javascript',
       body: signedIn
-        ? `window.puter = {
+        ? `window.everything = {
       env:'app', auth:{getUser:async()=>({username:'test'})},
       fs:{readdir:async()=>[]}, ui:{onLaunchedWithItems:()=>{},onItemsOpened:()=>{}}
     };`
@@ -27,7 +27,7 @@ async function prepare(page, signedIn = false) {
   await page.goto('/');
   await expect(page.locator('.editor')).toHaveAttribute('aria-busy', 'false');
   if (signedIn)
-    await expect(page.getByRole('button', { name: 'Save to Puter', exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Save to Everything', exact: true })).toBeVisible();
 }
 
 async function rotate(page) {
@@ -179,10 +179,10 @@ for (const phase of ['password', 'local leave', 'account leave'])
 for (const newer of ['file', 'library'])
   test(`a queued password prompt is cancelled by a newer ${newer}`, async ({ page }) => {
     const base64 = (await plainSource()).toString('base64');
-    await page.route('**/sdk/puter.js', (route) =>
+    await page.route('**/sdk/everything.js', (route) =>
       route.fulfill({
         contentType: 'application/javascript',
-        body: `window.puter = {
+        body: `window.everything = {
         env:'app', auth:{getUser:async()=>({username:'test'})},
         fs:{readdir:async()=>[],read:async()=>new Blob([Uint8Array.from(atob(${JSON.stringify(base64)}),c=>c.charCodeAt(0))])},
         ui:{onLaunchedWithItems:()=>{},onItemsOpened:handler=>{window.openItems=handler;}}

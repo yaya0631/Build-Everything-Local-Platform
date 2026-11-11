@@ -12,7 +12,7 @@ const checkValue = (actual, value) => value === 0 ? expect(actual).toBe(0) : exp
 async function external(wb) {
   const zip = X.CFB.read(new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()), { type: 'array' });
   const part = X.CFB.find(zip, '/xl/workbook.xml');
-  part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   part.size = part.content.length;
   return workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'gamma-scale.xlsx');
 }

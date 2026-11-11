@@ -18,7 +18,7 @@ describe('metadata sheet name collisions', () => {
     expect(back.activeSheet.frozenCols).toBe(1);
   });
 
-  it.each([false, true])('keeps a user sheet named _puter_meta (styles: %s)', async (styled) => {
+  it.each([false, true])('keeps a user sheet named _everything_meta (styles: %s)', async (styled) => {
     const wb = new Workbook({ sheets: [{ name: META_SHEET }, { name: `${META_SHEET}2` }, { name: 'Summary' }] });
     const [data, other, summary] = wb.sheets;
     wb.setInput(data.id, 0, 0, '21');

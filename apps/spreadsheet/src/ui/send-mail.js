@@ -4,7 +4,7 @@
  * Send a copy attaches the workbook as it is now (an .xlsx, a PDF of the workbook, the sheet or the selection,
  * or the sheet as .csv) with a subject and a message; the copy is the user's to hand on and leaves out the
  * record of earlier cell values that Show Changes keeps. Send a link shares the file with each address (Can
- * view or Can edit, as the Share dialog does; someone without a Puter account is invited) and emails them a
+ * view or Can edit, as the Share dialog does; someone without an Everything account is invited) and emails them a
  * link that opens it. Both go through the app's email worker (lib/mail.js), billed to the sender.
  */
 import { el } from './dom.js';
@@ -12,7 +12,7 @@ import { icon } from './icons.js';
 import { openModal, fieldAlert } from './modal.js';
 import { toast } from './toast.js';
 import { SHARE_MODES } from './share.js';
-import * as P from '../lib/puter.js';
+import * as P from '../lib/everything.js';
 import { fileLink } from '../lib/links.js';
 import { invitationLink } from '../collab/session.js';
 import { rangeName } from '../core/cell.js';
@@ -33,7 +33,7 @@ function field(label, control, hint = null) {
 function fromLine(user) {
   const name = user?.username || 'you';
   return el('p.send-from', {}, el('span', { html: icon('user', 14) }), el('span', {},
-    user?.email ? `From ${name}. Replies go to ${user.email}` : `From ${name}, through Puter`));
+    user?.email ? `From ${name}. Replies go to ${user.email}` : `From ${name}, through Everything`));
 }
 
 /** The To field: addresses separated by commas, with how many were read. */
@@ -202,7 +202,7 @@ export function openSendLinkDialog({ doc, mailer, user = null, onClose = null, l
 
   async function linkFor(access) {
     if (roomOwner) return invitationLink(client, access === 'write' ? 'editor' : 'viewer');
-    return (await P.puterShareLink(doc.path)) || (doc.uid ? fileLink(where, doc.uid) : null);
+    return (await P.everythingShareLink(doc.path)) || (doc.uid ? fileLink(where, doc.uid) : null);
   }
 
   async function send(e) {
@@ -243,7 +243,7 @@ export function openSendLinkDialog({ doc, mailer, user = null, onClose = null, l
     el('div.field', {}, el('label.field-label', { for: mode.id }, 'They can'), mode,
       el('span.field-hint', {}, roomOwner
         ? 'They get an invitation into this live workbook, valid for 7 days.'
-        : 'Each address is given access to the file. Someone without a Puter account is invited to join.')),
+        : 'Each address is given access to the file. Someone without an Everything account is invited to join.')),
     field('Message', message),
     alert,
     el('div.row.row-end', {},

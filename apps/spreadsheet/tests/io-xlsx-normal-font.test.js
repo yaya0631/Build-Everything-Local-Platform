@@ -26,7 +26,7 @@ async function exported(wb) {
   const text = path => new TextDecoder().decode(X.CFB.find(zip, path).content);
   const native = () => {
     const part = X.CFB.find(zip, '/xl/workbook.xml');
-    part.content = new TextEncoder().encode(text('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+    part.content = new TextEncoder().encode(text('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
     part.size = part.content.length;
     return X.CFB.write(zip, { type: 'array', fileType: 'zip' });
   };

@@ -346,7 +346,7 @@ export async function catchUpOwner(doc, notified) {
  * Expiry is enforced by the WORKER, so a document stops being signable
  * whether or not this ever runs; this is the owner's copy catching up, and it
  * is also where reminders go out, because sending mail needs the user's own
- * session (puter.workers.exec is what authorizes and bills it).
+ * session (everything.workers.exec is what authorizes and bills it).
  */
 export async function runTimers() {
   for (const doc of store.listDocs()) {

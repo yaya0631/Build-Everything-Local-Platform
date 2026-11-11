@@ -11,10 +11,10 @@ import {
 } from '../src/lib/captable.js';
 import { form3921Report } from '../src/lib/reports.js';
 
-/** A live Store against an in-memory Puter KV stub. */
+/** A live Store against an in-memory Everything KV stub. */
 function makeStore() {
   const kv = new Map();
-  globalThis.puter = {
+  globalThis.everything = {
     kv: {
       get: async (k) => (kv.has(k) ? kv.get(k) : null),
       set: async (k, v) => { kv.set(k, v); return true; },
@@ -146,14 +146,14 @@ describe('security writes after a reference changes in another tab', () => {
     const other = await first.addStakeholder({ name: 'Grace' });
     await second.init();
     const key = `captable:${first.activeCompanyId}:securities:v1`;
-    const before = await puter.kv.get(key);
+    const before = await everything.kv.get(key);
     await first.deleteStakeholder(other.id);
-    expect(await puter.kv.get(key)).toBe(before);
+    expect(await everything.kv.get(key)).toBe(before);
     await expect(second.addSecurity({ kind: 'shares', stakeholderId: other.id,
       classId: cls.id, quantity: 10, date: '2025-02-01',
     })).rejects.toThrow(/changed somewhere else/);
     expect(second.isStale).toBe(true);
-    expect(await puter.kv.get(key)).toBe(before);
+    expect(await everything.kv.get(key)).toBe(before);
   });
 });
 
@@ -727,8 +727,8 @@ describe('Store undo semantics', () => {
        time, before that write had applied. Gone, with no way back. */
     let release;
     const gate = new Promise((r) => { release = r; });
-    const set = puter.kv.set;
-    puter.kv.set = async (k, v) => { await gate; return set(k, v); };
+    const set = everything.kv.set;
+    everything.kv.set = async (k, v) => { await gate; return set(k, v); };
     const added = s.addSecurity({ kind: 'warrant', stakeholderId: 'h1', classId: 'c1', quantity: 9, strike: 1, date: '2026-01-01' });
     const deleted = s.deleteStakeholder('h1');
     release();
@@ -745,8 +745,8 @@ describe('Store undo semantics', () => {
   it('undo of a security delete puts back the record as a queued edit left it', async () => {
     let release;
     const gate = new Promise((r) => { release = r; });
-    const set = puter.kv.set;
-    puter.kv.set = async (k, v) => { await gate; return set(k, v); };
+    const set = everything.kv.set;
+    everything.kv.set = async (k, v) => { await gate; return set(k, v); };
     const edited = s.updateSecurity('s1', { pricePerShare: 9 });
     const deleted = s.deleteSecurity('s1');
     release();
@@ -776,13 +776,13 @@ describe('Store undo semantics', () => {
 
   it('undo still works after a split that failed and rolled back', async () => {
     const { undo } = await s.deleteSecurity('s1');
-    const set = puter.kv.set;
-    puter.kv.set = async (k, v) => {
+    const set = everything.kv.set;
+    everything.kv.set = async (k, v) => {
       if (k.includes(':securities:')) throw new Error('offline');
       return set(k, v);
     };
     await expect(s.recordSplit({ num: 10, den: 1, date: '2026-06-01' })).rejects.toThrow('offline');
-    puter.kv.set = set;
+    everything.kv.set = set;
     // Nothing changed, so the undo built before the attempt still applies.
     expect(s.security('s2').quantity).toBe(50);
     await undo();
@@ -791,7 +791,7 @@ describe('Store undo semantics', () => {
 
   it('undo refuses once another company’s dataset is loaded', async () => {
     const kv = new Map();
-    globalThis.puter = {
+    globalThis.everything = {
       kv: {
         get: async (k) => (kv.has(k) ? kv.get(k) : null),
         set: async (k, v) => { kv.set(k, v); return true; },
@@ -1396,8 +1396,8 @@ describe('Store undo semantics', () => {
     s.securities = Store.sanitizeSecurities([
       { id: 'w1', kind: 'warrant', stakeholderId: 'h1', classId: 'c1', quantity: 1000 },
     ], { classes: s.classes, stakeholders: s.stakeholders });
-    const set = puter.kv.set;
-    puter.kv.set = async (k, v) => {
+    const set = everything.kv.set;
+    everything.kv.set = async (k, v) => {
       if (k.includes(':securities:')) throw new Error('offline');
       return set(k, v);
     };
@@ -1405,7 +1405,7 @@ describe('Store undo semantics', () => {
     const cls = s.deleteClass('c1');
     await expect(del).rejects.toThrow('offline');
     await expect(cls).rejects.toThrow(/Warrants/);
-    puter.kv.set = set;
+    everything.kv.set = set;
     expect(s.security('w1')).not.toBeNull();
     expect(s.classes).toHaveLength(1);
   });
@@ -1454,8 +1454,8 @@ describe('Store valuations', () => {
     });
     // The first write to the profile fails; the delete rolls back.
     let failOnce = true;
-    const set = puter.kv.set;
-    puter.kv.set = async (k, v) => {
+    const set = everything.kv.set;
+    everything.kv.set = async (k, v) => {
       if (failOnce && k.includes(':company:')) { failOnce = false; throw new Error('offline'); }
       return set(k, v);
     };
@@ -1463,7 +1463,7 @@ describe('Store valuations', () => {
     const add = s.addValuation({ date: '2026-01-01', fmvPerShare: 2, note: 'Post-Seed' });
     await expect(del).rejects.toThrow('offline');
     await add;
-    puter.kv.set = set;
+    everything.kv.set = set;
     // The 2023 valuation the failed delete said was still there really is,
     // and the new one sits on top of it.
     expect(s.company.valuations.map((v) => v.date)).toEqual(['2026-01-01', '2024-01-01', '2023-01-01']);
@@ -1535,7 +1535,7 @@ describe('Store.deleteClass guards', () => {
        A second tab loaded before the issuance saw the class as unused and
        deleted it, and the certificate was validated away on the next load. */
     const kv = new Map();
-    globalThis.puter = {
+    globalThis.everything = {
       kv: {
         get: async (k) => (kv.has(k) ? kv.get(k) : null),
         set: async (k, v) => { kv.set(k, v); return true; },
@@ -1569,7 +1569,7 @@ describe('Store.deleteClass guards', () => {
        collection - an object where a list was expected, so an empty one -
        and let the class go while thousands of stored certificates were in it. */
     const kv = new Map();
-    globalThis.puter = {
+    globalThis.everything = {
       kv: {
         get: async (k) => (kv.has(k) ? kv.get(k) : null),
         set: async (k, v) => { kv.set(k, v); return true; },
@@ -1754,7 +1754,7 @@ describe('Store.closeRound', () => {
   it('rolls everything back when the write fails', async () => {
     const s = raising();
     const before = JSON.stringify({ c: s.classes, s: s.securities, co: s.company, h: s.stakeholders });
-    globalThis.puter.kv.set = async () => { throw new Error('offline'); };
+    globalThis.everything.kv.set = async () => { throw new Error('offline'); };
 
     await expect(s.closeRound({
       date: '2026-01-15',
@@ -1771,7 +1771,7 @@ describe('Store.closeRound', () => {
     // deleteStakeholder writes stakeholders and securities as two independent
     // kv.set calls. The first lands, the second doesn't.
     const kv = new Map();
-    globalThis.puter = {
+    globalThis.everything = {
       kv: {
         get: async (k) => (kv.has(k) ? kv.get(k) : null),
         set: async (k, v) => { kv.set(k, v); return true; },
@@ -1789,13 +1789,13 @@ describe('Store.closeRound', () => {
       quantity: 100, date: '2024-01-01',
     });
 
-    const set = puter.kv.set;
-    puter.kv.set = async (k, v) => {
+    const set = everything.kv.set;
+    everything.kv.set = async (k, v) => {
       if (k.endsWith(':securities:v1')) throw new Error('offline');
       return set(k, v);
     };
     await expect(s.deleteStakeholder(ada.id)).rejects.toThrow('offline');
-    puter.kv.set = set;
+    everything.kv.set = set;
 
     // Memory is back, as it always was.
     expect(s.stakeholders.map((h) => h.name)).toEqual(['Ada']);
@@ -1816,7 +1816,7 @@ describe('Store.closeRound', () => {
        read it as another tab's change: refused as stale, it left one
        collection with the delete applied and the other without. */
     const kv = new Map();
-    globalThis.puter = {
+    globalThis.everything = {
       kv: {
         get: async (k) => (kv.has(k) ? kv.get(k) : null),
         set: async (k, v) => { kv.set(k, v); return true; },
@@ -1836,14 +1836,14 @@ describe('Store.closeRound', () => {
     let stale = false;
     s.addEventListener('stale', () => { stale = true; });
 
-    const set = puter.kv.set;
-    puter.kv.set = async (k, v) => {
+    const set = everything.kv.set;
+    everything.kv.set = async (k, v) => {
       await set(k, v);
       if (k.endsWith(':securities:v1')) throw new Error('lost ack');
       return true;
     };
     await expect(s.deleteStakeholder(ada.id)).rejects.toThrow('lost ack');
-    puter.kv.set = set;
+    everything.kv.set = set;
 
     expect(s.stakeholders.map((h) => h.name)).toEqual(['Ada']);
     expect(s.securities).toHaveLength(1);
@@ -1867,7 +1867,7 @@ describe('Store.closeRound', () => {
 
   it('a failed write cannot erase a commit issued while it was in flight', async () => {
     const kv = new Map();
-    globalThis.puter = {
+    globalThis.everything = {
       kv: {
         get: async (k) => (kv.has(k) ? kv.get(k) : null),
         set: async (k, v) => { kv.set(k, v); return true; },
@@ -1885,11 +1885,11 @@ describe('Store.closeRound', () => {
     // while the first is still in flight. Unserialized, the first's rollback
     // would restore its pre-commit snapshot over the second's confirmed save,
     // in memory and on disk.
-    const set = puter.kv.set;
+    const set = everything.kv.set;
     let release;
     const gate = new Promise((r) => { release = r; });
     let stalled = false;
-    puter.kv.set = async (k, v) => {
+    everything.kv.set = async (k, v) => {
       if (!stalled && k.endsWith(':stakeholders:v1')) {
         stalled = true;
         await gate;
@@ -1974,7 +1974,7 @@ describe('Store.exerciseOption', () => {
   it('keeps the exercise and its certificate together when the write fails', async () => {
     const s = granted();
     const before = JSON.stringify(s.securities);
-    globalThis.puter.kv.set = async () => { throw new Error('offline'); };
+    globalThis.everything.kv.set = async () => { throw new Error('offline'); };
     await expect(s.exerciseOption('o1', { quantity: 400, date: '2026-03-01', classId: 'c1' }))
       .rejects.toThrow('offline');
     expect(JSON.stringify(s.securities)).toBe(before);
@@ -2385,7 +2385,7 @@ describe('Store company switching', () => {
     const kv = new Map();
     let held = null;
     let holding = null;
-    globalThis.puter = {
+    globalThis.everything = {
       kv: {
         get: async (k) => {
           if (held && held(k)) await holding;
@@ -2437,7 +2437,7 @@ describe('Store company switching', () => {
     const kv = new Map();
     let held = null;
     let holding = null;
-    globalThis.puter = {
+    globalThis.everything = {
       kv: {
         get: async (k) => (kv.has(k) ? kv.get(k) : null),
         set: async (k, v) => {
@@ -2486,7 +2486,7 @@ describe('Store company switching', () => {
     const kv = new Map();
     let held = null;
     let holding = null;
-    globalThis.puter = {
+    globalThis.everything = {
       kv: {
         get: async (k) => (kv.has(k) ? kv.get(k) : null),
         set: async (k, v) => {
@@ -2584,7 +2584,7 @@ describe('Store company switching', () => {
 describe('Store KV values over the size limit', () => {
   async function chunkedStore() {
     const kv = new Map();
-    globalThis.puter = {
+    globalThis.everything = {
       auth: { getUser: async () => ({ username: 'test' }) },
       kv: { get: async (k) => kv.get(k) ?? null,
         set: async (k, v) => { kv.set(k, v); return true; },
@@ -2608,8 +2608,8 @@ describe('Store KV values over the size limit', () => {
     let release, entered;
     const gate = new Promise((r) => { release = r; });
     const reading = new Promise((r) => { entered = r; });
-    const get = puter.kv.get;
-    puter.kv.get = async (k) => {
+    const get = everything.kv.get;
+    everything.kv.get = async (k) => {
       if (k === firstPart) { entered(); await gate; }
       return get(k);
     };
@@ -2626,9 +2626,9 @@ describe('Store KV values over the size limit', () => {
 
   it('keeps the old value after a failed chunk write and removes unpublished parts', async () => {
     const { s, kv, key } = await chunkedStore();
-    const set = puter.kv.set;
+    const set = everything.kv.set;
     let fail = true;
-    puter.kv.set = async (k, v) => {
+    everything.kv.set = async (k, v) => {
       if (fail && k.startsWith(`${key}:`) && k.endsWith(':part2')) {
         fail = false; throw new Error('offline');
       }
@@ -2643,9 +2643,9 @@ describe('Store KV values over the size limit', () => {
 
   it('keeps a published generation when the marker set lands but loses its acknowledgement', async () => {
     const { s, kv, key } = await chunkedStore();
-    const set = puter.kv.set;
+    const set = everything.kv.set;
     let lose = true;
-    puter.kv.set = async (k, v) => {
+    everything.kv.set = async (k, v) => {
       await set(k, v);
       /* The root's set commits on the server and the connection drops: the
          marker is stored, the caller hears a failure. Cleaning the new parts
@@ -2656,8 +2656,8 @@ describe('Store KV values over the size limit', () => {
     };
     // The compensating rewrite fails outright, so the landed marker is what stays.
     let compensations = 0;
-    const setAfter = puter.kv.set;
-    puter.kv.set = async (k, v) => {
+    const setAfter = everything.kv.set;
+    everything.kv.set = async (k, v) => {
       if (!lose && k === key && compensations++ === 0) throw new Error('offline');
       return setAfter(k, v);
     };
@@ -2696,7 +2696,7 @@ describe('Store KV values over the size limit', () => {
     let pause = false, release, reached;
     const gate = new Promise((r) => { release = r; });
     const writing = new Promise((r) => { reached = r; });
-    globalThis.puter = {
+    globalThis.everything = {
       auth: { getUser: async () => ({ username: 'test' }) },
       kv: {
         get: async (k) => kv.get(k) ?? null,
@@ -2735,13 +2735,13 @@ describe('Store KV values over the size limit', () => {
   });
 
   it('writes a snapshot too large for one entry across parts and reads it back', async () => {
-    /* Puter takes 400 KB in one KV value. A cap table whose collections each
+    /* Everything takes 400 KB in one KV value. A cap table whose collections each
        fit can still have a restore point - one value carrying all of them -
        that does not, and every guarded operation writes its snapshot before
        it will go ahead: transfer, split, round close, import, even wipe. */
     const kv = new Map();
     const refused = [];
-    globalThis.puter = {
+    globalThis.everything = {
       kv: {
         get: async (k) => (kv.has(k) ? kv.get(k) : null),
         set: async (k, v) => {
@@ -2826,7 +2826,7 @@ describe('Store.trimRestorePoints', () => {
   const bytes = (v) => new TextEncoder().encode(JSON.stringify(v)).length;
 
   it('keeps the newest points that fit under the KV value cap, measured in bytes', () => {
-    // Puter takes 400 KB per value; the budget sits under it, so three
+    // Everything takes 400 KB per value; the budget sits under it, so three
     // 150 KB points cannot all ride together and the oldest goes.
     const kept = Store.trimRestorePoints([point(1, 500), point(2, 500), point(3, 500)]);
     expect(kept.map((p) => p.id)).toEqual(['p1', 'p2']);
@@ -2847,11 +2847,11 @@ describe('Store.trimRestorePoints', () => {
 });
 
 describe('Store attachments', () => {
-  /** makeStore plus an in-memory puter.fs. */
+  /** makeStore plus an in-memory everything.fs. */
   function withFs() {
     const s = makeStore();
     const files = new Map();
-    globalThis.puter.fs = {
+    globalThis.everything.fs = {
       write: async (path, data) => { files.set(path, data); return { path }; },
       read: async (path) => { if (!files.has(path)) throw new Error('missing'); return files.get(path); },
       delete: async (path) => files.delete(path),
@@ -2882,7 +2882,7 @@ describe('Store attachments', () => {
       ['captable-attachments/', 'dir'],
       ['captable-attachments/co2/s1/abc-spa.pdf', 'pdf'],
     ]);
-    globalThis.puter = {
+    globalThis.everything = {
       kv: {
         get: async (k) => (kv.has(k) ? kv.get(k) : null),
         set: async (k, v) => { kv.set(k, v); return true; },
@@ -2958,7 +2958,7 @@ describe('Store attachments', () => {
     const { s, files } = withFs();
     // A big file and a small one, finishing in the opposite order they began.
     const done = new Map();
-    globalThis.puter.fs.write = async (path, data) => {
+    globalThis.everything.fs.write = async (path, data) => {
       await new Promise((r) => { done.set(path, r); });
       files.set(path, data);
       return { path };
@@ -3007,10 +3007,10 @@ describe('Store attachments', () => {
 
     it(`does not attach a pending ${kind} upload to another company with the same record ids`, async () => {
       const { s, files, original, upload, attachments } = await prepare();
-      const write = puter.fs.write;
+      const write = everything.fs.write;
       let release;
       const gate = new Promise((resolve) => { release = resolve; });
-      puter.fs.write = async (...args) => { await gate; return write(...args); };
+      everything.fs.write = async (...args) => { await gate; return write(...args); };
       const pending = upload().catch((error) => error);
       await s.createCompany('Another company');
       await s.importAll(original);
@@ -3022,7 +3022,7 @@ describe('Store attachments', () => {
 
     it(`cleans up a ${kind} upload when saving its reference fails`, async () => {
       const { files, upload, attachments } = await prepare();
-      puter.kv.set = async () => { throw new Error('offline'); };
+      everything.kv.set = async () => { throw new Error('offline'); };
       await expect(upload()).rejects.toThrow('offline');
       expect(attachments()).toBeUndefined();
       expect(files.size).toBe(0);
@@ -3030,10 +3030,10 @@ describe('Store attachments', () => {
 
     it(`rejects a ${kind} upload after the dataset is replaced with the same record ids`, async () => {
       const { s, files, original, upload, attachments } = await prepare();
-      const write = puter.fs.write;
+      const write = everything.fs.write;
       let release;
       const gate = new Promise((resolve) => { release = resolve; });
-      puter.fs.write = async (...args) => { await gate; return write(...args); };
+      everything.fs.write = async (...args) => { await gate; return write(...args); };
       const pending = upload().catch((error) => error);
       await s.importAll(original);
       release();
@@ -3057,11 +3057,11 @@ describe('Store attachments', () => {
     expect(files.has(att.path)).toBe(true);
   });
 
-  /** A store over an in-memory Puter, with companies to switch between. */
+  /** A store over an in-memory Everything, with companies to switch between. */
   async function twoCompanyFs() {
     const kv = new Map();
     const files = new Map();
-    globalThis.puter = {
+    globalThis.everything = {
       kv: {
         get: async (k) => (kv.has(k) ? kv.get(k) : null),
         set: async (k, v) => { kv.set(k, v); return true; },
@@ -3138,7 +3138,7 @@ describe('Store multi-company', () => {
   /** A live KV harness seeded with initial entries, returned for inspection. */
   function kvHarness(initial = {}) {
     const kv = new Map(Object.entries(initial));
-    globalThis.puter = {
+    globalThis.everything = {
       kv: {
         get: async (k) => (kv.has(k) ? kv.get(k) : null),
         set: async (k, v) => { kv.set(k, v); return true; },
@@ -3180,16 +3180,16 @@ describe('Store multi-company', () => {
       'captable:company:v1': JSON.stringify({ name: 'Acme', poolAuthorized: 100 }),
       'captable:stakeholders:v1': JSON.stringify([{ id: 'h1', name: 'Ada', kind: 'founder' }]),
     });
-    const set = puter.kv.set;
+    const set = everything.kv.set;
     let lost = true;
-    puter.kv.set = async (k, v) => {
+    everything.kv.set = async (k, v) => {
       await set(k, v);
       if (k === 'captable:companies:v1' && lost) { lost = false; throw new Error('connection reset'); }
       return true;
     };
     const s = new Store();
     await s.init();
-    puter.kv.set = set;
+    everything.kv.set = set;
     // Cleaned up as a failure, the next boot found the registry, skipped the
     // migration, and loaded an empty company while the singletons still held
     // the cap table.
@@ -3208,13 +3208,13 @@ describe('Store multi-company', () => {
       'captable:company:v1': JSON.stringify({ name: 'Acme', poolAuthorized: 100 }),
       'captable:stakeholders:v1': JSON.stringify([{ id: 'h1', name: 'Ada', kind: 'founder' }]),
     });
-    const set = puter.kv.set;
-    puter.kv.set = async (k, v) => {
+    const set = everything.kv.set;
+    everything.kv.set = async (k, v) => {
       if (k === 'captable:companies:v1') throw new Error('offline');
       return set(k, v);
     };
     await expect(new Store().init()).rejects.toThrow('offline');
-    puter.kv.set = set;
+    everything.kv.set = set;
     // The singletons stand for the retry; the half-made namespaced copy is gone.
     expect(kv.has('captable:company:v1')).toBe(true);
     expect([...kv.keys()].filter((k) => /^captable:[^:]+:company:v1$/.test(k))).toEqual([]);
@@ -3277,13 +3277,13 @@ describe('Store multi-company', () => {
     const first = s.activeCompanyId;
     await s.createCompany('Second Co');
 
-    const set = puter.kv.set;
-    puter.kv.set = async (k, v) => {
+    const set = everything.kv.set;
+    everything.kv.set = async (k, v) => {
       if (k === 'captable:companies:v1') throw new Error('offline');
       return set(k, v);
     };
     await expect(s.deleteCompany(first)).rejects.toThrow('offline');
-    puter.kv.set = set;
+    everything.kv.set = set;
 
     // Memory still lists it - otherwise the switcher shows it gone while the
     // caller was told nothing changed...
@@ -3311,12 +3311,12 @@ describe('Store multi-company', () => {
 
     // A slow connection: every KV write takes a moment, which is exactly
     // when someone reaches for the company switcher.
-    const set = puter.kv.set;
-    puter.kv.set = (k, v) => new Promise((resolve) => setTimeout(() => resolve(set(k, v)), 5));
+    const set = everything.kv.set;
+    everything.kv.set = (k, v) => new Promise((resolve) => setTimeout(() => resolve(set(k, v)), 5));
     const wipe = s.wipeAll();
     const sw = s.switchCompany(second.id);
     await Promise.allSettled([wipe, sw]);
-    puter.kv.set = set;
+    everything.kv.set = set;
 
     // The wipe landed on First Co, the company it was started on...
     const other = new Store();
@@ -3343,8 +3343,8 @@ describe('Store multi-company', () => {
     await s.updateCompany({ name: 'Beta Labs' });
     await s.switchCompany(first);
 
-    const set = puter.kv.set;
-    puter.kv.set = (k, v) => new Promise((resolve) => setTimeout(() => resolve(set(k, v)), 5));
+    const set = everything.kv.set;
+    everything.kv.set = (k, v) => new Promise((resolve) => setTimeout(() => resolve(set(k, v)), 5));
     const rename = s.updateCompany({ name: 'Acme Robotics, Inc.' });
     const sw = s.switchCompany(second.id);
     await Promise.allSettled([rename, sw]);
@@ -3353,7 +3353,7 @@ describe('Store multi-company', () => {
     const rename2 = s.updateCompany({ name: 'Beta Labs Ltd' });
     const created = s.createCompany('Gamma');
     await Promise.allSettled([rename2, created]);
-    puter.kv.set = set;
+    everything.kv.set = set;
     // The relabel's own registry write is queued behind the create; let it land.
     await s.updateSettings({});
 
@@ -3381,12 +3381,12 @@ describe('Store multi-company', () => {
     await s.addStakeholder({ name: 'Bob', kind: 'founder' });
     await s.switchCompany(first);
 
-    const set = puter.kv.set;
-    puter.kv.set = (k, v) => new Promise((resolve) => setTimeout(() => resolve(set(k, v)), 5));
+    const set = everything.kv.set;
+    everything.kv.set = (k, v) => new Promise((resolve) => setTimeout(() => resolve(set(k, v)), 5));
     const restore = s.restoreFromPoint(s.restorePoints[0].id);
     const sw = s.switchCompany(second.id);
     await Promise.allSettled([restore, sw]);
-    puter.kv.set = set;
+    everything.kv.set = set;
 
     expect(JSON.parse(kv.get(`captable:${first}:company:v1`)).splits).toEqual([]);
     expect(JSON.parse(kv.get(`captable:${second.id}:company:v1`)).name).toBe('Second Co');
@@ -3481,7 +3481,7 @@ describe('Store multi-company', () => {
        pointing at them, while the confirmation said its data was gone. */
     kvHarness();
     const deleted = [];
-    globalThis.puter.fs = { write: async () => ({}), delete: async (p) => { deleted.push(p); } };
+    globalThis.everything.fs = { write: async () => ({}), delete: async (p) => { deleted.push(p); } };
     const s = new Store();
     await s.init();
     const first = s.activeCompanyId;
@@ -3512,7 +3512,7 @@ describe('Store multi-company', () => {
   it('removes no file when a surviving company cannot be read', async () => {
     const kv = kvHarness();
     const deleted = [];
-    globalThis.puter.fs = { write: async () => ({}), delete: async (p) => { deleted.push(p); } };
+    globalThis.everything.fs = { write: async () => ({}), delete: async (p) => { deleted.push(p); } };
     const s = new Store();
     await s.init();
     const first = s.activeCompanyId;
@@ -3541,10 +3541,10 @@ describe('Store multi-company', () => {
     const holder = await s.addStakeholder({ name: 'Ada', kind: 'founder' });
     const cls = await s.addClass({ name: 'Common' });
     await s.addSecurity({ kind: 'shares', stakeholderId: holder.id, classId: cls.id, quantity: 100, date: '2024-01-01' });
-    const set = puter.kv.set;
+    const set = everything.kv.set;
     let release;
     const gate = new Promise((resolve) => { release = resolve; });
-    puter.kv.set = async (key, value) => {
+    everything.kv.set = async (key, value) => {
       if (key.endsWith(':securities:v1') && value === '[]') throw new Error('offline');
       if (key.endsWith(':stakeholders:v1') && value === '[]') await gate;
       return set(key, value);
@@ -3554,7 +3554,7 @@ describe('Store multi-company', () => {
     await new Promise((resolve) => setImmediate(resolve));
     release();
     expect(await deletion).toMatchObject({ message: 'offline' });
-    puter.kv.set = set;
+    everything.kv.set = set;
     const reloaded = new Store();
     await reloaded.init();
     expect(reloaded.stakeholders).toEqual(s.stakeholders);
@@ -3567,10 +3567,10 @@ describe('Store multi-company', () => {
     const s = new Store();
     await s.init();
     await s.updateSettings({ onboarded: true });
-    const set = puter.kv.set;
+    const set = everything.kv.set;
     let release;
     const gate = new Promise((resolve) => { release = resolve; });
-    puter.kv.set = async (key, value) => {
+    everything.kv.set = async (key, value) => {
       if (key === 'captable:settings:v1' && JSON.parse(value).theme === 'dark') {
         throw new Error('offline');
       }
@@ -3581,7 +3581,7 @@ describe('Store multi-company', () => {
     await new Promise((resolve) => setImmediate(resolve));
     release();
     expect(await save).toMatchObject({ message: 'offline' });
-    puter.kv.set = set;
+    everything.kv.set = set;
     const reloaded = new Store();
     await reloaded.init();
     expect(reloaded.settings).toEqual(s.settings);
@@ -3673,13 +3673,13 @@ describe('Store multi-company', () => {
     await s.switchCompany(first);
 
     // The connection drops midway through switching back.
-    const get = puter.kv.get;
-    puter.kv.get = async (k) => {
+    const get = everything.kv.get;
+    everything.kv.get = async (k) => {
       if (k === `captable:${second.id}:securities:v1`) throw new Error('offline');
       return get(k);
     };
     await expect(s.switchCompany(second.id)).rejects.toThrow(/offline/);
-    puter.kv.get = get;
+    everything.kv.get = get;
 
     // The failed switch must leave the pointer on the company still in memory,
     // or the next write lands First Co's collections on Second Co's keys.
@@ -3702,7 +3702,7 @@ describe('Store concurrent sessions', () => {
   /** Two Stores over one KV backend: two tabs on the same company. */
   async function twoTabs() {
     const kv = new Map();
-    globalThis.puter = {
+    globalThis.everything = {
       kv: {
         get: async (k) => (kv.has(k) ? kv.get(k) : null),
         set: async (k, v) => { kv.set(k, v); return true; },
@@ -3769,18 +3769,18 @@ describe('Store concurrent sessions', () => {
     expect(b.isStale).toBe(false);
     expect(b.settings.onboarded).toBe(true);
     // A's choice stands: B did not put its older theme back.
-    expect(JSON.parse(await puter.kv.get('captable:settings:v1'))).toEqual({ theme: 'dark' });
+    expect(JSON.parse(await everything.kv.get('captable:settings:v1'))).toEqual({ theme: 'dark' });
     // The writes that carry settings with a dataset go through too.
     await b.importAll({ company: { name: 'Imported' } }, {
       label: 'Before importing a backup', settings: { onboarded: true, sampleData: false },
     });
     expect(b.isStale).toBe(false);
     expect(b.company.name).toBe('Imported');
-    expect(JSON.parse(await puter.kv.get('captable:settings:v1'))).toEqual({ theme: 'dark' });
+    expect(JSON.parse(await everything.kv.get('captable:settings:v1'))).toEqual({ theme: 'dark' });
     // A theme change of B's own is last-write-wins, never a stale refusal.
     await b.updateSettings({ theme: 'light' });
     expect(b.isStale).toBe(false);
-    expect(JSON.parse(await puter.kv.get('captable:settings:v1'))).toEqual({ theme: 'light' });
+    expect(JSON.parse(await everything.kv.get('captable:settings:v1'))).toEqual({ theme: 'light' });
     const reload = new Store();
     await reload.init();
     expect(reload.settings.theme).toBe('light');
@@ -4694,7 +4694,7 @@ describe('Store.recordSplit', () => {
   it('rolls the whole split back when the write fails', async () => {
     const s = splittable();
     const before = JSON.stringify({ c: s.company, k: s.classes, x: s.securities });
-    globalThis.puter.kv.set = async () => { throw new Error('offline'); };
+    globalThis.everything.kv.set = async () => { throw new Error('offline'); };
     await expect(s.recordSplit({ num: 10, den: 1, date: '2026-06-01' })).rejects.toThrow('offline');
     expect(JSON.stringify({ c: s.company, k: s.classes, x: s.securities })).toBe(before);
   });
@@ -5008,7 +5008,7 @@ describe('Store.closeRound anti-dilution', () => {
 
   it('rolls the adjustment back with the rest of a failed close', async () => {
     const s = protectedStore();
-    globalThis.puter.kv.set = async () => { throw new Error('offline') };
+    globalThis.everything.kv.set = async () => { throw new Error('offline') };
     await expect(s.closeRound({
       date: '2026-03-01',
       classId: 'p1',
@@ -5245,7 +5245,7 @@ describe('restore points', () => {
 
   it('refuses the operation when the snapshot itself cannot be stored', async () => {
     const s = named();
-    globalThis.puter.kv.set = async () => { throw new Error('offline'); };
+    globalThis.everything.kv.set = async () => { throw new Error('offline'); };
     await expect(s.recordSplit({ num: 10, den: 1, date: '2026-06-01' })).rejects.toThrow('offline');
     // Nothing was rewritten, and no half-saved snapshot was left behind.
     expect(s.security('s1').quantity).toBe(100);
@@ -5602,7 +5602,7 @@ describe('Store.transferShares', () => {
   it('rolls the whole transfer back when the write fails', async () => {
     const s = makeStore();
     const before = JSON.stringify({ h: s.stakeholders, x: s.securities });
-    globalThis.puter.kv.set = async () => { throw new Error('offline'); };
+    globalThis.everything.kv.set = async () => { throw new Error('offline'); };
     await expect(s.transferShares('s1', {
       date: '2026-03-01', quantity: 60, to: { newHolder: { name: 'Family Trust', kind: 'entity' } },
     })).rejects.toThrow('offline');
@@ -5679,7 +5679,7 @@ describe('Store.markDeparted', () => {
   it('rolls the whole departure back when the write fails', async () => {
     const s = employed();
     const before = JSON.stringify({ h: s.stakeholders, x: s.securities });
-    globalThis.puter.kv.set = async () => { throw new Error('offline'); };
+    globalThis.everything.kv.set = async () => { throw new Error('offline'); };
     await expect(s.markDeparted('h1', {
       date: '2026-03-01',
       grants: [{ id: 'o2', cancelQty: 2400, exerciseBy: '2026-05-30' }],
@@ -6116,10 +6116,10 @@ describe('refusals are told apart from failed writes', () => {
     expect(refused.message).toMatch(/Only vested options/);
     expect(s.security(grant.id).exercised).toBe(0);
     // The platform failing to store the write is not a refusal.
-    const set = puter.kv.set;
-    puter.kv.set = async () => { throw new Error('Failed to fetch'); };
+    const set = everything.kv.set;
+    everything.kv.set = async () => { throw new Error('Failed to fetch'); };
     const failed = await s.exerciseOption(grant.id, { quantity: 10, date: '2026-01-01' }).catch((e) => e);
-    puter.kv.set = set;
+    everything.kv.set = set;
     expect(failed).toBeInstanceOf(Error);
     expect(isRefusal(failed)).toBe(false);
     expect(s.security(grant.id).exercised).toBe(0);
@@ -6205,7 +6205,7 @@ describe('Store sanitizers on imported ids and figures', () => {
 describe('Store restore points around a failed write', () => {
   async function fivePoints() {
     const kv = new Map();
-    const puter = {
+    const everything = {
       kv: {
         get: async (k) => (kv.has(k) ? kv.get(k) : null),
         set: async (k, v) => { kv.set(k, v); return true; },
@@ -6213,7 +6213,7 @@ describe('Store restore points around a failed write', () => {
       },
       auth: { getUser: async () => ({ uuid: 't', username: 'test' }) },
     };
-    globalThis.puter = puter;
+    globalThis.everything = everything;
     const s = new Store();
     await s.init();
     await s.addClass({ name: 'Common Stock', kind: 'common', authorized: 10_000_000 });
@@ -6222,12 +6222,12 @@ describe('Store restore points around a failed write', () => {
     for (let i = 1; i <= 5; i++) await s.recordSplit({ num: 2, den: 1, date: `2025-0${i}-01` });
     expect(s.restorePoints).toHaveLength(5);
     const failSecurities = () => {
-      const set = puter.kv.set;
-      puter.kv.set = async (k, v) => {
+      const set = everything.kv.set;
+      everything.kv.set = async (k, v) => {
         if (k.endsWith(':securities:v1')) throw new Error('offline');
         return set(k, v);
       };
-      return () => { puter.kv.set = set; };
+      return () => { everything.kv.set = set; };
     };
     return { s, failSecurities };
   }
@@ -6307,19 +6307,19 @@ describe('a rollback the connection refuses too', () => {
       del: async (k) => kv.delete(k),
     };
     const down = async () => { throw new Error('offline'); };
-    globalThis.puter = { kv: { ...live }, auth: { getUser: async () => ({ uuid: 't', username: 'test' }) } };
+    globalThis.everything = { kv: { ...live }, auth: { getUser: async () => ({ uuid: 't', username: 'test' }) } };
     const s = new Store();
     await s.init();
     const ada = await s.addStakeholder({ name: 'Ada', kind: 'founder' });
     const cls = await s.addClass({ name: 'Common Stock', kind: 'common' });
     await s.addSecurity({ kind: 'shares', stakeholderId: ada.id, classId: cls.id, quantity: 100, date: '2024-01-01' });
     const key = (field) => `captable:${s.activeCompanyId}:${field}:v1`;
-    const online = () => { Object.assign(puter.kv, live); };
-    const offline = () => { Object.assign(puter.kv, { get: down, set: down }); };
+    const online = () => { Object.assign(everything.kv, live); };
+    const offline = () => { Object.assign(everything.kv, { get: down, set: down }); };
     /* The stakeholders set lands; the connection is gone by the securities
        set, and stays gone for the rewrite. */
     const halfDelete = async () => {
-      puter.kv.set = async (k, v) => {
+      everything.kv.set = async (k, v) => {
         if (k.endsWith(':securities:v1')) {
           offline();
           return down();
@@ -6400,7 +6400,7 @@ describe('a rollback the connection refuses too', () => {
     /* The stakeholders set lands but loses its acknowledgement; the securities
        set fails outright; the rewrite of the stakeholders fails too. */
     let holderSets = 0;
-    puter.kv.set = async (k, v) => {
+    everything.kv.set = async (k, v) => {
       if (k.endsWith(':securities:v1')) throw new Error('offline');
       if (k.endsWith(':stakeholders:v1')) {
         holderSets += 1;
@@ -6415,7 +6415,7 @@ describe('a rollback the connection refuses too', () => {
     await expect(s.deleteStakeholder(ada.id)).rejects.toThrow('lost ack');
     expect(JSON.parse(kv.get(key('stakeholders')))).toEqual([]);
     expect(s.unsaved).toBe(true);
-    puter.kv.set = live.set;
+    everything.kv.set = live.set;
     let stale = false;
     s.addEventListener('stale', () => { stale = true; });
     /* The key holds the bytes of the first send, which the failed rewrite
@@ -6460,7 +6460,7 @@ describe('Store load with securities whose holder is missing', () => {
     const kv = new Map();
     kv.set('captable:companies:v1', JSON.stringify({ activeId: 'co', companies: [{ id: 'co', label: 'Acme', createdAt: 1 }] }));
     for (const [field, value] of Object.entries(records)) kv.set(`captable:co:${field}:v1`, JSON.stringify(value));
-    globalThis.puter = {
+    globalThis.everything = {
       kv: {
         get: async (k) => (kv.has(k) ? kv.get(k) : null),
         set: async (k, v) => { kv.set(k, v); return true; },

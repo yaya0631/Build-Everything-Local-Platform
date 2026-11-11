@@ -37,7 +37,7 @@ function setup() {
     org = boards.org;
   const sent = [],
     fetched = [];
-  org.puter.email = {
+  org.everything.email = {
     async sendTransactional(message) {
       sent.push(message);
       return { failed: [] };
@@ -900,7 +900,7 @@ test("SCIM provisioning links pending users by verified email and deactivates th
       members: [{ value: created.id }],
     })
   ).json();
-  // Bob signs in with Puter and verifies the address.
+  // Bob signs in with Everything and verifies the address.
   await call(editor, { op: "email.start", email: "bob@fabrikam.test" });
   const code = /code is (\d{6})/.exec(sent.at(-1).text)[1];
   await assert.rejects(
@@ -935,7 +935,7 @@ test("SCIM provisioning links pending users by verified email and deactivates th
   const linked = await (await scim("Users/" + created.id)).json();
   assert.equal(
     linked["urn:ietf:params:scim:schemas:extension:whiteboard:2.0:User"]
-      .puterUsername,
+      .everythingUsername,
     "Bob",
   );
   await scim("Users/" + created.id, "PATCH", {
@@ -1361,7 +1361,7 @@ test("content activity, search, duplicates, library governance, and AI policy", 
     op: "org.policy.set",
     policy: { ai: { enabled: true } },
   });
-  org.puter.ai = { chat: async () => ({ message: { content: "Summary" } }) };
+  org.everything.ai = { chat: async () => ({ message: { content: "Summary" } }) };
   assert.equal(
     (await call(editor, { op: "org.ai", task: "summarize", prompt: "Hi" }))
       .text,
@@ -4841,12 +4841,12 @@ test("a scheduled report that fails to send is tried again", async () => {
     op: "org.policy.set",
     policy: { reports: { schedule: "weekly", emails: ["ops@fabrikam.test"] } },
   });
-  const send = org.puter.email.sendTransactional;
-  org.puter.email.sendTransactional = async () => {
+  const send = org.everything.email.sendTransactional;
+  org.everything.email.sendTransactional = async () => {
     throw Error("Mail service unavailable");
   };
   await assert.rejects(sendScheduledReport(org));
-  org.puter.email.sendTransactional = send;
+  org.everything.email.sendTransactional = send;
   assert.equal(await sendScheduledReport(org), true);
   assert.match(sent.at(-1).subject || JSON.stringify(sent.at(-1)), /weekly/);
   assert.match(sent.at(-1).subject, /Rapport hebdomadaire/);
@@ -4882,8 +4882,8 @@ test("two worker instances send a scheduled report once", async () => {
   });
   const before = sent.length;
   const results = await Promise.all([
-    sendScheduledReport(new OrgService(org.puter)),
-    sendScheduledReport(new OrgService(org.puter)),
+    sendScheduledReport(new OrgService(org.everything)),
+    sendScheduledReport(new OrgService(org.everything)),
   ]);
   assert.deepEqual(results.sort(), [false, true]);
   assert.equal(sent.length, before + 1);
@@ -5832,9 +5832,9 @@ test("a large edit sent again after a failure counts toward the board's limit on
     update: encode(update),
   };
   // The edit's file is written, then its record is not.
-  const set = boards.puter.kv.set;
+  const set = boards.everything.kv.set;
   let failed = false;
-  boards.puter.kv.set = async function (key, ...rest) {
+  boards.everything.kv.set = async function (key, ...rest) {
     if (!failed && key.includes(":log:")) {
       failed = true;
       throw Object.assign(Error("Busy"), { code: "too_many_requests" });
@@ -5844,7 +5844,7 @@ test("a large edit sent again after a failure counts toward the board's limit on
   await assert.rejects(boards.call(owner, edit));
   await boards.call(owner, edit);
   assert.equal(env.data.get(`wb:${room}:assetbytes`), edit.update.length);
-  boards.puter.kv.set = set;
+  boards.everything.kv.set = set;
   // A file write that lands although its answer is lost stays counted.
   const { doc: again } = await boards.load(room);
   const from = again.vector(),
@@ -5862,9 +5862,9 @@ test("a large edit sent again after a failure counts toward the board's limit on
     id: await hash(second),
     update: encode(second),
   };
-  const write = boards.puter.fs.write;
+  const write = boards.everything.fs.write;
   let lost = false;
-  boards.puter.fs.write = async function (path, ...rest) {
+  boards.everything.fs.write = async function (path, ...rest) {
     const result = await write.call(this, path, ...rest);
     if (!lost && path.includes("/updates/")) {
       lost = true;
@@ -6204,15 +6204,15 @@ test("joining a deleted board records no membership", async () => {
 
 test("switching to an unreachable organization keeps the current one", async () => {
   const saved = new Map();
-  const puter = {
+  const everything = {
     kv: {
       get: async (key) => saved.get(key),
       set: async (key, value) => saved.set(key, value),
     },
   };
   const organization = createOrganization({
-    puter: () => puter,
-    call: async (_puter, server) => {
+    everything: () => everything,
+    call: async (_everything, server) => {
       if (server.includes("broken")) throw Error("Unreachable");
       return { configured: true, name: "Fabrikam", role: "member" };
     },
@@ -6307,7 +6307,7 @@ test("a reply in a long discussion notifies everyone who wrote in it without one
         ];
     });
   for (const [n, person] of people.slice(0, 29).entries()) await say(person, n);
-  // Each notification takes a moment to store, as Puter's storage does.
+  // Each notification takes a moment to store, as Everything's storage does.
   const notify = boards.org.notify.bind(boards.org);
   const told = [];
   let writing = 0,
@@ -7693,7 +7693,7 @@ test("the organization's AI is for its members, not guests", async () => {
 
 test("AI use is recorded only on boards the person can open, and limited each minute", async () => {
   const { env, boards, call, org } = setup();
-  org.puter.ai = { chat: async () => ({ message: { content: "ok" } }) };
+  org.everything.ai = { chat: async () => ({ message: { content: "ok" } }) };
   await call(owner, { op: "org.setup", name: "Fabrikam" });
   const { token } = await call(owner, { op: "org.invite", role: "member" });
   await call(editor, { op: "org.join", token });
@@ -7742,7 +7742,7 @@ test("an invitation that fails to join keeps the organization already in use", a
       uuid: "99999999-9999-4999-8999-999999999999",
       username: "Zed",
     };
-    B.org.puter.auth.getUser = async () => bOwner;
+    B.org.everything.auth.getUser = async () => bOwner;
     await A.call(owner, { op: "org.setup", name: "Org A" });
     const { token: joinA } = await A.call(owner, {
       op: "org.invite",
@@ -7759,7 +7759,7 @@ test("an invitation that fails to join keeps the organization already in use", a
     const servers = { "http://a.localhost:8443": A, "http://b.localhost:8443": B };
     const saved = new Map();
     const org = createOrganization({
-      puter: () => ({
+      everything: () => ({
         auth: { isSignedIn: () => true },
         kv: {
           get: async (k) => saved.get(k),
@@ -7856,7 +7856,7 @@ test("organization names with dollar signs show as written before joining", asyn
 test("signing out forgets the organization on the page, not the account's choice", async () => {
   const saved = new Map();
   const org = createOrganization({
-    puter: () => ({
+    everything: () => ({
       auth: { isSignedIn: () => true },
       kv: {
         get: async (k) => saved.get(k),
@@ -8131,7 +8131,7 @@ test("saving a comment sends its notification mail at once, not one after anothe
     org.forgetUser(user.uuid);
   }
   const sent = [];
-  org.puter.email = {
+  org.everything.email = {
     sendTransactional: (message) =>
       new Promise((resolve) =>
         setTimeout(() => {

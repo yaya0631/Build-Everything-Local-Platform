@@ -13,7 +13,7 @@ const sheetXml = async (blob) => {
 const withoutSidecar = async (blob) => {
   const zip = X.CFB.read(new Uint8Array(await blob.arrayBuffer()), { type: 'array' });
   const book = X.CFB.find(zip, '/xl/workbook.xml');
-  book.content = new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  book.content = new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   book.size = book.content.length;
   return X.CFB.write(zip, { type: 'array', fileType: 'zip' });
 };

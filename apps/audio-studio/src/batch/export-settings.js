@@ -1,5 +1,5 @@
 // Export settings shared by Batch Process and Match Loudness: format, sample
-// type, file name prefix/suffix and location (a Puter folder, or downloads
+// type, file name prefix/suffix and location (an Everything folder, or downloads
 // zipped when there are several files), plus the writer that stores outputs.
 
 import { h } from '../lib/dom.js';
@@ -9,18 +9,18 @@ import { FORMATS, getFormat, COMMON_RATES, usesDither } from '../export/formats.
 import { DITHER_MODES } from '../audio/quantize.js';
 import { zipStore } from '../lib/zip.js';
 import { downloadBlob } from '../storage/files.js';
-import * as puter from '../storage/puter.js';
+import * as everything from '../storage/everything.js';
 import { uniqueName } from './queue.js';
 
 /** Where outputs go, as text for summaries. */
 export function locationText(s) {
-  if (s.location === 'puter') return `to ${s.dir || `~/${puter.APP_DIR}`}`;
+  if (s.location === 'everything') return `to ${s.dir || `~/${everything.APP_DIR}`}`;
   return 'downloaded (several files as one ZIP)';
 }
 
 /** Asks for export settings starting from `s`; resolves the new settings fields, or null. */
 export async function exportSettingsDialog(app, s, { title = 'Batch Export Settings', example: exampleName = 'Interview' } = {}) {
-  const sdk = Boolean(puter.sdk());
+  const sdk = Boolean(everything.sdk());
   const fmtSel = h('select.select', { 'aria-label': 'Format' }, FORMATS.map((f) => h('option', { value: f.id }, f.label)));
   fmtSel.value = s.format;
   const rateSel = h('select.select', { 'aria-label': 'Sample rate' });
@@ -32,7 +32,7 @@ export async function exportSettingsDialog(app, s, { title = 'Batch Export Setti
   const settingsHost = h('div.batch-format-settings');
   const prefix = h('input.input', { type: 'text', value: s.prefix, 'aria-label': 'File name prefix', spellcheck: 'false' });
   const suffix = h('input.input', { type: 'text', value: s.suffix, 'aria-label': 'File name suffix', spellcheck: 'false' });
-  const locSel = h('select.select', { 'aria-label': 'Location' }, h('option', { value: 'puter', disabled: !sdk }, sdk ? 'Puter folder' : 'Puter folder (not available)'), h('option', { value: 'download' }, 'Download (ZIP for several files)'));
+  const locSel = h('select.select', { 'aria-label': 'Location' }, h('option', { value: 'everything', disabled: !sdk }, sdk ? 'Everything folder' : 'Everything folder (not available)'), h('option', { value: 'download' }, 'Download (ZIP for several files)'));
   locSel.value = sdk ? s.location : 'download';
   let dir = s.dir;
   const dirText = h('span.batch-dir');
@@ -70,10 +70,10 @@ export async function exportSettingsDialog(app, s, { title = 'Batch Export Setti
         return h('label.batch-setting', h('span.muted', `${st.label}:`), sel);
       }),
     );
-    const puterLoc = locSel.value === 'puter';
-    dirRow.hidden = !puterLoc;
-    collRow.forEach((x) => (x.hidden = !puterLoc));
-    dirText.textContent = dir || `~/${puter.APP_DIR}`;
+    const everythingLoc = locSel.value === 'everything';
+    dirRow.hidden = !everythingLoc;
+    collRow.forEach((x) => (x.hidden = !everythingLoc));
+    dirText.textContent = dir || `~/${everything.APP_DIR}`;
     example.textContent = `Example: ${prefix.value}${exampleName}${suffix.value}.${f.ext}`;
   };
   fmtSel.addEventListener('change', sync);
@@ -84,8 +84,8 @@ export async function exportSettingsDialog(app, s, { title = 'Batch Export Setti
   suffix.addEventListener('input', sync);
   browse.addEventListener('click', async () => {
     try {
-      if (!puter.isSignedIn() && !(await puter.signIn())) return;
-      const item = await puter.pickDirectory();
+      if (!everything.isSignedIn() && !(await everything.signIn())) return;
+      const item = await everything.pickDirectory();
       if (item?.path) {
         dir = item.path;
         sync();
@@ -138,19 +138,19 @@ export async function exportSettingsDialog(app, s, { title = 'Batch Export Setti
 }
 
 /**
- * Output writer for export settings `s`. Resolves null when Puter output is
+ * Output writer for export settings `s`. Resolves null when Everything output is
  * chosen but unavailable. write(name, blob) stores one file and resolves its
  * final name; finish(zipName) downloads what was collected (a ZIP for several).
  */
 export async function outputWriter(app, s) {
   let dir = null;
-  if (s.location === 'puter') {
-    if (!puter.sdk()) {
-      app.notify('Puter is not available. Choose Download in Export Settings.', { error: true });
+  if (s.location === 'everything') {
+    if (!everything.sdk()) {
+      app.notify('Everything is not available. Choose Download in Export Settings.', { error: true });
       return null;
     }
-    if (!puter.isSignedIn() && !(await puter.signIn().catch(() => false))) return null;
-    dir = s.dir || (await puter.appDir());
+    if (!everything.isSignedIn() && !(await everything.signIn().catch(() => false))) return null;
+    dir = s.dir || (await everything.appDir());
   }
   const zip = [];
   const taken = new Set();
@@ -161,12 +161,12 @@ export async function outputWriter(app, s) {
         let final = name;
         if (s.collision === 'rename') {
           const used = new Set();
-          while (await puter.exists(puter.joinPath(dir, final))) {
+          while (await everything.exists(everything.joinPath(dir, final))) {
             used.add(final.toLowerCase());
             final = uniqueName(name, used);
           }
         }
-        await puter.writeFile(puter.joinPath(dir, final), blob);
+        await everything.writeFile(everything.joinPath(dir, final), blob);
         return final;
       }
       const final = uniqueName(name, taken);

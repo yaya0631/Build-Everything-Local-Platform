@@ -27,7 +27,7 @@ async function roundtrip(wb, { patch, metadata = false } = {}) {
   if (!metadata) {
     const part = X.CFB.find(zip, '/xl/workbook.xml');
     X.CFB.utils.cfb_add(zip, '/xl/workbook.xml', bytes.encode(text.decode(part.content)
-      .replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')));
+      .replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')));
   }
   const part = X.CFB.find(zip, '/xl/charts/chart1_1.xml');
   const xml = patch ? patch(text.decode(part.content)) : text.decode(part.content);

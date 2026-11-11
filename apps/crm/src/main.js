@@ -26,15 +26,15 @@ async function start() {
   // or not this session gets as far as the app, or an install that first
   // opened on the sign-in screen would never have a shell to launch.
   registerWorker();
-  if (typeof puter === 'undefined') {
-    showError('Couldn’t reach Puter', 'The Puter SDK failed to load. Check your connection and try again.', () => location.reload());
+  if (typeof everything === 'undefined') {
+    showError('Couldn’t reach Everything', 'The Everything SDK failed to load. Check your connection and try again.', () => location.reload());
     return;
   }
 
   let signedIn = false;
   let asked = true;
   try {
-    signedIn = await Promise.resolve(puter.auth.isSignedIn());
+    signedIn = await Promise.resolve(everything.auth.isSignedIn());
   } catch {
     // Offline: the platform can't answer. A sign-in screen would be the
     // wrong answer - the user is signed in, they just have no network - so
@@ -71,7 +71,7 @@ async function boot() {
     await store.init();
   } catch (err) {
     console.error(err);
-    showError('Couldn’t load your data', 'Something went wrong talking to your Puter cloud.', () => location.reload());
+    showError('Couldn’t load your data', 'Something went wrong talking to your Everything cloud.', () => location.reload());
     return;
   }
 

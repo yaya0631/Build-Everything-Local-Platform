@@ -286,7 +286,7 @@ export function writePly(scene: ExportScene, opts: PlyWriteOptions = {}): { byte
   const header = [
     'ply',
     `format ${opts.ascii ? 'ascii' : 'binary_little_endian'} 1.0`,
-    'comment Created by Puter 3D',
+    'comment Created by Everything 3D',
     `element vertex ${nv}`,
     'property float x',
     'property float y',

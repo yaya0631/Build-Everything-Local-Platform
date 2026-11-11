@@ -218,7 +218,7 @@ export function installSessionBackup(app, { store, tab, now = () => Date.now() }
       group: `${tab}-${doc.id}`.replace(/[^a-z0-9-]/gi, ''),
       tab,
       name: parsed.name || doc.name,
-      source: doc.source?.type === 'puter' ? { type: 'puter', path: doc.source.path } : { type: doc.source?.type || 'new' },
+      source: doc.source?.type === 'everything' ? { type: 'everything', path: doc.source.path } : { type: doc.source?.type || 'new' },
       savedAt: at,
       dirty: Boolean(doc.dirty),
       offered: false,
@@ -321,8 +321,8 @@ export function installSessionBackup(app, { store, tab, now = () => Date.now() }
         const key = files.get(src.file);
         return key ? store.readMedia(key) : null;
       });
-      // Saving a restored session asks where unless it came from Puter; its media are written again.
-      if (m.source?.type === 'puter') session.source = { type: 'puter', path: m.source.path };
+      // Saving a restored session asks where unless it came from Everything; its media are written again.
+      if (m.source?.type === 'everything') session.source = { type: 'everything', path: m.source.path };
       session.savedState = null;
       app.addDocument(session);
       return session;

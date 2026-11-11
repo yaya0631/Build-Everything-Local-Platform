@@ -39,7 +39,7 @@ it('retains explicitly separate statistics and leaves unrelated priorities untou
 it('retains the extended statistical domain in metadata-free XLSX',async()=>{
  const{wb,id}=setup();wb.setInput(id,3,0,'100');
  const zip=X.CFB.read(new Uint8Array(await(await workbookToXlsx(wb)).arrayBuffer()),{type:'array'}),part=X.CFB.find(zip,'/xl/workbook.xml');
- part.content=new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,''));part.size=part.content.length;
+ part.content=new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,''));part.size=part.content.length;
  const back=await workbookFromFile(X.CFB.write(zip,{type:'array',fileType:'zip'}),'native.xlsx');expect(look(back,2)).toMatchObject({bg:'#333333'});expect(back.activeSheet.rules[0].range).toEqual(g(1,0,3));
 });
 

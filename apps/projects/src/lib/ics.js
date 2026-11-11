@@ -16,16 +16,16 @@
  *    then *updates* events instead of stacking duplicates, which is the whole
  *    difference between a useful export and a calendar full of triplicates.
  *
- * Pure, and unaware of Puter: it takes documents and returns text.
+ * Pure, and unaware of Everything: it takes documents and returns text.
  */
 
 import { addDays } from './dates.js';
 import { taskSpan, doneColumnIds } from './board.js';
 
 /** Where UIDs live. Never a real host — it only has to be stable and ours. */
-const UID_DOMAIN = 'project-management.puter';
+const UID_DOMAIN = 'project-management.everything';
 
-const PRODID = '-//Puter//Project Management//EN';
+const PRODID = '-//Everything//Project Management//EN';
 
 /** Escape the four characters RFC 5545 gives meaning to inside a value. */
 export function escapeIcsText(text) {

@@ -34,7 +34,7 @@ const $ = (sel) => document.querySelector('.modal-scrim ' + sel);
 const $$ = (sel) => [...document.querySelectorAll('.modal-scrim ' + sel)];
 const fire = (node, type) => node.dispatchEvent(new Event(type, { bubbles: true, cancelable: true }));
 
-const addButton = () => $$('.meeting__add').find((b) => /Add Puter Meetings link/.test(b.textContent));
+const addButton = () => $$('.meeting__add').find((b) => /Add Everything Meetings link/.test(b.textContent));
 const meetingRow = () => $('.meeting__row');
 const meetingField = () => $('.meeting')?.closest('.field');
 const removeButton = () => $('.meeting__row [aria-label="Remove meeting link"]');
@@ -49,7 +49,7 @@ afterEach(() => {
   document.body.innerHTML = '';
 });
 
-describe('event modal — Puter Meetings link', () => {
+describe('event modal — Everything Meetings link', () => {
   it('offers the button, mints a link on click, and saves it with the event', async () => {
     const store = makeStore();
     const meetings = makeMeetings();

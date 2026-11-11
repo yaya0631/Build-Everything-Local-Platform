@@ -85,7 +85,7 @@ await probe('cookie', () => document.cookie);
 await probe('indexedDB', () => new Promise((ok, no) => { const r = indexedDB.open('photo-studio-local'); r.onsuccess = () => ok('opened'); r.onerror = () => no(r.error); }));
 await probe('fetch', async () => (await fetch(${JSON.stringify('http://127.0.0.1:' + (process.env.PHOTO_EDITOR_TEST_PORT ?? 5175) + '/index.html')})).status);
 await probe('origin', () => self.origin);
-await probe('puter', () => typeof puter);`,
+await probe('everything', () => typeof everything);`,
   );
   expect(out).toEqual(
     expect.arrayContaining([
@@ -97,7 +97,7 @@ await probe('puter', () => typeof puter);`,
       'log: indexedDB blocked',
       'log: fetch blocked',
       'log: origin null',
-      'log: puter undefined',
+      'log: everything undefined',
     ]),
   );
 });

@@ -17,7 +17,7 @@ import { applyPathVars, encodeUrlText, splitUrl, withScheme } from './url.js';
 import { toBytes } from './http1.js';
 import { findVariables, interpolate } from './variables.js';
 
-export const USER_AGENT = 'PuterAPIClient/0.1';
+export const USER_AGENT = 'EverythingAPIClient/0.1';
 
 /** The auth that applies to a request: its own, or the nearest ancestor's. */
 export function effectiveAuth(request, parents = []) {

@@ -22,7 +22,7 @@ export function renderHome(app, el) {
           card('file-plus', 'Metric project', 'Millimetres, 1 : 100 plans', () => app.startProject('metric')),
           card('file-plus', 'Imperial project', 'Feet and inches, 1/8" plans', () => app.startProject('imperial')),
           card('house', 'Sample house', 'A small furnished house to explore', () => app.startProject('sample')),
-          card('folder-open', 'Open', 'From Puter or this device', () => app.run('open')),
+          card('folder-open', 'Open', 'From Everything or this device', () => app.run('open')),
         ),
       ),
       h(

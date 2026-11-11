@@ -455,7 +455,7 @@ export function writePivotAt(wb, sourceSheetId, built, sheetId, at, { label = 'I
  * references, which follow the rows and columns inserted or deleted around them and the renames of sheets and
  * tables; the fields are named by their headers, as Excel names a PivotTable's fields.
  */
-const DEFINITION = { source: '_PuterPivot_Source', area: '_PuterPivot_Area', fields: '_PuterPivot_Fields' };
+const DEFINITION = { source: '_EverythingPivot_Source', area: '_EverythingPivot_Area', fields: '_EverythingPivot_Fields' };
 const isDefinitionName = (n, sheetName) => n.hidden && (n.sheet || '').toLowerCase() === String(sheetName).toLowerCase()
   && Object.values(DEFINITION).some((name) => name.toLowerCase() === n.name.toLowerCase());
 const absoluteRange = (sheetName, r) => refToText({ sheet: sheetName, kind: 'range', r1: r.r1, c1: r.c1, r2: r.r2, c2: r.c2, absR1: true, absC1: true, absR2: true, absC2: true });

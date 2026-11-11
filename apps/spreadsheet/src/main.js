@@ -5,7 +5,7 @@ import { toast } from './ui/toast.js';
 import { closeAllModals, openModal } from './ui/modal.js';
 import { closeMenu } from './ui/menu.js';
 import { session } from './lib/session.js';
-import * as P from './lib/puter.js';
+import * as P from './lib/everything.js';
 import { Doc } from './lib/doc.js';
 import { sampleWorkbook } from './core/sample.js';
 import { isSpreadsheetFile } from './core/filetypes.js';
@@ -70,8 +70,8 @@ export function leaveWithoutSessionDialog({ kept = true } = {}) {
   return new Promise((resolve) => {
     const content = el('div', {},
       el('p.modal-text', {}, kept
-        ? 'This spreadsheet is not saved to Puter yet. Sign in to save it to your own cloud, or leave: your edits stay on this device, and can be recovered from Unsaved spreadsheets on the home screen.'
-        : 'This spreadsheet is not saved anywhere yet, and this browser could not keep a copy of it either. Sign in to Puter to save it to your own cloud, or leave and lose it.'),
+        ? 'This spreadsheet is not saved to Everything yet. Sign in to save it to your own cloud, or leave: your edits stay on this device, and can be recovered from Unsaved spreadsheets on the home screen.'
+        : 'This spreadsheet is not saved anywhere yet, and this browser could not keep a copy of it either. Sign in to Everything to save it to your own cloud, or leave and lose it.'),
       el('div.row.row-end', { style: { flexWrap: 'wrap' } },
         el('button.btn.btn-ghost', { type: 'button', onclick: () => modal.close() }, 'Keep editing'),
         el('button.btn.btn-danger', { type: 'button', onclick: () => { resolve('leave'); modal.close(); } }, 'Leave without saving'),
@@ -85,7 +85,7 @@ function mountSignInGate(requestedHash) {
   document.title = 'Spreadsheet';
   mount('gate', { el: signInView({
     title: 'Sign in to open this spreadsheet',
-    message: 'Spreadsheets live in your own Puter cloud. Sign in to open this one, or start a new spreadsheet without an account.',
+    message: 'Spreadsheets live in your own Everything cloud. Sign in to open this one, or start a new spreadsheet without an account.',
     onSignIn: async () => { if (await session.signIn() && location.hash === requestedHash) route(); },
     onSkip: () => go('#/'),
   }) });
@@ -275,7 +275,7 @@ async function route({ reload = false, file = null, draftKey = null } = {}) {
     try {
       const doc = await Doc.fromPath(path);
       if (!doc.path) {
-        // The file is gone, but edits made to it here never reached Puter: they open as a new spreadsheet.
+        // The file is gone, but edits made to it here never reached Everything: they open as a new spreadsheet.
         forgetRecent(path);
         history.replaceState(null, '', '#/new');
         toast('That file no longer exists. Unsaved changes kept on this device were opened as a new spreadsheet', { icon: 'info', duration: 6000 });
@@ -323,22 +323,22 @@ async function route({ reload = false, file = null, draftKey = null } = {}) {
 
 /**
  * Nobody has to sign in to work: the app opens straight into the editor.
- * Puter is asked for a sign-in at the first action that needs the cloud.
+ * Everything is asked for a sign-in at the first action that needs the cloud.
  */
 async function start() {
   if (!P.hasSDK()) {
-    show(errorView('Could not reach Puter', 'Puter could not be loaded. Check your connection and try again.', () => location.reload()));
+    show(errorView('Could not reach Everything', 'Everything could not be loaded. Check your connection and try again.', () => location.reload()));
     return;
   }
   setupFileDrop();
-  // Double-click or "Open with" on the Puter desktop: the SDK answers from the launch address as soon as this is registered.
+  // Double-click or "Open with" on the Everything desktop: the SDK answers from the launch address as soon as this is registered.
   P.onLaunchedWithItems(openDriveItems);
   P.onWindowClose(closeWindow);
   await boot();
 }
 
 /**
- * The Puter desktop window's close button, which waits for this: the sheet
+ * The Everything desktop window's close button, which waits for this: the sheet
  * saves what the autosave has not sent yet (a cell still being typed in
  * included), and asks, as leaving it for another screen would, when that save
  * cannot go through. Without this the window went at once, taking those edits.
@@ -365,7 +365,7 @@ function closeWindow() {
 }
 
 /**
- * Files on the drive handed to the app by the Puter desktop: the one it was
+ * Files on the drive handed to the app by the Everything desktop: the one it was
  * launched with (double-click, "Open with"), or those dragged onto the window.
  * A spreadsheet opens where it lives, so that its edits go back to it; an
  * image goes on the open sheet, as one dropped from the device does.
@@ -463,7 +463,7 @@ function setupFileDrop() {
   window.addEventListener('dragleave', (e) => { if (!e.relatedTarget) unhighlight(); });
   window.addEventListener('dragend', unhighlight);
   window.addEventListener('drop', (e) => {
-    // Files dragged in from the Puter desktop or one of its folder windows do not come the browser's way:
+    // Files dragged in from the Everything desktop or one of its folder windows do not come the browser's way:
     // the SDK dispatches a drop of its own, with the drive's entries in its detail and no dataTransfer.
     if (!e.dataTransfer && Array.isArray(e.detail?.items)) {
       e.preventDefault();

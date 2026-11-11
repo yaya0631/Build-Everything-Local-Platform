@@ -1,5 +1,5 @@
 /**
- * RSVP + booking endpoint — a Puter serverless worker deployed into the
+ * RSVP + booking endpoint — an Everything serverless worker deployed into the
  * calendar user's own account (see src/js/rsvp-links.js for the deploy/sync
  * side, and src/js/booking.js for the booking side).
  *
@@ -8,7 +8,7 @@
  * this worker's KV reveals no usable links; the raw token exists only in the
  * link itself (and in the host's private link cache in the calendar app).
  *
- * This worker serves NO HTML — it is a JSON API plus redirects (Puter
+ * This worker serves NO HTML — it is a JSON API plus redirects (Everything
  * guidance: workers as API-like endpoints). All human-facing UI lives on the
  * calendar app's own static hosting at PAGE_URL (public/rsvp.html), which
  * calls this API from the guest's browser.
@@ -87,15 +87,15 @@ const MAX_SUGGESTIONS = 10;
 
 /* ---- Small utilities --------------------------------------------------- */
 
-/** The puter.js build the platform baked into this deploy (its preamble's
+/** The everything.js build the platform baked into this deploy (its preamble's
  *  first line). Null under the test harness, which has no preamble. */
 function workerRuntime() {
-  return typeof __PUTER_PREAMBLE_VERSION__ === 'string' ? __PUTER_PREAMBLE_VERSION__ : null;
+  return typeof __EVERYTHING_PREAMBLE_VERSION__ === 'string' ? __EVERYTHING_PREAMBLE_VERSION__ : null;
 }
 
 function kvOf(ctx) {
   const owner = (ctx && ctx.me) || (typeof me !== 'undefined' ? me : null);
-  return owner.puter.kv;
+  return owner.everything.kv;
 }
 
 function respKey(eventId, email) {
@@ -106,7 +106,7 @@ function sugKey(eventId, email) {
   return `${SUG_PREFIX}${eventId}:${email}`;
 }
 
-/** puter.kv values may come back as parsed objects or JSON strings. */
+/** everything.kv values may come back as parsed objects or JSON strings. */
 function coerce(value) {
   if (value == null) return null;
   if (typeof value === 'string') {
@@ -136,7 +136,7 @@ function newToken() {
 }
 
 /**
- * The value if it is exactly a Puter Meetings room link, else ''. The RSVP
+ * The value if it is exactly an Everything Meetings room link, else ''. The RSVP
  * page and the booking emails render this as a clickable "Join" link, and
  * meeting URLs reach this worker from outside (the app pushes whatever an
  * imported ICS carried) — held to the exact room-link shape so a foreign URL
@@ -153,7 +153,7 @@ function meetingLink(value) {
 }
 
 /**
- * Mint an open Puter Meetings room link — the same stateless recipe the app's
+ * Mint an open Everything Meetings room link — the same stateless recipe the app's
  * meetings.js follows (see its header): 12 crypto-random lowercase letters,
  * grouped abcd-efgh-ijkl, wrapped in the Meetings URL. Nothing exists anywhere
  * until someone opens the link and starts the meeting, so minting here is
@@ -175,7 +175,7 @@ function mintMeetingUrl() {
 }
 
 /**
- * Every key under a prefix. puter.kv.list silently truncates large result
+ * Every key under a prefix. everything.kv.list silently truncates large result
  * sets (observed ~1k entries), so when the flat result is big enough to be
  * suspect, fan out one sub-list per hex char and merge — every event id from
  * the app starts with a lowercase hex char.
@@ -871,12 +871,12 @@ function fmtWhen(s) {
  * slot computation the guest page listed from, so the two can never disagree,
  * and a stale page simply gets slot_taken. Two guests racing for one slot are
  * resolved with a claim key (write-then-read-back on bookw:slot:<start>) plus
- * a final overlap re-check across all bookings — puter.kv has no transactions,
+ * a final overlap re-check across all bookings — everything.kv has no transactions,
  * so this narrows the race to KV round-trip time rather than eliminating it in
  * theory; in practice both guests are staring at the same slot grid, and the
  * exact-start claim catches that case outright.
  *
- * Confirmation emails are sent from the worker itself (me.puter.email — the
+ * Confirmation emails are sent from the worker itself (me.everything.email — the
  * host's own account sends and pays, exactly like their invitations) and are
  * strictly best-effort: a booking whose email fails is still a booking, and
  * the API says which mails actually went out so the page never promises one
@@ -961,9 +961,9 @@ function bookMailer(email) {
  */
 function bookSendForms(ctx) {
   const owner = bookOwner(ctx);
-  const send = bookMailer(owner && owner.puter && owner.puter.email);
+  const send = bookMailer(owner && owner.everything && owner.everything.email);
   if (!send) return null;
-  const token = owner.puter.authToken;
+  const token = owner.everything.authToken;
   const forms = [(message) => send(message)];
   if (token) {
     forms.unshift((message) => send({ ...message, requesterToken: token }));
@@ -1200,7 +1200,7 @@ function sanitizeBookingPage(input) {
     maxPerDay: bookInt(input.maxPerDay, 0, 50, 0),
     tz: bookValidTz(input.tz) ? input.tz : 'UTC',
     hours: sanitizeBookingHours(input.hours),
-    // Mint a Puter Meetings link for each booking. Defaults ON (absent =
+    // Mint an Everything Meetings link for each booking. Defaults ON (absent =
     // true, matching the app's normalizePage) so pages pushed by an app that
     // predates the field get video links the moment this worker does.
     meet: input.meet !== false,
@@ -1528,7 +1528,7 @@ function bookingIcs(cfg, booking) {
   const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//Puter Calendar//Booking//EN',
+    'PRODID:-//Everything Calendar//Booking//EN',
     `METHOD:${method}`,
     'BEGIN:VEVENT',
     `UID:${booking.id}@calendar.localhost`,
@@ -1630,7 +1630,7 @@ async function sendBookingMail(ctx, message) {
 }
 
 function bookFooterHtml() {
-  return `<p style="margin:20px 0 0;font-size:12px;color:#6b7280">Scheduled with Puter Calendar</p>`;
+  return `<p style="margin:20px 0 0;font-size:12px;color:#6b7280">Scheduled with Everything Calendar</p>`;
 }
 
 /** The mark that leads a booking mail: a white check in a green disc beside
@@ -2116,7 +2116,7 @@ router.post('/api/book/:page', async (ctx) => {
   /**
    * RESERVE, then check — the order is what makes the race safe.
    *
-   * puter.kv has no transactions, so two guests can only be separated by what
+   * everything.kv has no transactions, so two guests can only be separated by what
    * each can SEE of the other. Writing the record before the (storage-heavy)
    * availability check means every request's own check runs against a store
    * that already holds its reservation, and that is enough to prove no pair

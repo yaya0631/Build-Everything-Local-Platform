@@ -2,7 +2,7 @@ export const checkAbort = (signal) => {
   if (signal?.aborted) throw signal.reason ?? new DOMException('Cancelled', 'AbortError');
 };
 
-// Puter's SDK cannot abort a request already on the wire. Stop scheduling the
+// Everything's SDK cannot abort a request already on the wire. Stop scheduling the
 // next page once every consumer has left; one consumer never cancels another.
 export function sharedTask(run) {
   let current = null;

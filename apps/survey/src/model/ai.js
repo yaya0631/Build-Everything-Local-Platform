@@ -1,5 +1,5 @@
 /**
- * Drafting a survey with AI (puter.ai.chat). The model is asked for strict
+ * Drafting a survey with AI (everything.ai.chat). The model is asked for strict
  * JSON in a small schema of our own, and the reply is treated as untrusted:
  * extracted tolerantly (code fences, chatter around it, trailing commas),
  * mapped type by type onto our own question factories, capped in size, and
@@ -284,7 +284,7 @@ export function surveyFromAi(obj) {
   });
 }
 
-/** Ask the model for a survey. `ai` is puter.ai. */
+/** Ask the model for a survey. `ai` is everything.ai. */
 export async function generateSurvey(ai, prompt, opts = {}, { signal } = {}) {
   if (!ai || typeof ai.chat !== 'function') throw new Error('AI is not available.');
   // The documented form for a messages array is chat(messages, testMode, options).

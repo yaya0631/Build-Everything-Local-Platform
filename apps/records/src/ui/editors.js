@@ -477,7 +477,7 @@ export async function uploadFiles(page, table, field, recordId, files) {
     announce(`Uploaded ${atts.length} file${atts.length === 1 ? '' : 's'}`);
   } catch (err) {
     t.close();
-    toast(err?.code === 'storage_limit_reached' || err?.status === 413 ? 'Your Puter storage is full.' : 'Could not upload the file.', { error: true });
+    toast(err?.code === 'storage_limit_reached' || err?.status === 413 ? 'Your Everything storage is full.' : 'Could not upload the file.', { error: true });
   }
 }
 

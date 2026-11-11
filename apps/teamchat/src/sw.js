@@ -26,8 +26,8 @@ self.addEventListener('message', (event) => {
 /**
  * Navigations: the network first, so a new deployment shows up, and the
  * cached shell when offline. Hashed assets: cache first (their names change
- * with their content). The Puter SDK: stale-while-revalidate, so the app can
- * boot offline. API traffic goes through puter.workers.exec and is not
+ * with their content). The Everything SDK: stale-while-revalidate, so the app can
+ * boot offline. API traffic goes through everything.workers.exec and is not
  * touched here.
  */
 self.addEventListener('fetch', (event) => {

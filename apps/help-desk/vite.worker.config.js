@@ -4,13 +4,13 @@ import { join } from 'node:path';
 import { defineConfig } from 'vite';
 
 /**
- * Bundles the Puter worker into one plain script. The worker runtime provides
+ * Bundles the Everything worker into one plain script. The worker runtime provides
  * `router` and `me` as globals, so the output is an IIFE that uses them
  * without importing anything.
  *
  * The bundle is written to public/worker/ and shipped as a static file. When
  * a help desk owner turns on team access, their browser writes it to their
- * Puter drive and deploys it from there (see src/client/deploy.js). The build
+ * Everything drive and deploys it from there (see src/client/deploy.js). The build
  * id is a hash of the sources, so the app can tell when a deployed worker is
  * out of date and quietly redeploy it.
  */

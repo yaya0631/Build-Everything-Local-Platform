@@ -1,5 +1,5 @@
 // Pure decision extracted from main.js's load-time restore block. No DOM,
-// no localStorage, no puter — just the timestamp/ownership arithmetic that
+// no localStorage, no everything — just the timestamp/ownership arithmetic that
 // decides whether a remote save should replace what's already on screen.
 //
 // playerOwnsBoard: true once the player has committed to the current board

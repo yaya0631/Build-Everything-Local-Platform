@@ -1,7 +1,7 @@
 {
   "name": "Photo Studio",
   "short_name": "Photo Studio",
-  "description": "A GPU accelerated, layer-based photo editor with private Puter cloud storage.",
+  "description": "A GPU accelerated, layer-based photo editor with private Everything cloud storage.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

@@ -232,7 +232,7 @@ export function withExtension(name, formatId) {
   return `${base}.${f ? f.ext : 'wav'}`;
 }
 
-/** Removes characters Puter and most file systems reject. Empty input stays empty. */
+/** Removes characters Everything and most file systems reject. Empty input stays empty. */
 export function sanitizeFileName(name) {
   return String(name || '')
     .replace(/[\\/:*?"<>|\x00-\x1f]/g, '_')

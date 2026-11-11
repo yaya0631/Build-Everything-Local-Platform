@@ -13,7 +13,7 @@ import { authView } from './views/auth.js';
 const appRoot = document.getElementById('app');
 
 // The shell must open with no network: a service worker keeps the built app
-// and a copy of the Puter SDK on disk. Registered after load so it never
+// and a copy of the Everything SDK on disk. Registered after load so it never
 // competes with first paint; in dev, Vite's module server stays untouched.
 if (!import.meta.env.DEV && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -31,14 +31,14 @@ function showError(title, message, onRetry) {
 }
 
 async function start() {
-  if (typeof puter === 'undefined') {
-    showError('Couldn’t reach Puter', 'The Puter SDK failed to load. Check your connection and try again.', () => location.reload());
+  if (typeof everything === 'undefined') {
+    showError('Couldn’t reach Everything', 'The Everything SDK failed to load. Check your connection and try again.', () => location.reload());
     return;
   }
 
   let signedIn = false;
   try {
-    signedIn = await Promise.resolve(puter.auth.isSignedIn());
+    signedIn = await Promise.resolve(everything.auth.isSignedIn());
   } catch {
     signedIn = false;
   }
@@ -67,7 +67,7 @@ async function boot({ freshSignIn = false } = {}) {
       });
       return;
     }
-    showError('Couldn’t load your store', 'Something went wrong talking to your Puter cloud.', () => location.reload());
+    showError('Couldn’t load your store', 'Something went wrong talking to your Everything cloud.', () => location.reload());
     return;
   }
 

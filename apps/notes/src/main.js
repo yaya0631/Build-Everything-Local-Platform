@@ -9,7 +9,7 @@ import { icon } from './lib/icons.js';
 import { sanitizeHtml } from './lib/sanitize.js';
 import { applyTheme } from './ui/prefs.js';
 import { Store } from './data/store.js';
-import { puterBackend } from './data/backend.js';
+import { everythingBackend } from './data/backend.js';
 import { App } from './ui/app.js';
 import { PageEditor } from './editor/page-editor.js';
 import { tagStylesheet } from './editor/tag-edit.js';
@@ -33,10 +33,10 @@ function signInScreen(onSignedIn) {
   const error = h('p.field-error', { role: 'alert' });
   btn.addEventListener('click', async () => {
     btn.disabled = true;
-    btn.textContent = 'Waiting for Puter...';
+    btn.textContent = 'Waiting for Everything...';
     error.textContent = '';
     try {
-      await puter.auth.signIn();
+      await everything.auth.signIn();
       onSignedIn();
     } catch (err) {
       btn.disabled = false;
@@ -54,7 +54,7 @@ function signInScreen(onSignedIn) {
       feature('container', 'Write anywhere on the page, with notebooks, sections and pages'),
       feature('todo', 'Tag to-dos and ideas, then find them all in one place'),
       feature('pen', 'Draw and handwrite with pens and highlighters'),
-      feature('cloud', 'Saved as files in your own Puter cloud'),
+      feature('cloud', 'Saved as files in your own Everything cloud'),
     ),
     btn,
     error,
@@ -86,7 +86,7 @@ async function startApp(backend, user, env) {
     user,
     env,
     onSignOut: env === 'app' ? null : async () => {
-      await puter.auth.signOut();
+      await everything.auth.signOut();
       location.hash = '';
       location.reload();
     },
@@ -161,22 +161,22 @@ async function boot() {
     startApp(await localBackend(), { username: 'local' }, 'web');
     return;
   }
-  if (typeof puter === 'undefined') {
-    errorScreen("Couldn't reach Puter", 'Notes needs Puter to store your notebooks. Check your connection and try again.', () => location.reload());
+  if (typeof everything === 'undefined') {
+    errorScreen("Couldn't reach Everything", 'Notes needs Everything to store your notebooks. Check your connection and try again.', () => location.reload());
     return;
   }
-  const env = puter.env;
+  const env = everything.env;
   const begin = async () => {
     loading();
     let user = null;
     try {
-      user = await puter.auth.getUser();
+      user = await everything.auth.getUser();
     } catch {
       /* the store still works; the avatar falls back to an icon */
     }
-    startApp(puterBackend(puter), user, env);
+    startApp(everythingBackend(everything), user, env);
   };
-  if (env === 'app' || puter.auth.isSignedIn()) begin();
+  if (env === 'app' || everything.auth.isSignedIn()) begin();
   else signInScreen(begin);
 }
 

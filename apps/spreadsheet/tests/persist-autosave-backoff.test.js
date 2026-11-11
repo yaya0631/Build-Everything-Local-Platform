@@ -1,12 +1,12 @@
 import { afterEach, beforeAll, beforeEach, expect, it, vi } from 'vitest';
 import { Doc } from '../src/lib/doc.js';
 import { memoryStorage } from './helpers/memory-storage.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 
 // SheetJS is loaded on first use with a real dynamic import; warm it up so no test waits on it.
 beforeAll(async () => { await Doc.blank().toXlsxBlob(); });
-beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); installMockPuter(); vi.useFakeTimers(); });
-afterEach(() => { vi.useRealTimers(); delete globalThis.puter; });
+beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); installMockEverything(); vi.useFakeTimers(); });
+afterEach(() => { vi.useRealTimers(); delete globalThis.everything; });
 
 async function openDocument() {
   const doc = Doc.blank();
@@ -20,11 +20,11 @@ async function openDocument() {
 // the tab stayed open, the whole book encoded and sent each time.
 it('spaces out the retries of an autosave that keeps failing, and starts over at the next edit', async () => {
   const doc = await openDocument();
-  const write = puter.fs.write;
+  const write = everything.fs.write;
   let failing = true;
   const attempts = [];
-  puter.fs.write = async (path, ...rest) => {
-    if (!failing || path !== doc.path) return write.call(puter.fs, path, ...rest); // the history's snapshots are not the file
+  everything.fs.write = async (path, ...rest) => {
+    if (!failing || path !== doc.path) return write.call(everything.fs, path, ...rest); // the history's snapshots are not the file
     attempts.push(Date.now());
     throw new Error('Storage quota exceeded');
   };

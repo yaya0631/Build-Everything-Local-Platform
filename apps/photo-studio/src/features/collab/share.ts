@@ -1,6 +1,6 @@
 // Invite to Edit, Share for Review, access management, Stop Sharing and
 // opening invitation links. Sharing deploys (or reuses) a room worker in the
-// owner's Puter account, uploads the document there and turns the tab into
+// owner's Everything account, uploads the document there and turns the tab into
 // a shared document.
 import * as Y from 'yjs';
 import type { Editor } from '../../editor';
@@ -11,7 +11,7 @@ import { call, deploy } from '../../collab/api';
 import { RoomClient } from '../../collab/client';
 import { TileIndex } from '../../collab/tile-index';
 import { INVITE_ROLES, roleLabel, shareLink, type RoomLink } from '../../collab/protocol';
-import { collabPuter } from '../../collab/puter-types';
+import { collabEverything } from '../../collab/everything-types';
 import { commentsOf, shared, sharedOf } from './state';
 import { CollabSession, openShared, outboxStore, renderBar, type Member } from './session';
 
@@ -37,15 +37,15 @@ async function startSharing(e: Editor, purpose: 'edit' | 'review'): Promise<Coll
     purpose === 'edit' ? 'Invite to Edit' : 'Share for Review',
     [],
     'Start Sharing',
-    `${purpose === 'edit' ? 'People you invite edit this document with you live; each person undoes only their own changes.' : 'Reviewers see this document with zoom and pan and can leave comments; they cannot change it.'}\n\nSharing sets up a collaboration server in your Puter account and stores the document there (about ${bytes(tiles.bytes)} of pixels before compression). Everyone who opens a link signs in with Puter.\n\nThis tab becomes the shared document, and its earlier undo steps are cleared.`,
+    `${purpose === 'edit' ? 'People you invite edit this document with you live; each person undoes only their own changes.' : 'Reviewers see this document with zoom and pan and can leave comments; they cannot change it.'}\n\nSharing sets up a collaboration server in your Everything account and stores the document there (about ${bytes(tiles.bytes)} of pixels before compression). Everyone who opens a link signs in with Everything.\n\nThis tab becomes the shared document, and its earlier undo steps are cleared.`,
   );
   if (!ok) return;
-  const puter = collabPuter();
-  if (!puter.auth.isSignedIn()) await puter.auth.signIn();
+  const everything = collabEverything();
+  if (!everything.auth.isSignedIn()) await everything.auth.signIn();
   e.transform.apply();
   e.modal?.apply();
-  const user = await puter.auth.getUser();
-  const server = await deploy(puter, (text) => e.message(text));
+  const user = await everything.auth.getUser();
+  const server = await deploy(everything, (text) => e.message(text));
   const ydoc = new Y.Doc();
   const index = new TileIndex(tiles);
   // Comments made here before sharing become the owner's.
@@ -56,8 +56,8 @@ async function startSharing(e: Editor, purpose: 'edit' | 'review'): Promise<Coll
     resolved: t.resolved ? { ...t.resolved, by: t.resolved.by.id.startsWith('local:') ? me : t.resolved.by } : null,
     messages: t.messages.map((m) => (m.author.id.startsWith('local:') ? { ...m, author: me } : m)),
   }));
-  const room = await RoomClient.create({ puter, server, tiles: index, assets: s.assets, doc: s.doc, comments, ydoc }, (f) => e.message(`Uploading the document… ${Math.round(f * 100)}%`));
-  const client = new RoomClient({ puter, server, room, tiles: index, assets: s.assets, store: outboxStore(), ydoc });
+  const room = await RoomClient.create({ everything, server, tiles: index, assets: s.assets, doc: s.doc, comments, ydoc }, (f) => e.message(`Uploading the document… ${Math.round(f * 100)}%`));
+  const client = new RoomClient({ everything, server, room, tiles: index, assets: s.assets, store: outboxStore(), ydoc });
   await client.join();
   return openShared(e, { server, room }, { target: s, client });
 }
@@ -69,16 +69,16 @@ async function accessDialog(e: Editor, cs: CollabSession, purpose: 'edit' | 'rev
     return;
   }
   const dialog = document.querySelector<HTMLDialogElement>('#dialog')!;
-  const req = <T,>(input: Record<string, unknown>) => call<T>(cs.client.o.puter, cs.link.server, { room: cs.link.room, ...input });
+  const req = <T,>(input: Record<string, unknown>) => call<T>(cs.client.o.everything, cs.link.server, { room: cs.link.room, ...input });
   const roles = purpose === 'edit' ? INVITE_ROLES : INVITE_ROLES.filter((r) => r !== 'editor');
   const roleOptions = (selected: string, list = roles) => list.map((r) => `<option value="${r}" ${r === selected ? 'selected' : ''}>${escapeXML(roleLabel(r))}</option>`).join('');
   const days = `<option value="1">1 day</option><option value="7" selected>7 days</option><option value="30">30 days</option>`;
   dialog.innerHTML = `<form method="dialog" class="collab-dialog"><h2>${purpose === 'edit' ? 'Invite to Edit' : 'Share for Review'}</h2>
-<p class="muted">${purpose === 'edit' ? 'Anyone with an invitation link joins with the access it gives. People need a Puter account.' : 'A review link opens a review view: the image with zoom, pan and comments, without editing tools. Reviewers sign in with Puter.'}</p>
+<p class="muted">${purpose === 'edit' ? 'Anyone with an invitation link joins with the access it gives. People need an Everything account.' : 'A review link opens a review view: the image with zoom, pan and comments, without editing tools. Reviewers sign in with Everything.'}</p>
 <section aria-labelledby="collab-link-title"><h3 id="collab-link-title">Invitation link</h3>
 <div class="collab-row"><label>Access <select name="role">${roleOptions(purpose === 'edit' ? 'editor' : 'commenter')}</select></label><label>Expires after <select name="days">${days}</select></label><button type="button" data-act="link">${svg('link', 14)}Create Link</button></div>
 <div class="collab-row collab-link" hidden><input readonly aria-label="Invitation link" spellcheck="false"><button type="button" data-act="copy">${svg('copy', 14)}Copy</button></div></section>
-${purpose === 'edit' ? `<section aria-labelledby="collab-user-title"><h3 id="collab-user-title">Invite by Puter username</h3><div class="collab-row"><input name="username" placeholder="username" aria-label="Puter username" spellcheck="false" autocomplete="off"><select name="userrole" aria-label="Access">${roleOptions('editor')}</select><button type="button" data-act="user" disabled>Invite</button></div><p class="muted collab-small">Then send them the document’s link (Copy Link, in the people list beside the sharing status); they open it after signing in.</p></section>` : ''}
+${purpose === 'edit' ? `<section aria-labelledby="collab-user-title"><h3 id="collab-user-title">Invite by Everything username</h3><div class="collab-row"><input name="username" placeholder="username" aria-label="Everything username" spellcheck="false" autocomplete="off"><select name="userrole" aria-label="Access">${roleOptions('editor')}</select><button type="button" data-act="user" disabled>Invite</button></div><p class="muted collab-small">Then send them the document’s link (Copy Link, in the people list beside the sharing status); they open it after signing in.</p></section>` : ''}
 <section aria-labelledby="collab-members-title"><h3 id="collab-members-title">People with access</h3><ul class="collab-members"><li class="muted">Loading…</li></ul><div class="collab-row"><span class="muted collab-invites"></span><span class="panel-tabs-spacer"></span><button type="button" data-act="revoke">Revoke Invitation Links</button></div></section>
 <p class="collab-error" role="alert" hidden></p>
 <div class="dialog-actions"><button class="primary" value="done">Done</button></div></form>`;
@@ -195,7 +195,7 @@ export async function stopSharing(e: Editor) {
   const cs = activeShared(e);
   if (!cs || cs.role !== 'owner') return;
   if (!(await formDialog('Stop Sharing?', [], 'Stop Sharing', 'Everyone loses access and their open copies stop updating.\n\nThis tab keeps the document as a local copy, with its comments; save it to keep it.'))) return;
-  await call(cs.client.o.puter, cs.link.server, { op: 'stop', room: cs.link.room });
+  await call(cs.client.o.everything, cs.link.server, { op: 'stop', room: cs.link.room });
   cs.toLocal('Sharing stopped. This tab keeps a local copy.');
 }
 
@@ -206,11 +206,11 @@ export async function openLink(e: Editor, link: RoomLink) {
       await e.switchSession(s);
       return;
     }
-  const puter = collabPuter();
-  if (!puter.auth.isSignedIn()) {
-    const ok = await formDialog(link.review ? 'Open for Review' : 'Open Shared Document', [], 'Sign In', 'This link opens a shared document. Sign in with your Puter account to join.');
+  const everything = collabEverything();
+  if (!everything.auth.isSignedIn()) {
+    const ok = await formDialog(link.review ? 'Open for Review' : 'Open Shared Document', [], 'Sign In', 'This link opens a shared document. Sign in with your Everything account to join.');
     if (!ok) return;
-    await puter.auth.signIn();
+    await everything.auth.signIn();
   }
   await openShared(e, link, { review: link.review });
 }

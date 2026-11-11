@@ -23,7 +23,7 @@ async function fixture(second = false) {
 it.each([false, true])('ignores orphan table relationships with private metadata removed: %s', async noMeta => {
   const zip = await fixture();
   edit(zip, '/xl/worksheets/sheet1.xml', xml => xml.replace(/<tableParts\b[^>]*>[\s\S]*?<\/tableParts>/, ''));
-  if (noMeta) edit(zip, '/xl/workbook.xml', xml => xml.replace(/<sheet\b[^>]*name="_puter_meta"[^>]*\/>/, ''));
+  if (noMeta) edit(zip, '/xl/workbook.xml', xml => xml.replace(/<sheet\b[^>]*name="_everything_meta"[^>]*\/>/, ''));
   const raw = X.read(write(zip), { type: 'array' });
   expect(raw.Sheets.Sheet1['!tableXml']).toBeUndefined();
   const back = await workbookFromFile(write(zip), 'orphan.xlsx');
@@ -34,7 +34,7 @@ it.each([false, true])('ignores orphan table relationships with private metadata
 it('uses namespaced, entity-encoded references in worksheet order and deduplicates them', async () => {
   const zip = await fixture(true);
   edit(zip, '/xl/worksheets/sheet1.xml', xml => xml.replace(/<tableParts\b[^>]*>[\s\S]*?<\/tableParts>/,
-    '<x:tableParts xmlns:x="http://schemas.openxmlformats.org/spreadsheetml/2006/main" count="3"><x:tablePart r:id="&#112;uterTable2"/><x:tablePart r:id="puterTable1"/><x:tablePart r:id="puterTable2"/></x:tableParts>'));
+    '<x:tableParts xmlns:x="http://schemas.openxmlformats.org/spreadsheetml/2006/main" count="3"><x:tablePart r:id="&#112;uterTable2"/><x:tablePart r:id="everythingTable1"/><x:tablePart r:id="everythingTable2"/></x:tableParts>'));
   const raw = X.read(write(zip), { type: 'array' });
   expect(raw.Sheets.Sheet1['!tableXml']).toHaveLength(2);
   expect(raw.Sheets.Sheet1['!tableXml'][0]).toContain('name="OtherEntries"');
@@ -53,7 +53,7 @@ it.each(['relationship', 'target', 'type', 'external'])('rejects a referenced ta
     if (kind === 'relationship') return xml.replace(/<Relationship\b[^>]*Type="[^"]*\/table"[^>]*\/>/, '');
     if (kind === 'target') return xml.replace('../tables/table1.xml', '../tables/missing.xml');
     if (kind === 'type') return xml.replace('/relationships/table', '/relationships/hyperlink');
-    return xml.replace('Id="puterTable1"', 'Id="puterTable1" TargetMode="External"');
+    return xml.replace('Id="everythingTable1"', 'Id="everythingTable1" TargetMode="External"');
   });
   await expect(workbookFromFile(write(zip), 'broken.xlsx')).rejects.toThrow(/could not be read/);
 });

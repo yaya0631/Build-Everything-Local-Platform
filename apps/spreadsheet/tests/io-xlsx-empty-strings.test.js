@@ -22,7 +22,7 @@ it('retains explicitly stored empty strings separately from absent and styled bl
     expect(wb.getNote(id,0,8)).toBe("Note on a blank cell");
     const bytes=new Uint8Array(await(await workbookToXlsx(wb)).arrayBuffer());
     const zip=X.CFB.read(bytes,{type:'array'}),part=X.CFB.find(zip,'/xl/workbook.xml');
-    part.content=new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,''));part.size=part.content.length;
+    part.content=new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,''));part.size=part.content.length;
     wb=await workbookFromFile(X.CFB.write(zip,{type:'array',fileType:'zip'}),'external-empty.xlsx');
   }
 });

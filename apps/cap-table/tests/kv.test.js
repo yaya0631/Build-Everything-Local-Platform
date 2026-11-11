@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { readKV, getKV, compareAndSetKV, deleteKV, KVConflictError, KVReadError } from '../src/lib/kv.js';
-import { puterBackend, deferred } from './helpers/puter-kv.js';
+import { everythingBackend, deferred } from './helpers/everything-kv.js';
 
 describe('conditional KV publication', () => {
   let backend;
   beforeEach(() => {
-    backend = puterBackend();
+    backend = everythingBackend();
     backend.install();
   });
   const write = async (key, raw) => compareAndSetKV(key, await readKV(key), raw);
@@ -41,9 +41,9 @@ describe('conditional KV publication', () => {
     await write('data', 'base');
     const started = deferred();
     const release = deferred();
-    const set = puter.kv.set;
+    const set = everything.kv.set;
     let pause = true;
-    puter.kv.set = async (key, value) => {
+    everything.kv.set = async (key, value) => {
       if (key === 'data' && pause) {
         pause = false;
         started.resolve();
@@ -62,8 +62,8 @@ describe('conditional KV publication', () => {
   });
 
   it('keeps reading confirmed writes when shortcut updates fail', async () => {
-    const set = puter.kv.set;
-    puter.kv.set = async (key, value) => {
+    const set = everything.kv.set;
+    everything.kv.set = async (key, value) => {
       if (key === 'data') throw new Error('lost shortcut');
       return set(key, value);
     };
@@ -73,10 +73,10 @@ describe('conditional KV publication', () => {
 
   it('does not publish a failed payload or require a crashed writer to release a lock', async () => {
     await write('data', 'base');
-    const set = puter.kv.set;
-    puter.kv.set = async () => { throw new Error('offline'); };
+    const set = everything.kv.set;
+    everything.kv.set = async () => { throw new Error('offline'); };
     await expect(write('data', 'failed')).rejects.toThrow('offline');
-    puter.kv.set = set;
+    everything.kv.set = set;
     expect(await getKV('data')).toBe('base');
     await write('data', 'retry');
     expect(await getKV('data')).toBe('retry');
@@ -84,13 +84,13 @@ describe('conditional KV publication', () => {
 
   it.each([false, true])('removes a payload whose upload failed (landed=%s) and marks the failure unsent', async (landed) => {
     await write('data', 'base');
-    const set = puter.kv.set;
-    puter.kv.set = async (...args) => {
+    const set = everything.kv.set;
+    everything.kv.set = async (...args) => {
       if (landed) await set(...args);
       throw new Error('offline');
     };
     const failure = await write('data', 'failed').catch((err) => err);
-    puter.kv.set = set;
+    everything.kv.set = set;
     expect(failure.message).toBe('offline');
     // Nothing was appended, so the caller can tell this from a lost acknowledgement.
     expect(failure.unsent).toBe(true);
@@ -101,13 +101,13 @@ describe('conditional KV publication', () => {
 
   it.each([false, true])('handles an append failure (landed=%s) and allows a subsequent write', async (landed) => {
     await write('data', 'base');
-    const add = puter.kv.add;
-    puter.kv.add = async (...args) => {
+    const add = everything.kv.add;
+    everything.kv.add = async (...args) => {
       if (landed) await add(...args);
       throw new Error('lost acknowledgement');
     };
     await expect(write('data', 'attempted')).rejects.toThrow('lost acknowledgement');
-    puter.kv.add = add;
+    everything.kv.add = add;
     expect(await getKV('data')).toBe(landed ? 'attempted' : 'base');
     await write('data', 'retry');
     expect(await getKV('data')).toBe('retry');
@@ -135,9 +135,9 @@ describe('conditional KV publication', () => {
 
   it('removes a value that slipped in ahead of the delete, and hands back what it removed', async () => {
     await write('data', 'base');
-    const add = puter.kv.add;
+    const add = everything.kv.add;
     let once = true;
-    puter.kv.add = async (key, items) => {
+    everything.kv.add = async (key, items) => {
       if (once) {
         once = false;
         await write('data', 'slipped in');
@@ -151,9 +151,9 @@ describe('conditional KV publication', () => {
 
   it('retries when a newer publication removes a payload a reader was about to fetch', async () => {
     await write('data', 'base');
-    const get = puter.kv.get;
+    const get = everything.kv.get;
     let pause = true;
-    puter.kv.get = async (key) => {
+    everything.kv.get = async (key) => {
       if (key.endsWith(':value') && pause) {
         pause = false;
         await write('data', 'newer');
@@ -194,7 +194,7 @@ describe('conditional KV publication', () => {
 
   it('falls back to the shortcut when the remembered head belongs to another store', async () => {
     await write('data', 'first account');
-    backend = puterBackend();
+    backend = everythingBackend();
     backend.install();
     backend.values.set('data', 'legacy');
     expect(await getKV('data')).toBe('legacy');
@@ -203,7 +203,7 @@ describe('conditional KV publication', () => {
     // A deletion is remembered by nothing: a tombstone has no payload to
     // confirm it, so it must not seed a chain in the next store.
     await deleteKV('data');
-    backend = puterBackend();
+    backend = everythingBackend();
     backend.install();
     expect(await readKV('data')).toEqual({ raw: null, revision: 'initial' });
     await write('data', 'third account');
@@ -221,7 +221,7 @@ describe('conditional KV publication', () => {
   });
 
   it('fails closed when the SDK has no atomic append', async () => {
-    delete puter.kv.add;
+    delete everything.kv.add;
     await expect(write('data', 'unsafe')).rejects.toThrow('safe concurrent saves');
     expect(backend.values.size).toBe(0);
   });

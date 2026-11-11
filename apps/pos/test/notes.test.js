@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 import { Store, cleanQuickNotes, MAX_NOTE } from '../src/lib/store.js';
 import { receiptDoc } from '../src/lib/receipt-doc.js';
 import { lineItemsCsv } from '../src/lib/csv.js';
@@ -10,7 +10,7 @@ let mock;
 let store;
 
 beforeEach(async () => {
-  mock = installMockPuter();
+  mock = installMockEverything();
   store = new Store();
   await store.init();
 });

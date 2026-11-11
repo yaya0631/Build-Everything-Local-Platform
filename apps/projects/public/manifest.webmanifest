@@ -1,10 +1,10 @@
 {
   "name": "Project Management",
   "short_name": "Projects",
-  "description": "Kanban boards, timelines, and milestones. Lightweight project management on your own Puter cloud.",
+  "description": "Kanban boards, timelines, and milestones. Lightweight project management on your own Everything cloud.",
   "start_url": "./index.html",
   "scope": "./",
-  "id": "puter-project-management",
+  "id": "everything-project-management",
   "display": "standalone",
   "orientation": "any",
   "background_color": "#f8f8f7",

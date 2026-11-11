@@ -16,7 +16,7 @@
  * than with whatever was found there.
  */
 export function createSettings(scope, storage = window.localStorage) {
-  const key = `puter-mail:settings:${scope}`;
+  const key = `everything-mail:settings:${scope}`;
 
   const load = () => {
     try {

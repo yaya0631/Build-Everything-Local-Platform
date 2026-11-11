@@ -7,13 +7,13 @@ import { app } from '../app/app';
 import { clearScriptFiles } from '../scripting/files';
 import { iconEl } from '../ui/icons';
 import { type Agent, type ExchangeResult, type Step, createAgent } from './agent';
-import { type ChatFn, puterChat } from './ai';
+import { type ChatFn, everythingChat } from './ai';
 import { ATTACH_ACCEPT, type Attachment, MAX_ATTACHMENTS, attachmentKind, attachmentProblem, attachmentsTooLarge, formatSize, offerImages } from './attach';
 import { readAttachment } from './attachments';
 import { viewportUI } from './capture';
 import { renderMarkdown } from './markdown';
 import { SYSTEM_PROMPT, sceneSnapshot } from './prompt';
-import { inPuterDesktop, isSignedIn, loadPuter, signIn } from './puter';
+import { inEverythingDesktop, isSignedIn, loadEverything, signIn } from './everything';
 import { type AssistantHost, runTool, toolSpecs } from './tools';
 
 export const ASSISTANT_MODELS: { id: string; label: string; title: string }[] = [
@@ -25,7 +25,7 @@ export const ASSISTANT_MODELS: { id: string; label: string; title: string }[] = 
 const DEFAULT_MODEL = 'claude-opus-5-5';
 const SETTINGS_KEY = 'p3d:assistant';
 
-/** Development builds and browser tests may stand in for Puter AI with window.__assistantChat. */
+/** Development builds and browser tests may stand in for Everything AI with window.__assistantChat. */
 const devChat = (): ChatFn | null => (import.meta.env.DEV ? ((window as unknown as { __assistantChat?: ChatFn }).__assistantChat ?? null) : null);
 
 function loadModel(): string {
@@ -152,7 +152,7 @@ interface Turn {
 
 export class AssistantPanel {
   readonly el: HTMLElement;
-  /** Set by tests to answer without Puter. */
+  /** Set by tests to answer without Everything. */
   chat: ChatFn | null = null;
   private log: HTMLElement;
   private input: HTMLTextAreaElement;
@@ -176,7 +176,7 @@ export class AssistantPanel {
 
   constructor(private onClose: () => void) {
     this.agent = createAgent({
-      chat: (m, o) => (this.chat ?? devChat() ?? puterChat)(m, o),
+      chat: (m, o) => (this.chat ?? devChat() ?? everythingChat)(m, o),
       tools: () => toolSpecs(this.host),
       runTool: (name, args) => runTool(this.host, name, args),
       system: SYSTEM_PROMPT,
@@ -239,7 +239,7 @@ export class AssistantPanel {
       { class: 'assistant', 'aria-label': 'AI Assistant' },
       el('div', { class: 'as-bar' }, el('span', { class: 'as-title' }, ic('assistant'), 'Assistant'), modelSel, newChat, close),
       this.log,
-      el('div', { class: 'as-bottom' }, this.status, composer, el('div', { class: 'as-note' }, 'Sends your messages and a description of the scene to Puter AI.')),
+      el('div', { class: 'as-bottom' }, this.status, composer, el('div', { class: 'as-note' }, 'Sends your messages and a description of the scene to Everything AI.')),
     );
     this.bindDrop();
     this.renderEmpty();
@@ -326,18 +326,18 @@ export class AssistantPanel {
     if (!on) this.status.textContent = '';
   }
 
-  /** Whether Puter AI can be used; otherwise explains why in the conversation. */
+  /** Whether Everything AI can be used; otherwise explains why in the conversation. */
   private async ready(): Promise<boolean> {
     if (this.chat || devChat()) return true;
-    this.status.textContent = 'Connecting to Puter…';
-    const sdk = await loadPuter();
+    this.status.textContent = 'Connecting to Everything…';
+    const sdk = await loadEverything();
     this.status.textContent = '';
     if (!sdk?.ai) {
-      this.notice('The assistant runs on Puter AI, which could not be reached. Check your connection and try again.');
+      this.notice('The assistant runs on Everything AI, which could not be reached. Check your connection and try again.');
       return false;
     }
-    if (!inPuterDesktop() && !isSignedIn()) {
-      const btn = el('button', { class: 'as-btn primary', type: 'button' }, 'Sign in to Puter');
+    if (!inEverythingDesktop() && !isSignedIn()) {
+      const btn = el('button', { class: 'as-btn primary', type: 'button' }, 'Sign in to Everything');
       btn.addEventListener('click', () => {
         void signIn()
           .then((ok) => {
@@ -347,7 +347,7 @@ export class AssistantPanel {
           })
           .catch((e) => this.flash((e as Error).message));
       });
-      this.notice('Sign in to your Puter account to use the assistant (it runs on Puter AI).', btn);
+      this.notice('Sign in to your Everything account to use the assistant (it runs on Everything AI).', btn);
       return false;
     }
     return true;

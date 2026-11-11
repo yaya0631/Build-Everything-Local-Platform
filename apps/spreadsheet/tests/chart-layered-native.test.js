@@ -16,7 +16,7 @@ async function nativeCycle(wb) {
   const xml = decode(X.CFB.find(zip, parts[0]));
   const doc = new JSDOM(xml, { contentType: 'text/xml' }).window.document;
   const part = X.CFB.find(zip, '/xl/workbook.xml');
-  X.CFB.utils.cfb_add(zip, '/xl/workbook.xml', new TextEncoder().encode(decode(part).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')));
+  X.CFB.utils.cfb_add(zip, '/xl/workbook.xml', new TextEncoder().encode(decode(part).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')));
   return { wb: await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' })), doc };
 }
 const chart = wb => wb.sheets[0].charts[0];

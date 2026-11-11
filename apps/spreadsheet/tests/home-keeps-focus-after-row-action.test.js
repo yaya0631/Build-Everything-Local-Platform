@@ -44,7 +44,7 @@ beforeEach(() => {
     },
     ui: {},
   };
-  vi.stubGlobal('puter', sdk);
+  vi.stubGlobal('everything', sdk);
 });
 
 afterEach(() => {

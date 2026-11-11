@@ -181,15 +181,15 @@ describe('a file uploaded with a content type that carries a parameter', () => {
 });
 
 describe('a request that times out on its way up', () => {
-  const hadPuter = Object.hasOwn(globalThis, 'puter') ? globalThis.puter : undefined;
+  const hadEverything = Object.hasOwn(globalThis, 'everything') ? globalThis.everything : undefined;
   afterEach(() => {
-    if (hadPuter === undefined) delete globalThis.puter;
-    else globalThis.puter = hadPuter;
+    if (hadEverything === undefined) delete globalThis.everything;
+    else globalThis.everything = hadEverything;
   });
 
   it('is reported as the upload taking too long when it carried a file or a page of an archive, and as the server taking too long otherwise', async () => {
     const { api, ApiError } = await import('../src/lib/api.js');
-    globalThis.puter = { workers: { exec: async () => { throw new DOMException('The request timed out', 'TimeoutError'); } } };
+    globalThis.everything = { workers: { exec: async () => { throw new DOMException('The request timed out', 'TimeoutError'); } } };
     const said = async (p) => {
       try {
         await p;

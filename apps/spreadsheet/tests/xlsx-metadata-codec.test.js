@@ -9,7 +9,7 @@ const repeated = () => Object.fromEntries(Array.from({ length: 40 }, (_, r) => [
 
 describe('XLSX private style indexing', () => {
   it('deduplicates exact styles without changing the source or other metadata, and keeps the shared pool read-only', () => {
-    const meta = { v: 1, format: 'puter-spreadsheet', sheets: { Data: { styles: repeated(), nativeStyles: true, charts: [{ text: '😺 _x000A_ <&>' }] } } };
+    const meta = { v: 1, format: 'everything-spreadsheet', sheets: { Data: { styles: repeated(), nativeStyles: true, charts: [{ text: '😺 _x000A_ <&>' }] } } };
     const before = structuredClone(meta), json = stringifyXlsxMetadata(meta);
     expect(json.length).toBeLessThan(JSON.stringify(meta).length / 2);
     expect(JSON.parse(json).sheets.Data.styles.values).toHaveLength(1);
@@ -86,7 +86,7 @@ describe('XLSX private style indexing', () => {
     for (let cycle = 0; cycle < 2; cycle++) {
       const bytes = new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer());
       const raw = X.read(bytes, { type: 'array' });
-      const json = Object.entries(raw.Sheets._puter_meta).filter(([a]) => /^A\d+$/.test(a)).map(([, c]) => c.v).join('');
+      const json = Object.entries(raw.Sheets._everything_meta).filter(([a]) => /^A\d+$/.test(a)).map(([, c]) => c.v).join('');
       const metadata = JSON.parse(json).sheets.Data;
       expect(metadata.styles.encoding).toBe('style-index-v1');
       if (drawing) expect(metadata.nativeDrawings).toHaveLength(1);
@@ -114,7 +114,7 @@ describe('XLSX private style indexing', () => {
     for (let cycle = 0; cycle < 2; cycle++) {
       const bytes = new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer());
       const raw = X.read(bytes, { type: 'array' });
-      const json = Object.entries(raw.Sheets._puter_meta).filter(([a]) => /^A\d+$/.test(a)).map(([, c]) => c.v).join('');
+      const json = Object.entries(raw.Sheets._everything_meta).filter(([a]) => /^A\d+$/.test(a)).map(([, c]) => c.v).join('');
       for (const field of ['colStyles', 'rowStyles']) expect(JSON.parse(json).sheets.Lines[field].values).toHaveLength(2);
       wb = await workbookFromFile(bytes);
       expect(wb.styleAt(wb.activeSheetId, 80, 2)).toMatchObject({ color: '#123456', bg: '#ffeecc', bold: true, wrap: true });
@@ -132,7 +132,7 @@ describe('XLSX private style indexing', () => {
     expect(wb.getValue(id, 90, 90)).toBe(7); expect(wb.styleAt(id, 90, 90).color).toBe('#abcdef');
     const zip = X.CFB.read(new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()), { type: 'array' });
     const part = X.CFB.find(zip, '/xl/workbook.xml');
-    part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')); part.size = part.content.length;
+    part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')); part.size = part.content.length;
     const native = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }));
     for (const [r, c] of [[80, 2], [80, 3], [2, 80], [80, 23], [2, 2], [90, 90]]) {
       const style = wb.styleAt(id, r, c), actual = native.styleAt(native.activeSheetId, r, c);

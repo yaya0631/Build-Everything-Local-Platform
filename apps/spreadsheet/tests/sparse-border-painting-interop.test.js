@@ -13,7 +13,7 @@ const make = () => new Workbook({ sheets: [{ name: 'Paint', rows: 1000, cols: 80
 async function zipFor(wb) { return X.CFB.read(new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()), { type: 'array' }); }
 function withoutMeta(zip) {
   const part = X.CFB.find(zip, '/xl/workbook.xml');
-  part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')); part.size = part.content.length;
+  part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')); part.size = part.content.length;
   return X.CFB.write(zip, { type: 'array', fileType: 'zip' });
 }
 it.each([false, true])('exports distant blank borders and reopens repeated saves (native-only=%s)', async nativeOnly => {

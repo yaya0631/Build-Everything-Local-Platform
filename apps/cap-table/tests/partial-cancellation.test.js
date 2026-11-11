@@ -2,11 +2,11 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { Store } from '../src/lib/store.js';
 import { dbAsOf, grantVested, grantOutstanding, vestingForecast, upcomingEvents, isoLimitValueByYear } from '../src/lib/captable.js';
 import { awardExpenseSchedule, expenseReport } from '../src/lib/reports.js';
-import { puterBackend } from './helpers/puter-kv.js';
+import { everythingBackend } from './helpers/everything-kv.js';
 
 let store, common, holder, plan;
 beforeEach(async () => {
-  puterBackend().install(); store = new Store(); await store.init();
+  everythingBackend().install(); store = new Store(); await store.init();
   common = await store.addClass({ name: 'Common', kind: 'common' });
   holder = await store.addStakeholder({ name: 'Employee', kind: 'employee' });
   plan = await store.addPlan({ name: 'Plan', adopted: '2024-01-01', classId: common.id, reserve: 10000 });

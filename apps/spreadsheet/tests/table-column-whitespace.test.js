@@ -60,7 +60,7 @@ it('exports distinct native table headers and correct formulas without private m
     expect([...dom.window.document.querySelectorAll('tableColumn')].map(c => c.getAttribute('name'))).toEqual(headers.map(value => value.replace(/\n/g, '_x000A_')));
     dom.window.close();
     const part = X.CFB.find(zip, '/xl/workbook.xml');
-    part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+    part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
     part.size = part.content.length;
     wb = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'external.xlsx');
     expect(values(wb)).toEqual([11, 22, 33, 44, 55, 66]);
@@ -86,7 +86,7 @@ it.each([
   expect(wb.getValue(id, 0, 2)).toBe(7);
   const saved = new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer());
   const zip = X.CFB.read(saved, { type: 'array' }), part = X.CFB.find(zip, '/xl/workbook.xml');
-  part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   part.size = part.content.length;
   const back = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'external.xlsx');
   expect(back.tableColumns(back.activeSheetId, back.activeSheet.tables[0])).toEqual([expected]);

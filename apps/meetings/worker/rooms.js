@@ -1,11 +1,11 @@
 /**
- * Puter Meetings — the room directory.
+ * Everything Meetings — the room directory.
  *
- * A Puter Worker (http://localhost:8443/Workers/) that answers one
+ * An Everything Worker (http://localhost:8443/Workers/) that answers one
  * question for every meeting link: what is running behind this room code
  * right now? It is the single place a room's live invite is written and
- * read, backed by the worker's own key-value store (`me.puter.kv` — the
- * store of the `sandbox-puter-meetings-rooms` app the deploy makes), so
+ * read, backed by the worker's own key-value store (`me.everything.kv` — the
+ * store of the `sandbox-everything-meetings-rooms` app the deploy makes), so
  * there is exactly one record per room, one clock (this one), and one
  * answer for everyone who asks.
  *
@@ -33,10 +33,9 @@
  * Bodies are JSON sent as text/plain, so browsers make no CORS preflight
  * and `navigator.sendBeacon` can post the same thing on the way out. The
  * runtime adds `Access-Control-Allow-Origin: *`; nothing here needs a
- * Puter session — a room code is the capability, as the link already is.
+ * Everything session — a room code is the capability, as the link already is.
  *
- * Deploy (once; later deploys overwrite the file behind the same name):
- *   puter worker deploy worker/rooms.js puter-meetings-rooms
+ * The local server registers this file as everything-meetings-rooms at startup.
  */
 
 /** A live entry not heartbeated for this long is a host that vanished. */
@@ -104,7 +103,7 @@ function publicView(entry, now) {
 }
 
 async function readEntry(code) {
-  const raw = await me.puter.kv.get(keyFor(code));
+  const raw = await me.everything.kv.get(keyFor(code));
   if (raw === null || raw === undefined) return null;
   try {
     const entry = typeof raw === 'string' ? JSON.parse(raw) : raw;
@@ -115,7 +114,7 @@ async function readEntry(code) {
 }
 
 async function writeEntry(code, entry, now) {
-  await me.puter.kv.set(keyFor(code), JSON.stringify(entry), Math.floor(now / 1000) + KEEP_S);
+  await me.everything.kv.set(keyFor(code), JSON.stringify(entry), Math.floor(now / 1000) + KEEP_S);
 }
 
 async function readBody(request) {
@@ -226,7 +225,7 @@ router.post('/v1/rooms/:code/end', async ({ request, params }) => {
     // Only the meeting itself may end its entry; a stranger's request is a
     // no-op, not an error. A stale entry is nobody's — anyone may clear it.
     const ours = !!current && (current.secret === secret || !isFresh(current, now));
-    if (ours) await me.puter.kv.del(keyFor(code));
+    if (ours) await me.everything.kv.del(keyFor(code));
     return reply(200, { ok: true, now, ended: ours });
   } catch (error) {
     return reply(503, { ok: false, reason: 'store', message: String(error?.message ?? error) });

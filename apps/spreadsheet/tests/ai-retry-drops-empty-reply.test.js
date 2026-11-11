@@ -2,7 +2,7 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { Workbook } from '../src/core/workbook.js';
 import { createAiPanel } from '../src/ui/aipanel.js';
-import * as P from '../src/lib/puter.js';
+import * as P from '../src/lib/everything.js';
 import { memoryStorage } from './helpers/memory-storage.js';
 
 // A reply that failed before it said anything (the service busy, say) stayed in the chat once Try again was

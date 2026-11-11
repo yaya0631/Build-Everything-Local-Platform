@@ -8,7 +8,7 @@ beforeEach(() => {
   Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true });
   kv = new Map();
   reachable = true;
-  globalThis.puter = {
+  globalThis.everything = {
     auth: { isSignedIn: () => true },
     kv: {
       get: async (key) => { if (!reachable) throw new Error('offline'); return kv.get(key) ?? null; },
@@ -16,7 +16,7 @@ beforeEach(() => {
     },
   };
 });
-afterEach(() => { delete globalThis.puter; });
+afterEach(() => { delete globalThis.everything; });
 
 it("puts a preference changed while the account's store could not be reached in the store once it can be", async () => {
   savePref('options', { enterDirection: 'right' });

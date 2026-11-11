@@ -1,5 +1,5 @@
 // The script sandbox. Each run gets a hidden iframe with `sandbox="allow-scripts"`
-// (an opaque origin: no access to this page, its storage, cookies or Puter
+// (an opaque origin: no access to this page, its storage, cookies or Everything
 // session) and a content security policy that allows no network, images or
 // frames. The iframe starts a dedicated worker with the runtime and the
 // script; the page talks to that worker over a MessageChannel with

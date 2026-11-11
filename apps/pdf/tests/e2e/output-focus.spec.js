@@ -2,14 +2,14 @@ import { test, expect } from '@playwright/test';
 import { PDFDocument } from 'pdf-lib';
 import { readFile } from 'node:fs/promises';
 
-for (const action of ['Download', 'Save to Puter'])
+for (const action of ['Download', 'Save to Everything'])
   for (const moveFocus of [false, true])
     test(`${action} preserves keyboard focus after saving a form draft (move focus=${moveFocus})`, async ({
       page,
     }) => {
-      await page.route('**/sdk/puter.js', (route) =>
+      await page.route('**/sdk/everything.js', (route) =>
         route.fulfill({
-          body: `window.puter = {
+          body: `window.everything = {
             env: 'web',
             auth: { isSignedIn: () => true, getUser: async () => ({ username: 'test-user' }) },
             fs: {
@@ -54,7 +54,7 @@ for (const action of ['Download', 'Save to Puter'])
         };
       });
       const button = page.getByRole('button', {
-        name: action === 'Download' ? 'Download' : /^Save(?: to Puter)?$/,
+        name: action === 'Download' ? 'Download' : /^Save(?: to Everything)?$/,
         exact: true,
       });
       const settings = page.getByRole('button', { name: 'Settings', exact: true });
@@ -68,7 +68,7 @@ for (const action of ['Download', 'Save to Puter'])
       let bytes;
       if (pending) bytes = await readFile(await (await pending).path());
       else {
-        await expect(page.locator('.save-status')).toHaveText('Saved to Puter');
+        await expect(page.locator('.save-status')).toHaveText('Saved to Everything');
         bytes = new Uint8Array(await page.evaluate(() => window.savedOutput));
       }
       await expect(button).toBeEnabled();

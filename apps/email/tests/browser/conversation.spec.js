@@ -20,7 +20,7 @@ test('older messages remain available after a failed page read', async ({ page }
   await expect(more).toBeVisible();
   const before = await page.locator('.row').count();
   await page.evaluate(() => {
-    const fs = window.puter.fs;
+    const fs = window.everything.fs;
     const readdir = fs.readdir.bind(fs);
     fs.readdir = (path) => path.includes('/objects/')
       ? Promise.reject(new Error('offline')) : readdir(path);
@@ -50,7 +50,7 @@ test('a failed Mark all as read does not change the folder opened while it was l
   await folder('Inbox').click();
   await expect(page.locator('.row.unread').first()).toBeVisible();
   await page.evaluate(() => {
-    const fs = window.puter.fs;
+    const fs = window.everything.fs;
     const readdir = fs.readdir.bind(fs);
     fs.readdir = (path) => {
       if (!path.endsWith('/objects')) return readdir(path);

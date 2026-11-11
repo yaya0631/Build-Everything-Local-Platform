@@ -84,13 +84,13 @@ describe('a contact link copied whole into the invitation dialog', () => {
 describe('bringing an owner\'s worker up to the shipped build', () => {
   const worker = { url: 'http://teamchat-x.localhost:8443', path: '/me/teamchat-worker.js', name: 'teamchat-x' };
   const realFetch = globalThis.fetch;
-  const realPuter = globalThis.puter;
+  const realEverything = globalThis.everything;
   let writes;
   let health;
   /** The app ships build `aaaa…`; the worker answers /health with whatever `health` says at the time. */
   function ship() {
     globalThis.fetch = async () => new Response('/* teamchat-worker build=aaaaaaaaaaaa at=2000 */\nconsole.log(1);', { status: 200 });
-    globalThis.puter = {
+    globalThis.everything = {
       fs: { write: async (path) => { writes.push(path); return { path }; } },
       workers: { exec: async () => new Response(JSON.stringify(health()), { status: 200, headers: { 'Content-Type': 'application/json' } }) },
     };
@@ -101,7 +101,7 @@ describe('bringing an owner\'s worker up to the shipped build', () => {
   });
   afterEach(() => {
     globalThis.fetch = realFetch;
-    globalThis.puter = realPuter;
+    globalThis.everything = realEverything;
   });
 
   it('is reported as done only once the worker answers with the new build; a worker still on the old one is no update yet', async () => {
@@ -114,7 +114,7 @@ describe('bringing an owner\'s worker up to the shipped build', () => {
     expect(await updateOwnWorker(worker, 'bbbbbbbbbbbb', 1000, { wait: { attempts: 3, delay: 1 } })).toBeNull();
     expect(writes).toEqual(['/me/teamchat-worker.js']);
     // A worker that does not answer at all while the wait runs is not updated either.
-    globalThis.puter.workers.exec = async () => { throw new Error('offline'); };
+    globalThis.everything.workers.exec = async () => { throw new Error('offline'); };
     expect(await updateOwnWorker(worker, 'bbbbbbbbbbbb', 1000, { wait: { attempts: 2, delay: 1 } })).toBeNull();
     // One that comes up on the new build within the wait is: the third answer says so.
     let asked = 0;
@@ -273,10 +273,10 @@ describe('a webhook payload in the shapes the oldest integrations send it', () =
 
 describe('a block the original closed early, through an export and an import', () => {
   const { bob } = USERS;
-  const hadPuter = Object.hasOwn(globalThis, 'puter') ? globalThis.puter : undefined;
+  const hadEverything = Object.hasOwn(globalThis, 'everything') ? globalThis.everything : undefined;
   afterEach(() => {
-    if (hadPuter === undefined) delete globalThis.puter;
-    else globalThis.puter = hadPuter;
+    if (hadEverything === undefined) delete globalThis.everything;
+    else globalThis.everything = hadEverything;
   });
   /** The app's bridge to the (real) worker as alice. */
   const bridge = () => ({ workers: { exec: async (url, init = {}) => rt.dispatch(url, init, alice) } });
@@ -299,7 +299,7 @@ describe('a block the original closed early, through an export and an import', (
     expect(direct.pages.find((p) => p.conv === general.id).closed).toEqual([{ block: 0, after: lastRecord }]);
     expect(direct.pages.filter((p) => p.conv !== general.id).every((p) => p.closed === undefined)).toBe(true);
     // Through the app's own export and import.
-    globalThis.puter = bridge();
+    globalThis.everything = bridge();
     const archive = await exportWorkspace(`${wsId}@teamchat-old`);
     const newRef = await importArchive('https://teamchat-api.test', archive, { profile: { name: 'Alice' } });
     const copyId = parseRef(newRef).id;

@@ -5,7 +5,7 @@
 // caller, so a whole exchange can be played out in a test with a scripted
 // model.
 //
-// The transcript is in the shape Puter's AI takes (OpenAI's). Every tool call
+// The transcript is in the shape Everything's AI takes (OpenAI's). Every tool call
 // gets an answer, even one that was stopped, or the next request would be
 // refused as malformed. Screenshots go in a user message after the tool
 // results and only with the round that took them.

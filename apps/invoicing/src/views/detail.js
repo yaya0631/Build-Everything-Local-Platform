@@ -786,7 +786,7 @@ export function detailView({ navigate, params }) {
   /**
    * Hand one attachment back to the user. The file lives in their cloud, so
    * it is read into a blob here and offered as a download — the same path
-   * the PDF action takes, and the only one a Puter file can take.
+   * the PDF action takes, and the only one an Everything file can take.
    */
   async function downloadAttachment(entry, button) {
     if (button.getAttribute('aria-disabled') === 'true') return;

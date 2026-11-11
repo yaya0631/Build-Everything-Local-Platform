@@ -114,7 +114,7 @@ it('keeps the view with the sheet through XLSX, as <sheetView view="pageLayout">
   const back = await workbookFromFile(bytes.slice(), 'views.xlsx');
   expect(back.sheets.map(s => s.viewMode || 'normal')).toEqual(['pageLayout', 'pageBreak', 'normal']);
   const part = X.CFB.find(zip, '/xl/workbook.xml');
-  part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   part.size = part.content.length;
   const native = await workbookFromFile(new Uint8Array(X.CFB.write(zip, { type: 'array', fileType: 'zip' })), 'native.xlsx');
   expect(native.sheets.map(s => s.viewMode || 'normal')).toEqual(['pageLayout', 'pageBreak', 'normal']);

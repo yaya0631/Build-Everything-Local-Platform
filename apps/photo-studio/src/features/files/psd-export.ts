@@ -8,7 +8,7 @@ import { gridDocBounds, intersectRect, parseKey, readMask, readRGBA, TILE, union
 import type { IRect } from '../../imaging/types';
 import { PsdPreviewEditError, saveOriginalPsd } from '../../model/psd-original';
 import { Renderer } from '../../renderer/renderer';
-import { download } from '../../persistence/puter';
+import { download } from '../../persistence/everything';
 import { information } from '../../ui/dialog';
 import { askChoice } from '../preferences/warnings';
 import type { ReadPsdMaskGrid } from '../../model/psd';

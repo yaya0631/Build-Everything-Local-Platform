@@ -48,7 +48,7 @@ it('preserves line formats through app and native-only XLSX round trips', async 
   const bytes = new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer());
   check(await workbookFromFile(bytes,'saved.xlsx'));
   const zip=X.CFB.read(bytes,{type:'array'}),part=X.CFB.find(zip,'/xl/workbook.xml');
-  part.content=new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,''));part.size=part.content.length;
+  part.content=new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,''));part.size=part.content.length;
   check(await workbookFromFile(X.CFB.write(zip,{type:'array',fileType:'zip'}),'native.xlsx'));
 });
 it('bounds native line declarations and ignores comments, invalid styles and disabled row formats',()=>{
@@ -92,7 +92,7 @@ it.each(['row', 'column', 'both'])('keeps %s formats on hyperlink-only cells wit
     const part = X.CFB.find(zip, '/xl/workbook.xml');
     // One cycle exercises private metadata; the second is native-only.
     if (pass === 1) X.CFB.utils.cfb_add(zip, '/xl/workbook.xml', new TextEncoder().encode(new TextDecoder().decode(part.content)
-      .replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')));
+      .replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')));
     wb = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }));
   }
   const clip = wb.copyRange(wb.activeSheetId, { r1: 0, c1: 1, r2: 0, c2: 1 });

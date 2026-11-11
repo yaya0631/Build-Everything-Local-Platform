@@ -2,7 +2,7 @@
  * Where the game's data lives.
  *
  * localStorage is the primary store and always writes first, because it is the
- * one that cannot fail for a reason outside the player's control. A Puter
+ * one that cannot fail for a reason outside the player's control. An Everything
  * account, when there is one, is a second copy that makes the same data
  * readable from another device.
  *
@@ -17,7 +17,7 @@
 import { normalizeSettings } from './settings.js';
 import { mergeStats, normalizeStats } from './stats.js';
 import { decode, encode } from './serialize.js';
-import * as cloud from '../net/puter.js';
+import * as cloud from '../net/everything.js';
 
 const LS_SETTINGS = 'sudoku.settings.v1';
 const LS_STATS = 'sudoku.stats.v1';

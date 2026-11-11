@@ -34,7 +34,7 @@ it('preserves the axis format through duplication and native-only export',async(
   const w=new Workbook({sheets:[{name:'Data',charts:[make('"Q"0')]}]});
   w.duplicateChart(w.activeSheetId,w.activeSheet.charts[0].id);
   const zip=X.CFB.read(new Uint8Array(await(await workbookToXlsx(w)).arrayBuffer()),{type:'array'}),p=X.CFB.find(zip,'/xl/workbook.xml');
-  p.content=new TextEncoder().encode(new TextDecoder().decode(p.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,''));p.size=p.content.length;
+  p.content=new TextEncoder().encode(new TextDecoder().decode(p.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,''));p.size=p.content.length;
   const r=await workbookFromFile(X.CFB.write(zip,{type:'array',fileType:'zip'}),'axis.xlsx');
   for(const ch of r.activeSheet.charts){expect(ch.appearance.xFormat).toBe('"Q"0');expect(text(r,ch)).toContain('Q3')}
 });
@@ -52,7 +52,7 @@ it('keeps source-linked category display text instead of applying the cached axi
 it.each([['',true],[' sourceLinked="1"',true],[' sourceLinked="0"',false]])('imports category source linkage %s',async(attribute,expected)=>{
   const w=new Workbook({sheets:[{name:'Data',charts:[make('0.00')]}]});
   const zip=X.CFB.read(new Uint8Array(await(await workbookToXlsx(w)).arrayBuffer()),{type:'array'});
-  const p=X.CFB.find(zip,'/xl/workbook.xml');p.content=new TextEncoder().encode(new TextDecoder().decode(p.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,''));p.size=p.content.length;
+  const p=X.CFB.find(zip,'/xl/workbook.xml');p.content=new TextEncoder().encode(new TextDecoder().decode(p.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,''));p.size=p.content.length;
   const c=X.CFB.find(zip,'/xl/charts/chart1_1.xml');
   c.content=new TextEncoder().encode(new TextDecoder().decode(c.content).replace(/(<c:catAx>[\s\S]*?<c:numFmt[^>]*?) sourceLinked="0"/,`$1${attribute}`));c.size=c.content.length;
   const r=await workbookFromFile(X.CFB.write(zip,{type:'array',fileType:'zip'}),'linked.xlsx');

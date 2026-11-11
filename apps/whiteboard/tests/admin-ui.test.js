@@ -1070,7 +1070,7 @@ test("joining from a link confirms the organization before switching", async () 
     assert.deepEqual(used, [], "nothing changes on the first press");
     assert.match(
       dialog.querySelector("#org-join-status").textContent,
-      /ACME Corp at evil\.puter\.work\?.*replaces ACME/,
+      /ACME Corp at evil\.everything\.work\?.*replaces ACME/,
     );
     submit();
     await new Promise((resolve) => setTimeout(resolve, 10));
@@ -5182,18 +5182,18 @@ test("stored integration and SIEM secrets can be removed", async () => {
     d.querySelector("#integrations-form").requestSubmit();
     await settle();
     // Single sign-on is not offered as if it worked; multifactor
-    // authentication is Puter's.
+    // authentication is Everything's.
     assert.match(
       d.textContent,
-      /single sign-on needs the Puter account platform and is not available yet/,
+      /single sign-on needs the Everything account platform and is not available yet/,
     );
-    // Google Workspace accounts sign in through Puter's Sign in with Google.
+    // Google Workspace accounts sign in through Everything's Sign in with Google.
     assert.match(d.textContent, /Sign in with Google/);
     d.querySelector("#admin-tab-security").click();
     await settle();
     assert.match(
       d.textContent,
-      /Puter enforces multifactor authentication at sign-in/,
+      /Everything enforces multifactor authentication at sign-in/,
     );
     assert.doesNotMatch(d.textContent, /enforce it in Google Workspace/);
     d.querySelector("#s-secret-off").checked = true;

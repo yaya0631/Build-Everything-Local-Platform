@@ -67,7 +67,7 @@ describe('turning on team sign-in', () => {
     app.workspaces = { current: 'own', own: {}, joined: [] };
     app.store = { flush: async () => {} };
     const deleted = [];
-    globalThis.puter = { kv: {}, workers: { delete: async (name) => deleted.push(name) } };
+    globalThis.everything = { kv: {}, workers: { delete: async (name) => deleted.push(name) } };
     const { teamAccessCard } = await import('../src/views/team-access.js');
     const card = teamAccessCard();
     document.body.append(card);

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, beforeAll, vi } from 'vitest';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 
 let mock;
 let Store, KV_KEYS;
@@ -9,7 +9,7 @@ let mergeRecords, unwrapDoc;
 let A, B;
 
 beforeAll(async () => {
-  mock = installMockPuter();
+  mock = installMockEverything();
   ({ Store, KV_KEYS } = await import('../src/lib/store.js'));
   ({ mergeRecords, unwrapDoc } = await import('../src/lib/merge.js'));
 });
@@ -272,7 +272,7 @@ describe('two devices', () => {
       spy.mockRestore();
     }
     expect(B.settings.reminders).toBe(true);
-    const written = await puter.kv.get(KV_KEYS.settings);
+    const written = await everything.kv.get(KV_KEYS.settings);
     expect(written.data.reminders).toBe(true);
   });
 
@@ -287,12 +287,12 @@ describe('two devices', () => {
     expect(A.taskById(t.id)).toBeNull();
 
     // A device that never ran its sweep still holds the copy and writes it.
-    const raw = await puter.kv.get(KV_KEYS.items);
+    const raw = await everything.kv.get(KV_KEYS.items);
     raw.data.tasks.push({ ...t, done: true, completedAt: old, updatedAt: old });
     raw.rev += 1;
     raw.device = 'device-B';
     raw.at = Date.now();
-    await puter.kv.set(KV_KEYS.items, raw);
+    await everything.kv.set(KV_KEYS.items, raw);
 
     await pull(A);
     expect(A.taskById(t.id)).toBeNull();
@@ -318,9 +318,9 @@ describe('legacy documents', () => {
   it('reads pre-envelope documents and upgrades them on the next write', async () => {
     mock.reset();
     // What the previous app version wrote: bare values, lists as an array.
-    await puter.kv.set(KV_KEYS.settings, { theme: 'dark', onboarded: true });
-    await puter.kv.set(KV_KEYS.lists, [{ id: 'l1', name: 'Legacy list', icon: 'star', slot: 2, order: 0 }]);
-    await puter.kv.set(KV_KEYS.items, { tasks: [{ id: 't1', listId: 'l1', title: 'Legacy task' }], logMonths: [] });
+    await everything.kv.set(KV_KEYS.settings, { theme: 'dark', onboarded: true });
+    await everything.kv.set(KV_KEYS.lists, [{ id: 'l1', name: 'Legacy list', icon: 'star', slot: 2, order: 0 }]);
+    await everything.kv.set(KV_KEYS.items, { tasks: [{ id: 't1', listId: 'l1', title: 'Legacy task' }], logMonths: [] });
 
     const s = new Store();
     await s.init();
@@ -329,7 +329,7 @@ describe('legacy documents', () => {
     expect(s.taskById('t1').title).toBe('Legacy task');
 
     await s.updateTask('t1', { title: 'Upgraded' });
-    const raw = await puter.kv.get(KV_KEYS.items);
+    const raw = await everything.kv.get(KV_KEYS.items);
     expect(raw.v).toBe(2);
     expect(unwrapDoc(raw).data.tasks[0].title).toBe('Upgraded');
   });

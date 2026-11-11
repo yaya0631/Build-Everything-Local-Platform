@@ -1,5 +1,5 @@
 /**
- * The platform the app runs on: Puter (the real thing), or local demo mode,
+ * The platform the app runs on: Everything (the real thing), or local demo mode,
  * which keeps everything in this browser and runs the collector worker
  * in-page. Local mode starts with ?local in the URL and exists for trying the
  * app without an account, for development, and for tests. Everything above
@@ -8,30 +8,30 @@
 import { createLocalKv } from './local-kv.js';
 import { LOCAL_WORKER_URL, LOCAL_WORKER_FILE_KEY, localWorkerFetch, localWorkerFile } from './local-worker.js';
 
-function puterBackend(puter) {
+function everythingBackend(everything) {
   return {
-    mode: 'puter',
-    env: puter.env,
-    kv: puter.kv,
+    mode: 'everything',
+    env: everything.env,
+    kv: everything.kv,
     fs: {
-      write: (path, data, opts) => puter.fs.write(path, data, opts),
+      write: (path, data, opts) => everything.fs.write(path, data, opts),
       async readText(path) {
-        const blob = await puter.fs.read(path);
+        const blob = await everything.fs.read(path);
         return blob.text();
       },
-      delete: (path) => puter.fs.delete(path),
+      delete: (path) => everything.fs.delete(path),
     },
-    workers: puter.workers,
+    workers: everything.workers,
     auth: {
-      isSignedIn: async () => !!(await puter.auth.isSignedIn()),
-      signIn: () => puter.auth.signIn(),
-      signOut: () => puter.auth.signOut(),
-      getUser: () => puter.auth.getUser(),
+      isSignedIn: async () => !!(await everything.auth.isSignedIn()),
+      signIn: () => everything.auth.signIn(),
+      signOut: () => everything.auth.signOut(),
+      getUser: () => everything.auth.getUser(),
       getProfilePicture: () =>
-        typeof puter.auth.getProfilePicture === 'function' ? puter.auth.getProfilePicture() : Promise.resolve(null),
+        typeof everything.auth.getProfilePicture === 'function' ? everything.auth.getProfilePicture() : Promise.resolve(null),
     },
     fetchWorker: (url, init) => fetch(url, init),
-    ai: puter.ai,
+    ai: everything.ai,
   };
 }
 
@@ -96,12 +96,12 @@ export function isLocalMode(loc = globalThis.location) {
   }
 }
 
-/** Wait for the Puter SDK (loaded with `defer`) for up to `ms`. */
-export function waitForPuter(ms = 8000) {
+/** Wait for the Everything SDK (loaded with `defer`) for up to `ms`. */
+export function waitForEverything(ms = 8000) {
   return new Promise((resolve) => {
     const start = Date.now();
     const tick = () => {
-      if (globalThis.puter && globalThis.puter.kv) return resolve(globalThis.puter);
+      if (globalThis.everything && globalThis.everything.kv) return resolve(globalThis.everything);
       if (Date.now() - start > ms) return resolve(null);
       setTimeout(tick, 50);
     };
@@ -111,9 +111,9 @@ export function waitForPuter(ms = 8000) {
 
 export async function createBackend({ local = isLocalMode() } = {}) {
   if (local) return localBackend();
-  const puter = await waitForPuter();
-  if (!puter) return null;
-  return puterBackend(puter);
+  const everything = await waitForEverything();
+  if (!everything) return null;
+  return everythingBackend(everything);
 }
 
 export { localBackend as createLocalBackend };

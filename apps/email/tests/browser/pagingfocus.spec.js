@@ -13,7 +13,7 @@ test('returning from search keeps the pending page disabled and leaves one load 
   await expect(page.locator('.btn-more')).toBeVisible();
   const before = await page.locator('.row').count();
   await page.evaluate(() => {
-    const fs = window.puter.fs;
+    const fs = window.everything.fs;
     const readdir = fs.readdir.bind(fs);
     fs.readdir = (path) => {
       if (!path.includes('/objects/')) return readdir(path);
@@ -25,7 +25,7 @@ test('returning from search keeps the pending page disabled and leaves one load 
   });
   await page.locator('.btn-more').click();
   await expect(page.locator('.btn-more')).toBeDisabled();
-  await page.locator('.search-input').fill('subject:"Welcome to your Puter mailbox"');
+  await page.locator('.search-input').fill('subject:"Welcome to your Everything mailbox"');
   await expect(page.locator('.row')).toHaveCount(1);
   await page.locator('.search-input').fill('');
   await expect(page.locator('.row')).toHaveCount(before);
@@ -54,7 +54,7 @@ test('keyboard paging continues on the first newly displayed message', async ({ 
 test('a failed keyboard page load hands focus to Retry', async ({ page }) => {
   const more = await start(page);
   await page.evaluate(() => {
-    const fs = window.puter.fs;
+    const fs = window.everything.fs;
     const readdir = fs.readdir.bind(fs);
     fs.readdir = (path) => path.includes('/objects/')
       ? Promise.reject(new Error('offline')) : readdir(path);
@@ -80,7 +80,7 @@ test('paging without any starred matches leaves focus on the folder toolbar', as
 test('a completed page does not take focus back from another control', async ({ page }) => {
   const more = await start(page);
   await page.evaluate(() => {
-    const fs = window.puter.fs;
+    const fs = window.everything.fs;
     const readdir = fs.readdir.bind(fs);
     fs.readdir = (path) => {
       if (!path.includes('/objects/')) return readdir(path);

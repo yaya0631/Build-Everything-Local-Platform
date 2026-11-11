@@ -1,6 +1,6 @@
 /**
  * Creating and re-voicing presenter avatars. A new avatar gets its voice
- * from text to speech (Puter AI) or from an audio clip already on the
+ * from text to speech (Everything AI) or from an audio clip already on the
  * timeline; the voice is analyzed on the device for lip sync
  * (media/lipsync.js) and the avatar clip goes on an overlay track, grouped
  * with its voice clip so they move together.

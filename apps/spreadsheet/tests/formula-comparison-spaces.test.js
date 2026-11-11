@@ -97,7 +97,7 @@ describe('Excel space-separator comparison', () => {
     const wb = controls(), bytes = new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer());
     check(await workbookFromFile(bytes, 'comparison.xlsx'));
     const zip = XLSX.CFB.read(bytes, { type: 'array' }), part = XLSX.CFB.find(zip, '/xl/workbook.xml');
-    part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+    part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
     part.size = part.content.length;
     const reopened = await workbookFromFile(XLSX.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'native.xlsx');
     check(reopened);

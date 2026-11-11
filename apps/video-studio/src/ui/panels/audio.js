@@ -335,8 +335,8 @@ function voiceoverPanel(ctx) {
 }
 
 function signInHint(ctx, what) {
-  const btn = ctx.account?.onSignIn ? h('button.btn.primary', { type: 'button', onclick: () => ctx.account.onSignIn() }, icon('cloud', 16), 'Sign in to Puter') : null;
-  return emptyState('user', `Sign in to use ${what}`, `${what[0].toUpperCase()}${what.slice(1)} runs on Puter AI, so it needs a Puter account.`, btn);
+  const btn = ctx.account?.onSignIn ? h('button.btn.primary', { type: 'button', onclick: () => ctx.account.onSignIn() }, icon('cloud', 16), 'Sign in to Everything') : null;
+  return emptyState('user', `Sign in to use ${what}`, `${what[0].toUpperCase()}${what.slice(1)} runs on Everything AI, so it needs an Everything account.`, btn);
 }
 
 /**

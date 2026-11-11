@@ -30,7 +30,7 @@ const CACHE_KEY = 'cal:profile-pic';
 
 /** Stub the supported SDK method with a picture result or rejection. */
 function stubPicture(read) {
-  vi.stubGlobal('puter', { auth: { getProfilePicture: read } });
+  vi.stubGlobal('everything', { auth: { getProfilePicture: read } });
 }
 /**
  * Image stub that records instances and lets tests decide when (and whether)
@@ -84,11 +84,11 @@ afterEach(() => {
 describe('fetchProfilePicture', () => {
   it('uses the SDK with the explicit host username and never reads legacy files', async () => {
     const getProfilePicture = vi.fn(function (username) {
-      expect(this).toBe(puter.auth);
+      expect(this).toBe(everything.auth);
       return Promise.resolve(PIC);
     });
     const read = vi.fn();
-    vi.stubGlobal('puter', { auth: { getProfilePicture }, fs: { read } });
+    vi.stubGlobal('everything', { auth: { getProfilePicture }, fs: { read } });
     expect(await fetchProfilePicture('alice')).toEqual({ state: 'found', picture: PIC });
     expect(getProfilePicture).toHaveBeenCalledWith('alice');
     expect(read).not.toHaveBeenCalled();
@@ -97,7 +97,7 @@ describe('fetchProfilePicture', () => {
   it('is unknown when the SDK method is unavailable, without falling back to fs', async () => {
     expect(await fetchProfilePicture('alice')).toEqual({ state: 'unknown' });
     const read = vi.fn();
-    vi.stubGlobal('puter', { auth: {}, fs: { read } });
+    vi.stubGlobal('everything', { auth: {}, fs: { read } });
     expect(await fetchProfilePicture('alice')).toEqual({ state: 'unknown' });
     expect(read).not.toHaveBeenCalled();
   });

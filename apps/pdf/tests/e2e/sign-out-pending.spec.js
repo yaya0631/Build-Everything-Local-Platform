@@ -5,11 +5,11 @@ for (const outcome of ['success', 'failure'])
     test(`repeated sign-out shares one pending ${outcome}${reopened ? ' across reopened Settings' : ''} and permits a later attempt`, async ({
       page,
     }) => {
-      await page.route('**/sdk/puter.js', (route) =>
+      await page.route('**/sdk/everything.js', (route) =>
         route.fulfill({
           contentType: 'application/javascript',
           body: `window.account={username:'Alice'};window.signOutCalls=0;
-      window.puter={env:'web',auth:{isSignedIn:()=>!!window.account,getUser:async()=>window.account,
+      window.everything={env:'web',auth:{isSignedIn:()=>!!window.account,getUser:async()=>window.account,
         signIn:async()=>{window.account={username:'Bob'};},
         signOut:()=>{window.signOutCalls++;return new Promise((resolve,reject)=>{window.finishSignOut=()=>{
           if(${JSON.stringify(outcome)}==='failure'&&window.signOutCalls===1)reject(new Error('Sign-out failed'));
@@ -43,7 +43,7 @@ for (const outcome of ['success', 'failure'])
           await expect(settings).toHaveCount(0);
           await page.getByRole('button', { name: 'Settings', exact: true }).click();
         }
-        await settings.getByRole('button', { name: 'Sign in with Puter', exact: true }).click();
+        await settings.getByRole('button', { name: 'Sign in with Everything', exact: true }).click();
         await expect(page.locator('.account-label')).toHaveText('Bob');
         await page.getByRole('button', { name: 'Settings', exact: true }).click();
       }

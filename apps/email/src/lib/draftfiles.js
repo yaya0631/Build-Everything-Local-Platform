@@ -7,7 +7,7 @@ export function createDraftFileStore(scope, indexedDB = globalThis.indexedDB) {
   let tail = Promise.resolve();
   const open = () => opening ??= new Promise((resolve, reject) => {
     if (!indexedDB) return reject(new Error('Attachment storage is unavailable.'));
-    const request = indexedDB.open('puter-mail-draft-files', 1);
+    const request = indexedDB.open('everything-mail-draft-files', 1);
     let blocked = false;
     request.onupgradeneeded = () => request.result.createObjectStore('files');
     request.onsuccess = () => {

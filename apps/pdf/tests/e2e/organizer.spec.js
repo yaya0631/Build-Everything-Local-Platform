@@ -2,10 +2,10 @@ import { test, expect } from '@playwright/test';
 import { PDFDocument, StandardFonts } from 'pdf-lib';
 import { readFile } from 'node:fs/promises';
 
-const PUTER_MOCK = `window.puter = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async () => ({}) }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
-async function mockPuter(page) {
-  await page.route('**/sdk/puter.js', (route) =>
-    route.fulfill({ contentType: 'application/javascript', body: PUTER_MOCK }),
+const EVERYTHING_MOCK = `window.everything = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async () => ({}) }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
+async function mockEverything(page) {
+  await page.route('**/sdk/everything.js', (route) =>
+    route.fulfill({ contentType: 'application/javascript', body: EVERYTHING_MOCK }),
   );
 }
 async function openPdf(page, doc, name = 'test.pdf') {
@@ -41,7 +41,7 @@ const settled = (page) => expect(page.locator('.editor')).toHaveAttribute('aria-
 test('dragging a thumbnail reorders the pages and the view follows the moved page', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await tallPdf());
   await showPanel(page);
@@ -77,7 +77,7 @@ test('dragging a thumbnail reorders the pages and the view follows the moved pag
 test('releasing a thumbnail press outside the panel cannot start a later hover drag', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await tallPdf());
   await showPanel(page);
@@ -101,7 +101,7 @@ test('releasing a thumbnail press outside the panel cannot start a later hover d
 
 for (const stage of ['press', 'drag'])
   test(`Escape cancels a thumbnail ${stage} until the mouse is released`, async ({ page }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     await openPdf(page, await tallPdf());
     await page.getByRole('button', { name: 'Next page', exact: true }).click();
@@ -137,7 +137,7 @@ for (const stage of ['press', 'drag'])
 test('each thumbnail has a menu for its own page, on a button and on right click', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await tallPdf());
   await showPanel(page);
@@ -171,7 +171,7 @@ test('each thumbnail has a menu for its own page, on a button and on right click
 test("another page's menu inserts pages after that page and keeps the current page in view", async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await tallPdf());
   await showPanel(page);
@@ -215,7 +215,7 @@ test("another page's menu inserts pages after that page and keeps the current pa
 
 test('a drag parked at the panel edge keeps the list scrolling', async ({ page, isMobile }) => {
   test.skip(isMobile, 'Fingers scroll the panel; only mice and pens drag pages');
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   for (let i = 0; i < 30; i++) doc.addPage([400, 400]);
@@ -239,7 +239,7 @@ test('a drag parked at the panel edge keeps the list scrolling', async ({ page, 
 });
 
 test('deleting or moving another page keeps the current page in view', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await tallPdf());
   await showPanel(page);
@@ -269,7 +269,7 @@ test('deleting or moving another page keeps the current page in view', async ({ 
 test.describe('touch', () => {
   test.use({ hasTouch: true, isMobile: true, viewport: { width: 390, height: 780 } });
   test('a tap still opens a page and the page menu works by touch', async ({ page }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     await openPdf(page, await tallPdf());
     await showPanel(page);
@@ -288,7 +288,7 @@ test('pages keep a visible edge in forced colors, in the view and in the page gr
   page,
 }) => {
   await page.emulateMedia({ forcedColors: 'active' });
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await tallPdf());
   await settled(page);

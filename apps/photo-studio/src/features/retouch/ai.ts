@@ -1,4 +1,4 @@
-// Edit > AI Fill… and AI Expand…: generative edits through Puter's AI service.
+// Edit > AI Fill… and AI Expand…: generative edits through Everything's AI service.
 // Pixels leave the device only after the user reads the notice and presses
 // Generate in these dialogs; results arrive as new, masked layers.
 import type { Editor } from '../../editor';
@@ -11,7 +11,7 @@ import { newPixelLayer } from '../../model/pixel-layer';
 import { applySelection } from '../../model/selection';
 import { emptyGrid, gridFromImage, writeRect } from '../../model/tiles';
 import { boundingBox } from '../../imaging/segment/mask-ops';
-import { aiExpand, aiFill, AIError, toAIError, type AIImageOptions } from '../../imaging/ai/puter-ai';
+import { aiExpand, aiFill, AIError, toAIError, type AIImageOptions } from '../../imaging/ai/everything-ai';
 import { mask8, type Mask8 } from '../../imaging/types';
 import { cropMask, cropRGBA } from './logic';
 import { mergedImage, selectionMask } from './source';
@@ -26,22 +26,22 @@ function prefillOf(arg: unknown): AIPrefill {
 }
 const attr = (v: unknown) => escapeXML(String(v ?? ''));
 
-type PuterAuth = { auth?: { isSignedIn?: () => boolean; signIn?: () => Promise<unknown> } };
-/** Make sure a Puter session exists; must run inside the click that asked for it. */
+type EverythingAuth = { auth?: { isSignedIn?: () => boolean; signIn?: () => Promise<unknown> } };
+/** Make sure an Everything session exists; must run inside the click that asked for it. */
 export async function ensureSignedIn() {
-  const p = (globalThis as unknown as { puter?: PuterAuth }).puter;
-  if (!p) throw new AIError('unavailable', 'AI features need Puter. Check your connection and try again.');
+  const p = (globalThis as unknown as { everything?: EverythingAuth }).everything;
+  if (!p) throw new AIError('unavailable', 'AI features need Everything. Check your connection and try again.');
   if (p.auth?.isSignedIn && !p.auth.isSignedIn()) {
     try {
       await p.auth.signIn?.();
     } catch {
-      throw new AIError('unavailable', 'Sign in to your Puter account to use AI features.');
+      throw new AIError('unavailable', 'Sign in to your Everything account to use AI features.');
     }
-    if (!p.auth.isSignedIn()) throw new AIError('unavailable', 'Sign in to your Puter account to use AI features.');
+    if (!p.auth.isSignedIn()) throw new AIError('unavailable', 'Sign in to your Everything account to use AI features.');
   }
 }
 const notice = (what: string) =>
-  `<div class="ai-notice" role="note"><strong>Before you generate</strong><p>${escapeXML(what)} is sent to Puter's AI service to create the new pixels. This requires a Puter account (you may be asked to sign in) and can use credits from your Puter balance. Nothing is sent until you press Generate.</p></div>`;
+  `<div class="ai-notice" role="note"><strong>Before you generate</strong><p>${escapeXML(what)} is sent to Everything's AI service to create the new pixels. This requires an Everything account (you may be asked to sign in) and can use credits from your Everything balance. Nothing is sent until you press Generate.</p></div>`;
 
 /** Shared dialog flow: collect inputs, run the generation with cancel, return the result. */
 async function aiDialog<T>(title: string, body: string, generate: (ws: ReturnType<typeof openWorkspace>, signal: AbortSignal) => Promise<T>): Promise<T | undefined> {
@@ -65,7 +65,7 @@ async function aiDialog<T>(title: string, body: string, generate: (ws: ReturnTyp
     ctrl = new AbortController();
     go.disabled = true;
     status.className = 'ai-status busy';
-    status.textContent = 'Connecting to Puter…';
+    status.textContent = 'Connecting to Everything…';
     try {
       await ensureSignedIn();
       status.textContent = 'Generating… this can take a little while.';

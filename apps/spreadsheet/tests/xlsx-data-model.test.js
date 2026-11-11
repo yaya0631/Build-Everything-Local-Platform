@@ -55,7 +55,7 @@ it('writes native model parts through edits and repeated round trips without the
     expect(get('/xl/_rels/workbook.xml.rels')).toContain(`${REL}powerPivotData`);
     expect(get('/xl/workbook.xml')).toContain('dataModel');
     const part = X.CFB.find(zip, '/xl/workbook.xml');
-    part.content = new TextEncoder().encode(get('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')); part.size = part.content.length;
+    part.content = new TextEncoder().encode(get('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')); part.size = part.content.length;
     wb = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }));
     expect(wb.dataModel.archive).toBe(original.archive);
     expect(wb.dataModel.connectionsXml).toBe(original.connectionsXml);
@@ -65,8 +65,8 @@ it('writes native model parts through edits and repeated round trips without the
   }
 });
 it('allocates relationship IDs without colliding with existing workbook parts', () => {
-  const model = readXlsxDataModel(packageBook()), parts = new Map([['/xl/_rels/workbook.xml.rels', `<Relationships xmlns="${PACKAGE}"><Relationship Id="puterDataModel" Type="unrelated" Target="other.xml"/></Relationships>`]]);
+  const model = readXlsxDataModel(packageBook()), parts = new Map([['/xl/_rels/workbook.xml.rels', `<Relationships xmlns="${PACKAGE}"><Relationship Id="everythingDataModel" Type="unrelated" Target="other.xml"/></Relationships>`]]);
   writeXlsxDataModel(model, `<workbook xmlns="${MAIN}"/>`.replace('/>', '></workbook>'), { get: p => parts.get(p) || '', set: (p, text) => parts.set(p, text), binary: () => {}, contentType: () => {} });
-  expect(parts.get('/xl/_rels/workbook.xml.rels')).toContain('Id="puterDataModel1"');
+  expect(parts.get('/xl/_rels/workbook.xml.rels')).toContain('Id="everythingDataModel1"');
   expect(parts.get('/xl/_rels/workbook.xml.rels')).toContain('Target="other.xml"');
 });

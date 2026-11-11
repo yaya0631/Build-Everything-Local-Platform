@@ -119,7 +119,7 @@ export function writeXlsxPivots(wb, workbook, { get, set, contentType, styles, p
   const addRel = (owner, kind, target, external = false) => {
     const path = relPath(owner), current = get(path) || emptyRels, doc = parseModelXml(current);
     const used = new Set(kids(doc, 'Relationship', PACKAGE).map(n => n.getAttribute('Id')));
-    let id = 'puterPivot1', next = 2; while (used.has(id)) id = `puterPivot${next++}`;
+    let id = 'everythingPivot1', next = 2; while (used.has(id)) id = `everythingPivot${next++}`;
     const node = doc.ownerDocument.createElementNS(PACKAGE, 'Relationship');
     node.setAttribute('Id', id); node.setAttribute('Type', `${REL}/${kind}`); node.setAttribute('Target', target);
     if (external) node.setAttribute('TargetMode', 'External');

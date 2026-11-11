@@ -3,10 +3,10 @@ import { EFFECTS, EFFECT_TYPES, defaultEffectParams } from '../src/effects/catal
 import { EFFECT_PRESETS, effectPresetsFor, effectPresetParams } from '../src/effects/presets.js';
 import { UserPresets, PRESETS_DIR, PRESETS_FILE } from '../src/storage/user-presets.js';
 import { presetController, paramsEqual } from '../src/ui/presets.js';
-import * as puterApi from '../src/storage/puter.js';
+import * as everythingApi from '../src/storage/everything.js';
 
-/** A fake Puter SDK with an in-memory file system; every fs call is recorded. */
-function fakePuter({ signedIn = true, username = 'ada' } = {}) {
+/** A fake Everything SDK with an in-memory file system; every fs call is recorded. */
+function fakeEverything({ signedIn = true, username = 'ada' } = {}) {
   const files = new Map();
   const calls = [];
   const rec = (name, fn) => (...args) => {
@@ -48,12 +48,12 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
 let saved;
 beforeEach(() => {
-  saved = window.puter;
-  puterApi.resetAccountCache();
+  saved = window.everything;
+  everythingApi.resetAccountCache();
 });
 afterEach(() => {
-  window.puter = saved;
-  puterApi.resetAccountCache();
+  window.everything = saved;
+  everythingApi.resetAccountCache();
 });
 
 describe('built-in effect presets', () => {
@@ -153,9 +153,9 @@ describe('user preset store', () => {
     expect(back).toEqual({ changed: false, stale: false });
   });
 
-  it('never touches Puter while signed out', async () => {
-    const fake = fakePuter({ signedIn: false });
-    window.puter = fake;
+  it('never touches Everything while signed out', async () => {
+    const fake = fakeEverything({ signedIn: false });
+    window.everything = fake;
     const s = new UserPresets({ storage: memoryStorage(), delay: 5 });
     s.save('effect:eq', 'Local only', { m1_gain: 1 });
     expect(await s.sync()).toBe(false);
@@ -165,8 +165,8 @@ describe('user preset store', () => {
   });
 
   it('when signed in, writes one cloud file a moment after a burst of changes', async () => {
-    const fake = fakePuter();
-    window.puter = fake;
+    const fake = fakeEverything();
+    window.everything = fake;
     const s = new UserPresets({ storage: memoryStorage(), delay: 15 });
     s.save('effect:eq', 'One', { m1_gain: 1 });
     s.save('effect:eq', 'Two', { m1_gain: 2 });
@@ -181,8 +181,8 @@ describe('user preset store', () => {
   });
 
   it('merges the cloud file on sync and only writes back when it lacks something', async () => {
-    const fake = fakePuter();
-    window.puter = fake;
+    const fake = fakeEverything();
+    window.everything = fake;
     fake.files.set(FILE, JSON.stringify({ format: 'music-studio-presets', version: 1, presets: [{ id: 'pr-cloud', kind: 'effect:reverb', name: 'From laptop', params: { size: 0.9 }, updated: 100 }] }));
     const s = new UserPresets({ storage: memoryStorage(), delay: 5 });
     await s.sync();
@@ -196,11 +196,11 @@ describe('user preset store', () => {
   });
 
   it('does not overwrite the cloud file when it cannot be read', async () => {
-    const fake = fakePuter();
+    const fake = fakeEverything();
     fake.fs.read = async () => {
       throw Object.assign(new Error('offline'), { code: 'network' });
     };
-    window.puter = fake;
+    window.everything = fake;
     const s = new UserPresets({ storage: memoryStorage(), delay: 5 });
     s.save('effect:eq', 'Kept', {});
     await expect(s.sync()).rejects.toThrow('offline');
@@ -212,7 +212,7 @@ describe('preset controller', () => {
   const app = () => ({ prefs: { storage: memoryStorage() }, on: () => () => {}, notify: () => {} });
 
   it('names the current parameters, prefers the last pick, steps through built-ins and saved presets', () => {
-    window.puter = fakePuter({ signedIn: false });
+    window.everything = fakeEverything({ signedIn: false });
     const a = app();
     const defaults = defaultEffectParams('eq');
     let params = { ...defaults };

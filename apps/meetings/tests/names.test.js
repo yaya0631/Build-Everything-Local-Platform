@@ -8,7 +8,7 @@ describe('initials', () => {
   });
 
   it('handles single names', () => {
-    expect(initials('puter')).toBe('P');
+    expect(initials('everything')).toBe('P');
   });
 
   it('handles empty input', () => {

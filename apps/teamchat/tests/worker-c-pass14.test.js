@@ -96,11 +96,11 @@ describe('the freeze around a move names the session that holds it', () => {
 });
 
 describe('moving a workspace, from the nominee\'s side: the session named to the freeze', () => {
-  const hadPuter = Object.hasOwn(globalThis, 'puter') ? globalThis.puter : undefined;
+  const hadEverything = Object.hasOwn(globalThis, 'everything') ? globalThis.everything : undefined;
   afterEach(() => {
     vi.useRealTimers();
-    if (hadPuter === undefined) delete globalThis.puter;
-    else globalThis.puter = hadPuter;
+    if (hadEverything === undefined) delete globalThis.everything;
+    else globalThis.everything = hadEverything;
   });
   const json = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
   const OLD = 'abcdef1234@teamchat-old';
@@ -112,7 +112,7 @@ describe('moving a workspace, from the nominee\'s side: the session named to the
   function servers({ pages = 1, pageTakesMs = 0, begin = (body) => json({ ok: true, transferring: { by: 'me', at: 1, sid: body?.sid } }) } = {}) {
     const made = [];
     let served = 0;
-    globalThis.puter = { workers: { exec: async (url, init = {}) => {
+    globalThis.everything = { workers: { exec: async (url, init = {}) => {
       const path = new URL(url).pathname;
       const method = init.method || 'GET';
       made.push({ call: `${method} ${path}`, body: init.body ? JSON.parse(init.body) : null });
@@ -182,7 +182,7 @@ describe('moving a workspace, from the nominee\'s side: the session named to the
     // Bob's other tab holds the freeze.
     expect((await as(bob).post(`/api/ws/${wsId}/transfer/begin`, { sid: 'other-tab-0001' })).ok).toBe(true);
     const made = [];
-    globalThis.puter = { workers: { exec: async (url, init) => {
+    globalThis.everything = { workers: { exec: async (url, init) => {
       made.push(`${init?.method || 'GET'} ${new URL(url).pathname}`);
       return rt.dispatch(url, init, bob);
     } } };
@@ -304,16 +304,16 @@ describe('a token rotated in the same moment it was revoked', () => {
 });
 
 describe('importing a messages.json whose pages are damaged', () => {
-  const hadPuter = Object.hasOwn(globalThis, 'puter') ? globalThis.puter : undefined;
+  const hadEverything = Object.hasOwn(globalThis, 'everything') ? globalThis.everything : undefined;
   afterEach(() => {
-    if (hadPuter === undefined) delete globalThis.puter;
-    else globalThis.puter = hadPuter;
+    if (hadEverything === undefined) delete globalThis.everything;
+    else globalThis.everything = hadEverything;
   });
   const json = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
   const HEADER = { format: 'teamchat-export', version: 1, workspace: { id: 'abcdef1234', name: 'Acme' }, channels: { c1: { name: 'general', def: true } }, members: {}, memberDocs: {} };
   function server() {
     const made = [];
-    globalThis.puter = { workers: { exec: async (url, init = {}) => {
+    globalThis.everything = { workers: { exec: async (url, init = {}) => {
       const path = new URL(url).pathname;
       made.push(`${init.method || 'GET'} ${path}`);
       if (path === '/api/workspaces/import') return json({ workspace: { id: 'copy0000001', name: 'Acme' } });

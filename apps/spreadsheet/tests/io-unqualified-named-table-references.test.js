@@ -28,7 +28,7 @@ it.each(Object.keys(writers).flatMap((format) => [
   ['COUNTA([#Headers])', [[2, 2], [2, 2], [2, 2]]],
   ['COLUMN([[#Headers],[Value]])', [[1, 1], [4, 4], [1, 1]]],
   ['LAMBDA([Value],IF(ISOMITTED(Value),SUM([@Value]),Value))()', [[10, 20], [100, 200], [7, 8]]],
-  ['LAMBDA([_puter_rowref_1],SUM([@Value]))()', [[10, 20], [100, 200], [7, 8]]],
+  ['LAMBDA([_everything_rowref_1],SUM([@Value]))()', [[10, 20], [100, 200], [7, 8]]],
   ['LET(LAMBDA,LAMBDA(x,SUM(x)),LAMBDA([Value]))', [[30, 30], [300, 300], [15, 15]]],
 ].map(([formula, expected]) => ({ format, formula, expected }))))(
   'preserves calling-table selection for $formula in $format', async ({ format, formula, expected }) => {

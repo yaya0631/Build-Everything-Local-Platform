@@ -1,4 +1,4 @@
-# Solitaire: Vite restructure, realistic cards, Puter sync
+# Solitaire: Vite restructure, realistic cards, Everything sync
 
 **Date:** 2026-08-14
 **Status:** Approved design, ready for implementation planning
@@ -18,7 +18,7 @@ Two goals:
 - Game rules extracted into pure DOM-free modules with Vitest coverage.
 - Desktop cards with correct pip layouts, real court-card art, and a card surface that reads as a physical object.
 - Small cards unchanged from today: top-left rank and suit only.
-- Stats and in-progress games sync to Puter automatically whenever already signed in, never blocking play.
+- Stats and in-progress games sync to Everything automatically whenever already signed in, never blocking play.
 - Winning triggers the classic Windows Solitaire cascade: cards bounce off the viewport edges leaving trails.
 - Installable and playable offline as a PWA, with app-store listing material.
 
@@ -108,15 +108,15 @@ The cascade ends when every card has settled, when the player clicks or taps, or
 
 Physics lives in a pure, unit-tested module (`ui/cascade-physics.js`); the canvas layer only draws. `Math.random()` is correct here, unlike in `render()` — a cascade card is launched once and animated to completion, never re-created from state on each frame.
 
-### Puter integration
+### Everything integration
 
 Two features, both local-first. **The game never requires an account and never shows a sign-in dialog on load.**
 
-Sync is automatic, not opt-in — there is no sign-in button, and `signIn()` was removed entirely. On load the app calls `puter.auth.isSignedIn()` once and only touches `puter.kv` if that already returns true. This load-time guarantee is unchanged from the original design and remains the thing that keeps the game silent for a signed-out visitor: Puter's documented behaviour is that *any* cloud call auto-prompts a sign-in dialog, so nothing beyond `isSignedIn()` may be called before that check passes.
+Sync is automatic, not opt-in — there is no sign-in button, and `signIn()` was removed entirely. On load the app calls `everything.auth.isSignedIn()` once and only touches `everything.kv` if that already returns true. This load-time guarantee is unchanged from the original design and remains the thing that keeps the game silent for a signed-out visitor: Everything's documented behaviour is that *any* cloud call auto-prompts a sign-in dialog, so nothing beyond `isSignedIn()` may be called before that check passes.
 
-The manual sign-in button was removed at the repository owner's request. The app is expected to run mostly as a Puter app, where — per Puter's own docs — a published app already has the user signed in; in that context a sign-in button had no one left to click it, and cloud sync should simply happen. Loaded as a plain website by a signed-out visitor, the behaviour is exactly what it was before: `isSignedIn()` returns false, no cloud call is made, and the game is local-only for that session, with nothing in the UI implying otherwise.
+The manual sign-in button was removed at the repository owner's request. The app is expected to run mostly as an Everything app, where — per Everything's own docs — a published app already has the user signed in; in that context a sign-in button had no one left to click it, and cloud sync should simply happen. Loaded as a plain website by a signed-out visitor, the behaviour is exactly what it was before: `isSignedIn()` returns false, no cloud call is made, and the game is local-only for that session, with nothing in the UI implying otherwise.
 
-**Stats** — games played, games won, best (lowest) move count. Always written to `localStorage`. When signed in, mirrored to `puter.kv`. Merge rule: `max(played)`, `max(won)`, `min(bestMoves)` ignoring absent values.
+**Stats** — games played, games won, best (lowest) move count. Always written to `localStorage`. When signed in, mirrored to `everything.kv`. Merge rule: `max(played)`, `max(won)`, `min(bestMoves)` ignoring absent values.
 
 **Resume game** — the in-progress board is saved so a game can be continued on another device.
 
@@ -132,9 +132,9 @@ Save format is compact — each card is two characters, rank (`A23456789TJQK`) p
 {"v":1,"t":["As2h3S", "..."],"f":["","","",""],"s":"...","w":"...","m":42,"ts":1786...}
 ```
 
-A full 52-card board is roughly 250 bytes, comfortably inside any plausible KV value limit. The docs do not publish the limit as a number, so `stats.js` reads `puter.kv.MAX_VALUE_SIZE` at runtime and skips the remote write if the payload would exceed it.
+A full 52-card board is roughly 250 bytes, comfortably inside any plausible KV value limit. The docs do not publish the limit as a number, so `stats.js` reads `everything.kv.MAX_VALUE_SIZE` at runtime and skips the remote write if the payload would exceed it.
 
-Any Puter failure — offline, declined sign-in, API error — falls back to local-only silently. A "Powered by Puter" footer link is included, as their docs request.
+Any Everything failure — offline, declined sign-in, API error — falls back to local-only silently. A "Powered by Everything" footer link is included, as their docs request.
 
 ### PWA and distribution
 
@@ -179,7 +179,7 @@ solitaire/
     │   ├── drag.js         # pointer drag/drop, findDropTarget
     │   └── animate.js      # flip host, stock flight, win celebration
     ├── services/
-    │   └── stats.js        # localStorage + optional Puter KV
+    │   └── stats.js        # localStorage + optional Everything KV
     └── vendor/
         └── cardmeister.js  # vendored public-domain deck
 ```
@@ -188,7 +188,7 @@ solitaire/
 
 `game/` is pure: it imports nothing from `ui/` or `services/`, touches no DOM, and every function is directly callable from a test.
 
-`ui/` reads game state and renders. `services/stats.js` depends only on `game/serialize.js` and the global `puter`.
+`ui/` reads game state and renders. `services/stats.js` depends only on `game/serialize.js` and the global `everything`.
 
 **Import cycle to avoid:** `board.js` must attach drag handlers from `drag.js`, and `drag.js` must trigger a re-render from `board.js`. Rather than importing each other, `main.js` owns a `requestRender()` function and passes it into both. This is the one structural trap in the split; everything else is a straight extraction.
 

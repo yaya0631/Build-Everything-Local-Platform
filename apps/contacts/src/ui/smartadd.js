@@ -1,6 +1,6 @@
 // "Smart Add" — paste an email signature, business card text, or any blurb and
-// let Puter AI extract structured fields, which then open in the editor for
-// review. This is the app's only use of AI, and it goes through puter.ai.
+// let Everything AI extract structured fields, which then open in the editor for
+// review. This is the app's only use of AI, and it goes through everything.ai.
 import { toast } from '../toast.js'
 import { icons } from '../icons.js'
 import { openEditor } from './editor.js'
@@ -54,7 +54,7 @@ export function openSmartAdd() {
         <p class="form-error" data-error hidden></p>
       </div>
       <footer class="modal__foot">
-        <span class="modal__hint">Powered by Puter AI</span>
+        <span class="modal__hint">Powered by Everything AI</span>
         <div class="modal__foot-right">
           <button type="button" class="btn btn--soft" data-action="close">Cancel</button>
           <button type="button" class="btn btn--primary" data-action="extract">${icons.sparkles}<span>Extract</span></button>
@@ -115,7 +115,7 @@ export function openSmartAdd() {
       textEl.focus()
       return
     }
-    if (!window.puter || !window.puter.ai || typeof window.puter.ai.chat !== 'function') {
+    if (!window.everything || !window.everything.ai || typeof window.everything.ai.chat !== 'function') {
       errorEl.textContent = 'AI is unavailable right now.'
       errorEl.hidden = false
       return
@@ -125,7 +125,7 @@ export function openSmartAdd() {
     extractBtn.disabled = true
     extractBtn.classList.add('is-loading')
     try {
-      const resp = await window.puter.ai.chat(
+      const resp = await window.everything.ai.chat(
         [
           { role: 'system', content: SYSTEM_PROMPT },
           { role: 'user', content: text },
@@ -151,7 +151,7 @@ export function openSmartAdd() {
     } catch (err) {
       const msg = String(err && err.message ? err.message : err)
       errorEl.textContent = /credit/i.test(msg)
-        ? "You're out of Puter AI credits. Add the contact manually instead."
+        ? "You're out of Everything AI credits. Add the contact manually instead."
         : "Couldn't read those details. Try adding more text, or enter them manually."
       errorEl.hidden = false
     } finally {

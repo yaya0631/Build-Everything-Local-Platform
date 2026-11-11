@@ -20,7 +20,7 @@ import {
  * by the green room and the in-call More menu.
  */
 
-const CUSTOM_IMAGE_KEY = 'bgImage'; // local-only: data URLs are too big for puter.kv
+const CUSTOM_IMAGE_KEY = 'bgImage'; // local-only: data URLs are too big for everything.kv
 const MAX_CUSTOM_EDGE = 1920;
 
 const BASE = import.meta.env.BASE_URL;

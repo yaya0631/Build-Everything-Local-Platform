@@ -2,7 +2,7 @@ import type { Editor } from '../../editor';
 import { svg } from '../../app/icons';
 import { tools } from '../../app/registry';
 import { escapeXML } from '../../model/assets';
-import { download } from '../../persistence/puter';
+import { download } from '../../persistence/everything';
 import { gridFromImage } from '../../model/tiles';
 import { documentPatternPixels, type DocumentPattern } from '../../model/fill-layer';
 import { gradientToCss } from '../../imaging/gradient/edit';

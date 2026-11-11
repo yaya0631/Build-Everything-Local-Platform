@@ -3,10 +3,10 @@ import { PDFDocument, PDFName, PDFNumber, PDFString } from 'pdf-lib';
 import { readFile } from 'node:fs/promises';
 import { addHighlight, listHighlights, ensureMarkupAppearance } from '../../src/core/highlight.js';
 
-const PUTER_MOCK = `window.puter = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async () => ({}) }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
-async function mockPuter(page) {
-  await page.route('**/sdk/puter.js', (route) =>
-    route.fulfill({ contentType: 'application/javascript', body: PUTER_MOCK }),
+const EVERYTHING_MOCK = `window.everything = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async () => ({}) }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
+async function mockEverything(page) {
+  await page.route('**/sdk/everything.js', (route) =>
+    route.fulfill({ contentType: 'application/javascript', body: EVERYTHING_MOCK }),
   );
 }
 async function openPdf(page, doc, name = 'test.pdf') {
@@ -20,7 +20,7 @@ async function openPdf(page, doc, name = 'test.pdf') {
 test('existing underline and strikethrough annotations remain editable after reopening', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   const pdfPage = doc.addPage([400, 400]);
@@ -69,7 +69,7 @@ test('existing underline and strikethrough annotations remain editable after reo
 test('Highlight only exposes highlighting and its keyboard placement creates a highlight', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([400, 400]);
@@ -98,7 +98,7 @@ for (const [kind, label] of [
   test(`recoloring an imported ${label} retains its transparency through export and undo`, async ({
     page,
   }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     const doc = await PDFDocument.create();
     doc.addPage([400, 400]);
@@ -140,7 +140,7 @@ for (const [kind, label] of [
   test(`a content-locked ${label} permits color and deletion while preserving its text`, async ({
     page,
   }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     const doc = await PDFDocument.create();
     doc.addPage([400, 400]);

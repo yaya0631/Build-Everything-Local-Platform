@@ -54,13 +54,13 @@ beforeEach(() => {
   root = document.createElement('div');
   root.id = 'app';
   document.body.append(root);
-  globalThis.puter = { ui: {}, APIOrigin: 'https://api.example', authToken: 't', fs: { write: async () => {} } };
+  globalThis.everything = { ui: {}, APIOrigin: 'https://api.example', authToken: 't', fs: { write: async () => {} } };
 });
 
 afterEach(() => {
   root.remove();
   document.querySelectorAll('.toast, .modal-root, .compose-dock').forEach((node) => node.remove());
-  delete globalThis.puter;
+  delete globalThis.everything;
 });
 
 describe('a draft row', () => {
@@ -70,7 +70,7 @@ describe('a draft row', () => {
     // The inbox has been read, so the book knows who priya@northgate.example
     // is; nobody has ever written to or from the other address.
     drafts.save({
-      id: 'd1', updated: Date.now(), attachments: 0, domain: 'puter.email',
+      id: 'd1', updated: Date.now(), attachments: 0, domain: 'everything.email',
       to: 'priya@northgate.example, nobody@nowhere.example', cc: '', subject: 'Notes', body: 'soon',
       html: '', inReplyTo: '', references: '',
     });

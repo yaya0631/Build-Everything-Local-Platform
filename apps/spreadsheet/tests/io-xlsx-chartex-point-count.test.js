@@ -16,7 +16,7 @@ async function treemapFile(count) {
     entry.size = entry.content.length;
   };
   // Without the app's own sheet the chart is read from its DrawingML, as from a file Excel saved.
-  edit(/xl\/workbook\.xml$/, (xml) => xml.replace(/<sheet [^>]*name="_puter_meta"[^>]*\/>/, ''));
+  edit(/xl\/workbook\.xml$/, (xml) => xml.replace(/<sheet [^>]*name="_everything_meta"[^>]*\/>/, ''));
   edit(/chartEx[\d_]*\.xml$/, (xml) => xml.replace(/<cx:f>[^<]*<\/cx:f>/g, '')
     .replace(/(<cx:numDim type="size"><cx:lvl )ptCount="3"/, `$1ptCount="${count}"`));
   return new Uint8Array(XLSX.CFB.write(zip, { type: 'array', fileType: 'zip' }));

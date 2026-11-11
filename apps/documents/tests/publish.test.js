@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import * as P from '../src/lib/puter.js';
+import * as P from '../src/lib/everything.js';
 import { slugify, subdomainFor, siteUrl, publishDir, parseSiteRecord, PUBLISH_FOLDER } from '../src/lib/publish.js';
 
 describe('publishing', () => {
@@ -7,7 +7,7 @@ describe('publishing', () => {
   afterEach(() => vi.restoreAllMocks());
 
   it('keeps colliding names and paths isolated when publishing or deleting pages', async () => {
-    const P = await import('../src/lib/puter.js');
+    const P = await import('../src/lib/everything.js');
     const files = new Map();
     const hosting = new Map();
     vi.spyOn(P, 'writeFile').mockImplementation(async (path, blob) => { files.set(path, await blob.text()); });
@@ -62,7 +62,7 @@ describe('publishing', () => {
   });
 
   it('keeps legacy publications working only for the document recorded as their owner', async () => {
-    const P = await import('../src/lib/puter.js');
+    const P = await import('../src/lib/everything.js');
     const docPath = 'Documents/Notes.docx';
     const dir = `${PUBLISH_FOLDER}/notes`;
     const record = { docPath, subdomain: 'notes-existing', publishedAt: 5 };
@@ -89,8 +89,8 @@ describe('publishing', () => {
     expect(separate.subdomain).toBe('new-page');
   });
 
-  it('publishes, updates, and unpublishes through the Puter wrappers', async () => {
-    const P = await import('../src/lib/puter.js');
+  it('publishes, updates, and unpublishes through the Everything wrappers', async () => {
+    const P = await import('../src/lib/everything.js');
     const files = new Map();
     const hosting = new Map();
     vi.spyOn(P, 'writeFile').mockImplementation(async (path, blob) => { files.set(path, await blob.text()); });

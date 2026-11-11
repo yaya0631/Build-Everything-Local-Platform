@@ -4,11 +4,11 @@ import { Workbook } from '../src/core/workbook.js';
 import { addComment, getThread } from '../src/core/comments.js';
 import { findMentions, mentionedPeople } from '../src/core/mentions.js';
 import { createMentionNotifier } from '../src/ui/mention-notify.js';
-import * as P from '../src/lib/puter.js';
+import * as P from '../src/lib/everything.js';
 import * as T from '../src/ui/toast.js';
 
 // Someone a shared workbook was shared with has no file of it. Mentioning anyone in a comment there asked "This
-// spreadsheet is not saved to Puter yet, so ana cannot open the comment. Save it and share it with them?", for a
+// spreadsheet is not saved to Everything yet, so ana cannot open the comment. Save it and share it with them?", for a
 // workbook everyone in it has open, and "Save, share and notify" failed with "Save the spreadsheet first".
 afterEach(() => { vi.restoreAllMocks(); });
 
@@ -39,7 +39,7 @@ it('does not ask a member of a shared workbook to save and share it before telli
   await notifier.notify(posted(wb, '@ana have a look', [{ name: 'ana', user: 'ana' }]));
   expect(ask).not.toHaveBeenCalled();
   expect(doc.save).not.toHaveBeenCalled();
-  expect(mailer.sendMentions.mock.calls[0][0].recipients).toEqual([{ email: 'ana@puter.email', name: 'ana' }]);
+  expect(mailer.sendMentions.mock.calls[0][0].recipients).toEqual([{ email: 'ana@everything.email', name: 'ana' }]);
 });
 
 it('says that someone outside the shared workbook needs its owner to invite them', async () => {
@@ -48,5 +48,5 @@ it('says that someone outside the shared workbook needs its owner to invite them
   expect(ask).not.toHaveBeenCalled();
   expect(P.shareFile).not.toHaveBeenCalled();
   expect(toast).toHaveBeenCalledWith('bo cannot open this shared workbook. Ask its owner to invite them', expect.anything());
-  expect(mailer.sendMentions.mock.calls[0][0].recipients).toEqual([{ email: 'ana@puter.email', name: 'ana' }]);
+  expect(mailer.sendMentions.mock.calls[0][0].recipients).toEqual([{ email: 'ana@everything.email', name: 'ana' }]);
 });

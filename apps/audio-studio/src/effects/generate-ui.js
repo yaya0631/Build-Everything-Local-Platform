@@ -19,7 +19,7 @@ import { controlsFor } from './layout.js';
 import { runTimePitch } from './defs/time-pitch.js';
 import { withProgress } from './progress.js';
 import { isAbort } from './apply.js';
-import * as puter from '../storage/puter.js';
+import * as everything from '../storage/everything.js';
 import { decodeAudio } from '../audio/decode.js';
 import { dsp } from '../audio/dsp.js';
 import { UserError } from '../lib/errors.js';
@@ -406,8 +406,8 @@ export function speechOptions(voiceChoice, language, neural) {
   return { provider: 'aws-polly', voice, language, engine: neural ? 'neural' : 'standard' };
 }
 
-/** Readable message from a Puter error (objects, strings or Errors). */
-export function puterErrorMessage(err) {
+/** Readable message from an Everything error (objects, strings or Errors). */
+export function everythingErrorMessage(err) {
   if (!err) return 'Unknown error.';
   if (typeof err === 'string') return err;
   return err.message || err.error?.message || err.error || (err.code ? `Error ${err.code}` : 'Unknown error.');
@@ -482,7 +482,7 @@ async function speechDialog(app, sdk, targetRate) {
     body: h(
       'div.fx-dialog-body.speech-body',
       text,
-      h('div.row', count, h('div.spacer'), h('span.faint', 'Uses Puter AI; requires a Puter account.')),
+      h('div.row', count, h('div.spacer'), h('span.faint', 'Uses Everything AI; requires an Everything account.')),
       h('div.form-grid', h('label', 'Language:'), lang, h('label', 'Voice:'), voice, h('span'), neuralRow, placement ? h('label', 'Placement:') : null, placement),
       controlsFor(delivery, ['speed', 'volume']),
       error,
@@ -516,7 +516,7 @@ async function speechDialog(app, sdk, targetRate) {
 let speechTake = null; // the last synthesized speech: { key, outs, rate }
 
 /**
- * Speech for the settings at `targetRate`: synthesized by Puter AI, decoded,
+ * Speech for the settings at `targetRate`: synthesized by Everything AI, decoded,
  * resampled and shaped (speaking rate, volume). The last take is kept, so a
  * preview followed by Generate asks the service once.
  */
@@ -531,7 +531,7 @@ export async function synthesizeSpeech(sdk, s, targetRate, signal) {
     try {
       el = await sdk.ai.txt2speech(s.text.trim(), speechOptions(s.voice, s.language, s.neural));
     } catch (err) {
-      throw new UserError(`Speech could not be generated: ${puterErrorMessage(err)}`);
+      throw new UserError(`Speech could not be generated: ${everythingErrorMessage(err)}`);
     }
     const decoded = await decodeSpeech(el, signal);
     raw = decoded.channels;
@@ -564,18 +564,18 @@ async function decodeSpeech(el, signal) {
 }
 
 export async function generateSpeechCommand(app) {
-  const sdk = puter.sdk();
+  const sdk = everything.sdk();
   if (!sdk?.ai?.txt2speech) {
-    app.notify('Speech generation needs Puter, which is not available. Check your connection and reload.', { error: true });
+    app.notify('Speech generation needs Everything, which is not available. Check your connection and reload.', { error: true });
     return null;
   }
-  if (!puter.isSignedIn()) {
-    const ok = await confirmDialog({ title: 'Sign In to Generate Speech', message: 'Generating speech uses Puter AI and needs a free Puter account. Sign in now?', confirm: 'Sign In' });
+  if (!everything.isSignedIn()) {
+    const ok = await confirmDialog({ title: 'Sign In to Generate Speech', message: 'Generating speech uses Everything AI and needs a free Everything account. Sign in now?', confirm: 'Sign In' });
     if (!ok) return null;
     try {
-      if (!(await puter.signIn())) return null;
+      if (!(await everything.signIn())) return null;
     } catch (err) {
-      app.notify(`Sign-in did not complete: ${puterErrorMessage(err)}`, { error: true });
+      app.notify(`Sign-in did not complete: ${everythingErrorMessage(err)}`, { error: true });
       return null;
     }
   }

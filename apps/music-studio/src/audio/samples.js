@@ -7,7 +7,7 @@
 //   peaks = { perSecond, min: Float32Array, max: Float32Array } (mono mix)
 //
 // Emits 'change' (id) when a sample arrives or is removed. Loading files from
-// Puter or this device is storage's job; the cache only holds decoded data.
+// Everything or this device is storage's job; the cache only holds decoded data.
 
 import { Emitter } from '../lib/emitter.js';
 

@@ -30,7 +30,7 @@ export const REVOKE_BATCH_MAX = 20;
  */
 export function workerAppUid() {
   try {
-    return appUidFromToken(me?.puter?.authToken);
+    return appUidFromToken(me?.everything?.authToken);
   } catch {
     return null;
   }
@@ -42,7 +42,7 @@ export function workerAppUid() {
  */
 export function callerAppUid(user) {
   try {
-    return appUidFromToken(user?.puter?.authToken);
+    return appUidFromToken(user?.everything?.authToken);
   } catch {
     return null;
   }
@@ -59,7 +59,7 @@ export function callerAppUid(user) {
  * worker anyway, so six hours costs nothing real. Consent
  * (events_kv_handle_not_delegated) is different: it is the one code a
  * person can flip from outside the app entirely, at any moment, with
- * nothing telling the worker — granted from the Puter GUI, another device,
+ * nothing telling the worker — granted from the Everything GUI, another device,
  * or a session long since closed, none of which touches this worker's
  * cached verdict. An owner's own tab open at the time heals that at once
  * (see shell.js's healEventsVerdict); this thirty minutes covers the owner
@@ -78,7 +78,7 @@ export function callerAppUid(user) {
  * failure, a timeout, an answer with no handle) gets the same short,
  * member-scoped backoff a transient failure deserves.
  *
- * Puter's KV shares added three more. account_is_not_verified is the
+ * Everything's KV shares added three more. account_is_not_verified is the
  * owner's unconfirmed email, worker-wide until they confirm it.
  * recipient_not_accepting_shares is one member who blocked the owner or
  * takes no shares at all, and invalid_kv_share_prefix one workspace whose
@@ -102,7 +102,7 @@ const MEMBER_BACKOFF_MS = {
 const DEFAULT_MEMBER_BACKOFF_MS = 10 * 60_000;
 
 /**
- * Ask Puter for a handle on this workspace's signal region for one grantee.
+ * Ask Everything for a handle on this workspace's signal region for one grantee.
  * Never throws: a network failure, a timeout, and an error response all come
  * back as { ok: false, code, why }, which the caller turns into a backoff
  * rather than a failed request of its own.
@@ -113,9 +113,9 @@ export async function mintHandle(wsId, granteeUuid) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), HANDLE_TIMEOUT_MS);
   try {
-    const res = await fetch(`${me.puter.APIOrigin}/events/kv-handles`, {
+    const res = await fetch(`${me.everything.APIOrigin}/events/kv-handles`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${me.puter.authToken}` },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${me.everything.authToken}` },
       body: JSON.stringify({ granteeUid: granteeUuid, prefix: evRegion(wsId) }),
       signal: controller.signal,
     });
@@ -131,7 +131,7 @@ export async function mintHandle(wsId, granteeUuid) {
 }
 
 /**
- * Ask Puter to give up one previously minted handle, mirroring mintHandle in
+ * Ask Everything to give up one previously minted handle, mirroring mintHandle in
  * every way that matters: never throws, the same timeout, and a network
  * failure or an error response both come back as { ok: false, code, why }.
  * Retiring an already-revoked handle is idempotent on the platform's side
@@ -145,9 +145,9 @@ export async function revokeHandle(handle) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), HANDLE_TIMEOUT_MS);
   try {
-    const res = await fetch(`${me.puter.APIOrigin}/events/kv-handles/${encodeURIComponent(handle)}`, {
+    const res = await fetch(`${me.everything.APIOrigin}/events/kv-handles/${encodeURIComponent(handle)}`, {
       method: 'DELETE',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${me.puter.authToken}` },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${me.everything.authToken}` },
       signal: controller.signal,
     });
     if (res.ok) return { ok: true };
@@ -261,7 +261,7 @@ export async function eventsBlock(ws, uuid, doc = null, user = null) {
  * releaseHandle is the only other place a handle is given back, and it reads
  * `ev.h`, which this is about to overwrite, so a handle abandoned here would
  * sit on one of the owner's live-handle slots (100 per app, 50 on free)
- * until cleared by hand from a Puter session. Revoking is idempotent and
+ * until cleared by hand from an Everything session. Revoking is idempotent and
  * already answers ok on a 404/subject_does_not_exist, so the ordinary case
  * here — a handle that is already gone, which is why this was called at all
  * — costs one wasted round trip, while the uncommon one (an app binding
@@ -305,7 +305,7 @@ export async function remintHandle(ws, uuid, doc = null, user = null) {
  * A worker with no app identity used to answer bare null here, so an owner
  * whose worker can never do events was told nothing, for ever — and
  * overwriting the worker bundle is not the fix, since a worker's app
- * identity is settled once, when `puter.workers.create()` makes it; the only
+ * identity is settled once, when `everything.workers.create()` makes it; the only
  * remedy is deploying a new worker. `'no_app_uid'` names that case instead,
  * the same code mintHandle() already answers for it, so a caller only ever
  * has one name to check.

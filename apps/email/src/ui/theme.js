@@ -1,6 +1,6 @@
 /** Light / dark / system theme. System is the default: no attribute, no key. */
 
-const LS_KEY = 'puter-mail:theme';
+const LS_KEY = 'everything-mail:theme';
 
 export const THEMES = [
   { id: 'system', label: 'System', icon: 'monitor' },

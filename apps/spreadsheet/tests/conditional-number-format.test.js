@@ -44,7 +44,7 @@ async function resaved(wb) {
   vi.stubGlobal('Blob', NodeBlob);
   const zip = X.CFB.read(new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()), { type: 'array' });
   const book = X.CFB.find(zip, '/xl/workbook.xml');
-  book.content = new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  book.content = new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   book.size = book.content.length;
   return { styles: new TextDecoder().decode(X.CFB.find(zip, '/xl/styles.xml').content), bytes: X.CFB.write(zip, { type: 'array', fileType: 'zip' }) };
 }

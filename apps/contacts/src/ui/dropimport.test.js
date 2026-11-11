@@ -170,12 +170,12 @@ describe('startDropImport', () => {
     t.cleanup()
   })
 
-  describe('files dragged from the Puter desktop', () => {
-    // Those never fire a DOM drag event — Puter hands them over as cloud items.
-    function puterWin(items) {
+  describe('files dragged from the Everything desktop', () => {
+    // Those never fire a DOM drag event — Everything hands them over as cloud items.
+    function everythingWin(items) {
       let handler = null
       return {
-        win: { puter: { ui: { onItemsOpened: (fn) => (handler = fn) } } },
+        win: { everything: { ui: { onItemsOpened: (fn) => (handler = fn) } } },
         open: () => handler(items),
       }
     }
@@ -190,7 +190,7 @@ describe('startDropImport', () => {
     }
 
     it('imports a vCard item, reading it from the cloud', async () => {
-      const desktop = puterWin([fsItem('ada.vcf', 'BEGIN:VCARD\r\nFN:Ada\r\nEND:VCARD\r\n')])
+      const desktop = everythingWin([fsItem('ada.vcf', 'BEGIN:VCARD\r\nFN:Ada\r\nEND:VCARD\r\n')])
       const t = setup({ win: desktop.win })
 
       desktop.open()
@@ -206,12 +206,12 @@ describe('startDropImport', () => {
       const realFetch = globalThis.fetch
       globalThis.fetch = fetchMock
 
-      const desktop = puterWin([
+      const desktop = everythingWin([
         fsItem('shared.vcf', '', {
           read: async () => {
             throw new Error('permission denied')
           },
-          readURL: 'https://api.puter.test/read?signature=abc',
+          readURL: 'https://api.everything.test/read?signature=abc',
         }),
       ])
       const t = setup({ win: desktop.win })
@@ -219,14 +219,14 @@ describe('startDropImport', () => {
       desktop.open()
       const [file] = t.onFiles.mock.calls[0][0]
       expect(await file.text()).toContain('BEGIN:VCARD')
-      expect(fetchMock).toHaveBeenCalledWith('https://api.puter.test/read?signature=abc')
+      expect(fetchMock).toHaveBeenCalledWith('https://api.everything.test/read?signature=abc')
 
       globalThis.fetch = realFetch
       t.cleanup()
     })
 
     it('skips folders, and reports items that hold no contacts', () => {
-      const desktop = puterWin([
+      const desktop = everythingWin([
         { name: 'Pictures', isDirectory: true },
         fsItem('selfie.png', ''),
       ])
@@ -240,7 +240,7 @@ describe('startDropImport', () => {
     })
 
     it('survives a desktop with no onItemsOpened, leaving OS drops working', () => {
-      const t = setup({ win: { puter: { ui: {} } } })
+      const t = setup({ win: { everything: { ui: {} } } })
       t.target.dispatchEvent(dragEvent('drop', [vcf()]))
       expect(t.onFiles).toHaveBeenCalledTimes(1)
       t.cleanup()

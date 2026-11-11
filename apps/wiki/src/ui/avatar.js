@@ -26,14 +26,14 @@ export function avatar(name, { picture = null, size = 24, label = null } = {}) {
 const pictures = new Map();
 let source = null;
 
-/** Where other people's profile pictures come from (puter.auth.getProfilePicture). */
+/** Where other people's profile pictures come from (everything.auth.getProfilePicture). */
 export function setPictureSource(fn) {
   source = fn;
   pictures.clear();
 }
 
 /**
- * An avatar that shows the person's profile picture once it loads (Puter
+ * An avatar that shows the person's profile picture once it loads (Everything
  * shares pictures of people on paid plans; others keep their initials).
  */
 export function personAvatar(name, opts = {}) {

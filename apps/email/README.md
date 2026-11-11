@@ -1,16 +1,16 @@
-# Puter Mail
+# Everything Mail
 
 For the composer review, shipped improvements, remaining Gmail gaps, and verification steps, see [Composer audit](docs/composer-audit.md).
 
 For measured loading/search improvements, benchmark reproduction, and remaining limits, see [Performance report](docs/performance.md).
 
-A fast, private email client for your [Puter](https://localhost:8443) account. It reads the mailbox that Puter's `emailrx` backend extension writes into your account, renders every message safely as plain text, and sends mail through the `useremailtx` extension from your `@puter.email` address.
+A fast, private email client for your [Everything](https://localhost:8443) account. It reads the mailbox that Everything's `emailrx` backend extension writes into your account, renders every message safely as plain text, and sends mail through the `useremailtx` extension from your `@everything.email` address.
 
 ## How it works
 
 ### Receiving
 
-Incoming mail lands in your Puter account as raw RFC 822 files:
+Incoming mail lands in your Everything account as raw RFC 822 files:
 
 ```
 /<username>/.mail/objects/<YYYY-MM-DD>/<uuidv7>--<base64url subject>
@@ -25,18 +25,18 @@ Plain text that arrives as `format=flowed` (RFC 3676) -- which is how Thunderbir
 Sending is one request to the `useremailtx` backend extension:
 
 ```
-POST {puter.APIOrigin}/email/send
-Authorization: Bearer <puter auth token>
+POST {everything.APIOrigin}/email/send
+Authorization: Bearer <everything auth token>
 Content-Type: message/rfc822
 
 <the whole RFC822 message>
 ```
 
-The endpoint takes a complete message and parses it server-side. It enforces that `From:` is `<your username>@puter.email`, which is the one address this app sends as and the one the dialog shows, then walks the To/Cc list one recipient at a time: a recipient on that domain is delivered internally, by writing the message into their `/<recipient>/.mail/objects/...` mailbox — the same place inbound mail lands — and everyone else is relayed over SMTP. Recipients are unrestricted; the sender's own address is not.
+The endpoint takes a complete message and parses it server-side. It enforces that `From:` is `<your username>@everything.email`, which is the one address this app sends as and the one the dialog shows, then walks the To/Cc list one recipient at a time: a recipient on that domain is delivered internally, by writing the message into their `/<recipient>/.mail/objects/...` mailbox — the same place inbound mail lands — and everyone else is relayed over SMTP. Recipients are unrestricted; the sender's own address is not.
 
 Because the endpoint wants a whole message rather than fields, the app composes MIME in the browser (`src/lib/compose.js`): CRLF line endings, RFC 2047 encoded words for a non-ASCII subject, base64 `text/plain; charset=utf-8` for the body, and header folding at 78 characters. A message with attachments becomes `multipart/mixed` — the text part first, then one base64 part per file, with the filename written as an RFC 2047 encoded word *and* an RFC 2231 `filename*` when it isn't ASCII. The reader takes either form, plus RFC 2231's numbered continuations, since a non-ASCII name from Gmail or Apple Mail arrives only as `filename*`. The tests round-trip every composed message through the same parser the app reads mail with.
 
-Attachments come either from the device (`<input type="file">`, or dropped onto the dialog) or from your own Puter files (`puter.ui.showOpenFilePicker()`), and are capped at 18 MB in total: the whole message is posted as one request body, and base64 inflates it by 4/3, so that is a 24 MB message. The cap is checked in the dialog, so an oversized file is reported next to the file it is about rather than as a rejected POST after a long upload. Each file's chip is one node, built once and repainted as its own read lands: the list used to be thrown away and rebuilt on every change — and one of the changes is *another* file finishing, which happens on its own schedule while the writer is doing something else. A chip replaced under a pointer takes the click that had already begun on it, so pressing Remove on one file did nothing at all if a second file's read landed in the moment between the press and its release.
+Attachments come either from the device (`<input type="file">`, or dropped onto the dialog) or from your own Everything files (`everything.ui.showOpenFilePicker()`), and are capped at 18 MB in total: the whole message is posted as one request body, and base64 inflates it by 4/3, so that is a 24 MB message. The cap is checked in the dialog, so an oversized file is reported next to the file it is about rather than as a rejected POST after a long upload. Each file's chip is one node, built once and repainted as its own read lands: the list used to be thrown away and rebuilt on every change — and one of the changes is *another* file finishing, which happens on its own schedule while the writer is doing something else. A chip replaced under a pointer takes the click that had already begun on it, so pressing Remove on one file did nothing at all if a second file's read landed in the moment between the press and its release.
 
 To and Cc address a message to any number of people, and are lists rather than lines of text to say so: each address entered becomes a chip of its own, so taking one name off a message of six is a click instead of an exercise in editing a comma-separated string without breaking the addresses either side of it. An address is ended by Enter, by a comma or semicolon, or by moving on; a pasted list is split on the spot, in any of the forms another client hands out (`a@b.co, c@d.co`, names and angle brackets, semicolons, or a mix), while a single pasted address is left as text so a half-typed one can still be corrected. Backspace on an empty field takes the last chip back into it — the same path as pressing that chip, so the two say the same thing — and pressing any chip takes *that* one back — an address you can see is wrong should not have to be typed again from nothing, which is all a red chip used to offer. A chip is one tab stop carrying both of the things there are to do with a recipient: Enter corrects it, Delete removes it, and the ✕ beside it is the pointer's way to the second. A chip that is not an address says so in words as well as in red — `not-an-address is not an email address. Press Enter to correct it, Delete to remove it.` — because a colour and an icon are nothing to a screen reader and not much of an explanation to anyone else. A comma inside a quoted name — `"Doe, Jane" <jane@example.com>` — belongs to the address and does not end it. On a phone the field asks for the keyboard an address is typed on: `inputmode="email"` for an `@` without a trip to the symbols layer, and capitalisation, autocorrect and spellcheck all off — left to their defaults they capitalised the first letter of every address, rewrote domains that looked misspelt, and underlined the rest in red. Not `type="email"`, because the field takes a whole list and names with angle brackets in them, and one address per box is not its shape. Duplicates collapse, and an entry that names no address is marked where it was entered rather than at the far end of a refused send. Underneath it is still the one comma-separated string that a draft stores and that the address-list parser reads, so nothing else in the app had to learn about chips.
 
@@ -101,7 +101,7 @@ Trash carries the one action that applies to the whole folder: **Empty Trash now
 
 Rows can also be dragged onto a folder in the sidebar, which is the other way every desktop mail client has always moved mail: what is dragged is what a row action would act on -- the ticked rows if there are any, else the row under the pointer -- and the drop is the same move the buttons make, with the same Undo. Where a drop can land follows from where the rows are (Archive and Trash from the inbox, Trash from Sent, Inbox and Trash from Archive, Inbox and Archive from Trash), and the folders that will take the drop say so while it is in the air. Leaving Archive or Trash by a drag is a restore whatever it lands on, so the next Restore does not send the message back into the Trash it was dragged out of.
 
-Archiving and deleting are `puter.fs.move()` calls between those folders. The day folder and the filename never change, so read and star flags — which are keyed on the filename — survive the move, and so does the newest-first ordering. It also makes undo exact: the reverse move puts the file back, which is why an archive or a delete offers "Undo" in a toast instead of asking for confirmation first. A permanent delete from Trash is the one thing undo cannot cover, so that one confirms — with a dialog of the app's own, because a Puter app runs in a cross-origin iframe and Chrome suppresses `window.confirm` there, answering "no" without showing anything. Restoring returns a message to the folder it came from, remembered per filename alongside the read and star flags.
+Archiving and deleting are `everything.fs.move()` calls between those folders. The day folder and the filename never change, so read and star flags — which are keyed on the filename — survive the move, and so does the newest-first ordering. It also makes undo exact: the reverse move puts the file back, which is why an archive or a delete offers "Undo" in a toast instead of asking for confirmation first. A permanent delete from Trash is the one thing undo cannot cover, so that one confirms — with a dialog of the app's own, because an Everything app runs in a cross-origin iframe and Chrome suppresses `window.confirm` there, answering "no" without showing anything. Restoring returns a message to the folder it came from, remembered per filename alongside the read and star flags.
 
 ### Conversations
 
@@ -145,11 +145,11 @@ Sending, archiving, and deleting all need **write access to `/<username>/.mail`*
 
 ### Read and starred state
 
-Flags belong to the account, not to a browser. Read/unread and starred are kept in `puter.kv` — app-scoped per user, so no filesystem permission and no prompt — with `localStorage` in front of it as a synchronous cache the list renders from immediately; the account store is read and written in the background, because a flag is a display detail and must never delay the list.
+Flags belong to the account, not to a browser. Read/unread and starred are kept in `everything.kv` — app-scoped per user, so no filesystem permission and no prompt — with `localStorage` in front of it as a synchronous cache the list renders from immediately; the account store is read and written in the background, because a flag is a display detail and must never delay the list.
 
 Both sides are the same shape: a message id mapped to *when* it last changed, in whole seconds, positive when the flag is on and negative when it was turned off. Keeping the "off" side is what lets "mark as unread" survive a merge with a device that still thinks the message is read — the merge is last-write-wins per id, so two devices reading different mail merge to both being read, and a tie keeps the flag on rather than losing a star. `mergeFlags()` is a pure function with tests, since two devices marking different messages read is the normal case, not an edge case.
 
-Ids are the uuid v7 part of the filename rather than the whole name: it is already unique per message, and dropping the base64 subject makes the payload about a third of the size, which matters when the whole set has to fit in one key-value entry. Five thousand entries are kept, most-recently-changed first. If `puter.kv` is missing or unreachable the app carries on with local flags only.
+Ids are the uuid v7 part of the filename rather than the whole name: it is already unique per message, and dropping the base64 subject makes the payload about a third of the size, which matters when the whole set has to fit in one key-value entry. Five thousand entries are kept, most-recently-changed first. If `everything.kv` is missing or unreachable the app carries on with local flags only.
 
 A conversation's read and starred state is derived from its messages' rather than stored beside it, so nothing here changed when the list started grouping them.
 
@@ -165,13 +165,13 @@ Results are messages rather than conversations — see [Conversations](#conversa
 
 ### Watching for new mail
 
-The mailbox is watched, not polled. At launch the app subscribes to `fs:/<username>/.mail` with [`puter.events.onLocal()`](http://localhost:8443/Events/onLocal/): one subscription covering every folder, costing nothing while nothing changes. When emailrx writes a message the app is told the path within a few hundred milliseconds, and `createMailbox().sync()` lists exactly what landed — normally one newest-first recursive `readdir` page, stopping at the newest known message; large folder lists and older SDKs use the root/day traversal — and prepends it. Nothing already on screen is rebuilt, so new rows appear without moving the scroll position, disturbing an open message, or clearing a search. Events are gathered for half a second before they are acted on, so a burst of mail is one listing rather than one per message.
+The mailbox is watched, not polled. At launch the app subscribes to `fs:/<username>/.mail` with [`everything.events.onLocal()`](http://localhost:8443/Events/onLocal/): one subscription covering every folder, costing nothing while nothing changes. When emailrx writes a message the app is told the path within a few hundred milliseconds, and `createMailbox().sync()` lists exactly what landed — normally one newest-first recursive `readdir` page, stopping at the newest known message; large folder lists and older SDKs use the root/day traversal — and prepends it. Nothing already on screen is rebuilt, so new rows appear without moving the scroll position, disturbing an open message, or clearing a search. Events are gathered for half a second before they are acted on, so a burst of mail is one listing rather than one per message.
 
 The same subscription hears what your other devices do. A message archived, deleted or restored from another tab or another phone leaves its folder here the way it would have if the action had been taken here — its row goes, or its conversation shrinks — and the folder it went to is re-listed when it is next opened, or at once if it is on screen. A message put back into the inbox is listed, not announced: it is not new. The app tells its own writes from another device's by remembering the paths it has just written, because an event's `self` flag names the account rather than the tab, and the account's other tabs are exactly what the watch is for. A `gap` marker — the server saying it dropped something — re-lists every folder rather than trusting what is on screen. `src/lib/watch.js` is the reading of events as changes to folders; it touches neither the DOM nor the network.
 
 A check that finds nothing says nothing: no toast, no re-render. When mail does arrive it shows up in three places — the rows themselves, the unread count in the document title, and, if it arrived while a message was open or the list was scrolled down, a "2 new messages" pill in the list toolbar rather than a jump. Desktop notifications are off until you turn them on in Settings, because `Notification.requestPermission()` has to be user initiated; they only fire while the window is not focused — which now includes a tab that is hidden, since events arrive whether or not the tab is visible. Clicking one is the reader asking to see it: one message opens, a handful go to the top of the inbox, and a search that was on screen is cleared first, since what arrived is in the folder and not necessarily in the results.
 
-Where the subscription cannot be had — a Puter without the Events API, a server with it turned off, or a lapse the SDK could not reconnect from — the app falls back to what it did before: a visible tab looks every 60 seconds, a hidden one not at all, and every tick tries for the subscription again. Either way, a tab coming back into view or coming back online makes one check of its own, since a connection that slept with the laptop may have missed a delivery.
+Where the subscription cannot be had — an Everything without the Events API, a server with it turned off, or a lapse the SDK could not reconnect from — the app falls back to what it did before: a visible tab looks every 60 seconds, a hidden one not at all, and every tick tries for the subscription again. Either way, a tab coming back into view or coming back online makes one check of its own, since a connection that slept with the laptop may have missed a delivery.
 
 ### The keyboard
 
@@ -207,7 +207,7 @@ A message that names a way off its mailing list in `List-Unsubscribe` (RFC 2369)
 
 Plain text is the default for every message and stays fully functional. When a message has a `text/html` part, the reader offers a second view of it, rendered only when asked for and only for that message:
 
-- The frame is `<iframe sandbox srcdoc>` with **neither `allow-scripts` nor `allow-same-origin`**. Without scripts nothing in a message runs; without same-origin the frame is a unique opaque origin that cannot reach this app's storage or its Puter token. The only capabilities granted are `allow-popups` and `allow-popups-to-escape-sandbox`, so a link the reader clicks opens as an ordinary tab.
+- The frame is `<iframe sandbox srcdoc>` with **neither `allow-scripts` nor `allow-same-origin`**. Without scripts nothing in a message runs; without same-origin the frame is a unique opaque origin that cannot reach this app's storage or its Everything token. The only capabilities granted are `allow-popups` and `allow-popups-to-escape-sandbox`, so a link the reader clicks opens as an ordinary tab.
 - A `Content-Security-Policy` inside the frame (`default-src 'none'; base-uri 'none'; form-action 'none'; style-src 'unsafe-inline'; img-src data:`) is what stops a tracking pixel: nothing loads unless it is named there, and remote images are only named once the reader presses **Show images**. That choice is remembered per sender, not globally. The frame is opened up by what the reader has allowed, never by what the app managed to detect — so a tracker the detector misses still does not load; detection only decides whether the reader is told anything is being held back. Detection covers the whole document, `<head>` stylesheets included, which is where a newsletter usually keeps its CSS.
 - The markup is sanitized first anyway (`src/lib/sanitize.js`), because a typo in a sandbox attribute should not be the difference between a rendered newsletter and a disclosed token. It is an allowlist: an element or attribute it does not name does not survive; `script`, `iframe`, `object`, `embed`, `form`, `meta`, `link`, `svg` and friends are dropped with their contents, every `on*` attribute goes, and only `http`, `https` and `mailto` survive as links — with `target="_blank"` and `rel="noopener noreferrer"` applied by the sanitizer rather than copied from the message. A stylesheet that would fetch something remote has its `url()` neutered while remote content is refused, so CSS is held to the same rule as an `img`.
 - Inline images referenced by `cid:` are rewritten to `data:` URLs from the MIME part that carries them, so a message's own images work with remote content still blocked. A part that claims to be anything other than an image is refused.
@@ -217,7 +217,7 @@ Plain text is the default for every message and stays fully functional. When a m
 
 - Plain text is the default view. HTML is rendered only when you ask for it, in a sandboxed frame that cannot run scripts, reach this app, or load remote content until you allow it.
 - Markup is filtered on the way *out* too. What you paste into a message reaches the editor as HTML, so it goes through an allowlist first — of elements, of style properties, and of the value each property may take. A message you send carries no script, no stylesheet, no remote reference, and no link that isn't `http`, `https` or `mailto`, whatever the page you copied it from was carrying. Every message also goes out with a real plain-text part, so no recipient is handed markup as their only option.
-- Attachments are listed with name and size, and are only decoded when you open one: an image is shown in place, in a dialog with the download beside it, and everything else is downloaded -- to the device, or into your own Puter files through the OS's save dialog. SVG is not previewed, because it is a document that can carry script rather than a picture, and a very large image is a download rather than a preview. The name is shown and saved with the invisible characters taken out, so an attachment cannot use a right-to-left override to read as `report.pdf` while being `report.exe`.
+- Attachments are listed with name and size, and are only decoded when you open one: an image is shown in place, in a dialog with the download beside it, and everything else is downloaded -- to the device, or into your own Everything files through the OS's save dialog. SVG is not previewed, because it is a document that can carry script rather than a picture, and a very large image is a download rather than a preview. The name is shown and saved with the invisible characters taken out, so an attachment cannot use a right-to-left override to read as `report.pdf` while being `report.exe`.
 - Read/unread and starred state is kept in your account's key-value store, which no other app can read, plus a local cache. Nothing about your mail is sent anywhere else.
 - The app writes only what you ask it to: the copy of a message you send, and the moves behind archive, delete and restore. Nothing in your mailbox is deleted unless you delete it from Trash yourself.
 
@@ -226,12 +226,12 @@ Plain text is the default for every message and stays fully functional. When a m
 - Calendar invitation cards above the message body, from inline `text/calendar` parts or `.ics` attachments: event title, date and time with the sender's timezone, location, organizer, guests, meeting links, and the original invite download. All-day ranges, durations, recurring-event indicators, and cancellations are supported; RSVP sending and calendar synchronization are not implemented.
 - Gmail-style interface: header search pill, collapsible folder sidebar with a Compose pill, rounded content card, single-line rows with bold unread and tinted read states, and a list-to-message reading flow
 - Conversation view: one row per thread with its participants and message count, a reader that stacks the conversation oldest to newest with the newest and anything unread expanded, quoted replies folded away, and archive, delete, star and read/unread applying to the whole conversation with one Undo — grouped by `References` and `In-Reply-To` with a subject guard, from the same header read the rows already cost, and switchable off in Settings
-- Compose and send from your `@puter.email` address, to any number of recipients on Puter or off — To and Cc hold one removable chip per address, split a pasted list, and mark anything that isn't an address as you enter it — with Reply, Reply all, and Forward — replies threaded with `In-Reply-To` and `References`, forwards carrying the original attachments
+- Compose and send from your `@everything.email` address, to any number of recipients on Everything or off — To and Cc hold one removable chip per address, split a pasted list, and mark anything that isn't an address as you enter it — with Reply, Reply all, and Forward — replies threaded with `In-Reply-To` and `References`, forwards carrying the original attachments
 - Recipient completion from the addresses the app has already seen, ranked by who you have written to rather than who has written to you, out of the same header index that answers search — and offered rather than applied, so Enter still means the address you typed
 - Undo send: a message is held for five seconds (or ten, or thirty, or not at all) with an Undo that brings it back intact, attachments included
 - A signature set once under Settings and added to every new message, reply and forward, under the standard `-- ` separator
 - Limited rich text in the body — bold, italic, underline, strikethrough, a few fonts and sizes, text colour, lists and quotes — sent as `multipart/alternative` so every recipient gets a real plain-text message too, and sent as plain text alone when nothing was formatted
-- Attachments from your device or your Puter files, added by button or by drag and drop, with a removable chip per file and a size cap checked before sending
+- Attachments from your device or your Everything files, added by button or by drag and drop, with a removable chip per file and a size cap checked before sending
 - Sign-in gate, permission flow, and a first-run onboarding tour
 - Unsubscribe from a mailing list from beside the sender, out of the `List-Unsubscribe` header the list actually honours: by a prefilled message where the list takes mail, by the list's own page otherwise
 - Clickable links in every message, with the real host shown where a link's text disagrees with where it goes, and addresses that open a prefilled compose
@@ -245,7 +245,7 @@ Plain text is the default for every message and stays fully functional. When a m
 - Mail that appears as it lands, and folders that follow what your other devices do, over a filesystem subscription rather than polling — with an unread badge in the tab title, a non-intrusive new-mail pill, and opt-in desktop notifications
 - Drafts that survive closing the dialog, a reload, or a lost tab: autosaved while you type as both text and markup, listed newest first in their own folder, reopened where you left off with the formatting intact, and cleared by sending or by an undoable Discard
 - Search across the whole folder — sender, subject, preview, and field prefixes (`from:`, `to:`, `subject:`, `before:`, `after:`, `has:attachment`, `is:unread`, `is:starred`) — with honest progress while the index builds
-- Attachment preview for images, download to the device or into your Puter files, view source, print, download a message as `.eml`, per-sender avatars
+- Attachment preview for images, download to the device or into your Everything files, view source, print, download a message as `.eml`, per-sender avatars
 - A menu on every open message in a conversation, to reply to or forward that message rather than the newest
 - Light, dark, and system theme (system is the default), and a compact density for anyone who reads a lot of mail
 - Keyboard navigation (arrow keys, Enter, Escape) and screen-reader friendly markup
@@ -260,15 +260,15 @@ npm run build     # production build into dist/
 npm run preview   # preview the production build
 ```
 
-No frameworks: the UI is plain DOM, styled with hand-written CSS, with [Lucide](https://lucide.dev) for icons and [Puter.js](http://localhost:8443) as the only backend.
+No frameworks: the UI is plain DOM, styled with hand-written CSS, with [Lucide](https://lucide.dev) for icons and [Everything.js](http://localhost:8443) as the only backend.
 
-`puter.APIOrigin` is read at send time, so the app targets whichever backend the SDK is pointed at — `api.localhost:8443` in production, `api.puter.localhost:5101` in local development, with no change here.
+`everything.APIOrigin` is read at send time, so the app targets whichever backend the SDK is pointed at — `api.localhost:8443` in production, `api.everything.localhost:5101` in local development, with no change here.
 
 ## Project layout
 
 ```
 src/
-  lib/        pure logic, no DOM beyond a parser and no Puter:
+  lib/        pure logic, no DOM beyond a parser and no Everything:
                 mime.js       RFC 822 / MIME parsing, address lists, bodies
                 compose.js    MIME composition, reply recipients, validation
                 richtext.js   the compose editor's HTML vocabulary, both ways
@@ -290,7 +290,7 @@ src/
   styles/     design tokens, base components, app screens
 tests/        vitest suites for every lib module, and for the shell, the
               compose dialog and folder search over the test mailbox
-example.html  reference implementation of mail receiving on Puter
+example.html  reference implementation of mail receiving on Everything
 ```
 
 Everything in `lib/` is a pure function over strings, bytes, or an injected store, which is why the suite covers the parts that matter without a browser: MIME round-trips, the sanitizer's payload set, the rich text vocabulary in both directions, the linkifier's awkward cases, the flag merge, the search index, the contact ranking, and the mailbox listing against a fake filesystem. The shell is tested over `lib/sample.js`, an in-memory mailbox of realistic messages (quoted-printable, base64, encoded words, multipart, attachments including an image, an HTML newsletter carrying a script, a `javascript:` link, a tracking pixel and an inline image, and a three-message thread with the `Message-ID`/`References` chain a real client writes), so archiving, deleting and restoring run against a real listing rather than a stub, and the safe path and the grouping are both exercised for real.

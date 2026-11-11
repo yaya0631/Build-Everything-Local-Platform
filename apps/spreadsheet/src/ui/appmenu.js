@@ -1,7 +1,7 @@
 /**
  * The account menu shared by the home screen and the editor: theme,
- * shortcuts, about, and (outside the Puter desktop) sign in or out. Inside a
- * Puter app window the desktop owns the session, so neither is offered there.
+ * shortcuts, about, and (outside the Everything desktop) sign in or out. Inside a
+ * Everything app window the desktop owns the session, so neither is offered there.
  */
 
 import { el } from './dom.js';
@@ -13,7 +13,7 @@ import { openOptionsDialog } from './options-dialog.js';
 import { currentTheme } from './theme.js';
 import { session } from '../lib/session.js';
 import { toast } from './toast.js';
-import * as P from '../lib/puter.js';
+import * as P from '../lib/everything.js';
 import { LOCALES, getLocale, formatValue, formatGeneral, formatDate, setLocale } from '../core/format.js';
 import { clearAccountStorage } from '../lib/account-storage.js';
 import { clearOutbox } from '../collab/outbox.js';
@@ -60,7 +60,7 @@ export function openAppMenu(anchor, { onOptions = null } = {}) {
   ];
   if (!P.isApp()) {
     items.push({ separator: true });
-    if (session.signedOut) items.push({ label: 'Sign in to Puter', icon: 'login', hint: 'Save spreadsheets to your own cloud', onSelect: () => session.signIn() });
+    if (session.signedOut) items.push({ label: 'Sign in to Everything', icon: 'login', hint: 'Save spreadsheets to your own cloud', onSelect: () => session.signIn() });
     else items.push({ label: 'Sign out', icon: 'logout', onSelect: confirmSignOut });
   }
   openMenu({ anchor, items, align: 'end', label: 'Account', minWidth: 240 });
@@ -108,7 +108,7 @@ export function renderAccountButton(button) {
 export async function confirmSignOut() {
   const ok = await confirmDialog({
     title: 'Sign out?',
-    message: 'Your spreadsheets stay in your Puter account. Anything unsaved in an open document is saved first, and the copies this browser kept are removed from this computer.',
+    message: 'Your spreadsheets stay in your Everything account. Anything unsaved in an open document is saved first, and the copies this browser kept are removed from this computer.',
     confirmLabel: 'Sign out', danger: false,
   });
   if (!ok) return;
@@ -157,9 +157,9 @@ export function openLocaleDialog() {
   return modal;
 }
 
-const COMPANY = 'Puter Technologies Inc.';
+const COMPANY = 'Everything Technologies Inc.';
 
-/** Puter's own pages, for the row of links under the description. */
+/** Everything's own pages, for the row of links under the description. */
 const ABOUT_LINKS = [
   ['Website', 'http://localhost:8443'],
   ['Privacy', 'http://localhost:8443/privacy'],
@@ -209,8 +209,8 @@ export function openAbout() {
         el('div.about-icon', { html: icon('brand', 80) }),
         el('p.about-name', {}, 'Spreadsheet')),
       el('p.about-meta', {}, `Version ${APP_VERSION}`, el('span.about-dot', { 'aria-hidden': 'true' }, ' · '), `by ${COMPANY}`),
-      el('p.modal-text.about-tagline', {}, 'A fast, private spreadsheet. Your work is saved as standard .xlsx files in your own Puter cloud, ready to open anywhere.'),
-      el('nav.about-links', { 'aria-label': 'Puter' }, ABOUT_LINKS.map(([label, href]) =>
+      el('p.modal-text.about-tagline', {}, 'A fast, private spreadsheet. Your work is saved as standard .xlsx files in your own Everything cloud, ready to open anywhere.'),
+      el('nav.about-links', { 'aria-label': 'Everything' }, ABOUT_LINKS.map(([label, href]) =>
         el('a.about-link', { href, ...external, 'aria-label': `${label}, opens in a new tab` }, label, opensNew.cloneNode(true)))),
       credits,
       el('p.about-legal', {}, `© ${new Date().getFullYear()} ${COMPANY} All rights reserved.`)),

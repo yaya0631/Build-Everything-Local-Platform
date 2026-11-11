@@ -8,7 +8,7 @@
 import { el } from '../ui/dom.js';
 import { toast } from '../ui/toast.js';
 import { openModal } from '../ui/modal.js';
-import * as P from './puter.js';
+import * as P from './everything.js';
 import { session } from './session.js';
 import { HANWORD_IMPORTABLE, importHanword } from './importers.js';
 import { importKind } from './importers.js';
@@ -53,7 +53,7 @@ export async function importFiles(fileList, {
   const words = picked.filter((f) => P.OPENABLE.test(f.name || ''));
   const texts = picked.filter((f) => !P.OPENABLE.test(f.name || ''));
   // Only the files written to the cloud directly need a session; text files open like a single one does.
-  if (words.length && session.signedOut && !await session.signIn()) { if (stillHere()) toast('Sign in to Puter to import several files at once', { icon: 'info' }); return; }
+  if (words.length && session.signedOut && !await session.signIn()) { if (stillHere()) toast('Sign in to Everything to import several files at once', { icon: 'info' }); return; }
   if (!stillHere()) return;
   let saved = 0;
   const issues = [];

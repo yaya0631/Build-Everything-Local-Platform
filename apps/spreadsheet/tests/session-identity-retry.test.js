@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { memoryStorage } from './helpers/memory-storage.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 import { Doc } from '../src/lib/doc.js';
 import { session } from '../src/lib/session.js';
 import { listDrafts, loadDraft } from '../src/lib/drafts.js';
@@ -11,7 +11,7 @@ beforeEach(() => {
   vi.useFakeTimers();
   vi.stubGlobal('localStorage', memoryStorage());
   vi.stubGlobal('matchMedia', () => ({ matches: false }));
-  installMockPuter();
+  installMockEverything();
 });
 afterEach(() => {
   session.state = 'unknown';
@@ -20,14 +20,14 @@ afterEach(() => {
   vi.useRealTimers();
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
-  delete globalThis.puter;
+  delete globalThis.everything;
 });
 
 // Signed in, but the identity look-up failed at boot: local records went under a random
 // throwaway scope, and every draft written in that session was unreachable after a reload.
 it('keeps asking who is signed in after a failed look-up, then moves the records kept meanwhile into the account', async () => {
   let failures = 2;
-  puter.auth.getUser = vi.fn(async () => { if (failures-- > 0) throw new Error('Network request failed'); return { username: 'nariman', uuid: 'u-7' }; });
+  everything.auth.getUser = vi.fn(async () => { if (failures-- > 0) throw new Error('Network request failed'); return { username: 'nariman', uuid: 'u-7' }; });
   await session.init();
   expect(session.signedIn).toBe(true);
   expect(isAccountScope(storageScope())).toBe(false);
@@ -54,29 +54,29 @@ it('keeps asking who is signed in after a failed look-up, then moves the records
   doc.wb.setInput(doc.wb.activeSheetId, 1, 0, 'after');
   expect(doc.writeDraft()).toBe(true);
   expect(listDrafts()).toHaveLength(1);
-  const asked = puter.auth.getUser.mock.calls.length;
+  const asked = everything.auth.getUser.mock.calls.length;
   await vi.advanceTimersByTimeAsync(60 * 60_000);
-  expect(puter.auth.getUser.mock.calls.length).toBe(asked);
+  expect(everything.auth.getUser.mock.calls.length).toBe(asked);
   doc.destroy();
 });
 
 it('stops asking once signed out, and gives up after a while', async () => {
-  puter.auth.getUser = vi.fn(async () => { throw new Error('Network request failed'); });
+  everything.auth.getUser = vi.fn(async () => { throw new Error('Network request failed'); });
   await session.init();
   await vi.advanceTimersByTimeAsync(10_000);
-  expect(puter.auth.getUser.mock.calls.length).toBeGreaterThan(1);
-  const asked = puter.auth.getUser.mock.calls.length;
-  puter.auth.isSignedIn = () => false;
+  expect(everything.auth.getUser.mock.calls.length).toBeGreaterThan(1);
+  const asked = everything.auth.getUser.mock.calls.length;
+  everything.auth.isSignedIn = () => false;
   await session.refresh();
   expect(session.signedOut).toBe(true);
   await vi.advanceTimersByTimeAsync(60 * 60_000);
-  expect(puter.auth.getUser.mock.calls.length).toBe(asked);
+  expect(everything.auth.getUser.mock.calls.length).toBe(asked);
 
-  puter.auth.isSignedIn = () => true;
+  everything.auth.isSignedIn = () => true;
   await session.refresh();
-  const before = puter.auth.getUser.mock.calls.length;
+  const before = everything.auth.getUser.mock.calls.length;
   await vi.advanceTimersByTimeAsync(24 * 60 * 60_000);
-  const attempts = puter.auth.getUser.mock.calls.length - before;
+  const attempts = everything.auth.getUser.mock.calls.length - before;
   expect(attempts).toBeGreaterThan(3);
   expect(attempts).toBeLessThan(20);
 });

@@ -15,7 +15,7 @@ import {
   variantsOf,
   type FontCandidate,
 } from '../src/imaging/text/match-font';
-import { aiCodec, matchFontWithAI } from '../src/imaging/ai/puter-ai';
+import { aiCodec, matchFontWithAI } from '../src/imaging/ai/everything-ai';
 import type { Mask8, RGBA8 } from '../src/imaging/types';
 
 // A small font-file rasterizer stands in for canvas text: glyph outlines from
@@ -175,16 +175,16 @@ describe('Match Font ranking', () => {
 });
 
 describe('Ask AI for a font match', () => {
-  const g = globalThis as unknown as { puter?: unknown };
+  const g = globalThis as unknown as { everything?: unknown };
   const codec = { ...aiCodec };
   afterEach(() => {
-    delete g.puter;
+    delete g.everything;
     Object.assign(aiCodec, codec);
   });
   it('sends the crop with the candidate names and reads back an order', async () => {
     aiCodec.toDataUri = async () => 'data:image/png;base64,iVBORw0KGgo=';
     const chat = vi.fn(async () => ({ message: { content: 'Crimson Pro\n2. inter\nSomething Else' } }));
-    g.puter = { ai: { txt2img: vi.fn(), chat } };
+    g.everything = { ai: { txt2img: vi.fn(), chat } };
     const img = render('Ab', { family: 'Crimson Pro', weight: 400, italic: false }, 30);
     const order = await matchFontWithAI(img, ['Inter', 'Crimson Pro', 'Caveat']);
     expect(order).toEqual(['Crimson Pro', 'Inter']);
@@ -194,7 +194,7 @@ describe('Ask AI for a font match', () => {
     expect(prompt).toContain('Caveat');
     expect(media).toBeInstanceOf(File);
   });
-  it('fails clearly without Puter', async () => {
-    await expect(matchFontWithAI(render('A', { family: 'Inter', weight: 400, italic: false }, 20), ['Inter'])).rejects.toThrow(/Puter/);
+  it('fails clearly without Everything', async () => {
+    await expect(matchFontWithAI(render('A', { family: 'Inter', weight: 400, italic: false }, 20), ['Inter'])).rejects.toThrow(/Everything/);
   });
 });

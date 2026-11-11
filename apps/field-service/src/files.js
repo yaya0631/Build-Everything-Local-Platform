@@ -1,6 +1,6 @@
 /**
  * Attachments (receipts, job photos, documents) live in the app's own
- * Puter folder, never in KV. Records only keep a small reference:
+ * Everything folder, never in KV. Records only keep a small reference:
  *   { id, name, type, size, path, createdAt }
  *
  * Photos are downscaled in the browser before upload so a 12 MP phone
@@ -64,13 +64,13 @@ export async function saveFile(file, folder = 'files') {
   const id = newId();
   const name = safeName(file.name);
   const path = `${folder}/${id}-${name}`;
-  if (app.demo || typeof puter === 'undefined') {
+  if (app.demo || typeof everything === 'undefined') {
     memory.set(path, blob);
   } else if (app.team?.url) {
     // Team businesses keep files in the owner's drive, through the worker.
     await call(app.team.url, 'fileWrite', { path, data: await toBase64(blob), type: blob.type || file.type || '' }, { timeoutMs: 120000 });
   } else {
-    await puter.fs.write(path, blob, { createMissingParents: true, overwrite: true });
+    await everything.fs.write(path, blob, { createMissingParents: true, overwrite: true });
   }
   return { id, name: file.name, type: blob.type || file.type, size: blob.size, path, createdAt: new Date().toISOString() };
 }
@@ -87,11 +87,11 @@ export async function fileUrl(att) {
 async function loadUrl(att) {
   let blob = memory.get(att.path);
   if (!blob) {
-    if (app.demo || typeof puter === 'undefined') throw new Error('File not available');
+    if (app.demo || typeof everything === 'undefined') throw new Error('File not available');
     if (app.team?.url) {
       const out = await call(app.team.url, 'fileRead', { path: att.path }, { timeoutMs: 120000 });
       blob = new Blob([fromBase64(out.data)], { type: att.type || out.type || '' });
-    } else blob = await puter.fs.read(att.path);
+    } else blob = await everything.fs.read(att.path);
   }
   if (att.type && blob.type !== att.type) blob = new Blob([blob], { type: att.type });
   const url = URL.createObjectURL(blob);
@@ -106,9 +106,9 @@ export async function deleteFile(att) {
   urlCache.delete(att.path);
   if (!app.demo && app.team?.url) {
     await call(app.team.url, 'fileDelete', { path: att.path });
-  } else if (!app.demo && typeof puter !== 'undefined') {
+  } else if (!app.demo && typeof everything !== 'undefined') {
     try {
-      await puter.fs.delete(att.path);
+      await everything.fs.delete(att.path);
     } catch (err) {
       // Already gone is fine.
       if (!/not.?found|subject_does_not_exist/i.test(String(err?.code || err?.message || err))) throw err;

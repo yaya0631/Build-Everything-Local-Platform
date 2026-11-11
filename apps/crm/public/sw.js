@@ -14,7 +14,7 @@
  * refreshed. So the first visit needs the network; every one after it
  * doesn't.
  *
- * What is never cached: Puter's own API. Auth and KV calls must fail fast
+ * What is never cached: Everything's own API. Auth and KV calls must fail fast
  * offline so the app's outbox takes over - a stale cached answer there
  * would be a lie about the user's data.
  */
@@ -32,12 +32,12 @@ const SHELL_URLS = [
   './favicon.ico',
 ];
 
-/** Puter's own services: never served from cache. */
-const isPuterAPI = (url) => /(^|\.)puter\.(com|localhost)$/i.test(url.hostname)
+/** Everything's own services: never served from cache. */
+const isEverythingAPI = (url) => /(^|\.)everything\.(com|localhost)$/i.test(url.hostname)
   && !/^js\./i.test(url.hostname);
 
-/** The SDK itself, from Puter's CDN: cacheable, and needed to boot at all. */
-const isPuterSDK = (url) => /^js\.puter\.com$/i.test(url.hostname);
+/** The SDK itself, from Everything's CDN: cacheable, and needed to boot at all. */
+const isEverythingSDK = (url) => /^js\.everything\.com$/i.test(url.hostname);
 
 self.addEventListener('install', (event) => {
   event.waitUntil((async () => {
@@ -84,7 +84,7 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET') return;
   const url = new URL(request.url);
   if (url.protocol !== 'http:' && url.protocol !== 'https:') return;
-  if (isPuterAPI(url)) return;                    // let it fail, honestly
+  if (isEverythingAPI(url)) return;                    // let it fail, honestly
 
   // A navigation offline gets the cached shell: the app is a hash router,
   // so index.html is every route.
@@ -104,7 +104,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  if (url.origin === self.location.origin || isPuterSDK(url)) {
+  if (url.origin === self.location.origin || isEverythingSDK(url)) {
     event.respondWith(staleWhileRevalidate(request, RUNTIME));
   }
 });

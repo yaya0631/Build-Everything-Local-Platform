@@ -194,10 +194,10 @@ describe('createSnapshotStore', () => {
   });
 });
 
-describe('the Puter adapter', () => {
+describe('the Everything adapter', () => {
   it('refuses a name that would reach outside the snapshot folder', async () => {
     const calls = [];
-    const puter = {
+    const everything = {
       fs: {
         readdir: async () => [],
         read: async (p) => {
@@ -208,8 +208,8 @@ describe('the Puter adapter', () => {
         delete: async (p) => calls.push(p),
       },
     };
-    const { createPuterSnapshotFS } = await import('../src/core/snapshots.js');
-    const fs = createPuterSnapshotFS(puter);
+    const { createEverythingSnapshotFS } = await import('../src/core/snapshots.js');
+    const fs = createEverythingSnapshotFS(everything);
     await fs.read('snapshot-2026-08-20T09-00-00-000Z-daily.json');
     expect(calls[0]).toBe('shifts-snapshots/snapshot-2026-08-20T09-00-00-000Z-daily.json');
     await expect(fs.read('../../secrets.json')).rejects.toThrow(/Invalid snapshot name/);

@@ -6,7 +6,7 @@
  *   server: the server this user deployed, if any { name, path, build }
  *   last:   the desk they used most recently
  */
-import { sdk } from './puter.js';
+import { sdk } from './everything.js';
 import { USER_DOC_KEY } from '../shared/keys.js';
 
 export const deskRef = (server, desk) => `${server}/${desk}`;

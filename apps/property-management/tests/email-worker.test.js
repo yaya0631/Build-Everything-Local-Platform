@@ -1,5 +1,5 @@
 /**
- * The email worker, run against fake Puter objects: who may send, what is
+ * The email worker, run against fake Everything objects: who may send, what is
  * sent, duplicate skipping and the daily cap.
  */
 import { describe, it, expect, vi } from 'vitest';
@@ -36,8 +36,8 @@ function memoryKV() {
 function setup({ caller = true } = {}) {
   const sent = [];
   const kv = memoryKV();
-  const me = { puter: { kv, authToken: 'owner-token', email: { send: vi.fn(async (msg) => (sent.push(msg), {})) } } };
-  const user = caller ? { uuid: 'user-1', puter: { authToken: 'user-token' } } : null;
+  const me = { everything: { kv, authToken: 'owner-token', email: { send: vi.fn(async (msg) => (sent.push(msg), {})) } } };
+  const user = caller ? { uuid: 'user-1', everything: { authToken: 'user-token' } } : null;
   const routes = load();
   const send = async (body) => {
     const request = { json: async () => body, headers: new Map() };
@@ -62,7 +62,7 @@ describe('email worker', () => {
     expect((await res.json()).ok).toBe(true);
   });
 
-  it('refuses callers without a Puter session', async () => {
+  it('refuses callers without an Everything session', async () => {
     const { send, sent } = setup({ caller: false });
     expect((await send(body())).status).toBe(401);
     expect(sent).toHaveLength(0);
@@ -94,8 +94,8 @@ describe('email worker', () => {
   it('two identical requests at once send the message once', async () => {
     const { sent, routes, kv } = setup();
     // Handing a message over takes a moment, as it does for real.
-    const me = { puter: { kv, authToken: 'owner-token', email: { send: vi.fn(async (msg) => (await new Promise((r) => setTimeout(r, 20)), sent.push(msg), {})) } } };
-    const user = { uuid: 'user-1', puter: { authToken: 'user-token' } };
+    const me = { everything: { kv, authToken: 'owner-token', email: { send: vi.fn(async (msg) => (await new Promise((r) => setTimeout(r, 20)), sent.push(msg), {})) } } };
+    const user = { uuid: 'user-1', everything: { authToken: 'user-token' } };
     const send = async () => ({ data: await (await routes['POST /send']({ request: { json: async () => body(), headers: new Map() }, me, user })).json() });
     const [a, b] = await Promise.all([send(), send()]);
     expect(sent).toHaveLength(1);
@@ -108,8 +108,8 @@ describe('email worker', () => {
   it('a send that failed can be retried', async () => {
     const { send, sent, routes, kv } = setup();
     let fail = true;
-    const me = { puter: { kv, authToken: 'owner-token', email: { send: vi.fn(async (msg) => (fail ? Promise.reject(new Error('smtp down')) : (sent.push(msg), {}))) } } };
-    const user = { uuid: 'user-1', puter: { authToken: 'user-token' } };
+    const me = { everything: { kv, authToken: 'owner-token', email: { send: vi.fn(async (msg) => (fail ? Promise.reject(new Error('smtp down')) : (sent.push(msg), {}))) } } };
+    const user = { uuid: 'user-1', everything: { authToken: 'user-token' } };
     const post = async () => (await routes['POST /send']({ request: { json: async () => body(), headers: new Map() }, me, user })).json();
     expect((await post()).failed).toBe(1);
     fail = false;

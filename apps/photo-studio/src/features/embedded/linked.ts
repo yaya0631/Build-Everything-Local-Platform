@@ -1,6 +1,6 @@
 // Linked embedded objects: content placed from a file that stays associated
 // with it. The project keeps a cached copy, so it always opens; Update
-// Modified Content re-reads the file. Puter files are re-read from their
+// Modified Content re-reads the file. Everything files are re-read from their
 // path. A local file can be re-read only while this page holds its handle
 // (browsers allow no access by path), so after a reload Relink re-picks it.
 import type { Editor } from '../../editor';
@@ -8,7 +8,7 @@ import { allLayers, findLayer } from '../../model/document';
 import { contentsOf, type EmbeddedContents, type EmbedLink } from '../../model/embedded';
 import { cloudRead, cloudSaveAs, pickCloudFiles } from '../files/cloud';
 import { formDialog } from '../../ui/dialog';
-import { download } from '../../persistence/puter';
+import { download } from '../../persistence/everything';
 import { contentsFromFile, fittedTransform, insertInstance, instanceLayer, plainContents, setContents } from './contents';
 import { contentsFile, contentsFormats, fileAccept, pickLocalFiles, selectedObject } from './convert';
 import { handles, linkedIn, linkReaders, statuses, type FileHandle } from './link-state';
@@ -20,12 +20,12 @@ export async function sha256(blob: Blob) {
   const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', await blob.arrayBuffer()));
   return Array.from(digest, (b) => b.toString(16).padStart(2, '0')).join('');
 }
-/** The current bytes of a linked file when they can be read (Puter path, or
+/** The current bytes of a linked file when they can be read (Everything path, or
  * a local file whose handle this page holds); otherwise undefined. */
 export async function readLinkedFile(c: EmbeddedContents): Promise<Blob | undefined> {
   if (!c.link) return undefined;
   try {
-    if (c.link.kind === 'puter' && c.link.path) return await cloudRead(c.link.path);
+    if (c.link.kind === 'everything' && c.link.path) return await cloudRead(c.link.path);
     if (c.link.kind === 'library') return await linkReaders.library?.(c);
     const h = handles.get(c.id);
     return h ? await h.getFile() : undefined;
@@ -47,14 +47,14 @@ async function pickLocal(): Promise<{ file: File; handle?: FileHandle } | undefi
   const [file] = await pickLocalFiles(fileAccept());
   return file ? { file } : undefined;
 }
-async function linkFor(kind: 'local' | 'puter', blob: Blob, name: string, path?: string): Promise<EmbedLink> {
+async function linkFor(kind: 'local' | 'everything', blob: Blob, name: string, path?: string): Promise<EmbedLink> {
   return { kind, name, ...(path ? { path } : {}), size: blob.size, modified: blob instanceof File ? blob.lastModified : Date.now(), hash: await sha256(blob) };
 }
 
 type Picked = { blob: Blob; name: string; link: EmbedLink; handle?: FileHandle };
-/** Pick the file to link. The Puter picker never settles when dismissed, so
+/** Pick the file to link. The Everything picker never settles when dismissed, so
  * the editor is not held busy while it is open; `then` runs the work. */
-async function pickLinked(e: Editor, from: 'local' | 'puter', then: (p: Picked) => Promise<void>) {
+async function pickLinked(e: Editor, from: 'local' | 'everything', then: (p: Picked) => Promise<void>) {
   if (from === 'local') {
     const p = await pickLocal();
     if (p) await then({ blob: p.file, name: p.file.name, link: await linkFor('local', p.file, p.file.name), handle: p.handle });
@@ -65,25 +65,25 @@ async function pickLinked(e: Editor, from: 'local' | 'puter', then: (p: Picked) 
   if (!item) return;
   await e.run(async () => {
     const blob = await item.read();
-    await then({ blob, name: item.name, link: await linkFor('puter', blob, item.name, item.path) });
+    await then({ blob, name: item.name, link: await linkFor('everything', blob, item.name, item.path) });
   });
 }
 
-/** File → Place Linked… (local file) or Place Linked from Puter…. */
-export function placeLinked(e: Editor, from: 'local' | 'puter') {
+/** File → Place Linked… (local file) or Place Linked from Everything…. */
+export function placeLinked(e: Editor, from: 'local' | 'everything') {
   return pickLinked(e, from, async (picked) => {
     const c = { ...(await contentsFromFile(e, e.doc, e.assets, picked.blob, picked.name)), link: picked.link };
     if (picked.handle) handles.set(c.id, picked.handle);
     statuses.set(c.id, 'current');
     insertInstance(e, instanceLayer(c, c.name, fittedTransform(e.doc, c.width, c.height)), c, 'Place Linked');
-    e.message(`Placed ${picked.name} as a linked embedded object.${picked.handle || from === 'puter' ? '' : ' This browser gives no lasting access to the file; use Relink to File to update it later.'}`);
+    e.message(`Placed ${picked.name} as a linked embedded object.${picked.handle || from === 'everything' ? '' : ' This browser gives no lasting access to the file; use Relink to File to update it later.'}`);
   });
 }
 
 async function readLinked(c: EmbeddedContents): Promise<Blob | undefined> {
   const link = c.link!;
   try {
-    if (link.kind === 'puter' && link.path) return await cloudRead(link.path);
+    if (link.kind === 'everything' && link.path) return await cloudRead(link.path);
     if (link.kind === 'library') return await linkReaders.library?.(c);
     return await handles.get(c.id)?.getFile();
   } catch {
@@ -130,7 +130,7 @@ export async function relink(e: Editor) {
   const l = selectedObject(e);
   if (!l) return;
   const old = contentsOf(e.doc, l);
-  await pickLinked(e, old?.link?.kind === 'puter' ? 'puter' : 'local', async (picked) => {
+  await pickLinked(e, old?.link?.kind === 'everything' ? 'everything' : 'local', async (picked) => {
     const next = await contentsFromFile(e, e.doc, e.assets, picked.blob, picked.name);
     const id = old?.id ?? next.id;
     if (picked.handle) handles.set(id, picked.handle);
@@ -165,7 +165,7 @@ const saveTypes: Record<string, { description: string; accept: Record<string, st
 };
 
 /** Layer → Embedded Objects → Convert to Linked…: write the contents of an
- * embedded object to a file on this device or on Puter and link to it, so
+ * embedded object to a file on this device or on Everything and link to it, so
  * the file can be edited elsewhere and updated here. */
 export async function convertToLinked(e: Editor) {
   const l = selectedObject(e);
@@ -181,11 +181,11 @@ export async function convertToLinked(e: Editor) {
   const preferred = formats.find(([k]) => k === 'project')?.[0] ?? formats[0][0];
   const v = await formDialog('Convert to Linked', [
     { name: 'format', label: 'Save contents as', type: 'select', value: preferred, options: formats.filter(([k]) => k !== 'source' || !c.project) },
-    { name: 'to', label: 'Save to', type: 'select', value: 'device', options: [['device', 'This device'], ['puter', 'Puter']] },
+    { name: 'to', label: 'Save to', type: 'select', value: 'device', options: [['device', 'This device'], ['everything', 'Everything']] },
   ], 'Save and Link', `The contents of “${c.name}” are written to a file and the object links to it; edit the file elsewhere and use Update Modified Content to bring changes in.`);
   if (!v) return;
   const file = await contentsFile(e, c, v.format);
-  const link = async (kind: 'local' | 'puter', name: string, path?: string, handle?: FileHandle) => {
+  const link = async (kind: 'local' | 'everything', name: string, path?: string, handle?: FileHandle) => {
     const id = existing?.id ?? c.id;
     if (handle) handles.set(id, handle);
     statuses.set(id, kind === 'local' && !handle ? 'unavailable' : 'current');
@@ -202,12 +202,12 @@ export async function convertToLinked(e: Editor) {
     });
     e.message(`“${c.name}” is now linked to ${name}.${kind === 'local' && !handle ? ' This browser cannot keep access to the downloaded file; use Relink to File to update from it later.' : ''}`);
   };
-  if (v.to === 'puter') {
-    // The Puter picker never settles when dismissed; do not hold the editor.
+  if (v.to === 'everything') {
+    // The Everything picker never settles when dismissed; do not hold the editor.
     e.release();
     const item = await cloudSaveAs(file.blob, file.name);
     if (!item) return;
-    await e.run(() => link('puter', item.name, item.path));
+    await e.run(() => link('everything', item.name, item.path));
     return;
   }
   const picker = (window as unknown as { showSaveFilePicker?: SavePicker }).showSaveFilePicker;

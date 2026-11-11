@@ -1,9 +1,9 @@
 {
-  "name": "puter-meetings",
+  "name": "everything-meetings",
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Puter Meetings — realtime video meetings built entirely on Puter.js and the Puter Peer API.",
+  "description": "Everything Meetings — realtime video meetings built entirely on Everything.js and the Everything Peer API.",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

@@ -59,7 +59,7 @@ it('preserves Unicode spaces through HTML paste, edits, undo and metadata-free X
   expect(cellsFromHtmlRows(parseHtmlClipboard(html).rows).map(x => x.cell.v)).toEqual(values);
   const blob = await workbookToXlsx(wb), bytes = await new Promise(resolve => { const r = new FileReader(); r.onload = () => resolve(new Uint8Array(r.result)); r.readAsArrayBuffer(blob); });
   const zip = X.CFB.read(bytes, {type:'array'}), part = X.CFB.find(zip, '/xl/workbook.xml');
-  part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,'')); part.size = part.content.length;
+  part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,'')); part.size = part.content.length;
   const back = await workbookFromFile(X.CFB.write(zip, {type:'array',fileType:'zip'}), 'spaces.xlsx');
   expect(back.rangeValues(back.activeSheetId, {r1:0,c1:0,r2:0,c2:values.length-1})).toEqual([values]);
   expect(back.getValue(back.activeSheetId, 1, 0)).toBe(true);

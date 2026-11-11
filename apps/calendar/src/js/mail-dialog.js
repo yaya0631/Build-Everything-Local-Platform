@@ -30,7 +30,7 @@ const POLICY_OPTIONS = [
 // (see its connect()/suspensionMessage()), so this dialog never re-derives
 // error copy from a raw code.
 const STATE_MESSAGE = {
-  off: 'Not connected — connect to add invitations sent to your Puter mailbox automatically.',
+  off: 'Not connected — connect to add invitations sent to your Everything mailbox automatically.',
   connecting: 'Connecting…',
   ok: 'Connected — invitations are checked automatically.',
   foreground: 'Checked while the calendar is open.',
@@ -80,7 +80,7 @@ export function openMailDialog({ mailbox, intake, store, toast = defaultToast })
   }
 
   // connect()/reconnect() MUST be invoked directly from this click handler —
-  // puter.perms.request opens a popup and needs the user gesture right here,
+  // everything.perms.request opens a popup and needs the user gesture right here,
   // not after an intervening await.
   function runPrimaryAction(state) {
     if (busy) return;
@@ -228,8 +228,8 @@ export function openMailDialog({ mailbox, intake, store, toast = defaultToast })
         el('p', {
           class: 'muted',
           text:
-            "Calendar can read your Puter mailbox and run in the background to detect invitations. " +
-            'To revoke that access entirely, use Puter’s own app permissions settings.',
+            "Calendar can read your Everything mailbox and run in the background to detect invitations. " +
+            'To revoke that access entirely, use Everything’s own app permissions settings.',
         }),
       ]),
       el('div', { class: 'modal__foot' }, [

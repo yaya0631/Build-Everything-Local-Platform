@@ -44,7 +44,7 @@ it.each([false,true])('exports a stable live midpoint and reopens without changi
   const zip=X.CFB.read(new Uint8Array(await(await workbookToXlsx(wb)).arrayBuffer()),{type:'array'}),part=X.CFB.find(zip,'/xl/worksheets/sheet1.xml');
   const xml=new TextDecoder().decode(part.content);
   expect(xml).toContain('IFERROR(');expect(xml).not.toMatch(/NaN|Infinity/);
-  if(!privateData){const book=X.CFB.find(zip,'/xl/workbook.xml');book.content=new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,''));book.size=book.content.length;}
+  if(!privateData){const book=X.CFB.find(zip,'/xl/workbook.xml');book.content=new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,''));book.size=book.content.length;}
   wb=await workbookFromFile(X.CFB.write(zip,{type:'array',fileType:'zip'}),'midpoints.xlsx');
   expect(values.map((_,r)=>look(wb,r))).toEqual(expected);
  }

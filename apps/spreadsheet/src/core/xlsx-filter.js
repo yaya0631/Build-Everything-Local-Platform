@@ -258,7 +258,7 @@ export function writeXlsxFilter(filter, numbersByText = null) {
     if (typeof crit.native === 'string' && crit.native) {
       const colour = /^<colorFilter\b/.test(crit.native) ? (['0', 'false'].includes(attr(crit.native.match(/^<[^>]*>/)[0], 'cellColor')) ? ['ink', crit.ink] : ['fill', crit.color]) : null;
       if (!colour) body = crit.native;
-      else if (/^#[\da-f]{6}$/i.test(colour[1] || '')) body = crit.native.replace(/\bdxfId="[^"]*"/, `dxfId="puter-${colour[0]}-${colour[1].slice(1).toLowerCase()}"`);
+      else if (/^#[\da-f]{6}$/i.test(colour[1] || '')) body = crit.native.replace(/\bdxfId="[^"]*"/, `dxfId="everything-${colour[0]}-${colour[1].slice(1).toLowerCase()}"`);
     }
     else if (Array.isArray(crit.values)) {
       const shown = crit.values.filter((value) => value !== '');

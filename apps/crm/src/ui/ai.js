@@ -115,7 +115,7 @@ function openPasteSheet({ kind, fields, onFilled }) {
     focusFirst: true,
     content: el('div', {},
       el('p.settings-note.sheet-note', {},
-        'What you paste is sent to your Puter AI to be read back as fields. Nothing is saved until you save the form.'),
+        'What you paste is sent to your Everything AI to be read back as fields. Nothing is saved until you save the form.'),
       el('div.settings-body', {},
         el('div.field', {},
           el('label.field-label', { for: 'ai-paste' }, 'Text to read'),
@@ -241,7 +241,7 @@ function openSummary(text, who) {
           el('label.field-label.sr-only', { for: 'ai-summary' }, 'Summary'),
           area,
           el('p.field-hint', {},
-            'Written by your Puter AI from this record’s own history. Nothing is saved - copy what is useful.')
+            'Written by your Everything AI from this record’s own history. Nothing is saved - copy what is useful.')
         )
       ),
       el('div.form-actions', {},

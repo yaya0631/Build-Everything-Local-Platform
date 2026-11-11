@@ -13,7 +13,7 @@ import { formatSize } from './format.js';
 
 // The domains a sender may claim in `From:`. Recipients are unrestricted;
 // these only decide what this user is allowed to send *as*.
-export const PUTER_DOMAINS = ['puter.email'];
+export const EVERYTHING_DOMAINS = ['everything.email'];
 
 // Bare mailbox addresses only. Header punctuation and control characters must
 // never reach the delivery loop as part of an address.
@@ -237,7 +237,7 @@ const nameParams = (key, filename) => {
 
 // Boundaries must not occur in any part; a uuid contains no base64 character
 // and no character the encoders emit, so it cannot collide with a body.
-export const makeBoundary = () => `--=_puter_${crypto.randomUUID()}`;
+export const makeBoundary = () => `--=_everything_${crypto.randomUUID()}`;
 
 const base64Lines = (bytes) => (bytesToBase64(bytes).match(/.{1,76}/g) ?? []).join(CRLF);
 

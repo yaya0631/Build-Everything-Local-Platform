@@ -1,12 +1,12 @@
 // Save As / Save a Copy / Export File dialog, modelled on a pro editor's
-// export dialog: file name, location (a Puter folder or this device), format,
+// export dialog: file name, location (an Everything folder or this device), format,
 // sample type (with a Change... page for rate, channels, bit depth and
 // dither), format settings, metadata/markers and an estimated size.
 
 import { h } from '../lib/dom.js';
 import { icon } from '../ui/icons.js';
 import { openDialog } from '../ui/dialog.js';
-import * as puter from '../storage/puter.js';
+import * as everything from '../storage/everything.js';
 import { FORMATS, getFormat, conformOptions, defaultOptions, estimateSize, formatBytesShort, describeSampleType, describeSettings, usesDither, withExtension, sanitizeFileName, channelLabel, COMMON_RATES, docBitDepth, formatForName } from './formats.js';
 import { DITHER_MODES } from '../audio/quantize.js';
 import { codecSupported } from './webcodecs.js';
@@ -47,15 +47,15 @@ export function initialState(doc, { mode, frames, remembered = {}, includeMeta }
 }
 
 /**
- * Shows the dialog. Resolves { fileName, location: { type: 'puter', dir } | { type: 'download' }, options } or null.
+ * Shows the dialog. Resolves { fileName, location: { type: 'everything', dir } | { type: 'download' }, options } or null.
  */
 export async function exportFileDialog(app, doc, { mode = 'export', frames = doc.length, initialName } = {}) {
   const remembered = app.prefs.get('exportPrefs') || {};
   const state = initialState(doc, { mode, frames, remembered, includeMeta: app.prefs.get('exportMarkers') !== false });
   if (initialName) state.name = withExtension(initialName, state.options.format);
   const support = await webCodecsSupport();
-  const sdk = Boolean(puter.sdk());
-  let locationType = mode === 'download' || !sdk ? 'download' : app.prefs.get('exportLocation') === 'download' ? 'download' : 'puter';
+  const sdk = Boolean(everything.sdk());
+  let locationType = mode === 'download' || !sdk ? 'download' : app.prefs.get('exportLocation') === 'download' ? 'download' : 'everything';
   let dir = app.prefs.get('exportFolder') || null;
   let notes = [];
 
@@ -64,7 +64,7 @@ export async function exportFileDialog(app, doc, { mode = 'export', frames = doc
   const locSelect = h(
     'select.select',
     { 'aria-label': 'Location' },
-    h('option', { value: 'puter', disabled: !sdk }, sdk ? 'Puter folder' : 'Puter folder (not available offline)'),
+    h('option', { value: 'everything', disabled: !sdk }, sdk ? 'Everything folder' : 'Everything folder (not available offline)'),
     h('option', { value: 'download' }, 'This device (download)'),
   );
   locSelect.value = locationType;
@@ -130,9 +130,9 @@ export async function exportFileDialog(app, doc, { mode = 'export', frames = doc
   // ----------------------------------------------------------------- logic
   const fmt = () => getFormat(state.options.format);
   const showDir = () => {
-    const puterLoc = locSelect.value === 'puter';
-    locRow.querySelector('.io-loc-path').hidden = !puterLoc;
-    dirText.textContent = dir || `~/${puter.APP_DIR}`;
+    const everythingLoc = locSelect.value === 'everything';
+    locRow.querySelector('.io-loc-path').hidden = !everythingLoc;
+    dirText.textContent = dir || `~/${everything.APP_DIR}`;
     dirText.title = dirText.textContent;
   };
   const renderSettings = () => {
@@ -183,8 +183,8 @@ export async function exportFileDialog(app, doc, { mode = 'export', frames = doc
   browse.addEventListener('click', async () => {
     error.textContent = '';
     try {
-      if (!puter.isSignedIn() && !(await puter.signIn())) return;
-      const item = await puter.pickDirectory();
+      if (!everything.isSignedIn() && !(await everything.signIn())) return;
+      const item = await everything.pickDirectory();
       if (item?.path) {
         dir = item.path;
         showDir();
@@ -246,8 +246,8 @@ export async function exportFileDialog(app, doc, { mode = 'export', frames = doc
   };
 
   refresh();
-  // Resolve the default Puter folder in the background.
-  if (!dir && sdk && puter.isSignedIn()) puter.appDir().then((d) => {
+  // Resolve the default Everything folder in the background.
+  if (!dir && sdk && everything.isSignedIn()) everything.appDir().then((d) => {
     if (!dir) {
       dir = d;
       showDir();
@@ -293,7 +293,7 @@ export async function exportFileDialog(app, doc, { mode = 'export', frames = doc
   window.removeEventListener('keydown', escape, true);
   if (result !== 'ok') return null;
   const fileName = withExtension(sanitizeFileName(nameInput.value), state.options.format);
-  const location = locSelect.value === 'puter' ? { type: 'puter', dir: dir || null } : { type: 'download' };
+  const location = locSelect.value === 'everything' ? { type: 'everything', dir: dir || null } : { type: 'download' };
   // Remember choices for next time.
   app.prefs.set('exportPrefs', {
     format: state.options.format,

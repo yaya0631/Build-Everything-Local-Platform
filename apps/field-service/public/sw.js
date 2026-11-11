@@ -1,12 +1,12 @@
 /*
  * Offline support for the app shell. Data never goes through here: records
- * come from Puter and are cached by the app itself in IndexedDB.
+ * come from Everything and are cached by the app itself in IndexedDB.
  *
  * - Page loads: network first, falling back to the cached shell offline.
  * - Hashed build assets: cache first (their names change with every build),
  *   kept for the current release and the one before it.
  * - Other same-origin files (icons, manifest): stale while revalidate.
- * - Cross-origin requests (Puter's API and SDK) are never touched.
+ * - Cross-origin requests (Everything's API and SDK) are never touched.
  */
 const CACHE = 'field-service-v2';
 // Build files go in one cache per release, numbered: a new release starts

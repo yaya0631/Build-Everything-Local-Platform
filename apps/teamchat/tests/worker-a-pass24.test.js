@@ -330,12 +330,12 @@ describe('an upload declared larger than the route allows is refused before its 
 });
 
 /**
- * A Puter account renamed: the handle on every card of theirs follows (see
+ * An Everything account renamed: the handle on every card of theirs follows (see
  * ensureProfile), and so does the card on a workspace the account's record
  * here did not list yet (a moved workspace opened here for the first time,
  * a join cut short), which used to keep the old handle for good.
  */
-describe('a Puter account renamed', () => {
+describe('an Everything account renamed', () => {
   const robert = { uuid: bob.uuid, username: 'robert' };
 
   it('folds the new handle into every card the record lists, and the mention moves with it', async () => {

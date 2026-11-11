@@ -1,4 +1,4 @@
-/** Small shared helpers with no DOM or Puter dependency. */
+/** Small shared helpers with no DOM or Everything dependency. */
 
 /** Collision-resistant id: time prefix keeps ids roughly sortable. */
 export function uid() {

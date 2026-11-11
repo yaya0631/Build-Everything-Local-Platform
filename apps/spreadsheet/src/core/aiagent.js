@@ -5,7 +5,7 @@
  * question put to the user before a change that takes away data all come from the caller, so the
  * whole exchange can be played out in a test with a scripted model.
  *
- * The transcript is kept in the shape Puter's AI takes (OpenAI's): user, assistant (with its
+ * The transcript is kept in the shape Everything's AI takes (OpenAI's): user, assistant (with its
  * tool_calls), and one tool message answering each call. Every call gets an answer, even one the
  * user declined or stopped, or the next request would be refused as malformed.
  */
@@ -15,7 +15,7 @@ import { dataBounds, describeRange } from './aiformula.js';
 import { TOOLS, TOOL_NAMES, changesWorkbook, qualified } from './aitools.js';
 import { attachmentsIntro, attachmentsGone, attachmentWeight, attachmentsFit, sentBytes } from './aiattach.js';
 
-/** The model the assistant runs on, through Puter's AI. */
+/** The model the assistant runs on, through Everything's AI. */
 export const AI_MODEL = 'claude-opus-5-5';
 
 /** When the assistant asks before changing the workbook: before every change, before one that takes away data, or never. */
@@ -229,7 +229,7 @@ const newCallId = () => `call_${Date.now().toString(36)}_${(++callSeq).toString(
 
 /**
  * An assistant for one workbook. `chat(messages, { model, tools })` is an async iterable of
- * { type: 'text', text } and { type: 'tool', id, name, input } (lib/puter.js aiChatStream).
+ * { type: 'text', text } and { type: 'tool', id, name, input } (lib/everything.js aiChatStream).
  * `runTool(name, args, control)` → { ok, content, changed, target }, or a promise of it (control.waiting(note)
  * shows why it waits, control.stopped() says the user has stopped it meanwhile); `describe(name, args)` → { label,
  * destructive, detail }; `ready(name, args, control)` → null, or a promise a change waits on before it is described

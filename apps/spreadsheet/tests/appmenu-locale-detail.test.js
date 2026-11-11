@@ -10,7 +10,7 @@ let anchor;
 beforeEach(() => {
   vi.stubGlobal('localStorage', memoryStorage());
   vi.stubGlobal('matchMedia', () => ({ matches: false, addEventListener() {}, removeEventListener() {} }));
-  vi.stubGlobal('puter', {
+  vi.stubGlobal('everything', {
     env: 'web',
     auth: { isSignedIn: () => false, signIn: vi.fn(), getUser: async () => null, signOut: vi.fn() },
     kv: { get: async () => null, set: async () => true },

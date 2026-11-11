@@ -3,10 +3,10 @@ import { Store } from '../src/lib/store.js';
 import { AuditJournal, auditActionLabel, auditChanges, auditCSV, pruneProvenance } from '../src/lib/audit.js';
 import { readKV, compareAndSetKV } from '../src/lib/kv.js';
 import { fullyDiluted, dbAsOf, modelRound } from '../src/lib/captable.js';
-import { puterBackend, deferred } from './helpers/puter-kv.js';
+import { everythingBackend, deferred } from './helpers/everything-kv.js';
 
 let backend;
-beforeEach(() => { backend = puterBackend(); backend.install(); });
+beforeEach(() => { backend = everythingBackend(); backend.install(); });
 const reload = async () => { const s = new Store(); await s.init(); return s; };
 async function fixture() {
   const s = await reload();
@@ -111,7 +111,7 @@ describe('permanent audit records', () => {
 
   it('records attachment metadata under the document action without retaining file contents', async () => {
     const { s, sec } = await fixture();
-    puter.fs = { write: async () => {}, delete: async () => {} };
+    everything.fs = { write: async () => {}, delete: async () => {} };
     await s.attachToSecurity(sec.id, { name: 'agreement.pdf', size: 123 });
     const event = (await s.exportAudit()).events[0];
     expect(event.operation).toBe('attachDocument');
@@ -215,19 +215,19 @@ describe('permanent audit records', () => {
   it('finishes a company deletion, and its file cleanup, when the audit purge hits a transient failure', async () => {
     const { s, sec, journal } = await fixture();
     const files = new Map();
-    puter.fs = { write: async (path, file) => files.set(path, file), delete: async (path) => files.delete(path) };
+    everything.fs = { write: async (path, file) => files.set(path, file), delete: async (path) => files.delete(path) };
     await s.attachToSecurity(sec.id, { name: 'agreement.pdf', size: 123 });
     expect(files.size).toBe(1);
     const doomed = s.activeCompanyId;
     await s.createCompany('Other');
-    const get = puter.kv.get;
+    const get = everything.kv.get;
     let failed = false;
-    puter.kv.get = async (key) => {
+    everything.kv.get = async (key) => {
       if (!failed && key.startsWith(journal.prefix) && key.endsWith(':node')) { failed = true; throw new Error('network blip'); }
       return get(key);
     };
     await s.deleteCompany(doomed);
-    puter.kv.get = get;
+    everything.kv.get = get;
     expect(s.companies.some((c) => c.id === doomed)).toBe(false);
     expect(files.size).toBe(0);
     await expect(journal.page()).rejects.toThrow(/deleted/);
@@ -387,21 +387,21 @@ describe('durable decisions and recovery', () => {
 
   it('blocks business publication when audit intent persistence fails', async () => {
     const { s, holder } = await fixture();
-    const set = puter.kv.set;
-    puter.kv.set = async (key, value) => {
+    const set = everything.kv.set;
+    everything.kv.set = async (key, value) => {
       if (/:audit:v1:.*:part:0$/.test(key)) throw new Error('audit storage offline');
       return set(key, value);
     };
     await expect(s.updateStakeholder(holder.id, { name: 'Lost' })).rejects.toThrow('audit storage offline');
-    puter.kv.set = set;
+    everything.kv.set = set;
     expect((await reload()).stakeholder(holder.id).name).toBe('Founder');
   });
 
   it('compensates business writes if a completed decision cannot be published', async () => {
     const { s, holder } = await fixture();
-    const set = puter.kv.set;
+    const set = everything.kv.set;
     let fail = true;
-    puter.kv.set = async (key, value) => {
+    everything.kv.set = async (key, value) => {
       if (fail && /:decision:revision:.*:value$/.test(key) && JSON.parse(value).status === 'completed') {
         fail = false; throw new Error('decision offline');
       }
@@ -415,16 +415,16 @@ describe('durable decisions and recovery', () => {
   it('preserves a file when the completed attachment transaction loses all acknowledgements', async () => {
     const { s, sec } = await fixture();
     const files = new Map();
-    puter.fs = { write: async (path, file) => files.set(path, file), delete: async (path) => files.delete(path) };
-    const add = puter.kv.add, get = puter.kv.get;
+    everything.fs = { write: async (path, file) => files.set(path, file), delete: async (path) => files.delete(path) };
+    const add = everything.kv.add, get = everything.kv.get;
     let fail = true;
-    puter.kv.add = async (key, values) => {
+    everything.kv.add = async (key, values) => {
       const valueKey = key.replace(/:revision:[^:]+:next$/, `:revision:${values[0].__captableRevision}:value`);
       const payload = JSON.parse(backend.values.get(valueKey) || 'null');
       const result = await add(key, values);
       if (fail && key.includes(':decision:') && payload?.status === 'completed') {
         fail = false;
-        puter.kv.get = async () => { throw new Error('offline'); };
+        everything.kv.get = async () => { throw new Error('offline'); };
         throw new Error('lost acknowledgement');
       }
       return result;
@@ -432,7 +432,7 @@ describe('durable decisions and recovery', () => {
     await expect(s.attachToSecurity(sec.id, { name: 'agreement.pdf', size: 123 })).rejects.toThrow('offline');
     expect(s.unsaved).toBe(true);
     expect(files.size).toBe(1);
-    puter.kv.get = get;
+    everything.kv.get = get;
     expect(await s.retryUnsaved()).toBe(true);
     const attachment = s.security(sec.id).attachments[0];
     expect(files.has(attachment.path)).toBe(true);
@@ -441,9 +441,9 @@ describe('durable decisions and recovery', () => {
 
   it('reads a coherent before-state while another tab is publishing, without cancelling it', async () => {
     const { s, holder } = await fixture();
-    const started = deferred(), release = deferred(), add = puter.kv.add;
+    const started = deferred(), release = deferred(), add = everything.kv.add;
     let pause = true;
-    puter.kv.add = async (key, values) => {
+    everything.kv.add = async (key, values) => {
       if (pause && key.startsWith(`captable:${s.activeCompanyId}:securities:v1:`)) {
         pause = false; started.resolve(); await release.promise;
       }
@@ -501,9 +501,9 @@ describe('durable decisions and recovery', () => {
 
   it('tells a saver whose in-flight transaction another tab recovered that the cap table changed elsewhere', async () => {
     const { s, holder } = await fixture();
-    const started = deferred(), release = deferred(), add = puter.kv.add;
+    const started = deferred(), release = deferred(), add = everything.kv.add;
     let armed = true;
-    puter.kv.add = async (key, values) => {
+    everything.kv.add = async (key, values) => {
       const result = await add(key, values);
       // The business publication has landed; hold the save before it completes.
       if (armed && key.startsWith(`captable:${s.activeCompanyId}:stakeholders:v1:`)) { armed = false; started.resolve(); await release.promise; }

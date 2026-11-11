@@ -1,11 +1,11 @@
 /**
- * Video from a description, or from a picture, through Puter AI
- * (puter.ai.txt2vid). A clip can start from a picture (image to video),
+ * Video from a description, or from a picture, through Everything AI
+ * (everything.ai.txt2vid). A clip can start from a picture (image to video),
  * end on one (a bridge between two shots), or both.
  *
  * The provider's address for the clip is temporary and may not allow the
  * browser to read it, so the clip is written into the app's own folder in
- * Puter first (puter_output_path), read from there and the copy removed;
+ * Everything first (everything_output_path), read from there and the copy removed;
  * where that is refused, the address is read directly.
  *
  * txt2vid, the file system and fetch are injectable for tests.
@@ -18,13 +18,13 @@ export const VIDEO_PROMPT_MAX = 1500;
 
 /**
  * The video models offered in the assistant's settings, newest and best
- * first (from Puter's catalog). t2v is used for a clip from words alone,
+ * first (from Everything's catalog). t2v is used for a clip from words alone,
  * i2v when a first frame goes with it (null: the model works from words
  * only, and a clip that starts from a picture is made with
  * FRAME_FALLBACK instead). endFrame: it can also end on a picture.
  * seconds: the lengths it makes ({ min, max }, a list of choices, or null
  * when the model picks). res: the short side asked for. centsPerSecond:
- * Puter's price, for the estimate shown before a clip is made.
+ * Everything's price, for the estimate shown before a clip is made.
  *
  * The ids of the first three models offered (wan, seedance, veo) are kept,
  * as settings remember them.
@@ -173,7 +173,7 @@ export function fitSeconds(model, seconds) {
   return Math.round(Math.min(m.seconds.max, Math.max(m.seconds.min, want)));
 }
 
-/** About what a clip costs, in US cents, at Puter's price for the model (a model that picks its length is counted at 5 s). */
+/** About what a clip costs, in US cents, at Everything's price for the model (a model that picks its length is counted at 5 s). */
 export function estimateCents(model, seconds) {
   const m = typeof model === 'string' ? videoModel(model) : model;
   return Math.round(m.centsPerSecond * (fitSeconds(m, seconds) ?? DEFAULT_SECONDS));
@@ -191,7 +191,7 @@ export function modelSummary(id) {
 export const formatCents = (cents) => (cents < 99.5 ? `${Math.max(1, Math.round(cents))}¢` : `$${(cents / 100).toFixed(2)}`);
 
 /**
- * Options for puter.ai.txt2vid. firstFrame and lastFrame are data URIs (or
+ * Options for everything.ai.txt2vid. firstFrame and lastFrame are data URIs (or
  * web addresses); a last frame without a first one is sent as the first, as
  * the models need one to end on another. A model that can't start from a
  * picture is swapped for FRAME_FALLBACK (modelForFrames). aspect applies to
@@ -218,7 +218,7 @@ export function txt2vidOptions({ prompt, model = DEFAULT_VIDEO_MODEL, seconds, a
   if (typeof sound === 'boolean') out.generate_audio = sound;
   const neg = String(negativePrompt || '').trim().slice(0, 500);
   if (neg) out.negative_prompt = neg;
-  if (outputPath) out.puter_output_path = outputPath;
+  if (outputPath) out.everything_output_path = outputPath;
   if (testMode) out.test_mode = true;
   return out;
 }
@@ -228,7 +228,7 @@ export function videoErrorMessage(err) {
   const code = String(err?.code || err?.error?.code || '');
   const why = String(err?.errorCode || err?.error?.errorCode || '');
   if (why === 'moderation_flagged' || code === 'moderation_flagged') return 'The request was declined by the content filter. Try a different description or picture.';
-  if (code === 'insufficient_funds') return 'Your Puter balance is too low to make this video. A shorter clip may fit.';
+  if (code === 'insufficient_funds') return 'Your Everything balance is too low to make this video. A shorter clip may fit.';
   if (code === 'upstream_timeout') return 'The video took too long to make. Try again, or ask for a shorter clip.';
   if (code === 'upstream_failed') return 'The video service could not make this clip. Try again.';
   if (code === 'prompt_required') return 'Describe the video first.';
@@ -296,10 +296,10 @@ let tempSeq = 0;
 const tempPath = () => `video-studio/.ai-temp/${Date.now().toString(36)}-${(++tempSeq).toString(36)}.mp4`;
 
 const defaultTxt2vid = (options) => {
-  if (typeof puter === 'undefined' || !puter.ai?.txt2vid) throw new Error('Video generation needs Puter.');
-  return puter.ai.txt2vid(options);
+  if (typeof everything === 'undefined' || !everything.ai?.txt2vid) throw new Error('Video generation needs Everything.');
+  return everything.ai.txt2vid(options);
 };
-const defaultFs = () => (typeof puter !== 'undefined' ? puter.fs : null);
+const defaultFs = () => (typeof everything !== 'undefined' ? everything.fs : null);
 
 /**
  * Make a clip: { blob, prompt, options }. opts are txt2vidOptions' (with
@@ -327,6 +327,6 @@ export async function generateVideo(opts = {}, { txt2vid = defaultTxt2vid, fs = 
       throw new Error(videoErrorMessage(again), { cause: again });
     }
   }
-  const blob = await videoBlobFrom(result, { savedPath: options.puter_output_path || null, fs, fetchFn });
+  const blob = await videoBlobFrom(result, { savedPath: options.everything_output_path || null, fs, fetchFn });
   return { blob, prompt, options };
 }

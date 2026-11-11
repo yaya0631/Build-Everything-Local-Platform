@@ -35,7 +35,7 @@ Google Workspace is the source of truth for who is active: someone deactivated o
 5. Select `syncWhiteboard` and **Run**. Approve the permissions, then read the execution log. Remove `DRY_RUN` (or set it to `false`) and run it again.
 6. Under **Triggers**, add a time-driven trigger for `syncWhiteboard`, for example every 15 minutes.
 
-People then sign in to Puter with **Sign in with Google** and verify their work address once (**Verify your email** in the board library); their provisioned role, license, and teams apply from then on.
+People then sign in to Everything with **Sign in with Google** and verify their work address once (**Verify your email** in the board library); their provisioned role, license, and teams apply from then on.
 
 ## Notes
 

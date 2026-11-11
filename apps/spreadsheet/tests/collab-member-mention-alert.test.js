@@ -50,9 +50,9 @@ afterEach(() => {
 it('tells someone who joined a shared workbook when a co-author mentions them in a comment', async () => {
   const env = environment();
   const wb = new Workbook({ sheets: [{ name: 'Plan' }] });
-  const room = await RoomClient.create({ puter: env.sdk(owner), server: SERVER, wb, name: 'Plan' });
+  const room = await RoomClient.create({ everything: env.sdk(owner), server: SERVER, wb, name: 'Plan' });
   const join = async (u, token) => {
-    const client = new RoomClient({ puter: env.sdk(u), server: SERVER, room, token, store: memoryOutbox(), poll: 50, noPeers: true });
+    const client = new RoomClient({ everything: env.sdk(u), server: SERVER, room, token, store: memoryOutbox(), poll: 50, noPeers: true });
     clients.push(client);
     await client.open();
     return client;

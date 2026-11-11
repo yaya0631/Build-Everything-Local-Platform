@@ -14,7 +14,7 @@ Make each order easy to get right. Scan a barcode or tap a product, choose sizes
 
 Keep a closer eye on your business with low-stock alerts, stock counts, customer purchase history, loyalty rewards, and store credit. See sales trends and your strongest products, then explore gross profit and margins when you record product costs. Reconcile the cash drawer at closing and export records for your bookkeeping.
 
-Your shop data is stored in your own Puter account, with automatic restore points and downloadable backups. After an online sign-in and initial load, a prepared device can reopen the register and record sales offline, then sync queued sales when the connection returns. History, catalog edits, and refunds require a connection. Card processing takes place on your separate payment terminal.
+Your shop data is stored in your own Everything account, with automatic restore points and downloadable backups. After an online sign-in and initial load, a prepared device can reopen the register and record sales offline, then sync queued sales when the connection returns. History, catalog edits, and refunds require a connection. Card processing takes place on your separate payment terminal.
 
 ## Key features
 
@@ -25,7 +25,7 @@ Your shop data is stored in your own Puter account, with automatic restore point
 - **Handle returns clearly** with full or partial refunds, separate refund receipts, and printable or shareable receipts.
 - **Understand what earns more** with sales trends, top products, payment breakdowns, and gross profit and margins where costs are recorded.
 - **Close the day confidently** by recording your opening float, cash movements, counted cash, and any difference from the expected balance.
-- **Keep control of your records** with your own Puter storage, automatic restore points, full backups, and CSV exports.
+- **Keep control of your records** with your own Everything storage, automatic restore points, full backups, and CSV exports.
 
 ## Who it's for
 

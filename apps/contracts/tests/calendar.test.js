@@ -2,8 +2,8 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { store } from '../src/lib/store.js';
 import { publishFeed, revokeFeed, regenerateFeed, FEED_PATH } from '../src/lib/calendar.js';
 
-/** Puter stand-in with a hosting API, so the feed paths are exercised whole. */
-function mockPuter() {
+/** Everything stand-in with a hosting API, so the feed paths are exercised whole. */
+function mockEverything() {
   const kv = new Map();
   const files = new Map();
   const sites = new Map();
@@ -40,15 +40,15 @@ describe('calendar feed', () => {
   let mock;
 
   beforeEach(async () => {
-    mock = mockPuter();
-    globalThis.puter = mock;
+    mock = mockEverything();
+    globalThis.everything = mock;
     await store.importAll({ settings: {}, contracts: [], contacts: [] });
   });
 
   it('mints a subdomain that is a secret, not a readable id', async () => {
     const url = await publishFeed();
     // 24 characters of CSPRNG over a 32-symbol alphabet: 120 bits.
-    expect(url).toMatch(/^https:\/\/cm-[a-z2-9]{24}\.puter\.site\/deadlines\.ics$/);
+    expect(url).toMatch(/^https:\/\/cm-[a-z2-9]{24}\.everything\.site\/deadlines\.ics$/);
 
     const token = (u) => u.match(/cm-([a-z2-9]+)\./)[1];
     const second = await publishFeed();

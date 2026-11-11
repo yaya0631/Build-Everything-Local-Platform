@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { expect, it } from 'vitest';
 import { formatBytes } from '../src/ui/dom.js';
-import { sanitizeName, ensureXlsx } from '../src/lib/puter.js';
+import { sanitizeName, ensureXlsx } from '../src/lib/everything.js';
 
 // A size just under a megabyte read "1024 KB", and anything from a gigabyte up was given in thousands of MB.
 it('shows a size in the unit its rounded figure belongs to, up to gigabytes', () => {

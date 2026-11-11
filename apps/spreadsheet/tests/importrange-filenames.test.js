@@ -1,7 +1,7 @@
 import { expect, it } from 'vitest';
 import { IMPORT_EXTENSIONS } from '../src/core/io.js';
 import { resolveImportPath } from '../src/core/importrange.js';
-import { ensureXlsx } from '../src/lib/puter.js';
+import { ensureXlsx } from '../src/lib/everything.js';
 
 it.each(IMPORT_EXTENSIONS)('keeps the supported %s extension for local names and explicit paths', (ext) => {
   for (const suffix of [ext, ext.toUpperCase()]) {

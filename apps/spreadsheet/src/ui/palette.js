@@ -27,7 +27,7 @@ export function paletteCommands(flags = {}) {
   const list = [
     c('New spreadsheet', 'File', 'filePlus', 'new'),
     flags.templates && c('New from template…', 'File', 'sparkle', 'newFromTemplate'),
-    flags.pick && c('Open from Puter…', 'File', 'folderOpen', 'open', null, { shortcut: `${M}+O` }),
+    flags.pick && c('Open from Everything…', 'File', 'folderOpen', 'open', null, { shortcut: `${M}+O` }),
     c('Import from device…', 'File', 'upload', 'import', null, { keywords: 'xlsx csv ods upload file' }),
     c('Import into this spreadsheet…', 'File', 'sheet', 'importSheets', null, { keywords: 'add sheets from file' }),
     c('Import from URL…', 'File', 'external', 'importUrl', null, { keywords: 'web address fetch csv xlsx download link' }),
@@ -146,7 +146,7 @@ export function paletteCommands(flags = {}) {
     flags.hasNote && c('Delete note', 'Insert', 'trash', 'deleteNote', null, { keywords: 'comment remove' }),
     c('Chart…', 'Insert', 'chartColumn', 'insertChart', null, { keywords: 'graph bar line pie' }),
     c('Image…', 'Insert', 'image', 'insertImage', null, { keywords: 'picture upload' }),
-    flags.pick && c('Image from Puter…', 'Insert', 'folderOpen', 'insertImagePuter', null, { keywords: 'picture cloud storage drive logo' }),
+    flags.pick && c('Image from Everything…', 'Insert', 'folderOpen', 'insertImageEverything', null, { keywords: 'picture cloud storage drive logo' }),
     c('Image from URL…', 'Insert', 'external', 'insertImageUrl', null, { keywords: 'picture web address link logo' }),
     c('Place picture in cell…', 'Insert', 'placeInCell', 'insertImage', 'cell', { keywords: 'image in cell value photo logo' }),
     flags.cellPicture && c('Place the cell picture over cells', 'Insert', 'placeOverCells', 'placeOverCells', null, { keywords: 'image float picture' }),

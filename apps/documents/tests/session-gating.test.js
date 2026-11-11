@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Doc, AUTOSAVE_MS, RETRY_MS, SIGN_IN_TO_SAVE, versioning } from '../src/lib/doc.js';
 import { session } from '../src/lib/session.js';
 
-describe('saving without a Puter session', () => {
+describe('saving without an Everything session', () => {
   let write, sdk;
   beforeEach(() => {
     vi.useFakeTimers();
@@ -19,7 +19,7 @@ describe('saving without a Puter session', () => {
       },
       fs: { mkdir: async () => {}, stat: async () => null, write },
     };
-    vi.stubGlobal('puter', sdk);
+    vi.stubGlobal('everything', sdk);
   });
   afterEach(() => {
     session.state = 'unknown';

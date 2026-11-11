@@ -1,6 +1,6 @@
 /**
  * Every photo and document attached anywhere in the fleet, in one list.
- * Files live in the app's Puter folder; records hold small references.
+ * Files live in the app's Everything folder; records hold small references.
  */
 import { h } from '../ui/dom.js';
 import { icon } from '../ui/icons.js';

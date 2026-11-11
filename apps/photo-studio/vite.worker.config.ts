@@ -1,5 +1,5 @@
 // Bundles the room worker (src/collab/server) that owners deploy to their
-// Puter account for shared documents: npm run build:worker writes
+// Everything account for shared documents: npm run build:worker writes
 // public/worker/photo-studio-worker.js. The build identifier is a hash of the
 // bundle itself, so any change to the worker triggers an update on the next
 // share.

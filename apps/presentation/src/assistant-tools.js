@@ -1,6 +1,6 @@
 // The AI assistant's tools: what the model may read and change in the open
 // presentation, described for the model (TOOLS, in the function-calling shape
-// Puter's AI takes) and carried out on the deck (runTool). Nothing here
+// Everything's AI takes) and carried out on the deck (runTool). Nothing here
 // touches the page. What only the editor can do arrives through `env`:
 //
 //   pres()             the open presentation

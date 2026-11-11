@@ -4,10 +4,10 @@ import { PDFDocument, PDFName, StandardFonts } from 'pdf-lib';
 import { readFile } from 'node:fs/promises';
 import fontkit from '@pdf-lib/fontkit';
 
-const PUTER_MOCK = `window.puter = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async () => ({}) }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
-async function mockPuter(page) {
-  await page.route('**/sdk/puter.js', (route) =>
-    route.fulfill({ contentType: 'application/javascript', body: PUTER_MOCK }),
+const EVERYTHING_MOCK = `window.everything = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async () => ({}) }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
+async function mockEverything(page) {
+  await page.route('**/sdk/everything.js', (route) =>
+    route.fulfill({ contentType: 'application/javascript', body: EVERYTHING_MOCK }),
   );
 }
 async function openPdf(page, doc) {
@@ -27,7 +27,7 @@ const settled = (page) => expect(page.locator('.editor')).toHaveAttribute('aria-
 test('canonical accents retain paragraph wrapping and remain editable after reopening', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([400, 400]).drawText('Original paragraph for editing.\nSecond line here.', {
@@ -64,7 +64,7 @@ for (const face of ['Bold', 'Italic', 'BoldItalic']) {
   test(`custom-named ${face} text keeps its descriptor style in controls and export`, async ({
     page,
   }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     const doc = await PDFDocument.create();
     doc.registerFontkit(fontkit);
@@ -103,7 +103,7 @@ for (const face of ['Bold', 'Italic', 'BoldItalic']) {
 }
 
 test('new regular text loads and measures the same font that is exported', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([600, 400]);
@@ -153,7 +153,7 @@ test('new regular text loads and measures the same font that is exported', async
 
 for (const kind of ['new', 'existing', 'grouped'])
   test(`Escape while composing text leaves the ${kind} text draft open`, async ({ page }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     const doc = await PDFDocument.create();
     const pdfPage = doc.addPage([400, 400]);
@@ -213,7 +213,7 @@ for (const style of ['Bold', 'Italic', 'Underline', 'Strikethrough'])
   test(`${style}-only drafts are unsaved, reversible, and protected when leaving`, async ({
     page,
   }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     const doc = await PDFDocument.create();
     doc.addPage([400, 400]).drawText('Plain line', { x: 40, y: 300, size: 18 });
@@ -269,7 +269,7 @@ async function exportedFonts(page) {
 test('new text can be bold and italic, and editing it keeps and changes the style', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([400, 400]);
@@ -310,7 +310,7 @@ test('new text can be bold and italic, and editing it keeps and changes the styl
 test('an unchanged edit of plain text stays a no-op and its toggles start unpressed', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   const font = await doc.embedFont(StandardFonts.Helvetica);

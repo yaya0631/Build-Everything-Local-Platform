@@ -1,12 +1,12 @@
 // Filter → Portrait & Restore… in the running app: the workspace opens, filters
 // toggle and preview in the worker, results apply as a new layer, a masked
 // layer, the current layer or a Live Filter, and undo restores the document.
-// AI requests go to a stubbed Puter SDK.
+// AI requests go to a stubbed Everything SDK.
 import { test, expect, type Page } from '@playwright/test';
 import { boot, historyLabels, idle, menu, openImage, run, undo } from './helpers';
 
 // txt2img returns a flat orange image, and records each call.
-const PUTER = `window.puter={env:"app",auth:{isSignedIn:()=>true},ai:{calls:[],txt2img:async(prompt,opts)=>{window.puter.ai.calls.push({prompt,opts});const c=document.createElement('canvas');c.width=200;c.height=150;const g=c.getContext('2d');g.fillStyle='#f08020';g.fillRect(0,0,200,150);return {src:c.toDataURL()};}}};`;
+const EVERYTHING = `window.everything={env:"app",auth:{isSignedIn:()=>true},ai:{calls:[],txt2img:async(prompt,opts)=>{window.everything.ai.calls.push({prompt,opts});const c=document.createElement('canvas');c.width=200;c.height=150;const g=c.getContext('2d');g.fillStyle='#f08020';g.fillRect(0,0,200,150);return {src:c.toDataURL()};}}};`;
 
 /** A 200x150 scene: a dark left half and a light right half with a noisy face-colored disc. */
 async function scene(page: Page) {
@@ -33,7 +33,7 @@ async function scene(page: Page) {
   await idle(page);
 }
 // The same, but each request waits for window.__aiOpen() while window.__aiGate is set.
-const PUTER_GATED = PUTER.replace('window.puter.ai.calls.push({prompt,opts});', 'window.puter.ai.calls.push({prompt,opts});if(window.__aiGate)await window.__aiGate;window.__aiReturned=(window.__aiReturned||0)+1;');
+const EVERYTHING_GATED = EVERYTHING.replace('window.everything.ai.calls.push({prompt,opts});', 'window.everything.ai.calls.push({prompt,opts});if(window.__aiGate)await window.__aiGate;window.__aiReturned=(window.__aiReturned||0)+1;');
 // Holds the final-render worker's run requests while window.__holdFull is set.
 const HOLD_FULL = `(() => {
   window.__heldRuns = [];
@@ -47,7 +47,7 @@ const HOLD_FULL = `(() => {
   };
   window.__releaseFull = () => { window.__holdFull = false; for (const f of window.__heldRuns.splice(0)) f(); };
 })();`;
-type AIWindow = { puter: { ai: { calls: { prompt: string; opts: { input_image?: string } }[] } }; __aiGate?: Promise<void>; __aiOpen?: () => void; __aiReturned?: number; __holdFull?: boolean; __heldRuns: unknown[]; __releaseFull: () => void };
+type AIWindow = { everything: { ai: { calls: { prompt: string; opts: { input_image?: string } }[] } }; __aiGate?: Promise<void>; __aiOpen?: () => void; __aiReturned?: number; __holdFull?: boolean; __heldRuns: unknown[]; __releaseFull: () => void };
 
 const dialog = (page: Page) => page.locator('dialog.pr-workspace[open]');
 /** Wait until the preview has rendered (no busy indicator). */
@@ -105,7 +105,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test('opens from the Filter menu, toggles filters and applies as a new layer that undo removes', async ({ page }) => {
-  await boot(page, 'default', PUTER);
+  await boot(page, 'default', EVERYTHING);
   await scene(page);
   await openWorkspace(page);
   const d = dialog(page);
@@ -146,7 +146,7 @@ test('opens from the Filter menu, toggles filters and applies as a new layer tha
 });
 
 test('colorize hints spread on the current layer, and settings are remembered', async ({ page }) => {
-  await boot(page, 'default', PUTER);
+  await boot(page, 'default', EVERYTHING);
   await scene(page);
   await openWorkspace(page);
   const d = dialog(page);
@@ -181,17 +181,17 @@ test('colorize hints spread on the current layer, and settings are remembered', 
 });
 
 test('Scene Changer sends a request only on Generate and applies as a masked layer', async ({ page }) => {
-  await boot(page, 'default', PUTER);
+  await boot(page, 'default', EVERYTHING);
   await scene(page);
   await openWorkspace(page);
   const d = dialog(page);
   await d.getByRole('button', { name: 'Scene Changer' }).click();
-  await expect(d.getByText('Uses your Puter account')).toBeVisible();
-  expect(await page.evaluate(() => (window as unknown as { puter: { ai: { calls: unknown[] } } }).puter.ai.calls.length)).toBe(0);
+  await expect(d.getByText('Uses your Everything account')).toBeVisible();
+  expect(await page.evaluate(() => (window as unknown as { everything: { ai: { calls: unknown[] } } }).everything.ai.calls.length)).toBe(0);
   await d.getByLabel('Protect Subject').uncheck();
   await d.getByRole('button', { name: 'Generate', exact: true }).click();
   await expect(d.locator('.pr-ai-status')).toHaveText('The changed scene is applied.');
-  const calls = await page.evaluate(() => (window as unknown as { puter: { ai: { calls: { prompt: string }[] } } }).puter.ai.calls);
+  const calls = await page.evaluate(() => (window as unknown as { everything: { ai: { calls: { prompt: string }[] } } }).everything.ai.calls);
   expect(calls.length).toBe(1);
   expect(calls[0].prompt).toContain('golden hour');
   // The result is kept in Generation History like other AI results.
@@ -225,7 +225,7 @@ test('Scene Changer sends a request only on Generate and applies as a masked lay
 });
 
 test('an AI result applied to the current layer marks it generated and is noted in provenance', async ({ page }) => {
-  await boot(page, 'default', PUTER);
+  await boot(page, 'default', EVERYTHING);
   await scene(page);
   await openWorkspace(page);
   const d = dialog(page);
@@ -253,7 +253,7 @@ test('an AI result applied to the current layer marks it generated and is noted 
 });
 
 test('applies as an editable Live Filter in one step and replays from settings', async ({ page }) => {
-  await boot(page, 'default', PUTER);
+  await boot(page, 'default', EVERYTHING);
   await scene(page);
   await openWorkspace(page);
   const d = dialog(page);
@@ -285,7 +285,7 @@ test('applies as an editable Live Filter in one step and replays from settings',
 });
 
 test('presets save and load the settings', async ({ page }) => {
-  await boot(page, 'default', PUTER);
+  await boot(page, 'default', EVERYTHING);
   await page.evaluate(() => localStorage.removeItem('photo-studio-portrait-restore-presets'));
   await scene(page);
   await openWorkspace(page);
@@ -307,7 +307,7 @@ test('presets save and load the settings', async ({ page }) => {
 });
 
 test('AI style with a reference image, and depth blur focus with the depth map saved as a channel', async ({ page }) => {
-  await boot(page, 'default', PUTER);
+  await boot(page, 'default', EVERYTHING);
   await scene(page);
   // A second layer to serve as the style reference.
   await page.evaluate(async () => {
@@ -333,7 +333,7 @@ test('AI style with a reference image, and depth blur focus with the depth map s
   await expect(d.getByRole('button', { name: 'Remove Reference' })).toBeVisible();
   await d.getByRole('button', { name: 'Generate Style' }).click();
   await expect(d.locator('.pr-ai-status')).toHaveText('The AI style is applied; Strength blends it.');
-  const call = await page.evaluate(() => (window as unknown as { puter: { ai: { calls: { prompt: string; opts: { input_images?: string[] } }[] } } }).puter.ai.calls[0]);
+  const call = await page.evaluate(() => (window as unknown as { everything: { ai: { calls: { prompt: string; opts: { input_images?: string[] } }[] } } }).everything.ai.calls[0]);
   expect(call.prompt).toContain('Restyle this photo as a bold poster');
   expect(call.opts.input_images?.length).toBe(2);
   // Depth Blur: clicking the preview focuses there.
@@ -359,7 +359,7 @@ test('AI style with a reference image, and depth blur focus with the depth map s
 });
 
 test('Live output while a layer mask or Quick Mask is edited filters the layer, not the mask', async ({ page }) => {
-  await boot(page, 'default', PUTER);
+  await boot(page, 'default', EVERYTHING);
   await scene(page);
   // A white layer mask, being edited.
   await page.evaluate(async () => {
@@ -410,7 +410,7 @@ test('Live output while a layer mask or Quick Mask is edited filters the layer, 
 });
 
 test('AI filters are sent the image as the filters before them leave it, the same each time', async ({ page }) => {
-  await boot(page, 'default', PUTER);
+  await boot(page, 'default', EVERYTHING);
   await scene(page);
   await openWorkspace(page);
   const d = dialog(page);
@@ -422,7 +422,7 @@ test('AI filters are sent the image as the filters before them leave it, the sam
   await expect(d.locator('.pr-ai-status')).toHaveText('The changed scene is applied.');
   await d.getByRole('button', { name: 'Generate Again' }).click();
   await expect(d.locator('.pr-ai-status')).toHaveText('The changed scene is applied.');
-  const sent = await page.evaluate(() => (window as unknown as AIWindow).puter.ai.calls.map((c) => c.opts.input_image!));
+  const sent = await page.evaluate(() => (window as unknown as AIWindow).everything.ai.calls.map((c) => c.opts.input_image!));
   expect(sent.length).toBe(2);
   // The scratch (250 in the original) was repaired before the image was sent.
   expect(await dataUrlRed(page, sent[0], 30, 70)).toBeLessThan(150);
@@ -433,7 +433,7 @@ test('AI filters are sent the image as the filters before them leave it, the sam
 });
 
 test('Live output follows a Live Filter mask in the preview and is not offered with a selection it would ignore', async ({ page }) => {
-  await boot(page, 'default', PUTER);
+  await boot(page, 'default', EVERYTHING);
   await scene(page);
   await run(page, 'filter.convert-live');
   // A Live Filter mask covering the right half: the scratch (x = 30) is outside it.
@@ -482,7 +482,7 @@ test('Live output follows a Live Filter mask in the preview and is not offered w
 
 test('OK fixes the settings and zooming does not cancel the final render', async ({ page }) => {
   await page.addInitScript(HOLD_FULL);
-  await boot(page, 'default', PUTER);
+  await boot(page, 'default', EVERYTHING);
   // Large enough that zooming in asks for a full-size render, small enough that the fitted view does not.
   await openImage(page, 1700, 1275, '#b08070');
   await openWorkspace(page);
@@ -510,7 +510,7 @@ test('OK fixes the settings and zooming does not cancel the final render', async
 });
 
 test('Reset All and loading a preset stop a running AI request', async ({ page }) => {
-  await boot(page, 'default', PUTER_GATED);
+  await boot(page, 'default', EVERYTHING_GATED);
   await page.evaluate(() => localStorage.removeItem('photo-studio-portrait-restore-presets'));
   await scene(page);
   await openWorkspace(page);
@@ -562,7 +562,7 @@ test('Reset All and loading a preset stop a running AI request', async ({ page }
 });
 
 test('saving the depth map as a channel is not offered for Live Filter output', async ({ page }) => {
-  await boot(page, 'default', PUTER);
+  await boot(page, 'default', EVERYTHING);
   await scene(page);
   await openWorkspace(page);
   const d = dialog(page);

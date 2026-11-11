@@ -767,7 +767,7 @@ export class RackView {
     for (const f of files) if (await this.importFile(f, { name: f.name }, at)) at++;
   }
 
-  /** Imports an OS file (or a Puter file payload) as a sampler channel at `index`. */
+  /** Imports an OS file (or an Everything file payload) as a sampler channel at `index`. */
   async importFile(file, { name, path } = {}, index) {
     const app = this.app;
     if (!app.importAudio) {
@@ -777,12 +777,12 @@ export class RackView {
     try {
       let blob = file;
       if (!blob && path) {
-        const puter = window.puter;
-        if (!puter?.auth?.isSignedIn?.() || !puter.fs?.read) {
-          app.notify('Sign in to use files from your Puter cloud.', { error: true });
+        const everything = window.everything;
+        if (!everything?.auth?.isSignedIn?.() || !everything.fs?.read) {
+          app.notify('Sign in to use files from your Everything cloud.', { error: true });
           return false;
         }
-        blob = await puter.fs.read(path);
+        blob = await everything.fs.read(path);
       }
       const r = await app.importAudio(blob, { name: baseName(name), path, as: 'sampler' });
       if (r?.channelId) {

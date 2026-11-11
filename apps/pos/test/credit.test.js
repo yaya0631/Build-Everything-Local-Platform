@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { installMockPuter, installMockStorage } from './helpers/mock-puter.js';
+import { installMockEverything, installMockStorage } from './helpers/mock-everything.js';
 import { Store, paymentMethodInfo } from '../src/lib/store.js';
 import { fullRefundPicks } from '../src/lib/refunds.js';
 import { receiptDoc } from '../src/lib/receipt-doc.js';
@@ -11,7 +11,7 @@ let storage;
 let store;
 
 beforeEach(async () => {
-  mock = installMockPuter();
+  mock = installMockEverything();
   storage = installMockStorage();
   store = new Store();
   await store.init();

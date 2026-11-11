@@ -11,7 +11,7 @@
 //   projects     key -> { key, name, modified, size }        local project list
 //   projectData  key -> JSON string                          local project files
 //   samples      id  -> { id, name, type, size, data: ArrayBuffer, path }
-//                      imported audio bytes (path: its Puter copy, once uploaded)
+//                      imported audio bytes (path: its Everything copy, once uploaded)
 //   drafts       'tab:<slot>' -> { json, file, dirty, at }    autosaved session per tab
 //                (storage/tabs.js; 'session' is the shared key of older versions)
 

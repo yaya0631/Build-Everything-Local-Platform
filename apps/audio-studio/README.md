@@ -1,8 +1,8 @@
 # Audio Studio
 
-A waveform and multitrack audio editor for the browser, built on [Puter](https://localhost:8443). Record, edit, restore, mix and master audio with a docked panel workspace, studio effects and spectral editing. Audio is processed on your device; projects and exported files are stored in your own Puter cloud.
+A waveform and multitrack audio editor for the browser, built on [Everything](https://localhost:8443). Record, edit, restore, mix and master audio with a docked panel workspace, studio effects and spectral editing. Audio is processed on your device; projects and exported files are stored in your own Everything cloud.
 
-An open-source alternative to Adobe Audition. No framework: vanilla JavaScript modules built with Vite. Puter.js is the only backend.
+An open-source alternative to Adobe Audition. No framework: vanilla JavaScript modules built with Vite. Everything.js is the only backend.
 
 ## What it does
 
@@ -10,7 +10,7 @@ An open-source alternative to Adobe Audition. No framework: vanilla JavaScript m
 - **Multitrack editor**: clips with fades, crossfades, envelopes, groups, stretching, remixing to a new length and speech alignment; buses, eight sends per track, track EQ and effect chains; automation; punch-in and loop recording into takes; mixdowns and bounces; session templates.
 - **Effects**: amplitude, delay, filter and EQ, modulation, restoration (noise prints, sound models, click/pop elimination, hum, reverb and hiss removal), reverb, special and time/pitch processors, all in WebAssembly, usable live in the Effects Rack and track chains or applied to a selection, with presets and Favorites.
 - **Analysis**: frequency analysis, amplitude statistics, phase meter, loudness measurement and matching, diagnostics.
-- **Workspace**: docked panels (Files, Media Browser for Puter and folders on this device, Markers, Playlist, Mixer, Tracks, Track Panner, Time, Zoom, Transport, Tools, Events, Video...) arranged in saved workspaces; categorized Preferences; MIDI control surfaces; batch processing; JavaScript automation scripts.
+- **Workspace**: docked panels (Files, Media Browser for Everything and folders on this device, Markers, Playlist, Mixer, Tracks, Track Panner, Time, Zoom, Transport, Tools, Events, Video...) arranged in saved workspaces; categorized Preferences; MIDI control surfaces; batch processing; JavaScript automation scripts.
 
 ## Architecture
 
@@ -43,7 +43,7 @@ In development, `window.as` is the app and `as.openDev(['name.wav'])` opens test
 ## Third-party
 
 - [Lucide](https://lucide.dev) icons (ISC), plus original glyphs in `src/ui/icons.js`.
-- [Puter.js](http://localhost:8443) for sign-in, cloud files and AI features.
+- [Everything.js](http://localhost:8443) for sign-in, cloud files and AI features.
 
 ## License
 

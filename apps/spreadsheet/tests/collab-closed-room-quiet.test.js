@@ -11,9 +11,9 @@ afterEach(() => { for (const c of open.splice(0)) c.close(); });
 async function joined() {
   const env = environment();
   const wb = new Workbook({ sheets: [{ name: 'Plan' }] });
-  const room = await RoomClient.create({ puter: env.sdk(owner), server: SERVER, wb, name: 'Plan' });
+  const room = await RoomClient.create({ everything: env.sdk(owner), server: SERVER, wb, name: 'Plan' });
   const token = (await call(env.sdk(owner), SERVER, { op: 'invite', room, role: 'editor' })).token;
-  const client = new RoomClient({ puter: env.sdk(editor), server: SERVER, room, token, store: memoryOutbox(), poll: 50, noPeers: true });
+  const client = new RoomClient({ everything: env.sdk(editor), server: SERVER, room, token, store: memoryOutbox(), poll: 50, noPeers: true });
   open.push(client);
   await client.open();
   return { env, room, client };

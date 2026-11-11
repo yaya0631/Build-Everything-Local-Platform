@@ -11,7 +11,7 @@ drag, and the save/stats plumbing call it instead of a specific game's
 rules. Klondike's rules are in `src/game/state.js` and `rules.js`, Spider's
 in `src/game/spider.js`. Desktop windows get realistic card art via a vendored SVG deck;
 small screens fall back to plain top-left rank-and-suit cards. Games and
-stats can optionally sync to Puter cloud storage.
+stats can optionally sync to Everything cloud storage.
 
 ## Build and serve
 

@@ -7,7 +7,7 @@ import { createStore } from '../src/core/store.js';
 const SOURCE = fs.readFileSync(new URL('../public/worker/property-management-team-worker.js', import.meta.url), 'utf8');
 
 /**
- * kv.incr on a path map, as Puter documents it: dots in a path nest
+ * kv.incr on a path map, as Everything documents it: dots in a path nest
  * ("a.b" -> { a: { b } }) and ["a.b"] names one field with a dot in it.
  */
 function incrPaths(cur, paths) {
@@ -75,7 +75,7 @@ function fakeFS() {
   };
 }
 
-const person = (uuid, username) => ({ puter: { auth: { getUser: async () => ({ uuid, username }) } } });
+const person = (uuid, username) => ({ everything: { auth: { getUser: async () => ({ uuid, username }) } } });
 
 function loadWorker() {
   const routes = [];
@@ -83,7 +83,7 @@ function loadWorker() {
   new Function('router', SOURCE)(router);
   const kv = fakeKV();
   const fsys = fakeFS();
-  const me = { puter: { kv, fs: fsys, auth: { getUser: async () => ({ uuid: 'owner-1', username: 'olivia' }) } } };
+  const me = { everything: { kv, fs: fsys, auth: { getUser: async () => ({ uuid: 'owner-1', username: 'olivia' }) } } };
   const handler = (method, path) => routes.find(([m, p]) => m === method && p === path)?.[2];
   return {
     kv,
@@ -95,7 +95,7 @@ function loadWorker() {
     async health() {
       return (await handler('GET', '/health')({ me })).json();
     },
-    /** A puter.workers.exec stand-in for the app-side client. */
+    /** An everything.workers.exec stand-in for the app-side client. */
     exec(user) {
       return async (url, init) => {
         const res = await handler('POST', '/api')({ me, user, request: { json: async () => JSON.parse(init.body), headers: new Headers() } });
@@ -121,7 +121,7 @@ describe('team worker', () => {
 
   it('refuses callers without a session', async () => {
     expect((await w.api(null, { op: 'meta' })).status).toBe(401);
-    expect((await w.api({ puter: { auth: { getUser: async () => { throw new Error('expired'); } } } }, { op: 'meta' })).status).toBe(401);
+    expect((await w.api({ everything: { auth: { getUser: async () => { throw new Error('expired'); } } } }, { op: 'meta' })).status).toBe(401);
   });
 
   it('lets the owner read and write records with the app key layout', async () => {
@@ -210,7 +210,7 @@ describe('team worker', () => {
     new Function('router', SOURCE)({ get: (p, fn) => routes.push(['GET', p, fn]), post: (p, fn) => routes.push(['POST', p, fn]) });
     const api = routes.find(([m, p]) => m === 'POST' && p === '/api')[2];
     let blip = false;
-    const me = { puter: { kv: w.kv, fs: w.fsys, auth: { getUser: async () => (blip ? Promise.reject(new Error('blip')) : { uuid: 'owner-1', username: 'olivia' }) } } };
+    const me = { everything: { kv: w.kv, fs: w.fsys, auth: { getUser: async () => (blip ? Promise.reject(new Error('blip')) : { uuid: 'owner-1', username: 'olivia' }) } } };
     const call = async (user, body) => {
       const res = await api({ me, user, request: { json: async () => body, headers: new Headers() } });
       return { status: res.status, body: await res.json() };
@@ -234,7 +234,7 @@ describe('team worker', () => {
     const saved = [];
     const kv = { set: async (k, v) => saved.push(v) };
     const ws = { current: url, own: {}, joined: [{ url, role: 'member', business: 'Old name' }] };
-    const entry = await refreshMembership(kv, ws, url, { getPuter: () => ({ workers: { exec: w.exec(STRANGER) } }) });
+    const entry = await refreshMembership(kv, ws, url, { getEverything: () => ({ workers: { exec: w.exec(STRANGER) } }) });
     expect(entry.role).toBe('admin');
     expect(saved[0].joined[0].role).toBe('admin');
   });
@@ -250,7 +250,7 @@ describe('team worker', () => {
     const inv = (await w.api(OWNER, { op: 'invite', role: 'member' })).body;
     await w.api(STRANGER, { op: 'join', token: inv.token });
     const url = 'http://propmgmt-abc.localhost:8443';
-    const mk = (user) => createStore({ backend: createWorkerBackend(url, { getPuter: () => ({ workers: { exec: w.exec(user) } }) }), flushDelay: 0 });
+    const mk = (user) => createStore({ backend: createWorkerBackend(url, { getEverything: () => ({ workers: { exec: w.exec(user) } }) }), flushDelay: 0 });
     const ownerStore = mk(OWNER);
     const memberStore = mk(STRANGER);
     await ownerStore.init();
@@ -285,8 +285,8 @@ describe('turning on team sign-in', () => {
     phone.put('tenants', { id: 'from-phone', firstName: 'Phone' });
     await phone.flush();
     here.put('tenants', { id: 'from-laptop', firstName: 'Laptop' });
-    const saved = { puter: globalThis.puter, fetch: globalThis.fetch };
-    globalThis.puter = {
+    const saved = { everything: globalThis.everything, fetch: globalThis.fetch };
+    globalThis.everything = {
       fs: { write: async (path) => ({ path }), read: async () => new Blob([]) },
       workers: { create: async (name) => ({ url: `http://${name}.localhost:8443` }), exec: w.exec(OWNER) },
     };
@@ -294,7 +294,7 @@ describe('turning on team sign-in', () => {
     try {
       await enableTeam({ store: here });
     } finally {
-      globalThis.puter = saved.puter;
+      globalThis.everything = saved.everything;
       globalThis.fetch = saved.fetch;
     }
     expect(w.kv.data.has('pm1:r:tenants:from-phone')).toBe(true);
@@ -309,8 +309,8 @@ describe('a team setup that fails', () => {
     await store.init();
     store.put('tenants', { id: 't1' });
     const deleted = [];
-    const saved = { puter: globalThis.puter, fetch: globalThis.fetch };
-    globalThis.puter = {
+    const saved = { everything: globalThis.everything, fetch: globalThis.fetch };
+    globalThis.everything = {
       fs: { write: async (path) => ({ path }) },
       workers: {
         create: async (name) => ({ url: `http://${name}.localhost:8443` }),
@@ -324,7 +324,7 @@ describe('a team setup that fails', () => {
     try {
       await expect(enableTeam({ store })).rejects.toThrow();
     } finally {
-      globalThis.puter = saved.puter;
+      globalThis.everything = saved.everything;
       globalThis.fetch = saved.fetch;
     }
     expect(deleted).toHaveLength(1);
@@ -365,7 +365,7 @@ describe('team worker hardening', () => {
     for (const op of ['constructor', 'toString', '__proto__', 'hasOwnProperty']) {
       const res = await w.api(OWNER, { op });
       expect(res.status, op).toBe(400);
-      expect(JSON.stringify(res.body)).not.toMatch(/authToken|puter/);
+      expect(JSON.stringify(res.body)).not.toMatch(/authToken|everything/);
     }
   });
 

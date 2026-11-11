@@ -64,7 +64,7 @@ export async function systemInfo(app) {
     [
       'Application',
       [
-        ['Environment', app.env === 'app' ? 'Puter desktop' : 'Web browser'],
+        ['Environment', app.env === 'app' ? 'Everything desktop' : 'Web browser'],
         ['Signed in', app.user ? `Yes (${app.user.username})` : 'No'],
         ['Open documents', String(app.editors.length)],
         ['Theme', app.prefs.get('theme')],

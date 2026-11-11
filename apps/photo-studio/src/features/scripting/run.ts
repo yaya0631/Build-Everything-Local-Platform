@@ -46,7 +46,7 @@ export async function confirmScript(name: string, opts: { offerInstall: boolean 
   const r = await modal({
     title: 'Run Script?',
     className: 'script-confirm',
-    body: `<p>“${escapeXML(name)}” is a script: a small program that can change your open documents, create and close documents, and ask you to open or save files.</p><p class="muted">It runs separately from Photo Studio, without network access and without access to your Puter account or this site's storage. Run it only if you trust where it came from.</p>${opts.offerInstall ? '<label class="dialog-field checkbox-field">Add it to File → Scripts<input type="checkbox" name="install"></label>' : ''}`,
+    body: `<p>“${escapeXML(name)}” is a script: a small program that can change your open documents, create and close documents, and ask you to open or save files.</p><p class="muted">It runs separately from Photo Studio, without network access and without access to your Everything account or this site's storage. Run it only if you trust where it came from.</p>${opts.offerInstall ? '<label class="dialog-field checkbox-field">Add it to File → Scripts<input type="checkbox" name="install"></label>' : ''}`,
     submit: 'Run Script',
   });
   if (!r) return null;

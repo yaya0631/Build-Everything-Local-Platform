@@ -40,7 +40,7 @@ function stubCalendar({ env = 'app', answer = () => ({ ok: true, result: { event
       state.closed = true
     },
   }
-  window.puter = {
+  window.everything = {
     env,
     ui: {
       launchApp: async () => {
@@ -72,7 +72,7 @@ beforeEach(() => {
 
 afterEach(() => {
   disposeCalendar()
-  delete window.puter
+  delete window.everything
   document.body.innerHTML = ''
 })
 

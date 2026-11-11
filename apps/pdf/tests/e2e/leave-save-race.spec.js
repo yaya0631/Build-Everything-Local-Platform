@@ -35,7 +35,7 @@ for (const phase of ['sign-in', 'save'])
             return bytes;
           };
         }, newer === 'pending pdf');
-        await page.route('**/sdk/puter.js', (route) =>
+        await page.route('**/sdk/everything.js', (route) =>
           route.fulfill({
             contentType: 'application/javascript',
             body: `
@@ -46,7 +46,7 @@ for (const phase of ['sign-in', 'save'])
                 setTimeout(() => { window.leaveFinished = true; }, 0);
               };
             });
-            window.puter = {
+            window.everything = {
               env: 'web',
               auth: {
                 isSignedIn: () => false,

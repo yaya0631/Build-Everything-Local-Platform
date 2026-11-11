@@ -101,7 +101,7 @@ export function buildICS(tasks, { calName = 'Tasks', now = new Date(), listNameO
   const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//Tasks on Puter//EN',
+    'PRODID:-//Tasks on Everything//EN',
     'CALSCALE:GREGORIAN',
     `X-WR-CALNAME:${escapeText(calName)}`,
   ];
@@ -112,7 +112,7 @@ export function buildICS(tasks, { calName = 'Tasks', now = new Date(), listNameO
     // Escape the id: it can arrive verbatim from an import or a collab
     // member's replica, and a raw newline in it would break out of the UID
     // line and inject arbitrary calendar properties.
-    lines.push(`UID:${escapeText(t.id)}@tasks.puter`);
+    lines.push(`UID:${escapeText(t.id)}@tasks.everything`);
     lines.push(`DTSTAMP:${stamp}`);
     if (t.dueTime) {
       lines.push(`DTSTART:${dateTimeValue(t.due, t.dueTime)}`);

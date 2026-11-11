@@ -3,10 +3,10 @@ import AxeBuilder from '@axe-core/playwright';
 import { PDFDocument, degrees } from 'pdf-lib';
 import { readFile } from 'node:fs/promises';
 
-const PUTER_MOCK = `window.puter = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async () => ({}) }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
-async function mockPuter(page) {
-  await page.route('**/sdk/puter.js', (route) =>
-    route.fulfill({ contentType: 'application/javascript', body: PUTER_MOCK }),
+const EVERYTHING_MOCK = `window.everything = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async () => ({}) }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
+async function mockEverything(page) {
+  await page.route('**/sdk/everything.js', (route) =>
+    route.fulfill({ contentType: 'application/javascript', body: EVERYTHING_MOCK }),
   );
 }
 async function openPdf(page, doc) {
@@ -55,7 +55,7 @@ async function threePages(rotation = 0) {
 test('page numbers land at the bottom center of every page and stay editable text', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await threePages());
   await menu(page, 'Page numbers…');
@@ -93,7 +93,7 @@ test('page numbers land at the bottom center of every page and stay editable tex
 test('page numbers read upright at the displayed bottom of rotated pages and follow the options', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await threePages(90));
   await menu(page, 'Page numbers…');
@@ -125,7 +125,7 @@ test('page numbers read upright at the displayed bottom of rotated pages and fol
 test('a watermark is centered on the chosen pages with the typed text, layout, and opacity', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await threePages());
   await page.getByRole('button', { name: 'Next page', exact: true }).click();
@@ -192,7 +192,7 @@ test('a watermark is centered on the chosen pages with the typed text, layout, a
 test('a header and footer fill in the file name and page numbers on every page', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await threePages());
   await menu(page, 'Header and footer…');
@@ -222,7 +222,7 @@ test('a header and footer fill in the file name and page numbers on every page',
 test('page numbering rejects an empty start and accepts an explicit zero with fractional text size', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await threePages());
   await menu(page, 'Page numbers…');
@@ -249,7 +249,7 @@ for (const kind of ['watermark', 'numbers', 'header'])
     test(`cancelling ${kind} preparation ignores a late font ${fails ? 'failure' : 'success'}`, async ({
       page,
     }) => {
-      await mockPuter(page);
+      await mockEverything(page);
       let release;
       const gate = new Promise((resolve) => {
         release = resolve;
@@ -302,7 +302,7 @@ for (const kind of ['watermark', 'numbers', 'header'])
 test('closing a page-mark dialog in the serialization turn discards its output', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await threePages());
   await menu(page, 'Watermark…');
@@ -333,7 +333,7 @@ test('closing a page-mark dialog in the serialization turn discards its output',
 
 for (const submit of ['button', 'Enter'])
   test(`header and footer accepts a fractional size through ${submit}`, async ({ page }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     await openPdf(page, await threePages());
     await menu(page, 'Header and footer…');
@@ -367,7 +367,7 @@ for (const submit of ['button', 'Enter'])
   });
 
 test('page marks count a page named twice in the range once', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await threePages());
   for (const [item, title, buttonName, message] of [

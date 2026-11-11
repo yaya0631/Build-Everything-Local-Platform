@@ -2,7 +2,7 @@
 // call (catalog search, details, propose a plan, answer a question) and the
 // tool-calling loop. The chat function is passed in, so tests run the loop
 // with scripted replies and never reach the network.
-import type { ChatMessage, ChatPart, ChatReply, ChatTool } from '../../imaging/ai/puter-ai';
+import type { ChatMessage, ChatPart, ChatReply, ChatTool } from '../../imaging/ai/everything-ai';
 import { COMMON_COMMANDS, type Catalog } from './catalog';
 import { OPS } from './ops';
 import { describeParams } from './params';
@@ -108,7 +108,7 @@ export function systemPrompt(catalog: Catalog): string {
     .filter((e) => !!e && !e.hidden)
     .map((e) => catalog.line(e!));
   const ops = OPS.map((o) => `${o.id} — ${o.description}\n${describeParams(o.params)}`).join('\n\n');
-  return `You are the Assistant in Photo Studio, a browser-based raster image editor with layers, masks, adjustment layers, selections, filters, type, layer effects and optional generative AI through Puter.
+  return `You are the Assistant in Photo Studio, a browser-based raster image editor with layers, masks, adjustment layers, selections, filters, type, layer effects and optional generative AI through Everything.
 
 What you do:
 - When the user describes a change to the document, call propose_plan once with the steps. Nothing changes until the user runs the plan; they can edit or remove steps first. The whole run is one undo step.
@@ -122,7 +122,7 @@ Finding commands:
 Planning rules:
 - Prefer operations and non-destructive edits: adjustment layers with settings (op.add_adjustment_layer), layer styles, masks. A selection active when an adjustment layer is added becomes its mask.
 - "input: settings" commands take args directly. "input: dialog" commands open a dialog where the user picks settings during the run; use them only when nothing else fits. Tools cannot be used by a plan.
-- "input: ai" commands (Generate Image, Edit with Prompt, AI Fill, AI Expand) create content with generative AI and spend the user's Puter credits. Use them only when the request needs new content that editing cannot make; put a precise prompt in args.prompt and say in the summary that it uses AI credits. Their dialog opens prefilled and the user presses Generate.
+- "input: ai" commands (Generate Image, Edit with Prompt, AI Fill, AI Expand) create content with generative AI and spend the user's Everything credits. Use them only when the request needs new content that editing cannot make; put a precise prompt in args.prompt and say in the summary that it uses AI credits. Their dialog opens prefilled and the user presses Generate.
 - A command that needs a selection must follow a step that makes one (op.select, select.subject, select.sky, select.all...). Remove the background of a subject with layer.remove-background (it masks the selected layer).
 - Coordinates and sizes are document pixels, origin at the top left. Use the layer names from the document description.
 - Keep plans short and in a sensible order. Write titles, summaries and notes in plain words for the user, without IDs.

@@ -179,7 +179,7 @@ export function createKvService(ctx) {
 
     incr(ownerId, app, key, amount = 1) {
       const current = getOne(ownerId, app, key);
-      // Puter accepts a path map here as well as a number:
+      // Everything accepts a path map here as well as a number:
       // incr(key, { 'counters.open': 1, 'counters.closed': -1 }).
       if (amount && typeof amount === 'object' && !Array.isArray(amount)) {
         const root = objectRoot(current);
@@ -201,7 +201,7 @@ export function createKvService(ctx) {
 
     add(ownerId, app, key, value) {
       const current = getOne(ownerId, app, key);
-      // Puter's add takes a path map: append to the array at each path.
+      // Everything's add takes a path map: append to the array at each path.
       if (value && typeof value === 'object' && !Array.isArray(value)) {
         const root = objectRoot(current);
         for (const [pathExpr, val] of Object.entries(value)) {

@@ -97,7 +97,7 @@ it('exports converted formatting as native cell styles without table or private 
   const { wb, id, tid } = setup(); wb.setTableTotals(id, tid, true); wb.deleteTable(id, tid);
   const zip = X.CFB.read(new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()), { type: 'array' });
   const xml = new TextDecoder().decode(X.CFB.find(zip, '/xl/workbook.xml').content);
-  X.CFB.utils.cfb_add(zip, '/xl/workbook.xml', new TextEncoder().encode(xml.replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')));
+  X.CFB.utils.cfb_add(zip, '/xl/workbook.xml', new TextEncoder().encode(xml.replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')));
   const back = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }));
   const sid = back.activeSheetId;
   expect(back.tablesOn(sid)).toEqual([]);

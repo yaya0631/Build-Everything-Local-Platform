@@ -6,7 +6,7 @@ for (const failure of ['early download failure', 'invalid response'])
   test(`a font ${failure} preserves the draft and supports retry`, async ({ page }) => {
     const errors = [];
     page.on('pageerror', (error) => errors.push(error.message));
-    await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
+    await page.route('**/sdk/everything.js', (route) => route.fulfill({ body: '' }));
     await page.route(/fontkit.*\.js/, async (route) => {
       await new Promise((resolve) => setTimeout(resolve, 350));
       await route.continue();

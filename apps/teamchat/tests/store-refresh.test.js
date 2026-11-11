@@ -1,7 +1,7 @@
 /**
  * The member document's refresh against a read in flight: what the store
- * keeps of its own reading when the worker's answer predates it. Puter is
- * faked at `puter.workers.exec`.
+ * keeps of its own reading when the worker's answer predates it. Everything is
+ * faked at `everything.workers.exec`.
  */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { store } from '../src/lib/store.js';
@@ -14,7 +14,7 @@ let gate = null; // when set, the bootstrap answer waits on it
 
 beforeEach(() => {
   gate = null;
-  globalThis.puter = {
+  globalThis.everything = {
     workers: {
       exec: async (url) => {
         const path = new URL(url).pathname;
@@ -92,7 +92,7 @@ describe('two refreshes in flight', () => {
       { channels: ['general'], u: 5 }, // asked first: the poll's refetch, slow
       { channels: ['general', 'ops'], u: 6 }, // asked second: after joining #ops
     ];
-    globalThis.puter.workers.exec = async (url) => {
+    globalThis.everything.workers.exec = async (url) => {
       const path = new URL(url).pathname;
       if (path !== '/api/ws/abc123def0') return json({ code: 'not_found' }, 404);
       const d = docs[releases.length];
@@ -124,8 +124,8 @@ describe('a read still in its debounce when a refresh starts', () => {
     store.me = { dms: {}, channels: ['general'], notify: {}, reads: { general: 4 }, mentions: { general: 1 }, threads: {} };
     const reads = [];
     let serverMentions = 1;
-    const base = globalThis.puter.workers.exec;
-    globalThis.puter.workers.exec = async (url, init) => {
+    const base = globalThis.everything.workers.exec;
+    globalThis.everything.workers.exec = async (url, init) => {
       const path = new URL(url).pathname;
       if (path.endsWith('/read')) {
         reads.push(JSON.parse(init.body));
@@ -162,8 +162,8 @@ describe('a read still in its debounce when a refresh starts', () => {
     // it, a count on a conversation read to its end and unchanged since is a
     // count for what was read (see _healStuckMentions).
     serverMentions = 1;
-    const withoutReply = globalThis.puter.workers.exec;
-    globalThis.puter.workers.exec = async (url, init) => {
+    const withoutReply = globalThis.everything.workers.exec;
+    globalThis.everything.workers.exec = async (url, init) => {
       const res = await withoutReply(url, init);
       if (!new URL(url).pathname.endsWith('/api/ws/abc123def0')) return res;
       const d = await res.json();
@@ -195,7 +195,7 @@ describe('a refresh of a workspace that moved, landing after its copy at the new
   it('is not applied to the copy: the two share an id, but not a server', async () => {
     let release;
     const slow = new Promise((r) => { release = r; });
-    globalThis.puter.workers.exec = async (url) => {
+    globalThis.everything.workers.exec = async (url) => {
       const u = new URL(url);
       if (u.pathname !== '/api/ws/abc123def0') return json({ code: 'not_found' }, 404);
       // The old owner's worker: the read-only copy a transfer left behind, slow to answer.
@@ -223,7 +223,7 @@ describe('a refresh of a workspace that moved, landing after its copy at the new
     store.ws = null;
     store.me = null;
     store.act = { c: {}, p: {}, w: 0, u: 0 };
-    store._applyBootstrap(await (await globalThis.puter.workers.exec('http://other-test.localhost:8443/api/ws/abc123def0')).json());
+    store._applyBootstrap(await (await globalThis.everything.workers.exec('http://other-test.localhost:8443/api/ws/abc123def0')).json());
     expect(store.ws.name).toBe('Test (new home)');
     release();
     await late;

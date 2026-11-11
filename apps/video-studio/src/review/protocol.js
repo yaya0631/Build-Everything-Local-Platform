@@ -1,6 +1,6 @@
 /**
  * Share for review: what the app and the owner's review worker agree on.
- * Pure helpers only (no Puter calls), so both sides and the tests import
+ * Pure helpers only (no Everything calls), so both sides and the tests import
  * them: roles, limits, ids, hashing and signing, worker addresses, review
  * links, token metadata and comment validation.
  */
@@ -173,9 +173,9 @@ export function parseReviewHash(hashText) {
 }
 
 /**
- * Metadata of a Puter token (JWT payload), for routing decisions only.
- * Puter compresses some claim names on the wire; both spellings are read.
- * Nothing here is trusted until Puter itself accepts the token.
+ * Metadata of an Everything token (JWT payload), for routing decisions only.
+ * Everything compresses some claim names on the wire; both spellings are read.
+ * Nothing here is trusted until Everything itself accepts the token.
  */
 export function tokenClaims(token) {
   try {

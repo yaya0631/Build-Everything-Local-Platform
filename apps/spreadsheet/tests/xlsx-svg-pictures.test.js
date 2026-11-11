@@ -8,7 +8,7 @@ async function packageFor() {
   const wb = new Workbook({ sheets: [{ name: 'Vectors', charts: [{ type: 'image', src, anchor: { r: 3, c: 2 }, w: 237, h: 93, rotation: 37, srcRect: { t: .2 } }] }] });
   const zip = X.CFB.read(new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()), { type: 'array' });
   const part = X.CFB.find(zip, '/xl/workbook.xml');
-  part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   part.size = part.content.length;
   return zip;
 }

@@ -488,7 +488,7 @@ test("late movement previews cannot overwrite a newer committed action", () => {
   const env = environment(),
     { doc } = seed();
   const session = new CollaborationSession({
-    puter: env.sdk(owner),
+    everything: env.sdk(owner),
     server: "http://whiteboard-test.localhost:8443",
     room: "test",
     user: owner,
@@ -521,7 +521,7 @@ test("a finished move stays where it was dropped until its edit arrives", async 
     { doc } = seed();
   let activity = 0;
   const session = new CollaborationSession({
-    puter: env.sdk(owner),
+    everything: env.sdk(owner),
     server: "http://whiteboard-test.localhost:8443",
     room: "test",
     user: owner,
@@ -603,7 +603,7 @@ test("peer document updates require a genuine worker receipt for the exact edit"
   await invite(env, b, editor);
   env.dropEvents = true;
   const session = new CollaborationSession({
-    puter: env.sdk(owner),
+    everything: env.sdk(owner),
     server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: owner,
@@ -671,7 +671,7 @@ test("a save whose edit already arrived over a peer link is not read back from t
   await invite(env, b, editor);
   env.dropEvents = true;
   const session = new CollaborationSession({
-    puter: env.sdk(owner),
+    everything: env.sdk(owner),
     server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: owner,
@@ -735,7 +735,7 @@ test("a finished move stays shown until an edit that moves it arrives, not just 
   await invite(env, b, editor);
   env.dropEvents = true;
   const session = new CollaborationSession({
-    puter: env.sdk(owner),
+    everything: env.sdk(owner),
     server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: owner,
@@ -820,7 +820,7 @@ test("a notice whose edit arrives with it, or a failed poll, leaves later polls 
   await invite(env, b, editor);
   env.dropEvents = true;
   const session = new CollaborationSession({
-    puter: env.sdk(owner),
+    everything: env.sdk(owner),
     server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: owner,
@@ -888,7 +888,7 @@ test("in a large room a relay that reads an edit no peer announced asks the othe
   env.dropEvents = true;
   const make = (user) =>
     new CollaborationSession({
-      puter: env.sdk(user),
+      everything: env.sdk(user),
       server: "http://whiteboard-test.localhost:8443",
       room: b.id,
       user,
@@ -961,7 +961,7 @@ test("only a relay's request to read the board makes a member synchronize", asyn
     b = await room(env);
   env.dropEvents = true;
   const session = new CollaborationSession({
-    puter: env.sdk(owner),
+    everything: env.sdk(owner),
     server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: owner,
@@ -1016,13 +1016,13 @@ test("told of a save by a board event, a synchronization names its record and as
   await invite(env, b, editor);
   const { BoardService: Other } =
     await import("../worker/service.js?instance=lagging");
-  const B = new Other(env.service.puter, {
+  const B = new Other(env.service.everything, {
     now: () => Date.now(),
     org: env.service.org,
   });
   env.service.now = () => Date.now();
   const session = new CollaborationSession({
-    puter: env.sdk(owner),
+    everything: env.sdk(owner),
     server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: owner,
@@ -1031,7 +1031,7 @@ test("told of a save by a board event, a synchronization names its record and as
     activity() {},
     status() {},
   });
-  const kv = env.service.puter.kv,
+  const kv = env.service.everything.kv,
     list = kv.list;
   let hidden = null;
   kv.list = async (...args) => {
@@ -1094,7 +1094,7 @@ test("a session is ready for edits once synchronized and recording them, before 
   };
   let readyAt = null;
   const session = new CollaborationSession({
-    puter: env.sdk(owner),
+    everything: env.sdk(owner),
     server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: owner,
@@ -1304,7 +1304,7 @@ test("two independent sessions recover missed events and lost acknowledgements a
     statuses = [];
   const make = (user, i) =>
     new CollaborationSession({
-      puter: env.sdk(user),
+      everything: env.sdk(user),
       server: "http://whiteboard-test.localhost:8443",
       room: b.id,
       user,
@@ -1370,7 +1370,7 @@ test("more than one batch of offline edits saves after a reload", async () => {
     (await read(scope)).sort((x, y) => (x.id < y.id ? -1 : 1));
   const make = () =>
     new CollaborationSession({
-      puter: env.sdk(owner),
+      everything: env.sdk(owner),
       server: "http://whiteboard-test.localhost:8443",
       room: b.id,
       user: owner,
@@ -1409,7 +1409,7 @@ test("a backlog larger than one upload round continues without waiting for a ret
     b = await room(env);
   const make = (store) =>
     new CollaborationSession({
-      puter: env.sdk(owner),
+      everything: env.sdk(owner),
       server: "http://whiteboard-test.localhost:8443",
       room: b.id,
       user: owner,
@@ -1464,7 +1464,7 @@ test("shared layer changes persist, synchronize, and undo without removing anoth
   env.dropEvents = true;
   const make = (user) =>
     new CollaborationSession({
-      puter: env.sdk(user),
+      everything: env.sdk(user),
       server: "http://whiteboard-test.localhost:8443",
       room: b.id,
       user,
@@ -1524,7 +1524,7 @@ test("shared media is stored in files and hydrated for export without embedding 
     store = memoryStore();
   let visible;
   const session = new CollaborationSession({
-    puter: env.sdk(owner),
+    everything: env.sdk(owner),
     server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: owner,
@@ -1681,7 +1681,7 @@ test("simultaneous additions past the object limit leave the board saveable", as
   // before the other's, and both accept it.
   const { BoardService: Other } =
     await import("../worker/service.js?instance=limit");
-  const other = new Other(env.service.puter, {
+  const other = new Other(env.service.everything, {
     now: () => env.now,
     org: env.service.org,
   });
@@ -1706,7 +1706,7 @@ test("simultaneous additions past the object limit leave the board saveable", as
   });
   env.now += 2000;
   const session = new CollaborationSession({
-    puter: env.sdk(editor),
+    everything: env.sdk(editor),
     server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: editor,
@@ -1753,7 +1753,7 @@ test("two people typing into one note past its length limit leave the board save
   await invite(env, b, editor);
   const { BoardService: Other } =
     await import("../worker/service.js?instance=text");
-  const other = new Other(env.service.puter, {
+  const other = new Other(env.service.everything, {
     now: () => env.now,
     org: env.service.org,
   });
@@ -1797,7 +1797,7 @@ test("two people typing into one note past its length limit leave the board save
     { status: 422 },
   );
   const session = new CollaborationSession({
-    puter: env.sdk(editor),
+    everything: env.sdk(editor),
     server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: editor,
@@ -1858,7 +1858,7 @@ test("an edit refused for the board's file limit says so rather than a conflict"
   let state;
   const reasons = [];
   const session = new CollaborationSession({
-    puter: env.sdk(owner),
+    everything: env.sdk(owner),
     server: "http://whiteboard-test.localhost:8443",
     room: initial.id,
     user: owner,
@@ -1923,7 +1923,7 @@ test("a refused edit is isolated and dropped, and the edits queued after it are 
     rejected = [];
   const make = (user, i) =>
     new CollaborationSession({
-      puter: env.sdk(user),
+      everything: env.sdk(user),
       server: "http://whiteboard-test.localhost:8443",
       room: initial.id,
       user,
@@ -2158,7 +2158,7 @@ test("participants cannot rewrite content, workshop settings or others' entries 
   // A commenter's own save writes only the discussion.
   let state;
   const session = new CollaborationSession({
-    puter: env.sdk(viewer),
+    everything: env.sdk(viewer),
     server: "http://whiteboard-test.localhost:8443",
     room: initial.id,
     user: viewer,
@@ -2249,7 +2249,7 @@ test("comments stored in another field order or with empty fields do not get oth
   });
   let state;
   const session = new CollaborationSession({
-    puter: env.sdk(owner),
+    everything: env.sdk(owner),
     server: "http://whiteboard-test.localhost:8443",
     room: initial.id,
     user: owner,
@@ -2335,7 +2335,7 @@ test("a failed start releases live channels instead of leaving an unsaved writab
   const env = environment(),
     b = await room(env);
   const session = new CollaborationSession({
-    puter: env.sdk(owner),
+    everything: env.sdk(owner),
     server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: owner,
@@ -2370,7 +2370,7 @@ test("local edits persist outbox rows without rewriting the full snapshot", asyn
   let state;
   const make = () =>
     new CollaborationSession({
-      puter: env.sdk(owner),
+      everything: env.sdk(owner),
       server: "http://whiteboard-test.localhost:8443",
       room: b.id,
       user: owner,
@@ -2411,7 +2411,7 @@ test("local edits persist outbox rows without rewriting the full snapshot", asyn
 });
 test("completed peer actions are remembered for a bounded set of sessions", () => {
   const session = new CollaborationSession({
-    puter: {},
+    everything: {},
     server: "http://whiteboard-test.localhost:8443",
     room: "bounded",
     user: owner,
@@ -2435,7 +2435,7 @@ test("a synchronization requested during another one runs again afterwards", asy
   const states = [];
   const make = (user, i) =>
     new CollaborationSession({
-      puter: env.sdk(user),
+      everything: env.sdk(user),
       server: "http://whiteboard-test.localhost:8443",
       room: b.id,
       user,
@@ -2481,7 +2481,7 @@ test("an edit made while an upload finishes is sent soon after it, not at the ne
     b = await room(env);
   let state;
   const session = new CollaborationSession({
-    puter: env.sdk(owner),
+    everything: env.sdk(owner),
     server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: owner,
@@ -2534,7 +2534,7 @@ test("live positions are sent less often as a room grows", async () => {
   const env = environment(),
     b = await room(env);
   const session = new CollaborationSession({
-    puter: env.sdk(owner),
+    everything: env.sdk(owner),
     server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: owner,
@@ -2579,7 +2579,7 @@ test("an edit after a quiet spell uploads at once; edits right after it wait for
     b = await room(env);
   const states = [];
   const session = new CollaborationSession({
-    puter: env.sdk(owner),
+    everything: env.sdk(owner),
     server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: owner,
@@ -2615,7 +2615,7 @@ test("an edit after a quiet spell uploads at once; edits right after it wait for
 });
 test("uploads are spaced by how many people are uploading, not how many are present", () => {
   const session = new CollaborationSession({
-    puter: {},
+    everything: {},
     server: "http://whiteboard-test.localhost:8443",
     room: "test",
     user: owner,
@@ -2660,7 +2660,7 @@ test("drawings finished in quick succession each stay shown until their own edit
   const env = environment(),
     { doc } = seed();
   const session = new CollaborationSession({
-    puter: env.sdk(owner),
+    everything: env.sdk(owner),
     server: "http://whiteboard-test.localhost:8443",
     room: "test",
     user: owner,
@@ -2747,7 +2747,7 @@ test("a finished move stays shown while its author is still saving it, and gives
   const env = environment(),
     { doc } = seed();
   const session = new CollaborationSession({
-    puter: env.sdk(owner),
+    everything: env.sdk(owner),
     server: "http://whiteboard-test.localhost:8443",
     room: "test",
     user: owner,
@@ -2839,7 +2839,7 @@ test("a finished move stays shown while its author is still saving it, and gives
 test("presence says a finished change is settling until its edit is saved, each second, for twenty seconds at most", async () => {
   const env = environment();
   const session = new CollaborationSession({
-    puter: env.sdk(owner),
+    everything: env.sdk(owner),
     server: "http://whiteboard-test.localhost:8443",
     room: "test",
     user: owner,
@@ -2907,7 +2907,7 @@ test("a selection or open editor keeps being shared while its participant is idl
   const env = environment(),
     b = await room(env);
   const session = new CollaborationSession({
-    puter: env.sdk(owner),
+    everything: env.sdk(owner),
     server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: owner,
@@ -2945,7 +2945,7 @@ test("someone whose access is removed stops seeing the previous participants", a
   const rosters = [];
   const make = (user, activity = () => {}) =>
     new CollaborationSession({
-      puter: env.sdk(user),
+      everything: env.sdk(user),
       server: "http://whiteboard-test.localhost:8443",
       room: b.id,
       user,
@@ -2983,7 +2983,7 @@ test("someone whose access is removed stops seeing the previous participants", a
 test("live view counts as unavailable only once others are present without a peer link for ten seconds", () => {
   const env = environment();
   const session = new CollaborationSession({
-    puter: env.sdk(owner),
+    everything: env.sdk(owner),
     server: "http://whiteboard-test.localhost:8443",
     room: "test",
     user: owner,
@@ -3024,9 +3024,9 @@ test("live view counts as unavailable only once others are present without a pee
 test("network failures and gateway pages give a message people can act on, keeping the status", async () => {
   const env = environment(),
     b = await room(env);
-  const puter = env.sdk(owner);
+  const everything = env.sdk(owner);
   const session = new CollaborationSession({
-    puter,
+    everything,
     server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: owner,
@@ -3046,7 +3046,7 @@ test("network failures and gateway pages give a message people can act on, keepi
       return true;
     });
     env.offline = false;
-    puter.workers.exec = async () =>
+    everything.workers.exec = async () =>
       new Response("<html>Bad gateway</html>", { status: 502 });
     await assert.rejects(session.request("sync"), { status: 502 });
   } finally {
@@ -3057,7 +3057,7 @@ test("an invite code renewed during a check-in is published right after it", asy
   const env = environment(),
     b = await room(env);
   const session = new CollaborationSession({
-    puter: env.sdk(owner),
+    everything: env.sdk(owner),
     server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: owner,
@@ -3117,7 +3117,7 @@ test("a failed upload while connecting leaves live features on and uploads once 
   let state;
   const make = () =>
     new CollaborationSession({
-      puter: env.sdk(owner),
+      everything: env.sdk(owner),
       server: "http://whiteboard-test.localhost:8443",
       room: b.id,
       user: owner,
@@ -3169,7 +3169,7 @@ test("the save status says live the same way after synchronizing and after savin
   const statuses = [];
   let state;
   const session = new CollaborationSession({
-    puter: env.sdk(owner),
+    everything: env.sdk(owner),
     server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: owner,
@@ -3226,7 +3226,7 @@ test("synchronizing without news neither rewrites the local copy nor redraws, bu
   const changes = [0, 0];
   const make = (user, i, s = memoryStore()) =>
     new CollaborationSession({
-      puter: env.sdk(user),
+      everything: env.sdk(user),
       server: "http://whiteboard-test.localhost:8443",
       room: b.id,
       user,
@@ -3281,7 +3281,7 @@ test("a session whose ID another participant took after it lapsed continues unde
   await invite(env, b, editor);
   await invite(env, b, viewer, "viewer");
   const session = new CollaborationSession({
-    puter: env.sdk(editor),
+    everything: env.sdk(editor),
     server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: editor,
@@ -3576,7 +3576,7 @@ test("repairs made outside undo history are saved like edits", async () => {
   const env = environment(),
     b = await room(env);
   const a = new CollaborationSession({
-    puter: env.sdk(owner),
+    everything: env.sdk(owner),
     server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: owner,
@@ -3603,10 +3603,10 @@ test("a slow reply does not put the shared clock out of step with the server", a
   const env = environment(),
     b = await room(env);
   env.service.now = () => Date.now();
-  const puter = env.sdk(owner),
-    exec = puter.workers.exec;
+  const everything = env.sdk(owner),
+    exec = everything.workers.exec;
   let slow = false;
-  puter.workers.exec = async (url, options) => {
+  everything.workers.exec = async (url, options) => {
     const response = await exec(url, options);
     // The server read its clock, then the reply took long to arrive, as
     // when a large board is sent back.
@@ -3614,7 +3614,7 @@ test("a slow reply does not put the shared clock out of step with the server", a
     return response;
   };
   const session = new CollaborationSession({
-    puter,
+    everything,
     server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: owner,
@@ -3762,16 +3762,16 @@ test("the shared clock catches up after the device sleeps", async () => {
     b = await room(env);
   let slept = 0;
   env.service.now = () => Date.now() + slept;
-  const puter = env.sdk(owner),
-    exec = puter.workers.exec;
+  const everything = env.sdk(owner),
+    exec = everything.workers.exec;
   // The reply after waking is no quicker than the first ones.
-  puter.workers.exec = async (url, options) => {
+  everything.workers.exec = async (url, options) => {
     const response = await exec(url, options);
     if (slept) await new Promise((r) => setTimeout(r, 300));
     return response;
   };
   const session = new CollaborationSession({
-    puter,
+    everything,
     server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: owner,
@@ -4118,7 +4118,7 @@ test("someone turned away by a full board is told so, keeps saving, and checks i
   seed.destroy();
   const make = (status = () => {}) =>
     new CollaborationSession({
-      puter: env.sdk(owner),
+      everything: env.sdk(owner),
       server: "http://whiteboard-test.localhost:8443",
       room: initial.id,
       user: owner,
@@ -4181,7 +4181,7 @@ test("a save whose edits already arrived, over a peer link or as one's own, is n
   const make = (user) => {
     const box = {};
     const session = new CollaborationSession({
-      puter: { ...env.sdk(user), peer: hub.peer },
+      everything: { ...env.sdk(user), peer: hub.peer },
       server: "http://whiteboard-test.localhost:8443",
       room: initial.id,
       user,

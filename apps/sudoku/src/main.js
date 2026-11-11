@@ -65,7 +65,7 @@ import {
   syncSavedGame,
   syncStats,
 } from './game/persistence.js';
-import * as account from './net/puter.js';
+import * as account from './net/everything.js';
 import { createBoardView } from './ui/boardView.js';
 import { createKeypad } from './ui/keypad.js';
 
@@ -981,21 +981,21 @@ function renderAccount() {
     el.accountName.textContent = 'Sign in';
     el.accountBtn.disabled = false;
     el.accountBtn.title = 'Sign in to carry your puzzles and times between devices';
-    el.accountBtn.setAttribute('aria-label', 'Sign in with Puter');
+    el.accountBtn.setAttribute('aria-label', 'Sign in with Everything');
     return;
   }
 
   el.accountName.textContent = state.accountName ?? 'Signed in';
-  // Inside a Puter app the session belongs to the shell around us, so there is
+  // Inside an Everything app the session belongs to the shell around us, so there is
   // no sign-out to offer: the button becomes a label saying who is signed in.
   // http://localhost:8443/Utils/env/
   el.accountBtn.disabled = hosted;
   el.accountBtn.title = hosted
-    ? `Signed in as ${state.accountName ?? 'your Puter account'}`
+    ? `Signed in as ${state.accountName ?? 'your Everything account'}`
     : 'Sign out';
   el.accountBtn.setAttribute(
     'aria-label',
-    hosted ? `Signed in as ${state.accountName ?? 'your Puter account'}` : 'Sign out',
+    hosted ? `Signed in as ${state.accountName ?? 'your Everything account'}` : 'Sign out',
   );
 }
 

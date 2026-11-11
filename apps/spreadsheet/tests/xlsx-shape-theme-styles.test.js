@@ -23,7 +23,7 @@ function themed({ inherited = false, width = 97, height = 43 } = {}) {
 }
 async function external(wb) {
   const zip = X.CFB.read(new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()), { type: 'array' });
-  edit(zip, '/xl/workbook.xml', xml => xml.replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  edit(zip, '/xl/workbook.xml', xml => xml.replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   return { back: await workbookFromFile(bytes(zip), 'native.xlsx'), xml: new TextDecoder().decode(X.CFB.find(zip, '/xl/drawings/drawing1.xml').content) };
 }
 

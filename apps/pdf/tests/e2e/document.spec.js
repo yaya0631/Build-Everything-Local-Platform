@@ -3,10 +3,10 @@ import { PDFDocument, PDFHexString, PDFName, decodePDFRawStream } from 'pdf-lib'
 import { readFile } from 'node:fs/promises';
 import { addMetadata } from '../fixtures/metadata.js';
 
-const PUTER_MOCK = `window.puter = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async () => ({}) }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
-async function mockPuter(page) {
-  await page.route('**/sdk/puter.js', (route) =>
-    route.fulfill({ contentType: 'application/javascript', body: PUTER_MOCK }),
+const EVERYTHING_MOCK = `window.everything = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async () => ({}) }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
+async function mockEverything(page) {
+  await page.route('**/sdk/everything.js', (route) =>
+    route.fulfill({ contentType: 'application/javascript', body: EVERYTHING_MOCK }),
   );
 }
 async function openPdf(page, doc, name = 'test.pdf', bytes) {
@@ -52,7 +52,7 @@ const settled = (page) => expect(page.locator('.editor')).toHaveAttribute('aria-
 for (const storage of ['Info', 'XMP']) {
   for (const content of ['multiline', 'long']) {
     test(`Document details preserves untouched ${content} ${storage} fields`, async ({ page }) => {
-      await mockPuter(page);
+      await mockEverything(page);
       await page.goto('/#library');
       const source = await PDFDocument.create();
       source.addPage([400, 300]);
@@ -119,7 +119,7 @@ for (const storage of ['Info', 'XMP']) {
 test('Document details edits multiline values and restores them with undo and redo', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([400, 300]);
@@ -145,7 +145,7 @@ test('Document details edits multiline values and restores them with undo and re
 });
 
 test('editing an author preserves XML 1.0 separator characters in the title', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const source = await PDFDocument.create();
   source.addPage([400, 300]);
@@ -177,7 +177,7 @@ test('editing an author preserves XML 1.0 separator characters in the title', as
 test('Document details reconciles XMP, preserves translations, and restores both stores with undo', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([400, 300]);
@@ -253,7 +253,7 @@ test('Document details reconciles XMP, preserves translations, and restores both
 test('Document details shows the file facts and saves the editable ones with undo', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([400, 300]);
@@ -297,7 +297,7 @@ test('Document details shows the file facts and saves the editable ones with und
 test('the Page menu turns every page at once and downloads a page as a PNG picture', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([400, 300]);
@@ -327,7 +327,7 @@ test('the Page menu turns every page at once and downloads a page as a PNG pictu
 test('editing and downloading a header-only PDF 2.0 file preserves its version and UTF-8 metadata', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([400, 300]).drawText('PDF 2.0 content');

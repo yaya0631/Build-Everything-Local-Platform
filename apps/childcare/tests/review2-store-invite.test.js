@@ -46,7 +46,7 @@ describe('a new invitation to a school already in the list', () => {
   it('is used to join again instead of being dropped', async () => {
     document.body.innerHTML = '<div id="app"></div>';
     history.replaceState(null, '', `/#/join?w=childcare-abcdefghij&t=${'T'.repeat(24)}`);
-    globalThis.puter = {
+    globalThis.everything = {
       auth: { isSignedIn: () => true, getUser: async () => ({ username: 'teacher', uuid: 'u9' }), getProfilePicture: async () => null },
       kv: {},
     };
@@ -56,6 +56,6 @@ describe('a new invitation to a school already in the list', () => {
     await tick(5);
     expect(calls[0]).toBe('join');
     expect(team.leaveWorkspace).not.toHaveBeenCalled();
-    delete globalThis.puter;
+    delete globalThis.everything;
   });
 });

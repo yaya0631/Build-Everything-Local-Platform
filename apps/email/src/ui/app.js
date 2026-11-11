@@ -33,7 +33,7 @@ import {
 } from '../lib/format.js';
 import {
   replyRecipients, replySubject, forwardSubject, forwardBlock, bytesToBase64, safeFilename,
-  PUTER_DOMAINS,
+  EVERYTHING_DOMAINS,
 } from '../lib/compose.js';
 import {
   parseQuery, matchesQuery, needsIndex, needsSearchRead, mayMatchSubject, createSearchIndex,
@@ -64,13 +64,13 @@ const SEARCH_DEBOUNCE_MS = 200;
 const RESULT_PAGE_SIZE = 60;
 const FOLDER_WINDOW_SIZE = 300;
 const THREAD_PAGE_SIZE = 60;
-const NAV_LS_KEY = 'puter-mail:nav';
-const THREAD_LS_KEY = 'puter-mail:conversations';
-const NOTIFY_LS_KEY = 'puter-mail:notify';
+const NAV_LS_KEY = 'everything-mail:nav';
+const THREAD_LS_KEY = 'everything-mail:conversations';
+const NOTIFY_LS_KEY = 'everything-mail:notify';
 // Seconds a send can be taken back for, and the one it is until changed.
 const UNDO_SEND_CHOICES = [0, 5, 10, 20, 30];
 const UNDO_SEND_DEFAULT = 5;
-const BASE_TITLE = 'Puter Mail';
+const BASE_TITLE = 'Everything Mail';
 // What the reader shows where a message has no text of its own -- a photo
 // sent from a phone with nothing typed under it. A note about the message,
 // not part of it, so it is never quoted into an answer.
@@ -78,7 +78,7 @@ const EMPTY_BODY = '(no text content)';
 
 /**
  * How often a visible tab looks for new mail when the mailbox cannot be
- * watched -- a Puter without the Events API, a server with it turned off, a
+ * watched -- an Everything without the Events API, a server with it turned off, a
  * subscription that lapsed and could not be made again. Every check is a
  * readdir against the user's own filesystem -- normally one sorted recursive
  * page, or a root/day traversal for large roots and older SDKs. With the
@@ -101,9 +101,9 @@ const mobile = () => matchMedia('(max-width: 800px)').matches;
 /**
  * The Gmail-style inbox shell: top bar with search, folder sidebar, and a
  * content card that swaps between the message list and an open message.
- * `ctx` carries the fs to read from (puter.fs in the app, the in-memory
+ * `ctx` carries the fs to read from (everything.fs in the app, the in-memory
  * sample mailbox in the tests) plus account/session callbacks. `ctx.events`
- * is the Events API when this Puter has one; the shell watches `.mail` over it
+ * is the Events API when this Everything has one; the shell watches `.mail` over it
  * and polls only where it cannot.
  *
  * A folder is a mailbox listing plus a way of reading it. Inbox, Sent,
@@ -367,7 +367,7 @@ export function renderApp(root, ctx) {
   // The reader's own addresses on the sending domains, which is what makes a
   // conversation read "Ana, me, Leo" rather than repeating an address they own.
   const ownAddresses = new Set((ctx.account?.username
-    ? PUTER_DOMAINS.map((domain) => `${ctx.account.username}@${domain}`)
+    ? EVERYTHING_DOMAINS.map((domain) => `${ctx.account.username}@${domain}`)
     : []).map((address) => address.toLowerCase()));
 
   // -- conversations -----------------------------------------------------------
@@ -655,7 +655,7 @@ export function renderApp(root, ctx) {
     menuBtn,
     el('div.brand', {},
       el('img.brand-icon', { src: './app-icon.png', width: 24, height: 24, alt: '' }),
-      el('h1.brand-name', {}, 'Puter Mail'),
+      el('h1.brand-name', {}, 'Everything Mail'),
     ),
     el('div.search', { role: 'search' },
       el('span.search-icon', { html: icon('search', 18) }),
@@ -2183,7 +2183,7 @@ export function renderApp(root, ctx) {
     const count = countOf(list);
     // The one action undo cannot cover, so it is the one that asks first --
     // and it asks with a dialog of this app's own, because `window.confirm` is
-    // suppressed in the cross-origin iframe a Puter app runs in and would have
+    // suppressed in the cross-origin iframe an Everything app runs in and would have
     // answered "no" to every permanent delete without showing anything.
     const confirmed = await confirmDialog({
       title: 'Delete forever?',
@@ -3100,7 +3100,7 @@ export function renderApp(root, ctx) {
         : el('div.center', {},
           el('span.center-icon', { html: icon('inbox', 28, 1.4) }),
           el('p', {}, 'No mail yet.'),
-          el('p.center-note', {}, 'Messages delivered to your Puter mailbox appear here. Check back after your first message arrives.')));
+          el('p.center-note', {}, 'Messages delivered to your Everything mailbox appear here. Check back after your first message arrives.')));
       syncSelection();
       return;
     }
@@ -3292,7 +3292,7 @@ export function renderApp(root, ctx) {
   };
 
   /**
-   * Save an attachment into the user's own Puter files, through the OS's save
+   * Save an attachment into the user's own Everything files, through the OS's save
    * dialog. Inside a cloud OS the download folder of the device is the wrong
    * place for a file half the time: the file belongs next to the other files,
    * where the other apps are. The picker writes the bytes itself and rejects
@@ -3309,11 +3309,11 @@ export function renderApp(root, ctx) {
     const name = safeFilename(attachment.filename);
     let saved;
     try {
-      saved = await ctx.saveToPuter(blob, name);
+      saved = await ctx.saveToEverything(blob, name);
     } catch {
       return; // dismissed
     }
-    toast(`Saved ${saved?.name || name} to your Puter files.`, { iconName: 'cloudUpload' });
+    toast(`Saved ${saved?.name || name} to your Everything files.`, { iconName: 'cloudUpload' });
   };
 
   const downloadBlob = (blob, name) => {
@@ -3367,9 +3367,9 @@ export function renderApp(root, ctx) {
       el('div.preview-actions', {},
         el('span.preview-size', {}, formatSize(attachment.size)),
         el('span.spacer'),
-        ctx.saveToPuter && el('button.btn', {
+        ctx.saveToEverything && el('button.btn', {
           type: 'button', onclick: () => saveAttachment(attachment),
-        }, el('span.btn-icon', { html: icon('cloudUpload', 15) }), 'Save to Puter'),
+        }, el('span.btn-icon', { html: icon('cloudUpload', 15) }), 'Save to Everything'),
         el('button.btn.btn-primary', {
           type: 'button', onclick: () => downloadAttachment(attachment),
         }, el('span.btn-icon', { html: icon('download', 15) }), 'Download'),
@@ -3812,7 +3812,7 @@ export function renderApp(root, ctx) {
       // second view, rendered only when the reader asks for it, in an iframe
       // with neither allow-scripts nor allow-same-origin: no mail script can
       // run, and the frame is a unique opaque origin that cannot reach this
-      // app's storage or its Puter token. A CSP inside the frame blocks remote
+      // app's storage or its Everything token. A CSP inside the frame blocks remote
       // content, and the markup is sanitized before it gets there anyway.
 
       // Both of these walk the whole message, and neither is worth anything
@@ -4003,14 +4003,14 @@ export function renderApp(root, ctx) {
             el('span.attachment-dl', { html: icon(preview ? 'eye' : 'download', 14) }),
           );
           // The other place a file can go inside a cloud OS: the user's own
-          // Puter files, the way the compose dialog can attach from them.
-          if (!ctx.saveToPuter) return download;
+          // Everything files, the way the compose dialog can attach from them.
+          if (!ctx.saveToEverything) return download;
           return el('span.attachment-group', {},
             download,
             el('button.attachment-save', {
               type: 'button', html: icon('cloudUpload', 15),
-              title: `Save ${name} to your Puter files`,
-              'aria-label': `Save ${name} to your Puter files`,
+              title: `Save ${name} to your Everything files`,
+              'aria-label': `Save ${name} to your Everything files`,
               onclick: () => saveAttachment(a),
             }),
           );
@@ -4812,7 +4812,7 @@ export function renderApp(root, ctx) {
       const note = new Notification(`${BASE_TITLE}: new mail`, {
         body,
         // One replaceable notification rather than a pile of them.
-        tag: 'puter-mail-new',
+        tag: 'everything-mail-new',
         icon: './icon-192.png',
       });
       // The click is the reader asking to see it. One message opens; a
@@ -5170,7 +5170,7 @@ export function renderApp(root, ctx) {
   /**
    * Subscribe to changes under `.mail`. One subscription covers every folder,
    * and it costs nothing while nothing changes. Where it cannot be had -- a
-   * Puter without the Events API, a server with it turned off, a lapse the
+   * Everything without the Events API, a server with it turned off, a lapse the
    * SDK could not reconnect from -- the shell falls back to the timed check,
    * and asks for the subscription again at the moments a connection tends to
    * come back. Every path out of here that does not end with the watch

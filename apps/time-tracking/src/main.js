@@ -36,7 +36,7 @@ function showError(title, message, onRetry) {
 }
 
 async function start() {
-  if (typeof puter === 'undefined') {
+  if (typeof everything === 'undefined') {
     // The SDK could not load. If this device holds a signed-in user's
     // local mirror, boot from it: reads come from the cache, writes queue,
     // and the real SDK is picked up with a reload once the network returns.
@@ -46,13 +46,13 @@ async function start() {
       await boot();
       return;
     }
-    showError('Could not reach Puter', 'The Puter SDK failed to load. Check your connection and try again.', () => location.reload());
+    showError('Could not reach Everything', 'The Everything SDK failed to load. Check your connection and try again.', () => location.reload());
     return;
   }
 
   let signedIn = false;
   try {
-    signedIn = await Promise.resolve(puter.auth.isSignedIn());
+    signedIn = await Promise.resolve(everything.auth.isSignedIn());
   } catch {
     signedIn = false;
   }
@@ -77,7 +77,7 @@ async function boot() {
     if (!navigator.onLine) {
       showError('You are offline', 'This device has no local copy of your data yet. Connect once and it will be available offline from then on.', () => location.reload());
     } else {
-      showError('Could not load your data', 'Something went wrong talking to your Puter cloud.', () => location.reload());
+      showError('Could not load your data', 'Something went wrong talking to your Everything cloud.', () => location.reload());
     }
     return;
   }
@@ -142,7 +142,7 @@ async function syncPending() {
 }
 
 /**
- * Pull in what another device did. One Puter account holds the data, so
+ * Pull in what another device did. One Everything account holds the data, so
  * the intended user tracks on a phone and reviews on a laptop; a tab left
  * open used to show a stale month forever. Quiet by design: nothing is
  * said unless something actually changed, and a hidden tab does not bother
@@ -174,7 +174,7 @@ async function syncBoth() {
 let updateOfflineBanner = () => {};
 
 /**
- * Bottom banner for work that has not reached Puter yet. Two signals, not
+ * Bottom banner for work that has not reached Everything yet. Two signals, not
  * one: the OS reporting offline, and the write queue itself. A server that
  * is unreachable while the OS still reports online (a DNS or VPN blip)
  * never flips `navigator.onLine`, and without the queue check those

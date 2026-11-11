@@ -1,14 +1,14 @@
-// The Assistant and Generation History in the running app, with Puter's AI
+// The Assistant and Generation History in the running app, with Everything's AI
 // replaced by a scripted stub: plans from tool-calling replies, running them
 // as one undo step, step-by-step runs and edits, answers with "Show me", the
 // start screen's describe-an-edit box, and recording and placing AI results.
 import { test, expect, type Page } from '@playwright/test';
 import { boot, historyLabels, idle, openImage, start, undo } from './helpers';
 
-// puter.ai.chat answers from window.__chatScript (one reply per call, in
+// everything.ai.chat answers from window.__chatScript (one reply per call, in
 // order) and records every call; txt2img returns flat images.
-const PUTER = `window.__chatCalls=[];window.__chatScript=[];
-window.puter={env:"app",auth:{isSignedIn:()=>true},ai:{
+const EVERYTHING = `window.__chatCalls=[];window.__chatScript=[];
+window.everything={env:"app",auth:{isSignedIn:()=>true},ai:{
 chat:async(messages,test,options)=>{window.__chatCalls.push({messages:JSON.parse(JSON.stringify(messages)),options:JSON.parse(JSON.stringify({...options,signal:undefined}))});const r=window.__chatScript.shift();return r??{message:{role:"assistant",content:"Nothing more to do."}};},
 txt2img:async(prompt,opts)=>{const c=document.createElement('canvas');c.width=128;c.height=96;const g=c.getContext('2d');g.fillStyle='#d03030';g.fillRect(0,0,128,96);return {src:c.toDataURL()};}}};`;
 
@@ -38,7 +38,7 @@ async function send(page: Page, text: string) {
 }
 
 test('a described edit becomes a checked plan that runs as one undo step', async ({ page }) => {
-  await boot(page, 'default', PUTER);
+  await boot(page, 'default', EVERYTHING);
   await openImage(page, 200, 150, '#808080', 'photo.png');
   await openAssistant(page);
   await expect(page.locator('.ast-intro')).toBeVisible();
@@ -104,7 +104,7 @@ test('a described edit becomes a checked plan that runs as one undo step', async
 });
 
 test('plans are validated, edited, run step by step and stopped', async ({ page }) => {
-  await boot(page, 'default', PUTER);
+  await boot(page, 'default', EVERYTHING);
   await openImage(page, 160, 120, '#406080', 'photo.png');
   await openAssistant(page);
   await script(page, {
@@ -169,7 +169,7 @@ test('plans are validated, edited, run step by step and stopped', async ({ page 
 });
 
 test('answers point at commands, tools and panels with Show me', async ({ page }) => {
-  await boot(page, 'default', PUTER);
+  await boot(page, 'default', EVERYTHING);
   await openImage(page, 120, 90, '#808080', 'photo.png');
   await openAssistant(page);
   await script(page, {
@@ -192,12 +192,12 @@ test('answers point at commands, tools and panels with Show me', async ({ page }
 });
 
 test('the start screen hands a described edit to the Assistant', async ({ page }) => {
-  await boot(page, 'default', PUTER);
+  await boot(page, 'default', EVERYTHING);
   await script(page, { calls: [{ name: 'propose_plan', args: { title: 'Square', steps: [{ action: 'op.crop', args: { aspect: '1:1' } }] } }] });
   const box = page.getByRole('region', { name: 'Describe an edit' });
   await expect(box).toBeVisible();
   // It says what is sent, image preview included, as the panel does.
-  await expect(box.locator('.start-describe-note')).toContainText('Sends your request, the document’s size and layer list and a small preview to Puter’s AI service');
+  await expect(box.locator('.start-describe-note')).toContainText('Sends your request, the document’s size and layer list and a small preview to Everything’s AI service');
   await box.getByRole('button', { name: 'Start' }).click();
   await expect(page.locator('#status')).toHaveText('Describe the edit first.');
   await box.getByRole('textbox', { name: 'Describe an edit' }).fill('crop it to a square');
@@ -213,7 +213,7 @@ test('the start screen hands a described edit to the Assistant', async ({ page }
 });
 
 test('AI results are recorded in Generation History and placed again', async ({ page }) => {
-  await boot(page, 'default', PUTER);
+  await boot(page, 'default', EVERYTHING);
   await openImage(page, 200, 150, '#808080', 'photo.png');
   await page.evaluate(async () => {
     const { generationStore } = await import('/src/features/generations/record.ts');
@@ -275,7 +275,7 @@ test('AI results are recorded in Generation History and placed again', async ({ 
 });
 
 test('AI Fill run by a plan is recorded as an AI result in provenance', async ({ page }) => {
-  await boot(page, 'default', PUTER);
+  await boot(page, 'default', EVERYTHING);
   await openImage(page, 160, 120, '#808080', 'photo.png');
   await page.evaluate(() => {
     window.photoStudio.preferences.provenancePrompts = true;
@@ -300,7 +300,7 @@ test('AI Fill run by a plan is recorded as an AI result in provenance', async ({
 });
 
 test('Generation History places a Generate Image result as the dialog fitted it', async ({ page }) => {
-  await boot(page, 'default', PUTER);
+  await boot(page, 'default', EVERYTHING);
   // The stub returns 128 × 96 images; this canvas is wider, so fitting leaves margins.
   await openImage(page, 200, 100, '#808080', 'wide.png');
   await page.evaluate(async () => {
@@ -334,7 +334,7 @@ test('Generation History places a Generate Image result as the dialog fitted it'
 });
 
 test('Generation History shows a result as soon as it is stored', async ({ page }) => {
-  await boot(page, 'default', PUTER);
+  await boot(page, 'default', EVERYTHING);
   await openImage(page, 120, 90, '#808080', 'photo.png');
   await page.evaluate(async () => {
     const { generationStore } = await import('/src/features/generations/record.ts');

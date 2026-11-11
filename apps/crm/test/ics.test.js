@@ -70,7 +70,7 @@ describe('events', () => {
   it('wraps events in a calendar with CRLF line endings', () => {
     const text = buildCalendar([{ uid: 'u1', summary: 'A', date: '2026-08-04' }], now);
     expect(lines(text)[0]).toBe('BEGIN:VCALENDAR');
-    expect(text).toContain('PRODID:-//Sales CRM//Puter//EN');
+    expect(text).toContain('PRODID:-//Sales CRM//Everything//EN');
     expect(text.endsWith('END:VCALENDAR\r\n')).toBe(true);
     expect(text).toContain('DTSTAMP:20260804T093000Z');
   });

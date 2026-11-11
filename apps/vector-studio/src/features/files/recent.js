@@ -4,11 +4,11 @@
  * Entries live in the preferences (small: kind, path, name, time); their
  * thumbnails live in a cache backend (OPFS) keyed by a hash of the entry so
  * localStorage stays small. Cloud entries are checked against
- * puter.fs.stat lazily (at most once per `staleAfter`) and dropped when the
+ * everything.fs.stat lazily (at most once per `staleAfter`) and dropped when the
  * file is gone; the user can also remove entries by hand.
  *
- * Entry: { kind: 'puter' | 'local', path, name, when, handleId? }
- *   puter  path is the absolute Puter path
+ * Entry: { kind: 'everything' | 'local', path, name, when, handleId? }
+ *   everything  path is the absolute Everything path
  *   local  a File System Access handle stored in IndexedDB under handleId
  */
 import { isMissing } from './backends.js';
@@ -49,7 +49,7 @@ export class RecentFiles {
   list() {
     const raw = this.prefs.get(RECENT_KEY);
     if (!Array.isArray(raw)) return [];
-    return raw.filter((e) => e && typeof e === 'object' && (e.kind === 'puter' ? typeof e.path === 'string' : e.kind === 'local' && e.handleId)).slice(0, this.limit);
+    return raw.filter((e) => e && typeof e === 'object' && (e.kind === 'everything' ? typeof e.path === 'string' : e.kind === 'local' && e.handleId)).slice(0, this.limit);
   }
 
   #store(list) {
@@ -136,7 +136,7 @@ export class RecentFiles {
     const now = this.now();
     const jobs = this.list()
       .filter((e) => {
-        if (e.kind !== 'puter') return false;
+        if (e.kind !== 'everything') return false;
         const last = this.checked.get(entryKey(e));
         return force || last == null || now - last >= this.staleAfter;
       })

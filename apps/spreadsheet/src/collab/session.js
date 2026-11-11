@@ -5,7 +5,7 @@
  */
 
 import { RoomClient } from './client.js';
-import { collabPuter, deploy, call } from './api.js';
+import { collabEverything, deploy, call } from './api.js';
 import { browserOutbox } from './outbox.js';
 import { shareLink } from './protocol.js';
 import { Doc, SHARED_FILE } from '../lib/doc.js';
@@ -17,7 +17,7 @@ const fileKey = (file) => `spreadsheet-collab-file-v1:${file.uid || file.path}`;
 export async function roomForFile(file) {
   if (!file?.path && !file?.uid) return null;
   try {
-    const p = globalThis.puter;
+    const p = globalThis.everything;
     if (!p?.kv?.get) return null;
     const saved = await p.kv.get(fileKey(file));
     return saved?.server && saved?.room ? saved : null;
@@ -29,18 +29,18 @@ export async function roomForFile(file) {
 /** Share the open workbook for editing together: deploy the worker, create the room, remember it for the file. */
 export async function startSharing(doc, progress = () => {}) {
   if (doc.roomFile) throw new Error(SHARED_FILE);
-  const puter = collabPuter();
-  const server = await deploy(puter, progress);
+  const everything = collabEverything();
+  const server = await deploy(everything, progress);
   progress('Sharing the workbook…');
   const file = doc.path ? { path: doc.path, uid: doc.uid || null } : null;
-  const room = await RoomClient.create({ puter, server, wb: doc.wb, name: doc.name, file });
-  if (file) await puter.kv.set(fileKey(file), { server, room, at: Date.now() });
+  const room = await RoomClient.create({ everything, server, wb: doc.wb, name: doc.name, file });
+  if (file) await everything.kv.set(fileKey(file), { server, room, at: Date.now() });
   return { server, room };
 }
 
 /** Join a room and open its workbook as a document. */
 export async function openRoom({ server, room, token, path = null, uid = null }) {
-  const client = new RoomClient({ puter: collabPuter(), server, room, token, store: browserOutbox(), toXlsx: (wb) => workbookToXlsx(wb) });
+  const client = new RoomClient({ everything: collabEverything(), server, room, token, store: browserOutbox(), toXlsx: (wb) => workbookToXlsx(wb) });
   try {
     await client.open();
   } catch (e) {
@@ -70,7 +70,7 @@ export async function stopSharing(doc) {
   // The room is closed now, by this person: this browser stops asking it, rather than learn of it as of a room
   // someone else closed on it while the workbook opens again as the file.
   client.halt();
-  if (doc.path) await globalThis.puter?.kv?.del?.(fileKey({ path: doc.path, uid: doc.uid })).catch?.(() => {});
+  if (doc.path) await globalThis.everything?.kv?.del?.(fileKey({ path: doc.path, uid: doc.uid })).catch?.(() => {});
 }
 
 export { call };

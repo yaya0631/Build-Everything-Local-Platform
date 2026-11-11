@@ -185,7 +185,7 @@ export class App extends Emitter {
       const btn = h('button.account-btn', { type: 'button', 'aria-label': `Account: ${this.user.username}`, 'aria-haspopup': 'menu', 'data-tip': this.user.username }, avatar);
       btn.addEventListener('click', () => {
         const items = [{ type: 'cmd', label: `Signed in as ${this.user.username}`, enabled: false }];
-        // Inside the Puter desktop the session belongs to Puter, so there is no sign-out here.
+        // Inside the Everything desktop the session belongs to Everything, so there is no sign-out here.
         if (this.env !== 'app' && this.onSignOut) items.push({ type: 'sep' }, { type: 'cmd', label: 'Sign out', enabled: true, run: () => this.onSignOut() });
         const r = btn.getBoundingClientRect();
         openMenu(this, items, { x: r.right - 200, y: r.bottom + 4, anchor: btn, label: 'Account' });
@@ -710,8 +710,8 @@ export class App extends Emitter {
             title: 'About Vector Studio',
             body: h(
               'div.about',
-              h('p', 'Vector Studio is a free, open-source vector illustration editor. Your files are stored in your own Puter cloud.'),
-              h('p', h('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Powered by Puter')),
+              h('p', 'Vector Studio is a free, open-source vector illustration editor. Your files are stored in your own Everything cloud.'),
+              h('p', h('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Powered by Everything')),
             ),
             buttons: [{ label: 'OK', value: true, primary: true }],
           }),

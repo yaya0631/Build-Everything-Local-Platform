@@ -16,7 +16,7 @@ async function testHandler({ event, ctx, user }) {
 `;
 
 function makeEmailList(items, { pageSize = 100 } = {}) {
-  // Mimics puter.email.list: pages of `pageSize`, newest first, with an
+  // Mimics everything.email.list: pages of `pageSize`, newest first, with an
   // opaque numeric-string cursor.
   return vi.fn(async ({ limit = pageSize, cursor } = {}) => {
     const start = cursor ? Number(cursor) : 0;
@@ -29,7 +29,7 @@ function makeEmailList(items, { pageSize = 100 } = {}) {
   });
 }
 
-function makePuter(overrides = {}) {
+function makeEverything(overrides = {}) {
   return {
     appID: 'app-1',
     events: {
@@ -49,21 +49,21 @@ function makePuter(overrides = {}) {
   };
 }
 
-function makeMailbox({ kv = makeKv(), puter = makePuter(), user = { username: 'nariman', email: 'nariman@example.com' }, now = () => 1000 } = {}) {
-  // The in-page rescan hands `user: puter` to the handler (mirroring the
-  // real `user: puter` in the design's pseudocode) — wire it to the SAME kv
+function makeMailbox({ kv = makeKv(), everything = makeEverything(), user = { username: 'nariman', email: 'nariman@example.com' }, now = () => 1000 } = {}) {
+  // The in-page rescan hands `user: everything` to the handler (mirroring the
+  // real `user: everything` in the design's pseudocode) — wire it to the SAME kv
   // the test inspects, so the fixture handler's writes land where expected.
-  puter.kv = kv;
+  everything.kv = kv;
   const mailbox = createMailbox({
     kv,
     store: {},
     user,
-    getPuter: () => puter,
+    getEverything: () => everything,
     blocked: () => false,
     source: TEST_HANDLER_SOURCE,
     now,
   });
-  return { mailbox, kv, puter };
+  return { mailbox, kv, everything };
 }
 
 describe('RECORD_VERSION / HANDLER_NAME / MAIL_SUBJECT', () => {
@@ -75,20 +75,20 @@ describe('RECORD_VERSION / HANDLER_NAME / MAIL_SUBJECT', () => {
 });
 
 describe('mailbox: available()', () => {
-  it('is false with no puter.events.onPersistent, or while blocked', () => {
-    const m1 = createMailbox({ kv: makeKv(), store: {}, user: {}, getPuter: () => null, blocked: () => false });
+  it('is false with no everything.events.onPersistent, or while blocked', () => {
+    const m1 = createMailbox({ kv: makeKv(), store: {}, user: {}, getEverything: () => null, blocked: () => false });
     expect(m1.available()).toBe(false);
-    const m2 = createMailbox({ kv: makeKv(), store: {}, user: {}, getPuter: () => ({ events: {}, perms: {} }), blocked: () => false });
+    const m2 = createMailbox({ kv: makeKv(), store: {}, user: {}, getEverything: () => ({ events: {}, perms: {} }), blocked: () => false });
     expect(m2.available()).toBe(false);
     const m3 = createMailbox({
       kv: makeKv(), store: {}, user: {},
-      getPuter: () => ({ events: { onPersistent() {} }, perms: {} }),
+      getEverything: () => ({ events: { onPersistent() {} }, perms: {} }),
       blocked: () => true,
     });
     expect(m3.available()).toBe(false);
   });
 
-  it('is true when puter.events/perms are present and not blocked', () => {
+  it('is true when everything.events/perms are present and not blocked', () => {
     const { mailbox } = makeMailbox();
     expect(mailbox.available()).toBe(true);
   });
@@ -96,22 +96,22 @@ describe('mailbox: available()', () => {
 
 describe('mailbox: connect() happy path', () => {
   it('sends one batched perms request, then a queue onPersistent', async () => {
-    const { mailbox, kv, puter } = makeMailbox();
+    const { mailbox, kv, everything } = makeMailbox();
     const status = await mailbox.connect();
 
-    expect(puter.perms.request).toHaveBeenCalledTimes(1);
-    expect(puter.perms.request.mock.calls[0][0]).toEqual([
+    expect(everything.perms.request).toHaveBeenCalledTimes(1);
+    expect(everything.perms.request.mock.calls[0][0]).toEqual([
       { resource: 'permission', permission: 'fs:/nariman/.mail:read', create: true },
       { resource: 'permission', permission: 'events:background' },
     ]);
-    expect(puter.events.onPersistent).toHaveBeenCalledTimes(1);
-    expect(puter.events.onPersistent.mock.calls[0][0]).toMatchObject({
+    expect(everything.events.onPersistent).toHaveBeenCalledTimes(1);
+    expect(everything.events.onPersistent.mock.calls[0][0]).toMatchObject({
       subject: MAIL_SUBJECT,
       queue: true,
       handlerName: HANDLER_NAME,
     });
-    expect(puter.events.onPersistent.mock.calls[0][0]).not.toHaveProperty('targets');
-    expect(puter.events.onPersistent.mock.calls[0][0]).not.toHaveProperty('delivery');
+    expect(everything.events.onPersistent.mock.calls[0][0]).not.toHaveProperty('targets');
+    expect(everything.events.onPersistent.mock.calls[0][0]).not.toHaveProperty('delivery');
     expect(status.mode).toBe('background');
     expect(status.state).toBe('ok');
     expect(status.subId).toBe('sub-1');
@@ -120,31 +120,31 @@ describe('mailbox: connect() happy path', () => {
   });
 
   it('adopts an existing, non-suspended subscription instead of creating a second', async () => {
-    const puter = makePuter({
+    const everything = makeEverything({
       events: {
         list: vi.fn(async () => [
           { id: 'existing-sub', subject: MAIL_SUBJECT, handlerName: HANDLER_NAME, suspendedAt: null },
         ]),
       },
     });
-    const { mailbox } = makeMailbox({ puter });
+    const { mailbox } = makeMailbox({ everything });
     const status = await mailbox.connect();
-    expect(puter.events.onPersistent).not.toHaveBeenCalled();
+    expect(everything.events.onPersistent).not.toHaveBeenCalled();
     expect(status.subId).toBe('existing-sub');
   });
 });
 
 describe('mailbox: connect() error mapping', () => {
-  it('unavailable() when puter.events is missing entirely', async () => {
-    const mailbox = createMailbox({ kv: makeKv(), store: {}, user: {}, getPuter: () => null, blocked: () => false, source: TEST_HANDLER_SOURCE });
+  it('unavailable() when everything.events is missing entirely', async () => {
+    const mailbox = createMailbox({ kv: makeKv(), store: {}, user: {}, getEverything: () => null, blocked: () => false, source: TEST_HANDLER_SOURCE });
     const status = await mailbox.connect();
     expect(status.state).toBe('unavailable');
   });
 
   it('events_disabled -> mode off, with a clear message', async () => {
     const err = Object.assign(new Error('no'), { code: 'events_disabled' });
-    const puter = makePuter({ perms: { request: vi.fn(async () => { throw err; }) } });
-    const { mailbox } = makeMailbox({ puter });
+    const everything = makeEverything({ perms: { request: vi.fn(async () => { throw err; }) } });
+    const { mailbox } = makeMailbox({ everything });
     const status = await mailbox.connect();
     expect(status.mode).toBe('off');
     expect(status.lastError).toMatch(/Not available/i);
@@ -152,48 +152,48 @@ describe('mailbox: connect() error mapping', () => {
 
   it('events_durable_requires_account -> mode off, with a clear message', async () => {
     const err = Object.assign(new Error('no'), { code: 'events_durable_requires_account' });
-    const puter = makePuter({ perms: { request: vi.fn(async () => { throw err; }) } });
-    const { mailbox } = makeMailbox({ puter });
+    const everything = makeEverything({ perms: { request: vi.fn(async () => { throw err; }) } });
+    const { mailbox } = makeMailbox({ everything });
     const status = await mailbox.connect();
     expect(status.mode).toBe('off');
-    expect(status.lastError).toMatch(/full Puter account/i);
+    expect(status.lastError).toMatch(/full Everything account/i);
   });
 
   it('no app identity -> foreground mode, without subscribing', async () => {
-    const puter = makePuter();
-    delete puter.appID;
-    const { mailbox } = makeMailbox({ puter });
+    const everything = makeEverything();
+    delete everything.appID;
+    const { mailbox } = makeMailbox({ everything });
     const status = await mailbox.connect();
     expect(status.mode).toBe('foreground');
     expect(status.state).toBe('foreground');
-    expect(puter.events.onPersistent).not.toHaveBeenCalled();
+    expect(everything.events.onPersistent).not.toHaveBeenCalled();
   });
 
-  // puter.perms.request RESOLVES falsy on denial — it does not throw. Modelling
+  // everything.perms.request RESOLVES falsy on denial — it does not throw. Modelling
   // denial as a rejection left the real path untested.
   it('refusing mailbox access stops with an explanation, and subscribes to nothing', async () => {
-    const puter = makePuter({ perms: { request: vi.fn(async () => [false, false]) } });
-    const { mailbox } = makeMailbox({ puter });
+    const everything = makeEverything({ perms: { request: vi.fn(async () => [false, false]) } });
+    const { mailbox } = makeMailbox({ everything });
     const status = await mailbox.connect();
     expect(status.mode).toBe('off');
     expect(status.state).toBe('off');
-    expect(status.lastError).toMatch(/needs access to your Puter mailbox/i);
-    expect(puter.events.onPersistent).not.toHaveBeenCalled();
+    expect(status.lastError).toMatch(/needs access to your Everything mailbox/i);
+    expect(everything.events.onPersistent).not.toHaveBeenCalled();
   });
 
   it('mailbox granted but background refused -> foreground mode, no subscription', async () => {
-    const puter = makePuter({ perms: { request: vi.fn(async () => [true, false]) } });
-    const { mailbox } = makeMailbox({ puter });
+    const everything = makeEverything({ perms: { request: vi.fn(async () => [true, false]) } });
+    const { mailbox } = makeMailbox({ everything });
     const status = await mailbox.connect();
     expect(status.mode).toBe('foreground');
     expect(status.state).toBe('foreground');
-    expect(puter.events.onPersistent).not.toHaveBeenCalled();
+    expect(everything.events.onPersistent).not.toHaveBeenCalled();
   });
 
   it('events_background_consent_required from onPersistent -> foreground mode', async () => {
     const err = Object.assign(new Error('no'), { code: 'events_background_consent_required' });
-    const puter = makePuter({ events: { onPersistent: vi.fn(async () => { throw err; }) } });
-    const { mailbox } = makeMailbox({ puter });
+    const everything = makeEverything({ events: { onPersistent: vi.fn(async () => { throw err; }) } });
+    const { mailbox } = makeMailbox({ everything });
     const status = await mailbox.connect();
     expect(status.mode).toBe('foreground');
   });
@@ -208,18 +208,18 @@ describe('mailbox: connect() error mapping', () => {
       }
       return { id: 'sub-retry' };
     });
-    const puter = makePuter({ events: { onPersistent } });
-    const { mailbox } = makeMailbox({ puter });
+    const everything = makeEverything({ events: { onPersistent } });
+    const { mailbox } = makeMailbox({ everything });
     const status = await mailbox.connect();
-    expect(puter.perms.request).toHaveBeenCalledTimes(2);
+    expect(everything.perms.request).toHaveBeenCalledTimes(2);
     expect(status.mode).toBe('background');
     expect(status.subId).toBe('sub-retry');
   });
 
   it('events_handler_not_found -> mode off, "not deployed" message', async () => {
     const err = Object.assign(new Error('no'), { code: 'events_handler_not_found' });
-    const puter = makePuter({ events: { onPersistent: vi.fn(async () => { throw err; }) } });
-    const { mailbox } = makeMailbox({ puter });
+    const everything = makeEverything({ events: { onPersistent: vi.fn(async () => { throw err; }) } });
+    const { mailbox } = makeMailbox({ everything });
     const status = await mailbox.connect();
     expect(status.mode).toBe('off');
     expect(status.lastError).toMatch(/not deployed/i);
@@ -227,8 +227,8 @@ describe('mailbox: connect() error mapping', () => {
 
   it('events_subscription_limit -> a transient message, mode off (retry-able)', async () => {
     const err = Object.assign(new Error('no'), { code: 'events_subscription_limit' });
-    const puter = makePuter({ events: { onPersistent: vi.fn(async () => { throw err; }) } });
-    const { mailbox } = makeMailbox({ puter });
+    const everything = makeEverything({ events: { onPersistent: vi.fn(async () => { throw err; }) } });
+    const { mailbox } = makeMailbox({ everything });
     const status = await mailbox.connect();
     expect(status.mode).toBe('off');
     expect(status.lastError).toBeTruthy();
@@ -241,7 +241,7 @@ describe('mailbox: suspension and reconnect', () => {
     kv.map.set('cal:mail:cfg', {
       v: 1, mode: 'background', subId: 'sub-1', handlerName: HANDLER_NAME, subject: MAIL_SUBJECT, watermark: '',
     });
-    const puter = makePuter({
+    const everything = makeEverything({
       events: {
         list: vi.fn(async () => [
           { id: 'sub-1', subject: MAIL_SUBJECT, handlerName: HANDLER_NAME, suspendedAt: 123, suspendedReason: 'permission_revoked' },
@@ -249,7 +249,7 @@ describe('mailbox: suspension and reconnect', () => {
         onPersistent: vi.fn(async () => ({ id: 'sub-new' })),
       },
     });
-    const { mailbox } = makeMailbox({ kv, puter });
+    const { mailbox } = makeMailbox({ kv, everything });
     const status = await mailbox.start();
     expect(status.state).toBe('suspended');
     expect(status.suspendedReason).toBeTruthy();
@@ -266,16 +266,16 @@ describe('mailbox: disconnect()', () => {
     kv.map.set('cal:mail:cfg', {
       v: 1, mode: 'background', subId: 'sub-1', handlerName: HANDLER_NAME, subject: MAIL_SUBJECT, watermark: '',
     });
-    const puter = makePuter();
-    const { mailbox } = makeMailbox({ kv, puter });
+    const everything = makeEverything();
+    const { mailbox } = makeMailbox({ kv, everything });
     await mailbox.start();
     await mailbox.disconnect();
-    expect(puter.events.unsubscribe).toHaveBeenCalledWith('sub-1');
+    expect(everything.events.unsubscribe).toHaveBeenCalledWith('sub-1');
     expect(mailbox.status().mode).toBe('off');
   });
 });
 
-describe('mailbox: rescan / watermark (puter.email.list)', () => {
+describe('mailbox: rescan / watermark (everything.email.list)', () => {
   function items(ids) {
     // Newest first, as email.list returns them; id order is the sort key.
     return ids.map((id) => ({ id, subject: 's', date: '2026-01-01T00:00:00.000Z', size: 100, folder: 'inbox', path: `/nariman/.mail/objects/2026-01-01/${id}--c3ViamVjdA`, uid: 'uid-' + id }));
@@ -283,8 +283,8 @@ describe('mailbox: rescan / watermark (puter.email.list)', () => {
 
   it('processes items newest-first and advances the watermark to the greatest id', async () => {
     const list = makeEmailList(items(['0003', '0002', '0001']));
-    const puter = makePuter({ email: { list } });
-    const { mailbox, kv } = makeMailbox({ puter });
+    const everything = makeEverything({ email: { list } });
+    const { mailbox, kv } = makeMailbox({ everything });
 
     await mailbox.rescan({ force: true });
 
@@ -313,8 +313,8 @@ describe('mailbox: rescan / watermark (puter.email.list)', () => {
       dated('0002', '2026-08-20T09:00:00.000Z'), // 29 days — past the horizon
       dated('0001', '2026-08-01T09:00:00.000Z'), // older still
     ]);
-    const puter = makePuter({ email: { list } });
-    const { mailbox, kv } = makeMailbox({ puter, now: () => NOW });
+    const everything = makeEverything({ email: { list } });
+    const { mailbox, kv } = makeMailbox({ everything, now: () => NOW });
 
     await mailbox.rescan({ force: true });
 
@@ -337,8 +337,8 @@ describe('mailbox: rescan / watermark (puter.email.list)', () => {
        dated('0002', '2025-12-01T09:00:00.000Z'), dated('0001', '2025-11-01T09:00:00.000Z')],
       { pageSize: 2 },
     );
-    const puter = makePuter({ email: { list } });
-    const { mailbox } = makeMailbox({ puter, now: () => NOW });
+    const everything = makeEverything({ email: { list } });
+    const { mailbox } = makeMailbox({ everything, now: () => NOW });
     await mailbox.rescan({ force: true });
     // The horizon is hit inside the first page, so the second is never asked for.
     expect(list).toHaveBeenCalledTimes(1);
@@ -349,16 +349,16 @@ describe('mailbox: rescan / watermark (puter.email.list)', () => {
     const list = makeEmailList([
       { id: '0001', subject: 's', date: 'not a date', size: 100, folder: 'inbox', path: '/nariman/.mail/objects/2026-09-18/0001--x', uid: 'uid-0001' },
     ]);
-    const puter = makePuter({ email: { list } });
-    const { mailbox, kv } = makeMailbox({ puter, now: () => NOW });
+    const everything = makeEverything({ email: { list } });
+    const { mailbox, kv } = makeMailbox({ everything, now: () => NOW });
     await mailbox.rescan({ force: true });
     expect(kv.map.get('test:seen:uid-0001')).toBeTruthy();
   });
 
   it('passes item.path/item.uid straight through to the in-page handler', async () => {
     const list = makeEmailList(items(['0001']));
-    const puter = makePuter({ email: { list } });
-    const { mailbox, kv } = makeMailbox({ puter });
+    const everything = makeEverything({ email: { list } });
+    const { mailbox, kv } = makeMailbox({ everything });
     await mailbox.rescan({ force: true });
     expect(kv.map.get('test:seen:uid-0001').path).toBe('/nariman/.mail/objects/2026-01-01/0001--c3ViamVjdA');
   });
@@ -369,8 +369,8 @@ describe('mailbox: rescan / watermark (puter.email.list)', () => {
       v: 1, mode: 'foreground', subId: '', handlerName: HANDLER_NAME, subject: MAIL_SUBJECT, watermark: '0002',
     });
     const list = makeEmailList(items(['0004', '0003', '0002', '0001']));
-    const puter = makePuter({ email: { list } });
-    const { mailbox } = makeMailbox({ kv, puter });
+    const everything = makeEverything({ email: { list } });
+    const { mailbox } = makeMailbox({ kv, everything });
     await mailbox.start();
     await mailbox.rescan({ force: true });
     expect(kv.map.get('test:seen:uid-0004')).toBeTruthy();
@@ -385,8 +385,8 @@ describe('mailbox: rescan / watermark (puter.email.list)', () => {
       { id: '0002', subject: 's', date: 'd', size: (3 << 20) + 1, folder: 'inbox', path: '/nariman/.mail/objects/2026-01-01/0002--x', uid: 'uid-big' },
       { id: '0001', subject: 's', date: 'd', size: 100, folder: 'inbox', path: '/nariman/.mail/objects/2026-01-01/0001--x', uid: 'uid-small' },
     ]);
-    const puter = makePuter({ email: { list } });
-    const { mailbox, kv } = makeMailbox({ puter });
+    const everything = makeEverything({ email: { list } });
+    const { mailbox, kv } = makeMailbox({ everything });
     await mailbox.rescan({ force: true });
     expect(kv.map.get('test:seen:uid-big')).toBeUndefined();
     expect(kv.map.get('test:seen:uid-small')).toBeTruthy();
@@ -400,8 +400,8 @@ describe('mailbox: rescan / watermark (puter.email.list)', () => {
     });
     kv.map.set('cal:mail:gap', { at: 1, reason: 'missed delivery' });
     const list = makeEmailList(items(['0003', '0002', '0001']));
-    const puter = makePuter({ email: { list } });
-    const { mailbox } = makeMailbox({ kv, puter });
+    const everything = makeEverything({ email: { list } });
+    const { mailbox } = makeMailbox({ kv, everything });
     await mailbox.start(); // loads cfg.watermark from kv, same as real startup
     await mailbox.rescan({ force: true });
     // 0002 and 0001 are <= the stored watermark but the gap forces a full pass.
@@ -413,8 +413,8 @@ describe('mailbox: rescan / watermark (puter.email.list)', () => {
   it('caps a pass at 200 messages, across multiple pages', async () => {
     const ids = Array.from({ length: 250 }, (_, i) => String(250 - i).padStart(4, '0')); // newest (0250) first
     const list = makeEmailList(items(ids), { pageSize: 100 });
-    const puter = makePuter({ email: { list } });
-    const { mailbox, kv } = makeMailbox({ puter });
+    const everything = makeEverything({ email: { list } });
+    const { mailbox, kv } = makeMailbox({ everything });
     await mailbox.rescan({ force: true });
     const seenCount = [...kv.map.keys()].filter((k) => k.startsWith('test:seen:')).length;
     expect(seenCount).toBe(200);
@@ -428,9 +428,9 @@ describe('mailbox: rescan / watermark (puter.email.list)', () => {
 
   it('respects the 5-minute throttle unless forced', async () => {
     const list = makeEmailList([]);
-    const puter = makePuter({ email: { list } });
+    const everything = makeEverything({ email: { list } });
     let t = 0;
-    const { mailbox } = makeMailbox({ puter, now: () => t });
+    const { mailbox } = makeMailbox({ everything, now: () => t });
     await mailbox.rescan({ force: true });
     expect(list).toHaveBeenCalledTimes(1);
     t += 1000;
@@ -443,9 +443,9 @@ describe('mailbox: rescan / watermark (puter.email.list)', () => {
 
   it('a broken `new Function` (future CSP) disables local scanning without throwing', async () => {
     const kv = makeKv();
-    const puter = makePuter();
+    const everything = makeEverything();
     const mailbox = createMailbox({
-      kv, store: {}, user: { username: 'n' }, getPuter: () => puter, blocked: () => false,
+      kv, store: {}, user: { username: 'n' }, getEverything: () => everything, blocked: () => false,
       source: 'not even valid js (((',
     });
     await expect(mailbox.rescan({ force: true })).resolves.not.toThrow();

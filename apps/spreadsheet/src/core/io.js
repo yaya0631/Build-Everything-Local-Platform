@@ -33,7 +33,7 @@ import { legacyCommentText } from './comments.js';
  *   xlsx-export completes the native styles and layout missing from the
  *   Community Edition writer. The app's original style inheritance and
  *   additional settings also travel in a very-hidden
- *   sheet named `_puter_meta` as JSON. Other spreadsheet apps ignore that
+ *   sheet named `_everything_meta` as JSON. Other spreadsheet apps ignore that
  *   sheet; this app reads it back and removes it from view.
  */
 
@@ -94,7 +94,7 @@ import { serializeScripts } from './scripts.js';
 import { readXlsxScripts } from './xlsx-scripts.js';
 import { serializeChangeHistory } from './change-history.js';
 
-export const META_SHEET = '_puter_meta';
+export const META_SHEET = '_everything_meta';
 const META_CHUNK = 30000;
 // The file format's limit on a formula's length; anything longer is not a formula another program wrote.
 const MAX_FORMULA = 8192;
@@ -565,7 +565,7 @@ function tableFileFormulas(table, externalWorkbooks = null) {
 /** The app's own state for the sidecar; `ods` adds what that format's writer and reader lose. */
 function collectMeta(wb, structuredNames = [], { ods = false, fileSheets = null, history = true, active = wb.activeSheet } = {}) {
   // Sheet names are user data; names such as __proto__ must be ordinary keys.
-  const meta = { v: 1, format: 'puter-spreadsheet', ...(!ods ? { themeFonts: true } : {}), active: active?.name || null, sheets: Object.create(null) };
+  const meta = { v: 1, format: 'everything-spreadsheet', ...(!ods ? { themeFonts: true } : {}), active: active?.name || null, sheets: Object.create(null) };
   let any = structuredNames.length > 0;
   if (ods && (wb.calculationCompatibility.version !== 2 || wb.calculationCompatibility.warnBelowVersion)) {
     meta.calculationCompatibility = wb.calculationCompatibility; any = true;
@@ -872,7 +872,7 @@ function buildBook(X, wb, { meta = true, odsSettings = false, ods = false, histo
     if (titles.length) (book.Workbook.Names ||= []).push({ Name: '_xlnm.Print_Titles', Ref: titles.join(','), Sheet: i });
   }
   const extra = meta || odsSettings ? collectMeta(wb, structuredNames, { ods: odsSettings, fileSheets: book.Sheets, history, active: open }) : null;
-  if (extra && odsSettings) book.PuterSettings = extra;
+  if (extra && odsSettings) book.EverythingSettings = extra;
   // LibreOffice reads frozen panes, tab colours, gridlines, zoom and the open sheet from its own view settings.
   if (ods) {
     const sheets = {};
@@ -910,7 +910,7 @@ function buildBook(X, wb, { meta = true, odsSettings = false, ods = false, histo
     }
     metaSheet['!ref'] = X.utils.encode_range(extent);
     book.Workbook.Sheets.push({ name: metaName, Hidden: 2 });
-    book.PuterExportMeta = { name: metaName, data: extra };
+    book.EverythingExportMeta = { name: metaName, data: extra };
   }
   return book;
 }
@@ -2725,12 +2725,12 @@ export async function workbookFromFile(data, filename = '', { sourceWorkbook = n
   // write the file that way. Excel refuses such a file with a repair prompt; so do we.
   const twice = book.SheetNames.find((name, i) => book.SheetNames.indexOf(name) !== i);
   if (twice != null) throw Object.assign(new Error(`Two sheets are named "${twice}"; the file may be damaged`), { code: 'unreadable' });
-  const candidates = book.SheetNames.filter((n) => /^_puter_meta\d*$/i.test(n))
+  const candidates = book.SheetNames.filter((n) => /^_everything_meta\d*$/i.test(n))
     .map((name) => ({ name, data: readMeta(X, book.Sheets[name]) })).filter((m) => m.data);
   // Prefer marked sidecars; older files used the fixed name without a marker.
-  const sidecar = candidates.find((m) => m.data.format === 'puter-spreadsheet')
+  const sidecar = candidates.find((m) => m.data.format === 'everything-spreadsheet')
     || candidates.find((m) => m.name === META_SHEET);
-  const storedMeta = sidecar?.data || book.PuterSettings;
+  const storedMeta = sidecar?.data || book.EverythingSettings;
   const meta = storedMeta ? unpackNativeFillState(storedMeta) : storedMeta;
   const nativeStyles = readXlsxStyles(book, meta?.nativeFillBaseline, meta?.nativeFillRecords);
   const fonts = fileCellStyles(book.Styles, nativeStyles);

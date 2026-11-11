@@ -3,7 +3,7 @@ import { boot } from "./helpers";
 import { mkdir, writeFile } from "node:fs/promises";
 
 test.beforeEach(async ({ page }) => {
-  await boot(page, "default", "window.puter={};");
+  await boot(page, "default", "window.everything={};");
 });
 
 test("dash intervals, phase, units, zero gaps and affine paths match analytic pixel areas", async ({

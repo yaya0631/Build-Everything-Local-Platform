@@ -1927,7 +1927,7 @@ test("Google exports follow redirects to Google's file hosts only", async () => 
   const fileURL = "https://doc-08-4o-sheets.googleusercontent.com/export/abc";
   const requests = [];
   let location = fileURL;
-  // Like Puter's fetch, this fetcher returns redirects instead of following.
+  // Like Everything's fetch, this fetcher returns redirects instead of following.
   const fetcher = async (url) => {
     requests.push(url);
     if (url === exportURL)
@@ -2010,10 +2010,10 @@ test("Google imports say when a file or sheet tab is gone, and blame sharing onl
     await rejects(google.sheet(sheet), ACCESS_ERROR);
     await rejects(google.document(doc), ACCESS_ERROR);
   }
-  // Puter's fetch, used when a direct request is refused, says the same.
+  // Everything's fetch, used when a direct request is refused, says the same.
   const saved = { fetch: globalThis.fetch, window: globalThis.window };
   globalThis.window = {
-    puter: {
+    everything: {
       auth: { isSignedIn: () => true },
       net: {
         fetch: async () =>
@@ -2046,20 +2046,20 @@ test("Google imports say when a file or sheet tab is gone, and blame sharing onl
   }
 });
 
-test("Google files shared by link download directly, without asking anyone to sign in to Puter", async () => {
+test("Google files shared by link download directly, without asking anyone to sign in to Everything", async () => {
   const saved = { fetch: globalThis.fetch, window: globalThis.window };
   const calls = [];
-  const puter = {
+  const everything = {
     signedIn: false,
-    auth: { isSignedIn: () => puter.signedIn },
+    auth: { isSignedIn: () => everything.signedIn },
     net: {
       fetch: async (url) => {
-        calls.push(["puter", url]);
+        calls.push(["everything", url]);
         return new Response("a,b", { headers: { "content-type": "text/csv" } });
       },
     },
   };
-  globalThis.window = { puter };
+  globalThis.window = { everything };
   try {
     const link = `https://docs.google.com/spreadsheets/d/${DOC_ID}/edit`;
     const url = `https://docs.google.com/spreadsheets/d/${DOC_ID}/export?format=csv`;
@@ -2074,7 +2074,7 @@ test("Google files shared by link download directly, without asking anyone to si
       calls.map((c) => c[0]),
       ["direct"],
     );
-    // A refused direct request does not open a Puter sign-in for someone
+    // A refused direct request does not open an Everything sign-in for someone
     // signed out; it says the file is not shared.
     calls.length = 0;
     globalThis.fetch = async (u) => {
@@ -2086,14 +2086,14 @@ test("Google files shared by link download directly, without asking anyone to si
       calls.map((c) => c[0]),
       ["direct"],
     );
-    // Signed in, Puter's fetch is tried next.
+    // Signed in, Everything's fetch is tried next.
     calls.length = 0;
-    puter.signedIn = true;
+    everything.signedIn = true;
     const response = await defaultFetcher(url, {});
     assert.equal(await response.text(), "a,b");
     assert.deepEqual(
       calls.map((c) => c[0]),
-      ["direct", "puter"],
+      ["direct", "everything"],
     );
   } finally {
     Object.assign(globalThis, saved);
@@ -2102,7 +2102,7 @@ test("Google files shared by link download directly, without asking anyone to si
 
 test("cancelling a Google download settles even when the fetch ignores the signal", async () => {
   const sheetURL = `https://docs.google.com/spreadsheets/d/${DOC_ID}/edit`;
-  // Like Puter's fetch, these fetchers never look at the signal: one never
+  // Like Everything's fetch, these fetchers never look at the signal: one never
   // answers, the other answers but never finishes sending the body.
   const fetchers = [
     () => new Promise(() => {}),

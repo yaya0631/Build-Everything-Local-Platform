@@ -24,11 +24,11 @@ view-only link. Two viable architectures, in order of preference:
 
 1. **Per-member op-logs (no server).** Each member appends operations
    (add/complete/edit/delete, with task id + `updatedAt`) to a log file in
-   *their own* Puter drive and shares its read URL with the group. Every
+   *their own* Everything drive and shares its read URL with the group. Every
    member's app merges all logs on load and on focus. Last-writer-wins per
    task field, ids generated with `uid()` so adds never collide. The owner
    remains the source of truth for the list's metadata.
-2. **A Puter worker** owning the list document, accepting authenticated
+2. **An Everything worker** owning the list document, accepting authenticated
    writes from members. Simpler merge story, but introduces the app's
    first server-side component and an availability dependency.
 

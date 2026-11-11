@@ -1,13 +1,13 @@
-// Entry point of the room worker bundle (npm run build:worker). Puter Workers
-// provide `router` and `me`; `user` on a request is the caller's Puter.
+// Entry point of the room worker bundle (npm run build:worker). Everything Workers
+// provide `router` and `me`; `user` on a request is the caller's Everything.
 import { RoomService } from './service';
 import { authenticate } from './auth';
 
 declare const router: {
   get(path: string, handler: (ctx: { request: Request }) => Response | Promise<Response>): void;
-  post(path: string, handler: (ctx: { request: Request; user?: { puter?: unknown } }) => Response | Promise<Response>): void;
+  post(path: string, handler: (ctx: { request: Request; user?: { everything?: unknown } }) => Response | Promise<Response>): void;
 };
-declare const me: { puter: ConstructorParameters<typeof RoomService>[0] };
+declare const me: { everything: ConstructorParameters<typeof RoomService>[0] };
 declare const __WORKER_BUILD__: string;
 
 async function readBody(request: Request, limit = 17_000_000) {
@@ -37,12 +37,12 @@ async function readBody(request: Request, limit = 17_000_000) {
 router.get('/health', () => Response.json({ ok: true, protocol: 1, build: __WORKER_BUILD__ }));
 router.post('/api', async ({ request, user }) => {
   try {
-    if (!user?.puter) return Response.json({ message: 'Sign in with Puter to continue.' }, { status: 401 });
+    if (!user?.everything) return Response.json({ message: 'Sign in with Everything to continue.' }, { status: 401 });
     const text = await readBody(request);
     if (text === null) return Response.json({ message: 'A JSON request body is required.' }, { status: 400 });
     const input = JSON.parse(text);
-    const identity = await authenticate(request, user.puter as Parameters<typeof authenticate>[1], input);
-    return Response.json(await new RoomService(me.puter).call(identity, input));
+    const identity = await authenticate(request, user.everything as Parameters<typeof authenticate>[1], input);
+    return Response.json(await new RoomService(me.everything).call(identity, input));
   } catch (error) {
     const e = error as Error & { status?: number };
     return Response.json(

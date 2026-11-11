@@ -15,7 +15,7 @@ vi.mock('../src/ui/toast.js', () => ({ toast: vi.fn() }));
 vi.mock('../src/views/onboarding.js', () => ({ maybeOnboard: vi.fn() }));
 vi.mock('../src/core/backend.js', async (importOriginal) => {
   const real = await importOriginal();
-  return { ...real, createPuterBackend: () => real.createMemoryBackend() };
+  return { ...real, createEverythingBackend: () => real.createMemoryBackend() };
 });
 vi.mock('../src/team.js', async (importOriginal) => ({
   ...(await importOriginal()),
@@ -43,7 +43,7 @@ describe('kiosk lock', () => {
     localStorage.clear();
     document.body.innerHTML = '<div id="app"></div>';
     history.replaceState(null, '', '/?x#/');
-    globalThis.puter = { auth: { isSignedIn: () => true, getUser: async () => ({ username: 'director', uuid: 'u1' }), getProfilePicture: async () => null }, kv: {} };
+    globalThis.everything = { auth: { isSignedIn: () => true, getUser: async () => ({ username: 'director', uuid: 'u1' }), getProfilePicture: async () => null }, kv: {} };
     // What kiosk.js stored when the kiosk was opened earlier.
     const { app, setKioskLock } = await import('../src/app.js');
     app.user = { username: 'director', uuid: 'u1' };
@@ -57,6 +57,6 @@ describe('kiosk lock', () => {
     const { maybeOnboard } = await import('../src/views/onboarding.js');
     await tick(5);
     expect(maybeOnboard).not.toHaveBeenCalled();
-    delete globalThis.puter;
+    delete globalThis.everything;
   });
 });

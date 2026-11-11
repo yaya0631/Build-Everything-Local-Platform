@@ -141,14 +141,14 @@ describe('a channel bookmark pointing at an uploaded file', () => {
 });
 
 describe('an import that stops short (the client side of an import or transfer)', () => {
-  const hadPuter = Object.hasOwn(globalThis, 'puter') ? globalThis.puter : undefined;
+  const hadEverything = Object.hasOwn(globalThis, 'everything') ? globalThis.everything : undefined;
   afterEach(() => {
-    if (hadPuter === undefined) delete globalThis.puter;
-    else globalThis.puter = hadPuter;
+    if (hadEverything === undefined) delete globalThis.everything;
+    else globalThis.everything = hadEverything;
   });
 
   it('takes the half-made copy down with the failure, so nothing is left counting against its owner, and a clean try succeeds', async () => {
-    globalThis.puter = bridgeTo(alice);
+    globalThis.everything = bridgeTo(alice);
     const conv = 'stopconv01';
     const msg = (seq) => ({ seq, user: alice.uuid, text: `m${seq}`, ts: 1000 + seq });
     const header = {
@@ -197,10 +197,10 @@ describe('completing a transfer that has already been completed', () => {
 });
 
 describe('accepting a transfer again after a failure (the client side)', () => {
-  const hadPuter = Object.hasOwn(globalThis, 'puter') ? globalThis.puter : undefined;
+  const hadEverything = Object.hasOwn(globalThis, 'everything') ? globalThis.everything : undefined;
   afterEach(() => {
-    if (hadPuter === undefined) delete globalThis.puter;
-    else globalThis.puter = hadPuter;
+    if (hadEverything === undefined) delete globalThis.everything;
+    else globalThis.everything = hadEverything;
   });
 
   /** Alice's workspace with bob nominated; the worker open to bob's own workspaces. Returns the original's reference. */
@@ -215,7 +215,7 @@ describe('accepting a transfer again after a failure (the client side)', () => {
   /** Bob's app talking to the worker, with `hook(path, init)` able to stand in for one call. */
   function bobsApp(hook) {
     const calls = [];
-    globalThis.puter = { workers: { exec: async (url, init) => {
+    globalThis.everything = { workers: { exec: async (url, init) => {
       const path = new URL(url).pathname;
       calls.push(`${init?.method || 'GET'} ${path}`);
       const out = hook ? await hook(path, init) : undefined;
@@ -376,11 +376,11 @@ describe('a pasted recipient list with quoted display names', () => {
 });
 
 describe('the time a download gets', () => {
-  const hadPuter = Object.hasOwn(globalThis, 'puter') ? globalThis.puter : undefined;
+  const hadEverything = Object.hasOwn(globalThis, 'everything') ? globalThis.everything : undefined;
   afterEach(() => {
     vi.useRealTimers();
-    if (hadPuter === undefined) delete globalThis.puter;
-    else globalThis.puter = hadPuter;
+    if (hadEverything === undefined) delete globalThis.everything;
+    else globalThis.everything = hadEverything;
   });
 
   /**
@@ -403,7 +403,7 @@ describe('the time a download gets', () => {
         });
       },
     });
-    globalThis.puter = { workers: { exec: async (url, init) => {
+    globalThis.everything = { workers: { exec: async (url, init) => {
       seen.signal = init.signal;
       init.signal?.addEventListener('abort', () => { try { ctl.error(init.signal.reason); } catch { /* closed already */ } });
       return new Response(stream, { status: 200, headers });
@@ -443,7 +443,7 @@ describe('the time a download gets', () => {
   it('still holds a plain answer to the short timeout', async () => {
     vi.useFakeTimers();
     let signal = null;
-    globalThis.puter = { workers: { exec: (url, init) => { signal = init.signal; return new Promise(() => {}); } } };
+    globalThis.everything = { workers: { exec: (url, init) => { signal = init.signal; return new Promise(() => {}); } } };
     const pending = api.health('http://teamchat-x.localhost:8443');
     await vi.advanceTimersByTimeAsync(19_000);
     expect(signal.aborted).toBe(false);

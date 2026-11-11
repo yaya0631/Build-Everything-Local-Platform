@@ -25,7 +25,7 @@ test('deleting a shared document from the list ends the sharing, and the people 
   await expect.poll(() => editorText(guest), { timeout: 15000 }).toBe('Quarterly plan.');
   await expect(guest.locator('.canvas-save-status')).toHaveAttribute('aria-label', 'Shared · saved by the owner');
   // The owner deletes the document from the list.
-  await expect(owner.locator('.canvas-save-status')).toHaveAttribute('aria-label', 'Saved to Puter', { timeout: 15000 });
+  await expect(owner.locator('.canvas-save-status')).toHaveAttribute('aria-label', 'Saved to Everything', { timeout: 15000 });
   await owner.evaluate(() => { location.hash = '#/home'; });
   await owner.getByRole('button', { name: 'Options for Untitled document.docx' }).click();
   await owner.getByRole('menuitem', { name: 'Delete' }).click();

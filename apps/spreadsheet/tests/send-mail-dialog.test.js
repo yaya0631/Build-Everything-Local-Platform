@@ -5,7 +5,7 @@ import { Doc } from '../src/lib/doc.js';
 import { closeAllModals } from '../src/ui/modal.js';
 import { openSendCopyDialog, openSendLinkDialog } from '../src/ui/send-mail.js';
 import { menubarMenus } from '../src/ui/menubar.js';
-import * as P from '../src/lib/puter.js';
+import * as P from '../src/lib/everything.js';
 import * as T from '../src/ui/toast.js';
 
 beforeEach(() => { vi.stubGlobal('matchMedia', () => ({ matches: true, addEventListener() {}, removeEventListener() {} })); });
@@ -103,7 +103,7 @@ describe('Send a link', () => {
     vi.spyOn(T, 'toast').mockImplementation(() => {});
     vi.spyOn(P, 'canShare').mockReturnValue(true);
     vi.spyOn(P, 'shareFile').mockResolvedValue({});
-    vi.spyOn(P, 'puterShareLink').mockResolvedValue(null);
+    vi.spyOn(P, 'everythingShareLink').mockResolvedValue(null);
     const d = doc();
     const mailer = { sendLink: vi.fn(async ({ recipients }) => results(recipients.map((r) => r.email))) };
     openSendLinkDialog({ doc: d, mailer, location: { origin: 'http://spreadsheet.localhost:8443', pathname: '/' } });

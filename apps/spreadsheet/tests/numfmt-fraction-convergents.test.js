@@ -38,7 +38,7 @@ it('keeps values and formulas through edits, undo, and native XLSX round trips',
   const bytes = new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer());
   const raw = X.read(bytes, { type: 'array', cellNF: true });
   const zip = X.CFB.read(bytes, { type: 'array' }), part = X.CFB.find(zip, '/xl/workbook.xml');
-  part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   part.size = part.content.length;
   const restored = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'external.xlsx');
   cases.forEach(([value, code, text], r) => {

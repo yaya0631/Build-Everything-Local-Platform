@@ -587,7 +587,7 @@ function storageInfo({ app }) {
   return h(
     'div.prefs-ext',
     h('div.form-grid', h('label', 'Used:'), used, h('label', 'Available:'), free, h('label', 'Storage:'), h('div.prefs-inline', persisted, persist), h('label', 'Unrecovered files:'), h('div.prefs-inline', recovery, clean)),
-    h('p.prefs-help', 'Recovery copies of unsaved files live in this browser. Saved files live in Puter or on this device.'),
+    h('p.prefs-help', 'Recovery copies of unsaved files live in this browser. Saved files live in Everything or on this device.'),
   );
 }
 

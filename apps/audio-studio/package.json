@@ -1,7 +1,7 @@
 {
   "name": "audio-studio",
   "version": "2.0.0",
-  "description": "Audio Studio: a waveform and multitrack audio editor on Puter. Record, edit, restore, mix and master audio in the browser, stored in your own cloud.",
+  "description": "Audio Studio: a waveform and multitrack audio editor on Everything. Record, edit, restore, mix and master audio in the browser, stored in your own cloud.",
   "type": "module",
   "private": true,
   "engines": {

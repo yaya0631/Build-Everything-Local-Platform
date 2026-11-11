@@ -1,8 +1,8 @@
 /**
  * Conversation UI (review pass 27), driven in node through
  * tests/helpers/dom.js as the pass-19 to pass-26 files are: a fresh DOM and
- * a fresh module registry for every test, Puter faked at
- * `puter.workers.exec`, the toast, the theme, the modal layer and navigation
+ * a fresh module registry for every test, Everything faked at
+ * `everything.workers.exec`, the toast, the theme, the modal layer and navigation
  * mocked.
  */
 import { describe, it, expect, afterEach, vi } from 'vitest';
@@ -32,7 +32,7 @@ async function boot({ width = 1280, ...env } = {}) {
   dom?.uninstall();
   dom = installDom({ width, ...env });
   vi.resetModules();
-  globalThis.puter = { workers: { exec: async () => json({ code: 'not_found', message: 'nope' }, 404) } };
+  globalThis.everything = { workers: { exec: async () => json({ code: 'not_found', message: 'nope' }, 404) } };
   ({ store } = await import('../src/lib/store.js'));
   const { api } = await import('../src/lib/api.js');
   store.wsId = REF;
@@ -64,7 +64,7 @@ afterEach(async () => {
   store = null;
   dom?.uninstall();
   dom = null;
-  delete globalThis.puter;
+  delete globalThis.everything;
   vi.restoreAllMocks();
 });
 
@@ -86,7 +86,7 @@ async function listOn(messages, { d }) {
 describe('the keyboard on a control whose press takes its own group out of the row', () => {
   it('"Remove preview" pressed from the keyboard lands on the message, not on whatever control now stands at its place in the row', async () => {
     const { dom: d } = await boot();
-    globalThis.puter.workers.exec = async (url, init = {}) => {
+    globalThis.everything.workers.exec = async (url, init = {}) => {
       if (init.method === 'DELETE' && new URL(url).pathname.endsWith('/messages/3/unfurl')) return json({ ok: true });
       return json({ code: 'not_found', message: 'nope' }, 404);
     };
@@ -113,7 +113,7 @@ describe('the keyboard on a control whose press takes its own group out of the r
     const { dom: d } = await boot();
     const { loadEmoji } = await import('../src/lib/emoji.js');
     await loadEmoji();
-    globalThis.puter.workers.exec = async (url, init = {}) => {
+    globalThis.everything.workers.exec = async (url, init = {}) => {
       if (init.method === 'POST' && new URL(url).pathname.endsWith('/reactions')) return json({ ok: true });
       return json({ code: 'not_found', message: 'nope' }, 404);
     };
@@ -412,7 +412,7 @@ describe('a reaction pill as a screen reader hears it', () => {
   it('is named by the emoji, how many reacted and who, pressed when the reader is one of them, and says so afresh when they toggle it; the "+" beside the pills is a button of the group', async () => {
     const { dom: d } = await boot();
     const { emojiLabel } = await import('../src/lib/emoji.js');
-    globalThis.puter.workers.exec = async (url, init = {}) => {
+    globalThis.everything.workers.exec = async (url, init = {}) => {
       if (init.method === 'POST' && new URL(url).pathname.endsWith('/reactions')) return json({ ok: true });
       return json({ code: 'not_found', message: 'nope' }, 404);
     };
@@ -627,7 +627,7 @@ describe('words pasted into a message\'s edit box past the limit', () => {
     const { dom: d } = await boot();
     const { toast } = await import('../src/ui/toast.js');
     const calls = [];
-    globalThis.puter.workers.exec = async (url, init = {}) => {
+    globalThis.everything.workers.exec = async (url, init = {}) => {
       calls.push({ method: init.method, path: new URL(url).pathname });
       return json({ code: 'not_found', message: 'nope' }, 404);
     };

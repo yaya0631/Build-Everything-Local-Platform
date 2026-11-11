@@ -9,7 +9,7 @@ vi.mock('../src/views/editor.js', () => ({ editorView: mocks.editor }));
 vi.mock('../src/views/home.js', () => ({ homeView: mocks.home }));
 vi.mock('../src/lib/session.js', () => ({ session: { init: async () => {}, signedOut: false, addEventListener() {}, removeEventListener() {} } }));
 vi.mock('../src/lib/recent.js', async (importOriginal) => ({ ...(await importOriginal()), rememberRecent: mocks.rememberRecent }));
-vi.mock('../src/lib/puter.js', () => ({
+vi.mock('../src/lib/everything.js', () => ({
   hasSDK: () => true, isSignedIn: async () => true, onAuth() {}, onLaunchedWithItems() {}, onWindowClose() {}, setWindowTitle() {}, isNotFound: () => false, samePath: (a, b) => a === b,
   inAppFolder: (path) => String(path).startsWith('Spreadsheets/'),
 }));

@@ -26,7 +26,7 @@ beforeEach(() => {
   vi.useFakeTimers();
   posts = [];
   drafts = draftStore();
-  vi.stubGlobal('puter', { ui: {}, APIOrigin: 'https://api.example', authToken: 't', fs: { write: async () => {} } });
+  vi.stubGlobal('everything', { ui: {}, APIOrigin: 'https://api.example', authToken: 't', fs: { write: async () => {} } });
   vi.stubGlobal('fetch', async (url, init) => {
     posts.push({ url, body: init.body, auth: init.headers.authorization });
     return { ok: true, json: async () => ({}) };
@@ -48,9 +48,9 @@ describe('sign-out during an Undo Send hold', () => {
     modal.panel.querySelector('.compose-form').dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
     expect(isDraftSending({ username: 'me', mailPath: '/me/.mail', id: drafts.list()[0].id })).toBe(true);
 
-    // main.js signOut(): closeComposers() then puter.auth.signOut().
+    // main.js signOut(): closeComposers() then everything.auth.signOut().
     expect(closeComposers()).toBe(true);
-    puter.authToken = null;
+    everything.authToken = null;
     await vi.advanceTimersByTimeAsync(6000);
     expect(posts).toEqual([]);
     expect(drafts.count).toBe(1);

@@ -13,7 +13,7 @@ import { ORIGIN, SharedProject, documentTiles, type AssetRef, type Prepared } fr
 import { PeerNetwork, type Ticket } from './peers';
 import { writeThread } from './ycomments';
 import type { CommentThread } from './comments';
-import type { CollabPuter } from './puter-types';
+import type { CollabEverything } from './everything-types';
 import type { TileIndex } from './tile-index';
 import type { Assets } from '../model/assets';
 import type { PhotoDocument } from '../model/document';
@@ -89,7 +89,7 @@ export class RoomClient {
   private lastPresenceSent = 0;
   constructor(
     public o: {
-      puter: CollabPuter;
+      everything: CollabEverything;
       server: string;
       room: string;
       token?: string;
@@ -120,7 +120,7 @@ export class RoomClient {
     });
   }
   private request<T = Record<string, unknown>>(input: Record<string, unknown>) {
-    return call<T>(this.o.puter, this.o.server, { room: this.o.room, ...input });
+    return call<T>(this.o.everything, this.o.server, { room: this.o.room, ...input });
   }
   get canEdit() {
     return this.role === 'owner' || this.role === 'editor';
@@ -133,7 +133,7 @@ export class RoomClient {
 
   /** Upload a document and create its room (owner). Returns the room ID. */
   static async create(
-    o: { puter: CollabPuter; server: string; tiles: TileIndex; assets: Assets; doc: PhotoDocument; comments: CommentThread[]; ydoc: Y.Doc },
+    o: { everything: CollabEverything; server: string; tiles: TileIndex; assets: Assets; doc: PhotoDocument; comments: CommentThread[]; ydoc: Y.Doc },
     progress: (fraction: number) => void = () => {},
   ) {
     const room = crypto.randomUUID().replaceAll('-', '');
@@ -170,7 +170,7 @@ export class RoomClient {
       }
       if (!state.length) break;
     }
-    const send = (assets: { hash: string; data: string }[]) => call(o.puter, o.server, { op: 'asset.put', room, assets });
+    const send = (assets: { hash: string; data: string }[]) => call(o.everything, o.server, { op: 'asset.put', room, assets });
     let batch: { hash: string; data: string }[] = [],
       size = 0;
     for (let i = 0; i < uploads.length; i++) {
@@ -185,7 +185,7 @@ export class RoomClient {
       progress((i + 1) / (uploads.length + 1));
     }
     if (batch.length) await send(batch);
-    await call(o.puter, o.server, { op: 'create', room, initial, name: o.doc.name });
+    await call(o.everything, o.server, { op: 'create', room, initial, name: o.doc.name });
     progress(1);
     return room;
   }
@@ -220,15 +220,15 @@ export class RoomClient {
     );
     this.timers.push(setInterval(() => void this.checkIn().catch(() => {}), 30_000));
     this.timers.push(setInterval(() => this.expirePeople(), 2000));
-    if (!this.o.noPeers && this.o.puter.peer) await this.checkIn().catch(() => {});
+    if (!this.o.noPeers && this.o.everything.peer) await this.checkIn().catch(() => {});
     if (queued.length) this.flush();
   }
   /**
    * The owner's consent for this app to give the people they share with a handle on the room's change signal;
-   * without it, they hear of changes only by polling. Puter remembers the answer, so it prompts at most once.
+   * without it, they hear of changes only by polling. Everything remembers the answer, so it prompts at most once.
    */
   async allowLiveUpdates() {
-    const { perms, appID } = this.o.puter;
+    const { perms, appID } = this.o.everything;
     const app = this.events?.app;
     if (this.role !== 'owner' || !app || app !== appID || !this.user || typeof perms?.request !== 'function') return false;
     const kvShare = perms.Resource?.KV_SHARE;
@@ -247,12 +247,12 @@ export class RoomClient {
   }
 
   private async subscribe(events: { app?: string; handle?: string; key: string } | null) {
-    if (!events || !this.o.puter.events?.onLocal || this.closed) return;
+    if (!events || !this.o.everything.events?.onLocal || this.closed) return;
     const subject = events.handle ? `kv:${events.handle}:${events.key}` : `kv:${events.app}:${events.key}`;
     try {
       // A notice carries no data: it prompts a synchronization (and, as
       // people joining also signal, a check-in for the roster).
-      this.subscription = await this.o.puter.events.onLocal(
+      this.subscription = await this.o.everything.events.onLocal(
         subject,
         () => {
           this.scheduleSync(150);
@@ -509,12 +509,12 @@ export class RoomClient {
   private checkingIn?: Promise<void>;
   /** Renew this session's peer ticket and learn who is here. */
   async checkIn() {
-    if (this.closed || this.o.noPeers || !this.o.puter.peer) return;
+    if (this.closed || this.o.noPeers || !this.o.everything.peer) return;
     if (this.checkingIn) return this.checkingIn;
     this.checkingIn = (async () => {
       this.keys ??= await keyPair();
       this.peers ??= new PeerNetwork({
-        peer: this.o.puter.peer!,
+        peer: this.o.everything.peer!,
         session: this.session,
         keys: this.keys,
         roomKey: this.roomKey!,

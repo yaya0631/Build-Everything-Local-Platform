@@ -20,7 +20,7 @@ afterEach(async () => { cleanup?.(); cleanup = null; await initSync(); vi.restor
 it('keeps the error visible, offers retry, and announces success only after recovery', async () => {
   let reject = true;
   vi.stubGlobal('navigator', { onLine: false });
-  vi.stubGlobal('puter', { kv: { set: async () => { if (reject) throw new Error('API rejected'); } } });
+  vi.stubGlobal('everything', { kv: { set: async () => { if (reject) throw new Error('API rejected'); } } });
   cleanup = setupOfflineBanner();
   const banner = document.querySelector('[role="status"]');
   const retry = banner.querySelector('button');

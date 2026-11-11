@@ -82,7 +82,7 @@ export function openExpenseForm({ expense = null, prefill = {}, receiptFile = nu
           thumb,
           el('div.grow', {},
             el('div.title.truncate', {}, name),
-            el('div.sub', {}, [pendingFile ? 'Ready to upload' : 'Stored in your Puter drive', size].filter(Boolean).join(', '))
+            el('div.sub', {}, [pendingFile ? 'Ready to upload' : 'Stored in your Everything drive', size].filter(Boolean).join(', '))
           ),
           hasStored && !pendingFile && el('button.icon-btn', { type: 'button', html: icon('eye', 18, 2), 'aria-label': 'View receipt', onclick: () => openReceiptViewer(expense) }),
           el('button.icon-btn', { type: 'button', html: icon('swap', 18, 2), 'aria-label': 'Replace receipt', title: 'Replace', onclick: () => fileInput.click() }),

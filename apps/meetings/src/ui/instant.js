@@ -3,7 +3,7 @@ import { RoomSession } from '../net/session.js';
 import { mintRoomCode, RoomLease, hostFields, ROOM_SETUP_TIMEOUT_MS } from '../lib/rooms.js';
 import { withDeadline } from '../lib/timers.js';
 import { getPref } from '../lib/prefs.js';
-import { hasPuter } from '../lib/env.js';
+import { hasEverything } from '../lib/env.js';
 import { isAnonymous } from '../lib/account.js';
 
 /**
@@ -35,11 +35,11 @@ export async function startInstant({ media, name }) {
 /**
  * Whether "Start an instant meeting" can skip the pre-join screen and put
  * the user straight into the call: they are signed in (hosting takes a
- * Puter account, and asking for one is the screen's job), and they have
+ * Everything account, and asking for one is the screen's job), and they have
  * told us their name before — the saved name is what they will be
  * introduced by, and there is no renaming once inside, so the account
  * username is never sprung on someone who has not chosen it.
  */
 export function canStartWithoutPrejoin() {
-  return hasPuter() && !isAnonymous() && !!getPref('name');
+  return hasEverything() && !isAnonymous() && !!getPref('name');
 }

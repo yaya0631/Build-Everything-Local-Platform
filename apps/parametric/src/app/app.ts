@@ -412,7 +412,7 @@ export class App {
     this.hooks.saveSettings?.(this.settings);
   }
 
-  /** Loads settings saved in the user's Puter account (set by main). */
+  /** Loads settings saved in the user's Everything account (set by main). */
   loadRemoteSettings: () => Promise<void> | void = () => {};
 
   applySettings(s: Settings) {

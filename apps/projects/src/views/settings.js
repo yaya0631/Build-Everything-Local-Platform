@@ -12,7 +12,7 @@ import { openMenu } from '../ui/menu.js';
 import { exportBackup } from '../ui/backupactions.js';
 import { importAnyFile } from '../ui/importfile.js';
 import { openCalendarExport } from '../ui/calendarexport.js';
-import { canSaveFiles } from '../lib/puterui.js';
+import { canSaveFiles } from '../lib/everythingui.js';
 import { openShortcuts, MOD_KEY } from '../ui/shortcuts.js';
 import { menuButton } from '../ui/navdrawer.js';
 import { notificationState, requestNotificationPermission } from '../ui/reminders.js';
@@ -20,7 +20,7 @@ import { notificationState, requestNotificationPermission } from '../ui/reminder
 export async function confirmSignOut() {
   const ok = await confirmDialog({
     title: 'Sign out?',
-    message: 'Your data stays safe in your Puter account and is here when you sign back in.',
+    message: 'Your data stays safe in your Everything account and is here when you sign back in.',
     confirmLabel: 'Sign out',
     danger: false,
   });
@@ -32,18 +32,18 @@ export async function confirmSignOut() {
     // the very changes the dialog above promised were safe.
     const discard = await confirmDialog({
       title: 'Some changes are not saved',
-      message: 'Your latest changes could not reach Puter and will be lost if you sign out now. Check your connection and try again, or sign out anyway.',
+      message: 'Your latest changes could not reach Everything and will be lost if you sign out now. Check your connection and try again, or sign out anyway.',
       confirmLabel: 'Sign out anyway',
     });
     if (!discard) return;
   }
-  puter.auth.signOut();
+  everything.auth.signOut();
   location.hash = '#/';
   location.reload();
 }
 
 export function settingsView() {
-  const username = store.user?.username || 'Puter user';
+  const username = store.user?.username || 'Everything user';
 
   /* Appearance */
   const themeGroup = el('div.seg', { role: 'radiogroup', 'aria-label': 'Theme' });
@@ -88,9 +88,9 @@ export function settingsView() {
       },
       canSaveFiles() && 'sep',
       canSaveFiles() && {
-        label: 'Save .zip to Puter…',
+        label: 'Save .zip to Everything…',
         icon: 'cloud',
-        onClick: () => exportBackup(exportBtn, { withAttachments: true, toPuter: true }),
+        onClick: () => exportBackup(exportBtn, { withAttachments: true, toEverything: true }),
       },
     ]),
   }, ' Export');
@@ -257,18 +257,18 @@ export function settingsView() {
     ),
 
     section('Account',
-      row({ ic: 'users', title: username, sub: 'Signed in with Puter' }),
-      // Inside the Puter desktop, the session belongs to the OS — no sign-out.
-      puter.env !== 'app' && row({
-        ic: 'logout', title: 'Sign out', sub: 'Your data stays in your Puter account',
+      row({ ic: 'users', title: username, sub: 'Signed in with Everything' }),
+      // Inside the Everything desktop, the session belongs to the OS — no sign-out.
+      everything.env !== 'app' && row({
+        ic: 'logout', title: 'Sign out', sub: 'Your data stays in your Everything account',
         control: el('button.btn.btn-ghost.btn-sm', { onclick: confirmSignOut }, 'Sign out'),
       })
     ),
 
     section('About',
-      row({ ic: 'board', title: 'Project Management', sub: 'Boards, timelines, and milestones. Your data lives in your own Puter cloud.' }),
+      row({ ic: 'board', title: 'Project Management', sub: 'Boards, timelines, and milestones. Your data lives in your own Everything cloud.' }),
       row({
-        ic: 'cloud', title: 'Powered by Puter',
+        ic: 'cloud', title: 'Powered by Everything',
         control: el('a.btn.btn-ghost.btn-sm', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Learn more'),
       })
     )

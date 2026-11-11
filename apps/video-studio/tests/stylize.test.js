@@ -65,7 +65,7 @@ describe('style looks', () => {
 
 describe('AI restyle', () => {
   afterEach(() => {
-    delete globalThis.puter;
+    delete globalThis.everything;
   });
 
   it('builds an instruction from a style chip and a description', () => {
@@ -93,7 +93,7 @@ describe('AI restyle', () => {
     const picture = { blob: new Blob(['x'], { type: 'image/png' }), width: 10, height: 10 };
     await expect(restylePicture(picture, { style: 'clay', txt2img: async () => { throw { code: 'moderation_flagged' }; } })).rejects.toThrow(/content filter/);
     await expect(restylePicture(picture, { txt2img: async () => 'x' })).rejects.toThrow(/Pick a style/);
-    await expect(restylePicture(picture, { style: 'clay' })).rejects.toThrow(/needs Puter/);
+    await expect(restylePicture(picture, { style: 'clay' })).rejects.toThrow(/needs Everything/);
   });
 
   it('names results and fits the picture size', () => {
@@ -111,7 +111,7 @@ function env({ signedIn = true } = {}) {
   const [img] = onMain(p, clip('image', 0, 4));
   const store = new EditorStore(p);
   const library = {
-    backend: { kind: signedIn ? 'puter' : 'local' },
+    backend: { kind: signedIn ? 'everything' : 'local' },
     importFile: async (file) => normalizeAsset({ kind: 'image', name: file.name, width: 640, height: 360 }),
   };
   const ctx = { store, library, player: { pause() {} } };
@@ -120,7 +120,7 @@ function env({ signedIn = true } = {}) {
     picture: vi.fn(async () => ({ blob: new Blob(['p'], { type: 'image/png' }), width: 640, height: 360 })),
     restyle: vi.fn(async () => ({ blob: new Blob(['r'], { type: 'image/png' }) })),
   };
-  if (signedIn) globalThis.puter = { ai: {} };
+  if (signedIn) globalThis.everything = { ai: {} };
   store.select(img.id);
   const insp = createInspector(ctx);
   document.body.append(insp.el);
@@ -132,7 +132,7 @@ const button = (root, text) => [...root.querySelectorAll('button')].find((b) => 
 
 describe('style tab', () => {
   afterEach(() => {
-    delete globalThis.puter;
+    delete globalThis.everything;
     document.body.replaceChildren();
   });
 
@@ -155,7 +155,7 @@ describe('style tab', () => {
 
   it('asks signed-out users to sign in for AI restyle', () => {
     const { insp } = env({ signedIn: false });
-    expect(insp.el.textContent).toMatch(/needs a Puter account/);
+    expect(insp.el.textContent).toMatch(/needs an Everything account/);
     expect(button(insp.el, 'Restyle')).toBeUndefined();
     insp.dispose();
   });

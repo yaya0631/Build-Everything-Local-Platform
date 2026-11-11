@@ -11,7 +11,7 @@
  * stays as the primary - always the first entry - so CSV, dupe-merge, and
  * the trash restore path keep working on it unchanged.
  *
- * Pure functions over plain objects: no Puter, no DOM.
+ * Pure functions over plain objects: no Everything, no DOM.
  */
 
 /**

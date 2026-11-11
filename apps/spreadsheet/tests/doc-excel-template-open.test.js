@@ -4,15 +4,15 @@ import { Doc } from '../src/lib/doc.js';
 import { Workbook } from '../src/core/workbook.js';
 import { isSpreadsheetFile, workbookToXlsx } from '../src/core/io.js';
 import { memoryStorage } from './helpers/memory-storage.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 
 // An Excel template (.xltx, or .xltm with macros) was not a file the app opened: dropping one or
 // opening it from the drive said it was not a spreadsheet. It now opens, and like Excel the first
 // save makes a new workbook (an .xlsx beside it) and leaves the template as it was.
 let mock;
 beforeAll(async () => { await Doc.blank().toXlsxBlob(); });
-beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); mock = installMockPuter(); vi.useFakeTimers(); });
-afterEach(() => { vi.useRealTimers(); delete globalThis.puter; });
+beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); mock = installMockEverything(); vi.useFakeTimers(); });
+afterEach(() => { vi.useRealTimers(); delete globalThis.everything; });
 
 async function templateBytes() {
   const wb = new Workbook();

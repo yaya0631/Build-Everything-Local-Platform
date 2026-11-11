@@ -3,7 +3,7 @@ import { renderApp } from '../src/ui/app.js';
 import { createSampleMailbox } from '../src/lib/sample.js';
 
 /**
- * Saving an attachment into the user's Puter files, through the save dialog
+ * Saving an attachment into the user's Everything files, through the save dialog
  * the shell is handed. The dialog is a stub: what is checked is what it is
  * given and what is said afterwards.
  */
@@ -40,7 +40,7 @@ afterEach(() => {
   document.querySelectorAll('.toast').forEach((node) => node.remove());
 });
 
-describe('Save to Puter', () => {
+describe('Save to Everything', () => {
   it('is not offered where there is no save dialog to hand the file to', async () => {
     mount();
     await settle(250);
@@ -52,7 +52,7 @@ describe('Save to Puter', () => {
   it('hands the decoded file and its safe name to the save dialog', async () => {
     const given = [];
     mount({
-      saveToPuter: async (blob, name) => {
+      saveToEverything: async (blob, name) => {
         given.push({ blob, name });
         return { name };
       },
@@ -62,7 +62,7 @@ describe('Save to Puter', () => {
     const save = root.querySelector('.attachment-save');
     expect(save).not.toBe(null);
     const chipName = save.parentElement.querySelector('.attachment-name').textContent;
-    expect(save.getAttribute('aria-label')).toBe(`Save ${chipName} to your Puter files`);
+    expect(save.getAttribute('aria-label')).toBe(`Save ${chipName} to your Everything files`);
 
     save.click();
     await settle(50);
@@ -71,11 +71,11 @@ describe('Save to Puter', () => {
     expect(given[0].name).toBe(chipName);
     expect(given[0].blob).toBeInstanceOf(Blob);
     expect(given[0].blob.size).toBeGreaterThan(0);
-    expect(lastToast()).toBe(`Saved ${chipName} to your Puter files.`);
+    expect(lastToast()).toBe(`Saved ${chipName} to your Everything files.`);
   });
 
   it('says nothing when the dialog is dismissed', async () => {
-    mount({ saveToPuter: async () => { throw new Error('dismissed'); } });
+    mount({ saveToEverything: async () => { throw new Error('dismissed'); } });
     await settle(250);
     await open(WITH_FILE);
     root.querySelector('.attachment-save').click();

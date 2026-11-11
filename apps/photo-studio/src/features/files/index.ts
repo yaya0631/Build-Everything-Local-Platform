@@ -1,4 +1,4 @@
-// File menu: opening (all codecs, Puter, recent files), saving projects,
+// File menu: opening (all codecs, Everything, recent files), saving projects,
 // Export As and the other exporters, File Info, Print and Automate.
 import type { Editor } from '../../editor';
 import type { Layer } from '../../model/document';
@@ -39,10 +39,10 @@ export function installFiles(e: Editor) {
     registerCommand({ id, label, recordable: false, ...lazyRun(mod, run), ...extra });
   lcmd('file.new', 'New…', newDocument, (m) => void m.newDocumentWindow(e), { shortcut: 'Mod+N', description: 'Create a document from a preset or custom settings' });
   // These replace the basic versions registered by core.
-  lcmd('file.open-cloud', 'Open from Puter…', saving, (m) => m.openFromCloud(e), { description: 'Open one or more files from Puter' });
-  lcmd('file.save', 'Save', saving, (m) => m.save(e), { shortcut: 'Mod+S', enabled: hasDoc, description: 'Save the project to Puter' });
-  lcmd('file.save-as', 'Save As…', saving, (m) => m.saveAs(e), { shortcut: 'Mod+Shift+S', enabled: hasDoc, description: 'Save the project to a new Puter location' });
-  lcmd('file.save-copy', 'Save a Copy…', saving, (m) => m.saveAs(e, true), { shortcut: 'Mod+Alt+S', enabled: hasDoc, description: 'Save a copy to Puter without changing where this document saves' });
+  lcmd('file.open-cloud', 'Open from Everything…', saving, (m) => m.openFromCloud(e), { description: 'Open one or more files from Everything' });
+  lcmd('file.save', 'Save', saving, (m) => m.save(e), { shortcut: 'Mod+S', enabled: hasDoc, description: 'Save the project to Everything' });
+  lcmd('file.save-as', 'Save As…', saving, (m) => m.saveAs(e), { shortcut: 'Mod+Shift+S', enabled: hasDoc, description: 'Save the project to a new Everything location' });
+  lcmd('file.save-copy', 'Save a Copy…', saving, (m) => m.saveAs(e, true), { shortcut: 'Mod+Alt+S', enabled: hasDoc, description: 'Save a copy to Everything without changing where this document saves' });
   lcmd('file.download-project', 'Download Project (.photo)', saving, (m) => m.downloadProject(e), { enabled: hasDoc });
   lcmd('file.export-as', 'Export As…', exportDialog, (m) => m.exportAsDialog(e), { shortcut: 'Mod+Alt+Shift+W', enabled: hasDoc, description: 'Export with format, size, metadata and color options' });
   // The label follows Preferences → Export → Quick export format.
@@ -58,7 +58,7 @@ export function installFiles(e: Editor) {
   lcmd('file.export-svg', 'Export SVG', layersExport, (m) => m.exportSvgFile(e), { enabled: hasDoc, description: 'Export layers as SVG shapes, text and images' });
   lcmd('file.export-layers', 'Export Layers to Files…', layersExport, (m) => m.exportLayers(e), { enabled: (e) => e.hasDocument && e.doc.layers.length > 0 });
   lcmd('file.import-layers', 'Import Layers…', importing, (m) => m.importLayers(e), { enabled: hasDoc, description: 'Add every layer of a PSD or .photo file to this document as a group' });
-  lcmd('file.import-layers-cloud', 'Import Layers from Puter…', importing, (m) => m.importLayers(e, 'puter'), { enabled: hasDoc, description: 'Add every layer of a PSD or .photo file on Puter to this document as a group' });
+  lcmd('file.import-layers-cloud', 'Import Layers from Everything…', importing, (m) => m.importLayers(e, 'everything'), { enabled: hasDoc, description: 'Add every layer of a PSD or .photo file on Everything to this document as a group' });
   lcmd('file.export-color-lookup', 'Color Lookup Tables…', lutExport, (m) => m.exportColorLookup(e), { enabled: (e) => e.hasDocument && hasAdjustment(e.doc.layers), description: 'Export the effect of the adjustment layers as a .cube, .3dl or .csp table' });
   lcmd('file.package', 'Package as ZIP', packaging, (m) => m.packageDocument(e), { enabled: hasDoc, description: 'Collect the project and its linked files into a ZIP' });
   lcmd('file.export-paths', 'Paths to Vector File…', pathsExport, (m) => m.exportPathsDialog(e), { enabled: (e) => e.hasDocument && (!!e.doc.paths?.length || !!e.doc.workPath?.paths.length), description: 'Export saved paths and the work path as SVG' });

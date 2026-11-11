@@ -1,6 +1,6 @@
 # Hiring · Applicant Tracking
 
-Job pages, candidate pipeline, interview scheduling, scorecards, offers, and onboarding: a complete, calm hiring workflow in one app. Built with vanilla JavaScript and [Puter.js](http://localhost:8443); no frameworks.
+Job pages, candidate pipeline, interview scheduling, scorecards, offers, and onboarding: a complete, calm hiring workflow in one app. Built with vanilla JavaScript and [Everything.js](http://localhost:8443); no frameworks.
 
 ## Features
 
@@ -15,9 +15,9 @@ Job pages, candidate pipeline, interview scheduling, scorecards, offers, and onb
 
 ## Data & integrations
 
-All data is stored in the signed-in user's own Puter account via `puter.kv`; nothing touches third-party servers. The app keeps dated snapshots of the whole dataset in the user's own drive (`hiring-backups/`) — one a day, one immediately before a wipe, a restore, or a purge — listed in Settings with per-entry restore and download. Calendar integration is file-based (`.ics` download, plus an optional self-hosted subscription feed), video meetings attach via meeting links, contacts via `mailto:` / `tel:` links, and offer letters copy or download as documents with typed-signature records.
+All data is stored in the signed-in user's own Everything account via `everything.kv`; nothing touches third-party servers. The app keeps dated snapshots of the whole dataset in the user's own drive (`hiring-backups/`) — one a day, one immediately before a wipe, a restore, or a purge — listed in Settings with per-entry restore and download. Calendar integration is file-based (`.ics` download, plus an optional self-hosted subscription feed), video meetings attach via meeting links, contacts via `mailto:` / `tel:` links, and offer letters copy or download as documents with typed-signature records.
 
-When running inside Puter (`puter.env === 'app'`), the platform owns the session, so the app hides its sign-out control.
+When running inside Everything (`everything.env === 'app'`), the platform owns the session, so the app hides its sign-out control.
 
 ## Development
 
@@ -28,14 +28,14 @@ npm test           # vitest suite over the core domain logic
 npm run build      # production build to dist/
 ```
 
-The `?mock` query flag (dev builds only) swaps in `dev/puter-mock.js`, a tiny localStorage-backed stand-in for the Puter SDK, so the app can be developed without a Puter session.
+The `?mock` query flag (dev builds only) swaps in `dev/everything-mock.js`, a tiny localStorage-backed stand-in for the Everything SDK, so the app can be developed without an Everything session.
 
 ## Architecture
 
 ```
 src/
   core/      domain logic, framework- and DOM-free (fully unit tested)
-    backend.js    storage adapters: Puter KV + in-memory (tests)
+    backend.js    storage adapters: Everything KV + in-memory (tests)
     store.js      state, actions, persistence, subscriptions
     pipeline.js   stages, funnel, staleness
     interviews.js validation, conflicts, ordering

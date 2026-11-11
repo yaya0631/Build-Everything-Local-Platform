@@ -38,7 +38,7 @@ const states = (doc) =>
     .map((widget) => widget.dict.lookup(PDFName.of('AS'))?.decodeText());
 
 test.beforeEach(async ({ page }) => {
-  await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
+  await page.route('**/sdk/everything.js', (route) => route.fulfill({ body: '' }));
   await page.goto('/#library');
 });
 

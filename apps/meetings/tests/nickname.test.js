@@ -7,7 +7,7 @@ import { makeState, encode, parse } from '../src/lib/protocol.js';
 let root, unmount, ctx;
 beforeEach(() => {
   localStorage.clear();
-  delete window.puter;
+  delete window.everything;
   window.matchMedia = vi.fn().mockReturnValue({ matches: false });
   root = document.createElement('div');
   document.body.append(root);

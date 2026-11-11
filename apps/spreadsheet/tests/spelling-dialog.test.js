@@ -81,10 +81,10 @@ describe('the Spelling dialog', () => {
   });
 
   it('adds a word to the person’s dictionary and a fix to AutoCorrect', async () => {
-    const { button, word, dialog } = await mount({ A1: 'Puterly recieve' });
-    expect(word()).toBe('Puterly');
+    const { button, word, dialog } = await mount({ A1: 'Everythingly recieve' });
+    expect(word()).toBe('Everythingly');
     button('Add to Dictionary').click();
-    expect(customWords()).toContain('Puterly');
+    expect(customWords()).toContain('Everythingly');
     expect(word()).toBe('recieve');
     dialog.querySelector('input[aria-label="Change to"]').value = 'receive';
     button('AutoCorrect').click();
@@ -163,7 +163,7 @@ describe('the language pane', () => {
     const { pane } = setup();
     pane.show('thesaurus');
     pane.lookup('word');
-    expect(pane.el.querySelector('.lang-status').textContent).toMatch(/needs Puter/);
+    expect(pane.el.querySelector('.lang-status').textContent).toMatch(/needs Everything/);
   });
 
   it('translates the selected cells and puts each translation back in its cell, as one step', async () => {

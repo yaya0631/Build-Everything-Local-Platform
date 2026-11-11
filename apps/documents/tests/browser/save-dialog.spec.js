@@ -1,9 +1,9 @@
 import { test, expect } from '@playwright/test';
 
 /**
- * Inside the Puter desktop (the mock's ?env=app) a new document is saved where the user chooses, with Puter's
+ * Inside the Everything desktop (the mock's ?env=app) a new document is saved where the user chooses, with Everything's
  * Save dialog, and only when the user asks. The mock's dialog saves under ~/Desktop, or cancels when a test sets
- * window.__puterSaveAs to null.
+ * window.__everythingSaveAs to null.
  */
 
 const text = page => page.getByRole('textbox', { name: 'Document text' });
@@ -18,8 +18,8 @@ async function openEditor(page, hash = '#/new') {
   await expect(page.getByRole('button', { name: 'Bold', exact: true })).toBeEnabled();
   await page.evaluate(() => {
     window.__dialogs = [];
-    const show = puter.ui.showSaveFilePicker;
-    puter.ui.showSaveFilePicker = function (data, name) { window.__dialogs.push(name); return show.call(this, data, name); };
+    const show = everything.ui.showSaveFilePicker;
+    everything.ui.showSaveFilePicker = function (data, name) { window.__dialogs.push(name); return show.call(this, data, name); };
   });
 }
 
@@ -31,13 +31,13 @@ test('a new document is not saved until Save, which asks where and then autosave
   expect(await drive(page)).toEqual([]);
   expect(await page.evaluate(() => window.__dialogs)).toEqual([]);
   await text(page).press('ControlOrMeta+s');
-  await expect(status(page)).toHaveAttribute('aria-label', 'Saved to Puter');
+  await expect(status(page)).toHaveAttribute('aria-label', 'Saved to Everything');
   expect(await page.evaluate(() => window.__dialogs)).toEqual(['Untitled document.docx']);
   expect(await docPath(page)).toBe('~/Desktop/Untitled document.docx');
   await expect(page).toHaveURL(/#\/edit\/~%2FDesktop%2FUntitled%20document\.docx$/);
   await page.keyboard.type(' and more');
   await expect(status(page)).toHaveAttribute('aria-label', 'Unsaved changes');
-  await expect(status(page)).toHaveAttribute('aria-label', 'Saved to Puter');
+  await expect(status(page)).toHaveAttribute('aria-label', 'Saved to Everything');
   expect(await drive(page)).toEqual(['~/Desktop/Untitled document.docx']);
   expect(await page.evaluate(() => window.__dialogs)).toHaveLength(1);
 });
@@ -45,13 +45,13 @@ test('a new document is not saved until Save, which asks where and then autosave
 test('a name typed without .docx in the Save dialog gets it, and AutoSave goes on there', async ({ page }) => {
   await openEditor(page);
   await text(page).fill('Notes');
-  await page.evaluate(() => { window.__puterSaveAs = 'Notes'; });
+  await page.evaluate(() => { window.__everythingSaveAs = 'Notes'; });
   await text(page).press('ControlOrMeta+s');
-  await expect(status(page)).toHaveAttribute('aria-label', 'Saved to Puter');
+  await expect(status(page)).toHaveAttribute('aria-label', 'Saved to Everything');
   expect(await docPath(page)).toBe('~/Desktop/Notes.docx');
   await page.keyboard.type(' and more');
   await expect(status(page)).toHaveAttribute('aria-label', 'Unsaved changes');
-  await expect(status(page)).toHaveAttribute('aria-label', 'Saved to Puter');
+  await expect(status(page)).toHaveAttribute('aria-label', 'Saved to Everything');
   expect(await drive(page)).toEqual(['~/Desktop/Notes.docx']);
   expect(await page.evaluate(() => window.__dialogs)).toHaveLength(1);
 });
@@ -59,7 +59,7 @@ test('a name typed without .docx in the Save dialog gets it, and AutoSave goes o
 test('cancelling the Save dialog leaves the document unsaved without an error', async ({ page }) => {
   await openEditor(page);
   await text(page).fill('Draft');
-  await page.evaluate(() => { window.__puterSaveAs = null; });
+  await page.evaluate(() => { window.__everythingSaveAs = null; });
   await text(page).press('ControlOrMeta+s');
   await expect.poll(() => page.evaluate(() => window.__dialogs.length)).toBe(1);
   await page.waitForTimeout(500);
@@ -72,13 +72,13 @@ test('cancelling the Save dialog leaves the document unsaved without an error', 
 test('leaving a new document asks where to save it; cancelling asks whether to leave', async ({ page }) => {
   await openEditor(page);
   await text(page).fill('Draft');
-  await page.evaluate(() => { window.__puterSaveAs = null; });
+  await page.evaluate(() => { window.__everythingSaveAs = null; });
   await page.evaluate(() => { location.hash = '#/home'; });
   const dialog = page.getByRole('dialog', { name: 'Leave without saving?' });
   await expect(dialog).toBeVisible();
   expect(await page.evaluate(() => window.__dialogs)).toEqual(['Untitled document.docx']);
   await expect(page.locator('.toast-root')).not.toContainText(/./);
-  await page.evaluate(() => { window.__puterSaveAs = 'Kept.docx'; });
+  await page.evaluate(() => { window.__everythingSaveAs = 'Kept.docx'; });
   await dialog.getByRole('button', { name: 'Keep editing' }).click();
   await page.evaluate(() => { location.hash = '#/home'; });
   await expect(page.getByRole('heading', { name: 'Your documents' })).toBeVisible();
@@ -88,9 +88,9 @@ test('leaving a new document asks where to save it; cancelling asks whether to l
 test('a document saved elsewhere through the Save dialog is listed on the documents screen and in Open recent', async ({ page }) => {
   await openEditor(page);
   await text(page).fill('Plans');
-  await page.evaluate(() => { window.__puterSaveAs = 'Plans.docx'; });
+  await page.evaluate(() => { window.__everythingSaveAs = 'Plans.docx'; });
   await text(page).press('ControlOrMeta+s');
-  await expect(status(page)).toHaveAttribute('aria-label', 'Saved to Puter');
+  await expect(status(page)).toHaveAttribute('aria-label', 'Saved to Everything');
   await page.evaluate(() => { location.hash = '#/home'; });
   const row = page.locator('[data-path="~/Desktop/Plans.docx"]');
   await expect(row).toBeVisible();
@@ -109,7 +109,7 @@ test('a document saved elsewhere through the Save dialog keeps a version history
   await openEditor(page);
   await text(page).fill('First version.');
   await text(page).press('ControlOrMeta+s');
-  await expect(status(page)).toHaveAttribute('aria-label', 'Saved to Puter');
+  await expect(status(page)).toHaveAttribute('aria-label', 'Saved to Everything');
   expect(await docPath(page)).toBe('~/Desktop/Untitled document.docx');
   await page.locator('.ed-menubar').getByRole('menuitem', { name: 'File', exact: true }).click();
   await page.getByRole('menuitem', { name: 'Browse Version History', exact: true }).click();
@@ -127,7 +127,7 @@ test('File > Save: Save a Copy asks where and goes on in the copy', async ({ pag
   await openEditor(page);
   await text(page).fill('Original');
   await text(page).press('ControlOrMeta+s');
-  await expect(status(page)).toHaveAttribute('aria-label', 'Saved to Puter');
+  await expect(status(page)).toHaveAttribute('aria-label', 'Saved to Everything');
   await page.getByRole('button', { name: 'File', exact: true }).click();
   const view = page.getByRole('dialog', { name: 'File' });
   await view.getByRole('tab', { name: 'Save' }).click();
@@ -145,8 +145,8 @@ test('time spent in the Save dialog while leaving is not reported as a stalled s
   await text(page).fill('Draft');
   // The user takes longer to choose than a stalled save is given.
   await page.evaluate(() => {
-    const show = puter.ui.showSaveFilePicker;
-    puter.ui.showSaveFilePicker = function (data, name) {
+    const show = everything.ui.showSaveFilePicker;
+    everything.ui.showSaveFilePicker = function (data, name) {
       const answer = new Promise(resolve => setTimeout(resolve, 16500)).then(() => show.call(this, data, name));
       const saved = answer.then(item => item);
       saved.undefinedOnCancel = answer;
@@ -167,7 +167,7 @@ test('sharing a template with edits saves it as a new .docx first, and shares th
   await text(page).fill('Dear reader,');
   await page.evaluate(async () => {
     const doc = window.__docs.current.view.doc;
-    await puter.fs.write('~/Desktop/Letter.dotx', await doc.exporter());
+    await everything.fs.write('~/Desktop/Letter.dotx', await doc.exporter());
     doc.discardEdits();
   });
   await page.goto('about:blank');
@@ -175,7 +175,7 @@ test('sharing a template with edits saves it as a new .docx first, and shares th
   await text(page).press('End');
   await page.keyboard.type(' hello');
   await expect(status(page)).toHaveAttribute('aria-label', 'Not saved yet');
-  await page.evaluate(() => { window.__puterSaveAs = null; });
+  await page.evaluate(() => { window.__everythingSaveAs = null; });
   await page.getByRole('button', { name: 'Share', exact: true }).first().click();
   await page.getByRole('menuitem', { name: 'Invite People…' }).click();
   const dialog = page.getByRole('dialog', { name: /^Share/ });
@@ -184,7 +184,7 @@ test('sharing a template with edits saves it as a new .docx first, and shares th
   await expect(dialog).toContainText('Save the document before sharing it.');
   expect(await page.evaluate(() => window.__dialogs)).toEqual(['Letter.docx']);
   expect(await docPath(page)).toBe('~/Desktop/Letter.dotx');
-  await page.evaluate(() => { window.__puterSaveAs = 'Letter.docx'; });
+  await page.evaluate(() => { window.__everythingSaveAs = 'Letter.docx'; });
   await dialog.getByRole('button', { name: 'Copy Link' }).click();
   await expect(dialog.getByRole('textbox', { name: 'Invitation link' })).toHaveValue(/collab-/, { timeout: 15000 });
   expect(await docPath(page)).toBe('~/Desktop/Letter.docx');
@@ -195,21 +195,21 @@ test('publishing a template with edits saves it as a new .docx first, and publis
   await text(page).fill('Notice');
   await page.evaluate(async () => {
     const doc = window.__docs.current.view.doc;
-    await puter.fs.write('~/Desktop/Notice.dotx', await doc.exporter());
+    await everything.fs.write('~/Desktop/Notice.dotx', await doc.exporter());
     doc.discardEdits();
   });
   await page.goto('about:blank');
   await openEditor(page, '#/edit/~%2FDesktop%2FNotice.dotx');
   await text(page).press('End');
   await page.keyboard.type(' board');
-  await page.evaluate(() => { window.__puterSaveAs = null; });
+  await page.evaluate(() => { window.__everythingSaveAs = null; });
   await page.getByRole('button', { name: 'File', exact: true }).click();
   const view = page.getByRole('dialog', { name: 'File' });
   await view.getByRole('tab', { name: 'Share' }).click();
   await view.getByRole('button', { name: 'Publish to the Web' }).click();
   await expect(view.locator('.bs-share-note')).toHaveText('Save the document first.');
-  expect(await page.evaluate(() => Object.keys(puter.hosting._sites))).toEqual([]);
-  await page.evaluate(() => { window.__puterSaveAs = 'Notice.docx'; });
+  expect(await page.evaluate(() => Object.keys(everything.hosting._sites))).toEqual([]);
+  await page.evaluate(() => { window.__everythingSaveAs = 'Notice.docx'; });
   await view.getByRole('button', { name: 'Publish to the Web' }).click();
   await expect(view.getByRole('button', { name: 'Stop Publishing' })).toBeVisible();
   expect(await docPath(page)).toBe('~/Desktop/Notice.docx');
@@ -220,14 +220,14 @@ test('leaving a template with edits says only the changes are unsaved, not the f
   await text(page).fill('Memo');
   await page.evaluate(async () => {
     const doc = window.__docs.current.view.doc;
-    await puter.fs.write('~/Desktop/Memo.dotx', await doc.exporter());
+    await everything.fs.write('~/Desktop/Memo.dotx', await doc.exporter());
     doc.discardEdits();
   });
   await page.goto('about:blank');
   await openEditor(page, '#/edit/~%2FDesktop%2FMemo.dotx');
   await text(page).press('End');
   await page.keyboard.type(' text');
-  await page.evaluate(() => { window.__puterSaveAs = null; location.hash = '#/home'; });
+  await page.evaluate(() => { window.__everythingSaveAs = null; location.hash = '#/home'; });
   const dialog = page.getByRole('dialog', { name: 'Leave without saving?' });
   await expect(dialog).toContainText('Your changes to “Memo.dotx” have not been saved yet.');
   await dialog.getByRole('button', { name: 'Leave without saving' }).click();
@@ -239,7 +239,7 @@ test('File > Export downloads every format to this device, without the Save dial
   await openEditor(page);
   await text(page).fill('Exported');
   await text(page).press('ControlOrMeta+s');
-  await expect(status(page)).toHaveAttribute('aria-label', 'Saved to Puter');
+  await expect(status(page)).toHaveAttribute('aria-label', 'Saved to Everything');
   const before = await drive(page);
   const tiles = [['Word document', 'Untitled document.docx'], ['PDF', 'Untitled document.pdf'], ['Web page', 'Untitled document.html'], ['Markdown', 'Untitled document.md'], ['Plain text', 'Untitled document.txt']];
   for (const [tile, file] of tiles) {
@@ -256,9 +256,9 @@ test('File > Export downloads every format to this device, without the Save dial
 test('the documents screen downloads a document to this device, without the Save dialog', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/mock.html?env=app#/home');
-  await page.evaluate(async () => { await puter.fs.write('Documents/Report.docx', new Blob(['not opened'])); });
+  await page.evaluate(async () => { await everything.fs.write('Documents/Report.docx', new Blob(['not opened'])); });
   await page.reload();
-  await page.evaluate(() => { window.__dialogs = []; puter.ui.showSaveFilePicker = (data, name) => { window.__dialogs.push(name); return new Promise(() => {}); }; });
+  await page.evaluate(() => { window.__dialogs = []; everything.ui.showSaveFilePicker = (data, name) => { window.__dialogs.push(name); return new Promise(() => {}); }; });
   await page.locator('[data-path="Documents/Report.docx"] .file-menu-btn').click();
   const [download] = await Promise.all([page.waitForEvent('download'), page.getByRole('menuitem', { name: 'Download' }).click()]);
   expect(download.suggestedFilename()).toBe('Report.docx');

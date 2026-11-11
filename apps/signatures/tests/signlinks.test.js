@@ -1,12 +1,12 @@
 /**
  * Integration: the signlinks client module deploying and talking to a REAL
- * instantiation of sign-worker.js through the fake Puter SDK.
+ * instantiation of sign-worker.js through the fake Everything SDK.
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { createStore } from '../src/lib/store.js';
 import { createSignLinks, SIGN_WORKER_VERSION } from '../src/lib/signlinks.js';
-import { makeFakePuter } from './helpers/fake-puter.js';
+import { makeFakeEverything } from './helpers/fake-everything.js';
 
 const PDF = new Uint8Array([0x25, 0x50, 0x44, 0x46]);
 const IMG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUg==';
@@ -17,12 +17,12 @@ describe('signlinks', () => {
   let links;
 
   beforeEach(async () => {
-    p = makeFakePuter();
-    store = createStore({ getPuter: () => p });
+    p = makeFakeEverything();
+    store = createStore({ getEverything: () => p });
     await store.init();
     links = createSignLinks({
       store,
-      getPuter: () => p,
+      getEverything: () => p,
       fetchFn: p.fetchTo,
       verifyAttempts: 2,
       verifyDelayMs: 1,
@@ -41,7 +41,7 @@ describe('signlinks', () => {
 
   it('deploys the worker once, verifies it, and persists the config', async () => {
     const cfg = await links.ensureWorker();
-    expect(cfg.url).toMatch(/^https:\/\/doc-sign-[0-9a-f]{10}\.puter\.work$/);
+    expect(cfg.url).toMatch(/^https:\/\/doc-sign-[0-9a-f]{10}\.everything\.work$/);
     expect(cfg.version).toBe(SIGN_WORKER_VERSION);
     expect(p.workers.create).toHaveBeenCalledTimes(1);
     // The stored source contains no raw secret, only its hash.
@@ -54,7 +54,7 @@ describe('signlinks', () => {
     expect(source).toContain('https://signatures.example/sign.html');
 
     // A second instance adopts the stored config instead of redeploying.
-    const again = createSignLinks({ store, getPuter: () => p, fetchFn: p.fetchTo, verifyAttempts: 2, verifyDelayMs: 1 });
+    const again = createSignLinks({ store, getEverything: () => p, fetchFn: p.fetchTo, verifyAttempts: 2, verifyDelayMs: 1 });
     const cfg2 = await again.ensureWorker();
     expect(cfg2.url).toBe(cfg.url);
     expect(p.workers.create).toHaveBeenCalledTimes(1);
@@ -64,7 +64,7 @@ describe('signlinks', () => {
     const doc = await sentDoc();
     const map = await links.syncDoc(doc);
     expect(Object.keys(map)).toEqual(['ext1']);
-    expect(map.ext1).toMatch(/^https:\/\/doc-sign-[0-9a-f]{10}\.puter\.work\/sign\/[0-9a-f]{40}$/);
+    expect(map.ext1).toMatch(/^https:\/\/doc-sign-[0-9a-f]{10}\.everything\.work\/sign\/[0-9a-f]{40}$/);
     // Re-sync keeps the same link (the one already emailed must survive).
     const map2 = await links.syncDoc(store.getDoc(doc.id));
     expect(map2.ext1 ?? map.ext1).toBe(map.ext1);
@@ -161,7 +161,7 @@ describe('signlinks', () => {
     expect(retried).toHaveLength(1);
     expect(retried[0].completedNow).toBe(true);
     expect(store.getDoc(doc.id).audit.filter((e) => e.type === 'signed')).toHaveLength(1);
-    const reloaded = createStore({ getPuter: () => p });
+    const reloaded = createStore({ getEverything: () => p });
     await reloaded.init();
     expect(reloaded.getDoc(doc.id).status).toBe('completed');
     expect((await reloaded.readSigData(doc.id)).f1.data).toBe(IMG);

@@ -11,7 +11,7 @@ vi.mock('../src/views/editor.js', () => ({
 
 it('does not let a delayed import replace a newer navigation or import', async () => {
   vi.stubGlobal('matchMedia', () => ({ matches: false, addEventListener() {} }));
-  vi.stubGlobal('puter', {
+  vi.stubGlobal('everything', {
     auth: { isSignedIn: () => true, getUser: async () => ({ username: 'test' }) },
     fs: { readdir: async () => [], read: async () => new Blob(['document']), mkdir: async () => {}, stat: async () => null, write: async () => ({}) },
   });

@@ -13,10 +13,10 @@ declare global {
 
 export type Backend = 'default' | 'WebGPU' | 'WebGL';
 
-/** Load the workspace with a stubbed Puter SDK and wait for the compositor. */
-export async function boot(page: Page, backend: Backend = 'default', puter = 'window.puter={env:"app",auth:{isSignedIn:()=>true}};') {
+/** Load the workspace with a stubbed Everything SDK and wait for the compositor. */
+export async function boot(page: Page, backend: Backend = 'default', everything = 'window.everything={env:"app",auth:{isSignedIn:()=>true}};') {
   if (backend === 'WebGL') await page.addInitScript(() => Object.defineProperty(navigator, 'gpu', { value: undefined }));
-  await page.route('**/sdk/puter.js', (route) => route.fulfill({ contentType: 'application/javascript', body: puter }));
+  await page.route('**/sdk/everything.js', (route) => route.fulfill({ contentType: 'application/javascript', body: everything }));
   await page.goto('/');
   await page.waitForFunction(() => !!window.photoStudio?.renderer, null, { timeout: 90_000 });
   await expect(page.locator('#engine-status')).toHaveText(backend === 'WebGL' ? 'WebGL2' : backend === 'WebGPU' ? 'WebGPU' : /WebGPU|WebGL2/);

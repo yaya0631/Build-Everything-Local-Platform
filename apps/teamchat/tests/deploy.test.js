@@ -10,7 +10,7 @@ let writes;
 
 function ship(banner) {
   globalThis.fetch = async () => new Response(`${banner}\nconsole.log(1);`, { status: 200 });
-  globalThis.puter = {
+  globalThis.everything = {
     fs: { write: async (path) => { writes.push(path); return { path }; } },
     workers: { exec: async () => new Response(JSON.stringify({ ok: true, build: 'aaaaaaaaaaaa' }), { status: 200, headers: { 'Content-Type': 'application/json' } }) },
   };

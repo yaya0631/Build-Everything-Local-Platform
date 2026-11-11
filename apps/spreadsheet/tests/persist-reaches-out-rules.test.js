@@ -3,7 +3,7 @@ import { Doc } from '../src/lib/doc.js';
 import { Workbook } from '../src/core/workbook.js';
 import { workbookToXlsx } from '../src/core/io.js';
 import { memoryStorage } from './helpers/memory-storage.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 
 // The open-time scan read every conditional rule's value and every dropdown's list as a formula.
 // Once a reaching function counted by its bare name, a rule highlighting the text "AI" or a list
@@ -12,8 +12,8 @@ import { installMockPuter } from './helpers/mock-puter.js';
 // or a formula.
 let mock;
 beforeAll(async () => { await workbookToXlsx(new Workbook()); });
-beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); mock = installMockPuter(); });
-afterEach(() => { delete globalThis.puter; });
+beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); mock = installMockEverything(); });
+afterEach(() => { delete globalThis.everything; });
 
 const A1 = { r1: 0, c1: 0, r2: 0, c2: 0 };
 const B1 = { r1: 0, c1: 1, r2: 0, c2: 1 };

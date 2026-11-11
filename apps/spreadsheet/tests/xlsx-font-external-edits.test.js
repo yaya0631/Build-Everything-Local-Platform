@@ -64,7 +64,7 @@ it.each(['cell', 'column', 'row'])('accepts native %s font changes instead of re
   const reopened = await read(await bytes(back));
   for (const [r, c] of points) expect(pick(effective(reopened, r, c))).toEqual(pick(effective(back, r, c)));
   const native = zipEditor(await bytes(back));
-  native.set('/xl/workbook.xml', native.get('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  native.set('/xl/workbook.xml', native.get('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   const external = await read(native.finish());
   for (const [r, c] of points) expect(xlsxFontProjection(effective(external, r, c))).toMatchObject(changed);
   const [r, c] = points[0], copied = back.copyRange(back.activeSheetId, { r1: r, c1: c, r2: r, c2: c });

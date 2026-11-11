@@ -3,7 +3,7 @@
 import type { Editor } from '../../editor';
 import type { PhotoDocument } from '../../model/document';
 import { escapeXML } from '../../model/assets';
-import { download } from '../../persistence/puter';
+import { download } from '../../persistence/everything';
 import { formDialog } from '../../ui/dialog';
 import { maskToSvg } from '../vector/geometry';
 

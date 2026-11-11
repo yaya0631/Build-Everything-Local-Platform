@@ -1,8 +1,8 @@
 /**
  * Conversation UI (review pass 25), driven in node through
  * tests/helpers/dom.js as the pass-19 to pass-24 files are: a fresh DOM and
- * a fresh module registry for every test, Puter faked at
- * `puter.workers.exec`, the toast, the theme, the modal layer and navigation
+ * a fresh module registry for every test, Everything faked at
+ * `everything.workers.exec`, the toast, the theme, the modal layer and navigation
  * mocked.
  */
 import { describe, it, expect, afterEach, vi } from 'vitest';
@@ -32,7 +32,7 @@ async function boot({ width = 1280, ...env } = {}) {
   dom?.uninstall();
   dom = installDom({ width, ...env });
   vi.resetModules();
-  globalThis.puter = { workers: { exec: async () => json({ code: 'not_found', message: 'nope' }, 404) } };
+  globalThis.everything = { workers: { exec: async () => json({ code: 'not_found', message: 'nope' }, 404) } };
   ({ store } = await import('../src/lib/store.js'));
   const { api } = await import('../src/lib/api.js');
   store.wsId = REF;
@@ -64,7 +64,7 @@ afterEach(async () => {
   store = null;
   dom?.uninstall();
   dom = null;
-  delete globalThis.puter;
+  delete globalThis.everything;
   vi.restoreAllMocks();
 });
 
@@ -234,7 +234,7 @@ describe('the Search index dialog opened again while a build runs', () => {
     const { toast } = await import('../src/ui/toast.js');
     const { openModal } = await import('../src/ui/modal.js');
     const pending = [];
-    globalThis.puter.workers.exec = async (url, init = {}) => {
+    globalThis.everything.workers.exec = async (url, init = {}) => {
       if (url.includes('/search/reindex')) return new Promise((r) => { pending.push(r); });
       return json({ code: 'not_found', message: 'nope' }, 404);
     };
@@ -298,7 +298,7 @@ describe('the Search index dialog opened again while a build runs', () => {
     expect(startOf(second).getAttribute('aria-busy')).toBeNull();
     // Tried again from here: the next request carries the state the last step handed back.
     let sent = null;
-    globalThis.puter.workers.exec = async (url, init = {}) => {
+    globalThis.everything.workers.exec = async (url, init = {}) => {
       if (url.includes('/search/reindex')) { sent = JSON.parse(init.body); return new Promise(() => {}); }
       return json({ code: 'not_found', message: 'nope' }, 404);
     };
@@ -641,7 +641,7 @@ describe('the "N replies" line at the head of an open thread', () => {
     const { renderThreadPanel } = await import('../src/ui/panel.js');
     vi.spyOn(store, 'markRead').mockImplementation(() => {});
     store.pokeSync = () => {};
-    globalThis.puter.workers.exec = async (url, init = {}) => {
+    globalThis.everything.workers.exec = async (url, init = {}) => {
       if (init.method === 'DELETE') return json({ ok: true });
       return json({ messages: [], seq: 0 });
     };
@@ -676,7 +676,7 @@ describe('the "N replies" line at the head of an open thread', () => {
     vi.spyOn(store, 'markRead').mockImplementation(() => {});
     store.pokeSync = () => {};
     const root = { ...message(5, 'u-me'), text: 'root 5', replyCount: 2 };
-    globalThis.puter.workers.exec = async (url, init = {}) => {
+    globalThis.everything.workers.exec = async (url, init = {}) => {
       const u = new URL(url);
       if (u.pathname.endsWith('/messages') && u.searchParams.get('from') === '5') return json({ messages: [root], seq: 45 });
       if (u.pathname.endsWith('/messages')) return json({ messages: [], seq: 0 });

@@ -42,7 +42,7 @@ export function operatorCheatSheet(): string {
 // links
 
 /** Our own help destinations for wm.url_open_preset. */
-const feedbackDialog = () => (globalThis as unknown as { puter?: { ui?: { showFeedbackDialog?: () => Promise<boolean> } } }).puter?.ui?.showFeedbackDialog;
+const feedbackDialog = () => (globalThis as unknown as { everything?: { ui?: { showFeedbackDialog?: () => Promise<boolean> } } }).everything?.ui?.showFeedbackDialog;
 
 const URL_PRESETS: [string, string, string][] = [
   ['BUG', 'Report a Bug', 'Tell the people who make this app about a problem'],
@@ -52,11 +52,11 @@ const URL_PRESETS: [string, string, string][] = [
 
 function openUrlPreset(type: string): boolean {
   if (type === 'BUG') {
-    // the Puter SDK is loaded on first use
-    void import('../assistant/puter').then(async (m) => {
-      await m.loadPuter();
+    // the Everything SDK is loaded on first use
+    void import('../assistant/everything').then(async (m) => {
+      await m.loadEverything();
       const f = feedbackDialog();
-      if (!f) return app.report('WARNING', 'Feedback can be sent when the app runs in Puter');
+      if (!f) return app.report('WARNING', 'Feedback can be sent when the app runs in Everything');
       if (await f()) app.report('INFO', 'Thank you for your feedback');
     });
     return true;
@@ -69,9 +69,9 @@ function openUrlPreset(type: string): boolean {
 // ---------------------------------------------------------------------------
 // quitting
 
-/** Leave the app: Puter closes its window; a browser tab can only be closed when the script opened it. */
+/** Leave the app: Everything closes its window; a browser tab can only be closed when the script opened it. */
 function quitNow() {
-  const p = (globalThis as unknown as { puter?: { exit?: () => void } }).puter;
+  const p = (globalThis as unknown as { everything?: { exit?: () => void } }).everything;
   if (typeof p?.exit === 'function') {
     p.exit();
     return;

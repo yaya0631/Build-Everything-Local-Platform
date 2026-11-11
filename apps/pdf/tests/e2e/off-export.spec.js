@@ -9,7 +9,7 @@ for (const kind of ['radio', 'checkbox'])
       test(`form ${kind} keeps an Off export distinct from no selection (inherited=${inherited}, default=${defaultOnly})`, async ({
         page,
       }) => {
-        await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
+        await page.route('**/sdk/everything.js', (route) => route.fulfill({ body: '' }));
         await page.goto('/#library');
         const { doc } = await offExportPdf({ kind, inherited, defaultOnly });
         const open = async (document) => {

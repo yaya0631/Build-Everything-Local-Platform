@@ -137,7 +137,7 @@ export function registerCommands(app: App, files: FileOps) {
       description: 'Design and change the part by describing what you want.',
       checked: () => app.taskPaneOpen() === 'assistant', run: () => app.toggleTaskPane('assistant'),
     },
-    { id: 'share', label: 'Share...', icon: 'share', keywords: 'collaborate invite team access', description: 'Let other Puter users view or edit this part.', run: () => shareDialog(app, files) },
+    { id: 'share', label: 'Share...', icon: 'share', keywords: 'collaborate invite team access', description: 'Let other Everything users view or edit this part.', run: () => shareDialog(app, files) },
     { id: 'properties', label: 'Part Properties...', icon: 'part', keywords: 'units decimals', description: 'Name, units and precision.', run: () => propertiesDialog(app) },
     // ---- edit ----
     {

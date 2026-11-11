@@ -1,7 +1,7 @@
 /**
  * The mailbox watched rather than polled.
  *
- * The shell subscribes to `.mail` as a whole with `puter.events.onLocal()`,
+ * The shell subscribes to `.mail` as a whole with `everything.events.onLocal()`,
  * so one subscription covers every folder, and mail delivered, filed,
  * restored or deleted -- by emailrx, by another device, by another tab --
  * arrives as an event naming the path that changed:

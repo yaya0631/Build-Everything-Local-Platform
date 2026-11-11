@@ -1435,7 +1435,7 @@ test("each page of a history with no pauses reads about what it shows", async ()
     t += 120_000;
   };
   for (let n = 0; n < 20_000; n++) add(n);
-  // Puter's listing position, here an offset from the newest key, which
+  // Everything's listing position, here an offset from the newest key, which
   // records added or removed since move.
   let keys;
   const sorted = () => (keys = [...env.data.keys()].sort());

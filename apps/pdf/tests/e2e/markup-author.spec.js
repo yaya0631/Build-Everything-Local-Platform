@@ -3,14 +3,14 @@ import { PDFDocument } from 'pdf-lib';
 import { readFile } from 'node:fs/promises';
 import { listAnnotations } from '../../src/core/annotations.js';
 
-const PUTER_MOCK = `window.puter = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async () => ({}) }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
+const EVERYTHING_MOCK = `window.everything = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async () => ({}) }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
 const settled = (page) => expect(page.locator('.editor')).toHaveAttribute('aria-busy', 'false');
 
 // Highlights are comments like any other: the Comments panel, comment summaries, and other
 // readers show who made each one and when.
 test('highlights record who made them and when', async ({ page }) => {
-  await page.route('**/sdk/puter.js', (route) =>
-    route.fulfill({ contentType: 'application/javascript', body: PUTER_MOCK }),
+  await page.route('**/sdk/everything.js', (route) =>
+    route.fulfill({ contentType: 'application/javascript', body: EVERYTHING_MOCK }),
   );
   await page.goto('/#library');
   const doc = await PDFDocument.create();

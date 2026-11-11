@@ -10,7 +10,7 @@ export async function capture(browser, base, root) {
     if (!localStorage.getItem('store-assets-seeded')) {
       localStorage.setItem('inventory:theme', 'light');
       for (const [key, value] of Object.entries(data)) {
-        localStorage.setItem(`puter-mock:kv:inv:${key}:${key === 'products' ? 'v2' : 'v1'}`, JSON.stringify(value));
+        localStorage.setItem(`everything-mock:kv:inv:${key}:${key === 'products' ? 'v2' : 'v1'}`, JSON.stringify(value));
       }
       localStorage.setItem('store-assets-seeded', 'yes');
     }

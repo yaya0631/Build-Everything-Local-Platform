@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { homeView } from '../src/views/home.js';
-import * as P from '../src/lib/puter.js';
+import * as P from '../src/lib/everything.js';
 import { closeMenu } from '../src/ui/menu.js';
 import { saveDraft, loadDraft, draftKey } from '../src/lib/drafts.js';
 import { Workbook } from '../src/core/workbook.js';

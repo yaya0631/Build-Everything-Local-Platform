@@ -2,12 +2,12 @@ import { test, expect } from "@playwright/test";
 import { addText } from "./editor-commands.js";
 
 // Nobody has to sign in to work: the app opens into a new presentation, and
-// Puter's sign-in is asked for when a presentation is saved to the cloud.
-async function mockPuter(page, { signedIn = false } = {}) {
-  await page.route("**/sdk/puter.js", (route) =>
+// Everything's sign-in is asked for when a presentation is saved to the cloud.
+async function mockEverything(page, { signedIn = false } = {}) {
+  await page.route("**/sdk/everything.js", (route) =>
     route.fulfill({
       contentType: "application/javascript",
-      body: `(()=>{let signedIn=${signedIn};const files={};window.__writes=[];window.__signIns=0;window.puter={env:'web',auth:{isSignedIn:async()=>signedIn,getUser:async()=>({username:'test-user',uuid:'test-user-id'}),signIn:async()=>{window.__signIns++;signedIn=true},signOut:async()=>{signedIn=false}},kv:new Proxy({},{get(){throw Error('KV is forbidden')}}),fs:{readdir:async()=>Object.values(files),write:async(path,blob,options)=>{const actual=path.startsWith('/')?path:'/test/'+path;window.__writes.push({path:actual,options,size:blob.size});files[actual]={path:actual,name:actual.split('/').pop(),modified:Date.now()/1000,bytes:blob};return files[actual];},read:async path=>files[path].bytes,rename:async(path,name)=>({path:path.slice(0,path.lastIndexOf('/')+1)+name}),delete:async path=>delete files[path]},ui:{onLaunchedWithItems:()=>{}}};})();`,
+      body: `(()=>{let signedIn=${signedIn};const files={};window.__writes=[];window.__signIns=0;window.everything={env:'web',auth:{isSignedIn:async()=>signedIn,getUser:async()=>({username:'test-user',uuid:'test-user-id'}),signIn:async()=>{window.__signIns++;signedIn=true},signOut:async()=>{signedIn=false}},kv:new Proxy({},{get(){throw Error('KV is forbidden')}}),fs:{readdir:async()=>Object.values(files),write:async(path,blob,options)=>{const actual=path.startsWith('/')?path:'/test/'+path;window.__writes.push({path:actual,options,size:blob.size});files[actual]={path:actual,name:actual.split('/').pop(),modified:Date.now()/1000,bytes:blob};return files[actual];},read:async path=>files[path].bytes,rename:async(path,name)=>({path:path.slice(0,path.lastIndexOf('/')+1)+name}),delete:async path=>delete files[path]},ui:{onLaunchedWithItems:()=>{}}};})();`,
     }),
   );
 }
@@ -17,7 +17,7 @@ const draftRows = (page) =>
 // through the locator rather than its role.
 
 test("opens into a new presentation without a sign-in", async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto("/");
   await expect(page.locator(".editor")).toBeVisible();
   await expect(page.locator(".document-title")).toHaveText(
@@ -59,7 +59,7 @@ test("opens into a new presentation without a sign-in", async ({ page }) => {
 test("edits stay on this device until the save button signs the guest in", async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto("/");
   await expect(page.locator(".editor")).toBeVisible();
   await addText(page);
@@ -71,7 +71,7 @@ test("edits stay on this device until the save button signs the guest in", async
   await page
     .getByRole("button", { name: "Sign in to save", exact: true })
     .click();
-  await expect(page.locator("#save-status")).toHaveText("Saved to Puter");
+  await expect(page.locator("#save-status")).toHaveText("Saved to Everything");
   expect(await page.evaluate(() => window.__signIns)).toBe(1);
   expect(await page.evaluate(() => window.__writes.length)).toBe(1);
   await expect(page.locator(".editor-header .account-button")).toHaveText(
@@ -98,7 +98,7 @@ test("edits stay on this device until the save button signs the guest in", async
 test("a signed-in visitor lands in the editor too, with the account in the header", async ({
   page,
 }) => {
-  await mockPuter(page, { signedIn: true });
+  await mockEverything(page, { signedIn: true });
   await page.goto("/");
   await expect(page.locator(".editor")).toBeVisible();
   await expect(page.locator(".editor-header .account-button")).toHaveText(
@@ -114,13 +114,13 @@ test("a signed-in visitor lands in the editor too, with the account in the heade
 test("a sign-in the SDK performs on its own is picked up by the header", async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto("/");
   await expect(
     page.getByRole("button", { name: "Sign in to save", exact: true }),
   ).toBeVisible();
   await page.evaluate(() =>
-    puter.onAuth({ username: "test-user", uuid: "test-user-id" }),
+    everything.onAuth({ username: "test-user", uuid: "test-user-id" }),
   );
   await expect(page.locator(".editor-header .account-button")).toHaveText(
     "test-user",

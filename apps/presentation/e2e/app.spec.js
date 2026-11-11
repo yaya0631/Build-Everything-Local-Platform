@@ -571,7 +571,7 @@ for (const modifier of ["Control", "Meta"]) {
   test(`${modifier}+S commits and saves text being edited on the canvas`, async ({
     page,
   }) => {
-    await mockPuter(page, { signedIn: true });
+    await mockEverything(page, { signedIn: true });
     await page.goto("/#/home");
     await page
       .getByRole("button", { name: "The big idea A clear, considered story" })
@@ -580,12 +580,12 @@ for (const modifier of ["Control", "Meta"]) {
     const input = page.getByRole("textbox", { name: "Edit text", exact: true });
     await input.fill("Save this in-progress title");
     await input.press(`${modifier}+s`);
-    await expect(page.locator("#save-status")).toContainText("Saved to Puter");
+    await expect(page.locator("#save-status")).toContainText("Saved to Everything");
     const bytes = await page.evaluate(async () =>
       Array.from(
         new Uint8Array(
           await (
-            await puter.fs.read(window.__writes.at(-1).path)
+            await everything.fs.read(window.__writes.at(-1).path)
           ).arrayBuffer(),
         ),
       ),
@@ -597,7 +597,7 @@ for (const modifier of ["Control", "Meta"]) {
   });
 }
 
-async function mockPuter(
+async function mockEverything(
   page,
   {
     signedIn = false,
@@ -607,34 +607,34 @@ async function mockPuter(
     username = "test-user",
   } = {},
 ) {
-  await page.route("**/sdk/puter.js", (route) =>
+  await page.route("**/sdk/everything.js", (route) =>
     route.fulfill({
       contentType: "application/javascript",
-      body: `(()=>{let signedIn=${signedIn};const files={};window.__writes=[];window.puter={env:${JSON.stringify(env)},auth:{isSignedIn:async()=>{if(${delayAuth})await new Promise(resolve=>window.__releaseAuth=resolve);return signedIn},getUser:async()=>({username:${JSON.stringify(username)},uuid:'test-user-id'}),signIn:async()=>{signedIn=true},signOut:async()=>{signedIn=false}},kv:new Proxy({},{get(){throw Error('KV is forbidden')}}),fs:{readdir:async()=>Object.values(files),write:async(path,blob,options)=>{if(${failWrite})throw Error('Cloud save failed. Your draft is still on this device.');const actual=path.startsWith('/')?path:'/test/'+path;window.__writes.push({path:actual,options,size:blob.size});files[actual]={path:actual,name:actual.split('/').pop(),modified:Date.now()/1000,bytes:blob};return files[actual];},read:async path=>files[path].bytes,rename:async(path,name)=>({path:path.slice(0,path.lastIndexOf('/')+1)+name}),delete:async path=>delete files[path]},ui:{onLaunchedWithItems:()=>{}}};})();`,
+      body: `(()=>{let signedIn=${signedIn};const files={};window.__writes=[];window.everything={env:${JSON.stringify(env)},auth:{isSignedIn:async()=>{if(${delayAuth})await new Promise(resolve=>window.__releaseAuth=resolve);return signedIn},getUser:async()=>({username:${JSON.stringify(username)},uuid:'test-user-id'}),signIn:async()=>{signedIn=true},signOut:async()=>{signedIn=false}},kv:new Proxy({},{get(){throw Error('KV is forbidden')}}),fs:{readdir:async()=>Object.values(files),write:async(path,blob,options)=>{if(${failWrite})throw Error('Cloud save failed. Your draft is still on this device.');const actual=path.startsWith('/')?path:'/test/'+path;window.__writes.push({path:actual,options,size:blob.size});files[actual]={path:actual,name:actual.split('/').pop(),modified:Date.now()/1000,bytes:blob};return files[actual];},read:async path=>files[path].bytes,rename:async(path,name)=>({path:path.slice(0,path.lastIndexOf('/')+1)+name}),delete:async path=>delete files[path]},ui:{onLaunchedWithItems:()=>{}}};})();`,
     }),
   );
 }
 async function start(page) {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto("/#/home");
   await expect(
     page.getByRole("heading", { name: "Good ideas deserve a stage." }),
   ).toBeVisible();
 }
-// Leaves the editor with edits that never reached Puter, so they stay behind
+// Leaves the editor with edits that never reached Everything, so they stay behind
 // as a recovery draft: the save on the way out fails, and the person leaves
 // anyway.
 async function leaveWithUnsavedCloudEdits(page) {
   await page.evaluate(() => {
-    const write = puter.fs.write;
-    puter.fs.write = async () => {
-      puter.fs.write = write;
+    const write = everything.fs.write;
+    everything.fs.write = async () => {
+      everything.fs.write = write;
       throw Error("Cloud save failed.");
     };
   });
   await page.getByRole("button", { name: "Back to presentations" }).click();
   await page
-    .getByRole("dialog", { name: "Your latest changes aren't saved to Puter" })
+    .getByRole("dialog", { name: "Your latest changes aren't saved to Everything" })
     .getByRole("button", { name: "Leave", exact: true })
     .click();
 }
@@ -702,18 +702,18 @@ for (const nextAction of ["new presentation", "sign out"]) {
   test(`a delayed cloud picker is discarded after ${nextAction}`, async ({
     page,
   }) => {
-    await mockPuter(page, { signedIn: true });
+    await mockEverything(page, { signedIn: true });
     await page.goto("/#/home");
     await expect(
       page.getByRole("button", { name: "Account and settings" }),
     ).toContainText("test-user");
     await page.evaluate(() => {
       window.__cloudReads = 0;
-      puter.fs.read = async () => {
+      everything.fs.read = async () => {
         window.__cloudReads++;
         throw new Error("Stale file was read");
       };
-      puter.ui.showOpenFilePicker = () =>
+      everything.ui.showOpenFilePicker = () =>
         new Promise((resolve) => {
           window.__releasePicker = () =>
             resolve({
@@ -723,7 +723,7 @@ for (const nextAction of ["new presentation", "sign out"]) {
         });
     });
     await page
-      .getByRole("button", { name: "Open from Puter", exact: true })
+      .getByRole("button", { name: "Open from Everything", exact: true })
       .click();
     await page.waitForFunction(() => window.__releasePicker);
     if (nextAction === "new presentation") {
@@ -738,7 +738,7 @@ for (const nextAction of ["new presentation", "sign out"]) {
         .getByRole("menuitem", { name: "Sign out", exact: true })
         .click();
       await expect(
-        page.getByRole("button", { name: "Connect Puter", exact: true }),
+        page.getByRole("button", { name: "Connect Everything", exact: true }),
       ).toBeVisible();
     }
     await page.evaluate(async () => {
@@ -753,7 +753,7 @@ for (const nextAction of ["new presentation", "sign out"]) {
       );
     } else
       await expect(
-        page.getByRole("button", { name: "Connect Puter", exact: true }),
+        page.getByRole("button", { name: "Connect Everything", exact: true }),
       ).toBeVisible();
   });
 }
@@ -761,7 +761,7 @@ for (const nextAction of ["new presentation", "sign out"]) {
 test("an oversized cloud import is rejected before its blob is copied into memory", async ({
   page,
 }) => {
-  await mockPuter(page, { signedIn: true });
+  await mockEverything(page, { signedIn: true });
   await page.goto("/#/home");
   await page
     .getByRole("button", { name: "The big idea A clear, considered story" })
@@ -776,15 +776,15 @@ test("an oversized cloud import is rejected before its blob is copied into memor
       window.__bufferReads++;
       return read();
     };
-    puter.fs.read = async () => blob;
-    puter.ui.showOpenFilePicker = async () => ({
+    everything.fs.read = async () => blob;
+    everything.ui.showOpenFilePicker = async () => ({
       name: "Oversized.pptx",
       path: "/test/Oversized.pptx",
     });
   });
   await openFileMenu(page);
   await page
-    .getByRole("menuitem", { name: "Open from Puter", exact: true })
+    .getByRole("menuitem", { name: "Open from Everything", exact: true })
     .click();
   await expect(page.locator("#toast")).toHaveText(
     "Please choose a PPTX file smaller than 200 MB.",
@@ -803,11 +803,11 @@ for (const selectFile of [false, true]) {
     await page.evaluate(
       ({ bytes, selectFile }) => {
         window.__cloudReads = 0;
-        puter.fs.read = async () => {
+        everything.fs.read = async () => {
           window.__cloudReads++;
           return new Blob([new Uint8Array(bytes)]);
         };
-        puter.ui.showOpenFilePicker = async () =>
+        everything.ui.showOpenFilePicker = async () =>
           selectFile
             ? [{ name: "Picked deck.pptx", path: "/test/Picked deck.pptx" }]
             : null;
@@ -815,13 +815,13 @@ for (const selectFile of [false, true]) {
       { bytes, selectFile },
     );
     await page
-      .getByRole("button", { name: "Open from Puter", exact: true })
+      .getByRole("button", { name: "Open from Everything", exact: true })
       .click();
     if (selectFile) {
       await expect(page.locator(".document-title")).toHaveText("Picked deck");
       await expect(page.locator("#slide-count")).toHaveText("5");
       await expect(page.locator("#save-status")).toContainText(
-        "Saved to Puter",
+        "Saved to Everything",
       );
       expect(await page.evaluate(() => window.__cloudReads)).toBe(1);
     } else {
@@ -839,17 +839,17 @@ for (const selectFile of [false, true]) {
 test("a slow cloud open cannot replace a presentation started afterward", async ({
   page,
 }) => {
-  await mockPuter(page, { signedIn: true });
+  await mockEverything(page, { signedIn: true });
   await page.goto("/#/home");
   await page
     .getByRole("button", { name: "The big idea A clear, considered story" })
     .click();
   await page.getByRole("button", { name: /^(Save|Sign in to save)$/ }).click();
-  await expect(page.locator("#save-status")).toContainText("Saved to Puter");
+  await expect(page.locator("#save-status")).toContainText("Saved to Everything");
   await page.getByRole("button", { name: "Back to presentations" }).click();
   await page.evaluate(() => {
-    const read = puter.fs.read;
-    puter.fs.read = (path) =>
+    const read = everything.fs.read;
+    everything.fs.read = (path) =>
       new Promise((resolve, reject) => {
         window.__releaseRead = async () => {
           try {
@@ -979,10 +979,10 @@ for (const resizeOpenMenu of [false, true]) {
       path: `test-results/short-menu-${resizeOpenMenu}-${info.project.name}.png`,
     });
     await menu
-      .getByRole("menuitem", { name: "Save to Puter", exact: true })
+      .getByRole("menuitem", { name: "Save to Everything", exact: true })
       .click();
     await expect(menu).toHaveCount(0);
-    await expect(page.locator("#save-status")).toHaveText("Saved to Puter");
+    await expect(page.locator("#save-status")).toHaveText("Saved to Everything");
   });
 }
 
@@ -1048,7 +1048,7 @@ for (const title of ["The big idea", "Plan.pptx"]) {
   test(`library download preserves the filename for ${title}`, async ({
     page,
   }) => {
-    await mockPuter(page, { signedIn: true });
+    await mockEverything(page, { signedIn: true });
     await page.goto("/#/home");
     await page
       .getByRole("button", { name: "The big idea A clear, considered story" })
@@ -1063,7 +1063,7 @@ for (const title of ["The big idea", "Plan.pptx"]) {
     await page
       .getByRole("button", { name: /^(Save|Sign in to save)$/ })
       .click();
-    await expect(page.locator("#save-status")).toHaveText("Saved to Puter");
+    await expect(page.locator("#save-status")).toHaveText("Saved to Everything");
     await page.getByRole("button", { name: "Back to presentations" }).click();
     await page
       .getByRole("button", { name: `Options for ${title}`, exact: true })
@@ -1166,7 +1166,7 @@ test("a title ending in .pptx survives recovery, unchanged rename, download, and
     .click();
   expect((await downloaded).suggestedFilename()).toBe("Plan.pptx.pptx");
   await page.getByRole("button", { name: /^(Save|Sign in to save)$/ }).click();
-  await expect(page.locator("#save-status")).toHaveText("Saved to Puter");
+  await expect(page.locator("#save-status")).toHaveText("Saved to Everything");
   await expect(title).toHaveText("Plan.pptx");
   expect(await page.evaluate(() => window.__writes.at(-1).path)).toBe(
     "/test/Presentations/Plan.pptx.pptx",
@@ -1174,8 +1174,8 @@ test("a title ending in .pptx survives recovery, unchanged rename, download, and
   await page.getByRole("button", { name: "Back to presentations" }).click();
   await page.evaluate(() => {
     window.__renames = 0;
-    const rename = puter.fs.rename;
-    puter.fs.rename = (...args) => {
+    const rename = everything.fs.rename;
+    everything.fs.rename = (...args) => {
       window.__renames++;
       return rename(...args);
     };
@@ -1271,16 +1271,16 @@ for (const [title, input] of [
     test(`${location} rename ignores the equivalent name ${JSON.stringify(input)}`, async ({
       page,
     }) => {
-      await mockPuter(page, { signedIn: true });
+      await mockEverything(page, { signedIn: true });
       await page.goto("/#/home");
       await page.evaluate(
         ({ title, bytes }) => {
-          puter.fs.readdir = async () => [
+          everything.fs.readdir = async () => [
             { name: title + ".pptx", path: "/test/" + title + ".pptx" },
           ];
-          puter.fs.read = async () => new Blob([new Uint8Array(bytes)]);
+          everything.fs.read = async () => new Blob([new Uint8Array(bytes)]);
           window.__renameCalls = 0;
-          puter.fs.rename = async () => {
+          everything.fs.rename = async () => {
             window.__renameCalls++;
             throw new Error("The destination already exists.");
           };
@@ -1325,7 +1325,7 @@ for (const [title, input] of [
       ).toBe(0);
       if (location === "editor") {
         await expect(page.locator(".document-title")).toHaveText(title);
-        await expect(page.locator("#save-status")).toHaveText("Saved to Puter");
+        await expect(page.locator("#save-status")).toHaveText("Saved to Everything");
       } else
         await expect(
           page.getByRole("button", {
@@ -1346,17 +1346,17 @@ for (const action of [
   test(`library ${action} preserves a useful keyboard focus target`, async ({
     page,
   }) => {
-    await mockPuter(page, { signedIn: true });
+    await mockEverything(page, { signedIn: true });
     await page.goto("/#/home");
     await page.evaluate((action) => {
-      puter.fs.readdir = async () => window.__files;
+      everything.fs.readdir = async () => window.__files;
       window.__files = [
         { name: "Alpha.pptx", path: "/test/Alpha.pptx" },
         ...(action === "delete last"
           ? []
           : [{ name: "Zulu.pptx", path: "/test/Zulu.pptx" }]),
       ];
-      puter.fs.rename = async (path, name) => {
+      everything.fs.rename = async (path, name) => {
         if (action === "rename while searching")
           await new Promise((resolve) => (window.__releaseRename = resolve));
         const file = window.__files.find((file) => file.path === path);
@@ -1364,7 +1364,7 @@ for (const action of [
         file.path = "/test/" + name;
         return file;
       };
-      puter.fs.delete = async (path) => {
+      everything.fs.delete = async (path) => {
         window.__files = window.__files.filter((file) => file.path !== path);
       };
     }, action);
@@ -1375,7 +1375,7 @@ for (const action of [
     await page
       .getByRole("button", { name: /^(Save|Sign in to save)$/ })
       .click();
-    await expect(page.locator("#save-status")).toHaveText("Saved to Puter");
+    await expect(page.locator("#save-status")).toHaveText("Saved to Everything");
     await page.getByRole("button", { name: "Back to presentations" }).click();
     const options = page.getByRole("button", {
       name: "Options for Alpha",
@@ -1454,24 +1454,24 @@ for (const [action, save] of [
   test(`${save ? "saving" : "closing"} ${action} restores library focus after a background save refreshes its row`, async ({
     page,
   }) => {
-    await mockPuter(page, { signedIn: true });
+    await mockEverything(page, { signedIn: true });
     await page.goto("/#/home");
     await expect(
       page.getByRole("button", { name: "Account and settings" }),
     ).toContainText("test-user");
     await page.evaluate(() => {
       window.__alpha = { name: "Alpha.pptx", path: "/test/Alpha.pptx" };
-      const list = puter.fs.readdir;
-      puter.fs.readdir = async (...args) => [
+      const list = everything.fs.readdir;
+      everything.fs.readdir = async (...args) => [
         window.__alpha,
         ...(await list(...args)),
       ];
-      puter.fs.rename = async (path, name) => {
+      everything.fs.rename = async (path, name) => {
         window.__alpha = { name, path: "/test/" + name };
         return window.__alpha;
       };
-      const write = puter.fs.write;
-      puter.fs.write = async (...args) => {
+      const write = everything.fs.write;
+      everything.fs.write = async (...args) => {
         await new Promise((resolve) => (window.__releaseWrite = resolve));
         return write(...args);
       };
@@ -1526,11 +1526,11 @@ for (const [action, save] of [
 test("library search matches equivalent Unicode names in imported drafts and cloud files", async ({
   page,
 }) => {
-  await mockPuter(page, { signedIn: true });
+  await mockEverything(page, { signedIn: true });
   await page.goto("/#/home");
   const bytes = await P.savePresentation(createDeck());
   await page.evaluate(async (bytes) => {
-    await puter.fs.write(
+    await everything.fs.write(
       "Presentations/Cafe\u0301 notes.pptx",
       new Blob([new Uint8Array(bytes)]),
       {},
@@ -1618,7 +1618,7 @@ test("library dates refresh over time without replacing focused controls", async
 test("library modification dates distinguish calendar days and unavailable timestamps", async ({
   page,
 }) => {
-  await mockPuter(page, { signedIn: true });
+  await mockEverything(page, { signedIn: true });
   await page.goto("/#/home");
   const now = await page.evaluate(() => new Date(2026, 0, 2, 2).getTime());
   await page.clock.setFixedTime(now);
@@ -1674,7 +1674,7 @@ test("library modification dates distinguish calendar days and unavailable times
         expected: "Date unavailable",
       },
     ];
-    puter.fs.readdir = async () =>
+    everything.fs.readdir = async () =>
       records.map(({ name, modified }) => ({
         name: name + ".pptx",
         path: "/test/" + name + ".pptx",
@@ -2052,7 +2052,7 @@ test("slides can be added and presentation mode is keyboard navigable", async ({
 test("explicit themes persist, and app environment has no logout option", async ({
   page,
 }) => {
-  await mockPuter(page, { signedIn: true, env: "app" });
+  await mockEverything(page, { signedIn: true, env: "app" });
   await page.goto("/#/home");
   await page.getByRole("button", { name: "Account and settings" }).click();
   await expect(
@@ -2071,7 +2071,7 @@ for (const signedIn of [false, true]) {
   test(`cloud saving succeeds without recovery storage ${signedIn ? "when already signed in" : "during the first sign-in"}`, async ({
     page,
   }) => {
-    await mockPuter(page, { signedIn });
+    await mockEverything(page, { signedIn });
     await page.goto("/#/home");
     await page
       .getByRole("button", { name: "The big idea A clear, considered story" })
@@ -2089,16 +2089,16 @@ for (const signedIn of [false, true]) {
     await page
       .getByRole("button", { name: /^(Save|Sign in to save)$/ })
       .click();
-    await expect(page.locator("#save-status")).toContainText("Saved to Puter");
+    await expect(page.locator("#save-status")).toContainText("Saved to Everything");
     await expect(page.locator(".account-button")).toContainText("test-user");
     await expect(page.locator("#toast")).toContainText(
-      "Saved to your Puter cloud",
+      "Saved to your Everything cloud",
     );
     expect(await page.evaluate(() => window.__writes.length)).toBe(1);
     const bytes = await page.evaluate(async () =>
       Array.from(
         new Uint8Array(
-          await (await puter.fs.read(window.__writes[0].path)).arrayBuffer(),
+          await (await everything.fs.read(window.__writes[0].path)).arrayBuffer(),
         ),
       ),
     );
@@ -2112,13 +2112,13 @@ for (const signedIn of [false, true]) {
 test("cloud save writes a PPTX file and changes autosave to the same path", async ({
   page,
 }) => {
-  await mockPuter(page, { signedIn: true });
+  await mockEverything(page, { signedIn: true });
   await page.goto("/#/home");
   await page
     .getByRole("button", { name: "New presentation", exact: true })
     .click();
   await page.getByRole("button", { name: /^(Save|Sign in to save)$/ }).click();
-  await expect(page.locator("#save-status")).toContainText("Saved to Puter");
+  await expect(page.locator("#save-status")).toContainText("Saved to Everything");
   await addText(page);
   await expect.poll(() => page.evaluate(() => window.__writes.length)).toBe(2);
   const writes = await page.evaluate(() => window.__writes);
@@ -2132,18 +2132,18 @@ test("cloud save writes a PPTX file and changes autosave to the same path", asyn
 test("autosave does not upload a revision the Save button already saved", async ({
   page,
 }) => {
-  await mockPuter(page, { signedIn: true });
+  await mockEverything(page, { signedIn: true });
   await page.goto("/#/home");
   await page
     .getByRole("button", { name: "New presentation", exact: true })
     .click();
   await page.getByRole("button", { name: /^(Save|Sign in to save)$/ }).click();
-  await expect(page.locator("#save-status")).toContainText("Saved to Puter");
+  await expect(page.locator("#save-status")).toContainText("Saved to Everything");
   // An edit schedules an autosave; saving by hand first leaves it nothing to do.
   await addText(page);
   await expect(page.locator(".object-hit")).toHaveCount(1);
   await page.getByRole("button", { name: /^(Save|Sign in to save)$/ }).click();
-  await expect(page.locator("#toast")).toHaveText("Saved to your Puter cloud.");
+  await expect(page.locator("#toast")).toHaveText("Saved to your Everything cloud.");
   await page.waitForTimeout(2500);
   expect(await page.evaluate(() => window.__writes.length)).toBe(2);
   // A later edit still autosaves.
@@ -2152,7 +2152,7 @@ test("autosave does not upload a revision the Save button already saved", async 
 });
 
 test("cloud failures retain recoverable local work", async ({ page }) => {
-  await mockPuter(page, { signedIn: true, failWrite: true });
+  await mockEverything(page, { signedIn: true, failWrite: true });
   await page.goto("/#/home");
   await page
     .getByRole("button", { name: "New presentation", exact: true })
@@ -2244,7 +2244,7 @@ for (const reselect of [false, true]) {
 test("a theme dialog cannot recolor a different presentation opened while it was visible", async ({
   page,
 }) => {
-  await mockPuter(page, { signedIn: true });
+  await mockEverything(page, { signedIn: true });
   await page.goto("/#/home");
   await page
     .getByRole("button", { name: "The big idea A clear, considered story" })
@@ -2253,8 +2253,8 @@ test("a theme dialog cannot recolor a different presentation opened while it was
   const background = P.getSlideBackground(P.getSlides(incoming)[0]).color;
   await page.evaluate(
     (bytes) => {
-      puter.fs.read = async () => new Blob([new Uint8Array(bytes)]);
-      puter.ui.showOpenFilePicker = () =>
+      everything.fs.read = async () => new Blob([new Uint8Array(bytes)]);
+      everything.ui.showOpenFilePicker = () =>
         new Promise((resolve) => {
           window.__releasePicker = () =>
             resolve({
@@ -2267,7 +2267,7 @@ test("a theme dialog cannot recolor a different presentation opened while it was
   );
   await openFileMenu(page);
   await page
-    .getByRole("menuitem", { name: "Open from Puter", exact: true })
+    .getByRole("menuitem", { name: "Open from Everything", exact: true })
     .click();
   await page.waitForFunction(() => window.__releasePicker);
   await themeDialog(page);
@@ -2276,7 +2276,7 @@ test("a theme dialog cannot recolor a different presentation opened while it was
   await expect(page).toHaveTitle("Another deck | Presentation");
   await page.getByRole("button", { name: "Apply theme", exact: true }).click();
   await expect(page.getByRole("dialog")).toHaveCount(0);
-  await expect(page.locator("#save-status")).toHaveText("Saved to Puter");
+  await expect(page.locator("#save-status")).toHaveText("Saved to Everything");
   await expect(
     page.getByRole("button", { name: "Undo", exact: true }),
   ).toBeDisabled();
@@ -2619,19 +2619,19 @@ test("keyboard activation respects toolbar buttons and open menus", async ({
 test("a queued rename is skipped when the first save has already assigned its requested name", async ({
   page,
 }) => {
-  await mockPuter(page, { signedIn: true });
+  await mockEverything(page, { signedIn: true });
   await page.goto("/#/home");
   await page
     .getByRole("button", { name: "New presentation", exact: true })
     .click();
   await page.evaluate(() => {
-    const write = puter.fs.write;
-    puter.fs.write = async (path, ...args) => {
+    const write = everything.fs.write;
+    everything.fs.write = async (path, ...args) => {
       await new Promise((resolve) => (window.__releaseWrite = resolve));
       return write("Presentations/Untitled presentation (1).pptx", ...args);
     };
     window.__renameCalls = 0;
-    puter.fs.rename = async () => {
+    everything.fs.rename = async () => {
       window.__renameCalls++;
       throw new Error("The destination already exists.");
     };
@@ -2647,7 +2647,7 @@ test("a queued rename is skipped when the first save has already assigned its re
     .getByRole("button", { name: /^(Save|Sign in to save)$/ })
     .click();
   await page.evaluate(() => window.__releaseWrite());
-  await expect(page.locator("#save-status")).toHaveText("Saved to Puter");
+  await expect(page.locator("#save-status")).toHaveText("Saved to Everything");
   expect(await page.evaluate(() => window.__renameCalls)).toBe(0);
   await expect(page.locator(".document-title")).toHaveText(
     "Untitled presentation (1)",
@@ -2658,7 +2658,7 @@ for (const edited of [false, true]) {
   test(`a rename dialog ${edited ? "keeps an explicit edit" : "keeps an unchanged value inactive"} when a first save assigns a new filename`, async ({
     page,
   }) => {
-    await mockPuter(page, { signedIn: true });
+    await mockEverything(page, { signedIn: true });
     await page.goto("/#/home");
     await expect(
       page.getByRole("button", { name: "Account and settings" }),
@@ -2669,21 +2669,21 @@ for (const edited of [false, true]) {
     await page
       .getByRole("button", { name: /^(Save|Sign in to save)$/ })
       .click();
-    await expect(page.locator("#save-status")).toHaveText("Saved to Puter");
+    await expect(page.locator("#save-status")).toHaveText("Saved to Everything");
     await page.getByRole("button", { name: "Back to presentations" }).click();
     await page
       .getByRole("button", { name: "New presentation", exact: true })
       .click();
     await page.evaluate(() => {
-      const write = puter.fs.write;
-      puter.fs.write = async (path, bytes, options) => {
-        puter.fs.write = write;
+      const write = everything.fs.write;
+      everything.fs.write = async (path, bytes, options) => {
+        everything.fs.write = write;
         await new Promise((resolve) => (window.__releaseWrite = resolve));
         return write(path.replace(/\.pptx$/, " (1).pptx"), bytes, options);
       };
-      const rename = puter.fs.rename;
+      const rename = everything.fs.rename;
       window.__renameCalls = [];
-      puter.fs.rename = (...args) => {
+      everything.fs.rename = (...args) => {
         window.__renameCalls.push(args);
         return rename(...args);
       };
@@ -2700,7 +2700,7 @@ for (const edited of [false, true]) {
     await expect(page.locator(".document-title")).toHaveText(
       "Untitled presentation (1)",
     );
-    await expect(page.locator("#save-status")).toHaveText("Saved to Puter");
+    await expect(page.locator("#save-status")).toHaveText("Saved to Everything");
     await input.press("Enter");
     await expect(page.getByRole("dialog")).toHaveCount(0);
     await expect(page.locator(".document-title")).toHaveText(
@@ -2722,20 +2722,20 @@ for (const edited of [false, true]) {
 test("a cloud-assigned suffix beyond the input limit stays visible through download and recovery", async ({
   page,
 }) => {
-  await mockPuter(page, { signedIn: true });
+  await mockEverything(page, { signedIn: true });
   await page.goto("/#/home");
   const base = "x".repeat(180);
   const assigned = base + " (1)";
   const bytes = Array.from(await P.savePresentation(createDeck()));
   await page.evaluate(
     async ({ base, bytes }) => {
-      await puter.fs.write(
+      await everything.fs.write(
         `Presentations/${base}.pptx`,
         new Blob([new Uint8Array(bytes)]),
         { overwrite: false },
       );
-      const write = puter.fs.write;
-      puter.fs.write = (path, blob, options) =>
+      const write = everything.fs.write;
+      everything.fs.write = (path, blob, options) =>
         write(
           options.dedupeName ? path.replace(/\.pptx$/, " (1).pptx") : path,
           blob,
@@ -2754,7 +2754,7 @@ test("a cloud-assigned suffix beyond the input limit stays visible through downl
   await input.press("Enter");
   await expect(title).toHaveText(base);
   await page.getByRole("button", { name: /^(Save|Sign in to save)$/ }).click();
-  await expect(page.locator("#save-status")).toHaveText("Saved to Puter");
+  await expect(page.locator("#save-status")).toHaveText("Saved to Everything");
   await expect(title).toHaveText(assigned);
   await title.click();
   await expect(input).toHaveValue(assigned);
@@ -2791,16 +2791,16 @@ test("a cloud-assigned suffix beyond the input limit stays visible through downl
 test("a duplicate first-save name follows the cloud filename throughout the editor and recovery", async ({
   page,
 }) => {
-  await mockPuter(page, { signedIn: true });
+  await mockEverything(page, { signedIn: true });
   await page.goto("/#/home");
   await expect(
     page.getByRole("button", { name: "Account and settings" }),
   ).toContainText("test-user");
   await page.evaluate(() => {
-    const write = puter.fs.write;
-    puter.fs.write = async (path, blob, options) => {
+    const write = everything.fs.write;
+    everything.fs.write = async (path, blob, options) => {
       if (options.dedupeName) {
-        const files = await puter.fs.readdir();
+        const files = await everything.fs.readdir();
         const name = path.split("/").pop();
         if (files.some((file) => file.name === name))
           path = path.replace(/\.pptx$/, " (1).pptx");
@@ -2812,13 +2812,13 @@ test("a duplicate first-save name follows the cloud filename throughout the edit
     .getByRole("button", { name: "New presentation", exact: true })
     .click();
   await page.getByRole("button", { name: /^(Save|Sign in to save)$/ }).click();
-  await expect(page.locator("#save-status")).toContainText("Saved to Puter");
+  await expect(page.locator("#save-status")).toContainText("Saved to Everything");
   await page.getByRole("button", { name: "Back to presentations" }).click();
   await page
     .getByRole("button", { name: "New presentation", exact: true })
     .click();
   await page.getByRole("button", { name: /^(Save|Sign in to save)$/ }).click();
-  await expect(page.locator("#save-status")).toContainText("Saved to Puter");
+  await expect(page.locator("#save-status")).toContainText("Saved to Everything");
   await expect(page.locator(".document-title")).toHaveText(
     "Untitled presentation (1)",
   );
@@ -2836,7 +2836,7 @@ test("a duplicate first-save name follows the cloud filename throughout the edit
     "Untitled presentation (1).pptx",
   );
   await page.getByRole("button", { name: /^(Save|Sign in to save)$/ }).click();
-  await expect(page.locator("#save-status")).toContainText("Saved to Puter");
+  await expect(page.locator("#save-status")).toContainText("Saved to Everything");
   expect(
     await page.evaluate(() =>
       window.__writes.map(({ path, options }) => ({
@@ -2876,14 +2876,14 @@ for (const delayedRefresh of [false, true]) {
   test(`a cloud save completed in the library ${delayedRefresh ? "keeps later saves independent of a delayed refresh" : "appears without interrupting search"}`, async ({
     page,
   }) => {
-    await mockPuter(page, { signedIn: true });
+    await mockEverything(page, { signedIn: true });
     await page.goto("/#/home");
     await expect(
       page.getByRole("button", { name: "Account and settings" }),
     ).toContainText("test-user");
     await page.evaluate(() => {
-      const write = puter.fs.write;
-      puter.fs.write = async (...args) => {
+      const write = everything.fs.write;
+      everything.fs.write = async (...args) => {
         await new Promise((resolve) => {
           window.__releaseWrite = resolve;
         });
@@ -2911,8 +2911,8 @@ for (const delayedRefresh of [false, true]) {
     await search.evaluate((input) => input.setSelectionRange(1, 2));
     if (delayedRefresh)
       await page.evaluate(() => {
-        const list = puter.fs.readdir;
-        puter.fs.readdir = async (...args) => {
+        const list = everything.fs.readdir;
+        everything.fs.readdir = async (...args) => {
           await new Promise((resolve) => (window.__releaseListing = resolve));
           return list(...args);
         };
@@ -2930,7 +2930,7 @@ for (const delayedRefresh of [false, true]) {
         .poll(() => page.evaluate(() => !!window.__releaseWrite))
         .toBe(true);
       await page.evaluate(() => window.__releaseWrite());
-      await expect(page.locator("#save-status")).toHaveText("Saved to Puter");
+      await expect(page.locator("#save-status")).toHaveText("Saved to Everything");
       await page.evaluate(() => window.__releaseListing());
       await expect(page).toHaveTitle("Untitled presentation | Presentation");
       await expect(page.locator("#slide-position")).toHaveText("Slide 1 of 1");
@@ -2947,22 +2947,22 @@ for (const delayedRefresh of [false, true]) {
     ).toEqual([1, 2]);
     await cloudFile.click();
     await expect(page.locator("#slide-position")).toHaveText("Slide 1 of 5");
-    await expect(page.locator("#save-status")).toHaveText("Saved to Puter");
+    await expect(page.locator("#save-status")).toHaveText("Saved to Everything");
   });
 }
 
 test("recovery after an overlapping first cloud save keeps newer edits and the saved path", async ({
   page,
 }) => {
-  await mockPuter(page, { signedIn: true });
+  await mockEverything(page, { signedIn: true });
   await page.goto("/#/home");
   await expect(
     page.getByRole("button", { name: "Account and settings" }),
   ).toContainText("test-user");
   await page.evaluate(() => {
-    const write = puter.fs.write;
-    puter.fs.write = async (...args) => {
-      puter.fs.write = write;
+    const write = everything.fs.write;
+    everything.fs.write = async (...args) => {
+      everything.fs.write = write;
       await new Promise((resolve) => (window.__releaseWrite = resolve));
       return write(...args);
     };
@@ -2989,7 +2989,7 @@ test("recovery after an overlapping first cloud save keeps newer edits and the s
     "/test/Presentations/Untitled presentation.pptx",
   );
   await page.getByRole("button", { name: /^(Save|Sign in to save)$/ }).click();
-  await expect(page.locator("#save-status")).toHaveText("Saved to Puter");
+  await expect(page.locator("#save-status")).toHaveText("Saved to Everything");
   expect(
     await page.evaluate(() =>
       window.__writes.map(({ path, options }) => ({
@@ -3007,7 +3007,7 @@ test("recovery after an overlapping first cloud save keeps newer edits and the s
   const bytes = await page.evaluate(async () =>
     Array.from(
       new Uint8Array(
-        await (await puter.fs.read(window.__writes.at(-1).path)).arrayBuffer(),
+        await (await everything.fs.read(window.__writes.at(-1).path)).arrayBuffer(),
       ),
     ),
   );
@@ -3018,15 +3018,15 @@ test("recovery after an overlapping first cloud save keeps newer edits and the s
 test("a pending cloud save does not mark a different presentation as saving", async ({
   page,
 }) => {
-  await mockPuter(page, { signedIn: true });
+  await mockEverything(page, { signedIn: true });
   await page.goto("/#/home");
   await expect(
     page.getByRole("button", { name: "Account and settings" }),
   ).toContainText("test-user");
   await page.evaluate(() => {
-    const write = puter.fs.write;
+    const write = everything.fs.write;
     window.__completedWrites = 0;
-    puter.fs.write = async (...args) => {
+    everything.fs.write = async (...args) => {
       await new Promise((resolve) => {
         window.__releaseWrite = resolve;
       });
@@ -3056,7 +3056,7 @@ test("a pending cloud save does not mark a different presentation as saving", as
   await page.waitForFunction(() => window.__releaseWrite);
   await expect(page.locator("#save-status")).toHaveText("Saving…");
   await page.evaluate(() => window.__releaseWrite());
-  await expect(page.locator("#save-status")).toHaveText("Saved to Puter");
+  await expect(page.locator("#save-status")).toHaveText("Saved to Everything");
   await expect(page.locator("#save-status")).toHaveAttribute(
     "title",
     "/test/Presentations/The big idea.pptx",
@@ -3066,17 +3066,17 @@ test("a pending cloud save does not mark a different presentation as saving", as
 test("renaming during a slow cloud save keeps subsequent writes on the renamed path", async ({
   page,
 }) => {
-  await mockPuter(page, { signedIn: true });
+  await mockEverything(page, { signedIn: true });
   await page.goto("/#/home");
   await page
     .getByRole("button", { name: "New presentation", exact: true })
     .click();
   await page.getByRole("button", { name: /^(Save|Sign in to save)$/ }).click();
-  await expect(page.locator("#save-status")).toContainText("Saved to Puter");
+  await expect(page.locator("#save-status")).toContainText("Saved to Everything");
   await page.evaluate(() => {
-    const write = puter.fs.write;
+    const write = everything.fs.write;
     let delay = true;
-    puter.fs.write = async (...args) => {
+    everything.fs.write = async (...args) => {
       if (delay) {
         delay = false;
         await new Promise((resolve) => {
@@ -3108,7 +3108,7 @@ test("renaming during a slow cloud save keeps subsequent writes on the renamed p
 test("a pending sign-out prevents starting work that its completion would discard", async ({
   page,
 }) => {
-  await mockPuter(page, { signedIn: true });
+  await mockEverything(page, { signedIn: true });
   await page.goto("/#/home");
   await expect(
     page.getByRole("button", { name: "Account and settings" }),
@@ -3118,8 +3118,8 @@ test("a pending sign-out prevents starting work that its completion would discar
   });
   const box = await template.boundingBox();
   await page.evaluate(() => {
-    const signOut = puter.auth.signOut;
-    puter.auth.signOut = async () => {
+    const signOut = everything.auth.signOut;
+    everything.auth.signOut = async () => {
       await new Promise((resolve) => (window.__releaseSignOut = resolve));
       return signOut();
     };
@@ -3138,7 +3138,7 @@ test("a pending sign-out prevents starting work that its completion would discar
   await expect(progress).toBeVisible();
   await page.evaluate(() => window.__releaseSignOut());
   await expect(
-    page.getByRole("button", { name: "Connect Puter", exact: true }),
+    page.getByRole("button", { name: "Connect Everything", exact: true }),
   ).toBeVisible();
   await expect(progress).toHaveCount(0);
   await template.click();
@@ -3148,13 +3148,13 @@ test("a pending sign-out prevents starting work that its completion would discar
 test("a failed sign-out restores access to the signed-in library", async ({
   page,
 }) => {
-  await mockPuter(page, { signedIn: true });
+  await mockEverything(page, { signedIn: true });
   await page.goto("/#/home");
   await expect(
     page.getByRole("button", { name: "Account and settings" }),
   ).toContainText("test-user");
   await page.evaluate(() => {
-    puter.auth.signOut = async () => {
+    everything.auth.signOut = async () => {
       await new Promise((resolve) => (window.__releaseSignOut = resolve));
       throw new Error("Sign-out unavailable");
     };
@@ -3179,19 +3179,19 @@ test("a failed sign-out restores access to the signed-in library", async ({
     .click();
   await expect(page.locator("#slide-count")).toHaveText("1");
   await page.getByRole("button", { name: /^(Save|Sign in to save)$/ }).click();
-  await expect(page.locator("#save-status")).toContainText("Saved to Puter");
+  await expect(page.locator("#save-status")).toContainText("Saved to Everything");
 });
 
 test("signing out clears account files even when device storage fails", async ({
   page,
 }) => {
-  await mockPuter(page, { signedIn: true });
+  await mockEverything(page, { signedIn: true });
   await page.goto("/#/home");
   await page
     .getByRole("button", { name: "New presentation", exact: true })
     .click();
   await page.getByRole("button", { name: /^(Save|Sign in to save)$/ }).click();
-  await expect(page.locator("#save-status")).toContainText("Saved to Puter");
+  await expect(page.locator("#save-status")).toContainText("Saved to Everything");
   await page.getByRole("button", { name: "Back to presentations" }).click();
   const file = page.getByRole("button", {
     name: "Untitled presentation PowerPoint presentation",
@@ -3206,7 +3206,7 @@ test("signing out clears account files even when device storage fails", async ({
   await page.getByRole("button", { name: "Account and settings" }).click();
   await page.getByRole("menuitem", { name: "Sign out", exact: true }).click();
   await expect(
-    page.getByRole("button", { name: "Connect Puter" }),
+    page.getByRole("button", { name: "Connect Everything" }),
   ).toBeVisible();
   await expect(
     page.getByText("Could not load your presentations.", { exact: false }),
@@ -3474,12 +3474,12 @@ test("a failed library load is not presented as an empty library", async ({
     page.getByRole("heading", { name: "Your next story starts here" }),
   ).toBeVisible();
   await page.evaluate(() => {
-    window.__readdir = puter.fs.readdir;
-    puter.fs.readdir = async () => {
+    window.__readdir = everything.fs.readdir;
+    everything.fs.readdir = async () => {
       throw new Error("Storage is unavailable");
     };
   });
-  await page.getByRole("button", { name: "Connect Puter" }).click();
+  await page.getByRole("button", { name: "Connect Everything" }).click();
   await expect(page.locator(".error-row")).toContainText(
     "Could not load your presentations",
   );
@@ -3490,7 +3490,7 @@ test("a failed library load is not presented as an empty library", async ({
     page.getByRole("button", { name: "Import a presentation", exact: true }),
   ).toHaveCount(0);
   await page.evaluate(() => {
-    puter.fs.readdir = window.__readdir;
+    everything.fs.readdir = window.__readdir;
   });
   await page.getByRole("button", { name: "Retry", exact: true }).click();
   await expect(page.locator(".error-row")).toHaveCount(0);
@@ -3502,7 +3502,7 @@ test("a failed library load is not presented as an empty library", async ({
 test("the library shows a loading state until the account and drafts are checked", async ({
   page,
 }) => {
-  await mockPuter(page, { signedIn: true, delayAuth: true });
+  await mockEverything(page, { signedIn: true, delayAuth: true });
   await page.goto("/#/home");
   await page.waitForFunction(() => window.__releaseAuth);
   const list = page.locator("#file-list");
@@ -3521,7 +3521,7 @@ test("the library shows a loading state until the account and drafts are checked
 test("late account initialization preserves work already started", async ({
   page,
 }) => {
-  await mockPuter(page, { signedIn: true, delayAuth: true });
+  await mockEverything(page, { signedIn: true, delayAuth: true });
   await page.goto("/#/home");
   await page.waitForFunction(() => window.__releaseAuth);
   await page
@@ -3710,7 +3710,7 @@ for (const signedIn of [false, true]) {
   test(`renaming a ${signedIn ? "cloud" : "local"} deck updates its displayed name when recovery storage fails`, async ({
     page,
   }) => {
-    await mockPuter(page, { signedIn });
+    await mockEverything(page, { signedIn });
     await page.goto("/#/home");
     await page
       .getByRole("button", { name: "New presentation", exact: true })
@@ -3720,7 +3720,7 @@ for (const signedIn of [false, true]) {
         .getByRole("button", { name: /^(Save|Sign in to save)$/ })
         .click();
       await expect(page.locator("#save-status")).toContainText(
-        "Saved to Puter",
+        "Saved to Everything",
       );
     } else
       await expect(page.locator("#save-status")).toContainText(
@@ -3740,7 +3740,7 @@ for (const signedIn of [false, true]) {
       .press("Enter");
     // The failure is reported in the app's own words, not the browser's.
     await expect(page.locator("#toast")).toHaveText(
-      "Device storage is unavailable. Save to Puter or download a copy to keep your work.",
+      "Device storage is unavailable. Save to Everything or download a copy to keep your work.",
     );
     await expect(page.locator(".document-title")).toHaveText(
       "Renamed despite storage failure",
@@ -4014,16 +4014,16 @@ test("printing an all-hidden deck explains why there is nothing to print", async
   ).toHaveCount(0);
 });
 
-test("inside Puter, exports download to this device rather than open Puter's Save dialog", async ({
+test("inside Everything, exports download to this device rather than open Everything's Save dialog", async ({
   page,
 }) => {
-  await mockPuter(page, { signedIn: true, env: "app" });
+  await mockEverything(page, { signedIn: true, env: "app" });
   await page.goto("/#/home");
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await page.evaluate(() => {
     window.__asked = 0;
-    puter.ui.showSaveFilePicker = async () => {
+    everything.ui.showSaveFilePicker = async () => {
       window.__asked++;
       throw new Error("Export destination unavailable");
     };
@@ -4393,7 +4393,7 @@ for (const commitBeforeRender of [false, true]) {
 test("a stale recovery entry uses the latest name, cloud path, and palette from another tab", async ({
   page,
 }) => {
-  await mockPuter(page, { signedIn: true });
+  await mockEverything(page, { signedIn: true });
   await page.goto("/#/home");
   await page
     .getByRole("button", { name: "The big idea A clear, considered story" })
@@ -4405,7 +4405,7 @@ test("a stale recovery entry uses the latest name, cloud path, and palette from 
   });
   await expect(staleEntry).toBeVisible();
   const other = await page.context().newPage();
-  await mockPuter(other, { signedIn: true });
+  await mockEverything(other, { signedIn: true });
   await other.goto("/#/home");
   await other
     .getByRole("button", { name: "The big idea Recovery draft", exact: true })
@@ -4424,14 +4424,14 @@ test("a stale recovery entry uses the latest name, cloud path, and palette from 
   await other.getByRole("button", { name: "Midnight", exact: true }).click();
   await other.getByRole("button", { name: "Apply theme", exact: true }).click();
   await other.getByRole("button", { name: /^(Save|Sign in to save)$/ }).click();
-  await expect(other.locator("#save-status")).toContainText("Saved to Puter");
+  await expect(other.locator("#save-status")).toContainText("Saved to Everything");
   const path = await other.evaluate(() => window.__writes.at(-1).path);
   await other.close();
   await staleEntry.click();
   await expect(page.locator(".document-title")).toHaveText(
     "Updated in another tab",
   );
-  await expect(page.locator("#save-status")).toContainText("Saved to Puter");
+  await expect(page.locator("#save-status")).toContainText("Saved to Everything");
   await themeDialog(page);
   await expect(
     page.getByRole("button", { name: "Midnight", exact: true }),
@@ -4439,7 +4439,7 @@ test("a stale recovery entry uses the latest name, cloud path, and palette from 
   await page.keyboard.press("Escape");
   await addText(page);
   await page.getByRole("button", { name: /^(Save|Sign in to save)$/ }).click();
-  await expect(page.locator("#save-status")).toContainText("Saved to Puter");
+  await expect(page.locator("#save-status")).toContainText("Saved to Everything");
   expect(await page.evaluate(() => window.__writes.at(-1).path)).toBe(path);
   expect(
     await page.evaluate(() => window.__writes.at(-1).options.overwrite),
@@ -4527,8 +4527,8 @@ for (const destination of ["editor", "home"]) {
     } else {
       await start(page);
       await page.evaluate(() => {
-        const signIn = puter.auth.signIn;
-        puter.auth.signIn = async () => {
+        const signIn = everything.auth.signIn;
+        everything.auth.signIn = async () => {
           await new Promise(
             (resolve) => (window.__releaseTransition = resolve),
           );
@@ -4536,7 +4536,7 @@ for (const destination of ["editor", "home"]) {
         };
       });
       await page
-        .getByRole("button", { name: "Connect Puter", exact: true })
+        .getByRole("button", { name: "Connect Everything", exact: true })
         .click();
     }
     await page.waitForFunction(() => window.__releaseTransition);
@@ -4607,14 +4607,14 @@ test("undo preserves a focused slide thumbnail through the navigator refresh", a
 test("a library refresh closes an outdated file menu and preserves its keyboard focus", async ({
   page,
 }) => {
-  await mockPuter(page, { signedIn: true });
+  await mockEverything(page, { signedIn: true });
   await page.goto("/#/home");
   await expect(
     page.getByRole("button", { name: "Account and settings" }),
   ).toContainText("test-user");
   await page.evaluate(() => {
-    const write = puter.fs.write;
-    puter.fs.write = async (...args) => {
+    const write = everything.fs.write;
+    everything.fs.write = async (...args) => {
       await new Promise((resolve) => (window.__releaseWrite = resolve));
       return write(...args);
     };
@@ -4658,10 +4658,10 @@ test("a library refresh closes an outdated file menu and preserves its keyboard 
 test("scrolling the library dismisses its file menu without reversing the scroll", async ({
   page,
 }) => {
-  await mockPuter(page, { signedIn: true });
+  await mockEverything(page, { signedIn: true });
   await page.goto("/#/home");
   await page.evaluate(() => {
-    puter.fs.readdir = async () =>
+    everything.fs.readdir = async () =>
       Array.from({ length: 40 }, (_, index) => ({
         name: `Deck ${String(index).padStart(2, "0")}.pptx`,
         path: `/test/Deck ${index}.pptx`,
@@ -5790,16 +5790,16 @@ for (const action of ["Undo", "Redo"]) {
 test("canvas typing survives completion of a delayed cloud rename", async ({
   page,
 }) => {
-  await mockPuter(page, { signedIn: true });
+  await mockEverything(page, { signedIn: true });
   await page.goto("/#/home");
   await page
     .getByRole("button", { name: "The big idea A clear, considered story" })
     .click();
   await page.getByRole("button", { name: /^(Save|Sign in to save)$/ }).click();
-  await expect(page.locator("#save-status")).toContainText("Saved to Puter");
+  await expect(page.locator("#save-status")).toContainText("Saved to Everything");
   await page.evaluate(() => {
-    const rename = puter.fs.rename;
-    puter.fs.rename = async (...args) => {
+    const rename = everything.fs.rename;
+    everything.fs.rename = async (...args) => {
       await new Promise((resolve) => (window.__releaseRename = resolve));
       return rename(...args);
     };
@@ -6243,7 +6243,7 @@ for (const location of ["library", "editor"]) {
   test(`a ${location} rename updates older recovery drafts`, async ({
     page,
   }) => {
-    await mockPuter(page, { signedIn: true });
+    await mockEverything(page, { signedIn: true });
     await page.goto("/#/home");
     await page
       .getByRole("button", { name: "New presentation", exact: true })
@@ -6251,19 +6251,19 @@ for (const location of ["library", "editor"]) {
     await page
       .getByRole("button", { name: /^(Save|Sign in to save)$/ })
       .click();
-    await expect(page.locator("#save-status")).toHaveText("Saved to Puter");
+    await expect(page.locator("#save-status")).toHaveText("Saved to Everything");
     await addText(page);
     await expect(page.locator("#save-status")).toHaveText(
       "Saved on this device",
     );
     await leaveWithUnsavedCloudEdits(page);
     await page.evaluate(() => {
-      const read = puter.fs.read;
-      puter.fs.rename = async (path, name) => {
+      const read = everything.fs.read;
+      everything.fs.rename = async (path, name) => {
         const bytes = await read(path);
         const renamed = path.slice(0, path.lastIndexOf("/") + 1) + name;
-        await puter.fs.write(renamed, bytes, { overwrite: false });
-        await puter.fs.delete(path);
+        await everything.fs.write(renamed, bytes, { overwrite: false });
+        await everything.fs.delete(path);
         return { path: renamed };
       };
     });
@@ -6285,7 +6285,7 @@ for (const location of ["library", "editor"]) {
       await cloudFile.click();
       await page
         .getByRole("dialog", { name: "Recover unsaved changes?" })
-        .getByRole("button", { name: "Open the Puter version" })
+        .getByRole("button", { name: "Open the Everything version" })
         .click();
       await expect(page.locator(".object-hit")).toHaveCount(0);
       await page.locator(".document-title").click();
@@ -6303,7 +6303,7 @@ for (const location of ["library", "editor"]) {
       await page
         .getByRole("button", { name: /^(Save|Sign in to save)$/ })
         .click();
-      await expect(page.locator("#save-status")).toHaveText("Saved to Puter");
+      await expect(page.locator("#save-status")).toHaveText("Saved to Everything");
       await page.getByRole("button", { name: "Back to presentations" }).click();
     }
     await expect(
@@ -6327,7 +6327,7 @@ for (const location of ["library", "editor"]) {
     await page
       .getByRole("button", { name: /^(Save|Sign in to save)$/ })
       .click();
-    await expect(page.locator("#save-status")).toHaveText("Saved to Puter");
+    await expect(page.locator("#save-status")).toHaveText("Saved to Everything");
     expect(await page.evaluate(() => window.__writes.at(-1).path)).toBe(
       "/test/Presentations/Renamed with local changes.pptx",
     );
@@ -6341,7 +6341,7 @@ for (const delayed of ["rename", "read"]) {
   test(`a library rename updates the same file opened during a pending ${delayed}`, async ({
     page,
   }) => {
-    await mockPuter(page, { signedIn: true });
+    await mockEverything(page, { signedIn: true });
     await page.goto("/#/home");
     await page
       .getByRole("button", { name: "New presentation", exact: true })
@@ -6349,11 +6349,11 @@ for (const delayed of ["rename", "read"]) {
     await page
       .getByRole("button", { name: /^(Save|Sign in to save)$/ })
       .click();
-    await expect(page.locator("#save-status")).toContainText("Saved to Puter");
+    await expect(page.locator("#save-status")).toContainText("Saved to Everything");
     await page.getByRole("button", { name: "Back to presentations" }).click();
     await page.evaluate((delayed) => {
-      const original = puter.fs[delayed];
-      puter.fs[delayed] = async (...args) => {
+      const original = everything.fs[delayed];
+      everything.fs[delayed] = async (...args) => {
         const result = await original(...args);
         await new Promise((resolve) => (window.__releaseOperation = resolve));
         return result;
@@ -6400,7 +6400,7 @@ for (const delayed of ["rename", "read"]) {
     await page
       .getByRole("button", { name: /^(Save|Sign in to save)$/ })
       .click();
-    await expect(page.locator("#save-status")).toContainText("Saved to Puter");
+    await expect(page.locator("#save-status")).toContainText("Saved to Everything");
     expect(await page.evaluate(() => window.__writes.at(-1).path)).toBe(
       "/test/Presentations/Renamed while opening.pptx.pptx",
     );
@@ -6421,24 +6421,24 @@ for (const delayed of ["rename", "read"]) {
 test("a cloud read failure without a rename is reported without retrying", async ({
   page,
 }) => {
-  await mockPuter(page, { signedIn: true });
+  await mockEverything(page, { signedIn: true });
   await page.goto("/#/home");
   await expect(
     page.getByRole("button", { name: "Account and settings" }),
   ).toContainText("test-user");
   await page.evaluate(() => {
     window.__cloudReads = 0;
-    puter.ui.showOpenFilePicker = async () => ({
+    everything.ui.showOpenFilePicker = async () => ({
       name: "Unavailable.pptx",
       path: "/test/Unavailable.pptx",
     });
-    puter.fs.read = async () => {
+    everything.fs.read = async () => {
       window.__cloudReads++;
       throw new Error("Cloud read unavailable");
     };
   });
   await page
-    .getByRole("button", { name: "Open from Puter", exact: true })
+    .getByRole("button", { name: "Open from Everything", exact: true })
     .click();
   await expect(page.locator("#toast")).toHaveText("Cloud read unavailable");
   expect(await page.evaluate(() => window.__cloudReads)).toBe(1);
@@ -6451,7 +6451,7 @@ for (const superseded of [false, true]) {
   test(`a read whose file was renamed ${superseded ? "stops after newer navigation" : "retries the new path"}`, async ({
     page,
   }) => {
-    await mockPuter(page, { signedIn: true });
+    await mockEverything(page, { signedIn: true });
     await page.goto("/#/home");
     await page
       .getByRole("button", { name: "New presentation", exact: true })
@@ -6459,13 +6459,13 @@ for (const superseded of [false, true]) {
     await page
       .getByRole("button", { name: /^(Save|Sign in to save)$/ })
       .click();
-    await expect(page.locator("#save-status")).toContainText("Saved to Puter");
+    await expect(page.locator("#save-status")).toContainText("Saved to Everything");
     await page.getByRole("button", { name: "Back to presentations" }).click();
     await page.evaluate(() => {
-      const read = puter.fs.read;
+      const read = everything.fs.read;
       let first = true;
       window.__readPaths = [];
-      puter.fs.read = async (path) => {
+      everything.fs.read = async (path) => {
         window.__readPaths.push(path);
         if (first) {
           first = false;
@@ -6474,11 +6474,11 @@ for (const superseded of [false, true]) {
         if (window.__movedPath === path) throw new Error("Cloud file moved");
         return read(path);
       };
-      puter.fs.rename = async (path, name) => {
+      everything.fs.rename = async (path, name) => {
         const blob = await read(path);
         const target = path.slice(0, path.lastIndexOf("/") + 1) + name;
-        const result = await puter.fs.write(target, blob, { overwrite: true });
-        await puter.fs.delete(path);
+        const result = await everything.fs.write(target, blob, { overwrite: true });
+        await everything.fs.delete(path);
         window.__movedPath = path;
         return result;
       };
@@ -6544,7 +6544,7 @@ for (const superseded of [false, true]) {
   test(`recovery queued behind deletion ${superseded ? "respects newer navigation" : "opens a local copy"}`, async ({
     page,
   }) => {
-    await mockPuter(page, { signedIn: true });
+    await mockEverything(page, { signedIn: true });
     await page.goto("/#/home");
     await page
       .getByRole("button", { name: "New presentation", exact: true })
@@ -6552,15 +6552,15 @@ for (const superseded of [false, true]) {
     await page
       .getByRole("button", { name: /^(Save|Sign in to save)$/ })
       .click();
-    await expect(page.locator("#save-status")).toHaveText("Saved to Puter");
+    await expect(page.locator("#save-status")).toHaveText("Saved to Everything");
     await addText(page);
     await expect(page.locator("#save-status")).toHaveText(
       "Saved on this device",
     );
     await leaveWithUnsavedCloudEdits(page);
     await page.evaluate(() => {
-      const original = puter.fs.delete;
-      puter.fs.delete = async (...args) => {
+      const original = everything.fs.delete;
+      everything.fs.delete = async (...args) => {
         await new Promise((resolve) => (window.__releaseDelete = resolve));
         return original(...args);
       };
@@ -6604,12 +6604,12 @@ for (const superseded of [false, true]) {
     );
     await expect(page.locator("#save-status")).toHaveAttribute(
       "title",
-      "Save to Puter to access this presentation on other devices.",
+      "Save to Everything to access this presentation on other devices.",
     );
     await page
       .getByRole("button", { name: /^(Save|Sign in to save)$/ })
       .click();
-    await expect(page.locator("#save-status")).toHaveText("Saved to Puter");
+    await expect(page.locator("#save-status")).toHaveText("Saved to Everything");
     await expect(page.locator("#slide-count")).toHaveText(
       superseded ? "5" : "1",
     );
@@ -6624,7 +6624,7 @@ for (const pendingRecovery of [false, true]) {
   test(`deleting a cloud file detaches its ${pendingRecovery ? "pending" : "inactive"} recovery draft`, async ({
     page,
   }) => {
-    await mockPuter(page, { signedIn: true });
+    await mockEverything(page, { signedIn: true });
     await page.goto("/#/home");
     await page
       .getByRole("button", { name: "New presentation", exact: true })
@@ -6632,7 +6632,7 @@ for (const pendingRecovery of [false, true]) {
     await page
       .getByRole("button", { name: /^(Save|Sign in to save)$/ })
       .click();
-    await expect(page.locator("#save-status")).toContainText("Saved to Puter");
+    await expect(page.locator("#save-status")).toContainText("Saved to Everything");
     await addText(page);
     await expect(page.locator("#save-status")).toHaveText(
       "Saved on this device",
@@ -6696,7 +6696,7 @@ for (const pendingRecovery of [false, true]) {
     await expect(page.locator(".object-hit")).toHaveCount(1);
     await expect(page.locator("#save-status")).toHaveAttribute(
       "title",
-      "Save to Puter to access this presentation on other devices.",
+      "Save to Everything to access this presentation on other devices.",
     );
     await addText(page);
     await expect(page.locator("#save-status")).toHaveText(
@@ -6712,7 +6712,7 @@ for (const pendingRecovery of [false, true]) {
     await page
       .getByRole("button", { name: /^(Save|Sign in to save)$/ })
       .click();
-    await expect(page.locator("#save-status")).toHaveText("Saved to Puter");
+    await expect(page.locator("#save-status")).toHaveText("Saved to Everything");
     expect(
       await page.evaluate(() => window.__writes.at(-1).options.overwrite),
     ).toBe(false);
@@ -6723,7 +6723,7 @@ for (const delayed of ["delete", "read"]) {
   test(`deleting a cloud file handles its pending ${delayed} without reconnecting the deleted path`, async ({
     page,
   }) => {
-    await mockPuter(page, { signedIn: true });
+    await mockEverything(page, { signedIn: true });
     await page.goto("/#/home");
     await page
       .getByRole("button", { name: "New presentation", exact: true })
@@ -6731,11 +6731,11 @@ for (const delayed of ["delete", "read"]) {
     await page
       .getByRole("button", { name: /^(Save|Sign in to save)$/ })
       .click();
-    await expect(page.locator("#save-status")).toContainText("Saved to Puter");
+    await expect(page.locator("#save-status")).toContainText("Saved to Everything");
     await page.getByRole("button", { name: "Back to presentations" }).click();
     await page.evaluate((delayed) => {
-      const original = puter.fs[delayed];
-      puter.fs[delayed] = async (...args) => {
+      const original = everything.fs[delayed];
+      everything.fs[delayed] = async (...args) => {
         const read = delayed === "read" ? await original(...args) : null;
         await new Promise(
           (resolve) => (window.__releaseFileOperation = resolve),
@@ -6790,7 +6790,7 @@ for (const delayed of ["delete", "read"]) {
     } else {
       await expect(page.locator("#save-status")).toHaveAttribute(
         "title",
-        "Save to Puter to access this presentation on other devices.",
+        "Save to Everything to access this presentation on other devices.",
       );
       await addText(page);
       await expect(page.locator("#save-status")).toHaveText(
@@ -6803,7 +6803,7 @@ for (const delayed of ["delete", "read"]) {
       expect(await page.evaluate(() => window.__writes.length)).toBe(1);
       expect(
         await page.evaluate(
-          async () => (await puter.fs.readdir("Presentations")).length,
+          async () => (await everything.fs.readdir("Presentations")).length,
         ),
       ).toBe(0);
       await page.getByRole("button", { name: "Back to presentations" }).click();
@@ -6817,7 +6817,7 @@ for (const delayed of ["delete", "read"]) {
       await page
         .getByRole("button", { name: /^(Save|Sign in to save)$/ })
         .click();
-      await expect(page.locator("#save-status")).toHaveText("Saved to Puter");
+      await expect(page.locator("#save-status")).toHaveText("Saved to Everything");
       expect(await page.evaluate(() => window.__writes.length)).toBe(2);
       expect(
         await page.evaluate(() => window.__writes.at(-1).options.overwrite),
@@ -6830,7 +6830,7 @@ for (const action of ["Rename", "Delete presentation"]) {
   test(`a delayed library ${action} preserves work started afterward`, async ({
     page,
   }) => {
-    await mockPuter(page, { signedIn: true });
+    await mockEverything(page, { signedIn: true });
     await page.goto("/#/home");
     await page
       .getByRole("button", { name: "New presentation", exact: true })
@@ -6838,12 +6838,12 @@ for (const action of ["Rename", "Delete presentation"]) {
     await page
       .getByRole("button", { name: /^(Save|Sign in to save)$/ })
       .click();
-    await expect(page.locator("#save-status")).toContainText("Saved to Puter");
+    await expect(page.locator("#save-status")).toContainText("Saved to Everything");
     await page.getByRole("button", { name: "Back to presentations" }).click();
     await page.evaluate((action) => {
       const key = action === "Rename" ? "rename" : "delete";
-      const original = puter.fs[key];
-      puter.fs[key] = async (...args) => {
+      const original = everything.fs[key];
+      everything.fs[key] = async (...args) => {
         await new Promise(
           (resolve) => (window.__releaseFileOperation = resolve),
         );
@@ -6902,10 +6902,10 @@ for (const failFirst of [false, true]) {
   }) => {
     await start(page);
     await page.evaluate((failFirst) => {
-      const signIn = puter.auth.signIn;
+      const signIn = everything.auth.signIn;
       window.__signInCalls = 0;
       window.__failSignIn = failFirst;
-      puter.auth.signIn = async () => {
+      everything.auth.signIn = async () => {
         window.__signInCalls++;
         await new Promise((resolve) => (window.__releaseSignIn = resolve));
         if (window.__failSignIn) throw new Error("Sign-in cancelled");
@@ -6913,7 +6913,7 @@ for (const failFirst of [false, true]) {
       };
     }, failFirst);
     const connect = page.getByRole("button", {
-      name: "Connect Puter",
+      name: "Connect Everything",
       exact: true,
     });
     await connect.click();
@@ -6939,7 +6939,7 @@ for (const failFirst of [false, true]) {
   });
 }
 
-test("closing the Puter sign-in window is not reported as an error", async ({
+test("closing the Everything sign-in window is not reported as an error", async ({
   page,
 }) => {
   await start(page);
@@ -6949,10 +6949,10 @@ test("closing the Puter sign-in window is not reported as an error", async ({
       error: "auth_window_closed",
       msg: "Authentication window was closed by the user without completing the process.",
     };
-    puter.auth.signIn = () => Promise.reject(window.__rejection);
+    everything.auth.signIn = () => Promise.reject(window.__rejection);
   });
   const connect = page.getByRole("button", {
-    name: "Connect Puter",
+    name: "Connect Everything",
     exact: true,
   });
   await connect.click();
@@ -6968,12 +6968,12 @@ test("closing the Puter sign-in window is not reported as an error", async ({
   });
   await connect.click();
   await expect(page.locator("#toast")).toHaveText(
-    "The browser blocked the Puter sign-in window. Allow pop-ups for this site and try again.",
+    "The browser blocked the Everything sign-in window. Allow pop-ups for this site and try again.",
   );
   await expect(connect).toBeVisible();
   // The sign-in remains available once the window can open.
   await page.evaluate(() => {
-    puter.auth.signIn = async () => {};
+    everything.auth.signIn = async () => {};
   });
   await connect.click();
   await expect(
@@ -6987,9 +6987,9 @@ for (const reconnect of [false, true]) {
   }) => {
     await start(page);
     await page.evaluate(() => {
-      const list = puter.fs.readdir;
+      const list = everything.fs.readdir;
       let first = true;
-      puter.fs.readdir = async (...args) => {
+      everything.fs.readdir = async (...args) => {
         if (first) {
           first = false;
           await new Promise((resolve) => (window.__releaseList = resolve));
@@ -6997,19 +6997,19 @@ for (const reconnect of [false, true]) {
         return list(...args);
       };
       window.__pickerCalls = 0;
-      puter.ui.showOpenFilePicker = async () => {
+      everything.ui.showOpenFilePicker = async () => {
         window.__pickerCalls++;
         return null;
       };
     });
     await page
-      .getByRole("button", { name: "Open from Puter", exact: true })
+      .getByRole("button", { name: "Open from Everything", exact: true })
       .click();
     await page.waitForFunction(() => window.__releaseList);
     await page.getByRole("button", { name: "Account and settings" }).click();
     await page.getByRole("menuitem", { name: "Sign out", exact: true }).click();
     const connect = page.getByRole("button", {
-      name: "Connect Puter",
+      name: "Connect Everything",
       exact: true,
     });
     await expect(connect).toBeVisible();
@@ -7027,7 +7027,7 @@ for (const reconnect of [false, true]) {
     if (!reconnect) await expect(connect).toBeVisible();
     else {
       await page
-        .getByRole("button", { name: "Open from Puter", exact: true })
+        .getByRole("button", { name: "Open from Everything", exact: true })
         .click();
       expect(await page.evaluate(() => window.__pickerCalls)).toBe(1);
     }
@@ -7039,8 +7039,8 @@ test("canvas typing survives completion of a delayed sign-in", async ({
 }) => {
   await story(page);
   await page.evaluate(() => {
-    const signIn = puter.auth.signIn;
-    puter.auth.signIn = async () => {
+    const signIn = everything.auth.signIn;
+    everything.auth.signIn = async () => {
       await new Promise((resolve) => (window.__releaseSignIn = resolve));
       return signIn();
     };
@@ -7051,16 +7051,16 @@ test("canvas typing survives completion of a delayed sign-in", async ({
   const input = page.getByRole("textbox", { name: "Edit text", exact: true });
   await input.fill("Keep typing during sign-in");
   await page.evaluate(() => window.__releaseSignIn());
-  await expect(page.locator("#save-status")).toContainText("Saved to Puter");
+  await expect(page.locator("#save-status")).toContainText("Saved to Everything");
   await expect(input).toBeFocused();
   await expect(input).toHaveText("Keep typing during sign-in");
   await input.press("ControlOrMeta+Enter");
   await page.getByRole("button", { name: /^(Save|Sign in to save)$/ }).click();
-  await expect(page.locator("#save-status")).toContainText("Saved to Puter");
+  await expect(page.locator("#save-status")).toContainText("Saved to Everything");
   const bytes = await page.evaluate(async () =>
     Array.from(
       new Uint8Array(
-        await (await puter.fs.read(window.__writes.at(-1).path)).arrayBuffer(),
+        await (await everything.fs.read(window.__writes.at(-1).path)).arrayBuffer(),
       ),
     ),
   );
@@ -7092,15 +7092,15 @@ test("sign-in transfers recovery ownership after older guest saves finish", asyn
   );
   await start(page);
   await page.evaluate(() => {
-    const signIn = puter.auth.signIn;
-    puter.auth.signIn = async () => {
+    const signIn = everything.auth.signIn;
+    everything.auth.signIn = async () => {
       await new Promise((resolve) => (window.__releaseSignIn = resolve));
       return signIn();
     };
   });
   await page.getByRole("button", { name: "Account and settings" }).click();
   await page
-    .getByRole("menuitem", { name: "Sign in with Puter", exact: true })
+    .getByRole("menuitem", { name: "Sign in with Everything", exact: true })
     .click();
   await page.waitForFunction(() => window.__releaseSignIn);
   await page
@@ -7132,8 +7132,8 @@ test("a Save awaiting sign-in does not upload a different presentation opened la
 }) => {
   await story(page);
   await page.evaluate(() => {
-    const signIn = puter.auth.signIn;
-    puter.auth.signIn = async () => {
+    const signIn = everything.auth.signIn;
+    everything.auth.signIn = async () => {
       await new Promise((resolve) => (window.__releaseSignIn = resolve));
       return signIn();
     };
@@ -7154,7 +7154,7 @@ test("a Save awaiting sign-in does not upload a different presentation opened la
     "Saved on this device",
   );
   await page.getByRole("button", { name: /^(Save|Sign in to save)$/ }).click();
-  await expect(page.locator("#save-status")).toContainText("Saved to Puter");
+  await expect(page.locator("#save-status")).toContainText("Saved to Everything");
   expect(await page.evaluate(() => window.__writes.at(-1).path)).toContain(
     "Untitled presentation.pptx",
   );
@@ -7190,8 +7190,8 @@ test("sign-in completion does not cancel a pending local import", async ({
 }) => {
   await start(page);
   await page.evaluate(() => {
-    const signIn = puter.auth.signIn;
-    puter.auth.signIn = async () => {
+    const signIn = everything.auth.signIn;
+    everything.auth.signIn = async () => {
       await new Promise((resolve) => (window.__releaseSignIn = resolve));
       return signIn();
     };
@@ -7203,7 +7203,7 @@ test("sign-in completion does not cancel a pending local import", async ({
     };
   });
   await page
-    .getByRole("button", { name: "Connect Puter", exact: true })
+    .getByRole("button", { name: "Connect Everything", exact: true })
     .click();
   await page.waitForFunction(() => window.__releaseSignIn);
   const chooser = page.waitForEvent("filechooser");
@@ -8228,7 +8228,7 @@ test("the format panel stays between the toolbar and the footer", async ({
 test("library search and name sorting use displayed titles rather than file names", async ({
   page,
 }) => {
-  await mockPuter(page, { signedIn: true });
+  await mockEverything(page, { signedIn: true });
   await page.goto("/#/home");
   const rename = async (name) => {
     await page.locator(".document-title").click();
@@ -8242,7 +8242,7 @@ test("library search and name sorting use displayed titles rather than file name
     .click();
   await rename("Alpha");
   await page.getByRole("button", { name: /^(Save|Sign in to save)$/ }).click();
-  await expect(page.locator("#save-status")).toContainText("Saved to Puter");
+  await expect(page.locator("#save-status")).toContainText("Saved to Everything");
   await page.getByRole("button", { name: "Back to presentations" }).click();
   await page
     .getByRole("button", { name: "New presentation", exact: true })
@@ -8625,13 +8625,13 @@ test("autosave waits while offline and resumes when the connection returns", asy
   page,
   context,
 }) => {
-  await mockPuter(page, { signedIn: true });
+  await mockEverything(page, { signedIn: true });
   await page.goto("/#/home");
   await page
     .getByRole("button", { name: "The big idea A clear, considered story" })
     .click();
   await page.getByRole("button", { name: /^(Save|Sign in to save)$/ }).click();
-  await expect(page.locator("#save-status")).toContainText("Saved to Puter");
+  await expect(page.locator("#save-status")).toContainText("Saved to Everything");
   const writes = () => page.evaluate(() => window.__writes.length);
   expect(await writes()).toBe(1);
   await context.setOffline(true);
@@ -8644,7 +8644,7 @@ test("autosave waits while offline and resumes when the connection returns", asy
   expect(await writes()).toBe(1);
   await expect(page.locator("#toast")).not.toHaveClass(/visible/);
   await context.setOffline(false);
-  await expect(page.locator("#save-status")).toContainText("Saved to Puter");
+  await expect(page.locator("#save-status")).toContainText("Saved to Everything");
   expect(await writes()).toBe(2);
 });
 
@@ -9778,7 +9778,7 @@ test("inherited and theme slide backgrounds are reported and kept legible", asyn
 test("a long username ends in an ellipsis instead of widening the home header", async ({
   page,
 }) => {
-  await mockPuter(page, {
+  await mockEverything(page, {
     signedIn: true,
     username: "a-very-long-username-that-keeps-going-and-going",
   });
@@ -9915,13 +9915,13 @@ test("a slide whose part name holds selector syntax still opens from the navigat
 test("the delete confirmation says what a draft and a cloud file each are", async ({
   page,
 }) => {
-  await mockPuter(page, { signedIn: true });
+  await mockEverything(page, { signedIn: true });
   await page.goto("/#/home");
   await page
     .getByRole("button", { name: "The big idea A clear, considered story" })
     .click();
   await page.getByRole("button", { name: "Save", exact: true }).click();
-  await expect(page.locator("#save-status")).toContainText("Saved to Puter");
+  await expect(page.locator("#save-status")).toContainText("Saved to Everything");
   await page.getByRole("button", { name: "Back to presentations" }).click();
   await page
     .getByRole("button", { name: "New presentation", exact: true })
@@ -9939,13 +9939,13 @@ test("the delete confirmation says what a draft and a cloud file each are", asyn
     .getByRole("menuitem", { name: "Delete draft", exact: true })
     .click();
   await expect(dialog).toContainText("from this device");
-  await expect(dialog).not.toContainText("Puter cloud");
+  await expect(dialog).not.toContainText("Everything cloud");
   await page.getByRole("button", { name: "Cancel", exact: true }).click();
   await page.getByRole("button", { name: "Options for The big idea" }).click();
   await page
     .getByRole("menuitem", { name: "Delete presentation", exact: true })
     .click();
-  await expect(dialog).toContainText("from your Puter cloud");
+  await expect(dialog).toContainText("from your Everything cloud");
   await page.getByRole("button", { name: "Cancel", exact: true }).click();
 });
 
@@ -10015,7 +10015,7 @@ test("the inline editor takes the text's own font and colors when they stay read
 });
 
 test("the print and save shortcuts work while presenting", async ({ page }) => {
-  await mockPuter(page, { signedIn: true });
+  await mockEverything(page, { signedIn: true });
   await page.goto("/#/home");
   await page
     .getByRole("button", { name: "The big idea A clear, considered story" })
@@ -10044,7 +10044,7 @@ test("the print and save shortcuts work while presenting", async ({ page }) => {
   await expect(page.locator("#print-slides .print-page")).toHaveCount(5);
   await expect(presenter).toBeVisible();
   await page.keyboard.press("Control+s");
-  await expect(page.locator("#save-status")).toContainText("Saved to Puter");
+  await expect(page.locator("#save-status")).toContainText("Saved to Everything");
   await expect(presenter).toBeVisible();
 });
 
@@ -10158,7 +10158,7 @@ test("keyboard focus survives duplicating and deleting objects", async ({
 test("a message shows above the slideshow and other open dialogs", async ({
   page,
 }) => {
-  await mockPuter(page, { signedIn: true });
+  await mockEverything(page, { signedIn: true });
   await page.goto("/#/home");
   await page
     .getByRole("button", { name: "The big idea A clear, considered story" })
@@ -10170,7 +10170,7 @@ test("a message shows above the slideshow and other open dialogs", async ({
   ).toBeVisible();
   await page.keyboard.press("Control+s");
   const toast = page.locator("#toast");
-  await expect(toast).toHaveText("Saved to your Puter cloud.");
+  await expect(toast).toHaveText("Saved to your Everything cloud.");
   await expect(toast).toBeVisible();
   // The top layer stacks in opening order, so a popover opened after the
   // slideshow's dialog paints above it, clear of the control bar.
@@ -10186,7 +10186,7 @@ test("a message shows above the slideshow and other open dialogs", async ({
   ).toEqual({ popover: true, display: "block", aboveControls: true });
   await page.keyboard.press("Escape");
   await expect(toast).toBeVisible();
-  await expect(toast).toHaveText("Saved to your Puter cloud.");
+  await expect(toast).toHaveText("Saved to your Everything cloud.");
 });
 
 // A tiny valid PNG, for pasting and inserting pictures, and another one to
@@ -12433,10 +12433,10 @@ test("alignment and lists apply to the paragraphs selected while editing", async
     .toBe(2);
 });
 
-test("a copy is saved to Puter under a new name and becomes the open presentation", async ({
+test("a copy is saved to Everything under a new name and becomes the open presentation", async ({
   page,
 }) => {
-  await mockPuter(page, { signedIn: true });
+  await mockEverything(page, { signedIn: true });
   await page.goto("/#/home");
   await page
     .getByRole("button", { name: "The big idea A clear, considered story" })
@@ -12444,7 +12444,7 @@ test("a copy is saved to Puter under a new name and becomes the open presentatio
   await expect(page.locator("#slide-position")).toHaveText("Slide 1 of 5");
   await openFileMenu(page);
   await page
-    .getByRole("menuitem", { name: "Save a copy to Puter", exact: true })
+    .getByRole("menuitem", { name: "Save a copy to Everything", exact: true })
     .click();
   const dialog = page.getByRole("dialog", { name: "Save a copy" });
   const name = dialog.getByRole("textbox", { name: "Presentation name" });
@@ -12453,7 +12453,7 @@ test("a copy is saved to Puter under a new name and becomes the open presentatio
   await expect(page.locator(".document-title span")).toHaveText(
     "The big idea copy",
   );
-  await expect(page.locator("#save-status")).toHaveText("Saved to Puter");
+  await expect(page.locator("#save-status")).toHaveText("Saved to Everything");
   await expect(
     page.getByText("Saved a copy as The big idea copy."),
   ).toBeVisible();
@@ -12469,7 +12469,7 @@ test("a copy is saved to Puter under a new name and becomes the open presentatio
   await page.keyboard.press("Control+s");
   // The queued edit/save can still show the preceding save's status.
   await expect.poll(() => page.evaluate(() => window.__writes.length)).toBe(2);
-  await expect(page.locator("#save-status")).toHaveText("Saved to Puter");
+  await expect(page.locator("#save-status")).toHaveText("Saved to Everything");
   const later = await page.evaluate(() => window.__writes);
   expect(later).toHaveLength(2);
   expect(later[1].path).toBe(writes[0].path);
@@ -12479,7 +12479,7 @@ test("a copy is saved to Puter under a new name and becomes the open presentatio
         Array.from(
           new Uint8Array(
             await (
-              await puter.fs.read(window.__writes.at(-1).path)
+              await everything.fs.read(window.__writes.at(-1).path)
             ).arrayBuffer(),
           ),
         ),
@@ -13183,14 +13183,14 @@ test("presentations open where crypto.randomUUID is unavailable", async ({
 test("a copy saved under a name ending in .pptx keeps one extension", async ({
   page,
 }) => {
-  await mockPuter(page, { signedIn: true });
+  await mockEverything(page, { signedIn: true });
   await page.goto("/#/home");
   await page
     .getByRole("button", { name: "The big idea A clear, considered story" })
     .click();
   await openFileMenu(page);
   await page
-    .getByRole("menuitem", { name: "Save a copy to Puter", exact: true })
+    .getByRole("menuitem", { name: "Save a copy to Everything", exact: true })
     .click();
   const dialog = page.getByRole("dialog", { name: "Save a copy" });
   await dialog
@@ -14411,22 +14411,22 @@ test("the ribbon's tab strip does not scroll vertically", async ({ page }) => {
 test("the library lists a rename that finishes after leaving the editor", async ({
   page,
 }) => {
-  await mockPuter(page, { signedIn: true });
+  await mockEverything(page, { signedIn: true });
   await page.goto("/#/home");
   await page
     .getByRole("button", { name: "The big idea A clear, considered story" })
     .click();
   await page.keyboard.press("Control+s");
-  await expect(page.locator("#save-status")).toHaveText("Saved to Puter");
+  await expect(page.locator("#save-status")).toHaveText("Saved to Everything");
   // The cloud takes a moment to rename; the library is opened meanwhile,
   // and lists its files again once the rename has gone through.
   await page.evaluate(() => {
-    const rename = puter.fs.rename;
-    puter.fs.rename = (...args) =>
+    const rename = everything.fs.rename;
+    everything.fs.rename = (...args) =>
       new Promise((resolve) => setTimeout(() => resolve(rename(...args)), 800));
-    const readdir = puter.fs.readdir;
+    const readdir = everything.fs.readdir;
     window.__listings = 0;
-    puter.fs.readdir = (...args) => {
+    everything.fs.readdir = (...args) => {
       window.__listings++;
       return readdir(...args);
     };
@@ -14479,7 +14479,7 @@ test("the library opens as a guest while the account lookup hangs", async ({
   page,
 }) => {
   test.slow();
-  await mockPuter(page, { signedIn: true, delayAuth: true });
+  await mockEverything(page, { signedIn: true, delayAuth: true });
   await page.goto("/#/home");
   await expect(
     page.getByRole("heading", { name: "Good ideas deserve a stage." }),
@@ -14919,7 +14919,7 @@ test("unavailable device storage is reported once, in plain words", async ({
     }),
   );
   const warning =
-    "Device storage is unavailable. Save to Puter or download a copy to keep your work.";
+    "Device storage is unavailable. Save to Everything or download a copy to keep your work.";
   await page
     .getByRole("button", { name: "The big idea A clear, considered story" })
     .click();
@@ -16446,7 +16446,7 @@ test("the save status is announced only when it changes", async ({ page }) => {
 test("the account button is named after the signed-in account", async ({
   page,
 }) => {
-  await mockPuter(page, { signedIn: true });
+  await mockEverything(page, { signedIn: true });
   await page.goto("/#/home");
   const account = page.getByRole("button", { name: "Account and settings" });
   await expect(account).toContainText("test-user");
@@ -16522,10 +16522,10 @@ test("touch screens get larger targets for slide options and the find bar", asyn
 test("a library row's name is readable in full from its tooltip", async ({
   page,
 }) => {
-  await mockPuter(page, { signedIn: true });
+  await mockEverything(page, { signedIn: true });
   await page.goto("/#/home");
   await page.evaluate(async () => {
-    await puter.fs.write(
+    await everything.fs.write(
       "Presentations/A rather long presentation name that runs past the row.pptx",
       new Blob(["x"]),
       {},
@@ -17702,17 +17702,17 @@ test("an object its selected group carries is left to the group", async ({
 test("a sign-in that comes to nothing still lets the library load", async ({
   page,
 }) => {
-  await mockPuter(page, { delayAuth: true });
+  await mockEverything(page, { delayAuth: true });
   await page.goto("/#/home");
   await expect(
     page.getByRole("heading", { name: "Good ideas deserve a stage." }),
   ).toBeVisible();
   await page.evaluate(() => {
-    puter.auth.signIn = () =>
+    everything.auth.signIn = () =>
       Promise.reject({ error: "auth_window_closed", msg: "closed" });
   });
   await page
-    .getByRole("button", { name: "Connect Puter", exact: true })
+    .getByRole("button", { name: "Connect Everything", exact: true })
     .click();
   await page.evaluate(() => window.__releaseAuth());
   await expect(page.locator(".library")).not.toContainText("Loading", {
@@ -17722,7 +17722,7 @@ test("a sign-in that comes to nothing still lets the library load", async ({
     "Your next story starts here",
   );
   await expect(
-    page.getByRole("button", { name: "Connect Puter", exact: true }),
+    page.getByRole("button", { name: "Connect Everything", exact: true }),
   ).toBeVisible();
 });
 

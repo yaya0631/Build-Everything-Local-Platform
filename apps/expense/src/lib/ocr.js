@@ -1,5 +1,5 @@
 /**
- * Receipt OCR through Puter AI. The vision model gets the image and a strict
+ * Receipt OCR through Everything AI. The vision model gets the image and a strict
  * JSON contract; the response is parsed defensively because models wrap
  * JSON in prose or code fences. Falls back to plain img2txt plus a text
  * extraction pass when the vision call fails.
@@ -134,10 +134,10 @@ function messageText(res) {
 }
 
 /**
- * Run OCR on a receipt image. `sdk` is the puter object (injected for tests).
+ * Run OCR on a receipt image. `sdk` is the everything object (injected for tests).
  * Resolves to { result, source, rawText } where source is 'vision' or 'ocr'.
  */
-export async function runReceiptOcr(file, { categories, baseCurrency, model = DEFAULT_OCR_MODEL, sdk = globalThis.puter, now = new Date() } = {}) {
+export async function runReceiptOcr(file, { categories, baseCurrency, model = DEFAULT_OCR_MODEL, sdk = globalThis.everything, now = new Date() } = {}) {
   const prompt = buildOcrPrompt({ categories, baseCurrency });
   let lastError = null;
   try {

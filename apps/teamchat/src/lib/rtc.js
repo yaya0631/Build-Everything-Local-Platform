@@ -1,7 +1,7 @@
 /**
- * MediaLink: media tracks layered onto a Puter Peer connection.
+ * MediaLink: media tracks layered onto an Everything Peer connection.
  *
- * puter.peer.connect() / serve() give us a WebRTC data channel with the
+ * everything.peer.connect() / serve() give us a WebRTC data channel with the
  * signalling and TURN relays taken care of. A huddle needs audio (and, when
  * someone turns it on, a camera or a screen) on the same connection, and
  * the library leaves the underlying RTCPeerConnection open for exactly
@@ -10,7 +10,7 @@
  * that is already open (the "perfect negotiation" pattern, with one side
  * polite so simultaneous offers settle).
  *
- * It also watches the transport. The Puter connection reports `close` only
+ * It also watches the transport. The Everything connection reports `close` only
  * when its data channel closes, and a data channel does not close when the
  * network path under it dies; it just stops delivering. So a link whose ICE
  * has failed (a network switch, sleep and wake, a relay allocation lapsing)
@@ -25,7 +25,7 @@
  *   'lost'                   {}           the transport is gone
  *   'restored'               {}           it came back on its own after 'lost'
  *
- * Adapted from Puter Meetings' rtc.js.
+ * Adapted from Everything Meetings' rtc.js.
  */
 
 /** Camera encoding for a huddle with `peerCount` others: a mesh sends every stream to everyone, so cap the upload. */
@@ -67,7 +67,7 @@ export class MediaLink extends EventTarget {
 
   /**
    * @param {object} opts
-   * @param {object} opts.conn   a PuterPeerConnection exposing `.peerconnection`
+   * @param {object} opts.conn   a EverythingPeerConnection exposing `.peerconnection`
    * @param {boolean} opts.polite  which side yields on offer glare (must differ per side)
    * @param {(payload: object) => void} opts.sendSignal  carries { sdp } / { candidate } to the peer
    */
@@ -76,7 +76,7 @@ export class MediaLink extends EventTarget {
     this.polite = !!polite;
     this.#sendSignal = sendSignal;
     this.pc = conn?.peerconnection;
-    if (!this.pc) throw new Error('This Puter connection does not expose its peer connection; media cannot be added to it.');
+    if (!this.pc) throw new Error('This Everything connection does not expose its peer connection; media cannot be added to it.');
     this.#listen(this.pc, 'negotiationneeded', () => this.#negotiate());
     this.#listen(this.pc, 'icecandidate', (e) => this.#sendSignal({ candidate: e.candidate ? candidateJson(e.candidate) : null }));
     this.#listen(this.pc, 'track', (e) => this.#onTrack(e));

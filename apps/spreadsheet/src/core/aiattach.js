@@ -4,7 +4,7 @@
  * model reads it by: an image, a document (PDF), or text. What can be attached, and how much of it, is decided
  * here; reading a file and fitting an image to what the model takes is the page's (ui/aiattachments.js).
  *
- * The limits follow Puter's Builder, whose assistant takes the same attachments to the same model: the vision API
+ * The limits follow Everything's Builder, whose assistant takes the same attachments to the same model: the vision API
  * refuses an image over 5 MB or 8000 px and reads a PDF of at most 100 pages, and a refused block would fail every
  * later request of the chat it sat in.
  */
@@ -146,7 +146,7 @@ export function attachmentsTooLarge(attachments) {
   return null;
 }
 
-/** An image or PDF as a content block (the shape Puter passes to the model: Anthropic's). */
+/** An image or PDF as a content block (the shape Everything passes to the model: Anthropic's). */
 export const imageBlock = (mediaType, data) => ({ type: 'image', source: { type: 'base64', media_type: mediaType, data } });
 export const pdfBlock = (data) => ({ type: 'document', source: { type: 'base64', media_type: 'application/pdf', data } });
 

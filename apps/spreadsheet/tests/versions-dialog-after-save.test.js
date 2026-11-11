@@ -3,7 +3,7 @@ import { afterEach, beforeAll, beforeEach, expect, it, vi } from 'vitest';
 import { Doc } from '../src/lib/doc.js';
 import { openVersionHistory } from '../src/ui/versions.js';
 import { closeAllModals } from '../src/ui/modal.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 import { memoryStorage } from './helpers/memory-storage.js';
 import { workbookToXlsx } from '../src/core/io.js';
 import { Workbook } from '../src/core/workbook.js';
@@ -14,7 +14,7 @@ import { Workbook } from '../src/core/workbook.js';
 let doc;
 beforeAll(async () => { await workbookToXlsx(new Workbook()); });
 beforeEach(() => {
-  installMockPuter();
+  installMockEverything();
   vi.stubGlobal('localStorage', memoryStorage());
   vi.stubGlobal('matchMedia', () => ({ matches: true }));
   document.body.innerHTML = '<div id="app"></div>';
@@ -24,7 +24,7 @@ afterEach(() => {
   doc?.destroy();
   doc = null;
   vi.unstubAllGlobals();
-  delete globalThis.puter;
+  delete globalThis.everything;
   document.body.replaceChildren();
 });
 

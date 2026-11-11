@@ -96,7 +96,7 @@ it.each([null, 0, -35])('retains %s rotation and category intervals in native XL
   expect(cat.getElementsByTagNameNS('*', 'tickLblSkip')[0].getAttribute('val')).toBe('2');
   expect(cat.getElementsByTagNameNS('*', 'bodyPr')[0].getAttribute('rot')).toBe(angle == null ? null : String(angle * 60000));
   const file = X.CFB.find(zip, '/xl/workbook.xml');
-  file.content = new TextEncoder().encode(part(zip, '/xl/workbook.xml').replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  file.content = new TextEncoder().encode(part(zip, '/xl/workbook.xml').replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   file.size = file.content.length;
   const back = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'native.xlsx');
   expect(back.sheets[0].charts[0].appearance).toMatchObject({ xRotation: chart.appearance.xRotation,
@@ -124,7 +124,7 @@ it.each([-60000000, -60000001])('imports Excel rotation sentinel %s as automatic
   // into the file, since Excel must be able to lay out resized charts again.
   expect(axis.getElementsByTagNameNS('*', 'bodyPr')[0].hasAttribute('rot')).toBe(false);
   const file = X.CFB.find(zip, '/xl/workbook.xml');
-  file.content = new TextEncoder().encode(part(zip, '/xl/workbook.xml').replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  file.content = new TextEncoder().encode(part(zip, '/xl/workbook.xml').replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   file.size = file.content.length;
   const back = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'native.xlsx');
   expect(back.sheets[0].charts[0].appearance).toMatchObject({ xRotation: 0, xRotationAuto: true });
@@ -152,7 +152,7 @@ it.each([135, -135, 180, -180, 225, -225, 270, -270, 360, -360, 450])('retains f
   const cat = doc(part(zip, '/xl/charts/chart1_1.xml')).getElementsByTagNameNS('*', 'catAx')[0];
   expect(cat.getElementsByTagNameNS('*', 'bodyPr')[0].getAttribute('rot')).toBe(String(angle * 60000));
   const book = X.CFB.find(zip, '/xl/workbook.xml');
-  book.content = new TextEncoder().encode(part(zip, '/xl/workbook.xml').replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')); book.size = book.content.length;
+  book.content = new TextEncoder().encode(part(zip, '/xl/workbook.xml').replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')); book.size = book.content.length;
   const back = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'native.xlsx');
   expect(back.sheets[0].charts[0].appearance).toMatchObject({ xRotation: angle, xRotationAuto: false });
   const copy = wb.duplicateChart(sheet.id, chart.id);

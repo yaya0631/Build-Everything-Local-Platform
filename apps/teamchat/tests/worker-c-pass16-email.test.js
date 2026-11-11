@@ -18,7 +18,7 @@ beforeAll(async () => {
     owner: { uuid: 'u-dev-0000', username: 'dev' },
     loadWorker: () => import('../worker/email.js'),
   });
-  globalThis.me.puter.email = { send: async (message) => { sends.push(message); return {}; } };
+  globalThis.me.everything.email = { send: async (message) => { sends.push(message); return {}; } };
 });
 
 beforeEach(() => {

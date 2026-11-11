@@ -1,6 +1,6 @@
 /**
  * End-to-end style tests of the agent workspace in jsdom: the real app,
- * backend and replica over the dev mock of the Puter SDK.
+ * backend and replica over the dev mock of the Everything SDK.
  */
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import axe from 'axe-core';
@@ -30,10 +30,10 @@ async function go(hash) {
 
 beforeAll(async () => {
   localStorage.clear();
-  await import('../dev/mock-puter.js');
+  await import('../dev/mock-everything.js');
   ({ app } = await import('../src/app.js'));
   ({ mountShell } = await import('../src/views/shell.js'));
-  const { currentUser } = await import('../src/client/puter.js');
+  const { currentUser } = await import('../src/client/everything.js');
   document.body.append(root);
   app.user = await currentUser();
   await app.loadDoc();
@@ -62,7 +62,7 @@ describe('agent workspace', () => {
     const labels = [...root.querySelectorAll('.rail-item')].map((a) => a.getAttribute('aria-label'));
     expect(labels).toContain('Views');
     expect(labels).toContain('Source code on GitHub (opens in a new tab)');
-    expect(root.querySelector('.rail-github').getAttribute('href')).toBe('https://github.com/heyputer/everything');
+    expect(root.querySelector('.rail-github').getAttribute('href')).toBe('https://github.com/yaya0631/Build-Everything-Local-Platform');
   });
 
   it('lists tickets in a view with counts', async () => {

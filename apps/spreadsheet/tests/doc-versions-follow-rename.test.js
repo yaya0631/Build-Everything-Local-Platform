@@ -1,11 +1,11 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { Doc } from '../src/lib/doc.js';
 import { listVersions, saveVersion } from '../src/lib/versions.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 
 let mock;
-beforeEach(() => { mock = installMockPuter(); });
-afterEach(() => { delete globalThis.puter; vi.restoreAllMocks(); });
+beforeEach(() => { mock = installMockEverything(); });
+afterEach(() => { delete globalThis.everything; vi.restoreAllMocks(); });
 
 // The version folder used to move in the background: a save queued right after the rename
 // wrote a fresh snapshot under the new name first, and the old history was left behind.
@@ -13,8 +13,8 @@ it('has the history under the new name by the time rename resolves', async () =>
   const doc = new Doc({ name: 'Old', path: 'Spreadsheets/Old.xlsx' });
   await saveVersion('Spreadsheets/Old.xlsx', new Blob(['v1']), 'first');
   expect(await listVersions('Spreadsheets/Old.xlsx')).toHaveLength(1);
-  const slowMove = puter.fs.rename;
-  puter.fs.rename = async (...args) => { await new Promise((r) => setTimeout(r, 30)); return slowMove.call(puter.fs, ...args); };
+  const slowMove = everything.fs.rename;
+  everything.fs.rename = async (...args) => { await new Promise((r) => setTimeout(r, 30)); return slowMove.call(everything.fs, ...args); };
   expect(await doc.rename('New')).toBeNull();
   expect(doc.path).toBe('Spreadsheets/New.xlsx');
   expect(await listVersions('Spreadsheets/New.xlsx')).toHaveLength(1);

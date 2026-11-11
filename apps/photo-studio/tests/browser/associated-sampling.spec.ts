@@ -4,10 +4,10 @@ import path from "node:path";
 import type { Backend } from "../../src/renderer/backend";
 
 test.beforeEach(async ({ page }) => {
-  await page.route("**/sdk/puter.js", (r) =>
+  await page.route("**/sdk/everything.js", (r) =>
     r.fulfill({
       contentType: "application/javascript",
-      body: "window.puter={};",
+      body: "window.everything={};",
     }),
   );
   await page.goto("/");

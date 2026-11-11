@@ -54,7 +54,7 @@ export class SyncManager {
     clearInterval(this.timer);
     const app = this.app;
     const f = app.file;
-    const cloud = f?.source === 'cloud' && f.path && typeof puter !== 'undefined';
+    const cloud = f?.source === 'cloud' && f.path && typeof everything !== 'undefined';
     this.base = null;
     this.path = cloud ? f.path : null;
     this.version = version;

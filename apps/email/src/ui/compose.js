@@ -4,7 +4,7 @@ import { openModal } from './modal.js';
 import { toast } from './toast.js';
 import { createEditor } from './editor.js';
 import {
-  PUTER_DOMAINS, ADDRESS_RE, parseAddresses, draftProblem, draftProblemField, buildMessage,
+  EVERYTHING_DOMAINS, ADDRESS_RE, parseAddresses, draftProblem, draftProblemField, buildMessage,
   safeFilename, withSignature, isSignatureOnly, MAX_ATTACHMENT_BYTES, mentionsAttachment,
 } from '../lib/compose.js';
 import { htmlToText, hasFormatting, messageHtml } from '../lib/richtext.js';
@@ -20,7 +20,7 @@ import { MOD } from './shortcuts.js';
  *   POST {APIOrigin}/email/send   content-type: message/rfc822
  *
  * The endpoint takes a whole RFC 822 message, enforces that `From:` is
- * <username>@puter.email — the one address this dialog sends as — and
+ * <username>@everything.email — the one address this dialog sends as — and
  * delivers to each To/Cc recipient: into the mailbox of anyone on that
  * domain, over SMTP for everyone else.
  *
@@ -40,7 +40,7 @@ import { MOD } from './shortcuts.js';
  *
  * Attachments are read into memory as bytes here and composed into a
  * multipart/mixed message at send time. Two sources, because this client
- * lives inside a cloud OS: the local device, and the user's Puter files.
+ * lives inside a cloud OS: the local device, and the user's Everything files.
  *
  * A half-written message used to exist only inside this modal: closing it,
  * reloading, or losing the tab lost the text with no way back. The dialog now
@@ -121,11 +121,11 @@ export const closeComposers = () => {
 };
 
 const deliver = async (message) => {
-  const response = await fetch(`${puter.APIOrigin}/email/send`, {
+  const response = await fetch(`${everything.APIOrigin}/email/send`, {
     method: 'POST',
     headers: {
       'content-type': 'message/rfc822',
-      authorization: `Bearer ${puter.authToken}`,
+      authorization: `Bearer ${everything.authToken}`,
     },
     body: message,
   });
@@ -171,9 +171,9 @@ const COLLAPSE_OVER = 4;
 
 const requestMailWrite = (mailPath) => {
   const permission = `fs:${mailPath}:write`;
-  return puter.perms?.request
-    ? puter.perms.request(permission)
-    : puter.ui.requestPermission({ permission });
+  return everything.perms?.request
+    ? everything.perms.request(permission)
+    : everything.ui.requestPermission({ permission });
 };
 
 /**
@@ -221,7 +221,7 @@ export function openCompose({
   // which a default parameter does not cover, so it is normalised here rather
   // than left to throw on the first property read.
   const prefill = given ?? {};
-  const sendingDomain = PUTER_DOMAINS[0];
+  const sendingDomain = EVERYTHING_DOMAINS[0];
   const fromAddress = `${username}@${sendingDomain}`;
   // A resumed draft wins over a prefill: Reply always starts a new draft,
   // and the Compose pill continues the newest one.
@@ -1064,7 +1064,7 @@ export function openCompose({
   };
 
   // `read` is a thunk so a large file is only pulled into memory once, and
-  // the same code covers a local File and a Puter FSItem.
+  // the same code covers a local File and an Everything FSItem.
   const attach = ({ filename, type, read, size }) => {
     if (closed || sending || sent || discarded) return;
     if (restoringFiles) { setStatus('Wait for draft attachments to load.', 'error'); return; }
@@ -1120,13 +1120,13 @@ export function openCompose({
   });
 
   // Inside a cloud OS the other obvious source is the user's own files.
-  const puterBtn = window.puter?.ui?.showOpenFilePicker && el('button.icon-btn', {
+  const everythingBtn = window.everything?.ui?.showOpenFilePicker && el('button.icon-btn', {
     type: 'button', html: icon('folder', 18),
-    'aria-label': 'Attach files from your Puter files', title: 'Attach from Puter',
+    'aria-label': 'Attach files from your Everything files', title: 'Attach from Everything',
     onclick: async () => {
       let picked;
       try {
-        picked = await puter.ui.showOpenFilePicker({ multiple: true });
+        picked = await everything.ui.showOpenFilePicker({ multiple: true });
       } catch {
         return; // the picker throws when it is dismissed
       }
@@ -1296,7 +1296,7 @@ export function openCompose({
     // slide underneath the controls. Errors retain their own full-width row.
     el('div.compose-footer', {},
       status,
-      el('div.compose-actions', {}, sendBtn, attachBtn, puterBtn, fileInput, discardBtn)),
+      el('div.compose-actions', {}, sendBtn, attachBtn, everythingBtn, fileInput, discardBtn)),
     el('div.compose-drop', { 'aria-hidden': 'true' },
       el('span.compose-drop-inner', {},
         el('span', { html: icon('paperclip', 20) }), 'Drop files to attach')),
@@ -1350,7 +1350,7 @@ export function openCompose({
      * stored, and a draft the store refused to keep.
      *
      * It says so and lets the next close through, rather than asking with
-     * `window.confirm`. A Puter app runs in a cross-origin iframe, where
+     * `window.confirm`. An Everything app runs in a cross-origin iframe, where
      * Chrome suppresses the native dialogs and answers `false` without showing
      * anything -- which here meant "veto the close": Escape, the scrim and the
      * ✕ all did nothing and the dialog could not be closed at all.
@@ -1531,7 +1531,7 @@ export function openCompose({
       // done, and nothing here can undo it.
       try {
         const filed = await fileSentCopy({
-          fs: puter.fs, mailPath, raw: message, subject: outgoing.subject, date: sentAt,
+          fs: everything.fs, mailPath, raw: message, subject: outgoing.subject, date: sentAt,
         });
         // Told where, so the shell knows the file that has just appeared in
         // Sent is its own rather than another device's.

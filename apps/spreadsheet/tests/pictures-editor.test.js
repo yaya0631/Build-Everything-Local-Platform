@@ -3,7 +3,7 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { editorView } from '../src/views/editor.js';
 import { Doc } from '../src/lib/doc.js';
 import { session } from '../src/lib/session.js';
-import * as P from '../src/lib/puter.js';
+import * as P from '../src/lib/everything.js';
 import { closeMenu } from '../src/ui/menu.js';
 
 const PNG = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
@@ -56,11 +56,11 @@ function select(objectId) {
   node.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }));
 }
 
-it('places a picture from Puter into the active cell, as one undoable step that keeps the cell format', async () => {
+it('places a picture from Everything into the active cell, as one undoable step that keeps the cell format', async () => {
   const { wb, id } = await setup();
   wb.applyStyle(id, { r1: 3, c1: 2, r2: 3, c2: 2 }, { bg: '#ffeeaa' }); wb.clearHistory();
   view.goTo('Sheet1!C4');
-  view.run('insertImagePuter', 'cell'); await settle();
+  view.run('insertImageEverything', 'cell'); await settle();
   readers[0].result = SRC; readers[0].onload(); await settle();
   expect(wb.getCell(id, 3, 2)).toMatchObject({ v: { image: SRC, fit: 'contain', alt: 'Team logo' }, s: { bg: '#ffeeaa' } });
   expect(wb.sheet(id).charts).toHaveLength(0);

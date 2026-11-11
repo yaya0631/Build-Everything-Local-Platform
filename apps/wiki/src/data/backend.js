@@ -8,8 +8,8 @@
  *   remove(path)                      (missing files are not an error)
  *   list(dir)   -> [{ name, isDir, modified }]
  *
- * With Puter, relative paths resolve inside the app's own folder in the
- * user's cloud, so every page is a file the user owns. puter.kv is never
+ * With Everything, relative paths resolve inside the app's own folder in the
+ * user's cloud, so every page is a file the user owns. everything.kv is never
  * used for page content or files; it only holds small settings and lists.
  */
 
@@ -21,17 +21,17 @@ export function isMissing(err) {
 
 const modifiedOf = (item) => {
   const m = Number(item?.modified ?? item?.mtime ?? 0);
-  // Puter reports seconds; keep milliseconds everywhere.
+  // Everything reports seconds; keep milliseconds everywhere.
   return m && m < 1e12 ? m * 1000 : m;
 };
 
-export function puterBackend(puter, root = 'wiki') {
+export function everythingBackend(everything, root = 'wiki') {
   const p = (path) => `${root}/${path}`;
   return {
-    kind: 'puter',
+    kind: 'everything',
     async read(path) {
       try {
-        const blob = await puter.fs.read(p(path));
+        const blob = await everything.fs.read(p(path));
         return { bytes: new Uint8Array(await blob.arrayBuffer()), modified: null };
       } catch (err) {
         if (isMissing(err)) return null;
@@ -40,19 +40,19 @@ export function puterBackend(puter, root = 'wiki') {
     },
     async readBlob(path) {
       try {
-        return await puter.fs.read(p(path));
+        return await everything.fs.read(p(path));
       } catch (err) {
         if (isMissing(err)) return null;
         throw err;
       }
     },
     async write(path, data) {
-      const item = await puter.fs.write(p(path), data instanceof Blob ? data : new Blob([data]), { overwrite: true, dedupeName: false, createMissingParents: true });
+      const item = await everything.fs.write(p(path), data instanceof Blob ? data : new Blob([data]), { overwrite: true, dedupeName: false, createMissingParents: true });
       return { modified: modifiedOf(item) || Date.now(), size: item?.size ?? null };
     },
     async stat(path) {
       try {
-        const item = await puter.fs.stat(p(path));
+        const item = await everything.fs.stat(p(path));
         return { modified: modifiedOf(item), size: item.size };
       } catch (err) {
         if (isMissing(err)) return null;
@@ -61,25 +61,25 @@ export function puterBackend(puter, root = 'wiki') {
     },
     async remove(path) {
       try {
-        await puter.fs.delete(p(path));
+        await everything.fs.delete(p(path));
       } catch (err) {
         if (!isMissing(err)) throw err;
       }
     },
     async list(dir) {
       try {
-        const items = await puter.fs.readdir(p(dir));
+        const items = await everything.fs.readdir(p(dir));
         return items.map((it) => ({ name: it.name, isDir: Boolean(it.is_dir ?? it.isDir), modified: modifiedOf(it) }));
       } catch (err) {
         if (isMissing(err)) return [];
         throw err;
       }
     },
-    /** Watches the folder for writes from other devices, when Puter supports it. */
+    /** Watches the folder for writes from other devices, when Everything supports it. */
     async watch(onChange) {
-      if (!puter.events?.onLocal) return null;
+      if (!everything.events?.onLocal) return null;
       try {
-        const sub = await puter.events.onLocal(`fs:${root}`, ({ event }) => onChange(event), { onError: () => {} });
+        const sub = await everything.events.onLocal(`fs:${root}`, ({ event }) => onChange(event), { onError: () => {} });
         return () => sub.off();
       } catch {
         return null;
@@ -143,7 +143,7 @@ export function memoryBackend() {
 
 /**
  * IndexedDB backend for the development sandbox (?local), so the app can
- * be tried without a Puter account. Development builds only.
+ * be tried without an Everything account. Development builds only.
  */
 export async function indexedDbBackend(name = 'wiki-local') {
   const db = await new Promise((resolve, reject) => {
@@ -197,14 +197,14 @@ export async function indexedDbBackend(name = 'wiki-local') {
   };
 }
 
-/** Small structured settings: puter.kv when signed in, localStorage otherwise. */
-export function puterKv(puter) {
+/** Small structured settings: everything.kv when signed in, localStorage otherwise. */
+export function everythingKv(everything) {
   return {
     async get(key) {
-      return puter.kv.get(key);
+      return everything.kv.get(key);
     },
     async set(key, value) {
-      return puter.kv.set(key, value);
+      return everything.kv.set(key, value);
     },
   };
 }

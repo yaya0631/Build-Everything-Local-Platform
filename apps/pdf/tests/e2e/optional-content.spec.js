@@ -66,10 +66,10 @@ for (const membership of [false, true]) {
   test(`hidden layer annotations have no active controls or comments (membership=${membership})`, async ({
     page,
   }) => {
-    await page.route('**/sdk/puter.js', (route) =>
+    await page.route('**/sdk/everything.js', (route) =>
       route.fulfill({
         contentType: 'application/javascript',
-        body: `window.puter = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username: 'test-user'}) }, fs: { readdir: async () => [] }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`,
+        body: `window.everything = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username: 'test-user'}) }, fs: { readdir: async () => [] }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`,
       }),
     );
     await page.goto('/#library');
@@ -159,10 +159,10 @@ for (const membership of [false, true]) {
 }
 
 test('a layer hidden in the Layers panel stays hidden after an edit', async ({ page }) => {
-  await page.route('**/sdk/puter.js', (route) =>
+  await page.route('**/sdk/everything.js', (route) =>
     route.fulfill({
       contentType: 'application/javascript',
-      body: `window.puter = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username: 'test-user'}) }, fs: { readdir: async () => [] }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`,
+      body: `window.everything = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username: 'test-user'}) }, fs: { readdir: async () => [] }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`,
     }),
   );
   await page.goto('/#library');
@@ -196,10 +196,10 @@ test('a layer hidden in the Layers panel stays hidden after an edit', async ({ p
 });
 
 test('a layer switch keeps the focus when an Undo redraws the Layers panel', async ({ page }) => {
-  await page.route('**/sdk/puter.js', (route) =>
+  await page.route('**/sdk/everything.js', (route) =>
     route.fulfill({
       contentType: 'application/javascript',
-      body: `window.puter = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username: 'test-user'}) }, fs: { readdir: async () => [] }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`,
+      body: `window.everything = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username: 'test-user'}) }, fs: { readdir: async () => [] }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`,
     }),
   );
   await page.goto('/#library');
@@ -236,10 +236,10 @@ test('a layer switch keeps the focus when an Undo redraws the Layers panel', asy
 });
 
 test('a layer hidden in the Layers panel stays hidden in Organize pages', async ({ page }) => {
-  await page.route('**/sdk/puter.js', (route) =>
+  await page.route('**/sdk/everything.js', (route) =>
     route.fulfill({
       contentType: 'application/javascript',
-      body: `window.puter = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username: 'test-user'}) }, fs: { readdir: async () => [] }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`,
+      body: `window.everything = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username: 'test-user'}) }, fs: { readdir: async () => [] }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`,
     }),
   );
   // A page covered in black, all of it on one layer.

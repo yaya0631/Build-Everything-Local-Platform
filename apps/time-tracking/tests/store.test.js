@@ -6,14 +6,14 @@ import {
   INVOICE_LOCK_FIELDS, invoiceLocksOf,
 } from '../src/lib/store.js';
 import { sampleDataset, wipeSampleData } from '../src/lib/sample.js';
-import { createPuterMock } from './puter-mock.js';
+import { createEverythingMock } from './everything-mock.js';
 
 let store;
 let mock;
 
 beforeEach(async () => {
-  mock = createPuterMock();
-  globalThis.puter = mock;
+  mock = createEverythingMock();
+  globalThis.everything = mock;
   store = createStore();
   await store.init();
 });
@@ -834,7 +834,7 @@ describe('export / import / sample data', () => {
     const dump = await store.exportAll();
 
     const fresh = createStore();
-    globalThis.puter = createPuterMock();
+    globalThis.everything = createEverythingMock();
     await fresh.init();
     await fresh.importAll(dump);
     expect(fresh.clients).toHaveLength(1);
@@ -946,7 +946,7 @@ describe('export / import / sample data', () => {
     expect(await store.entriesBetween('2000-01-01', '2100-01-01')).toEqual([]);
     // The old month files are gone from disk too.
     for (const key of Object.keys(data.entries)) {
-      expect(globalThis.puter._files.has(`hourly-data/entries-${key}.json`)).toBe(false);
+      expect(globalThis.everything._files.has(`hourly-data/entries-${key}.json`)).toBe(false);
     }
   });
 });
@@ -1723,7 +1723,7 @@ describe('invoices', () => {
     const dump = await store.exportAll();
 
     const fresh = createStore();
-    globalThis.puter = createPuterMock();
+    globalThis.everything = createEverythingMock();
     await fresh.init();
     await fresh.importAll(dump);
     expect(fresh.invoices).toHaveLength(1);

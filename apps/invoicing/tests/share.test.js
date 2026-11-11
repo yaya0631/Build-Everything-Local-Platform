@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-/* The same stand-in for Puter that store.test.js uses. */
+/* The same stand-in for Everything that store.test.js uses. */
 const kv = new Map();
 const files = new Map();
-globalThis.puter = {
+globalThis.everything = {
   auth: { getUser: async () => ({ username: 'test' }) },
   kv: {
     get: async (k) => (kv.has(k) ? kv.get(k) : null),
@@ -74,15 +74,15 @@ describe('publishDoc', () => {
     const { publishDoc } = await shareLib();
 
     // The page write lands; recording the token on the document fails.
-    const write = puter.fs.write;
-    puter.fs.write = async (path, data) => {
+    const write = everything.fs.write;
+    everything.fs.write = async (path, data) => {
       if (path.includes('docs-2026')) throw new Error('connection dropped');
       return write(path, data);
     };
     try {
       await expect(publishDoc(store, store.doc('D1'), null)).rejects.toThrow();
     } finally {
-      puter.fs.write = write;
+      everything.fs.write = write;
     }
     // No live page may be left behind that the app can never take down:
     // without a recorded token, "Stop sharing" would never appear.
@@ -107,15 +107,15 @@ describe('publishDoc', () => {
     await store.init();
     const { publishDoc } = await shareLib();
 
-    const write = puter.fs.write;
-    puter.fs.write = async (path, data, opts) => {
+    const write = everything.fs.write;
+    everything.fs.write = async (path, data, opts) => {
       if (path.endsWith('.html')) throw new Error('connection dropped');
       return write(path, data, opts);
     };
     try {
       await expect(publishDoc(store, store.doc('D1'), null)).rejects.toThrow();
     } finally {
-      puter.fs.write = write;
+      everything.fs.write = write;
     }
     expect(store.doc('D1').shareToken).toBeUndefined();
     expect([...files.keys()].filter((p) => p.startsWith('invoicing-data/public/'))).toEqual([]);
@@ -129,12 +129,12 @@ describe('publishDoc', () => {
     const store = await freshStore();
     await store.init();
     const { republishIfShared } = await shareLib();
-    const write = puter.fs.write;
-    puter.fs.write = async () => { throw new Error('connection dropped'); };
+    const write = everything.fs.write;
+    everything.fs.write = async () => { throw new Error('connection dropped'); };
     try {
       await expect(republishIfShared(store, 'D1')).rejects.toThrow();
     } finally {
-      puter.fs.write = write;
+      everything.fs.write = write;
     }
     expect(store.doc('D1').shareToken).toBe('tok000000001');
     expect(files.get('invoicing-data/public/tok000000001.html')).toBe('old page');
@@ -160,9 +160,9 @@ describe('a document deleted while share work is in flight', () => {
     // live-only, so recording the token used to fall back to the pre-delete
     // copy and save it — lifting the document out of the trash, with a
     // public page nothing had recorded.
-    const write = puter.fs.write;
+    const write = everything.fs.write;
     let release = null;
-    puter.fs.write = async (path, data) => {
+    everything.fs.write = async (path, data) => {
       if (path.startsWith('invoicing-data/public/') && path.endsWith('.html')) {
         await new Promise((r) => { release = r; });
       }
@@ -176,7 +176,7 @@ describe('a document deleted while share work is in flight', () => {
       release();
       await expect(publishing).rejects.toThrow('no longer here');
     } finally {
-      puter.fs.write = write;
+      everything.fs.write = write;
     }
     expect(store.doc('D1')).toBeNull();
     expect(onDisk().deletedAt).toBeTruthy();
@@ -188,9 +188,9 @@ describe('a document deleted while share work is in flight', () => {
     const store = await seed({ shareToken: 'tok000000001' });
     files.set('invoicing-data/public/tok000000001.html', 'page');
     const { unpublishDoc } = await shareLib();
-    const remove = puter.fs.delete;
+    const remove = everything.fs.delete;
     let release = null;
-    puter.fs.delete = async (path, options) => {
+    everything.fs.delete = async (path, options) => {
       if (path === 'invoicing-data/public/tok000000001.html') await new Promise((r) => { release = r; });
       return remove(path, options);
     };
@@ -201,7 +201,7 @@ describe('a document deleted while share work is in flight', () => {
       release();
       await taking;
     } finally {
-      puter.fs.delete = remove;
+      everything.fs.delete = remove;
     }
     expect(store.doc('D1')).toBeNull();
     expect(onDisk().deletedAt).toBeTruthy();
@@ -230,8 +230,8 @@ describe('share work on one document, one piece at a time', () => {
     const { republishIfShared, unpublishDoc } = await shareLib();
     await republishIfShared(store, 'D1');
     await store.setShareAttachments('D1', false);
-    const remove = puter.fs.delete;
-    puter.fs.delete = async (path, options) => {
+    const remove = everything.fs.delete;
+    everything.fs.delete = async (path, options) => {
       if (path === 'invoicing-data/public/tok000000001') throw new Error('deletion denied');
       return remove(path, options);
     };
@@ -242,7 +242,7 @@ describe('share work on one document, one piece at a time', () => {
       expect(store.doc('D1').shareToken).toBe('tok000000001');
       expect(publicFiles()).toContain('invoicing-data/public/tok000000001/a1-timesheet.pdf');
     } finally {
-      puter.fs.delete = remove;
+      everything.fs.delete = remove;
     }
     await run();
     expect(publicFiles()).not.toContain('invoicing-data/public/tok000000001/a1-timesheet.pdf');
@@ -252,8 +252,8 @@ describe('share work on one document, one piece at a time', () => {
   it('can unpublish a document whose attachment folder is already absent', async () => {
     const store = await seed();
     const { unpublishDoc } = await shareLib();
-    const remove = puter.fs.delete;
-    puter.fs.delete = async (path, options) => {
+    const remove = everything.fs.delete;
+    everything.fs.delete = async (path, options) => {
       if (path === 'invoicing-data/public/tok000000001') {
         throw Object.assign(new Error('not found'), { code: 'subject_does_not_exist' });
       }
@@ -263,7 +263,7 @@ describe('share work on one document, one piece at a time', () => {
       await unpublishDoc(store, store.doc('D1'));
       expect(store.doc('D1').shareToken).toBeUndefined();
     } finally {
-      puter.fs.delete = remove;
+      everything.fs.delete = remove;
     }
   });
   // The page write is what the tests hold back; the publish reaches it only
@@ -282,8 +282,8 @@ describe('share work on one document, one piece at a time', () => {
     const store = await seed();
     const { republishIfShared, unpublishDoc } = await shareLib();
     const held = [];
-    const write = puter.fs.write;
-    puter.fs.write = (path, data, opts) => (path.endsWith('.html')
+    const write = everything.fs.write;
+    everything.fs.write = (path, data, opts) => (path.endsWith('.html')
       ? new Promise((resolve) => { held.push(() => resolve(write(path, data, opts))); })
       : write(path, data, opts));
     try {
@@ -295,7 +295,7 @@ describe('share work on one document, one piece at a time', () => {
       await refresh;
       await takedown;
     } finally {
-      puter.fs.write = write;
+      everything.fs.write = write;
     }
     expect(store.doc('D1').shareToken).toBeUndefined();
     expect(publicFiles()).toEqual([]);
@@ -324,8 +324,8 @@ describe('share work on one document, one piece at a time', () => {
     await store.init();
     const { publishDoc } = await shareLib();
     const held = [];
-    const write = puter.fs.write;
-    puter.fs.write = (path, data, opts) => (path.endsWith('.html')
+    const write = everything.fs.write;
+    everything.fs.write = (path, data, opts) => (path.endsWith('.html')
       ? new Promise((resolve) => { held.push(() => resolve(write(path, data, opts))); })
       : write(path, data, opts));
     try {
@@ -336,7 +336,7 @@ describe('share work on one document, one piece at a time', () => {
       held.splice(0).forEach((go) => go());
       await publishing;
     } finally {
-      puter.fs.write = write;
+      everything.fs.write = write;
     }
     expect(store.doc('D1').shareToken).toBeTruthy();
     expect(store.doc('D1').reference).toBe('PO-77');

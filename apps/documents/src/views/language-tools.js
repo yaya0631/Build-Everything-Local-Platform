@@ -1,12 +1,12 @@
 /**
  * Language: mark text's proofing language (§17.3.2.20 lang) or exclude it from proofing
  * (§17.3.2.21 noProof), set the document's default language, and translate the selection or the
- * whole document with Puter's AI into a pane (with Insert) or a new document.
+ * whole document with Everything's AI into a pane (with Insert) or a new document.
  */
 import { el, listboxKeys } from '../ui/dom.js';
 import { openModal } from '../ui/modal.js';
 import { toast } from '../ui/toast.js';
-import * as P from '../lib/puter.js';
+import * as P from '../lib/everything.js';
 import { translateParagraphs } from '../lib/proofing-ai.js';
 import { readableText, insertableText } from '../lib/ai.js';
 import { LANGUAGES, languageName, englishLanguageName, sidePane, button, hint, preference } from './review-ui.js';
@@ -72,7 +72,7 @@ export function createTranslatePane({ editor, pkg, error, openDocument, document
   pane.body.append(
     el('label.field', {}, el('span.field-label', {}, 'Translate into'), target),
     source, el('div.rv-actions', {}, translate, wholeDocument), status, output, el('div.rv-actions', {}, insert, copy),
-    hint('Translation uses Puter AI: the selected text, or the whole document, is sent when you choose Translate.'));
+    hint('Translation uses Everything AI: the selected text, or the whole document, is sent when you choose Translate.'));
 
   const selection = () => {
     const engine = editor(); if (!engine) return null;
@@ -85,7 +85,7 @@ export function createTranslatePane({ editor, pkg, error, openDocument, document
     source.textContent = chosen ? `Selection: “${chosen.text.slice(0, 120)}${chosen.text.length > 120 ? '…' : ''}”` : 'Select text to translate it here, or translate the whole document into a new one.';
     translate.disabled = !chosen || !P.canUseAi() || !!busy;
     wholeDocument.disabled = !P.canUseAi() || !!busy;
-    if (!P.canUseAi()) status.textContent = 'Translation needs Puter AI. Open this document in Puter to translate.';
+    if (!P.canUseAi()) status.textContent = 'Translation needs Everything AI. Open this document in Everything to translate.';
   }
   async function run() {
     const chosen = selection(); if (!chosen) return;

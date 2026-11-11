@@ -21,7 +21,7 @@ import { formatDate, diffDays, formatTime } from '../core/dates.js';
 import { billStatus, trustBalance } from '../core/finance.js';
 import { APP_NAME, allowUnload, hasUnsavedEdits } from './viewhost.js';
 
-export const REPO_URL = 'https://github.com/heyputer/everything';
+export const REPO_URL = 'https://github.com/yaya0631/Build-Everything-Local-Platform';
 const RAIL_KEY = 'legal.rail';
 
 export const NAV = [
@@ -432,7 +432,7 @@ function openAccountMenu(anchor, onSignIn) {
         link('Source code on GitHub', 'github', { href: REPO_URL, target: '_blank', rel: 'noopener noreferrer', onClick: () => close() }),
       ];
       let footer = null;
-      if (app.demo) footer = link('Sign in with Puter', 'log-in', { onClick: () => (close(), onSignIn?.()) });
+      if (app.demo) footer = link('Sign in with Everything', 'log-in', { onClick: () => (close(), onSignIn?.()) });
       else if (canSignOut())
         footer = link('Sign out', 'log-out', {
           onClick: async () => {

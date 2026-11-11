@@ -4,10 +4,10 @@ import { readFile } from 'node:fs/promises';
 import { createCanvas } from '@napi-rs/canvas';
 import { addCompressiblePage, addMetadata } from '../fixtures/metadata.js';
 
-const PUTER_MOCK = `window.puter = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async () => ({}) }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
-async function mockPuter(page) {
-  await page.route('**/sdk/puter.js', (route) =>
-    route.fulfill({ contentType: 'application/javascript', body: PUTER_MOCK }),
+const EVERYTHING_MOCK = `window.everything = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async () => ({}) }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
+async function mockEverything(page) {
+  await page.route('**/sdk/everything.js', (route) =>
+    route.fulfill({ contentType: 'application/javascript', body: EVERYTHING_MOCK }),
   );
 }
 async function openPdf(page, bytes, pages) {
@@ -79,7 +79,7 @@ async function photoPdf({ separateImages = false } = {}) {
 test('Reduce file size shrinks the pictures, reports the sizes, and can be undone', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const original = await photoPdf();
   await openPdf(page, original, 2);
@@ -108,7 +108,7 @@ test('Reduce file size shrinks the pictures, reports the sizes, and can be undon
 });
 
 test('a compact PDF is left alone without a history entry', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([300, 300]).drawText('Just text', { x: 30, y: 200, size: 18 });
@@ -127,7 +127,7 @@ test('a compact PDF is left alone without a history entry', async ({ page }) => 
 test('reducing file size preserves newer XMP details through download, undo, and redo', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const source = await PDFDocument.create();
   addCompressiblePage(source);
@@ -165,7 +165,7 @@ test('reducing file size preserves newer XMP details through download, undo, and
 test('closing a document stops compression before encoding its remaining images', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await photoPdf({ separateImages: true }), 2);
   await page.evaluate(() => {
@@ -199,7 +199,7 @@ test('closing a document stops compression before encoding its remaining images'
 });
 
 test('reducing the size of a signed PDF asks first, as other edits do', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const { createSelfSignedId, signPdf, verifySignatures } =
     await import('../../src/core/digital-signature.js');

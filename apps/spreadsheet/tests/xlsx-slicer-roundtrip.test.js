@@ -25,7 +25,7 @@ function editPackage(bytes, edit = () => {}, removeMeta = false) {
   const zip = X.CFB.read(bytes, { type: 'array' });
   const get = path => new TextDecoder().decode(X.CFB.find(zip, path).content);
   const set = (path, xml) => X.CFB.utils.cfb_add(zip, path, new TextEncoder().encode(xml));
-  if (removeMeta) set('/xl/workbook.xml', get('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  if (removeMeta) set('/xl/workbook.xml', get('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   edit({ get, set });
   return new Uint8Array(X.CFB.write(zip, { type: 'array', fileType: 'zip' }));
 }
@@ -141,10 +141,10 @@ it('rejects an orphan native view rather than silently dropping it', async () =>
 
 it('avoids cache-name collisions with defined names and table names', async () => {
   const { wb, sheet } = make();
-  wb.names.push({ name: 'puterslicercache1', ref: 'Views!A1' });
-  wb.updateTable(sheet.id, sheet.tables[0].id, { name: 'PuterSlicerCache2' });
+  wb.names.push({ name: 'everythingslicercache1', ref: 'Views!A1' });
+  wb.updateTable(sheet.id, sheet.tables[0].id, { name: 'EverythingSlicerCache2' });
   const native = readXlsxSlicers(X.read(await bytes(wb), { type: 'array', bookFiles: true, cellStyles: true }));
-  expect(native.caches[0].name).toBe('PuterSlicerCache3');
+  expect(native.caches[0].name).toBe('EverythingSlicerCache3');
 });
 
 it('preserves native view/cache names independently of captions, header renames and private metadata', async () => {
@@ -165,11 +165,11 @@ it('preserves native view/cache names independently of captions, header renames 
 });
 it('reserves imported names before allocating earlier new views and shares their source cache', async () => {
   const { wb, sheet, owner, id } = make();
-  wb.updateChart(owner.id, id, { nativeName: 'PuterSlicer1', nativeCacheName: 'PuterSlicerCache1' });
+  wb.updateChart(owner.id, id, { nativeName: 'EverythingSlicer1', nativeCacheName: 'EverythingSlicerCache1' });
   wb.addChart(sheet.id, { ...wb.chartById(owner.id, id), nativeName: undefined, nativeCacheName: undefined });
   const native = readXlsxSlicers(X.read(await bytes(wb), { type: 'array', bookFiles: true, cellStyles: true }));
-  expect(native.views.map(v => [v.owner, v.name])).toEqual([[sheet.name, 'PuterSlicer2'], ['Views', 'PuterSlicer1']]);
-  expect(native.caches.map(c => c.name)).toEqual(['PuterSlicerCache1']);
+  expect(native.views.map(v => [v.owner, v.name])).toEqual([[sheet.name, 'EverythingSlicer2'], ['Views', 'EverythingSlicer1']]);
+  expect(native.caches.map(c => c.name)).toEqual(['EverythingSlicerCache1']);
 });
 it('retains distinct named caches for the same source rather than silently merging their identities', async () => {
   const { wb, owner, id } = make();
@@ -238,10 +238,10 @@ it('preserves an existing cache companion name and emits the required companion 
   const fresh = make(); expect((await inspect(fresh.wb)).caches).toHaveLength(1);
 });
 it('does not consume an unrelated #N/A name when allocating a new cache', async () => {
-  const { wb } = make(); wb.names.push({ name: 'PuterSlicerCache1', ref: '#N/A' });
+  const { wb } = make(); wb.names.push({ name: 'EverythingSlicerCache1', ref: '#N/A' });
   const book = X.read(await bytes(wb), { type: 'array', bookFiles: true, cellStyles: true });
-  expect(readXlsxSlicers(book).caches[0].name).toBe('PuterSlicerCache2');
-  expect(book.Workbook.Names.map(n => n.Name).sort()).toEqual(['PuterSlicerCache1', 'PuterSlicerCache2']);
+  expect(readXlsxSlicers(book).caches[0].name).toBe('EverythingSlicerCache2');
+  expect(book.Workbook.Names.map(n => n.Name).sort()).toEqual(['EverythingSlicerCache1', 'EverythingSlicerCache2']);
 });
 
 it('encodes SpreadsheetML slicer identities and captions without encoding plain DrawingML names', async () => {

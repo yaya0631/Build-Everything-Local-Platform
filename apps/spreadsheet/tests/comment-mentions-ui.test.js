@@ -5,7 +5,7 @@ import { Doc } from '../src/lib/doc.js';
 import { getThread, addComment } from '../src/core/comments.js';
 import { findMentions } from '../src/core/mentions.js';
 import { closeAllModals } from '../src/ui/modal.js';
-import * as P from '../src/lib/puter.js';
+import * as P from '../src/lib/everything.js';
 
 // A comment box lists people on @, the posted comment keeps whom it mentions and can assign the thread, the
 // people mentioned are offered a share and told by email, and the card shows the mentions and the assignment.
@@ -27,12 +27,12 @@ beforeEach(() => {
   Object.defineProperty(HTMLElement.prototype, 'clientWidth', { configurable: true, get: () => 800 });
   Object.defineProperty(HTMLElement.prototype, 'clientHeight', { configurable: true, get: () => 400 });
   vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({ measureText: (t) => ({ width: t.length * 7 }), font: '' });
-  // The email worker, as puter.workers.exec reaches it: every request is recorded and answered as sent.
+  // The email worker, as everything.workers.exec reaches it: every request is recorded and answered as sent.
   exec = vi.fn(async (url, init) => {
     const body = JSON.parse(init.body);
     return new Response(JSON.stringify({ ok: true, sent: body.recipients.length, failed: 0, results: body.recipients.map((r) => ({ email: r.email, status: 'sent' })) }));
   });
-  vi.stubGlobal('puter', { workers: { exec }, fs: { share() {}, getShares() {} }, auth: { isSignedIn: () => true } });
+  vi.stubGlobal('everything', { workers: { exec }, fs: { share() {}, getShares() {} }, auth: { isSignedIn: () => true } });
   vi.spyOn(P, 'shareAccess').mockResolvedValue([{ who: 'user', recipient: 'ana', label: 'ana', mode: 'read' }]);
   vi.spyOn(P, 'shareFile').mockResolvedValue({});
   document.body.innerHTML = '<div id="app"></div>';
@@ -91,7 +91,7 @@ it('mentions, assigns, shares with and emails the people named in a new comment'
   const bodies = exec.mock.calls.map(([url, init]) => [url, JSON.parse(init.body)]);
   expect(bodies.map(([url, b]) => [url, b.recipients.map((r) => r.email), !!b.assigned])).toEqual([
     ['http://spreadsheet-email.localhost:8443/mentions', ['kim@example.org'], false],
-    ['http://spreadsheet-email.localhost:8443/mentions', ['ana@puter.email'], true],
+    ['http://spreadsheet-email.localhost:8443/mentions', ['ana@everything.email'], true],
   ]);
   expect(bodies[0][1].link).toMatch(/#\/file\/uid-3\?range=Sheet1!B2$/);
   expect(bodies[0][1].comment.cell).toBe('Sheet1!B2');

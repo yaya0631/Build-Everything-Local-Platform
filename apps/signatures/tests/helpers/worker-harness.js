@@ -1,10 +1,10 @@
 /**
  * Test harness for the workers in src/workers (pattern borrowed from
- * calendar.localhost:8443): instantiates one the way the Puter workers runtime
+ * calendar.localhost:8443): instantiates one the way the Everything workers runtime
  * would, a `router` global collecting routes and a `me` global exposing the
- * owner's own Puter resources, and lets tests call its routes as plain HTTP,
+ * owner's own Everything resources, and lets tests call its routes as plain HTTP,
  * with or without a signed-in caller (`user`, which the runtime only
- * populates for puter.workers.exec() callers). Request/Response are small
+ * populates for everything.workers.exec() callers). Request/Response are small
  * local shims so the harness never depends on which fetch globals the test
  * environment ships.
  */
@@ -59,7 +59,7 @@ export class ResponseShim {
   }
 }
 
-/* ---- Fake puter.kv ------------------------------------------------------ */
+/* ---- Fake everything.kv ------------------------------------------------------ */
 
 export function makeKv(initial = {}) {
   const map = new Map(Object.entries(initial));
@@ -124,12 +124,12 @@ function matchRoute(routes, method, pathname) {
  * Run worker source (placeholders already substituted) and return a `call`
  * able to hit its routes. `kv` is the worker-owner's storage; `me` overrides
  * the whole owner context for a worker that uses more of it than storage
- * (e.g. the email worker's `me.puter.email`, or the sign worker's
- * `me.puter.fs`).
+ * (e.g. the email worker's `me.everything.email`, or the sign worker's
+ * `me.everything.fs`).
  */
 export function instantiateWorker(source, { kv = makeKv(), me = null } = {}) {
-  const owner = me || { puter: { kv } };
-  const ownerKv = owner.puter.kv || kv;
+  const owner = me || { everything: { kv } };
+  const ownerKv = owner.everything.kv || kv;
   const routes = [];
   const add = (method) => (pattern, handler) => routes.push({ method, pattern, handler });
   const router = {
@@ -147,7 +147,7 @@ export function instantiateWorker(source, { kv = makeKv(), me = null } = {}) {
   );
 
   /** `user` stands in for the caller context the runtime attaches when the
-   *  request arrives through puter.workers.exec(); omit it to call as an
+   *  request arrives through everything.workers.exec(); omit it to call as an
    *  anonymous visitor. */
   async function call(
     method,

@@ -1,9 +1,9 @@
 // "My library": components the user created, available in every project.
-// Kept as one library file in the user's Puter storage, or in this browser's
+// Kept as one library file in the user's Everything storage, or in this browser's
 // private storage when signed out.
 
 import { Emitter } from '../core/emitter.js';
-import { puter, cloudAvailable, isMissing } from './puter.js';
+import { everything, cloudAvailable, isMissing } from './everything.js';
 import { LIBRARY_FORMAT } from '../model/schema.js';
 
 const CLOUD_PATH = 'Libraries/My components.circuitslib';
@@ -26,7 +26,7 @@ export class UserLibrary extends Emitter {
   async load() {
     let text = null;
     try {
-      if (cloudAvailable()) text = await (await puter().fs.read(CLOUD_PATH)).text();
+      if (cloudAvailable()) text = await (await everything().fs.read(CLOUD_PATH)).text();
       else {
         const dir = await localDir();
         if (dir) text = await (await (await dir.getFileHandle(LOCAL_FILE)).getFile()).text();
@@ -60,7 +60,7 @@ export class UserLibrary extends Emitter {
   async _save() {
     const text = JSON.stringify({ format: LIBRARY_FORMAT, version: 1, name: 'My components', components: this.all() });
     try {
-      if (cloudAvailable()) await puter().fs.write(CLOUD_PATH, text, { overwrite: true, createMissingParents: true });
+      if (cloudAvailable()) await everything().fs.write(CLOUD_PATH, text, { overwrite: true, createMissingParents: true });
       else {
         const dir = await localDir();
         if (!dir) return;

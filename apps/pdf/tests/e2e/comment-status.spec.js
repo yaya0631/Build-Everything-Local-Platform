@@ -5,7 +5,7 @@ import { addReply, addShapeAnnotation, setReviewState } from '../../src/core/ann
 const settled = (page) => expect(page.locator('.editor')).toHaveAttribute('aria-busy', 'false');
 
 test('the Review status field shows the status a comment has', async ({ page }) => {
-  await page.route('**/sdk/puter.js', (route) => route.abort());
+  await page.route('**/sdk/everything.js', (route) => route.abort());
   const doc = await PDFDocument.create();
   doc.addPage([400, 500]);
   const id = addShapeAnnotation(doc, 0, {
@@ -43,7 +43,7 @@ test('the Review status field shows the status a comment has', async ({ page }) 
 
 // A reply to a reply is part of the thread too, shown beneath the reply it answers.
 test('the properties panel shows replies to replies', async ({ page }) => {
-  await page.route('**/sdk/puter.js', (route) => route.abort());
+  await page.route('**/sdk/everything.js', (route) => route.abort());
   const doc = await PDFDocument.create();
   doc.addPage([400, 500]);
   const id = addShapeAnnotation(doc, 0, {

@@ -2,7 +2,7 @@
 
 <img src="icon.png" alt="PDF Editor icon" width="96" />
 
-A focused, framework-free PDF web app for Puter. Built with vanilla JavaScript, Vite, PDF.js, pdf-lib, and Lucide. Warm neutral surfaces and red accents reflect the app icon.
+A focused, framework-free PDF web app for Everything. Built with vanilla JavaScript, Vite, PDF.js, pdf-lib, and Lucide. Warm neutral surfaces and red accents reflect the app icon.
 
 ## Run
 
@@ -23,9 +23,9 @@ npm run build
 npm run preview
 ```
 
-Deploy all of `dist/` to a static host, including `pdfjs/`, `fonts/`, and `THIRD_PARTY_NOTICES.txt`. `pdfjs/standard_fonts/` includes the Liberation Sans fonts (GPL v2 with a font exception); their corresponding source ships beside them in `pdfjs/standard_fonts/liberation-source/`, so deploy that directory too. Relative asset paths support deployment in a subdirectory. There is no server component, database, API secret, or environment configuration. The only backend integration is Puter.js, loaded from `/sdk/puter.js`.
+Deploy all of `dist/` to a static host, including `pdfjs/`, `fonts/`, and `THIRD_PARTY_NOTICES.txt`. `pdfjs/standard_fonts/` includes the Liberation Sans fonts (GPL v2 with a font exception); their corresponding source ships beside them in `pdfjs/standard_fonts/liberation-source/`, so deploy that directory too. Relative asset paths support deployment in a subdirectory. There is no server component, database, API secret, or environment configuration. The only backend integration is Everything.js, loaded from `/sdk/everything.js`.
 
-GitHub Actions runs unit tests, a production build, and Chromium desktop/mobile, WebKit, and Firefox integration checks. The browser suite uses a deterministic Puter boundary mock, not a real cloud account; actual account sign-in, permissions, cloud file picker behavior, and storage quota must also be exercised in the target Puter app.
+GitHub Actions runs unit tests, a production build, and Chromium desktop/mobile, WebKit, and Firefox integration checks. The browser suite uses a deterministic Everything boundary mock, not a real cloud account; actual account sign-in, permissions, cloud file picker behavior, and storage quota must also be exercised in the target Everything app.
 
 ## Features
 
@@ -43,10 +43,10 @@ The workspace follows the layout of desktop PDF editors (Adobe Acrobat was the r
 - **Measure:** distances, perimeters, and areas at a chosen unit and scale, saved as labelled comments.
 - Headers and footers with Bates numbering, watermarks, and page numbers can be removed again; Document details shows the fonts and edits the initial view (layout, panel, page, magnification, title); View offers Read mode, Full screen, Read out loud, and the Hand tool (or Space-drag).
 
-- No sign-in needed to work: the app opens straight into a blank PDF. Open local files, drop a PDF anywhere, edit, download, and print, all without an account. Puter asks for a sign-in at the first action that needs the cloud: saving, opening a cloud file, or the library, which lives at `#library` (the back arrow in the editor).
+- No sign-in needed to work: the app opens straight into a blank PDF. Open local files, drop a PDF anywhere, edit, download, and print, all without an account. Everything asks for a sign-in at the first action that needs the cloud: saving, opening a cloud file, or the library, which lives at `#library` (the back arrow in the editor).
 - Open local files, drop a PDF anywhere, open a blank PDF, or try the built-in sample from the library. Pictures become PDFs too: choose or drop PNG and JPEG files (several at once) and each lands on its own Letter or A4 sheet, turned to match and fitted to the page; phone photos are set upright from their EXIF orientation. The Page menu inserts pictures as pages after the current page.
 - Password-protected PDFs open after asking for their password (RC4 and AES-128/256 encryption from any writer; files that only restrict permissions open directly). A protected file keeps its own passwords, permissions, and encryption when downloaded, saved, extracted, or split, whichever of its passwords opened it. User access follows the document’s permissions for content editing, comments, forms, page assembly, copying, and printing. Select the Protected badge to view permissions and unlock owner access; changing or removing existing protection requires the permissions password. Low-resolution-only printing is limited to 150 dpi through File → Print. Protect a PDF from the File menu with a password to open and, optionally, a permissions password that limits printing, copying, commenting and form filling, or editing without it. Downloads and saves are then encrypted with AES-256, the header shows a lock while a password or restriction applies, and the File menu changes or removes it. Merging a protected PDF asks for its password too.
-- Puter library with search, sorting, download, rename, duplicate, and confirmed delete.
+- Everything library with search, sorting, download, rename, duplicate, and confirmed delete.
 - Comments panel: a Comments tab beside Pages lists every sticky note and markup in the PDF by page, with its text, author, date, and color; choosing one goes to its page and opens the note or selects the highlight. The tab shows the count.
 - Outline (bookmarks) panel: PDFs with an outline get an Outline tab beside Pages, a folding tree whose items jump to their pages, with arrow-key navigation and the current page marked. Add a bookmark for the current page from the Page menu; rename or remove any bookmark from its right-click or long-press menu in the Outline tab. Deleting a page redirects bookmarks and internal links that target it to the next page (the previous page when deleting the last one), preserving nested bookmarks and destinations to surviving pages.
 - High-fidelity PDF.js rendering, selectable text, lazy thumbnails, fit-width, fit-page, and 25–400% zoom with zoom buttons, keyboard shortcuts, and Ctrl / Command + wheel or trackpad pinch zooming around the pointer, page navigation, and find with a match count that steps match by match across pages, highlighting every hit on the page and the current one in orange (Enter and Shift+Enter move between matches).
@@ -70,16 +70,16 @@ The workspace follows the layout of desktop PDF editors (Adobe Acrobat was the r
 - Reduce file size (File menu): pictures are shrunk to the resolution they are shown at (100, 150, or 220 dpi) and saved as JPEG with their transparency kept as a soft mask, uncompressed streams are deflated, page thumbnails and objects left behind by earlier edits are dropped, and the result is one undoable step that reports the old and new sizes. Text, drawings, and form fields stay sharp; stencil masks, 1-bit scans, tiny pictures, and pictures under optional content are left untouched.
 - Document details (File menu) show the page count, file size, dates, and the producing software, and let you edit the title, author, subject, and keywords stored in the PDF. Imported forms are flattened with an explicit explanation before merging or extracting.
 - Transactional edits, bounded undo/redo, dirty-state tracking, leave protection, and real PDF exports.
-- Explicit Save to Puter, Save a copy, and Save to another folder. Originals are not overwritten until Save is explicitly chosen. New files use Puter's atomic name deduplication. Without a session the Save button reads "Sign in to save", and leaving unsaved work offers Keep editing, Leave without saving, or Sign in and save.
+- Explicit Save to Everything, Save a copy, and Save to another folder. Originals are not overwritten until Save is explicitly chosen. New files use Everything's atomic name deduplication. Without a session the Save button reads "Sign in to save", and leaving unsaved work offers Keep editing, Leave without saving, or Sign in and save.
 - Dark page colors (View menu) invert the page, its thumbnails, form fields, and text drafts for reading at night, remembered on the device; printing and downloads are unaffected.
 - System theme by default, persistent light/dark overrides, responsive layout, keyboard shortcuts, labeled controls, native modal focus handling, reduced-motion handling, and live feedback.
-- Puter desktop launch/open events and close protection. No sign-out option or sign-out call in `puter.env === 'app'`.
+- Everything desktop launch/open events and close protection. No sign-out option or sign-out call in `everything.env === 'app'`.
 
 ## Privacy and storage
 
-PDF parsing, rendering, and editing run on the device. Local files are uploaded only when the user chooses a cloud save. A local download is always available without signing in. Device preferences store only the theme and the dark page colors choice in localStorage, plus drawn and typed signatures when "Remember drawn and typed signatures on this device" is ticked in the signature dialog; uploaded signature images are never stored. Passwords typed to open or protect a PDF are kept in memory for the open document only and are never stored. PDF contents, history, file metadata, and auth tokens are not stored in localStorage or `puter.kv`. **There are no KV calls.**
+PDF parsing, rendering, and editing run on the device. Local files are uploaded only when the user chooses a cloud save. A local download is always available without signing in. Device preferences store only the theme and the dark page colors choice in localStorage, plus drawn and typed signatures when "Remember drawn and typed signatures on this device" is ticked in the signature dialog; uploaded signature images are never stored. Passwords typed to open or protect a PDF are kept in memory for the open document only and are never stored. PDF contents, history, file metadata, and auth tokens are not stored in localStorage or `everything.kv`. **There are no KV calls.**
 
-Cloud PDFs are ordinary blobs written with `puter.fs.write` in `PDF Editor/`, relative to the user's application-specific Puter AppData folder. Files opened through a Puter picker can save to the selected path. The file library lists the app folder, so files saved elsewhere are accessed with Open from Puter. No public sharing links are created.
+Cloud PDFs are ordinary blobs written with `everything.fs.write` in `PDF Editor/`, relative to the user's application-specific Everything AppData folder. Files opened through an Everything picker can save to the selected path. The file library lists the app folder, so files saved elsewhere are accessed with Open from Everything. No public sharing links are created.
 
 Saving is explicit, not automatic. In-session undo is limited to 25 snapshots and approximately 100 MB of retained history, with at least one snapshot retained. Undo and Redo shortcuts run in order even during page redraws; saving or downloading waits for queued history to finish. Reloading the tab discards unsaved work; the browser close prompt is best effort, especially on mobile. Saving in several tabs uses last-writer-wins for an explicitly opened path. A cloud failure keeps local edits available for retry or download.
 
@@ -110,7 +110,7 @@ regenerate the favicons, Apple touch icon, and 192/512 px app icons in `public/`
 - `src/core/text-edit.js`: source text parsing, glyph mapping, and native text replacement.
 - `src/core/image-edit.js`, `src/core/path-edit.js`, and `src/image-layer.js`: native image and path occurrence editing, live previews, pointer and keyboard transforms.
 - `src/text-selection.js` and `src/core/highlight.js`: text alignment, selection geometry, and editable PDF highlights.
-- `src/lib/puter.js`: isolated Puter boundary.
+- `src/lib/everything.js`: isolated Everything boundary.
 - `src/lib/ui.js`: DOM helpers, dialogs, Lucide icons, feedback.
 - `src/lib/menu.js`: popover menus and the menu bar.
 - `src/print.js`: page rendering for the browser's print command.
@@ -137,7 +137,7 @@ regenerate the favicons, Apple touch icon, and 192/512 px app icons in `public/`
 | Action               | Shortcut                          |
 | -------------------- | --------------------------------- |
 | Open PDF or pictures | Ctrl / Command O                  |
-| Save to Puter        | Ctrl / Command S                  |
+| Save to Everything        | Ctrl / Command S                  |
 | Download PDF         | Ctrl / Command Shift S            |
 | Undo                 | Ctrl / Command Z                  |
 | Redo                 | Ctrl / Command Shift Z, or Ctrl Y |

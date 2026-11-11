@@ -1,8 +1,8 @@
-# Puter Mail performance verification — 2026-09-17
+# Everything Mail performance verification — 2026-09-17
 
 Baseline: `042ff95`. Improvements build on its existing 60-message pages,
 descending name cursors, recursive catalogs, deduplication, and bounded body cache.
-Only this app was changed; no Puter backend or SDK changes are required.
+Only this app was changed; no Everything backend or SDK changes are required.
 
 ## Update: sorted recursive inbox pages
 
@@ -37,7 +37,7 @@ recursive-path-order limitation and measurements below predate this update.
 
 - **Recovery:** custom HTTP Range reads and the 64 KiB reader preview were
   withdrawn in `670618a` after the user reported deployed loading failures and
-  repeated attachment transfers. Production uses `puter.fs` directly again.
+  repeated attachment transfers. Production uses `everything.fs` directly again.
   Source contracts and mocked fetch tests had not established live compatibility.
   The preview also failed to cache a complete oversized response when a server
   ignored its requested limit. Full reader loads now use the bounded body cache.
@@ -69,7 +69,7 @@ recursive-path-order limitation and measurements below predate this update.
 
 Reviewed official [readdir](http://localhost:8443/FS/readdir/),
 [read](http://localhost:8443/FS/read/), and [KV list](http://localhost:8443/KV/list/),
-plus local Puter checkout `abcd58f3d0eab0369b1dedcdd0b48863c3a9b1b0`:
+plus local Everything checkout `abcd58f3d0eab0369b1dedcdd0b48863c3a9b1b0`:
 
 - SDK `FileSystem/operations/{readdir,read}.js`: cursor envelopes make one request;
   array calls drain pages; entries enter the SDK cache; reads send count in the URL.
@@ -122,12 +122,12 @@ The separate range benchmark performs real loopback HTTP against a synthetic
 server implementing the inspected `/read` contract. It compares SDK-style query
 parameters with the withdrawn experimental Range transport, now confined to
 `benchmarks/range-transport.js`. It is not a production app improvement or a
-deployed Puter measurement.
+deployed Everything measurement.
 
 ## Before/after browser results
 
 One run per case on this machine, at 5 ms synthetic latency; not medians or live
-Puter measurements. Before is `042ff95`; after uses the recovered SDK/full-reader
+Everything measurements. Before is `042ff95`; after uses the recovered SDK/full-reader
 path from `670618a` (unused preview-cache cleanup does not change these workloads).
 Raw per-operation request/byte/long-task/heap records are in
 `benchmarks/results/{before-final,before-100k,after-recovery}.json`.

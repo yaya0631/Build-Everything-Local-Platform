@@ -485,7 +485,7 @@ export async function replaceTextGroup(
         ),
       );
       if (decorations.length)
-        commands.push('ET', '/PuterTextDecoration BMC', ...decorations, 'EMC', 'BT');
+        commands.push('ET', '/EverythingTextDecoration BMC', ...decorations, 'EMC', 'BT');
       if (wrapper?.textObject) commands.push('ET');
       commands.push('EMC');
     } else if (wrapper?.textObject) commands.push('ET');

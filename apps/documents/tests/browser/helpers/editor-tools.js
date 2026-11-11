@@ -39,7 +39,7 @@ export async function fileCommand(page, name) {
   return (await menuBarMenu(page, 'File')).getByRole('menuitem', { name, exact: true });
 }
 
-export async function saveToPuter(page) {
+export async function saveToEverything(page) {
   await (await fileCommand(page, 'Save')).click();
 }
 

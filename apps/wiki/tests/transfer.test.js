@@ -8,7 +8,7 @@ import { cloneSubtree } from '../src/data/transfer.js';
 import { listBlocks, insertBlocks } from '../src/data/page.js';
 import { listRows } from '../src/data/database.js';
 import { deltaText } from '../src/data/richtext.js';
-import { fakePuter, alice } from './helpers/puter.js';
+import { fakeEverything, alice } from './helpers/everything.js';
 
 function collabFor(env, user) {
   const request = env.requester(user);
@@ -18,7 +18,7 @@ function collabFor(env, user) {
 describe('moving and copying safely', () => {
   let env;
   beforeEach(() => {
-    env = fakePuter();
+    env = fakeEverything();
     env.forget();
   });
 

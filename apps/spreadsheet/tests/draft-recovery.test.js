@@ -5,7 +5,7 @@ import { draftKey, loadDraft, saveDraft } from '../src/lib/drafts.js';
 import { setStorageUser } from '../src/lib/account-storage.js';
 import { Workbook } from '../src/core/workbook.js';
 import { homeView } from '../src/views/home.js';
-import * as P from '../src/lib/puter.js';
+import * as P from '../src/lib/everything.js';
 
 vi.mock('../src/lib/session.js', () => ({ session: { settings: {}, username: 'Test', signedOut: false, addEventListener() {}, removeEventListener() {} } }));
 let view;

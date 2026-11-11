@@ -32,8 +32,8 @@ export async function pool(items, limit, fn) {
   return out;
 }
 
-export function createPuterBackend(puter) {
-  const kv = puter.kv;
+export function createEverythingBackend(everything) {
+  const kv = everything.kv;
 
   async function listValues(pattern) {
     const out = [];
@@ -49,7 +49,7 @@ export function createPuterBackend(puter) {
   }
 
   return {
-    kind: 'puter',
+    kind: 'everything',
     async loadMeta(metaKeys) {
       const values = await pool(metaKeys, 4, (k) => kv.get(k));
       return flattenMeta(Object.fromEntries(metaKeys.map((k, i) => [k, values[i]])));

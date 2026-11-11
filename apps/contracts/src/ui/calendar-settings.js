@@ -38,7 +38,7 @@ export function calendarFeedSection() {
 
     if (!feedSupported()) {
       wrap.append(el('p.quiet-note', {},
-        'A subscription link needs Puter hosting, which this environment does not offer. The download above always works.'));
+        'A subscription link needs Everything hosting, which this environment does not offer. The download above always works.'));
       return;
     }
 
@@ -66,7 +66,7 @@ export function calendarFeedSection() {
       }, ' Create a subscription link');
       append(wrap, [
         el('p.about-text', { style: { marginBottom: '12px' } },
-          'A subscription keeps up on its own: your calendar re-reads it, so deadlines stay right as contracts change. It is served from your own Puter storage.'),
+          'A subscription keeps up on its own: your calendar re-reads it, so deadlines stay right as contracts change. It is served from your own Everything storage.'),
         create,
       ]);
       return;

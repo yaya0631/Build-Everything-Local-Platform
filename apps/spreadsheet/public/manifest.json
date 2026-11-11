@@ -1,8 +1,8 @@
 {
   "name": "Spreadsheet",
   "short_name": "Spreadsheet",
-  "description": "A fast, private spreadsheet. Formulas, formatting, and real .xlsx files saved to your own Puter cloud.",
-  "id": "puter-spreadsheet",
+  "description": "A fast, private spreadsheet. Formulas, formatting, and real .xlsx files saved to your own Everything cloud.",
+  "id": "everything-spreadsheet",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

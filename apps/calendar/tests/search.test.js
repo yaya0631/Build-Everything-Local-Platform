@@ -12,7 +12,7 @@ function makeStore(events, tasks = []) {
   };
 }
 
-/** Minimal async KV backing a real store (mirrors puter.kv's shape). */
+/** Minimal async KV backing a real store (mirrors everything.kv's shape). */
 function memKv() {
   const map = new Map();
   return {

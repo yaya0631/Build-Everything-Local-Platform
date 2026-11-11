@@ -5,8 +5,8 @@
  * focus with the focus fixup rule, a hash location that fires hashchange on
  * the next tick, matchMedia by viewport; no CSS). Every test boots a fresh
  * DOM and a fresh module registry, so the listeners the modules hang on
- * window and document never outlive their test. Puter is faked at
- * `puter.workers.exec`, as in tests/ui-shell-pass15.test.js.
+ * window and document never outlive their test. Everything is faked at
+ * `everything.workers.exec`, as in tests/ui-shell-pass15.test.js.
  */
 import { describe, it, expect, afterEach, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
@@ -40,7 +40,7 @@ async function boot({ hash = '', width = 1280, routes = {}, ...env } = {}) {
   dom = installDom({ hash, width, ...env });
   vi.resetModules();
   const calls = [];
-  globalThis.puter = {
+  globalThis.everything = {
     workers: {
       exec: async (url, init = {}) => {
         const u = new URL(url);
@@ -84,7 +84,7 @@ async function boot({ hash = '', width = 1280, routes = {}, ...env } = {}) {
 afterEach(() => {
   dom?.uninstall();
   dom = null;
-  delete globalThis.puter;
+  delete globalThis.everything;
 });
 
 /** The shell at a route, opened and settled. */
@@ -227,13 +227,13 @@ describe('Try again pressed from the keyboard, when the retry fails as well', ()
 });
 
 describe('the sign-in button', () => {
-  it('keeps the keyboard while Puter answers and after the sign-in is given up, and takes one press at a time', async () => {
+  it('keeps the keyboard while Everything answers and after the sign-in is given up, and takes one press at a time', async () => {
     dom?.uninstall();
     dom = installDom({ hash: '' });
     vi.resetModules();
     let asked = 0;
     let settle = null;
-    globalThis.puter = { auth: { signIn: () => { asked++; return new Promise((_, reject) => { settle = reject; }); } } };
+    globalThis.everything = { auth: { signIn: () => { asked++; return new Promise((_, reject) => { settle = reject; }); } } };
     const { authView } = await import('../src/views/auth.js');
     const signedIn = [];
     document.body.append(authView({ onSignedIn: () => signedIn.push(1) }));
@@ -242,8 +242,8 @@ describe('the sign-in button', () => {
     cta.focus();
     cta.click();
     expect(asked).toBe(1);
-    // Out to Puter: the button says so, and the keyboard stays on it.
-    expect(cta.textContent).toBe('Waiting for Puter');
+    // Out to Everything: the button says so, and the keyboard stays on it.
+    expect(cta.textContent).toBe('Waiting for Everything');
     expect(cta.hasAttribute('disabled')).toBe(false);
     expect(cta.getAttribute('aria-busy')).toBe('true');
     expect(document.activeElement).toBe(cta);

@@ -1,13 +1,13 @@
 import { afterEach, beforeAll, beforeEach, expect, it, vi } from 'vitest';
 import { Doc } from '../src/lib/doc.js';
 import { memoryStorage } from './helpers/memory-storage.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 
 let mock;
 // SheetJS is loaded on first use with a real dynamic import; warm it up so no test waits on it.
 beforeAll(async () => { await Doc.blank().toXlsxBlob(); });
-beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); mock = installMockPuter(); vi.useFakeTimers(); });
-afterEach(() => { vi.useRealTimers(); delete globalThis.puter; });
+beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); mock = installMockEverything(); vi.useFakeTimers(); });
+afterEach(() => { vi.useRealTimers(); delete globalThis.everything; });
 
 async function openDocument() {
   const doc = Doc.blank();
@@ -43,7 +43,7 @@ it('saves after the file was renamed elsewhere, following it, without reporting 
   const doc = await openDocument();
   const conflicts = watchConflicts(doc);
   await vi.advanceTimersByTimeAsync(2000);
-  await puter.fs.rename(doc.path, 'Renamed.xlsx');
+  await everything.fs.rename(doc.path, 'Renamed.xlsx');
   edit(doc, 'edited after the rename');
   await vi.advanceTimersByTimeAsync(2000);
   try {
@@ -58,9 +58,9 @@ it('still reports a file rewritten elsewhere before it was renamed elsewhere', a
   const doc = await openDocument();
   const conflicts = watchConflicts(doc);
   await vi.advanceTimersByTimeAsync(2000);
-  await puter.fs.write(doc.path, new Blob(['rewritten by another tab']));
+  await everything.fs.write(doc.path, new Blob(['rewritten by another tab']));
   await vi.advanceTimersByTimeAsync(2000);
-  await puter.fs.rename(doc.path, 'Renamed.xlsx');
+  await everything.fs.rename(doc.path, 'Renamed.xlsx');
   edit(doc, 'mine');
   await vi.advanceTimersByTimeAsync(2000);
   try {

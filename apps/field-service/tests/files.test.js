@@ -4,7 +4,7 @@ import { fileUrl } from '../src/files.js';
 describe('attachments', () => {
   it('downloads a file once when it is asked for again while still downloading', async () => {
     let reads = 0;
-    globalThis.puter = {
+    globalThis.everything = {
       fs: {
         read: async () => {
           reads++;
@@ -20,7 +20,7 @@ describe('attachments', () => {
       expect(await fileUrl(att)).toBe(a);
       expect(reads).toBe(1);
     } finally {
-      delete globalThis.puter;
+      delete globalThis.everything;
     }
   });
 });

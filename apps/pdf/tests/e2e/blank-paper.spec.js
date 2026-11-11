@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { PDFDocument } from 'pdf-lib';
 import { readFile } from 'node:fs/promises';
 
-const PUTER_MOCK = `window.puter = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async () => ({}) }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
+const EVERYTHING_MOCK = `window.everything = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async () => ({}) }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
 
 // A new PDF is a sheet of the paper the region prints on, as pictures turned into pages are.
 for (const [locale, size] of [
@@ -12,8 +12,8 @@ for (const [locale, size] of [
   test.describe(locale, () => {
     test.use({ locale });
     test(`a new blank PDF is ${size.width} by ${size.height} points`, async ({ page }) => {
-      await page.route('**/sdk/puter.js', (route) =>
-        route.fulfill({ contentType: 'application/javascript', body: PUTER_MOCK }),
+      await page.route('**/sdk/everything.js', (route) =>
+        route.fulfill({ contentType: 'application/javascript', body: EVERYTHING_MOCK }),
       );
       await page.goto('/');
       await expect(page.locator('.page-caption')).toHaveText('Page 1 of 1');

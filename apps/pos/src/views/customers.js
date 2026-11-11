@@ -2,7 +2,7 @@
  * The customer directory: put a name on a sale, and answer "what did they
  * buy in March?" without paging months by eye. Lightweight on purpose -
  * name and how to reach them - and stored only in the shopkeeper's own
- * Puter account.
+ * Everything account.
  */
 
 import { el, clear, append, keepFocus } from '../ui/dom.js';
@@ -43,7 +43,7 @@ export function customersView() {
       list.append(el('div.empty', {},
         el('div.empty-icon', { html: icon('users', 28) }),
         el('h3', {}, 'No customers yet'),
-        el('p', {}, 'Attach a customer at checkout, or add your regulars here. Everything stays in your own Puter account.'),
+        el('p', {}, 'Attach a customer at checkout, or add your regulars here. Everything stays in your own Everything account.'),
         el('button.btn.btn-primary', { onclick: () => openCustomerForm() }, 'Add a customer')
       ));
       return;

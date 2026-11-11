@@ -1,5 +1,5 @@
 /**
- * Data layer on top of Puter.
+ * Data layer on top of Everything.
  *
  * Storage design (mirrors the Accountant app's cost/scale reasoning):
  *
@@ -360,7 +360,7 @@ class Store extends EventTarget {
   #corruptKv = new Set();
 
   async #kvGet(key, fallback) {
-    const raw = await puter.kv.get(key);
+    const raw = await everything.kv.get(key);
     if (raw === null || raw === undefined) return fallback;
     if (typeof raw === 'string') {
       try {
@@ -372,7 +372,7 @@ class Store extends EventTarget {
         // cement the loss, and remember which keys must not be auto-seeded.
         console.error(`Unreadable value under ${key}; a copy was preserved`, err);
         this.#corruptKv.add(key);
-        puter.kv.set(`${key}:corrupt:${Date.now()}`, raw).catch(() => {});
+        everything.kv.set(`${key}:corrupt:${Date.now()}`, raw).catch(() => {});
         return fallback;
       }
     }
@@ -381,7 +381,7 @@ class Store extends EventTarget {
 
   async #kvSet(key, value) {
     if (key !== KV.products) {
-      await puter.kv.set(key, JSON.stringify(value));
+      await everything.kv.set(key, JSON.stringify(value));
       return;
     }
     // Any products write built from live state carries every stock move
@@ -389,7 +389,7 @@ class Store extends EventTarget {
     // payload was built. (importAll passes a new dataset instead - it also
     // clears the debt outright, so over-settling here is harmless.)
     const settled = this.#stockDebt.map((e) => e.id);
-    await puter.kv.set(key, JSON.stringify(value));
+    await everything.kv.set(key, JSON.stringify(value));
     if (settled.length) this.#dropStockDebt(settled);
   }
 
@@ -528,7 +528,7 @@ class Store extends EventTarget {
   }
 
   async init() {
-    this.user = await puter.auth.getUser().catch(() => null);
+    this.user = await everything.auth.getUser().catch(() => null);
     this.#useScope(this.user?.uuid || this.user?.username || 'anon');
     this.#stockDebt = this.#readStockDebt();
     const [settings, products, categories, taxes, discounts, customers, credit, months, holds, draft, drawers, stockMonths, stocktake, stocktakeMonths, snapshots] = await Promise.all([
@@ -636,7 +636,7 @@ class Store extends EventTarget {
   async #rebuildMonthIndexes() {
     let names = [];
     try {
-      const entries = await puter.fs.readdir(DATA_DIR);
+      const entries = await everything.fs.readdir(DATA_DIR);
       names = (Array.isArray(entries) ? entries : []).map((e) => String(e?.name ?? ''));
     } catch {
       return;   // can't list: the write-time read-merge still guards the files
@@ -1085,7 +1085,7 @@ class Store extends EventTarget {
     const photoFile = photoPath(id);
     const purge = target?.photo && photoFile
       ? setTimeout(() => {
-        if (!this.product(id)) puter.fs.delete(photoFile).catch(() => {});
+        if (!this.product(id)) everything.fs.delete(photoFile).catch(() => {});
       }, PHOTO_PURGE_DELAY_MS)
       : null;
     return {
@@ -1116,7 +1116,7 @@ class Store extends EventTarget {
     if (!product) throw new Error('That product is no longer here.');
     const path = photoPath(id);
     if (!path) throw new Error('This product can’t hold a photo.');
-    await puter.fs.write(path, blob, { createMissingParents: true });
+    await everything.fs.write(path, blob, { createMissingParents: true });
     const before = this.#snapshot();
     this.products = this.products.map((p) => (p.id === id ? { ...p, photo: Date.now() } : p));
     this.emit();
@@ -1131,7 +1131,7 @@ class Store extends EventTarget {
     this.emit();
     await this.#commit(before, [KV.products]);
     const path = photoPath(id);
-    if (path) puter.fs.delete(path).catch(() => {});
+    if (path) everything.fs.delete(path).catch(() => {});
   }
 
   /**
@@ -1145,7 +1145,7 @@ class Store extends EventTarget {
     const path = photoPath(product.id);
     if (!path) return null;
     try {
-      return await puter.fs.read(path);
+      return await everything.fs.read(path);
     } catch (err) {
       if (isMissingFileError(err)) return null;
       throw err;
@@ -1626,7 +1626,7 @@ class Store extends EventTarget {
       let sales = [];
       if (this.months.includes(key)) {
         try {
-          const blob = await puter.fs.read(monthPath(key));
+          const blob = await everything.fs.read(monthPath(key));
           const text = await blob.text();
           let parsed = null;
           try {
@@ -1646,7 +1646,7 @@ class Store extends EventTarget {
             const damage = new Error(`Unreadable ${monthPath(key)}`);
             console.error(`Unreadable ${monthPath(key)}; preserving a copy`);
             try {
-              await puter.fs.write(`${monthPath(key)}.corrupt-${Date.now()}`, text, { createMissingParents: true });
+              await everything.fs.write(`${monthPath(key)}.corrupt-${Date.now()}`, text, { createMissingParents: true });
             } catch {
               throw damage;
             }
@@ -1733,7 +1733,7 @@ class Store extends EventTarget {
     if (this.#diskConfirmed.has(tag)) return;
     let text = null;
     try {
-      const blob = await puter.fs.read(path);
+      const blob = await everything.fs.read(path);
       text = await blob.text();
     } catch (err) {
       if (!isMissingFileError(err)) throw err;
@@ -1754,7 +1754,7 @@ class Store extends EventTarget {
       }
     } else {
       console.error(`Unreadable ${path}; preserving a copy`);
-      await puter.fs.write(`${path}.corrupt-${Date.now()}`, text, { createMissingParents: true });
+      await everything.fs.write(`${path}.corrupt-${Date.now()}`, text, { createMissingParents: true });
     }
     this.#diskConfirmed.add(tag);
   }
@@ -1788,7 +1788,7 @@ class Store extends EventTarget {
       const cached = this.#saleCache.get(key) || [];
       await this.#absorbUnreadFile(`sales:${key}`, monthPath(key), cached, (s) => s?.id, byNewest);
       const sales = cached.filter((s) => !s.pendingSync);
-      return puter.fs.write(monthPath(key), JSON.stringify(sales), { createMissingParents: true });
+      return everything.fs.write(monthPath(key), JSON.stringify(sales), { createMissingParents: true });
     });
   }
 
@@ -2231,7 +2231,7 @@ class Store extends EventTarget {
           await this.#queueWrite(key, async () => {
             let onDisk = [];
             try {
-              const blob = await puter.fs.read(monthPath(key));
+              const blob = await everything.fs.read(monthPath(key));
               const text = await blob.text();
               let parsed = null;
               try {
@@ -2245,7 +2245,7 @@ class Store extends EventTarget {
                 // jam on them forever. A failed park propagates and the
                 // sales stay safely queued.
                 console.error(`Unreadable ${monthPath(key)}; preserving a copy`);
-                await puter.fs.write(`${monthPath(key)}.corrupt-${Date.now()}`, text, { createMissingParents: true });
+                await everything.fs.write(`${monthPath(key)}.corrupt-${Date.now()}`, text, { createMissingParents: true });
               }
             } catch (err) {
               if (!isMissingFileError(err)) throw err;
@@ -2255,7 +2255,7 @@ class Store extends EventTarget {
               .filter((r) => !known.has(r.id))
               .map(({ pendingSync, ...rest }) => rest);
             const merged = [...onDisk, ...additions].sort(byNewest);
-            await puter.fs.write(monthPath(key), JSON.stringify(merged), { createMissingParents: true });
+            await everything.fs.write(monthPath(key), JSON.stringify(merged), { createMissingParents: true });
             // This read is ground truth for the session: anything on disk
             // the cache never saw (a month the index lost track of) is
             // folded in, so a later ordinary write can't drop it.
@@ -2537,7 +2537,7 @@ class Store extends EventTarget {
       let days = [];
       if (this.drawerMonths.includes(key)) {
         try {
-          const blob = await puter.fs.read(drawerPath(key));
+          const blob = await everything.fs.read(drawerPath(key));
           const parsed = JSON.parse(await blob.text());
           // Wrong shape fails closed like a parse error: reading it as an
           // empty month would let the next drawer write replace the file.
@@ -2590,7 +2590,7 @@ class Store extends EventTarget {
       const cached = this.#drawerCache.get(key) || [];
       await this.#absorbUnreadFile(`drawer:${key}`, drawerPath(key), cached,
         (d) => d?.date, (a, b) => (a.date < b.date ? 1 : -1));
-      return puter.fs.write(drawerPath(key), JSON.stringify(cached), { createMissingParents: true });
+      return everything.fs.write(drawerPath(key), JSON.stringify(cached), { createMissingParents: true });
     });
   }
 
@@ -2722,7 +2722,7 @@ class Store extends EventTarget {
       let movements = [];
       if (this.stockMonths.includes(key)) {
         try {
-          const blob = await puter.fs.read(stockPath(key));
+          const blob = await everything.fs.read(stockPath(key));
           const parsed = JSON.parse(await blob.text());
           // Wrong shape fails closed, like the drawer months: an "empty"
           // read here would cost the ledger its file on the next write.
@@ -2756,7 +2756,7 @@ class Store extends EventTarget {
       const cached = this.#stockCache.get(key) || [];
       await this.#absorbUnreadFile(`stock:${key}`, stockPath(key), cached,
         (m) => m?.id, (a, b) => (b.at || 0) - (a.at || 0));
-      return puter.fs.write(stockPath(key), JSON.stringify(cached), { createMissingParents: true });
+      return everything.fs.write(stockPath(key), JSON.stringify(cached), { createMissingParents: true });
     });
   }
 
@@ -3072,7 +3072,7 @@ class Store extends EventTarget {
       let records = [];
       if (this.stocktakeMonths.includes(key)) {
         try {
-          const blob = await puter.fs.read(stocktakePath(key));
+          const blob = await everything.fs.read(stocktakePath(key));
           const parsed = JSON.parse(await blob.text());
           // Wrong shape fails closed, like the drawer and ledger months: an
           // "empty" read would cost the file its history on the next write.
@@ -3106,7 +3106,7 @@ class Store extends EventTarget {
       const cached = this.#stocktakeCache.get(key) || [];
       await this.#absorbUnreadFile(`stocktake:${key}`, stocktakePath(key), cached,
         (r) => r?.id, (a, b) => (b.at || 0) - (a.at || 0));
-      return puter.fs.write(stocktakePath(key), JSON.stringify(cached), { createMissingParents: true });
+      return everything.fs.write(stocktakePath(key), JSON.stringify(cached), { createMissingParents: true });
     });
   }
 
@@ -3323,7 +3323,7 @@ class Store extends EventTarget {
     const data = await this.exportAll();
     const json = JSON.stringify(data);
     const bytes = new TextEncoder().encode(json).length;
-    await puter.fs.write(path, json, { createMissingParents: true });
+    await everything.fs.write(path, json, { createMissingParents: true });
 
     const entry = {
       file,
@@ -3362,7 +3362,7 @@ class Store extends EventTarget {
     this.emit();
     await Promise.all(prune.map((entry) => {
       const path = snapshotPath(entry.file);
-      return path ? puter.fs.delete(path).catch(() => {}) : null;
+      return path ? everything.fs.delete(path).catch(() => {}) : null;
     }));
   }
 
@@ -3406,7 +3406,7 @@ class Store extends EventTarget {
   async readSnapshot(file) {
     const path = snapshotPath(file);
     if (!path) throw new Error('That restore point is no longer here.');
-    const blob = await puter.fs.read(path);
+    const blob = await everything.fs.read(path);
     return JSON.parse(await blob.text());
   }
 
@@ -3423,7 +3423,7 @@ class Store extends EventTarget {
       throw err;
     }
     const path = snapshotPath(file);
-    if (path) await puter.fs.delete(path).catch(() => {});
+    if (path) await everything.fs.delete(path).catch(() => {});
   }
 
   /* ---------- Whole-dataset import/export (sample data, backups) ---------- */
@@ -3648,10 +3648,10 @@ class Store extends EventTarget {
     // settings go last, so the currency, the receipt counter, and the
     // sample banner describe data that actually exists.
     await Promise.all([
-      ...newMonths.map((k) => puter.fs.write(monthPath(k), JSON.stringify(restored[k]), { createMissingParents: true })),
-      ...newDrawerMonths.map((k) => puter.fs.write(drawerPath(k), JSON.stringify(restoredDrawers[k]), { createMissingParents: true })),
-      ...newStockMonths.map((k) => puter.fs.write(stockPath(k), JSON.stringify(restoredStock[k]), { createMissingParents: true })),
-      ...newCountMonths.map((k) => puter.fs.write(stocktakePath(k), JSON.stringify(restoredCounts[k]), { createMissingParents: true })),
+      ...newMonths.map((k) => everything.fs.write(monthPath(k), JSON.stringify(restored[k]), { createMissingParents: true })),
+      ...newDrawerMonths.map((k) => everything.fs.write(drawerPath(k), JSON.stringify(restoredDrawers[k]), { createMissingParents: true })),
+      ...newStockMonths.map((k) => everything.fs.write(stockPath(k), JSON.stringify(restoredStock[k]), { createMissingParents: true })),
+      ...newCountMonths.map((k) => everything.fs.write(stocktakePath(k), JSON.stringify(restoredCounts[k]), { createMissingParents: true })),
     ]);
     await Promise.all([
       this.#kvSet(KV.months, newMonths),
@@ -3674,10 +3674,10 @@ class Store extends EventTarget {
     // Old month files not in the new dataset are best-effort deletes: the
     // index no longer references them, so a failure only leaves orphans.
     await Promise.all([
-      ...staleMonths.map((k) => puter.fs.delete(monthPath(k)).catch(() => {})),
-      ...staleDrawerMonths.map((k) => puter.fs.delete(drawerPath(k)).catch(() => {})),
-      ...staleStockMonths.map((k) => puter.fs.delete(stockPath(k)).catch(() => {})),
-      ...staleCountMonths.map((k) => puter.fs.delete(stocktakePath(k)).catch(() => {})),
+      ...staleMonths.map((k) => everything.fs.delete(monthPath(k)).catch(() => {})),
+      ...staleDrawerMonths.map((k) => everything.fs.delete(drawerPath(k)).catch(() => {})),
+      ...staleStockMonths.map((k) => everything.fs.delete(stockPath(k)).catch(() => {})),
+      ...staleCountMonths.map((k) => everything.fs.delete(stocktakePath(k)).catch(() => {})),
     ]);
 
     this.#loadGen++;

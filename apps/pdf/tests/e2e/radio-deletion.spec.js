@@ -9,7 +9,7 @@ for (const defaultOnly of [false, true])
       test(`deleting a page preserves surviving radio selections (default=${defaultOnly}, exports=${exportNamed}, selected=${selected})`, async ({
         page,
       }) => {
-        await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
+        await page.route('**/sdk/everything.js', (route) => route.fulfill({ body: '' }));
         await page.goto('/#library');
         const { doc, field } = await radioPagesPdf({
           defaultOnly,

@@ -3,8 +3,8 @@
  * and the shell's own controls, driven in node through tests/helpers/dom.js
  * (a small DOM: elements, selectors, bubbling events with capture, focus,
  * matchMedia by viewport and pointer; no CSS), as tests/lead-pass23-ui.test.js
- * drives them: a fresh DOM and a fresh module registry for every test, Puter
- * faked at `puter.workers.exec`, the toast, the theme, the modal layer and
+ * drives them: a fresh DOM and a fresh module registry for every test, Everything
+ * faked at `everything.workers.exec`, the toast, the theme, the modal layer and
  * navigation mocked.
  */
 import { describe, it, expect, afterEach, vi } from 'vitest';
@@ -35,7 +35,7 @@ async function boot({ width = 1280, ...env } = {}) {
   dom?.uninstall();
   dom = installDom({ width, ...env });
   vi.resetModules();
-  globalThis.puter = { workers: { exec: async () => json({ code: 'not_found', message: 'nope' }, 404) } };
+  globalThis.everything = { workers: { exec: async () => json({ code: 'not_found', message: 'nope' }, 404) } };
   ({ store } = await import('../src/lib/store.js'));
   const { api } = await import('../src/lib/api.js');
   store.wsId = REF;
@@ -67,7 +67,7 @@ afterEach(async () => {
   store = null;
   dom?.uninstall();
   dom = null;
-  delete globalThis.puter;
+  delete globalThis.everything;
   vi.restoreAllMocks();
 });
 
@@ -79,7 +79,7 @@ afterEach(async () => {
 async function openThreads({ rootUser = 'u-me', replies = [], replyCount = replies.length } = {}) {
   const { dom: d } = await boot({ hash: `#/ws/${encodeURIComponent(REF)}/threads` });
   const root = { seq: 1, user: rootUser, ts: 1_700_000_000_001, text: 'root 1', kind: 'msg', replyCount, attachments: [], mentions: [], reactions: {} };
-  globalThis.puter.workers.exec = async (url) => {
+  globalThis.everything.workers.exec = async (url) => {
     const u = new URL(url);
     if (u.pathname.endsWith('/threads')) return json({ threads: [{ id: 'c1_t1', conv: 'c1', seq: 1, at: 5000, unread: 0, root }] });
     if (u.pathname.endsWith('/messages')) return json({ messages: replies, seq: replies.length });
@@ -141,7 +141,7 @@ describe('an edit standing open on a Threads view card while the keyboard is els
     const { dom: d } = await boot({ hash: `#/ws/${encodeURIComponent(REF)}/threads` });
     const rootOf = (seq, user) => ({ seq, user, ts: 1_700_000_000_000 + seq, text: `root ${seq}`, kind: 'msg', replyCount: 0, attachments: [], mentions: [], reactions: {} });
     const roots = { 1: rootOf(1, 'u-me'), 2: rootOf(2, 'u2') };
-    globalThis.puter.workers.exec = async (url) => {
+    globalThis.everything.workers.exec = async (url) => {
       const u = new URL(url);
       if (u.pathname.endsWith('/threads')) return json({ threads: [1, 2].map((seq) => ({ id: `c1_t${seq}`, conv: 'c1', seq, at: 5000 + seq, unread: 0, root: roots[seq] })) });
       if (u.pathname.endsWith('/messages')) return json({ messages: [], seq: 0 });
@@ -334,7 +334,7 @@ describe('the Later view and the store\'s half-minute reuse of a server\'s lists
     let saved = [{ c: 'c1', s: 1, ts: 1000, done: false, message: m(1) }];
     let reminders = [{ id: 'r1', kind: 'reminder', conv: 'c1', seq: 1, dueAt: Date.now() + 3_600_000, note: 'call back', message: m(1) }];
     const calls = [];
-    globalThis.puter.workers.exec = async (url, init = {}) => {
+    globalThis.everything.workers.exec = async (url, init = {}) => {
       const u = new URL(url);
       calls.push(`${init.method || 'GET'} ${u.pathname}`);
       if (u.pathname.endsWith('/saved')) return json({ items: saved });

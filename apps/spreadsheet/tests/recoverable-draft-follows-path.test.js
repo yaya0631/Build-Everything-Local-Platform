@@ -3,11 +3,11 @@ import { draftKey, saveDraft, loadDraft } from '../src/lib/drafts.js';
 import { Doc } from '../src/lib/doc.js';
 import { Workbook } from '../src/core/workbook.js';
 import { memoryStorage } from './helpers/memory-storage.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 
 let mock;
-beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); mock = installMockPuter(); });
-afterEach(() => { delete globalThis.puter; });
+beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); mock = installMockEverything(); });
+afterEach(() => { delete globalThis.everything; });
 
 /** A file in the folder, older than any draft, with a draft of unsaved edits waiting under its key. */
 async function fileWithDraft(path) {

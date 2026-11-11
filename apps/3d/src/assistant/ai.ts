@@ -1,11 +1,11 @@
-// Puter AI chat with tool calling, streamed. Messages are in the OpenAI shape
-// Puter takes (system, user, assistant with tool_calls, tool); replies come
+// Everything AI chat with tool calling, streamed. Messages are in the OpenAI shape
+// Everything takes (system, user, assistant with tool_calls, tool); replies come
 // back as text pieces and tool calls as they arrive.
 
 import { prefs } from '../app/prefs';
 import type { AttachmentMeta } from './attach';
 
-/** Message parts. Images and PDFs use the blocks Puter passes to the model as they are (Anthropic's shape). */
+/** Message parts. Images and PDFs use the blocks Everything passes to the model as they are (Anthropic's shape). */
 export type ChatPart =
   | { type: 'text'; text: string }
   | { type: 'image'; source: { type: 'base64'; media_type: string; data: string } }
@@ -38,7 +38,7 @@ export interface ChatOptions {
 
 export type ChatFn = (messages: ChatMessage[], opts: ChatOptions) => AsyncIterable<StreamPart>;
 
-interface PuterAI {
+interface EverythingAI {
   ai?: { chat: (messages: unknown, opts?: Record<string, unknown>) => Promise<unknown> };
 }
 
@@ -68,11 +68,11 @@ const reachedLimit = (usage: { output_tokens?: number; completion_tokens?: numbe
 let callSeq = 0;
 const newCallId = () => `call_${Date.now().toString(36)}_${(++callSeq).toString(36)}`;
 
-/** puter.ai.chat, streamed. A reply the SDK hands back whole is yielded in the same pieces. */
-export async function* puterChat(messages: ChatMessage[], opts: ChatOptions = {}): AsyncIterable<StreamPart> {
+/** everything.ai.chat, streamed. A reply the SDK hands back whole is yielded in the same pieces. */
+export async function* everythingChat(messages: ChatMessage[], opts: ChatOptions = {}): AsyncIterable<StreamPart> {
   if (!prefs.use_online_access) throw new Error('The assistant works online, but online access is turned off (Preferences ▸ System ▸ Network).');
-  const p = (globalThis as unknown as { puter?: PuterAI }).puter;
-  if (!p?.ai?.chat) throw new Error('The assistant needs Puter, which is not available right now. Check your connection and reload.');
+  const p = (globalThis as unknown as { everything?: EverythingAI }).everything;
+  if (!p?.ai?.chat) throw new Error('The assistant needs Everything, which is not available right now. Check your connection and reload.');
   const options: Record<string, unknown> = { stream: true };
   if (opts.model) options.model = opts.model;
   if (opts.tools?.length) options.tools = opts.tools;

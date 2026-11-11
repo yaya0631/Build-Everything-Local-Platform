@@ -2,7 +2,7 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { editorView } from '../src/views/editor.js';
 import { Doc } from '../src/lib/doc.js';
-import * as P from '../src/lib/puter.js';
+import * as P from '../src/lib/everything.js';
 import * as notifications from '../src/ui/toast.js';
 import { closeAllModals } from '../src/ui/modal.js';
 
@@ -10,7 +10,7 @@ import { closeAllModals } from '../src/ui/modal.js';
 // network) before any request goes out, with `code: 'not-public'` and a message that says so. The
 // editor knew only the "too large" refusal as one worth showing, so this one came through as a bare
 // #VALUE! or the generic "Could not fetch" toast.
-vi.mock('../src/lib/puter.js', async (importOriginal) => ({
+vi.mock('../src/lib/everything.js', async (importOriginal) => ({
   ...(await importOriginal()),
   fetchText: vi.fn(),
   fetchBytes: vi.fn(),

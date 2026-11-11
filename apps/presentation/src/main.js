@@ -486,7 +486,7 @@ function setAppearance(value) {
 }
 setAppearance(appearance);
 function fail(error) {
-  // Puter's SDK sometimes rejects with `{ msg }` objects instead of Errors.
+  // Everything's SDK sometimes rejects with `{ msg }` objects instead of Errors.
   toast(
     error?.message || error?.msg || "Something went wrong. Please try again.",
   );
@@ -542,7 +542,7 @@ function accountItems() {
       ? [
           { separator: true },
           {
-            label: "Sign in with Puter",
+            label: "Sign in with Everything",
             icon: "User",
             hint: "Save presentations to your own cloud",
             onSelect: () => login(),
@@ -613,7 +613,7 @@ function accountButton() {
   control.prepend(accountAvatar());
   return control;
 }
-// Saving is where Puter comes in: a guest's button says so up front, and the
+// Saving is where Everything comes in: a guest's button says so up front, and the
 // click opens the sign-in before the save.
 function saveButton() {
   return button(
@@ -623,7 +623,7 @@ function saveButton() {
     "secondary save-button",
     account
       ? {}
-      : { title: "Sign in to Puter to keep this presentation in your cloud" },
+      : { title: "Sign in to Everything to keep this presentation in your cloud" },
   );
 }
 // The header's account and save buttons follow the account; a focused button
@@ -690,9 +690,9 @@ async function shortcutsDialog() {
       "div",
       { class: "dialog-body shortcuts" },
       ...[
-        ["Ctrl / ⌘ + S", "Save to Puter"],
-        ["Ctrl / ⌘ + Shift + S", "Save a copy to Puter"],
-        ["Ctrl / ⌘ + O", "Open from Puter"],
+        ["Ctrl / ⌘ + S", "Save to Everything"],
+        ["Ctrl / ⌘ + Shift + S", "Save a copy to Everything"],
+        ["Ctrl / ⌘ + O", "Open from Everything"],
         ["Ctrl / ⌘ + P", "Print"],
         ["Ctrl / ⌘ + F or H", "Find, or find and replace"],
         ["Ctrl / ⌘ + G or Shift + G", "Find next or previous"],
@@ -821,8 +821,8 @@ async function applyAccount(connected, request) {
     if (request !== accountRequest) return false;
     toast(
       recovered
-        ? `Signed in as ${account.username}. Save to keep this presentation in Puter.`
-        : `Signed in as ${account.username}. Local recovery is unavailable. Save to Puter to keep your work.`,
+        ? `Signed in as ${account.username}. Save to keep this presentation in Everything.`
+        : `Signed in as ${account.username}. Local recovery is unavailable. Save to Everything to keep your work.`,
     );
   }
   return request === accountRequest;
@@ -943,7 +943,7 @@ function renderHome() {
         el(
           "div",
           { class: "header-right" },
-          button("Open from Puter", "FolderOpen", run(openPicker), "secondary"),
+          button("Open from Everything", "FolderOpen", run(openPicker), "secondary"),
           accountButton(),
         ),
       ),
@@ -1044,10 +1044,10 @@ function renderHome() {
               el(
                 "p",
                 {},
-                "Sign in to save real PowerPoint files in your Puter cloud.",
+                "Sign in to save real PowerPoint files in your Everything cloud.",
               ),
             ),
-            button("Connect Puter", "ArrowRight", () => login(), "secondary"),
+            button("Connect Everything", "ArrowRight", () => login(), "secondary"),
           ),
         el(
           "section",
@@ -1122,7 +1122,7 @@ function renderHome() {
         "footer",
         { class: "home-footer" },
         el("span", {}, "Made for the way you think."),
-        el("span", {}, "PPTX files · Powered by Puter"),
+        el("span", {}, "PPTX files · Powered by Everything"),
       ),
     ),
   );
@@ -1409,8 +1409,8 @@ function renderFileList() {
           f.kind === "draft"
             ? "This device"
             : f.kind === "recent"
-              ? `Puter · ${cloud.folderName(f.path) || "Home"}`
-              : "Puter",
+              ? `Everything · ${cloud.folderName(f.path) || "Home"}`
+              : "Everything",
         ),
         el(
           "span",
@@ -1616,13 +1616,13 @@ function libraryFileMenu(e, f) {
           await dialog({
             title: `Delete “${fileTitle(f)}”?`,
             // A draft lives on this device only; the cloud file it may be
-            // linked to stays in Puter.
+            // linked to stays in Everything.
             body: el(
               "p",
               { class: "dialog-body" },
               f.kind === "draft"
-                ? "This removes the recovery draft from this device. Work that was not saved to Puter or downloaded is lost."
-                : "This removes the file from your Puter cloud permanently. This action cannot be undone.",
+                ? "This removes the recovery draft from this device. Work that was not saved to Everything or downloaded is lost."
+                : "This removes the file from your Everything cloud permanently. This action cannot be undone.",
             ),
             confirm: "Delete",
             danger: true,
@@ -1701,7 +1701,7 @@ async function leaveEditor() {
     }
     if (doc !== target) return false;
     if (pending !== mutationTail || activeEditorInput()) continue;
-    // A presentation kept in Puter takes its latest edits there on the way
+    // A presentation kept in Everything takes its latest edits there on the way
     // out, rather than leaving them waiting in a recovery draft. A save that
     // fails, or that finds the file changed elsewhere, is put to the person:
     // the draft keeps the edits if they leave anyway.
@@ -1741,14 +1741,14 @@ async function leaveEditor() {
         body: el(
           "p",
           { class: "dialog-body" },
-          "Your latest changes could not be saved on this device. Download a copy or save to Puter before leaving to keep them.",
+          "Your latest changes could not be saved on this device. Download a copy or save to Everything before leaving to keep them.",
         ),
         confirm: "Leave anyway",
         danger: true,
       });
       return leave && doc === target;
     }
-    // A draft that holds only what is in Puter is not kept on the device.
+    // A draft that holds only what is in Everything is not kept on the device.
     drafts.pruneSavedDrafts(target.owner).catch(() => {});
     return true;
   }
@@ -1764,11 +1764,11 @@ function saveFailedPrompt(target) {
       ? ` (${String(error.message).replace(/\.$/, "")})`
       : "";
   return {
-    title: "Your latest changes aren't saved to Puter",
+    title: "Your latest changes aren't saved to Everything",
     body: el(
       "p",
       { class: "dialog-body" },
-      `Puter could not save “${target.name}”${reason}. ${
+      `Everything could not save “${target.name}”${reason}. ${
         kept
           ? "Your changes are kept on this device and listed under Your presentations if you leave."
           : "This device could not keep a copy of them either, so leaving now loses them."
@@ -1997,11 +1997,11 @@ async function openCloud(file, { offerDraft = true } = {}) {
         body: el(
           "p",
           { class: "dialog-body" },
-          `“${name}” has changes on this device that were not saved to Puter.`,
+          `“${name}” has changes on this device that were not saved to Everything.`,
         ),
         actions: [
           { label: "Cancel", value: null },
-          { label: "Open the Puter version", value: "file" },
+          { label: "Open the Everything version", value: "file" },
           { label: "Recover changes", value: "draft", kind: "primary" },
         ],
       });
@@ -2044,7 +2044,7 @@ async function openCloud(file, { offerDraft = true } = {}) {
   }
 }
 // The newest recovery draft, other than the open presentation's, with
-// changes to `file` not saved to Puter.
+// changes to `file` not saved to Everything.
 async function unsavedDraftOf(file) {
   const list = await drafts.listDrafts(owner()).catch(() => []);
   return list.find(
@@ -2147,7 +2147,7 @@ async function openPicker() {
   if (request !== documentRequest) return;
   if (!cloud.canPickFiles())
     throw new Error(
-      "Puter's file picker is unavailable. Reload and try again.",
+      "Everything's file picker is unavailable. Reload and try again.",
     );
   const accountVersion = accountRequest;
   const file = await cloud.pickFile();
@@ -2304,7 +2304,7 @@ async function importFile(file) {
 // keeps failing, whatever the browser's own words for it; the save status
 // goes on showing that the work is unsaved.
 const STORAGE_WARNING =
-  "Device storage is unavailable. Save to Puter or download a copy to keep your work.";
+  "Device storage is unavailable. Save to Everything or download a copy to keep your work.";
 function warnStorage() {
   if (doc?.storageWarned) return;
   if (doc) doc.storageWarned = true;
@@ -2502,10 +2502,10 @@ async function settled() {
   commitText();
   await mutationTail;
 }
-// Resolves to whether the open presentation's latest revision is in Puter.
+// Resolves to whether the open presentation's latest revision is in Everything.
 // `force` writes over a file that changed elsewhere (the person chose to);
 // `quiet` leaves a conflict for the caller to put to the person. `chosen` is
-// the file Puter's Save dialog wrote for `chosen.target`: the save adopts it.
+// the file Everything's Save dialog wrote for `chosen.target`: the save adopts it.
 async function saveCloud(
   explicit = true,
   { force = false, quiet = false, chosen = null } = {},
@@ -2517,8 +2517,8 @@ async function saveCloud(
     if (!explicit) return false;
     if (!(await login())) return false;
   }
-  // Inside the Puter desktop the first file goes where the person chooses in
-  // Puter's Save dialog, which writes it; closing the dialog saves nothing.
+  // Inside the Everything desktop the first file goes where the person chooses in
+  // Everything's Save dialog, which writes it; closing the dialog saves nothing.
   // Autosave and its retries never open it: a presentation without a file
   // waits, in its draft, for a Save. The dialog is not kept in the queue,
   // since it may never answer.
@@ -2564,7 +2564,7 @@ async function saveCloud(
         chosen?.file ?? (await cloud.saveFile(bytes, target.name, target.path));
       target.path = file.path || target.path;
       if (!target.path)
-        throw new Error("Puter did not return the saved file location.");
+        throw new Error("Everything did not return the saved file location.");
       if (firstSave)
         target.name = cleanName(file.name || target.path.split("/").pop(), {
           maxLength: Infinity,
@@ -2595,8 +2595,8 @@ async function saveCloud(
         );
         // The dialog's folder is named, so the file can be found there.
         const where = chosen
-          ? `Saved to ${cloud.folderName(target.path) || "Home"} in your Puter.`
-          : "Saved to your Puter cloud.";
+          ? `Saved to ${cloud.folderName(target.path) || "Home"} in your Everything.`
+          : "Saved to your Everything cloud.";
         if (explicit)
           toast(recovered ? where : `${where} Local recovery is unavailable.`);
       } else if (firstSave) {
@@ -2621,7 +2621,7 @@ async function saveCloud(
       // few seconds, so the pauses grow.
       target.saveError = {
         message:
-          error?.message || error?.msg || "Puter could not save the file.",
+          error?.message || error?.msg || "Everything could not save the file.",
         offline: navigator.onLine === false,
       };
       if (doc === target && target.path && account) {
@@ -2750,7 +2750,7 @@ function conflictPrompt(target, { leaving = false } = {}) {
       body: el(
         "p",
         { class: "dialog-body" },
-        `“${target.name}” is no longer where it was in your Puter, and could not be found elsewhere. Your changes are not saved there.${keptNote}`,
+        `“${target.name}” is no longer where it was in your Everything, and could not be found elsewhere. Your changes are not saved there.${keptNote}`,
       ),
       actions: [
         ...stay,
@@ -2799,7 +2799,7 @@ async function reloadFromCloud(target) {
   }
 }
 // The file is gone: the presentation becomes a new one, and its first save
-// puts it where a new one goes (where the person chooses inside the Puter
+// puts it where a new one goes (where the person chooses inside the Everything
 // desktop, the Presentations folder elsewhere).
 async function saveAsNewFile(target) {
   const from = target.path;
@@ -2812,9 +2812,9 @@ async function saveAsNewFile(target) {
   recent.forgetRecent(target.owner, from);
   await saveCloud(true);
 }
-// A copy of the presentation under a new name in Puter, which then becomes
+// A copy of the presentation under a new name in Everything, which then becomes
 // the open presentation; the original stays as it was last saved. Inside the
-// Puter desktop, Puter's own Save dialog chooses the folder as well as the
+// Everything desktop, Everything's own Save dialog chooses the folder as well as the
 // name, and a second Save a copy while it is open opens no other; elsewhere
 // the copy goes to the Presentations folder under the name asked for.
 async function saveCopy() {
@@ -2839,7 +2839,7 @@ async function copyOf(target, useDialog) {
   const file = await saveQueue.run(async () => {
     if (doc !== target) return null;
     const bytes = await P.savePresentation(target.pres);
-    // Puter's dialog writes the file itself and never settles when it is
+    // Everything's dialog writes the file itself and never settles when it is
     // closed, so it is not kept in the queue that later saves wait on.
     if (useDialog) return { forDialog: bytes };
     // A typed ".pptx" is not part of the name; saveFile adds the extension.
@@ -2853,7 +2853,7 @@ async function copyOf(target, useDialog) {
     : file;
   if (!saved || doc !== target) return;
   if (!saved.path)
-    throw new Error("Puter did not return the saved file location.");
+    throw new Error("Everything did not return the saved file location.");
   const copyName = cleanName(saved.name || saved.path.split("/").pop(), {
     maxLength: Infinity,
   });
@@ -2877,7 +2877,7 @@ async function copyOf(target, useDialog) {
     toast(`Saved a copy as ${copyName}.`);
   if (view === "home") await loadLibrary();
 }
-// The tab and, inside the Puter desktop, the window are titled after the
+// The tab and, inside the Everything desktop, the window are titled after the
 // open presentation, and after the app in the library.
 function setTitle(name) {
   document.title = name ? `${name} | Presentation` : "Presentation";
@@ -2902,7 +2902,7 @@ function updateSaveStatus() {
   const busy = savingDocument === doc;
   const cloudSaved = savedRevision === revision;
   const onDevice = draftRevision === revision;
-  // What keeps the edits of a presentation in Puter from reaching it.
+  // What keeps the edits of a presentation in Everything from reaching it.
   const problem =
     !busy && !cloudSaved && doc.path
       ? doc.conflict ||
@@ -2911,7 +2911,7 @@ function updateSaveStatus() {
   const [state, glyph, label] = busy
     ? ["saving", "Cloud", "Saving…"]
     : cloudSaved
-      ? ["cloud", "Check", "Saved to Puter"]
+      ? ["cloud", "Check", "Saved to Everything"]
       : problem === "changed"
         ? ["conflict", "CircleAlert", "Changed elsewhere"]
         : problem === "missing"
@@ -2927,7 +2927,7 @@ function updateSaveStatus() {
                   "error",
                   "CircleAlert",
                   onDevice
-                    ? "Not saved to Puter · on this device"
+                    ? "Not saved to Everything · on this device"
                     : "Not saved",
                 ]
               : onDevice
@@ -2939,13 +2939,13 @@ function updateSaveStatus() {
     problem === "changed"
       ? "This presentation was saved from another tab or device since you opened it. Save to choose which version to keep."
       : problem === "missing"
-        ? "This presentation is no longer where it was in your Puter. Save to choose where it goes."
+        ? "This presentation is no longer where it was in your Everything. Save to choose where it goes."
         : problem === "offline"
-          ? "You are offline. Changes save to Puter when you reconnect."
+          ? "You are offline. Changes save to Everything when you reconnect."
           : problem === "error"
-            ? `Puter could not save: ${doc.saveError.message} Trying again shortly.`
+            ? `Everything could not save: ${doc.saveError.message} Trying again shortly.`
             : doc.path ||
-              "Save to Puter to access this presentation on other devices.";
+              "Save to Everything to access this presentation on other devices.";
   if (
     status.dataset.state === state &&
     status.title === hint &&
@@ -3561,7 +3561,7 @@ function editorTopbar() {
           "aria-label": "Quick Access Toolbar",
         },
         quick(
-          "Save to Puter",
+          "Save to Everything",
           "save",
           run(() => saveCloud()),
           {
@@ -4122,7 +4122,7 @@ const drawTools = createDrawTools({
   },
   renderSlide: (s) => preview(doc.pres, s),
   chat: () =>
-    cloud.canAI() ? globalThis.puter.ai.chat.bind(globalThis.puter.ai) : null,
+    cloud.canAI() ? globalThis.everything.ai.chat.bind(globalThis.everything.ai) : null,
   aiModel: AI_MODEL,
   // Ink to Math sets what it reads as an equation object (src/insert),
   // looked up when used: the insert features are made after the Draw tab.
@@ -7208,7 +7208,7 @@ function updatePanelToggles() {
 }
 window.addEventListener("resize", updatePanelToggles);
 /* ---------- AI assistant ----------
- * A chat beside the slide in which Puter's AI reads and edits the deck
+ * A chat beside the slide in which Everything's AI reads and edits the deck
  * (assistant-panel.js). Its edits go through mutate like any other, one undo
  * step each, and keep the user on the slide and selection they had.
  */
@@ -7436,7 +7436,7 @@ function fileMenu(anchor) {
         onSelect: run(() => newDeck("blank")),
       },
       {
-        label: "Open from Puter",
+        label: "Open from Everything",
         icon: "FolderOpen",
         shortcut: `${M}+O`,
         onSelect: run(openPicker),
@@ -7449,13 +7449,13 @@ function fileMenu(anchor) {
       { label: "Import PPTX", icon: "Upload", onSelect: pickLocal },
       { separator: true },
       {
-        label: "Save to Puter",
+        label: "Save to Everything",
         icon: "Save",
         shortcut: `${M}+S`,
         onSelect: run(() => saveCloud()),
       },
       {
-        label: "Save a copy to Puter",
+        label: "Save a copy to Everything",
         icon: "CopyPlus",
         shortcut: `${M}+Shift+S`,
         onSelect: run(saveCopy),
@@ -8020,8 +8020,8 @@ async function aboutDialog() {
         "p",
         { class: "muted" },
         cloud.asksWhereToSave()
-          ? "Saved presentations live in your own Puter cloud, in the folder you choose when you first save them. Recovery drafts stay on this device."
-          : "Saved presentations live in your own Puter cloud under Presentations/. Recovery drafts stay on this device.",
+          ? "Saved presentations live in your own Everything cloud, in the folder you choose when you first save them. Recovery drafts stay on this device."
+          : "Saved presentations live in your own Everything cloud under Presentations/. Recovery drafts stay on this device.",
       ),
     ),
     cancel: null,
@@ -16923,7 +16923,7 @@ document.addEventListener("dragover", (e) => {
 });
 document.addEventListener("drop", (e) => {
   hideDropPromise();
-  // Files dragged in from the Puter desktop or one of its folder windows do
+  // Files dragged in from the Everything desktop or one of its folder windows do
   // not come the browser's way: the SDK dispatches a drop of its own, with
   // the drive's entries in its detail and no dataTransfer.
   if (!e.dataTransfer) {
@@ -16980,7 +16980,7 @@ window.addEventListener("offline", () => {
   doc.saveError = { message: "You are offline.", offline: true };
   updateSaveStatus();
 });
-// Files on the drive handed to the app by the Puter desktop: the one it was
+// Files on the drive handed to the app by the Everything desktop: the one it was
 // launched with (a double-click, "Open with"), or those dragged onto the
 // window. A presentation opens where it lives, so its edits go back to it;
 // a picture goes on the current slide, as one dropped from the device does,
@@ -17060,10 +17060,10 @@ async function openLaunched(items) {
     renderHome();
   }
 }
-// The Puter desktop window's close button waits for this. A presentation
-// kept in Puter saves what autosave has not sent yet, and asks, as leaving it
+// The Everything desktop window's close button waits for this. A presentation
+// kept in Everything saves what autosave has not sent yet, and asks, as leaving it
 // for the library does, when that save cannot go through; one never saved to
-// Puter asks whether to save it, as a desktop app does. Without this the
+// Everything asks whether to save it, as a desktop app does. Without this the
 // window went at once, leaving the edits to a recovery draft nobody was told
 // about.
 let closing = null;
@@ -17093,7 +17093,7 @@ async function readyToClose() {
     if (doc !== target) return false;
     const kept = revision === draftRevision;
     const choice = await dialog({
-      title: `Save “${target.name}” to Puter before closing?`,
+      title: `Save “${target.name}” to Everything before closing?`,
       body: el(
         "p",
         { class: "dialog-body" },

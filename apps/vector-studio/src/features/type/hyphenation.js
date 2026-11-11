@@ -5,7 +5,7 @@
  * opens.
  *
  * Exceptions live in the preferences as `hyphenationExceptions`
- * ({ 'en-US': ['ty-po-graph-ic', 'Puter'] }): an entry's hyphens are the
+ * ({ 'en-US': ['ty-po-graph-ic', 'Everything'] }): an entry's hyphens are the
  * word's only breaks, an entry without hyphens is never hyphenated.
  */
 import { h } from '../../lib/dom.js';

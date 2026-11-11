@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 
-const signedIn = `window.puter = {env:'web',auth:{isSignedIn:()=>true,getUser:async()=>({username:'test-user'}),signIn:async()=>{},signOut:async()=>{}},fs:{readdir:async()=>[],write:async()=>({})},ui:{onLaunchedWithItems:()=>{},onItemsOpened:()=>{}}};`;
+const signedIn = `window.everything = {env:'web',auth:{isSignedIn:()=>true,getUser:async()=>({username:'test-user'}),signIn:async()=>{},signOut:async()=>{}},fs:{readdir:async()=>[],write:async()=>({})},ui:{onLaunchedWithItems:()=>{},onItemsOpened:()=>{}}};`;
 
 for (const width of [320, 360, 390, 430, 768, 1280])
   for (const account of ['local', 'signed in'])
@@ -10,7 +10,7 @@ for (const width of [320, 360, 390, 430, 768, 1280])
         page,
       }, testInfo) => {
         await page.setViewportSize({ width, height: 844 });
-        await page.route('**/sdk/puter.js', (route) =>
+        await page.route('**/sdk/everything.js', (route) =>
           route.fulfill({
             contentType: 'application/javascript',
             body: account === 'signed in' ? signedIn : '',
@@ -29,7 +29,7 @@ for (const width of [320, 360, 390, 430, 768, 1280])
         await expect(page.locator('.editor')).toHaveAttribute('aria-busy', 'false');
         await expect(
           page.getByRole('button', {
-            name: account === 'signed in' ? 'Save to Puter' : 'Sign in to save',
+            name: account === 'signed in' ? 'Save to Everything' : 'Sign in to save',
             exact: true,
           }),
         ).toBeVisible();

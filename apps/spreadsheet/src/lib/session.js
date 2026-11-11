@@ -1,20 +1,20 @@
 /**
  * Per-session state that is not part of any document: whether anyone is
- * signed in to Puter, who, and the small settings record (theme, regional
+ * signed in to Everything, who, and the small settings record (theme, regional
  * format). Views subscribe to 'change' to re-render the pieces that show these.
  *
- * Nobody has to sign in to work: the grid runs in the browser and Puter is
+ * Nobody has to sign in to work: the grid runs in the browser and Everything is
  * where files are saved, so a sign-in is asked for at the first action that
  * needs the cloud (saving, opening a file, listing the spreadsheets). Until
  * init() has asked the SDK the state is 'unknown' and nothing is gated.
- * Settings live in puter.kv for an account and in this browser otherwise, which
+ * Settings live in everything.kv for an account and in this browser otherwise, which
  * also keeps a copy of the account's for a boot that cannot reach the store;
  * choices made before signing in carry over to the account.
  */
 
 import { applyTheme } from '../ui/theme.js';
 import { setLocale } from '../core/format.js';
-import * as P from './puter.js';
+import * as P from './everything.js';
 import { setStorageUser, setGuestStorage, storageScope, adoptGuestStorage, adoptStorageFrom, isAccountScope } from './account-storage.js';
 
 // A failed identity look-up is asked again after this long, then at doubling intervals, up to the cap.
@@ -135,13 +135,13 @@ class Session extends EventTarget {
     return this.state === 'in';
   }
 
-  /** Known to have no Puter session: cloud actions ask for a sign-in first. */
+  /** Known to have no Everything session: cloud actions ask for a sign-in first. */
   get signedOut() {
     return this.state === 'out';
   }
 
   /**
-   * Open Puter's sign-in dialog. Resolves true once signed in, false when the
+   * Open Everything's sign-in dialog. Resolves true once signed in, false when the
    * dialog was dismissed. Concurrent callers share one dialog.
    */
   signIn() {
@@ -165,7 +165,7 @@ class Session extends EventTarget {
 
   /** The name to show. */
   get username() {
-    return this.user?.username || (this.state === 'out' ? 'Guest' : 'Puter user');
+    return this.user?.username || (this.state === 'out' ? 'Guest' : 'Everything user');
   }
 
   async update(patch) {

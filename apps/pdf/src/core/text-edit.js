@@ -551,7 +551,7 @@ export async function inspectText(doc, index, pdfPage, OPS, layers) {
         case 'BMC':
         case 'BDC': {
           marked.push({ actualText: s.actualText, paragraphData, wrapper });
-          if (args[0]?.value === 'PuterParagraph') {
+          if (args[0]?.value === 'EverythingParagraph') {
             paragraphData = readParagraphData(args);
             const opened = commands[at - 1];
             wrapper =

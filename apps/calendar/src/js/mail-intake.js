@@ -75,7 +75,7 @@ export function createMailIntake({
   user,
   toast = defaultToast,
   blocked = isBlocked,
-  getPuter = () => (typeof puter !== 'undefined' ? puter : null),
+  getEverything = () => (typeof everything !== 'undefined' ? everything : null),
   // Told how many invitations a pump newly put in the tray, so the app can say
   // so and offer a way to them. Never called for the first pump of a session:
   // a backlog that was already there is not news, and the tray shows it anyway.
@@ -292,7 +292,7 @@ export function createMailIntake({
   async function refreshCorrespondents() {
     if (corrAttempted) return;
     corrAttempted = true;
-    const p = getPuter();
+    const p = getEverything();
     if (!p || !p.email || typeof p.email.list !== 'function' || typeof p.email.get !== 'function') return;
     if (Date.now() - (corr.at || 0) < CORR_REFRESH_MS) return;
     try {
@@ -351,12 +351,12 @@ export function createMailIntake({
   /* ---- which attendee address the invitation reached us by -------------- */
 
   function computeInviteAttendee(record) {
-    const puterAddr = username() ? `${username()}@puter.email` : '';
+    const everythingAddr = username() ? `${username()}@everything.email` : '';
     const list = Array.isArray(record.attendees) ? record.attendees : [];
-    if (puterAddr && list.includes(puterAddr)) return puterAddr;
+    if (everythingAddr && list.includes(everythingAddr)) return everythingAddr;
     const self = selfEmail();
     if (self && list.includes(self)) return self;
-    return puterAddr;
+    return everythingAddr;
   }
 
   function mergeGuestsKeepingStatus(existingGuests, attendees) {
@@ -583,7 +583,7 @@ export function createMailIntake({
   /**
    * Own-echo: a REQUEST whose UID resolves, via OUR OWN
    * `@calendar.localhost` suffix, to an event the user hosts is our own
-   * invitation coming back through a Puter mailbox — not a real inbound
+   * invitation coming back through an Everything mailbox — not a real inbound
    * invitation, from anyone. Deliberately narrower than `findHostedByUid`: it
    * only trusts the suffix's own id lookup, not the general invite.uid
    * fallback, since only OUR exports ever mint that suffix.
@@ -622,7 +622,7 @@ export function createMailIntake({
     // Only reachable when mailInvitesShowUnknown surfaced this row at all
     // (see getPending) — the pill is how the tray says why it's asking.
     else if (!known) hint = 'Unknown sender';
-    else if (record.auth && record.auth.internal) hint = 'Puter user';
+    else if (record.auth && record.auth.internal) hint = 'Everything user';
 
     let whenText = '';
     try {
@@ -756,7 +756,7 @@ export function createMailIntake({
 
     // REQUEST / PUBLISH — own-echo rule: a REQUEST addressed to our
     // own UID scheme, for an event the user hosts, is our own invitation
-    // reflected back through a Puter mailbox. Not a real invitation from
+    // reflected back through an Everything mailbox. Not a real invitation from
     // anyone — drop it silently, before any trust decision.
     if (method === 'REQUEST' && resolveOwnEcho(item.uid)) {
       await deleteRecord(id);
@@ -992,7 +992,7 @@ export function createMailIntake({
       return;
     }
     try {
-      const p = getPuter();
+      const p = getEverything();
       const appId = p && p.appID;
       if (!appId || !p.events || typeof p.events.onLocal !== 'function') return;
       const sub = p.events.onLocal(`kv:${appId}:cal:mail:tick`, () => pump());

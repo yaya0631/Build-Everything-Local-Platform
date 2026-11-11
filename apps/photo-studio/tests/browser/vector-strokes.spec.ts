@@ -3,7 +3,7 @@ import { newDocument, layer } from "../../src/model/document";
 import { boot, openProject, panel, undo } from "./helpers";
 
 test.beforeEach(async ({ page }) => {
-  await boot(page, "default", "window.puter={};");
+  await boot(page, "default", "window.everything={};");
 });
 
 test("unsupported stroke descriptors produce an explicit compatibility notice", async ({

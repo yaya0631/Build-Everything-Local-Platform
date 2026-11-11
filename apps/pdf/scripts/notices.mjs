@@ -14,7 +14,7 @@ const dependencies = [
   'regenerator-runtime',
 ];
 const texts = [
-  'PDF Editor: third-party notices\n\nThese licenses apply to their respective dependencies, not to the application as a whole.\nPuter.js is loaded from /sdk/puter.js and is subject to Puter terms.\n',
+  'PDF Editor: third-party notices\n\nThese licenses apply to their respective dependencies, not to the application as a whole.\nEverything.js is loaded from /sdk/everything.js and is subject to Everything terms.\n',
 ];
 for (const name of dependencies) {
   const dir = `node_modules/${name}`;
@@ -94,7 +94,7 @@ texts.push(
     'readable source for the bundled Liberation Sans 1.07.4 fonts on a medium',
     'customarily used for software interchange, for no more than the cost of',
     'performing the distribution, by opening an issue at',
-    'https://github.com/HeyPuter/pdf-editor.',
+    'https://github.com/yaya0631/Build-Everything-Local-Platform',
     '',
     `${'-'.repeat(72)}`,
     'Liberation Sans license (GNU GPL v2 with the font exception)',

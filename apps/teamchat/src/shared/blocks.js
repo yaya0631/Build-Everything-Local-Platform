@@ -14,7 +14,7 @@
  *
  * `tc:ws:{id}:ev:s{n}` is the workspace's change-signal region
  * (src/shared/events.js): the `ev` segment under `tc:ws:{id}:` is reserved
- * for it and must never be given to anything else, since a Puter Events
+ * for it and must never be given to anything else, since an Everything Events
  * subscription anchors on the key prefix and a second meaning under `ev`
  * would blur what a signal key discloses.
  */
@@ -107,7 +107,7 @@ export const KEYS = {
   evRegion: (wsId) => `tc:ws:${wsId}:ev:`,
   /**
    * One shard of the signal region: `tc:ws:{wsId}:ev:s{n}`, exactly five
-   * `:`-segments. A Puter Events subscription anchors on an exact key only
+   * `:`-segments. An Everything Events subscription anchors on an exact key only
    * while it is within six segments; past that the anchor falls back to the
    * first six and the whole key becomes a filter, which — in a naming where
    * the shard index sat beyond that point — would put every shard on one

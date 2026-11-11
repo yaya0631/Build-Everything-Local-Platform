@@ -6,10 +6,10 @@ import { Doc } from '../src/lib/doc.js';
 import { saveDraft, loadDraft, draftKey } from '../src/lib/drafts.js';
 import { accountStorageKey } from '../src/lib/account-storage.js';
 import { listVersions, saveVersion } from '../src/lib/versions.js';
-import * as P from '../src/lib/puter.js';
+import * as P from '../src/lib/everything.js';
 import { Workbook } from '../src/core/workbook.js';
 import { memoryStorage } from './helpers/memory-storage.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 
 const recent = vi.hoisted(() => ({ forgetRecent: vi.fn() }));
 vi.mock('../src/lib/session.js', () => ({ session: { settings: {}, username: 'Test user', signedOut: false, addEventListener() {}, removeEventListener() {} } }));
@@ -25,8 +25,8 @@ if (!Blob.prototype.arrayBuffer) {
 }
 
 let mock;
-beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); mock = installMockPuter(); recent.forgetRecent.mockClear(); document.body.replaceChildren(); });
-afterEach(() => { closeMenu(); vi.restoreAllMocks(); document.body.replaceChildren(); delete globalThis.puter; });
+beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); mock = installMockEverything(); recent.forgetRecent.mockClear(); document.body.replaceChildren(); });
+afterEach(() => { closeMenu(); vi.restoreAllMocks(); document.body.replaceChildren(); delete globalThis.everything; });
 
 const settle = async (n) => { for (let i = 0; i < n; i++) await new Promise((r) => setTimeout(r, 0)); };
 const consentKey = (path) => `${accountStorageKey('spreadsheet:external')}${path}`;
@@ -71,7 +71,7 @@ it('carries the draft and the outside-content decision when a file is renamed fr
   expect(localStorage.getItem(consentKey('Spreadsheets/Plan.xlsx'))).toMatch(/^0:/);
   expect(recent.forgetRecent).toHaveBeenCalledWith('Spreadsheets/Budget.xlsx');
   // The browser's own record answers even when the account's store cannot be reached.
-  puter.kv.get = async () => { throw new Error('Network request failed'); };
+  everything.kv.get = async () => { throw new Error('Network request failed'); };
   const reopened = await Doc.fromPath('Spreadsheets/Plan.xlsx');
   expect(reopened.wb.externalAllowed).toBe(false);
   expect(text(reopened.recoverable)).toBe('offline edits');

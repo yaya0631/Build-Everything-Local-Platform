@@ -1,6 +1,6 @@
 import { beforeEach, expect, it, vi } from 'vitest';
 import * as Y from 'yjs';
-import { fakePuter, alice, bob, cam } from './helpers/puter.js';
+import { fakeEverything, alice, bob, cam } from './helpers/everything.js';
 import { encode } from '../src/collab/protocol.js';
 import { addPage } from '../src/data/tree.js';
 import { grantEvents } from '../src/collab/consent.js';
@@ -10,7 +10,7 @@ const ROOM = 'room0000abcd';
 beforeEach(() => DOCS.clear());
 
 async function shared(refuse) {
-  const env = fakePuter();
+  const env = fakeEverything();
   const tree = new Y.Doc();
   addPage(tree, { title: 'Handbook' });
   const mints = [];
@@ -57,16 +57,16 @@ it('holds back only the member a refusal is about', async () => {
 it('asks only the account the server runs as, and tells the space once granted', async () => {
   const request = vi.fn(async () => true);
   const space = { ownerUuid: alice.uuid, eventDescriptor: { app: 'app-wiki', key: 'wk:r:ev:signal' }, request: vi.fn(async () => ({})) };
-  const puter = { appID: 'app-wiki', perms: { request } };
-  expect(await grantEvents(puter, space)).toBe(true);
+  const everything = { appID: 'app-wiki', perms: { request } };
+  expect(await grantEvents(everything, space)).toBe(true);
   expect(request).toHaveBeenCalledWith('permission', { permission: `manage:kv-share:${alice.uuid}:app-wiki:wk` });
   expect(space.request).toHaveBeenCalledWith('events', { consented: true });
-  puter.perms.Resource = { KV_SHARE: 'kvShare' };
-  await grantEvents(puter, space);
+  everything.perms.Resource = { KV_SHARE: 'kvShare' };
+  await grantEvents(everything, space);
   expect(request).toHaveBeenLastCalledWith('kvShare', { prefix: 'wk:', access: 'watch' });
   // A manager who is not that account gets a handle, not the app's own subject, and is never asked.
   request.mockClear();
-  expect(await grantEvents(puter, { ...space, eventDescriptor: { handle: 'h', key: 'signal' } })).toBe(false);
-  expect(await grantEvents({ ...puter, appID: 'app-other' }, space)).toBe(false);
+  expect(await grantEvents(everything, { ...space, eventDescriptor: { handle: 'h', key: 'signal' } })).toBe(false);
+  expect(await grantEvents({ ...everything, appID: 'app-other' }, space)).toBe(false);
   expect(request).not.toHaveBeenCalled();
 });

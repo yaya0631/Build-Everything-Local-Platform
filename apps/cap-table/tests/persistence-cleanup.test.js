@@ -1,14 +1,14 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { Store } from '../src/lib/store.js';
 import { getKV } from '../src/lib/kv.js';
-import { puterBackend } from './helpers/puter-kv.js';
+import { everythingBackend } from './helpers/everything-kv.js';
 
 // Real Store + real conditional KV, with only the remote SDK replaced: what a
 // failed or misdirected write leaves behind in the user's storage.
 describe('storage left behind by failed and misdirected writes', () => {
   let backend;
   beforeEach(() => {
-    backend = puterBackend();
+    backend = everythingBackend();
     backend.install();
   });
   const reload = async () => { const s = new Store(); await s.init(); return s; };
@@ -33,10 +33,10 @@ describe('storage left behind by failed and misdirected writes', () => {
     const { a, holder, k } = await chunked();
     const before = generations(k);
     expect(before.size).toBe(1);
-    const set = puter.kv.set;
-    puter.kv.set = async (x, v) => {
+    const set = everything.kv.set;
+    everything.kv.set = async (x, v) => {
       if (x.startsWith(`${k}:revision:`) && x.endsWith(':value')) {
-        puter.kv.set = set;
+        everything.kv.set = set;
         if (landed) await set(x, v);
         throw new Error('offline');
       }
@@ -53,10 +53,10 @@ describe('storage left behind by failed and misdirected writes', () => {
 
   it('keeps the generation of a chunked save whose append landed with its acknowledgement lost', async () => {
     const { a, holder, k } = await chunked();
-    const add = puter.kv.add;
-    puter.kv.add = async (...args) => {
+    const add = everything.kv.add;
+    everything.kv.add = async (...args) => {
       if (!args[0].startsWith(k)) return add(...args);
-      puter.kv.add = add;
+      everything.kv.add = add;
       await add(...args);
       throw new Error('lost acknowledgement');
     };
@@ -77,8 +77,8 @@ describe('storage left behind by failed and misdirected writes', () => {
     const { a, holder, k } = await chunked();
     const before = generations(k);
     const live = JSON.parse(await getKV(k)).generation;
-    const add = puter.kv.add;
-    puter.kv.add = async (...args) => { if (!args[0].startsWith(k)) return add(...args); puter.kv.add = add; throw new Error('connection dropped'); };
+    const add = everything.kv.add;
+    everything.kv.add = async (...args) => { if (!args[0].startsWith(k)) return add(...args); everything.kv.add = add; throw new Error('connection dropped'); };
     await expect(a.updateStakeholder(holder.id, { name: 'Renamed' })).rejects.toThrow('connection dropped');
     /* Ambiguous to the writer, so the rollback is owed, and its own read of
        the key finds the value memory went back to already there, so nothing
@@ -106,11 +106,11 @@ describe('storage left behind by failed and misdirected writes', () => {
        then landed pointing at parts that were gone, and the next load threw
        CorruptDataError over the whole account. */
     const { a, holder, k } = await chunked();
-    const add = puter.kv.add;
+    const add = everything.kv.add;
     let landed;
-    puter.kv.add = async (...args) => {
+    everything.kv.add = async (...args) => {
       if (!args[0].startsWith(k)) return add(...args);
-      puter.kv.add = add;
+      everything.kv.add = add;
       landed = new Promise((r) => setTimeout(() => add(...args).then(r), 30));
       throw new Error('request timed out');
     };
@@ -158,7 +158,7 @@ describe('storage left behind by failed and misdirected writes', () => {
     await a.addStakeholder({ name: 'Founder', kind: 'founder' });
     await a.createCompany('Survivor');
     await a.switchCompany(doomed);
-    const kv = puter.kv;
+    const kv = everything.kv;
     const live = { get: kv.get, set: kv.set, add: kv.add, del: kv.del };
     // The registry write lands; the connection dies right after it.
     let dead = false;
@@ -256,13 +256,13 @@ describe('storage left behind by failed and misdirected writes', () => {
 
   it('takes every unresolved generation of a deleted company with it', async () => {
     const { a, holder, k } = await chunked();
-    const add = puter.kv.add;
-    const get = puter.kv.get;
-    puter.kv.add = async (...args) => {
+    const add = everything.kv.add;
+    const get = everything.kv.get;
+    everything.kv.add = async (...args) => {
       if (!args[0].startsWith(k)) return add(...args);
-      puter.kv.add = add;
+      everything.kv.add = add;
       // The connection stays down for the rollback's read too, so nothing resolves.
-      puter.kv.get = async (x) => { if (x.startsWith(k)) { puter.kv.get = get; throw new Error('offline'); } return get(x); };
+      everything.kv.get = async (x) => { if (x.startsWith(k)) { everything.kv.get = get; throw new Error('offline'); } return get(x); };
       throw new Error('connection dropped');
     };
     await expect(a.updateStakeholder(holder.id, { name: 'Renamed' })).rejects.toThrow('connection dropped');

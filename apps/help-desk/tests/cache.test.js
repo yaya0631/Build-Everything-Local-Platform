@@ -70,12 +70,12 @@ describe('losing access to a desk', () => {
     const real = Replica.prototype.open;
     Replica.prototype.open = async () => { throw new ApiError(403, { error: 'not_member', message: 'removed' }); };
     app.doc = { desks: { 'w/gone': {} } };
-    window.puter = { kv: { get: async () => null, set: async () => true, update: async () => ({}) }, auth: { getUser: async () => ({ uuid: 'u' }) } };
+    window.everything = { kv: { get: async () => null, set: async () => true, update: async () => ({}) }, auth: { getUser: async () => ({ uuid: 'u' }) } };
     try {
       await app.openDesk('w', 'gone').catch(() => {});
     } finally {
       Replica.prototype.open = real;
-      delete window.puter;
+      delete window.everything;
     }
     expect(await loadDesk('w/gone')).toBeNull();
   });

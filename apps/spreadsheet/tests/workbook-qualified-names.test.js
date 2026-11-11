@@ -119,7 +119,7 @@ it('distinguishes workbook names from real external links, including nested defi
 async function publicOnly(blob) {
   const zip = X.CFB.read(new Uint8Array(await blob.arrayBuffer()), { type: 'array' });
   const part = X.CFB.find(zip, '/xl/workbook.xml');
-  part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')); part.size = part.content.length;
+  part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')); part.size = part.content.length;
   return X.CFB.write(zip, { type: 'array', fileType: 'zip' });
 }
 it.each(['xlsx', 'public xlsx', 'ods'])('keeps live qualified formulas after %s round trips', async format => {

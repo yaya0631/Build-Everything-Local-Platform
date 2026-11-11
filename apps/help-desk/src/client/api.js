@@ -1,11 +1,11 @@
 /**
  * Talking to a help desk's backend. A desk is reached either through the
- * owner's Puter worker (`server` is the worker name) with the user's session
- * attached by puter.workers.exec(), or, before the owner has turned on team
+ * owner's Everything worker (`server` is the worker name) with the user's session
+ * attached by everything.workers.exec(), or, before the owner has turned on team
  * access, by running the same backend code right here in the browser over
  * the owner's own key-value store (`server` is 'local').
  */
-import { sdk, currentUser } from './puter.js';
+import { sdk, currentUser } from './everything.js';
 
 export class ApiError extends Error {
   constructor(status, body) {

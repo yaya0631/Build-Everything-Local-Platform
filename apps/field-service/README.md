@@ -2,7 +2,7 @@
 
 Free, open-source field service management for small service businesses (lawn care, cleaning, HVAC, plumbing, handyman work, and more). An open-source alternative to Jobber, Housecall Pro, and ServiceTitan.
 
-Built with vanilla JavaScript, Vite, [Lucide](https://lucide.dev) icons, and [Puter.js](http://localhost:8443) as the only backend. There is no framework and no server of its own.
+Built with vanilla JavaScript, Vite, [Lucide](https://lucide.dev) icons, and [Everything.js](http://localhost:8443) as the only backend. There is no framework and no server of its own.
 
 > **Early alpha.** Features may change and data could be lost. Please do not rely on it for real business records yet.
 
@@ -20,7 +20,7 @@ Built with vanilla JavaScript, Vite, [Lucide](https://lucide.dev) icons, and [Pu
   - Unscheduled jobs sit in a side panel; drag them onto the calendar.
 - **Invoices** are created from jobs, either for the whole job or per visit. Each invoice has payment terms and a due date. Status runs draft, awaiting payment, past due, paid, or bad debt, and the invoice keeps its payment history.
 - **Payments** are recorded by method and reference, can be applied to invoices, and export to CSV.
-- **Sending:** quotes and invoices are emailed from the app through Puter, can open in your email app, or can be printed or saved as PDF.
+- **Sending:** quotes and invoices are emailed from the app through Everything, can open in your email app, or can be printed or saved as PDF.
 - **Timesheets:**
   - clock in and out per team member, optionally against a job
   - weekly hours grid with labour cost
@@ -28,7 +28,7 @@ Built with vanilla JavaScript, Vite, [Lucide](https://lucide.dev) icons, and [Pu
   - CSV export for payroll
 - **Expenses** can carry receipt photos, link to jobs for costing, and track reimbursements.
 - **Reports** cover invoiced and collected revenue by month, receivables aging, quote win rate, revenue by service, top clients, visits per team member, expenses by category, and lead sources.
-- **Team sign-in.** The owner invites office staff and field crew with single-use links that expire after 7 days. Each person signs in with their own Puter account and works on the same business. Roles are admin and team member, and the owner can switch businesses or remove people at any time.
+- **Team sign-in.** The owner invites office staff and field crew with single-use links that expire after 7 days. Each person signs in with their own Everything account and works on the same business. Roles are admin and team member, and the owner can switch businesses or remove people at any time.
 - **Files and photos** can be attached to clients, requests, quotes, and jobs. Photos are downscaled in the browser before upload.
 - **Settings** cover:
   - business details and regional settings
@@ -50,7 +50,7 @@ Built with vanilla JavaScript, Vite, [Lucide](https://lucide.dev) icons, and [Pu
 
 ```sh
 npm install
-npm run dev      # http://field-service.puter.localhost:5173/
+npm run dev      # http://field-service.localhost:8443/
 npm test         # unit tests (Vitest)
 npm run build    # production build in dist/
 ```
@@ -59,13 +59,13 @@ Open `/?demo` to start straight in the demo without the welcome screen.
 
 ### Email worker
 
-Emailing quotes and invoices goes through one app-owned [Puter worker](http://localhost:8443/Workers/), because outbound mail has to be authorized by a worker's own token. The app calls it with `puter.workers.exec()`, which forwards the signed-in user's session, so each send is billed to, and rate-limited as, that user. The app owner deploys it once:
+Emailing quotes and invoices goes through one app-owned [Everything worker](http://localhost:8443/Workers/), because outbound mail has to be authorized by a worker's own token. The app calls it with `everything.workers.exec()`, which forwards the signed-in user's session, so each send is billed to, and rate-limited as, that user. The local server registers it automatically as `field-service-email` from `src/workers/email-worker.js`:
 
 ```sh
-npm run deploy:email-worker   # deploys src/workers/email-worker.js as field-service-email
+curl http://field-service-email.localhost:8443/health
 ```
 
-Until it is deployed, the send dialog still works through **Open in email app**, **Copy**, and **Print or PDF**.
+Until it is registered, the send dialog still works through **Open in email app**, **Copy**, and **Print or PDF**.
 
 ## Architecture
 
@@ -73,13 +73,13 @@ Until it is deployed, the send dialog still works through **Open in email app**,
 src/
   main.js            boot: sign-in, demo, welcome screen
   app.js             shared runtime context
-  platform.js        Puter auth, environment, profile picture
-  files.js           attachments in the app's Puter folder
+  platform.js        Everything auth, environment, profile picture
+  files.js           attachments in the app's Everything folder
   mailer.js          calling side of the email worker
   team.js            team sign-in: worker deploy, worker backend, invitations
   core/              framework-free logic (unit tested)
     store.js           local-first store and sync engine
-    backend.js         Puter KV and in-memory backends
+    backend.js         Everything KV and in-memory backends
     cache.js           IndexedDB snapshot cache
     totals.js          line items, discounts, tax, deposits (integer cents)
     status.js          derived statuses (late, past due, requires invoicing...)
@@ -98,19 +98,19 @@ tests/               Vitest unit tests
 
 ### Team sign-in
 
-Puter KV and files are private to each account, so a shared business runs through a [Puter worker](http://localhost:8443/Workers/) in the **owner's own account**. The worker source is `public/worker/field-service-team-worker.js`.
+Everything KV and files are private to each account, so a shared business runs through a [Everything worker](http://localhost:8443/Workers/) in the **owner's own account**. The worker source is `public/worker/field-service-team-worker.js`.
 
-- **Turning it on:** when the owner turns on team sign-in, the app writes the worker to their drive and deploys it with `puter.workers.create`. It then copies the owner's records and files into it.
-- **After that:** everyone, owner included, reads and writes through `puter.workers.exec`, which forwards each person's own session.
+- **Turning it on:** when the owner turns on team sign-in, the app writes the worker to their drive and deploys it with `everything.workers.create`. It then copies the owner's records and files into it.
+- **After that:** everyone, owner included, reads and writes through `everything.workers.exec`, which forwards each person's own session.
 - **Access checks:** the worker identifies the caller from that session, never from the request body, and checks membership on every request. Managing the team requires the owner or an admin.
 - **Invitations:** invite tokens are stored only as SHA-256 hashes, work once, and expire after 7 days. An invitation stops working if the person who sent it is removed.
-- **Joining asks first:** joining sends your Puter session to that business's worker, so the app always asks before joining. Only accept invitations from people you know.
+- **Joining asks first:** joining sends your Everything session to that business's worker, so the app always asks before joining. Only accept invitations from people you know.
 - **Key layout:** the worker uses the same KV layout as a single account, so the store and sync engine run unchanged on top of it (`createWorkerBackend` in `src/team.js`). The owner pays for the storage, and the data stays in their account.
 - **Updates:** when the app ships a newer worker build, the owner's copy is updated the next time they open the app.
 
 ### Storage design
 
-Puter KV is backed by DynamoDB, so the layout follows DynamoDB practice: small items, writes that touch only what changed, and prefix queries instead of scans.
+Everything KV is backed by DynamoDB, so the layout follows DynamoDB practice: small items, writes that touch only what changed, and prefix queries instead of scans.
 
 | Key | Holds |
 | --- | --- |
@@ -125,7 +125,7 @@ How sync works:
 - **Detecting other devices:** when a device bumps a version and gets back anything other than its own last version plus one, it knows another device wrote in between, and refreshes that collection.
 - **Visits:** visits are stored inside their job, so a 16-visit recurring job is one item rather than 16.
 - **Local first:** writes apply locally first, then go out in debounced batches with retry and backoff. An IndexedDB snapshot (including writes not yet sent) makes the app open instantly and keeps working offline.
-- **Files:** attachments live in the app's Puter folder (`files/`, `receipts/`), never in KV. Records keep only a small reference.
+- **Files:** attachments live in the app's Everything folder (`files/`, `receipts/`), never in KV. Records keep only a small reference.
 
 ### Performance notes
 
@@ -139,7 +139,7 @@ This is a forms, lists, and calendar app, so the right tools are plain DOM and S
 
 ## Data and privacy
 
-Each user's data lives in their own Puter account (KV and files). It is not shared with other users, and the app has no server of its own. The only exception is emailing a document, which passes the message through the email worker. That worker stores only hashed bookkeeping keys, so it holds nothing personal.
+Each user's data lives in their own Everything account (KV and files). It is not shared with other users, and the app has no server of its own. The only exception is emailing a document, which passes the message through the email worker. That worker stores only hashed bookkeeping keys, so it holds nothing personal.
 
 ## License
 

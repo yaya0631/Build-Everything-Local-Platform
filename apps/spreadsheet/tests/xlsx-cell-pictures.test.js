@@ -12,7 +12,7 @@ const zipOf = async wb => X.CFB.read(new Uint8Array(await (await workbookToXlsx(
 const bytes = z => X.CFB.write(z, { type: 'array', fileType: 'zip' });
 /** The file as another program saves it: the cells and rich values alone, without this app's own record. */
 function native(z) {
-  X.CFB.utils.cfb_add(z, '/xl/workbook.xml', new TextEncoder().encode(xml(z, '/xl/workbook.xml').replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')));
+  X.CFB.utils.cfb_add(z, '/xl/workbook.xml', new TextEncoder().encode(xml(z, '/xl/workbook.xml').replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')));
   return z;
 }
 

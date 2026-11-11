@@ -4,7 +4,7 @@
 
 ## Short description
 
-Build and send HTTP requests, write tests, organize collections and switch environments. Works in your browser, syncs with your Puter cloud.
+Build and send HTTP requests, write tests, organize collections and switch environments. Works in your browser, syncs with your Everything cloud.
 
 ## Long description
 
@@ -18,7 +18,7 @@ Write tests and pre-request scripts in JavaScript, then run a whole collection, 
 
 Import collection v2 files, OpenAPI, HAR, Insomnia exports and cURL commands, and copy any request as code in 17 languages.
 
-Requests go straight from your browser, or through the Puter relay when a server does not allow requests from web pages. Signed in, your workspace syncs across devices and you can share collections with other Puter users.
+Requests go straight from your browser, or through the Everything relay when a server does not allow requests from web pages. Signed in, your workspace syncs across devices and you can share collections with other Everything users.
 
 API Client works on a laptop, tablet or phone, follows your light or dark setting and is built to be usable with a keyboard and a screen reader.
 
@@ -30,5 +30,5 @@ API Client works on a laptop, tablet or phone, follows your light or dark settin
 - Pre-request and test scripts, plus a collection runner with data files.
 - WebSocket requests with a message log.
 - Import and export, cURL paste and code snippets in 17 languages.
-- Cloud sync and sharing with your Puter account.
+- Cloud sync and sharing with your Everything account.
 - System, light and dark themes.

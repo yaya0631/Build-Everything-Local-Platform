@@ -137,7 +137,7 @@ it('exports underlying wrapped text and its fill format even when the display is
   expect(copied.style).toMatchObject({code, wrap:true});
   const blob = await workbookToXlsx(wb), bytes = await new Promise(resolve => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.readAsArrayBuffer(blob); });
   const zip = XLSX.CFB.read(new Uint8Array(bytes), {type:'array'}), part = XLSX.CFB.find(zip, '/xl/workbook.xml');
-  part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   part.size = part.content.length;
   const back = await workbookFromFile(XLSX.CFB.write(zip, {type:'array',fileType:'zip'}), 'filled-text.xlsx');
   expect(back.getValue(back.activeSheetId,0,0)).toBe(value);

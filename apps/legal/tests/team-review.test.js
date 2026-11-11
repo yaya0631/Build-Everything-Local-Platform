@@ -14,10 +14,10 @@ import path from 'node:path';
 globalThis.Blob = NodeBlob;
 
 const WORKER_SOURCE = fs.readFileSync(path.join(__dirname, '../public/worker/legal-team-worker.js'), 'utf8');
-const person = (uuid, username) => ({ puter: { auth: { getUser: async () => ({ uuid, username }) } } });
+const person = (uuid, username) => ({ everything: { auth: { getUser: async () => ({ uuid, username }) } } });
 const OWNER = person('owner-1', 'eleanor');
 
-/** The firm worker over in-memory KV and files, plus a puter.workers.exec for one caller. */
+/** The firm worker over in-memory KV and files, plus an everything.workers.exec for one caller. */
 function loadWorker() {
   const routes = new Map();
   const router = { get: (p, fn) => routes.set(`GET ${p}`, fn), post: (p, fn) => routes.set(`POST ${p}`, fn) };
@@ -56,7 +56,7 @@ function loadWorker() {
     },
     delete: async (p) => void stored.delete(p),
   };
-  const me = { puter: { kv, fs: fsys, auth: { getUser: async () => ({ uuid: 'owner-1', username: 'eleanor' }) } } };
+  const me = { everything: { kv, fs: fsys, auth: { getUser: async () => ({ uuid: 'owner-1', username: 'eleanor' }) } } };
   const api = async (user, body) => {
     const res = await routes.get('POST /api')({ me, user, request: { json: async () => structuredClone(body) } });
     return { status: res.status, body: await res.json() };
@@ -89,7 +89,7 @@ describe('document files', () => {
 
   it('never opens an uploaded file as an active page under the app origin', async () => {
     const blobs = captureObjectUrls();
-    const html = '<script>alert(localStorage.getItem("puter.auth.token"))</script>';
+    const html = '<script>alert(localStorage.getItem("everything.auth.token"))</script>';
     // A colleague's document record can claim any type and any name.
     const ref = await files.saveFile(new Blob([html], { type: 'text/html' }), { name: 'brief.pdf' });
     const url = await files.fileUrl({ ...ref, type: 'text/html' });
@@ -112,11 +112,11 @@ describe('document files in a shared firm', () => {
     w = loadWorker();
     app.demo = false;
     app.team = { url: 'http://legalfirm-abc.localhost:8443', role: 'owner' };
-    globalThis.puter = { workers: { exec: w.exec(OWNER) } };
+    globalThis.everything = { workers: { exec: w.exec(OWNER) } };
   });
   afterEach(() => {
     app.team = null;
-    delete globalThis.puter;
+    delete globalThis.everything;
   });
 
   it('uploads files whose names contain consecutive dots', async () => {
@@ -132,12 +132,12 @@ describe('document files in a shared firm', () => {
   });
 });
 
-/** A Puter account that can deploy the firm worker: drive, workers, and fetch for the bundle and health. */
+/** An Everything account that can deploy the firm worker: drive, workers, and fetch for the bundle and health. */
 function ownerAccount(w, { create } = {}) {
   const drive = new Map();
   const deployed = [];
   const deleted = [];
-  const puter = {
+  const everything = {
     fs: {
       write: async (p, blob) => {
         drive.set(p, blob);
@@ -163,18 +163,18 @@ function ownerAccount(w, { create } = {}) {
     if (String(url).endsWith('/health')) return new Response(JSON.stringify({ ok: true, build: /build=(\w+)/.exec(WORKER_SOURCE)[1] }));
     return new Response(WORKER_SOURCE);
   };
-  return { puter, drive, deployed, deleted };
+  return { everything, drive, deployed, deleted };
 }
 
 describe('turning on team sign-in', () => {
   afterEach(() => {
-    delete globalThis.puter;
+    delete globalThis.everything;
   });
 
   it('does not report sample documents as not copied', async () => {
     const w = loadWorker();
     const acct = ownerAccount(w);
-    globalThis.puter = acct.puter;
+    globalThis.everything = acct.everything;
     const { buildSampleData } = await import('../src/core/sample.js');
     const store = createStore({ backend: createMemoryBackend(buildSampleData('2026-03-02')), flushDelay: 0 });
     await store.init();
@@ -187,16 +187,16 @@ describe('turning on team sign-in', () => {
 
 describe('turning on team sign-in when it fails midway', () => {
   afterEach(() => {
-    delete globalThis.puter;
+    delete globalThis.everything;
   });
 
   it('removes the half-set-up firm server so a retry starts clean', async () => {
     const w = loadWorker();
     const acct = ownerAccount(w);
-    acct.puter.workers.exec = async () => {
+    acct.everything.workers.exec = async () => {
       throw new TypeError('Failed to fetch');
     };
-    globalThis.puter = acct.puter;
+    globalThis.everything = acct.everything;
     const store = createStore({ backend: createMemoryBackend({ collections: { matters: [{ id: 'm1', description: 'A' }] } }), flushDelay: 0 });
     await store.init();
     await expect(team.enableTeam({ store })).rejects.toThrow(/firm server/);
@@ -229,8 +229,8 @@ describe('team sign-in settings: turning it on', () => {
         return { success: true, url: `http://${name}.localhost:8443` };
       },
     });
-    acct.puter.kv = { get: async () => null, set: async () => true };
-    globalThis.puter = acct.puter;
+    acct.everything.kv = { get: async () => null, set: async () => true };
+    globalThis.everything = acct.everything;
     app.demo = false;
     app.team = null;
     app.user = { username: 'eleanor', uuid: 'owner-1' };
@@ -250,7 +250,7 @@ describe('team sign-in settings: turning it on', () => {
     await tick();
   });
   afterEach(() => {
-    delete globalThis.puter;
+    delete globalThis.everything;
   });
 
   it('cannot be dismissed while the firm is being copied', async () => {
@@ -273,7 +273,7 @@ describe('team sign-in settings: turning it on', () => {
 
 describe('leaving a shared firm', () => {
   afterEach(() => {
-    delete globalThis.puter;
+    delete globalThis.everything;
     app.workspaces = null;
   });
 
@@ -284,7 +284,7 @@ describe('leaving a shared firm', () => {
     const inv = (await w.api(OWNER, { op: 'invite' })).body;
     await w.api(daniel, { op: 'join', token: inv.token });
     const saved = [];
-    globalThis.puter = { kv: { set: async (k, v) => saved.push(v) }, workers: { exec: w.exec(daniel) } };
+    globalThis.everything = { kv: { set: async (k, v) => saved.push(v) }, workers: { exec: w.exec(daniel) } };
     app.user = { username: 'daniel', uuid: 'u-2' };
     app.workspaces = { current: url, own: {}, joined: [{ url, business: 'Rivera Law', role: 'member' }] };
     await team.leaveWorkspace(url);
@@ -295,7 +295,7 @@ describe('leaving a shared firm', () => {
 
 describe('a joined firm', () => {
   afterEach(() => {
-    delete globalThis.puter;
+    delete globalThis.everything;
   });
 
   it('picks up a role the owner changed since joining', async () => {
@@ -308,7 +308,7 @@ describe('a joined firm', () => {
     await w.api(OWNER, { op: 'setRole', uuid: 'u-2', role: 'admin' });
     const saved = [];
     const kv = { set: async (k, v) => saved.push(v) };
-    globalThis.puter = { workers: { exec: w.exec(daniel) } };
+    globalThis.everything = { workers: { exec: w.exec(daniel) } };
     const ws = { current: url, own: {}, joined: [{ url, business: 'Shared firm', role: 'member' }] };
     const next = await team.refreshJoined(kv, ws, url);
     expect(next.joined[0]).toEqual({ url, business: 'Rivera Law', role: 'admin' });
@@ -333,7 +333,7 @@ describe('team sign-in settings: members', () => {
   }
 
   async function render(asWho, username, role) {
-    globalThis.puter = { workers: { exec: w.exec(asWho) } };
+    globalThis.everything = { workers: { exec: w.exec(asWho) } };
     app.demo = false;
     app.user = { username, uuid: 'x' };
     app.team = { url, role, business: 'Rivera Law' };
@@ -361,7 +361,7 @@ describe('team sign-in settings: members', () => {
     await join(bob, 'member');
   });
   afterEach(() => {
-    delete globalThis.puter;
+    delete globalThis.everything;
     app.team = null;
   });
 
@@ -372,7 +372,7 @@ describe('team sign-in settings: members', () => {
     sel.dispatchEvent(new Event('change'));
     for (let i = 0; i < 5; i++) await tick();
     expect(w.kv.data.get('lgt:m:u-4').role).toBe('admin');
-    globalThis.puter.workers.exec = async () => {
+    globalThis.everything.workers.exec = async () => {
       throw new TypeError('Failed to fetch');
     };
     sel.value = 'member';
@@ -470,13 +470,13 @@ describe('which firm to open', () => {
 
 describe('turning on team sign-in with older file names', () => {
   afterEach(() => {
-    delete globalThis.puter;
+    delete globalThis.everything;
   });
 
   it('copies a document whose stored name has ".." in it', async () => {
     const w = loadWorker();
     const acct = ownerAccount(w);
-    globalThis.puter = acct.puter;
+    globalThis.everything = acct.everything;
     const path = 'docs/m1/mabc123-Smith v. Jones..final.pdf';
     acct.drive.set(path, new Blob(['%PDF'], { type: 'application/pdf' }));
     const doc = { id: 'd1', matterId: 'm1', name: 'Smith v. Jones..final.pdf', file: { path, name: 'Smith v. Jones..final.pdf', type: 'application/pdf', size: 4 } };
@@ -495,8 +495,8 @@ describe('leaving a firm you were already removed from', () => {
     const removed = vi.fn();
     window.addEventListener('legal:removed', removed);
     const exec = async () => new Response(JSON.stringify({ ok: false, error: 'not_a_member', message: 'You are not a member of this firm.' }), { status: 403 });
-    await expect(team.call('http://legalfirm-abc.localhost:8443', 'leave', {}, { getPuter: () => ({ workers: { exec } }) })).rejects.toMatchObject({ code: 'not_a_member' });
-    await expect(team.call('http://legalfirm-abc.localhost:8443', 'load', { coll: 'matters' }, { getPuter: () => ({ workers: { exec } }) })).rejects.toBeTruthy();
+    await expect(team.call('http://legalfirm-abc.localhost:8443', 'leave', {}, { getEverything: () => ({ workers: { exec } }) })).rejects.toMatchObject({ code: 'not_a_member' });
+    await expect(team.call('http://legalfirm-abc.localhost:8443', 'load', { coll: 'matters' }, { getEverything: () => ({ workers: { exec } }) })).rejects.toBeTruthy();
     window.removeEventListener('legal:removed', removed);
     // Only the ordinary request reports it.
     expect(removed).toHaveBeenCalledTimes(1);

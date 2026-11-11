@@ -35,10 +35,10 @@ async function rtlDeck() {
 test("right-to-left paragraphs keep their reading order in the slide image", async ({
   page,
 }) => {
-  await page.route("**/sdk/puter.js", (route) =>
+  await page.route("**/sdk/everything.js", (route) =>
     route.fulfill({
       contentType: "application/javascript",
-      body: 'window.puter={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',
+      body: 'window.everything={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',
     }),
   );
   await page.goto("/#/home");

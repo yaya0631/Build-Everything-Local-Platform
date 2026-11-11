@@ -6,8 +6,8 @@ import { h, clear } from './dom.js';
 import { icon } from './icons.js';
 import { openDialog, toast, confirmDialog } from './dialog.js';
 import { decodeProject, baseName } from '../io/native.js';
-import { cloudList, cloudRead, deviceOpen, usePuterPickers, puterOpenPicker } from '../io/storage.js';
-import { isSignedIn, puterAvailable } from '../platform.js';
+import { cloudList, cloudRead, deviceOpen, useEverythingPickers, everythingOpenPicker } from '../io/storage.js';
+import { isSignedIn, everythingAvailable } from '../platform.js';
 import { linkData } from '../core/links.js';
 import { upgradeDoc } from '../core/template.js';
 import { MODEL_KINDS } from '../core/scene.js';
@@ -22,14 +22,14 @@ function modelCount(doc) {
 
 /** Ask where the project to link is: resolves to { name, path?, buffer } or null. */
 export async function chooseProject(app) {
-  if (usePuterPickers()) {
+  if (useEverythingPickers()) {
     try {
-      return await puterOpenPicker();
+      return await everythingOpenPicker();
     } catch {
       return null;
     }
   }
-  const signed = puterAvailable() && (await isSignedIn().catch(() => false));
+  const signed = everythingAvailable() && (await isSignedIn().catch(() => false));
   return new Promise((resolve) => {
     let done = false;
     const finish = (v) => {
@@ -46,14 +46,14 @@ export async function chooseProject(app) {
         const f = await deviceOpen();
         if (f) finish({ name: f.name, buffer: f.buffer });
       } }, icon('device', 16), 'Choose a file on this device')),
-      signed ? h('h3.dlg-sub', 'Your projects in Puter') : h('p.field-hint', 'Sign in to link projects from your Puter storage.'),
+      signed ? h('h3.dlg-sub', 'Your projects in Everything') : h('p.field-hint', 'Sign in to link projects from your Everything storage.'),
       list,
     );
     if (signed)
       cloudList()
         .then(({ items }) => {
           clear(list);
-          if (!items.length) list.append(h('li.file-empty', 'No projects in Puter yet.'));
+          if (!items.length) list.append(h('li.file-empty', 'No projects in Everything yet.'));
           for (const f of items)
             list.append(h('li', h('button.file-item', { type: 'button', onClick: async () => finish({ name: f.name, path: f.path, buffer: await cloudRead(f.path) }) }, icon('cloud', 16), h('span.file-name', baseName(f.name)))));
         })
@@ -89,7 +89,7 @@ export async function reloadLink(app, id, pick = false) {
   if (!el) return;
   let src = null;
   try {
-    if (!pick && el.path && puterAvailable()) src = { name: el.name, path: el.path, buffer: await cloudRead(el.path) };
+    if (!pick && el.path && everythingAvailable()) src = { name: el.name, path: el.path, buffer: await cloudRead(el.path) };
     else src = await chooseProject(app);
   } catch (err) {
     return toast(`Could not read ${el.path}: ${err.message || err}. Use Reload From to choose the file.`, { kind: 'error' });

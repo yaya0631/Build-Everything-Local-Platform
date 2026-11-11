@@ -39,13 +39,13 @@ const fileReply = async ({ cc = [] } = {}) => {
     '> them up as we go.',
   ].join('\n');
   const raw = buildMessage({
-    from: 'sample@puter.email',
+    from: 'sample@everything.email',
     to: ['priya@northgate.example'],
     cc,
     subject: `Re: ${THREAD}`,
     body,
     date: new Date(),
-    messageId: `<${Math.random().toString(36).slice(2)}@puter.email>`,
+    messageId: `<${Math.random().toString(36).slice(2)}@everything.email>`,
     inReplyTo: '<walkthrough-3@northgate.example>',
     references: [
       '<walkthrough-1@northgate.example>',
@@ -80,7 +80,7 @@ afterEach(() => {
 describe('finding the rest of a conversation', () => {
   it('opens threads without a history warning before Sent or Archive exists', async () => {
     await mount();
-    for (const subject of [THREAD, 'Welcome to your Puter mailbox']) {
+    for (const subject of [THREAD, 'Welcome to your Everything mailbox']) {
       rowFor(subject).click();
       await vi.waitFor(() => {
         expect(cards().length).toBeGreaterThan(0);
@@ -130,7 +130,7 @@ describe('finding the rest of a conversation', () => {
     await mount();
 
     listed.length = 0;
-    rowFor('Welcome to your Puter mailbox').click();
+    rowFor('Welcome to your Everything mailbox').click();
     await settle(400);
     // The first open lists the inbox, Sent and Archive to look for the rest of
     // the conversation: the folder itself plus one readdir per day folder.
@@ -284,7 +284,7 @@ describe('the start of a conversation on an older page', () => {
 
   const raw = (subject, extra = []) => [
     'From: Dana Ruiz <dana@example.com>',
-    'To: you@puter.email',
+    'To: you@everything.email',
     `Subject: ${subject}`,
     'Date: Mon, 17 Aug 2026 10:30:00 GMT',
     ...extra,
@@ -416,11 +416,11 @@ describe('the reader\'s own message in the stack', () => {
     await vi.waitFor(() => expect(cards()[3].querySelector('.msg-body')).not.toBeNull());
 
     // The rows and the "to" lines already say "me" for an address the reader
-    // owns; the sent card said "sample@puter.email", the one bare address in
+    // owns; the sent card said "sample@everything.email", the one bare address in
     // a stack of names.
     const mine = cards()[3];
     expect(mine.querySelector('.msg-from-name').textContent).toBe('me');
-    expect(mine.querySelector('.msg-from-email').textContent).toBe('<sample@puter.email>');
+    expect(mine.querySelector('.msg-from-email').textContent).toBe('<sample@everything.email>');
     // The disc is drawn from the address rather than from the word.
     expect(mine.querySelector('.avatar').textContent).toBe('S');
     expect(mine.querySelector('.msg-expander').getAttribute('aria-label'))

@@ -99,7 +99,7 @@ export function appendSlicerStyles(xml, paints, palette = null) {
     const key = JSON.stringify(format);
     if (shared.has(key)) return shared.get(key);
     let name;
-    do { name = `PuterSlicerStyle${serial++}`; } while (used.has(name.toLowerCase()));
+    do { name = `EverythingSlicerStyle${serial++}`; } while (used.has(name.toLowerCase()));
     used.add(name.toLowerCase()); shared.set(key, name);
     const table = create('tableStyle');
     for (const [key, value] of Object.entries({ name, pivot: 0, table: 0, count: Object.keys(format.frame).length })) table.setAttribute(key, String(value));

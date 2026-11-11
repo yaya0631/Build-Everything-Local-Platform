@@ -1,11 +1,11 @@
 /**
  * Compare Documents and Combine Documents. The reader picks an original and a revised document
- * (this one, a file from the device, or one from Puter); the result is a new document whose
+ * (this one, a file from the device, or one from Everything); the result is a new document whose
  * differences are tracked changes, shown first beside both sources and then opened or downloaded.
  */
 import { el } from '../ui/dom.js';
 import { openModal } from '../ui/modal.js';
-import * as P from '../lib/puter.js';
+import * as P from '../lib/everything.js';
 import { engineApi } from '../lib/engine-api.js';
 import { hint, preference } from './review-ui.js';
 
@@ -40,7 +40,7 @@ export function openCompareDialog({ mode = 'compare', editor, pkg, documentName,
     const current = () => {
       choose(key, { name: `${documentName() || 'This document'} (open now)`, current: true, read: currentBytes });
     };
-    const fromPuter = async () => {
+    const fromEverything = async () => {
       const picked = await P.pickFile({ accept: ['.docx'] });
       if (picked) choose(key, { name: picked.name, read: async () => new Uint8Array(await (await P.readFile(picked.path)).arrayBuffer()) });
     };
@@ -48,7 +48,7 @@ export function openCompareDialog({ mode = 'compare', editor, pkg, documentName,
       el('div.rv-actions', {},
         el('button.btn.btn-outline.btn-sm', { type: 'button', onclick: current }, 'This document'),
         el('button.btn.btn-outline.btn-sm', { type: 'button', onclick: () => fileInput.click() }, 'From device…'),
-        P.canPickFiles() ? el('button.btn.btn-outline.btn-sm', { type: 'button', onclick: fromPuter }, 'From Puter…') : null), fileInput) };
+        P.canPickFiles() ? el('button.btn.btn-outline.btn-sm', { type: 'button', onclick: fromEverything }, 'From Everything…') : null), fileInput) };
   };
   const original = slot('original', 'Original document'), revised = slot('revised', 'Revised document');
   const label = el('input.input', { value: '', placeholder: combine ? 'Author of the revised copy' : 'Author of the revised document', 'aria-label': 'Label changes with' });

@@ -1,13 +1,13 @@
 /**
- * Publishing a document as a web page on Puter hosting. The HTML export is
+ * Publishing a document as a web page on Everything hosting. The HTML export is
  * written to Documents/.published/<slug>/index.html, and that folder is
- * served from a localhost:8443 subdomain (puter.hosting). A private JSON file
+ * served from a localhost:8443 subdomain (everything.hosting). A private JSON file
  * beside the served folder records the subdomain and source path, so any
  * device can find the publication without exposing that metadata to readers.
  * Updating rewrites index.html; stopping deletes the site, folder, and record.
  */
 
-import * as P from './puter.js';
+import * as P from './everything.js';
 
 export const PUBLISH_FOLDER = `${P.FOLDER}/.published`;
 export const SITE_HOST = 'localhost:8443';
@@ -193,7 +193,7 @@ export async function publishPage(docPath, name, html, { existing = null, random
       try { await P.hostingDelete(subdomain); }
       catch (cleanupError) {
         if (!P.isNotFound(cleanupError)) {
-          throw new Error(`The page may still be live at ${siteUrl(subdomain)}, but its publication record could not be saved. Check this address and remove the page from Puter hosting.`, { cause: error });
+          throw new Error(`The page may still be live at ${siteUrl(subdomain)}, but its publication record could not be saved. Check this address and remove the page from Everything hosting.`, { cause: error });
         }
       }
     }

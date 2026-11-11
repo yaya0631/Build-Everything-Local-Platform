@@ -13,7 +13,7 @@ describe('sign out', () => {
   it('waits for the snapshots to be deleted when the file cache fails', async () => {
     globalThis.localStorage = { removeItem() {}, getItem: () => null, setItem() {} };
     globalThis.location = { reload: vi.fn() };
-    globalThis.puter = { auth: { signOut: vi.fn() } };
+    globalThis.everything = { auth: { signOut: vi.fn() } };
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const platform = await import('../src/platform.js');
     await platform.signOut('u1');

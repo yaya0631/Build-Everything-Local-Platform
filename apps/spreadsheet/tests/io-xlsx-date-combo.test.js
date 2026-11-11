@@ -62,7 +62,7 @@ it('exports native date categories and chart groups that reopen without private 
     expect(categories).toHaveLength(4);
     for (const [, cat] of categories) expect([...cat.matchAll(/<c:v>([^<]+)<\/c:v>/g)].map(m => +m[1])).toEqual([45000, 45001, 45010]);
     const part = X.CFB.find(zip, '/xl/workbook.xml');
-    part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+    part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
     part.size = part.content.length;
     wb = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'external.xlsx');
     expect(firstArea(svgOf(wb))).toBe(expected);

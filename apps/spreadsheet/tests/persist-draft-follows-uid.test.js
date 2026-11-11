@@ -3,17 +3,17 @@ import { Doc } from '../src/lib/doc.js';
 import { draftKey, loadDraft, listDrafts, saveDraft } from '../src/lib/drafts.js';
 import { Workbook } from '../src/core/workbook.js';
 import { memoryStorage } from './helpers/memory-storage.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 
 let mock;
 // SheetJS is loaded on first use with a real dynamic import; warm it up so no test waits on it.
 beforeAll(async () => { await Doc.blank().toXlsxBlob(); });
-beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); mock = installMockPuter(); vi.useFakeTimers(); });
-afterEach(() => { vi.useRealTimers(); delete globalThis.puter; });
+beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); mock = installMockEverything(); vi.useFakeTimers(); });
+afterEach(() => { vi.useRealTimers(); delete globalThis.everything; });
 
 const text = (json) => json?.sheets[0].cells['0,0'].v;
 
-/** A saved file with a draft of later edits that never reached Puter, as a closed tab leaves behind. */
+/** A saved file with a draft of later edits that never reached Everything, as a closed tab leaves behind. */
 async function fileWithDraft(name = 'Budget') {
   const original = Doc.blank();
   original.wb.setInput(original.wb.activeSheetId, 0, 0, 'saved');
@@ -31,7 +31,7 @@ async function fileWithDraft(name = 'Budget') {
 it('offers the draft of a file renamed elsewhere when the file is opened under its new name', async () => {
   const path = await fileWithDraft();
   await fileWithDraft('Other'); // another file's draft must not be taken for it
-  await puter.fs.rename(path, 'Q3.xlsx');
+  await everything.fs.rename(path, 'Q3.xlsx');
   const doc = await Doc.fromPath('Spreadsheets/Q3.xlsx');
   try {
     expect(doc.uid).toBe(mock.fs.get('Spreadsheets/Q3.xlsx').uid);
@@ -46,7 +46,7 @@ it('offers the draft of a file renamed elsewhere when the file is opened under i
 
 it('leaves a draft kept under the new address alone, and one of a draft written before file ids were kept where it is', async () => {
   const path = await fileWithDraft();
-  await puter.fs.rename(path, 'Q3.xlsx');
+  await everything.fs.rename(path, 'Q3.xlsx');
   const newer = new Workbook();
   newer.setInput(newer.activeSheetId, 0, 0, 'drafted under the new name');
   expect(saveDraft(draftKey('Spreadsheets/Q3.xlsx'), newer, 'Q3', 'rev-new', { fileModified: 1 })).toBe(true);
@@ -59,7 +59,7 @@ it('leaves a draft kept under the new address alone, and one of a draft written 
   old.setInput(old.activeSheetId, 0, 0, 'from before ids were kept');
   const legacy = 'Spreadsheets/Legacy.xlsx';
   expect(saveDraft(draftKey(legacy), old, 'Legacy', 'rev-legacy')).toBe(true);
-  await puter.fs.write('Spreadsheets/Fresh.xlsx', await Doc.blank().toXlsxBlob());
+  await everything.fs.write('Spreadsheets/Fresh.xlsx', await Doc.blank().toXlsxBlob());
   const fresh = await Doc.fromPath('Spreadsheets/Fresh.xlsx');
   try {
     expect(fresh.recoverable).toBeNull();
@@ -75,7 +75,7 @@ it('moves the draft of a file renamed elsewhere onto an address a stranger\'s re
   const stranger = new Workbook();
   stranger.setInput(stranger.activeSheetId, 0, 0, 'a stranger');
   expect(saveDraft(draftKey('Spreadsheets/Q3.xlsx'), stranger, 'Q3', 'rev-gone', { fileUid: 'uid-gone' })).toBe(true);
-  await puter.fs.rename(path, 'Q3.xlsx');
+  await everything.fs.rename(path, 'Q3.xlsx');
   const doc = await Doc.fromPath('Spreadsheets/Q3.xlsx');
   try {
     expect(text(doc.recoverable?.workbook)).toBe('never saved in Budget');

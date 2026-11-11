@@ -16,7 +16,7 @@ import { dataSection } from './settings/data.js';
 import { listsSection } from './settings/lists.js';
 import pkg from '../../package.json';
 
-const REPO_URL = 'https://github.com/heyputer/everything';
+const REPO_URL = 'https://github.com/yaya0631/Build-Everything-Local-Platform';
 
 export const SECTIONS = [
   { id: 'company', label: 'Company', icon: 'building' },
@@ -256,7 +256,7 @@ function appearanceSection() {
 function accessSection() {
   return h(
     'div.stack.settings-stack',
-    h('p.subtle.settings-lead', 'Let property managers, leasing agents and bookkeepers sign in with their own Puter accounts and work on the same company. Everyone sees the same properties, leases and books.'),
+    h('p.subtle.settings-lead', 'Let property managers, leasing agents and bookkeepers sign in with their own Everything accounts and work on the same company. Everyone sees the same properties, leases and books.'),
     teamAccessCard(),
   );
 }
@@ -268,12 +268,12 @@ function aboutSection() {
     h(
       'div.card-body.stack',
       h('div.row', h('img', { src: './icons/icon-192.png', alt: '', width: 48, height: 48, style: { borderRadius: '12px' } }), h('div', h('div.about-name', 'Property Management'), h('div.subtle', `Version ${pkg.version} · Early alpha`))),
-      h('p.muted', 'Free and open-source property management: properties, leases, rent, accounting, maintenance and reports. Part of the Everything project, built with plain JavaScript and Puter.'),
+      h('p.muted', 'Free and open-source property management: properties, leases, rent, accounting, maintenance and reports. Part of the Everything project, built with plain JavaScript and Everything.'),
       h('div.notice.warning', icon('warning'), h('span', 'This app is in early development. Features may change and data could be lost, so keep backups and do not use it for real tenant, lease or accounting records yet.')),
       h(
         'div.row.wrap',
         h('a.btn', { href: REPO_URL, target: '_blank', rel: 'noopener noreferrer' }, icon('github', 16), 'Source code on GitHub'),
-        h('a.btn.ghost', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener noreferrer' }, 'Powered by Puter', icon('external', 14)),
+        h('a.btn.ghost', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener noreferrer' }, 'Powered by Everything', icon('external', 14)),
       ),
       h('h3.about-sub', 'Open-source components'),
       h('ul.about-list', h('li', 'Lucide icons, ISC license')),

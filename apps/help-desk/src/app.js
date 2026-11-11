@@ -11,7 +11,7 @@ import { toastError } from './ui/toast.js';
 
 /**
  * The app's public address without the query string, which can carry
- * Puter session parameters that must never end up in shared links.
+ * Everything session parameters that must never end up in shared links.
  */
 export function appBaseUrl() {
   return `${location.origin}${location.pathname}`;

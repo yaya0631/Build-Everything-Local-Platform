@@ -1,7 +1,7 @@
 {
   "name": "api-client",
   "version": "0.1.0",
-  "description": "API Client: build, send, test and organize HTTP requests in your browser, with optional sync to your Puter cloud.",
+  "description": "API Client: build, send, test and organize HTTP requests in your browser, with optional sync to your Everything cloud.",
   "type": "module",
   "private": true,
   "scripts": {

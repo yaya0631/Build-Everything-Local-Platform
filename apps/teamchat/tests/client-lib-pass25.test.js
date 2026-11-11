@@ -20,7 +20,7 @@ const tick = (ms = 2) => new Promise((r) => setTimeout(r, ms));
 /** Route each call by the end of its path (first match wins); a handler gets the query and the request init. */
 function worker(routes) {
   const calls = [];
-  globalThis.puter = {
+  globalThis.everything = {
     workers: {
       exec: async (url, init = {}) => {
         const u = new URL(url);
@@ -51,7 +51,7 @@ function closeAcme() {
   store.profile = null;
   store.links = new Map();
   store.act = { c: {}, p: {}, w: 0, u: 0 };
-  delete globalThis.puter;
+  delete globalThis.everything;
 }
 
 /* ---- lib/store.js: the Later lists kept for reuse go once a change to them has landed ---- */
@@ -124,7 +124,7 @@ describe('a live post of one\'s own, with a mention of oneself or unread replies
     const state = { holdDoc: null, docMentions: 1 };
     const calls = worker({});
     // Routed by hand: the helper matches path ends, and both conversations' posts end in /messages.
-    globalThis.puter.workers.exec = async (url, init = {}) => {
+    globalThis.everything.workers.exec = async (url, init = {}) => {
       const u = new URL(url);
       calls.push(`${init.method || 'GET'} ${u.pathname}${u.search}`);
       const post = /\/conv\/([^/]+)\/messages$/.exec(u.pathname);
@@ -225,7 +225,7 @@ describe('deleting a reply of a thread', () => {
   function threaded({ rootInWindow = true } = {}) {
     openAcme();
     const calls = worker({});
-    globalThis.puter.workers.exec = async (url, init = {}) => {
+    globalThis.everything.workers.exec = async (url, init = {}) => {
       const u = new URL(url);
       calls.push(`${init.method || 'GET'} ${u.pathname}`);
       if (init.method === 'DELETE' && /\/messages\/\d+$/.test(u.pathname)) return json({ ok: true });

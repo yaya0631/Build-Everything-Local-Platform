@@ -177,7 +177,7 @@ describe('App', () => {
     expect(results[0].querySelector('mark').textContent).toBe('tulips');
   });
 
-  it('offers Sign Out on the web but never inside a Puter app', async () => {
+  it('offers Sign Out on the web but never inside an Everything app', async () => {
     expect(app.accountItems().some((i) => i.label === 'Sign Out')).toBe(true);
     const inApp = await mount({ env: 'app' });
     expect(inApp.app.accountItems().some((i) => i.label === 'Sign Out')).toBe(false);

@@ -6,7 +6,7 @@ import { toast } from './toast.js';
 import { openModal } from './modal.js';
 import { radioGroupKeys } from './bits.js';
 import { downloadBlob } from './backupactions.js';
-import { canSaveFiles, saveToPuter } from '../lib/puterui.js';
+import { canSaveFiles, saveToEverything } from '../lib/everythingui.js';
 import { projectMarkdown, projectCsv } from '../lib/exportdocs.js';
 import { doneColumnIds } from '../lib/board.js';
 import { matchesFilter, isFilterActive } from '../lib/filters.js';
@@ -163,12 +163,12 @@ export async function openExportProject(projectId) {
     };
   }
 
-  async function run(toPuter, button) {
+  async function run(toEverything, button) {
     button.disabled = true;
     try {
       const { blob, filename, note } = await build();
-      if (toPuter) {
-        const saved = await saveToPuter(blob, filename);
+      if (toEverything) {
+        const saved = await saveToEverything(blob, filename);
         if (!saved) return; // the picker was dismissed; nothing to report
         toast(`Saved to ${saved.path}${note}`, { icon: 'cloud' });
       } else {
@@ -190,11 +190,11 @@ export async function openExportProject(projectId) {
     onclick: () => run(false, downloadBtn),
   }, ' Download');
 
-  const puterBtn = canSaveFiles() && el('button.btn.btn-ghost', {
+  const everythingBtn = canSaveFiles() && el('button.btn.btn-ghost', {
     type: 'button',
     html: icon('cloud', 15, 2),
-    onclick: () => run(true, puterBtn),
-  }, ' Save to Puter…');
+    onclick: () => run(true, everythingBtn),
+  }, ' Save to Everything…');
 
   const modal = openModal({
     title: `Export ${entry?.name ?? 'project'}`,
@@ -206,7 +206,7 @@ export async function openExportProject(projectId) {
         + "browser's print command on the view itself."),
       el('div.row.row-end', {},
         el('button.btn.btn-ghost', { type: 'button', onclick: () => modal.close() }, 'Cancel'),
-        puterBtn || null,
+        everythingBtn || null,
         downloadBtn
       )
     ),

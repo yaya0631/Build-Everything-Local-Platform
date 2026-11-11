@@ -96,7 +96,7 @@ export function scriptUI(e: Editor, scriptName: string, progress: (fraction: num
         scriptName,
         opts.multiple ? 'Choose Files' : 'Choose a File',
         `<p class="script-message">The script asks to read ${opts.multiple ? 'files' : 'a file'}. It receives only what you choose.</p><p class="script-picked muted" aria-live="polite">Nothing chosen yet.</p>`,
-        [['cancel', 'Cancel'], ['device', 'From this device…', 'stay'], ['puter', 'From Puter…', 'stay'], ['ok', 'Use']],
+        [['cancel', 'Cancel'], ['device', 'From this device…', 'stay'], ['everything', 'From Everything…', 'stay'], ['ok', 'Use']],
         (d) => {
           const use = d.querySelector<HTMLButtonElement>('button[type="submit"]')!;
           use.disabled = true;
@@ -116,8 +116,8 @@ export function scriptUI(e: Editor, scriptName: string, progress: (fraction: num
             input.onchange = () => void read(Array.from(input.files ?? []).map((f) => ({ name: f.name, type: f.type, read: async () => f })));
             input.click();
           });
-          d.querySelector('[data-act="puter"]')!.addEventListener('click', () => {
-            // The Puter picker never settles when dismissed; Cancel stays available.
+          d.querySelector('[data-act="everything"]')!.addEventListener('click', () => {
+            // The Everything picker never settles when dismissed; Cancel stays available.
             void import('../files/cloud').then(({ pickCloudFiles }) => pickCloudFiles(opts.multiple, accept)).then((items) => read(items.map((it) => ({ name: it.name, read: () => it.read() })))).catch((error) => (status.textContent = String(error instanceof Error ? error.message : error)));
           });
         },
@@ -128,7 +128,7 @@ export function scriptUI(e: Editor, scriptName: string, progress: (fraction: num
       const total = files.reduce((n, f) => n + f.data.length, 0);
       const size = total < 1024 * 1024 ? `${Math.max(1, Math.round(total / 1024))} KB` : `${(total / 1048576).toFixed(1)} MB`;
       const what = files.length === 1 ? `“${files[0].name}”` : `${files.length} files as “${zipName}”`;
-      const r = await scriptDialog(scriptName, 'Save Files', `<p class="script-message">The script wants to save ${esc(what)} (${size}).</p>`, [['cancel', 'Cancel'], ['puter', 'Save to Puter…'], ['download', 'Download']]);
+      const r = await scriptDialog(scriptName, 'Save Files', `<p class="script-message">The script wants to save ${esc(what)} (${size}).</p>`, [['cancel', 'Cancel'], ['everything', 'Save to Everything…'], ['download', 'Download']]);
       if (!r) return false;
       let blob: Blob, name: string;
       if (files.length === 1) {
@@ -140,14 +140,14 @@ export function scriptUI(e: Editor, scriptName: string, progress: (fraction: num
         blob = new Blob([zipStore(files.map((f) => ({ name: uniqueName(f.name, used), data: f.data }))) as Uint8Array<ArrayBuffer>], { type: 'application/zip' });
         name = zipName ?? 'files.zip';
       }
-      if (r.action === 'puter') {
-        // The Puter picker never settles when dismissed, so it is not awaited.
+      if (r.action === 'everything') {
+        // The Everything picker never settles when dismissed, so it is not awaited.
         const { cloudSaveAs } = await import('../files/cloud');
         void cloudSaveAs(blob, name)
-          .then((item) => e.message(`Saved ${item.name} to Puter`))
+          .then((item) => e.message(`Saved ${item.name} to Everything`))
           .catch((error) => e.message(String(error instanceof Error ? error.message : error)));
       } else {
-        const { download } = await import('../../persistence/puter');
+        const { download } = await import('../../persistence/everything');
         download(blob, name);
       }
       return true;

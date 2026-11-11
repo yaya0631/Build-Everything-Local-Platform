@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import rawSource from '../src/workers/sign-worker.js?raw';
 import { SIGN_WORKER_VERSION } from '../src/lib/signlinks.js';
 import { instantiateWorker, makeKv, sha256Hex } from './helpers/worker-harness.js';
-import { makeFs } from './helpers/fake-puter.js';
+import { makeFs } from './helpers/fake-everything.js';
 import { isSignerTurn, currentTurn, effectiveSignerStatus } from '../src/lib/model.js';
 import { createEmailer } from '../src/lib/emailer.js';
 
@@ -70,7 +70,7 @@ describe('sequential request email', () => {
   };
   const emailer = createEmailer({
     store: { settings: { fullName: 'Alex' }, user: { username: 'alex' } },
-    getPuter: () => ({ workers: { exec: () => {} } }),
+    getEverything: () => ({ workers: { exec: () => {} } }),
   });
 
   it('plans only the signer whose turn it is', () => {
@@ -98,7 +98,7 @@ async function buildWorker() {
     .replace('__SIGN_PAGE_URL__', 'https://signatures.example/sign.html');
   const fs = makeFs();
   await fs.write('signatures-data/d1/original.pdf', new Uint8Array([1, 2, 3]));
-  const worker = instantiateWorker(source, { me: { puter: { kv: makeKv(), fs } } });
+  const worker = instantiateWorker(source, { me: { everything: { kv: makeKv(), fs } } });
   return worker;
 }
 

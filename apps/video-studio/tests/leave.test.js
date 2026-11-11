@@ -10,9 +10,9 @@ beforeEach(() => document.body.replaceChildren());
 
 describe('confirmLeave', () => {
   it('names what would be lost, focuses Stay and resolves the choice', async () => {
-    const library = { backend: { kind: 'puter' } };
+    const library = { backend: { kind: 'everything' } };
     const asked = confirmLeave(library, { edits: true, media: 2 });
-    expect(dialog().textContent).toMatch(/Your latest changes and 2 media files couldn't be saved to your Puter cloud\. If you leave now, they will be lost/);
+    expect(dialog().textContent).toMatch(/Your latest changes and 2 media files couldn't be saved to your Everything cloud\. If you leave now, they will be lost/);
     expect(document.activeElement).toBe(button('Stay'));
     button('Stay').click();
     expect(await asked).toBe(false);

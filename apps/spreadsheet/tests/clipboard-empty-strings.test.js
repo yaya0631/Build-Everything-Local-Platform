@@ -42,7 +42,7 @@ it('preserves empty-string semantics through edit, undo, XLSX and outgoing HTML'
   });
   const zip = X.CFB.read(new Uint8Array(bytes), { type: 'array' });
   const part = X.CFB.find(zip, '/xl/workbook.xml');
-  part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   part.size = part.content.length;
   const back = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'roundtrip');
   expect(back.getCell(back.activeSheetId, 0, 0).v).toBe('');

@@ -34,7 +34,7 @@ export async function videoInfo(blob, name, { path = null, fallbackDuration = 0 
 export async function rememberVideo(app, doc, blob, name, source) {
   if (doc?.kind !== 'audio' || !maybeVideo(name, blob.type)) return;
   try {
-    const info = await videoInfo(blob, name, { path: source?.type === 'puter' ? source.path || null : null, fallbackDuration: doc.length / doc.sampleRate });
+    const info = await videoInfo(blob, name, { path: source?.type === 'everything' ? source.path || null : null, fallbackDuration: doc.length / doc.sampleRate });
     if (info) setVideoOfDoc(doc, info);
   } catch (err) {
     console.warn('[video]', err);

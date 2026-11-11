@@ -4,8 +4,8 @@
  * (a small DOM: elements, selectors, bubbling events, focus, a hash location
  * that fires hashchange on the next tick, matchMedia by viewport). Every
  * test boots a fresh DOM and a fresh module registry, so the listeners the
- * shell hangs on window and document never outlive their test. Puter is
- * faked at `puter.workers.exec`, as in tests/store.test.js; the conversation
+ * shell hangs on window and document never outlive their test. Everything is
+ * faked at `everything.workers.exec`, as in tests/store.test.js; the conversation
  * column and the huddle window are stubbed (their own tests cover them).
  */
 import { describe, it, expect, afterEach, vi } from 'vitest';
@@ -37,7 +37,7 @@ async function boot({ hash = '', width = 1280, routes = {}, ...env } = {}) {
   dom = installDom({ hash, width, ...env });
   vi.resetModules();
   const calls = [];
-  globalThis.puter = {
+  globalThis.everything = {
     workers: {
       exec: async (url, init = {}) => {
         const u = new URL(url);
@@ -83,7 +83,7 @@ async function boot({ hash = '', width = 1280, routes = {}, ...env } = {}) {
 afterEach(() => {
   dom?.uninstall();
   dom = null;
-  delete globalThis.puter;
+  delete globalThis.everything;
 });
 
 /** The shell at a route, opened and settled. */

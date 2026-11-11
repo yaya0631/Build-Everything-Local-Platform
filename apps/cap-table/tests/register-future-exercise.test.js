@@ -2,14 +2,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { store } from '../src/lib/store.js';
 import { securitiesView } from '../src/views/securities.js';
-import { puterBackend } from './helpers/puter-kv.js';
+import { everythingBackend } from './helpers/everything-kv.js';
 
 let warrant;
 let grant;
 beforeEach(async () => {
   vi.useFakeTimers({ toFake: ['Date'] });
   vi.setSystemTime(new Date('2026-09-10T12:00:00'));
-  puterBackend().install();
+  everythingBackend().install();
   await store.init();
   const cls = await store.addClass({ name: 'Common', kind: 'common' });
   const holder = await store.addStakeholder({ name: 'Holder' });

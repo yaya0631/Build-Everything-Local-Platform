@@ -6,10 +6,10 @@ import { padJpegHeaders } from '../fixtures/jpeg-padding.js';
 import { MAX_IMAGE_SIZE } from '../../src/core/document.js';
 import { addBookmark } from '../../src/core/outline-edit.js';
 
-const PUTER_MOCK = `window.puter = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async () => ({}) }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
-async function mockPuter(page) {
-  await page.route('**/sdk/puter.js', (route) =>
-    route.fulfill({ contentType: 'application/javascript', body: PUTER_MOCK }),
+const EVERYTHING_MOCK = `window.everything = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async () => ({}) }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
+async function mockEverything(page) {
+  await page.route('**/sdk/everything.js', (route) =>
+    route.fulfill({ contentType: 'application/javascript', body: EVERYTHING_MOCK }),
   );
 }
 /** Choose a menu item by name from the menu bar, or from the folded phone menu. */
@@ -55,7 +55,7 @@ const settled = (page) => expect(page.locator('.editor')).toHaveAttribute('aria-
 test('image page insertion preserves link and bookmark targets through history and reopening', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([400, 500]);
@@ -141,7 +141,7 @@ for (const padded of [false, true])
   test(`Pictures to PDF turns chosen pictures into pages turned to match them (padded JPEG=${padded})`, async ({
     page,
   }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     const chooser = page.waitForEvent('filechooser');
     await page.getByRole('button', { name: 'Pictures to PDF', exact: true }).click();
@@ -163,7 +163,7 @@ for (const padded of [false, true])
 test('the Page menu inserts pictures after the current page and the open command accepts them', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/');
   await expect(page.locator('.page-caption')).toHaveText('Page 1 of 1');
   const chooser = page.waitForEvent('filechooser');
@@ -188,7 +188,7 @@ test('the Page menu inserts pictures after the current page and the open command
 });
 
 test('pictures dropped onto the app become a new PDF', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/');
   await expect(page.locator('.page-caption')).toHaveText('Page 1 of 1');
   const files = [
@@ -235,7 +235,7 @@ test('pictures dropped onto the app become a new PDF', async ({ page }) => {
 test('oversized rotated photos are rejected before decoding and a smaller photo still opens upright', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/');
   await expect(page.locator('.page-caption')).toHaveText('Page 1 of 1');
   const jpeg = await picture('photo.jpg', 400, 300, '#d02020');
@@ -278,7 +278,7 @@ for (const source of ['new PDF', 'existing PDF'])
   test(`an image batch exceeding the page capacity of a ${source} is rejected before reading files`, async ({
     page,
   }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     if (source === 'existing PDF') {
       const doc = await PDFDocument.create();

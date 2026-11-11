@@ -11,7 +11,7 @@ import { formatMessage } from '../src/lib/format.js';
 import { extractMentionNames, broadcastKind } from '../src/shared/limits.js';
 import { installDom } from './helpers/dom.js';
 
-/* ---- the store, driven in node with a fake Puter (as tests/client-lib-pass22.test.js) ---- */
+/* ---- the store, driven in node with a fake Everything (as tests/client-lib-pass22.test.js) ---- */
 
 const REF = 'abc123def0@teamchat-test';
 const json = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
@@ -29,7 +29,7 @@ const until = async (fn, ms = 5000) => {
 /** Route each call by the end of its path (first match wins); a handler gets the query and the request init. */
 function worker(routes) {
   const calls = [];
-  globalThis.puter = {
+  globalThis.everything = {
     workers: {
       exec: async (url, init = {}) => {
         const u = new URL(url);
@@ -70,7 +70,7 @@ function resetStore() {
   store.act = { c: {}, p: {}, w: 0, u: 0 };
   for (const t of store._readTimers.values()) clearTimeout(t);
   store._readTimers.clear();
-  delete globalThis.puter;
+  delete globalThis.everything;
 }
 
 const msg = (seq, text, extra = {}) => ({ seq, user: 'u-me', text, ts: seq * 1000, kind: 'msg', attachments: [], mentions: [], reactions: {}, replyCount: 0, ...extra });
@@ -401,7 +401,7 @@ describe('a conversation read in the last half-second before the page is put awa
     // A workspace forgotten with a read still waiting: nothing goes to it.
     store.markRead('c1', 3);
     const doc = { v: 1, profile: {}, prefs: {}, workspaces: [{ ref: REF, name: 'Acme' }], worker: null };
-    globalThis.puter.kv = { get: async () => structuredClone(doc), set: async () => {} };
+    globalThis.everything.kv = { get: async () => structuredClone(doc), set: async () => {} };
     store.user = structuredClone(doc);
     await store.forgetWorkspace(REF);
     store._flushReads();
@@ -439,7 +439,7 @@ describe('a conversation read in the last half-second before the page is put awa
     } finally {
       fresh?.stopPolling();
       dom.uninstall();
-      delete globalThis.puter;
+      delete globalThis.everything;
     }
   });
 });
@@ -455,7 +455,7 @@ describe('a workspace opened by a link whose reference is spelled another way (c
       '/api/ws/abc123def0': () => json(boot('abc123def0', 'Acme', channels)),
       '/api/ws/fedcba9876': () => json(boot('fedcba9876', 'Globex', channels)),
     });
-    globalThis.puter.kv = { get: async () => structuredClone(doc), set: async (k, v) => { Object.assign(doc, structuredClone(v)); } };
+    globalThis.everything.kv = { get: async () => structuredClone(doc), set: async (k, v) => { Object.assign(doc, structuredClone(v)); } };
     store.identity = { uuid: 'u-me', username: 'me' };
     store.user = structuredClone(doc);
     store.profile = { uuid: 'u-me', username: 'me', name: 'Me', prefs: {} };
@@ -526,7 +526,7 @@ async function partnerWithHost() {
   const calls = [];
   const history = { c1: [msg(1, 'a'), msg(2, 'b'), msg(3, 'c')], c2: [msg(1, 'x')] };
   const state = { delta: {} };
-  globalThis.puter = {
+  globalThis.everything = {
     workers: {
       exec: async (url, init = {}) => {
         const u = new URL(url);
@@ -628,7 +628,7 @@ describe('opening a workspace with a shared channel (the Later counts read as it
   it('reads this workspace\'s saved items and scheduled messages once, and the host\'s once, rather than this workspace\'s twice', async () => {
     const HOST = 'host00host@teamchat-test';
     const calls = [];
-    globalThis.puter = {
+    globalThis.everything = {
       workers: {
         exec: async (url, init = {}) => {
           const u = new URL(url);

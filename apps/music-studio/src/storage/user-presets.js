@@ -2,13 +2,13 @@
 // 'effect:<type>' or 'instrument:<type>'. A preset is
 // { id, kind, name, params, updated } (updated: ms since epoch).
 //
-// They always live in localStorage. When the user is signed in to Puter they
+// They always live in localStorage. When the user is signed in to Everything they
 // are also kept in one small JSON file in the app's own folder
 // (Presets/presets.json): merged on startup and on sign-in, and written a
 // moment after each change (one write for a burst of edits). Merging keeps
 // the newest version of each preset id; deletions are kept as tombstones for
 // a while so they reach other devices instead of coming back. Nothing touches
-// Puter while signed out.
+// Everything while signed out.
 //
 //   const presets = userPresets(app)      // one store per app
 //   presets.list('effect:eq'); presets.save('effect:eq', 'Bright', params)
@@ -16,7 +16,7 @@
 
 import { Emitter } from '../lib/emitter.js';
 import { uid } from '../lib/util.js';
-import * as puter from './puter.js';
+import * as everything from './everything.js';
 
 const KEY = 'music-studio:presets';
 export const PRESETS_DIR = 'Presets';
@@ -28,9 +28,9 @@ export const MAX_NAME = 60;
 export class UserPresets extends Emitter {
   /**
    * `storage`: a localStorage-like object. `delay`: ms to wait after a change
-   * before writing the cloud file. `api`: the Puter wrapper (tests swap it).
+   * before writing the cloud file. `api`: the Everything wrapper (tests swap it).
    */
-  constructor({ storage = globalThis.localStorage, delay = 1500, now = () => Date.now(), api = puter } = {}) {
+  constructor({ storage = globalThis.localStorage, delay = 1500, now = () => Date.now(), api = everything } = {}) {
     super();
     this.storage = storage;
     this.delay = delay;
@@ -273,7 +273,7 @@ export function userPresets(app) {
   const store = new UserPresets({ storage: app.prefs?.storage });
   app.userPresets = store;
   const pull = () => {
-    if (puter.isSignedIn()) store.sync().catch((err) => console.warn('Music Studio: presets could not sync with Puter.', err));
+    if (everything.isSignedIn()) store.sync().catch((err) => console.warn('Music Studio: presets could not sync with Everything.', err));
   };
   app.on?.('account', pull);
   if (typeof document !== 'undefined') {

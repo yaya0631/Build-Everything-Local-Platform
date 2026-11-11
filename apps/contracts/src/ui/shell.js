@@ -117,8 +117,8 @@ export function mountShell(appRoot) {
   }
 
   /* Sidebar (desktop) */
-  const isApp = typeof puter !== 'undefined' && puter.env === 'app';
-  const username = store.user?.username || 'Puter user';
+  const isApp = typeof everything !== 'undefined' && everything.env === 'app';
+  const username = store.user?.username || 'Everything user';
   const sidebarNav = el('div', { style: { display: 'contents' } });
   const sidebar = el('nav.sidebar', { 'aria-label': 'Main navigation' },
     el('div.brand', {},
@@ -134,7 +134,7 @@ export function mountShell(appRoot) {
     el('div.sidebar-user', {},
       el('span.avatar', { 'aria-hidden': 'true' }, username.charAt(0).toUpperCase()),
       el('span.name', { title: username }, username),
-      // Inside a Puter app the platform owns the session — no sign-out.
+      // Inside an Everything app the platform owns the session — no sign-out.
       !isApp && el('button.icon-btn', {
         html: icon('logout', 18, 2),
         'aria-label': 'Sign out',

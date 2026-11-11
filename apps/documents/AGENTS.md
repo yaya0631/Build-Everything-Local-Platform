@@ -16,7 +16,7 @@
 - Keep document mutations, DOCX serialization, layout, and painting separate.
 - Preserve untouched DOCX package parts. Open documents with unsupported features on a best-effort basis. Use a read-only approximation when safe editing is unavailable, and do not attach a save handler that could discard unsupported content.
 - Add meaningful round-trip and editing regressions for new engine behavior. Run unit tests, browser tests, and the production build.
-- `playground.html` runs locally without a Puter account. Keep it available as the small engine evaluation surface.
+- `playground.html` runs locally without an Everything account. Keep it available as the small engine evaluation surface.
 - Older app-authored import/export helpers remain available for future porting; their presence does not mean the canvas engine supports those features.
 
 # Specification and conformance

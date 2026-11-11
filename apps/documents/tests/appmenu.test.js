@@ -10,7 +10,7 @@ let anchor;
 beforeEach(() => {
   localStorage.clear();
   vi.stubGlobal('matchMedia', () => ({ matches: false, addEventListener() {} }));
-  vi.stubGlobal('puter', { env: 'web' });
+  vi.stubGlobal('everything', { env: 'web' });
   applyTheme('system');
   anchor = document.createElement('button');
   document.body.append(anchor);

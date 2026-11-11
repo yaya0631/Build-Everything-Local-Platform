@@ -1,10 +1,10 @@
 import { test, expect } from "@playwright/test";
 import { textOpacityDeck } from "../tests/text-opacity-fixture.js";
 const stub = async (page) =>
-  page.route("**/sdk/puter.js", (r) =>
+  page.route("**/sdk/everything.js", (r) =>
     r.fulfill({
       contentType: "application/javascript",
-      body: 'window.puter={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',
+      body: 'window.everything={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',
     }),
   );
 

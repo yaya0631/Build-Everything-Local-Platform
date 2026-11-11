@@ -29,7 +29,7 @@ async function roundtrip(wb, { metadata = false, patch } = {}) {
   const zip = X.CFB.read(new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()), { type: 'array' });
   const read = path => new TextDecoder().decode(X.CFB.find(zip, path).content);
   const write = (path, text) => X.CFB.utils.cfb_add(zip, path, new TextEncoder().encode(text));
-  if (!metadata) write('/xl/workbook.xml', read('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  if (!metadata) write('/xl/workbook.xml', read('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   if (patch) write('/xl/charts/chart1_1.xml', patch(read('/xl/charts/chart1_1.xml')));
   return workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }));
 }

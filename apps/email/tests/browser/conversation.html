@@ -12,7 +12,7 @@ import { openCompose } from '../../src/ui/compose.js';
 import { createSampleMailbox } from '../../src/lib/sample.js';
 const mailbox = createSampleMailbox();
 // In-memory mailbox and intercepted transport. No SDK or account session.
-window.puter = { ui: {}, APIOrigin: location.origin + '/test-api', authToken: 'fixture', fs: mailbox.fs };
+window.everything = { ui: {}, APIOrigin: location.origin + '/test-api', authToken: 'fixture', fs: mailbox.fs };
 renderApp(document.querySelector('#app'), {
   ...mailbox, sample: true, account: { username: 'sample' },
   pageSize: Number(new URLSearchParams(location.search).get('pageSize')) || undefined,

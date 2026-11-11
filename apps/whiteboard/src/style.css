@@ -1289,7 +1289,7 @@ nav + .workspace-label {
 .board-tag[data-storage="shared"] svg {
   color: var(--accent);
 }
-/* The cloud button shows a board already in Puter as saved. */
+/* The cloud button shows a board already in Everything as saved. */
 .editor-actions [data-action="cloud-save"][data-storage="cloud"] {
   color: var(--accent);
 }

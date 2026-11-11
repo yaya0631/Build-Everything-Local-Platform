@@ -1,7 +1,7 @@
 /**
- * Keeps the books in the user's Puter KV store and a copy on the device.
+ * Keeps the books in the user's Everything KV store and a copy on the device.
  *
- * Cost model. Puter KV is DynamoDB underneath: reads are billed per 4 KB of
+ * Cost model. Everything KV is DynamoDB underneath: reads are billed per 4 KB of
  * each entry touched, writes per 1 KB, list() has a lower rate limit than
  * get/set, and there are no secondary indexes. So:
  *
@@ -19,7 +19,7 @@
  *    flaky connection never loses an edit and ten quick edits cost one batch.
  *
  * Files (attachments, backups, statement imports) never go to KV; they live
- * in the user's Puter drive.
+ * in the user's Everything drive.
  */
 
 const LOG_TTL_DAYS = 30;
@@ -66,7 +66,7 @@ function isNetworkError(err) {
 export class Sync {
   /**
    * @param {object} opts
-   * @param {object} opts.kv        puter.kv (or a compatible mock)
+   * @param {object} opts.kv        everything.kv (or a compatible mock)
    * @param {object} opts.cache     from openCache()
    * @param {string[]} opts.prefixes record key prefixes to load, e.g. ['a', 't']
    * @param {string[]} opts.singles  standalone keys to load, e.g. ['settings']

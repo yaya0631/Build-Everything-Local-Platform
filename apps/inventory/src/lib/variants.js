@@ -20,7 +20,7 @@
  *
  * Two axes at most and no matrix generator: a family with an "Add
  * variant" row covers what a small shop keeps, and stops this becoming a
- * merchandising system. Pure — no DOM, no Puter; unit-tested.
+ * merchandising system. Pure — no DOM, no Everything; unit-tested.
  */
 
 import { stockStatus, DEFAULT_LOW_STOCK } from './inventory.js';

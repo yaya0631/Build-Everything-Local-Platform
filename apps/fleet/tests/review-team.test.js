@@ -90,7 +90,7 @@ describe('team worker role changes', () => {
 describe('team worker owner lookups', () => {
   it('keeps an owner’s invitation when the owner cannot be looked up for a moment', async () => {
     const { token } = (await w.api(OWNER, { op: 'invite', role: 'member' })).body;
-    // The worker restarts, and Puter's auth does not answer for a moment.
+    // The worker restarts, and Everything's auth does not answer for a moment.
     const restarted = loadWorker({
       kv: w.kv,
       ownerGetUser: async () => {

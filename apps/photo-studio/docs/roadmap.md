@@ -96,7 +96,7 @@ Status: `[ ]` planned, `[x]` done.
 
 ## Assisted editing
 
-- [x] Generate Image (prompt, style and aspect presets, variations, regenerate) and Edit with Prompt (image to image) through Puter AI, results as new layers with the prompt
+- [x] Generate Image (prompt, style and aspect presets, variations, regenerate) and Edit with Prompt (image to image) through Everything AI, results as new layers with the prompt
 - [x] Upscale: offline edge-directed Enhanced Upscale (1.5–8×, worker) with an optional generative AI layer
 - [x] Denoise (non-local means, automatic noise level) and Sharpen Details (Richardson–Lucy deconvolution) as filters, live filters and actions
 - [x] Mask All Objects (masked copies, masked groups or saved selections per object)
@@ -118,7 +118,7 @@ Status: `[ ]` planned, `[x]` done.
 - [x] General, Interface, Workspace, Tools, History & Autosave, File Handling, Export, Performance, Cursors, Transparency & Gamut, Units & Rulers, Guides/Grid/Slices and Type pages, every setting wired
 - [x] New Document window with preset categories, saved and recent presets, units (including columns), artboards, mode, background, profile and pixel aspect ratio
 - [x] Recent documents with thumbnails on the start screen; local files reopen after a reload
-- [x] Version History panel: versions on save, at the autosave interval and on demand; preview, restore, open as copy, delete (local only: Puter.js has no file version API)
+- [x] Version History panel: versions on save, at the autosave interval and on demand; preview, restore, open as copy, delete (local only: Everything.js has no file version API)
 - [x] Crash and tab-close recovery of unsaved documents
 - [x] File → Package as ZIP (project and linked files) and Export → Paths to Vector File (SVG)
 
@@ -160,15 +160,15 @@ Status: `[ ]` planned, `[x]` done.
 
 - [x] Scripting API in plain JavaScript (documents, layers, pixels, text, selections, commands with recorded arguments, dialogs and forms, progress and stopping, files through pickers), one undo step per run, documented in `docs/scripting.md`
 - [x] Sandbox: opaque-origin iframe with a strict content security policy running a worker, structured-clone messages, argument checks, first-run confirmation, unresponsive scripts stopped
-- [x] File → Scripts → Browse (device or Puter), Scripts panel (install, run, edit in a highlighting editor, enable, shortcuts, save, delete, output), installed scripts in File → Scripts, six sample scripts
+- [x] File → Scripts → Browse (device or Everything), Scripts panel (install, run, edit in a highlighting editor, enable, shortcuts, save, delete, output), installed scripts in File → Scripts, six sample scripts
 - [x] Script Events Manager (start, new, open, before/after save, export, close) for scripts and recorded actions
 - [x] Statistics (images combined into an embedded object with a stack mode, optional alignment)
-- [x] Lens Correction for many photos (automatic straightening and vignetting per photo, or custom settings; ZIP or Puter folder)
+- [x] Lens Correction for many photos (automatic straightening and vignetting per photo, or custom settings; ZIP or Everything folder)
 - [x] Create Batch Link: a link that opens Photo Studio ready to run an action on dropped photos (in place of executable droplets)
 
 ## Collaboration and review
 
-- [x] Invite to Edit: live co-editing of a document through Puter, with presence (cursors, selected layers) and an access list
+- [x] Invite to Edit: live co-editing of a document through Everything, with presence (cursors, selected layers) and an access list
 - [x] Share for Review: a read-only review link that shows the flattened image and takes comments
 - [x] Comments panel: comments pinned to points or regions of the canvas, threads, replies, resolve, mentions; kept in `.photo` projects
 
@@ -184,7 +184,7 @@ Status: `[ ]` planned, `[x]` done.
 
 ## Assets and provenance
 
-- [x] Libraries panel: colors, gradients, character styles, layer styles, brushes and graphics shared between documents, stored in Puter (or this browser)
+- [x] Libraries panel: colors, gradients, character styles, layer styles, brushes and graphics shared between documents, stored in Everything (or this browser)
 - [x] Provenance: record how an image was made (sources, edits, AI use) and attach the record to exports (XMP, optional self-signed C2PA manifest), with an inspector
 - [x] Image Assets: layers named like files (`hero.png`, `200% icon.webp`) are exported automatically on save
 - [x] Import from a camera (Import → Images from Device) and Import → Notes

@@ -5,16 +5,16 @@ import {
   CONTACT_DRAFT_FIELDS, COMPANY_DRAFT_FIELDS,
 } from '../src/lib/ai.js';
 
-afterEach(() => { delete globalThis.puter; });
+afterEach(() => { delete globalThis.everything; });
 
-const withAI = (chat) => { globalThis.puter = { ai: { chat } }; };
+const withAI = (chat) => { globalThis.everything = { ai: { chat } }; };
 
 describe('availability', () => {
   it('needs the platform capability to be there', () => {
     expect(aiAvailable()).toBe(false);
-    globalThis.puter = {};
+    globalThis.everything = {};
     expect(aiAvailable()).toBe(false);
-    globalThis.puter = { ai: {} };
+    globalThis.everything = { ai: {} };
     expect(aiAvailable()).toBe(false);
     withAI(async () => 'hi');
     expect(aiAvailable()).toBe(true);
@@ -25,7 +25,7 @@ describe('availability', () => {
     expect(aiEnabled({})).toBe(true);
     expect(aiEnabled({ aiAssist: true })).toBe(true);
     expect(aiEnabled({ aiAssist: false })).toBe(false);
-    delete globalThis.puter;
+    delete globalThis.everything;
     expect(aiEnabled({ aiAssist: true })).toBe(false);
   });
 });

@@ -53,7 +53,7 @@ it('preserves titles across rename, duplicate, draft, edit and metadata-free nat
   const zip = X.CFB.read(new Uint8Array(await (await workbookToXlsx(draft)).arrayBuffer()), { type: 'array' });
   const book = new TextDecoder().decode(X.CFB.find(zip, '/xl/workbook.xml').content);
   expect(book).toContain('_xlnm.Print_Titles');
-  rewrite(zip, '/xl/workbook.xml', xml => xml.replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  rewrite(zip, '/xl/workbook.xml', xml => xml.replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   const back = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'native.xlsx');
   expect(back.activeSheet.name).toBe("Q's, totals");
   expect(back.activeSheet.printSettings).toMatchObject({ titleRows: [2, 4], titleCols: [1, 2] });

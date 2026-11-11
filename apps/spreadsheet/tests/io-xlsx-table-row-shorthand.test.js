@@ -27,7 +27,7 @@ it('writes native #This Row references and restores the app spelling on its own 
 it('calculates native formulas without private metadata', async () => {
  const { zip, write, reopen } = await fixture();
  const book = XLSX.CFB.find(zip, '/xl/workbook.xml');
- write(book,new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,''));
+ write(book,new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,''));
  const back = await reopen();
  // Without the app's metadata the file's #This Row spelling still reads back in its written form.
  expect(back.getCell(back.activeSheetId,1,2).f).toBe('[@Quantity]*[@Price]');

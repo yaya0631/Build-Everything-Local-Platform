@@ -1,7 +1,7 @@
 {
   "name": "cap-table",
   "version": "1.0.0",
-  "description": "Cap table management on Puter — ownership, equity, options, and fundraising in one place",
+  "description": "Cap table management on Everything — ownership, equity, options, and fundraising in one place",
   "type": "module",
   "private": true,
   "scripts": {

@@ -24,7 +24,7 @@ async function native(wb, check = () => {}, transformBook = xml => xml) {
   const zip=X.CFB.read(new Uint8Array(await(await workbookToXlsx(wb)).arrayBuffer()),{type:'array'});
   check(new TextDecoder().decode(X.CFB.find(zip,'/xl/charts/chart1_1.xml').content));
   const book=X.CFB.find(zip,'/xl/workbook.xml');
-  book.content=new TextEncoder().encode(transformBook(new TextDecoder().decode(book.content)).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,''));book.size=book.content.length;
+  book.content=new TextEncoder().encode(transformBook(new TextDecoder().decode(book.content)).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,''));book.size=book.content.length;
   return workbookFromFile(X.CFB.write(zip,{type:'array',fileType:'zip'}),'dates.xlsx');
 }
 function draw(wb) {

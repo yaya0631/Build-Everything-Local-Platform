@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { Store } from '../src/lib/store.js';
 import { dbAsOf, planBalances } from '../src/lib/captable.js';
-import { puterBackend } from './helpers/puter-kv.js';
+import { everythingBackend } from './helpers/everything-kv.js';
 
 let store, holder, common, plan;
 beforeEach(async () => {
-  puterBackend().install(); store = new Store(); await store.init();
+  everythingBackend().install(); store = new Store(); await store.init();
   common = await store.addClass({ name: 'Common', kind: 'common' });
   holder = await store.addStakeholder({ name: 'Employee' });
   plan = await store.addPlan({ name: '2024 Plan', adopted: '2024-01-01', classId: common.id, reserve: 100 });
@@ -157,7 +157,7 @@ describe('dated reserve changes must hold on every day since them', () => {
 
 describe('the first pool is held to the same days', () => {
   it('refuses a back-dated first pool below what was drawn on a day since', async () => {
-    puterBackend().install(); const s = new Store(); await s.init();
+    everythingBackend().install(); const s = new Store(); await s.init();
     const cls = await s.addClass({ name: 'Common', kind: 'common' });
     const h = await s.addStakeholder({ name: 'Employee' });
     const grant = await s.addSecurity({ kind: 'option', stakeholderId: h.id, classId: cls.id, quantity: 100, date: '2024-03-01', strike: 1, vestingMonths: 0 });
@@ -174,7 +174,7 @@ describe('the first pool is held to the same days', () => {
   });
 
   it('is not held to the days before it existed', async () => {
-    puterBackend().install(); const s = new Store(); await s.init();
+    everythingBackend().install(); const s = new Store(); await s.init();
     const cls = await s.addClass({ name: 'Common', kind: 'common' });
     const h = await s.addStakeholder({ name: 'Employee' });
     await s.addSecurity({ kind: 'option', stakeholderId: h.id, classId: cls.id, quantity: 100, date: '2024-03-01', strike: 1, vestingMonths: 0 });
@@ -189,7 +189,7 @@ describe('the first pool is held to the same days', () => {
   });
 
   it('is still held to every day from its adoption on', async () => {
-    puterBackend().install(); const s = new Store(); await s.init();
+    everythingBackend().install(); const s = new Store(); await s.init();
     const cls = await s.addClass({ name: 'Common', kind: 'common' });
     const h = await s.addStakeholder({ name: 'Employee' });
     const grant = await s.addSecurity({ kind: 'option', stakeholderId: h.id, classId: cls.id, quantity: 100, date: '2024-03-01', strike: 1, vestingMonths: 0 });

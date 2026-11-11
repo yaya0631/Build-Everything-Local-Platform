@@ -95,7 +95,7 @@ export async function placeImage(app, editor, blob, { point, name = '', select =
   if (board && (width > board.w || height > board.h)) s = Math.min(board.w / width, board.h / height);
   const m = multiply(translate(p.x - (width * s) / 2, p.y - (height * s) / 2), scaleM(s));
   doc.assets.set(assetId, asset);
-  const link = blob.puterPath ? { source: 'puter', path: blob.puterPath, name: blob.name || name, size: blob.size, modified: blob.lastModified || Date.now() } : null;
+  const link = blob.everythingPath ? { source: 'everything', path: blob.everythingPath, name: blob.name || name, size: blob.size, modified: blob.lastModified || Date.now() } : null;
   let id = null;
   doc.transact('Place', () => {
     const t = drawTarget(editor, parent);

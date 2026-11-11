@@ -1,9 +1,9 @@
 /**
- * Wire protocol for meeting data channels (v4 — Puter-peer mesh with a
+ * Wire protocol for meeting data channels (v4 — Everything-peer mesh with a
  * migrating host).
  *
  * One participant is the host: it owns the meeting server and relays
- * guest-to-guest traffic, and guest-to-guest Puter peer invite codes are
+ * guest-to-guest traffic, and guest-to-guest Everything peer invite codes are
  * negotiated over that host connection:
  *
  *   guest --plain broadcastable--> host --FROM{id,msg}--> other guests
@@ -13,13 +13,13 @@
  * host itself.
  *
  * The host role is not fixed. When the host leaves, the survivors elect a
- * successor (lowest participant id, among those with a Puter account while
+ * successor (lowest participant id, among those with an Everything account while
  * any is left) which serves a fresh room and floods HOST_CLAIM across the
  * mesh; everyone else re-points their host link at it. `term` counts
  * migrations so a late or duplicate claim can't unseat a newer host —
  * highest term wins, lowest id breaks a tie.
  *
- * Guests need no Puter account. The host's GUEST GRANT — its word that lets
+ * Guests need no Everything account. The host's GUEST GRANT — its word that lets
  * someone without a session use the relays on its account — reaches them
  * in WELCOME, and again in GRANT whenever the host renews it, so a redial
  * or a guest<->guest link hours in still gets a relay. An identity's `acct`
@@ -39,7 +39,7 @@ export const MSG = Object.freeze({
   PEER_LEFT: 'peer-left', //     host -> guests: someone left
   TO: 'to', //                   guest -> host: route a targeted peer message
   FROM: 'from', //               host -> guest: relayed message with sender id
-  LINK_INVITE: 'link-invite', // guest -> guest via host: temp Puter invite code
+  LINK_INVITE: 'link-invite', // guest -> guest via host: temp Everything invite code
   LINK_HELLO: 'link-hello', //   guest -> guest direct: identify on temp link
   LINK_READY: 'link-ready', //   guest -> guest direct: temp link accepted
   STATE: 'state', //             name/media/hand state update
@@ -62,7 +62,7 @@ const RELAYABLE = Object.freeze([...BROADCASTABLE, MSG.LINK_INVITE]);
 
 /**
  * Shape of the participant identity carried by hello / welcome / peer-joined.
- * `acct` — a Puter account stands behind this participant — is read as true
+ * `acct` — an Everything account stands behind this participant — is read as true
  * when absent: a peer on a build that never said had to have one.
  */
 export function makeIdentity({ id, name, mic, cam, hand, presenting, acct }) {
@@ -77,7 +77,7 @@ export function makeIdentity({ id, name, mic, cam, hand, presenting, acct }) {
   };
 }
 
-/** Longest guest grant we carry (Puter caps its own at 512). */
+/** Longest guest grant we carry (Everything caps its own at 512). */
 export const MAX_GRANT_CHARS = 512;
 
 /** Longest secret a HELLO may carry (ours is a UUID, 36 chars). */
@@ -98,7 +98,7 @@ export function makeHello(identity, token = '') {
 /**
  * The host's answer to a HELLO: who it is, who else is here, how many times
  * the meeting has changed hands — the guest grant, for a guest joining with
- * no Puter session to reach the relays on (empty when the host has none to
+ * no Everything session to reach the relays on (empty when the host has none to
  * give) — and the MEETING SECRET: what the room directory's lease on this
  * meeting's link is held under (lib/rooms.js). Every participant learns it
  * so that whoever inherits the host role can carry the lease on. It is as

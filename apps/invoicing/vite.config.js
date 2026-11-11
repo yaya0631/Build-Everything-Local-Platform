@@ -5,7 +5,7 @@ import { defineConfig } from 'vite';
  *
  * The app looks installable — manifest, maskable icons, a bottom tab bar, a
  * boot splash — but without this it is a plain network-dependent page: on a
- * train it opened to "Could not reach Puter" and stayed there. The shell is
+ * train it opened to "Could not reach Everything" and stayed there. The shell is
  * precached under a name that changes with the build, so a new deploy never
  * serves half of one version and half of another, and old caches go on
  * activate.
@@ -59,7 +59,7 @@ function swSource(version, shell) {
   return `/* Generated at build time by vite.config.js — do not edit. */
 const CACHE = 'invoicing-${version}';
 const SHELL = ${JSON.stringify(shell, null, 2)};
-/* The Puter SDK is loaded from its own origin. It is runtime-cached so an
+/* The Everything SDK is loaded from its own origin. It is runtime-cached so an
    installed app has it offline, but nothing about the offline path may
    depend on it resolving: the app boots from its own local snapshot. */
 const SDK = self.location.origin + '/sdk/';

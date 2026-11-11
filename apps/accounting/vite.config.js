@@ -87,7 +87,7 @@ self.addEventListener('fetch', (event) => {
       return response;
     })());
   }
-  /* Calls to the user's Puter cloud always go to the network. */
+  /* Calls to the user's Everything cloud always go to the network. */
 });
 `;
 }

@@ -41,7 +41,7 @@ export function openOnboarding() {
       el('div.onboard-hero', {},
         el('img', { src: './icons/icon-192.png', width: 64, height: 64, alt: '' }),
         el('h3.onboard-title', {}, 'Every hour, accounted for'),
-        el('p.onboard-sub', {}, 'Track billable hours by client, project, or task. Stored in your own Puter account, never sold or shared.')
+        el('p.onboard-sub', {}, 'Track billable hours by client, project, or task. Stored in your own Everything account, never sold or shared.')
       ),
       el('button.btn.btn-primary.btn-block.btn-tall', {
         type: 'button',

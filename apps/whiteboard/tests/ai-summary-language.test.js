@@ -88,7 +88,7 @@ function setup(text = "Veuillez lire cette étape. Read first.") {
     center: () => ({ x: 0, y: 0 }),
     toast: (message) => toasts.push(message),
     refresh() {},
-    puter: () => null,
+    everything: () => null,
   });
   return {
     dom,

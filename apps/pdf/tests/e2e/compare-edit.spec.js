@@ -27,7 +27,7 @@ const inkOnFirstPage = (page, side) =>
 test('the compared pages still draw after the PDF is edited during a comparison', async ({
   page,
 }) => {
-  await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
+  await page.route('**/sdk/everything.js', (route) => route.fulfill({ body: '' }));
   await page.goto('/#library');
   const opened = page.waitForEvent('filechooser');
   await page.keyboard.press('ControlOrMeta+o');

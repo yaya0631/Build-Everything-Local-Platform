@@ -5,7 +5,7 @@ import { openExerciseForm, openCertifyForm, openSettleForm } from '../src/ui/gra
 import { openWarrantActions } from '../src/ui/warrantactions.js';
 import { authorizedOverrun } from '../src/lib/captable.js';
 import { store } from '../src/lib/store.js';
-import { puterBackend } from './helpers/puter-kv.js';
+import { everythingBackend } from './helpers/everything-kv.js';
 
 let dom;
 let common;
@@ -15,7 +15,7 @@ beforeEach(async () => {
   for (const name of ['window', 'document', 'location', 'Node', 'Element', 'HTMLElement', 'HTMLInputElement', 'requestAnimationFrame']) {
     vi.stubGlobal(name, dom.window[name]);
   }
-  puterBackend().install();
+  everythingBackend().install();
   await store.init();
   common = await store.addClass({ name: 'Common Stock', kind: 'common', authorized: 1000, pricePerShare: 0.01 });
   holder = await store.addStakeholder({ name: 'Nova', kind: 'employee' });

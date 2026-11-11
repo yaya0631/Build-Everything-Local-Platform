@@ -1024,7 +1024,7 @@ async function aiRequest(org, identity, input, boards) {
   if (!policy.ai.enabled || !policy.ai[feature])
     fail(403, "Your organization has turned off this AI feature.");
   // The organization pays for its AI, so guests, including anyone who
-  // opened a public link, use their own Puter AI instead.
+  // opened a public link, use their own Everything AI instead.
   const role = await org.role(identity);
   if (!role || role === "guest")
     fail(403, "AI features are available to organization members.");
@@ -1057,7 +1057,7 @@ async function aiRequest(org, identity, input, boards) {
         fail(400, "Choose a PNG, JPEG, or WebP photo.");
       }
       path = `whiteboard/ai/${short()}.${type === "jpeg" ? "jpg" : type}`;
-      await org.puter.fs.write(
+      await org.everything.fs.write(
         path,
         new Blob([bytes], { type: `image/${type}` }),
         {
@@ -1065,12 +1065,12 @@ async function aiRequest(org, identity, input, boards) {
           overwrite: true,
         },
       );
-      response = await org.puter.ai.chat(
+      response = await org.everything.ai.chat(
         [
           {
             role: "user",
             content: [
-              { type: "file", puter_path: path },
+              { type: "file", everything_path: path },
               { type: "text", text: prompt },
             ],
           },
@@ -1078,9 +1078,9 @@ async function aiRequest(org, identity, input, boards) {
         false,
         options,
       );
-    } else response = await org.puter.ai.chat(prompt, false, options);
+    } else response = await org.everything.ai.chat(prompt, false, options);
   } finally {
-    if (path) org.puter.fs.delete(path).catch(() => {});
+    if (path) org.everything.fs.delete(path).catch(() => {});
   }
   const content = response?.message?.content;
   const output =
@@ -1523,12 +1523,12 @@ export async function adminCall(org, boards, identity, input) {
       );
       sent = delivered(result, email);
     } catch {
-      // Refused below, as for an address Puter did not deliver to.
+      // Refused below, as for an address Everything did not deliver to.
     }
     if (!sent)
       fail(
         502,
-        "The verification email could not be sent. Ask your administrator to check the organization's Puter plan.",
+        "The verification email could not be sent. Ask your administrator to check the organization's Everything plan.",
       );
     await org.audit(
       identity,
@@ -1953,7 +1953,7 @@ export async function adminCall(org, boards, identity, input) {
       item.createdBy !== identity.uuid
     )
       fail(403, "This item is awaiting approval.");
-    return { item, board: await (await org.puter.fs.read(item.file)).text() };
+    return { item, board: await (await org.everything.fs.read(item.file)).text() };
   }
   if (op === "library.submit") {
     const role = await org.role(identity);
@@ -1999,7 +1999,7 @@ export async function adminCall(org, boards, identity, input) {
     }
     const itemId = short();
     const file = `whiteboard/library/${itemId}.json`;
-    await org.puter.fs.write(file, input.board, {
+    await org.everything.fs.write(file, input.board, {
       createMissingParents: true,
       overwrite: true,
     });
@@ -2036,7 +2036,7 @@ export async function adminCall(org, boards, identity, input) {
     if (op === "library.approve") await admin();
     if (op === "library.remove") {
       await org.kv.del("org:lib:" + item.id);
-      await org.puter.fs.delete(item.file).catch(() => {});
+      await org.everything.fs.delete(item.file).catch(() => {});
     } else
       await org.kv.set("org:lib:" + item.id, {
         ...item,
@@ -2158,7 +2158,7 @@ export async function adminCall(org, boards, identity, input) {
         saml: false,
         scim: true,
         mfaSignal: false,
-        note: "SAML single sign-on is provided by the Puter account platform. Puter enforces multifactor authentication at sign-in.",
+        note: "SAML single sign-on is provided by the Everything account platform. Everything enforces multifactor authentication at sign-in.",
       },
     };
   }
@@ -2176,7 +2176,7 @@ export async function adminCall(org, boards, identity, input) {
     if (policy.mfaRequired && !before.mfaRequired)
       fail(
         400,
-        "Puter enforces multifactor authentication at sign-in, so there is nothing to turn on here.",
+        "Everything enforces multifactor authentication at sign-in, so there is nothing to turn on here.",
       );
     const secrets =
       input.secrets && typeof input.secrets === "object" ? input.secrets : {};

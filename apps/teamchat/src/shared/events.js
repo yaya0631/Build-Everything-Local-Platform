@@ -15,7 +15,7 @@ import { KEYS } from './blocks.js';
  * do not have the workspace document at hand, and a count read from a stale
  * client alongside a fresher worker would disagree about who owns which
  * shard. Four shards land 200 concurrent watchers per workspace at full
- * fidelity before Puter's per-event fan-out cap starts handing out gap
+ * fidelity before Everything's per-event fan-out cap starts handing out gap
  * markers instead of silence.
  */
 export const EV_SHARDS = 4;
@@ -57,7 +57,7 @@ export function evRingShard(uuid) {
 
 /**
  * The absolute key of shard `n`: exactly five `:`-segments (`tc`, `ws`, the
- * workspace id, `ev`, `s{n}`). A Puter Events subscription anchors on an
+ * workspace id, `ev`, `s{n}`). An Everything Events subscription anchors on an
  * exact key only within six segments; a seventh makes the anchor fall back to
  * the first six with the whole key as a filter, which in a naming where the
  * shard index sat beyond that point would put every shard on one anchor and
@@ -84,14 +84,14 @@ function decodeCompressedAppUid(v) {
 }
 
 /**
- * The app uid a Puter auth token carries, or null: no token, a user-scoped
+ * The app uid an Everything auth token carries, or null: no token, a user-scoped
  * session with no app claim at all, or anything that will not parse. Both
  * the worker and the client decode it themselves, and from both claim
  * forms, because a v2 token — the only kind the platform has signed for
  * years — never carries `app_uid` at all: signing compresses the payload,
  * and the auth scope's table maps `app_uid` to `au`, whose value is the uuid
  * with its `app-` prefix stripped, its dashes removed and its hex packed
- * into base64. Reading `app_uid` alone, on the reasoning that puter.js's own
+ * into base64. Reading `app_uid` alone, on the reasoning that everything.js's own
  * getAppIDFromAuthToken is undocumented and should not be depended on, found
  * nothing in any token the platform actually signs: every worker read as
  * user-scoped, every bootstrap left the `events` block out, and the whole

@@ -6,7 +6,7 @@
 // the caller, so a whole exchange can be played out in a test with a
 // scripted model.
 //
-// The transcript keeps the shape Puter's AI takes (OpenAI's): user,
+// The transcript keeps the shape Everything's AI takes (OpenAI's): user,
 // assistant (with its tool_calls), and one tool message answering each call.
 // Every call gets an answer, even one the user declined or stopped, or the
 // next request would be refused as malformed.
@@ -22,7 +22,7 @@ import {
 } from "./model.js";
 import { TOOLS, TOOL_NAMES, changesDeck } from "./assistant-tools.js";
 
-/** The model the assistant runs on, through Puter's AI. */
+/** The model the assistant runs on, through Everything's AI. */
 export const AI_MODEL = "claude-opus-5-5";
 /** When the assistant asks before changing the deck. */
 export const APPROVAL_MODES = [

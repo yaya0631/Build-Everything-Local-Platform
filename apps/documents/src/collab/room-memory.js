@@ -1,6 +1,6 @@
 /**
  * The room a document file was shared in, remembered per file path in the
- * owner's Puter KV so that reopening the file rejoins it. The memory follows
+ * owner's Everything KV so that reopening the file rejoins it. The memory follows
  * the file: a rename moves it, and deleting the file, or creating a new file
  * at that path, forgets it, so a later document under the same name never
  * rejoins (and is overwritten by) another document's room.
@@ -11,7 +11,7 @@ import { DOCUMENT_FOLDER, documentPathKey, documentRoot } from '../lib/document-
 const ROOM_KEY = 'documents-collab-room:';
 
 /** The SDK, when there is one (the mock SDK in development). */
-const sdk = () => (typeof puter !== 'undefined' ? puter : null);
+const sdk = () => (typeof everything !== 'undefined' ? everything : null);
 
 /**
  * The keys a file's room can be remembered under, the one to use first. A file in the app folder is spelled from

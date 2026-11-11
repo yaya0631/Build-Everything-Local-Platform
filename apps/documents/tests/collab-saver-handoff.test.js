@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as Y from 'yjs';
 
-vi.mock('../src/lib/puter.js', async (importOriginal) => {
+vi.mock('../src/lib/everything.js', async (importOriginal) => {
   const real = await importOriginal();
   const files = new Map();
   let clock = 1;
@@ -21,7 +21,7 @@ import { CollabClient } from '../src/collab/client.js';
 import { MemoryHub } from '../src/collab/transports.js';
 import { LiveSession } from '../src/collab/live.js';
 import { Doc, versioning, publishing } from '../src/lib/doc.js';
-import * as P from '../src/lib/puter.js';
+import * as P from '../src/lib/everything.js';
 
 class FakeEngine {
   constructor() { this.session = new StorySession(new TextDocument([paragraph('')])); this.images = new Map(); this.composition = null; this.readOnly = false; this.viewOnly = false; this.overlays = []; }

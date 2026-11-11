@@ -1,7 +1,7 @@
 import { History } from '../history/history';
 import { Assets } from '../model/assets';
 import { newDocument, type PhotoDocument } from '../model/document';
-import { PuterStorage } from '../persistence/puter';
+import { EverythingStorage } from '../persistence/everything';
 import { documentTileIds } from '../model/pixel-layer';
 import type { TileGrid } from '../model/tiles';
 
@@ -14,7 +14,7 @@ export class DocumentSession {
   readonly id = crypto.randomUUID();
   history: History;
   assets = new Assets();
-  storage = new PuterStorage();
+  storage = new EverythingStorage();
   selectedIds = new Set<string>();
   collapsedGroups = new Set<string>();
   selectionAnchor = '';

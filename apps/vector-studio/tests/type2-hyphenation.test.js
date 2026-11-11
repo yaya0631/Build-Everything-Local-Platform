@@ -30,7 +30,7 @@ describe('Liang patterns', () => {
     expect(h('abab')).toEqual([2]);
     expect(h('tabletop')).toEqual([2, 5]);
     expect(parseException('as-so-ciate')).toEqual({ word: 'associate', points: [2, 4] });
-    expect(parseException('Puter')).toEqual({ word: 'puter', points: [] });
+    expect(parseException('Everything')).toEqual({ word: 'everything', points: [] });
   });
 
   it('hyphenates the required languages from their pattern files', async () => {
@@ -87,10 +87,10 @@ describe('hyphenation exceptions', () => {
   it('replace the rules of a word in one language', async () => {
     await loadHyphenation('en-US');
     expect(hyphenateWord('hyphenation', loose, 'en-US')).toBe('hy-phen-ation');
-    setHyphenationExceptions({ 'en-US': ['hyphen-ation', 'Puter'] });
+    setHyphenationExceptions({ 'en-US': ['hyphen-ation', 'Everything'] });
     expect(hyphenateWord('hyphenation', loose, 'en-US')).toBe('hyphen-ation');
     expect(hyphenateWord('Hyphenation', loose, 'en-US')).toBe('Hyphen-ation');
-    expect(hyphenPoints('puter', { minWord: 2, minBefore: 1, minAfter: 1 }, 'en-US')).toEqual([]);
+    expect(hyphenPoints('everything', { minWord: 2, minBefore: 1, minAfter: 1 }, 'en-US')).toEqual([]);
     // Other languages keep their rules.
     expect(hyphenateWord('hyphenation', loose, 'en-GB')).not.toBe('hyphen-ation');
     setHyphenationExceptions({});

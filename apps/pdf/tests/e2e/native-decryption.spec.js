@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { PDFDocument } from 'pdf-lib';
 
 async function setup(page, hold = false, failure = false) {
-  await page.route('**/sdk/puter.js', (route) => route.abort());
+  await page.route('**/sdk/everything.js', (route) => route.abort());
   await page.addInitScript(
     ({ hold, failure }) => {
       window.nativeDecryptions = 0;

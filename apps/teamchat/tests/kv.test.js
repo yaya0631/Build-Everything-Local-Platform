@@ -1,7 +1,7 @@
 /**
  * The in-memory KV is the ground the worker tests stand on, so its
  * path semantics are pinned here against the documented behavior of
- * puter.kv.add / update / remove / incr.
+ * everything.kv.add / update / remove / incr.
  */
 import { describe, it, expect } from 'vitest';
 import { createMemoryKv } from '../dev/worker-runtime.js';

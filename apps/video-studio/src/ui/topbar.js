@@ -26,7 +26,7 @@ export const LAYOUTS = [
   { id: 'vertical', label: 'Vertical video', icon: 'rect', leftW: 420, rightW: 400, upperH: 0.68 },
 ];
 
-/** Avatar button with the user's Puter profile picture when available. */
+/** Avatar button with the user's Everything profile picture when available. */
 export function accountButton({ user, picture, env, onSignOut, onSignIn, extraItems = [] }) {
   const img = picture ? h('img.avatar-img', { src: picture, alt: '' }) : null;
   const initial = user?.username ? user.username[0].toUpperCase() : null;
@@ -35,11 +35,11 @@ export function accountButton({ user, picture, env, onSignOut, onSignIn, extraIt
     user ? { heading: user.username } : { heading: 'Not signed in' },
     ...extraItems,
     { label: 'Theme', icon: 'sun', submenu: themeMenuItems },
-    // Inside the Puter desktop the session belongs to Puter, so there is no sign out here.
+    // Inside the Everything desktop the session belongs to Everything, so there is no sign out here.
     user && env !== 'app' && onSignOut ? 'separator' : null,
     user && env !== 'app' && onSignOut ? { label: 'Sign out', icon: 'logout', onSelect: onSignOut } : null,
     !user && onSignIn ? 'separator' : null,
-    !user && onSignIn ? { label: 'Sign in to save to Puter', icon: 'cloud', onSelect: onSignIn } : null,
+    !user && onSignIn ? { label: 'Sign in to save to Everything', icon: 'cloud', onSelect: onSignIn } : null,
   ].filter(Boolean), { align: 'end', label: 'Account' });
   return btn;
 }

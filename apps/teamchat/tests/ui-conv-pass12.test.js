@@ -3,7 +3,7 @@
  * enough of Element, Document and Event (a tree, attributes, classes,
  * focus, bubbling events, a selector engine for the selectors the modules
  * use) for the dialogs, the composer, the message rows and the conversation
- * view to be built and pressed. Puter is faked at `puter.workers.exec` where
+ * view to be built and pressed. Everything is faked at `everything.workers.exec` where
  * a test reaches the worker; the toast, the theme and the modal layer are
  * mocked, since they paint the page at import.
  */
@@ -429,7 +429,7 @@ afterEach(() => {
   store.me = null;
   store.profile = null;
   store.convs.clear();
-  delete globalThis.puter;
+  delete globalThis.everything;
 });
 
 describe('leaving a channel', () => {

@@ -8,7 +8,7 @@ import { MAIL_DIR } from '../lib/mailbox.js';
 const screen = (root, ...children) => {
   // The inbox puts its unread count in the title; a screen without an inbox
   // behind it must not keep it.
-  document.title = 'Puter Mail';
+  document.title = 'Everything Mail';
   clear(root).append(el('div.gate', {}, el('div.gate-inner', {}, ...children)));
 };
 
@@ -32,11 +32,11 @@ export function renderIntro(root, { onSignIn }) {
 
   screen(root,
     brandMark(),
-    el('h1.gate-title', {}, 'Puter Mail'),
-    el('p.gate-tagline', {}, 'A fast, private email client for your Puter account.'),
+    el('h1.gate-title', {}, 'Everything Mail'),
+    el('p.gate-tagline', {}, 'A fast, private email client for your Everything account.'),
     el('ul.gate-features', {},
       feature('shield', 'Private by design', `Your mail lives as files in the ${MAIL_DIR} folder of your account. Nothing is copied anywhere else.`),
-      feature('send', 'Send and receive', 'Compose mail from your @puter.email address, to any address on Puter or off.'),
+      feature('send', 'Send and receive', 'Compose mail from your @everything.email address, to any address on Everything or off.'),
       feature('mailOpen', 'Text-first reading', 'Messages render as plain text, so tracking pixels and scripts never load.'),
     ),
     signInBtn,
@@ -106,7 +106,7 @@ export function renderPermission(root, { mailPath, requestAccess, onGranted, onS
     brandMark(),
     el('h1.gate-title', {}, 'One quick permission'),
     el('p.gate-tagline', {},
-      `Puter Mail reads the messages stored in ${mailPath}. Sending asks separately for write access to the same folder, on your first send.`),
+      `Everything Mail reads the messages stored in ${mailPath}. Sending asks separately for write access to the same folder, on your first send.`),
     grantBtn,
     note,
     onSignOut && el('button.btn.btn-link', { type: 'button', onclick: onSignOut }, 'Sign out'),

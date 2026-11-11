@@ -119,7 +119,7 @@ export function createTitleBar({ w, c, a, local, title, status, account, menus, 
   /* ---- Document name: rename in place, details in a popover ---- */
   const details = el('button.ed-title-details', { type: 'button', 'aria-label': 'Document details', title: 'Location and details', 'aria-haspopup': 'dialog',
     onclick: () => {
-      const info = w.documentLocation?.() || { location: local ? 'This device' : 'Puter' };
+      const info = w.documentLocation?.() || { location: local ? 'This device' : 'Everything' };
       const name = el('input.input', { value: title.value, 'aria-label': 'File name', maxLength: 120 });
       const form = el('form.ed-title-popover', { onsubmit: e => { e.preventDefault(); popup.close(); if (name.value.trim() && name.value !== title.value) { title.value = name.value; title.dispatchEvent(new Event('change')); } focusEditor(); } },
         el('label.field', {}, el('span.field-label', {}, 'File name'), name),

@@ -7,7 +7,7 @@ import { fakeKV, fakeFS } from './helpers.js';
 
 const SOURCE = fs.readFileSync(new URL('../public/worker/childcare-team-worker.js', import.meta.url), 'utf8');
 
-const person = (uuid, username) => ({ puter: { auth: { getUser: async () => ({ uuid, username }) } } });
+const person = (uuid, username) => ({ everything: { auth: { getUser: async () => ({ uuid, username }) } } });
 
 function loadWorker() {
   const routes = [];
@@ -15,7 +15,7 @@ function loadWorker() {
   new Function('router', SOURCE)(router);
   const kv = fakeKV();
   const fsys = fakeFS();
-  const me = { puter: { kv, fs: fsys, auth: { getUser: async () => ({ uuid: 'owner-1', username: 'director' }) } } };
+  const me = { everything: { kv, fs: fsys, auth: { getUser: async () => ({ uuid: 'owner-1', username: 'director' }) } } };
   const handler = (method, path) => routes.find(([m, p]) => m === method && p === path)?.[2];
   const request = (url, init = {}) => {
     const r = new Request(url, init);
@@ -81,7 +81,7 @@ describe('school worker', () => {
 
   it('refuses callers without a session, and strangers', async () => {
     expect((await w.api(null, { op: 'meta', keys: ['cc1:meta'] })).status).toBe(401);
-    expect((await w.api({ puter: { auth: { getUser: async () => { throw new Error('expired'); } } } }, { op: 'meta' })).status).toBe(401);
+    expect((await w.api({ everything: { auth: { getUser: async () => { throw new Error('expired'); } } } }, { op: 'meta' })).status).toBe(401);
     const res = await w.api(STRANGER, { op: 'load', names: ['students'] });
     expect(res.status).toBe(403);
     expect(res.body.error).toBe('not_a_member');
@@ -370,7 +370,7 @@ describe('the app on top of the worker', () => {
     await join(TEACHER, { role: 'staff' });
     await join(PARENT, { role: 'parent', guardianId: 'g1' });
     const url = 'http://childcare-abc.localhost:8443';
-    const mk = (user) => createStore({ backend: createWorkerBackend(url, { getPuter: () => ({ workers: { exec: w.exec(user) } }) }), flushDelay: 0 });
+    const mk = (user) => createStore({ backend: createWorkerBackend(url, { getEverything: () => ({ workers: { exec: w.exec(user) } }) }), flushDelay: 0 });
     const staff = mk(TEACHER);
     const family = mk(PARENT);
     await staff.init();

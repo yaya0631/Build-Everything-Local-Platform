@@ -1,10 +1,10 @@
-import { hasPuter } from './env.js';
+import { hasEverything } from './env.js';
 
 /**
  * User preferences.
  *
  * localStorage is the fast, synchronous source of truth for boot;
- * puter.kv (per-user, per-app) syncs preferences across devices for
+ * everything.kv (per-user, per-app) syncs preferences across devices for
  * signed-in users. Both writes are best-effort.
  */
 
@@ -48,13 +48,13 @@ export function setLocalPref(key, value) {
   }
 }
 
-/** Persist a preference locally and (best-effort) to puter.kv. */
+/** Persist a preference locally and (best-effort) to everything.kv. */
 export function setPref(key, value) {
   setLocalPref(key, value);
-  if (!hasPuter()) return;
+  if (!hasEverything()) return;
   try {
-    if (!window.puter.auth?.isSignedIn?.()) return;
-    const kv = window.puter.kv;
+    if (!window.everything.auth?.isSignedIn?.()) return;
+    const kv = window.everything.kv;
     if (value === undefined || value === null) kv.del(KV_PREFIX + key).catch(() => {});
     else kv.set(KV_PREFIX + key, JSON.stringify(value)).catch(() => {});
   } catch {
@@ -89,12 +89,12 @@ export function prefsReady() {
 }
 
 async function pullCloudPrefs() {
-  if (!hasPuter()) return;
+  if (!hasEverything()) return;
   try {
     // Only touch kv when already signed in — a kv call for a signed-out
-    // user makes the Puter SDK pop its consent/auth dialog unprompted.
-    if (!window.puter.auth?.isSignedIn?.()) return;
-    const kv = window.puter.kv;
+    // user makes the Everything SDK pop its consent/auth dialog unprompted.
+    if (!window.everything.auth?.isSignedIn?.()) return;
+    const kv = window.everything.kv;
     await Promise.all(
       PREF_KEYS.map(async (key) => {
         if (hasLocalPref(key)) return;
@@ -113,7 +113,7 @@ async function pullCloudPrefs() {
 }
 
 /**
- * Special-case theme: it is read before puter.js settles, by the boot
+ * Special-case theme: it is read before everything.js settles, by the boot
  * script in index.html. That script strips quotes before comparing, so the
  * value is stored in the same JSON form as every other preference — one
  * key, one format. Writing a second, bare copy only ever clobbered the

@@ -928,7 +928,7 @@ export function mount(main, { id }) {
     return h('span.chg', h('span.chg-field', label), ' ', h('span.chg-from', fmt(c.field, c.from)), icon('chevron-right', { size: 12 }), h('span.chg-to', fmt(c.field, c.to)));
   };
 
-  /** Profile pictures for agents (Puter users); customers get initials. */
+  /** Profile pictures for agents (Everything users); customers get initials. */
   function agentUsername(uuid) {
     if (uuid && uuid === me?.uuid) return '';
     const m = app.replica.members[uuid];

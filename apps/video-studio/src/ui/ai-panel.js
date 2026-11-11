@@ -1,5 +1,5 @@
 /**
- * The AI sidebar: a chat docked at the right of the editor in which Puter AI
+ * The AI sidebar: a chat docked at the right of the editor in which Everything AI
  * makes video clips, pictures and voiceovers and edits the timeline with the
  * editor's own tools (media/ai-tools.js, performed by ui/ai-tool-runner.js).
  * Built after the Spreadsheet app's assistant panel.
@@ -7,7 +7,7 @@
  * What it shows as it works is what it does: every tool call is a line in
  * the reply ("Generate a video (5.0s)", "Trim clip c1"), with what it is
  * doing while it runs ("Generating 5s of video with Wan 2.7… 0:42") and a
- * link to the clips it touched. Making video costs Puter credits, so by
+ * link to the clips it touched. Making video costs Everything credits, so by
  * default each video waits for the user's Allow, with the prompt it would
  * send (the approval mode in the panel's menu decides what asks). Each reply
  * that changed the project ends with an Undo that takes back its changes,
@@ -86,7 +86,7 @@ const ID_RE = /(?<![\w-])[a-z0-9]{8,12}(?![\w-])/g;
 
 /**
  * createAiPanel(ctx, { chat, services, readFile, onToggle })
- * chat(messages, options) replaces Puter's streamed chat (tests); services go
+ * chat(messages, options) replaces Everything's streamed chat (tests); services go
  * to the tool runner (generation stand-ins); readFile replaces the reading of
  * attachments. Returns { el, rail, sheet, open(),
  * close(), toggle(), send(text), attach(files), isOpen, busy, dispose() }.
@@ -166,7 +166,7 @@ export function createAiPanel(ctx, { chat = null, services = {}, readFile = read
       if (agent.busy) stop();
       else submit();
     },
-  }, inputWrap, h('p.ai-disclaimer', 'The assistant can make mistakes. Generated video uses Puter credits.'));
+  }, inputWrap, h('p.ai-disclaimer', 'The assistant can make mistakes. Generated video uses Everything credits.'));
   const body = h('div.ai-body', log, signedOut, form);
 
   const resizer = h('div.ai-resize', { role: 'separator', 'aria-orientation': 'vertical', 'aria-label': 'Resize the assistant', tabindex: '0', 'aria-valuemin': MIN_WIDTH });
@@ -302,8 +302,8 @@ export function createAiPanel(ctx, { chat = null, services = {}, readFile = read
     log.hidden = !ok;
     form.hidden = !ok;
     if (!ok && !signedOut.childElementCount) {
-      const btn = ctx.account?.onSignIn ? h('button.btn.primary', { type: 'button', onclick: () => ctx.account.onSignIn() }, icon('cloud', 16), 'Sign in to Puter') : null;
-      signedOut.append(emptyState('user', 'Sign in to use the AI assistant', 'The assistant makes videos and edits with Puter AI, so it needs a Puter account.', btn));
+      const btn = ctx.account?.onSignIn ? h('button.btn.primary', { type: 'button', onclick: () => ctx.account.onSignIn() }, icon('cloud', 16), 'Sign in to Everything') : null;
+      signedOut.append(emptyState('user', 'Sign in to use the AI assistant', 'The assistant makes videos and edits with Everything AI, so it needs an Everything account.', btn));
     }
   }
 

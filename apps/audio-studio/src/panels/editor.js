@@ -91,7 +91,7 @@ function buildEmpty(app) {
     h('div.editor-empty-inner',
       h('div.editor-empty-icon', appIcon(72)),
       h('h2', 'No file open'),
-      h('p.muted', 'Open audio from your Puter files or this device, record something new, or start a multitrack session. You can also drop audio files anywhere in the window.'),
+      h('p.muted', 'Open audio from your Everything files or this device, record something new, or start a multitrack session. You can also drop audio files anywhere in the window.'),
       h('div.editor-empty-actions',
         action('Open', 'file.open', 'folder-open'),
         action('New Audio File', 'file.newAudio', 'file-plus'),

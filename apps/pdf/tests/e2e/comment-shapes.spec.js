@@ -23,7 +23,7 @@ async function shiftDrag(page, from, to) {
 }
 
 test('Shift keeps comment shapes regular, as the preview shows', async ({ page }) => {
-  await page.route('**/sdk/puter.js', (route) => route.abort());
+  await page.route('**/sdk/everything.js', (route) => route.abort());
   const doc = await PDFDocument.create();
   doc.addPage([400, 400]);
   await page.goto('/#library');

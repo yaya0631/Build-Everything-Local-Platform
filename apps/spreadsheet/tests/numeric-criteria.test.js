@@ -37,7 +37,7 @@ it.each(['boundaries', 'operators', 'aggregates'])('matches native Excel %s resu
     if (pass) break;
     const z = X.CFB.read(new Uint8Array(await (await workbookToXlsx(w)).arrayBuffer()), { type: 'array' });
     const p = X.CFB.find(z, '/xl/workbook.xml');
-    p.content = new TextEncoder().encode(new TextDecoder().decode(p.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')); p.size = p.content.length;
+    p.content = new TextEncoder().encode(new TextDecoder().decode(p.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')); p.size = p.content.length;
     w = await workbookFromFile(X.CFB.write(z, { type: 'array', fileType: 'zip' }), 'native.xlsx');
   }
 });

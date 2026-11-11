@@ -279,7 +279,7 @@ function commandEntries(app) {
   const transport = prefs.get('transport');
   list.push(cmd('transport-auto', 'Send through: Automatic', 'zap', () => app.setTransport('auto'), { keywords: 'transport relay browser cors', detail: transport === 'auto' ? 'Current' : '' }));
   list.push(cmd('transport-browser', 'Send through: Browser only', 'globe', () => app.setTransport('browser'), { keywords: 'transport cors', detail: transport === 'browser' ? 'Current' : '' }));
-  if (signedIn) list.push(cmd('transport-relay', 'Send through: Puter relay', 'server', () => app.setTransport('relay'), { keywords: 'transport cors proxy', detail: transport === 'relay' ? 'Current' : '' }));
+  if (signedIn) list.push(cmd('transport-relay', 'Send through: Everything relay', 'server', () => app.setTransport('relay'), { keywords: 'transport cors proxy', detail: transport === 'relay' ? 'Current' : '' }));
   list.push(cmd('cookies', 'Manage cookies', 'cookie', () => openCookiesDialog(app)));
   list.push(cmd('settings', 'Settings', 'settings', () => openSettingsDialog(app), { keywords: 'preferences options', top: true }));
   list.push(cmd('shortcuts', 'Keyboard shortcuts', 'keyboard', () => openShortcutsDialog(), { kbd: 'Mod+/', keywords: 'keys help', top: true }));
@@ -287,7 +287,7 @@ function commandEntries(app) {
   for (const e of app.ws.environments) {
     list.push(cmd(`env-${e.id}`, `Select environment: ${e.name}`, 'globe', () => app.setEnvironment(e.id), { keywords: 'switch use', detail: e.id === app.environmentId ? 'Active' : '' }));
   }
-  if (app.session?.puter && !signedIn) list.push(cmd('sign-in', 'Sign in to Puter', 'logIn', () => app.signIn(), { keywords: 'account sync login' }));
+  if (app.session?.everything && !signedIn) list.push(cmd('sign-in', 'Sign in to Everything', 'logIn', () => app.signIn(), { keywords: 'account sync login' }));
   return list;
 }
 

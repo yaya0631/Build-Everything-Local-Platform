@@ -21,7 +21,7 @@ describe('smart add extraction', () => {
 
   it('ignores a repeat Cmd+Enter while a request is in flight', async () => {
     let calls = 0
-    window.puter = {
+    window.everything = {
       env: 'web',
       ui: {},
       // Never resolves within the test — the request stays "in flight".
@@ -48,7 +48,7 @@ describe('smart add extraction', () => {
 
   it('extracts once the request settles again after a failure', async () => {
     let calls = 0
-    window.puter = {
+    window.everything = {
       env: 'web',
       ui: {},
       ai: { chat: async () => (calls++, Promise.reject(new Error('boom'))) },

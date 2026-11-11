@@ -42,12 +42,12 @@ describe('sign out', () => {
       ['childcare.workspaces:u1', JSON.stringify({ current: 'own', own: {}, joined: [] })],
     ]);
     globalThis.localStorage = { getItem: (k) => store.get(k) ?? null, setItem: (k, v) => store.set(k, v), removeItem: (k) => store.delete(k) };
-    const puterSignOut = vi.fn();
-    globalThis.puter = { auth: { signOut: puterSignOut } };
+    const everythingSignOut = vi.fn();
+    globalThis.everything = { auth: { signOut: everythingSignOut } };
     try {
       const platform = await import('../src/platform.js');
       await platform.signOut('u1');
-      expect(puterSignOut).toHaveBeenCalled();
+      expect(everythingSignOut).toHaveBeenCalled();
       expect(await createIdbCache('user:u1').load()).toBeUndefined();
       expect(await createIdbCache('user:u1:team:http://school-a.localhost:8443').load()).toBeUndefined();
       expect(await createIdbCache('user:u2').load()).toBeTruthy();
@@ -58,7 +58,7 @@ describe('sign out', () => {
       expect(platform.cachedProfilePicture('director')).toBeNull();
       expect(platform.cachedWorkspaces('u1')).toBeNull();
     } finally {
-      delete globalThis.puter;
+      delete globalThis.everything;
       delete globalThis.localStorage;
     }
   });

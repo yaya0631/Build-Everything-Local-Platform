@@ -1,14 +1,14 @@
 /**
- * AI assistance through Puter's AI service. Requests run against the
- * signed-in user's own Puter account.
+ * AI assistance through Everything's AI service. Requests run against the
+ * signed-in user's own Everything account.
  */
 export function createAi() {
   return {
     available() {
-      return typeof puter !== 'undefined' && Boolean(puter.ai?.chat);
+      return typeof everything !== 'undefined' && Boolean(everything.ai?.chat);
     },
     async ask(prompt) {
-      const res = await puter.ai.chat(prompt);
+      const res = await everything.ai.chat(prompt);
       if (typeof res === 'string') return res;
       const content = res?.message?.content;
       if (Array.isArray(content)) return content.map((c) => c.text || '').join('');

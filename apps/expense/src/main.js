@@ -21,12 +21,12 @@ function showError(title, message, onRetry) {
 }
 
 async function start() {
-  if (typeof puter === 'undefined') {
-    showError('Couldn’t reach Puter', 'The Puter SDK failed to load. Check your connection and try again.', () => location.reload());
+  if (typeof everything === 'undefined') {
+    showError('Couldn’t reach Everything', 'The Everything SDK failed to load. Check your connection and try again.', () => location.reload());
     return;
   }
   let signedIn = false;
-  try { signedIn = await Promise.resolve(puter.auth.isSignedIn()); } catch { signedIn = false; }
+  try { signedIn = await Promise.resolve(everything.auth.isSignedIn()); } catch { signedIn = false; }
   if (!signedIn) {
     appRoot.replaceChildren(authView({ onSignedIn: boot }));
     return;
@@ -39,7 +39,7 @@ async function boot() {
     await store.init();
   } catch (err) {
     console.error(err);
-    showError('Couldn’t load your data', navigator.onLine ? 'Something went wrong talking to your Puter cloud.' : 'You appear to be offline.', () => location.reload());
+    showError('Couldn’t load your data', navigator.onLine ? 'Something went wrong talking to your Everything cloud.' : 'You appear to be offline.', () => location.reload());
     return;
   }
   // Settings win over the pre-paint localStorage value (they sync across devices).

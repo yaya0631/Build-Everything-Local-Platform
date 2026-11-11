@@ -144,7 +144,7 @@ export function brandMark(size = 24) {
   return img;
 }
 
-export const REPO_URL = 'https://github.com/heyputer/everything';
+export const REPO_URL = 'https://github.com/yaya0631/Build-Everything-Local-Platform';
 
 /** The GitHub mark, for linking to the source repository. */
 export function githubMark(size = 18) {

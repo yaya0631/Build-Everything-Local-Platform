@@ -5,10 +5,10 @@ import { PDFDocument, PDFName, PDFString, StandardFonts, degrees } from 'pdf-lib
 import { readFile } from 'node:fs/promises';
 import { inspectPaths, pathColorHex } from '../../src/core/path-edit.js';
 
-const PUTER_MOCK = `window.puter = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async (path, blob, options) => { window.lastSave = {path, size:blob.size, options}; return {path, name:path.split('/').pop()}; } }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
-async function mockPuter(page) {
-  await page.route('**/sdk/puter.js', (route) =>
-    route.fulfill({ contentType: 'application/javascript', body: PUTER_MOCK }),
+const EVERYTHING_MOCK = `window.everything = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async (path, blob, options) => { window.lastSave = {path, size:blob.size, options}; return {path, name:path.split('/').pop()}; } }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
+async function mockEverything(page) {
+  await page.route('**/sdk/everything.js', (route) =>
+    route.fulfill({ contentType: 'application/javascript', body: EVERYTHING_MOCK }),
   );
 }
 async function openPdf(page, doc, name = 'test.pdf') {
@@ -37,7 +37,7 @@ async function multiPagePdf(count = 3) {
 }
 
 test('an emptied page number field keeps the current page', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await multiPagePdf());
   await page.getByRole('button', { name: 'Next page', exact: true }).click();
@@ -58,7 +58,7 @@ test('an emptied page number field keeps the current page', async ({ page }) => 
 });
 
 test('Alt+Arrow keys move the caret inside fields instead of changing pages', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await multiPagePdf());
   await page.getByRole('button', { name: 'Next page', exact: true }).click();
@@ -85,7 +85,7 @@ test('Alt+Arrow keys move the caret inside fields instead of changing pages', as
 });
 
 test('Undo and Redo shortcuts work while a toolbar select keeps the focus', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await multiPagePdf(1));
   await page.getByRole('button', { name: 'Shape', exact: true }).click();
@@ -107,7 +107,7 @@ test('Undo and Redo shortcuts work while a toolbar select keeps the focus', asyn
 });
 
 test('recoloring a highlight keeps the value typed into a form field', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   const pdfPage = doc.addPage([400, 400]);
@@ -144,7 +144,7 @@ test('recoloring a highlight keeps the value typed into a form field', async ({ 
 });
 
 test('applying a text draft hands the focus to the page instead of the body', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await multiPagePdf(1));
   await page.getByRole('button', { name: 'Text', exact: true }).click();
@@ -164,7 +164,7 @@ test('applying a text draft hands the focus to the page instead of the body', as
 test('a drag out of a dialog field keeps the dialog open; a backdrop press closes it', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await multiPagePdf(1));
   await page.getByRole('button', { name: /^Rename / }).click();
@@ -189,7 +189,7 @@ test('a drag out of a dialog field keeps the dialog open; a backdrop press close
 });
 
 test('Escape closes an open dialog before touching the highlight editor', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await page.getByRole('button', { name: 'Try a sample PDF' }).click();
   await expect(page.locator('.page-caption')).toHaveText('Page 1 of 1');
@@ -214,7 +214,7 @@ test('Escape closes an open dialog before touching the highlight editor', async 
 });
 
 test('inserting an unsupported image file explains the accepted formats', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await multiPagePdf(1));
   for (const file of [
@@ -237,7 +237,7 @@ test('inserting an unsupported image file explains the accepted formats', async 
 test.describe('dense displays', () => {
   test.use({ deviceScaleFactor: 2, viewport: { width: 1280, height: 800 } });
   test('thumbnails render at device resolution', async ({ page }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     await openPdf(page, await multiPagePdf(2));
     if (!(await page.locator('#page-sidebar').isVisible()))
@@ -255,7 +255,7 @@ test.describe('dense displays', () => {
 });
 
 test('Escape closes the find bar and clears its highlights', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await multiPagePdf(2));
   await page.keyboard.press('ControlOrMeta+f');
@@ -277,7 +277,7 @@ test('Escape closes the find bar and clears its highlights', async ({ page }) =>
 test('the browser theme color stays the brand color in every appearance', async ({ page }) => {
   // Like the neighboring Documents and Spreadsheet apps, the browser chrome takes the brand
   // color rather than the page color, so it reads the same before and after a theme change.
-  await mockPuter(page);
+  await mockEverything(page);
   await page.emulateMedia({ colorScheme: 'dark' });
   await page.goto('/#library');
   const meta = page.locator('meta[name="theme-color"]');
@@ -301,7 +301,7 @@ test('the browser theme color stays the brand color in every appearance', async 
 test.describe('dark appearance', () => {
   test.use({ colorScheme: 'dark' });
   test('the text editing panel stays legible on the dark surface', async ({ page }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     await openPdf(page, await multiPagePdf(1));
     await page.getByRole('button', { name: 'Text', exact: true }).click();
@@ -329,7 +329,7 @@ test.describe('phone layout', () => {
     hasTouch: true,
   });
   test('the pages panel leaves the docked object controls accessible', async ({ page }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     await openPdf(page, await imagePdf());
     await page.getByRole('button', { name: 'Select image 1', exact: true }).click();
@@ -350,7 +350,7 @@ test.describe('phone layout', () => {
 });
 
 test('keyboard focus rings stay visible inside clipped page targets', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await imagePdf());
   const target = page.getByRole('button', { name: 'Select image 1', exact: true });
@@ -383,7 +383,7 @@ test('keyboard focus rings stay visible inside clipped page targets', async ({ p
 });
 
 test('the editor fills the viewport without a stray scrollbar', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await multiPagePdf(1));
   const overflow = await page.evaluate(() => ({
@@ -396,7 +396,7 @@ test('the editor fills the viewport without a stray scrollbar', async ({ page })
 test.describe('tablet layout', () => {
   test.use({ viewport: { width: 820, height: 1180 } });
   test('the toolbar fits without sideways scrolling', async ({ page }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     await openPdf(page, await multiPagePdf(1));
     const toolbar = page.locator('.toolbar');
@@ -422,7 +422,7 @@ test.describe('tablet layout', () => {
 test.describe('small phone layout', () => {
   test.use({ viewport: { width: 360, height: 780 }, isMobile: true, hasTouch: true });
   test('highlight options wrap instead of overflowing the context bar', async ({ page }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     await openPdf(page, await multiPagePdf(1));
     await page.getByRole('button', { name: 'Highlight', exact: true }).click();
@@ -444,7 +444,7 @@ test.describe('small phone layout', () => {
 test.describe('narrow phone toolbar', () => {
   test.use({ viewport: { width: 360, height: 780 }, isMobile: true, hasTouch: true });
   test('the zoom control shows its whole label', async ({ page }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     await openPdf(page, await multiPagePdf(1));
     const zoom = page.getByLabel('Zoom', { exact: true });
@@ -470,7 +470,7 @@ test.describe('narrow phone toolbar', () => {
 });
 
 test('the editor exposes landmark roles and a focusable skip target', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await multiPagePdf(1));
   await expect(page.getByRole('toolbar', { name: 'PDF tools' })).toBeVisible();
@@ -482,12 +482,12 @@ test('the editor exposes landmark roles and a focusable skip target', async ({ p
   await expect(page.locator('main#main')).toBeFocused();
 });
 
-test('the home screen renders before the Puter SDK has loaded', async ({ page }) => {
+test('the home screen renders before the Everything SDK has loaded', async ({ page }) => {
   let release;
   const held = new Promise((resolve) => (release = resolve));
-  await page.route('**/sdk/puter.js', async (route) => {
+  await page.route('**/sdk/everything.js', async (route) => {
     await held;
-    await route.fulfill({ contentType: 'application/javascript', body: PUTER_MOCK });
+    await route.fulfill({ contentType: 'application/javascript', body: EVERYTHING_MOCK });
   });
   await page.goto('/#library', { waitUntil: 'domcontentloaded' });
   await expect(page.getByRole('button', { name: 'New blank PDF' })).toBeVisible();
@@ -499,7 +499,7 @@ test('the home screen renders before the Puter SDK has loaded', async ({ page })
 });
 
 test('a rejected text draft keeps the zoom control on the rendered zoom', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await multiPagePdf(1));
   await page.getByRole('button', { name: 'Text', exact: true }).click();
@@ -523,7 +523,7 @@ test('a rejected text draft keeps the zoom control on the rendered zoom', async 
 test('a fit-width page catches up with a resize that happened during a text draft', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await multiPagePdf(1));
   const paper = page.locator('.paper');
@@ -551,7 +551,7 @@ test('a fit-width page catches up with a resize that happened during a text draf
 });
 
 test('switching tools indexes the page in place instead of re-rendering it', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await imagePdf();
   const font = await doc.embedFont(StandardFonts.Helvetica);
@@ -610,7 +610,7 @@ test('switching tools indexes the page in place instead of re-rendering it', asy
 });
 
 test('the live region announces page changes once, not every re-render', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await page.evaluate(() => {
     window.announcements = [];
@@ -642,7 +642,7 @@ test('the live region announces page changes once, not every re-render', async (
 test('highlighting works when the action is pressed before the deferred measurement', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await multiPagePdf(1));
   await page.getByRole('button', { name: 'Highlight', exact: true }).click();
@@ -681,7 +681,7 @@ test('highlighting works when the action is pressed before the deferred measurem
 });
 
 test('text sizes learned from the page keep the size menu in ascending order', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await page.getByRole('button', { name: 'Try a sample PDF' }).click();
   await expect(page.locator('.page-caption')).toHaveText('Page 1 of 1');
@@ -702,7 +702,7 @@ test('text sizes learned from the page keep the size menu in ascending order', a
 });
 
 test('the redo shortcut leaves a pending text draft alone', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await multiPagePdf(1));
   await page.getByRole('button', { name: 'Text', exact: true }).click();
@@ -722,7 +722,7 @@ test('the redo shortcut leaves a pending text draft alone', async ({ page }) => 
 });
 
 test('the pages panel toggle exposes its expanded state', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await multiPagePdf(2));
   const toggle = page.getByRole('button', { name: 'Toggle pages panel', exact: true });
@@ -740,7 +740,7 @@ test('the pages panel toggle exposes its expanded state', async ({ page }) => {
 });
 
 test('find starts from the current page and wraps around', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await multiPagePdf(3));
   await page.getByRole('button', { name: 'Next page', exact: true }).click();
@@ -767,7 +767,7 @@ test('find starts from the current page and wraps around', async ({ page }) => {
 });
 
 test('find marks only the matched characters inside a text span', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   const font = await doc.embedFont(StandardFonts.Helvetica);
@@ -806,10 +806,10 @@ test('the library sorts file names naturally', async ({ page }) => {
     size: 1000 * (i + 1),
     modified: 1700000000 + i,
   }));
-  await page.route('**/sdk/puter.js', (route) =>
+  await page.route('**/sdk/everything.js', (route) =>
     route.fulfill({
       contentType: 'application/javascript',
-      body: PUTER_MOCK.replace(
+      body: EVERYTHING_MOCK.replace(
         'readdir: async () => []',
         `readdir: async () => ${JSON.stringify(files)}`,
       ),
@@ -829,7 +829,7 @@ test('the library sorts file names naturally', async ({ page }) => {
 test('choosing a thumbnail dismisses the pages panel only when it overlays the page', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await multiPagePdf(3));
   const toggle = page.getByRole('button', { name: 'Toggle pages panel', exact: true });
@@ -845,7 +845,7 @@ test('choosing a thumbnail dismisses the pages panel only when it overlays the p
 });
 
 test('Ctrl+Y redoes outside text fields', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await multiPagePdf(1));
   await page.getByRole('button', { name: 'Highlight', exact: true }).click();
@@ -895,7 +895,7 @@ for (const rotation of [0, 90])
   test(`the text editing panel never covers the draft on a small page at ${rotation} degrees`, async ({
     page,
   }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     await openPdf(page, await paragraphPdf(rotation));
     await page.getByRole('button', { name: 'Text', exact: true }).click();
@@ -924,7 +924,7 @@ for (const rotation of [0, 90])
 test.describe('high density display', () => {
   test.use({ deviceScaleFactor: 3, viewport: { width: 500, height: 700 } });
   test('the page canvas renders at the device ratio within the pixel budget', async ({ page }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     await openPdf(page, await multiPagePdf(1));
     const canvas = page.locator('.paper > canvas').first();
@@ -949,7 +949,7 @@ test.describe('high density display', () => {
 test('text drafts use the font face PDF.js registered for a substituted standard font', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await multiPagePdf(1));
   await page.getByRole('button', { name: 'Text', exact: true }).click();
@@ -966,7 +966,7 @@ test('text drafts use the font face PDF.js registered for a substituted standard
 });
 
 test('an empty text draft shows its whole placeholder without scrollbars', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await multiPagePdf(1));
   await page.getByRole('button', { name: 'Text', exact: true }).click();
@@ -995,7 +995,7 @@ test('an empty text draft shows its whole placeholder without scrollbars', async
 test('toggling the pages panel re-renders the page only when its width changes', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   const font = await doc.embedFont(StandardFonts.Helvetica);
@@ -1039,7 +1039,7 @@ test('toggling the pages panel re-renders the page only when its width changes',
 });
 
 test('the pages panel keeps the current page thumbnail in view', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await multiPagePdf(14));
   const toggle = page.getByRole('button', { name: 'Toggle pages panel', exact: true });
@@ -1081,7 +1081,7 @@ test('the pages panel is one tab stop that the arrow keys move through', async (
   isMobile,
 }) => {
   test.skip(isMobile, 'a phone closes the panel whenever a page is chosen');
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await multiPagePdf(20));
   const panel = page.locator('#page-sidebar');
@@ -1130,7 +1130,7 @@ test('the pages panel is one tab stop that the arrow keys move through', async (
 test('dropping text into a draft keeps its native insertion while file drops open PDFs', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await multiPagePdf(1));
   await page.getByRole('button', { name: 'Text', exact: true }).click();
@@ -1176,7 +1176,7 @@ test('dropping text into a draft keeps its native insertion while file drops ope
 test('a file dragged onto the page opens it, over whatever sits under the cursor', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/');
   await expect(page.locator('.page-caption')).toHaveText('Page 1 of 1');
   const dropped = await multiPagePdf(2);
@@ -1231,7 +1231,7 @@ test('a file dragged onto the page opens it, over whatever sits under the cursor
 });
 
 test('documents, edits, and draft previews share one PDF.js worker', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.addInitScript(() => {
     window.workersStarted = 0;
     const NativeWorker = window.Worker;
@@ -1270,7 +1270,7 @@ test('documents, edits, and draft previews share one PDF.js worker', async ({ pa
 });
 
 test('find reuses extracted page text and still sees edits made afterwards', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await multiPagePdf(3));
   // Count text extractions through the worker traffic they cause.
@@ -1313,7 +1313,7 @@ test('find reuses extracted page text and still sees edits made afterwards', asy
 test('the annotation color follows tool changes while highlights keep their own', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await multiPagePdf(1));
   const swatch = page.getByLabel('Annotation color', { exact: true });
@@ -1342,7 +1342,7 @@ test('the annotation color follows tool changes while highlights keep their own'
 });
 
 test('the page area stays empty until the first page has its size', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   let releaseWorker;
   const gate = new Promise((resolve) => {
     releaseWorker = resolve;
@@ -1370,7 +1370,7 @@ test('the page area stays empty until the first page has its size', async ({ pag
 });
 
 test('printing shows the current page alone, scaled to the paper width', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await multiPagePdf(2));
   await page.getByRole('button', { name: 'Next page', exact: true }).click();
@@ -1403,7 +1403,7 @@ test('printing shows the current page alone, scaled to the paper width', async (
 });
 
 test('the page sits on whole device pixels however the spare width divides', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([700, 700]);
@@ -1439,7 +1439,7 @@ const zoomBelow = (zoom) => ZOOM_LEVELS.filter((level) => level < zoom / 1.01).a
 test('the zoom buttons step through fixed levels and the menu names an unlisted zoom', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await multiPagePdf(1));
   const zoom = page.getByLabel('Zoom', { exact: true }),
@@ -1479,7 +1479,7 @@ test('the zoom buttons step through fixed levels and the menu names an unlisted 
 });
 
 test('keyboard shortcuts zoom the page and return to fit width', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await multiPagePdf(1));
   const zoom = page.getByLabel('Zoom', { exact: true }),
@@ -1503,7 +1503,7 @@ test('keyboard shortcuts zoom the page and return to fit width', async ({ page }
 });
 
 test('Ctrl + wheel zooms the page around the pointer instead of the browser', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([900, 1200]);
@@ -1544,7 +1544,7 @@ test('Ctrl + wheel zooms the page around the pointer instead of the browser', as
 test('fit page shows the whole page inside the workspace and follows its height', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([400, 1000]);
@@ -1568,7 +1568,7 @@ test('fit page shows the whole page inside the workspace and follows its height'
 test('fit page keeps one zoom while scrolling through pages of different sizes', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   for (const size of [
@@ -1632,7 +1632,7 @@ for (const width of [1200, 390]) {
     test.use({ viewport: { width, height: 800 } });
     for (const key of ['Tab', 'Shift+Tab']) {
       test(`${key} closes menus and reaches the adjacent control`, async ({ page }) => {
-        await mockPuter(page);
+        await mockEverything(page);
         await page.goto('/#library');
         await openPdf(page, await multiPagePdf(2));
         const opener =
@@ -1670,7 +1670,7 @@ test.describe('menu bar', () => {
   test('the menu bar is one tab stop whose menus open, switch, and close from the keyboard', async ({
     page,
   }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     await openPdf(page, await multiPagePdf(3));
     const bar = page.getByRole('menubar', { name: 'PDF menus' });
@@ -1709,7 +1709,7 @@ test.describe('menu bar', () => {
   });
 
   test('page items follow the current page and rotate both ways', async ({ page }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     await openPdf(page, await multiPagePdf(2));
     await page.getByRole('menubar').getByRole('menuitem', { name: 'Page', exact: true }).click();
@@ -1731,7 +1731,7 @@ test.describe('folded phone menu', () => {
   test.use({ viewport: { width: 390, height: 780 }, isMobile: true, hasTouch: true });
   for (const key of ['ArrowRight', 'Enter', 'Space']) {
     test(`${key} enters a submenu that the pointer already opened`, async ({ page }) => {
-      await mockPuter(page);
+      await mockEverything(page);
       await page.goto('/#library');
       await openPdf(page, await multiPagePdf(2));
       // Open with the keyboard so focus has an explicit return target in every browser.
@@ -1761,7 +1761,7 @@ test.describe('folded phone menu', () => {
     });
   }
   test('one button holds the file actions and the other menus as submenus', async ({ page }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     await openPdf(page, await multiPagePdf(2));
     await expect(page.getByRole('menubar')).toBeHidden();
@@ -1779,7 +1779,7 @@ test.describe('folded phone menu', () => {
 });
 
 test('Go to page jumps to the entered page', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await multiPagePdf(4));
   await menu(page, 'Go to page…');
@@ -1793,7 +1793,7 @@ test('Go to page jumps to the entered page', async ({ page }) => {
 test('extracted pages keep hidden PDF layers hidden after download and reopening', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   const sheet = doc.addPage([200, 200]);
@@ -1836,7 +1836,7 @@ test('extracted pages keep hidden PDF layers hidden after download and reopening
 });
 
 test('Extract pages downloads the chosen pages as a new PDF', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await multiPagePdf(4));
   await page.getByRole('button', { name: 'Next page', exact: true }).click();
@@ -1868,7 +1868,7 @@ test('Extract pages downloads the chosen pages as a new PDF', async ({ page }) =
 test('find counts every match and steps through several on one page before moving on', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   const font = await doc.embedFont(StandardFonts.Helvetica);
@@ -1928,7 +1928,7 @@ async function toggleDarkPages(page) {
 test('dark page colors invert the page, persist across reloads, and switch back off', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await multiPagePdf(1));
   const canvas = page.locator('.paper > canvas').first();
@@ -1948,7 +1948,7 @@ test('dark page colors invert the page, persist across reloads, and switch back 
 test('dark page colors also invert the page preview shown while an object moves', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await imagePdf());
   await toggleDarkPages(page);
@@ -1965,7 +1965,7 @@ test('dark page colors also invert the page preview shown while an object moves'
 test('the browser print command prints the page in its own colors with dark pages on', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await multiPagePdf(1));
   await toggleDarkPages(page);
@@ -1977,7 +1977,7 @@ test('the browser print command prints the page in its own colors with dark page
 });
 
 test('the selected image shows keyboard focus on its move control', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await imagePdf());
   await page.getByRole('button', { name: 'Select image 1', exact: true }).click();
@@ -2001,7 +2001,7 @@ test('the selected image shows keyboard focus on its move control', async ({ pag
 test('Escape on a selected image closes its controls and hands focus back to the image', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await imagePdf());
   const target = page.getByRole('button', { name: 'Select image 1', exact: true });
@@ -2017,7 +2017,7 @@ test('Escape on a selected image closes its controls and hands focus back to the
 test('a checkbox group ticks one box at a time on the page and saves the chosen value', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   const sheet = doc.addPage([300, 300]);
@@ -2061,7 +2061,7 @@ test('a checkbox group ticks one box at a time on the page and saves the chosen 
 test('every control sits inside a landmark and each view has one first-level heading', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   const landmarks = async () =>
     (
       await new AxeBuilder({ page })
@@ -2087,7 +2087,7 @@ test('every control sits inside a landmark and each view has one first-level hea
 test('a dialog taller than a short window keeps its title and buttons in place', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.setViewportSize({ width: 1000, height: 520 });
   await page.goto('/#library');
   await openPdf(page, await multiPagePdf());
@@ -2117,7 +2117,7 @@ test('a dialog taller than a short window keeps its title and buttons in place',
 });
 
 test('a text draft opened at a high zoom keeps its properties in view', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.setViewportSize({ width: 390, height: 740 });
   await page.goto('/#library');
   const doc = await PDFDocument.create();
@@ -2153,13 +2153,13 @@ test('a text draft opened at a high zoom keeps its properties in view', async ({
 test('a second press while a save or a download is under way does not repeat it', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await multiPagePdf(2));
   // Count what reaches the cloud, with a write slow enough to press again during.
   await page.evaluate(() => {
     window.writes = [];
-    window.puter.fs.write = async (path) => {
+    window.everything.fs.write = async (path) => {
       window.writes.push(path);
       await new Promise((resolve) => setTimeout(resolve, 300));
       return { path, name: path.split('/').pop() };
@@ -2173,9 +2173,9 @@ test('a second press while a save or a download is under way does not repeat it'
       button.click();
       button.click();
     }, label);
-  await press('Save to Puter');
-  await expect(page.locator('#toast')).toHaveText('Saved to Puter as test.pdf.');
-  await expect(page.locator('.save-status')).toHaveText('Saved to Puter');
+  await press('Save to Everything');
+  await expect(page.locator('#toast')).toHaveText('Saved to Everything as test.pdf.');
+  await expect(page.locator('.save-status')).toHaveText('Saved to Everything');
   expect(await page.evaluate(() => window.writes)).toEqual(['PDF Editor/test.pdf']);
   // The same for the download: one press, one file.
   const downloads = [];
@@ -2187,7 +2187,7 @@ test('a second press while a save or a download is under way does not repeat it'
 });
 
 test('a file dropped while a dialog is open is refused, not opened behind it', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await multiPagePdf(2));
   await menu(page, 'Watermark…');
@@ -2234,7 +2234,7 @@ test('a file dropped while a dialog is open is refused, not opened behind it', a
 });
 
 test('Select all takes the page text, not the application around it', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await multiPagePdf(2));
   const selected = () => page.evaluate(() => window.getSelection().toString());
@@ -2270,7 +2270,7 @@ test('Select all takes the page text, not the application around it', async ({ p
 test.describe('at the narrow layout breakpoint', () => {
   test.use({ viewport: { width: 760, height: 800 } });
   test('the side panel starts closed instead of covering the page', async ({ page }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     await openPdf(page, await multiPagePdf(2));
     await expect(page.locator('#page-sidebar')).toBeHidden();
@@ -2284,7 +2284,7 @@ test.describe('at the narrow layout breakpoint', () => {
 test('choosing several PDFs opens the first and says what became of the others', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const chooser = page.waitForEvent('filechooser');
   await page.getByRole('button', { name: /Open a PDF/ }).click();
@@ -2309,7 +2309,7 @@ test('choosing several PDFs opens the first and says what became of the others',
 });
 
 test('an error message stays until the reader carries on', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const chooser = page.waitForEvent('filechooser');
   await page.getByRole('button', { name: /Open a PDF/ }).click();

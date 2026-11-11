@@ -189,11 +189,11 @@ export function renderRail(container) {
       { label: 'Profile and settings', icon: 'gear', onSelect: () => settingsDialog() },
       { label: currentTheme() === 'system' ? 'Theme: system' : `Theme: ${currentTheme()}`, icon: 'monitor', sub: 'Choose in settings', onSelect: () => settingsDialog({ section: 'appearance' }) },
     ];
-    if (typeof puter !== 'undefined' && puter.env !== 'app') {
+    if (typeof everything !== 'undefined' && everything.env !== 'app') {
       items.push('sep', {
         label: 'Sign out', icon: 'logout',
         onSelect: async () => {
-          const ok = await confirmDialog({ title: 'Sign out?', message: 'You can sign back in with your Puter account anytime.', confirmLabel: 'Sign out', danger: false });
+          const ok = await confirmDialog({ title: 'Sign out?', message: 'You can sign back in with your Everything account anytime.', confirmLabel: 'Sign out', danger: false });
           if (!ok) return;
           try {
             await store.signOut();

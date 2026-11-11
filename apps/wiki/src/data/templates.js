@@ -103,7 +103,7 @@ export function templateById(id) {
 /** The first page in a brand new workspace. */
 export function welcomeBlocks() {
   return [
-    { type: 'callout', icon: 'sparkles', bg: 'purple', text: 'Welcome to your wiki. Everything here is saved as files in your own Puter cloud.' },
+    { type: 'callout', icon: 'sparkles', bg: 'purple', text: 'Welcome to your wiki. Everything here is saved as files in your own Everything cloud.' },
     h(2, 'Write'),
     t('Click anywhere and start typing. Type / for headings, lists, to-dos, toggles, quotes, code, images, tables and more.'),
     bullet('Markdown shortcuts work too: # for a heading, - for a list, [] for a to-do, > for a toggle, ``` for code.'),

@@ -86,7 +86,7 @@ describe('the per-message menu', () => {
 
   it('offers no reply on a message that is on its own', async () => {
     mount();
-    await open('Welcome to your Puter mailbox');
+    await open('Welcome to your Everything mailbox');
     expect(cards()).toHaveLength(1);
     moreOf(cards()[0]).click();
     await settle(50);
@@ -105,7 +105,7 @@ describe('the per-message menu', () => {
 
   it('downloads the message as it arrived, as an .eml file', async () => {
     mount();
-    await open('Welcome to your Puter mailbox');
+    await open('Welcome to your Everything mailbox');
     const made = [];
     const clicked = [];
     URL.createObjectURL = (blob) => { made.push(blob); return 'blob:x'; };
@@ -120,9 +120,9 @@ describe('the per-message menu', () => {
     } finally {
       HTMLAnchorElement.prototype.click = realClick;
     }
-    expect(clicked).toEqual(['Welcome to your Puter mailbox.eml']);
+    expect(clicked).toEqual(['Welcome to your Everything mailbox.eml']);
     expect(made[0].type).toBe('message/rfc822');
-    expect(await made[0].text()).toContain('Subject: Welcome to your Puter mailbox');
+    expect(await made[0].text()).toContain('Subject: Welcome to your Everything mailbox');
   });
 
   it('is not on a collapsed message, whose file has not been read', async () => {
@@ -145,7 +145,7 @@ describe('Copy sender\'s address', () => {
     });
     try {
       mount();
-      await open('Welcome to your Puter mailbox');
+      await open('Welcome to your Everything mailbox');
       moreOf(cards()[0]).click();
       await settle(50);
       itemNamed('Copy sender\'s address').click();
@@ -166,7 +166,7 @@ describe('Copy sender\'s address', () => {
     });
     try {
       mount();
-      await open('Welcome to your Puter mailbox');
+      await open('Welcome to your Everything mailbox');
       moreOf(cards()[0]).click();
       await settle(50);
       itemNamed('Copy sender\'s address').click();

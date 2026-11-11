@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { sendDocument, parseRecipients, failureMessage, describeResult, digest, mailerAvailable } from '../src/mailer.js';
 
-const fakePuter = (response) => ({ workers: { exec: vi.fn(async () => response) } });
+const fakeEverything = (response) => ({ workers: { exec: vi.fn(async () => response) } });
 const res = (status, body) => ({ ok: status < 400, status, json: async () => body });
 
 describe('mailer', () => {
@@ -12,8 +12,8 @@ describe('mailer', () => {
   });
 
   it('posts the document through the worker bridge', async () => {
-    const p = fakePuter(res(200, { ok: true, sent: 1, results: [{ email: 'c@x.com', status: 'sent' }] }));
-    const out = await sendDocument({ kind: 'quote', doc: { id: 'q1', number: 7 }, settings: { company: { name: 'Acme', email: 'hi@acme.test' } }, to: ['c@x.com'], subject: 'Quote #7', body: 'Hello' }, { getPuter: () => p });
+    const p = fakeEverything(res(200, { ok: true, sent: 1, results: [{ email: 'c@x.com', status: 'sent' }] }));
+    const out = await sendDocument({ kind: 'quote', doc: { id: 'q1', number: 7 }, settings: { company: { name: 'Acme', email: 'hi@acme.test' } }, to: ['c@x.com'], subject: 'Quote #7', body: 'Hello' }, { getEverything: () => p });
     expect(out.sent).toBe(1);
     const [url, init] = p.workers.exec.mock.calls[0];
     expect(url).toMatch(/\/send$/);
@@ -23,14 +23,14 @@ describe('mailer', () => {
   });
 
   it('turns worker refusals into actionable messages', async () => {
-    const p = fakePuter(res(429, { error: 'daily_limit' }));
-    await expect(sendDocument({ kind: 'invoice', doc: { id: 'i' }, settings: {}, to: ['a@b.co'], subject: 's', body: 'b' }, { getPuter: () => p })).rejects.toThrow(/email limit/);
+    const p = fakeEverything(res(429, { error: 'daily_limit' }));
+    await expect(sendDocument({ kind: 'invoice', doc: { id: 'i' }, settings: {}, to: ['a@b.co'], subject: 's', body: 'b' }, { getEverything: () => p })).rejects.toThrow(/email limit/);
     expect(failureMessage(401, {})).toMatch(/Sign in/);
   });
 
   it('reports unreachable workers and missing SDKs', async () => {
     const p = { workers: { exec: vi.fn(async () => { throw new TypeError('Failed to fetch'); }) } };
-    await expect(sendDocument({ kind: 'invoice', doc: { id: 'i' }, settings: {}, to: ['a@b.co'], subject: 's', body: 'b' }, { getPuter: () => p })).rejects.toThrow(/Could not reach/);
+    await expect(sendDocument({ kind: 'invoice', doc: { id: 'i' }, settings: {}, to: ['a@b.co'], subject: 's', body: 'b' }, { getEverything: () => p })).rejects.toThrow(/Could not reach/);
     expect(mailerAvailable(() => null)).toBe(false);
   });
 

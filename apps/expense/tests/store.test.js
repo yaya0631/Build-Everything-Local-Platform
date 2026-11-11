@@ -1,12 +1,12 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { Store, KV_KEYS, monthPath, STATEMENTS_PATH, REPORTS_PATH, RECEIPTS_DIR } from '../src/lib/store.js';
-import { fakePuter, readJsonFile } from './helpers/fake-puter.js';
+import { fakeEverything, readJsonFile } from './helpers/fake-everything.js';
 
 let sdk;
 let store;
 
 beforeEach(async () => {
-  sdk = fakePuter();
+  sdk = fakeEverything();
   store = new Store(() => sdk);
   await store.init();
 });
@@ -179,7 +179,7 @@ describe('write serialisation', () => {
 
 describe('loading races', () => {
   it('a slow initial read never overwrites data imported while it was pending', async () => {
-    const slow = fakePuter({ readDelay: 30 });
+    const slow = fakeEverything({ readDelay: 30 });
     const s = new Store(() => slow);
     await s.init();
     // Views start loading on an empty account; the user picks sample data before the reads return.
@@ -194,7 +194,7 @@ describe('loading races', () => {
     expect((await s.loadMonth('2026-08'))).toHaveLength(1);
   });
   it('shares one read between concurrent callers', async () => {
-    const slow = fakePuter({ readDelay: 10 });
+    const slow = fakeEverything({ readDelay: 10 });
     const s = new Store(() => slow);
     await s.init();
     await Promise.all([s.loadStatements(), s.loadStatements(), s.loadMonth('2026-01'), s.loadMonth('2026-01')]);

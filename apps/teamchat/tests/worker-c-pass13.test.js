@@ -186,11 +186,11 @@ describe('the names an imported archive carries', () => {
 });
 
 describe('a large answer arriving slowly', () => {
-  const hadPuter = Object.hasOwn(globalThis, 'puter') ? globalThis.puter : undefined;
+  const hadEverything = Object.hasOwn(globalThis, 'everything') ? globalThis.everything : undefined;
   afterEach(() => {
     vi.useRealTimers();
-    if (hadPuter === undefined) delete globalThis.puter;
-    else globalThis.puter = hadPuter;
+    if (hadEverything === undefined) delete globalThis.everything;
+    else globalThis.everything = hadEverything;
   });
 
   /** A worker whose answer begins at once and whose body comes in `chunks` pieces, one every `every` ms, then stops for `stall` ms before the last. */
@@ -211,7 +211,7 @@ describe('a large answer arriving slowly', () => {
         }, wait));
       },
     });
-    globalThis.puter = { workers: { exec: async (url, init) => {
+    globalThis.everything = { workers: { exec: async (url, init) => {
       seen.signal = init.signal;
       // As fetch has it: an aborted request tears its body down, and a read in flight fails with the reason.
       init.signal.addEventListener('abort', () => { try { ctrl.error(init.signal.reason); } catch { /* closed already */ } });
@@ -247,11 +247,11 @@ describe('a large answer arriving slowly', () => {
 });
 
 describe('emailing invitations to a service that does not answer', () => {
-  const hadPuter = Object.hasOwn(globalThis, 'puter') ? globalThis.puter : undefined;
+  const hadEverything = Object.hasOwn(globalThis, 'everything') ? globalThis.everything : undefined;
   afterEach(() => {
     vi.useRealTimers();
-    if (hadPuter === undefined) delete globalThis.puter;
-    else globalThis.puter = hadPuter;
+    if (hadEverything === undefined) delete globalThis.everything;
+    else globalThis.everything = hadEverything;
   });
   const invite = { kind: 'workspace', server: 'teamchat-x', code: 'ABCD-EFGH-IJKL', workspace: 'Acme', inviter: 'Alice', emails: ['pat@example.com'] };
   const settle = (p) => p.then((v) => ({ ok: true, v }), (e) => ({ ok: false, e }));
@@ -260,7 +260,7 @@ describe('emailing invitations to a service that does not answer', () => {
     vi.useFakeTimers();
     globalThis.location = globalThis.location || { origin: 'http://localhost:8443', pathname: '/app/teamchat' };
     let signal = null;
-    globalThis.puter = { workers: { exec: (url, init) => new Promise((resolve, reject) => {
+    globalThis.everything = { workers: { exec: (url, init) => new Promise((resolve, reject) => {
       signal = init.signal;
       init.signal?.addEventListener('abort', () => reject(init.signal.reason));
     }) } };
@@ -273,7 +273,7 @@ describe('emailing invitations to a service that does not answer', () => {
     expect(out.ok).toBe(false);
     expect(out.e.message).toBe('The email service took too long to answer; if nothing arrives, copy the link and share it directly.');
     // An answer in time is taken as before.
-    globalThis.puter = { workers: { exec: async () => new Response(JSON.stringify({ ok: true, sent: 1, failed: 0, suppressed: 0, results: [{ email: 'pat@example.com', status: 'sent' }] }), { status: 200 }) } };
+    globalThis.everything = { workers: { exec: async () => new Response(JSON.stringify({ ok: true, sent: 1, failed: 0, suppressed: 0, results: [{ email: 'pat@example.com', status: 'sent' }] }), { status: 200 }) } };
     expect((await sendInviteEmails(invite)).sent).toBe(1);
   });
 });
@@ -461,11 +461,11 @@ describe('a bookmark coming down while the last message carrying its file is del
 });
 
 describe('moving a workspace, from the nominee\'s side: the freeze', () => {
-  const hadPuter = Object.hasOwn(globalThis, 'puter') ? globalThis.puter : undefined;
+  const hadEverything = Object.hasOwn(globalThis, 'everything') ? globalThis.everything : undefined;
   afterEach(() => {
     vi.useRealTimers();
-    if (hadPuter === undefined) delete globalThis.puter;
-    else globalThis.puter = hadPuter;
+    if (hadEverything === undefined) delete globalThis.everything;
+    else globalThis.everything = hadEverything;
   });
   const json = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
   const OLD = 'abcdef1234@teamchat-old';
@@ -477,7 +477,7 @@ describe('moving a workspace, from the nominee\'s side: the freeze', () => {
   function servers({ pages = 1, pageTakesMs = 0, failExportAt = null, failImportPage = false, begin = () => json({ ok: true, transferring: { by: 'me', at: 1 } }) } = {}) {
     const made = [];
     let served = 0;
-    globalThis.puter = { workers: { exec: async (url, init = {}) => {
+    globalThis.everything = { workers: { exec: async (url, init = {}) => {
       const u = new URL(url);
       const path = u.pathname;
       const method = init.method || 'GET';
@@ -581,7 +581,7 @@ describe('moving a workspace, from the nominee\'s side: the freeze', () => {
     // the moment the pause is granted, a member tries to post and to read.
     let during = null;
     let failImport = false;
-    globalThis.puter = { workers: { exec: async (url, init) => {
+    globalThis.everything = { workers: { exec: async (url, init) => {
       const path = new URL(url).pathname;
       if (failImport && path.endsWith('/import') && init?.method === 'POST') return json({ code: 'internal', message: 'the store failed' }, 500);
       const res = await rt.dispatch(url, init, bob);

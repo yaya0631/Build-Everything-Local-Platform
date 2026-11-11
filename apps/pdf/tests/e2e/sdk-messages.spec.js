@@ -17,7 +17,7 @@ async function setup(page, context, baseURL, sender) {
   doc.addPage([300, 300]);
   doc.addPage([300, 300]);
   const bytes = Buffer.from(await doc.save()).toString('base64');
-  await context.route('**/sdk/puter.js', (route) =>
+  await context.route('**/sdk/everything.js', (route) =>
     route.fulfill({
       contentType: 'application/javascript',
       body: `
@@ -25,8 +25,8 @@ async function setup(page, context, baseURL, sender) {
         let opened, closing;
         const controls=['click','focus','drag','drop','itemsOpened','windowWillClose','pictureInPictureClosed'];
         // Match the SDK's environment detection and its unfiltered desktop-message listener.
-        window.puter={
-          env:new URLSearchParams(location.search).has('puter.app_instance_id') && parent!==window ? 'app':'web',
+        window.everything={
+          env:new URLSearchParams(location.search).has('everything.app_instance_id') && parent!==window ? 'app':'web',
           auth:{isSignedIn:()=>false,getUser:async()=>({username:'test-user'})},
           fs:{readdir:async()=>[],read:async()=>new Blob([Uint8Array.from(atob(${JSON.stringify(bytes)}),c=>c.charCodeAt(0))])},
           ui:{onItemsOpened:handler=>{opened=handler;},onWindowClose:handler=>{closing=handler;}},
@@ -69,7 +69,7 @@ async function setup(page, context, baseURL, sender) {
         document.body.append(frame);
         window.editor = frame.contentWindow;
       },
-      baseURL + (desktop ? '/?puter.app_instance_id=test' : '/'),
+      baseURL + (desktop ? '/?everything.app_instance_id=test' : '/'),
     );
     await expect
       .poll(() =>
@@ -78,7 +78,7 @@ async function setup(page, context, baseURL, sender) {
           .find((f) => f.url().startsWith(baseURL))
           ?.url(),
       )
-      .toBe(baseURL + (desktop ? '/?puter.app_instance_id=test' : '/'));
+      .toBe(baseURL + (desktop ? '/?everything.app_instance_id=test' : '/'));
     editor = page.frames().find((f) => f.url().startsWith(baseURL));
     source = page;
     if (sender.endsWith('sibling')) {
@@ -174,7 +174,7 @@ for (const sender of [
     );
     // Authentication and ordinary messages still reach the SDK for its own validation.
     const others = [
-      { msg: 'puter.token', token: 'test-only' },
+      { msg: 'everything.token', token: 'test-only' },
       { original_msg_id: 'picker', msg: 'fileOpenCancelled' },
       null,
       'message',

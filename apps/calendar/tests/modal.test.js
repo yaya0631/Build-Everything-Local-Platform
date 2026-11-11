@@ -1325,7 +1325,7 @@ describe('event modal — guests & RSVP', () => {
   });
 });
 
-describe('event modal — email permission (Puter withholds user.email from apps)', () => {
+describe('event modal — email permission (Everything withholds user.email from apps)', () => {
   let modal;
   let store;
 

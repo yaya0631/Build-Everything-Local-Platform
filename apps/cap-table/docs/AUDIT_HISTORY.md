@@ -1,7 +1,7 @@
 # Permanent audit history
 
 History records business changes separately from the dashboard's recent activity
-feed. It retains complete before/after records, the authenticated Puter account
+feed. It retains complete before/after records, the authenticated Everything account
 identifier when available, recording time in UTC, business dates present in the
 changed records, action, source, and transaction ID. Security edits can include an
 optional explanation. An ordinary edit with no explicit business date says
@@ -133,7 +133,7 @@ head; recovery is required before accepting more.
 
 ## Trust and compatibility
 
-This is an application-level append-only journal in the user's Puter account.
+This is an application-level append-only journal in the user's Everything account.
 It is not tamper-proof against the storage owner, old application versions, or
 another program with the same account credentials. The content digest detects
 damage, not malicious replacement by an authorized owner. Do not claim independent

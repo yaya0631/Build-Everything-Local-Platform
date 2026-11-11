@@ -14,23 +14,23 @@ import { createSampleDataPopulator } from './lib/demo.js';
 
 let demoSession = null;
 window.email = { populateSampleData: createSampleDataPopulator(() =>
-  window.puter?.auth.isSignedIn() ? demoSession : null,
+  window.everything?.auth.isSignedIn() ? demoSession : null,
 ) };
 
 const root = document.getElementById('app');
 
 // The SDK loads with `defer` ahead of this module; the poll only covers a
 // slow network still fetching it.
-const waitForPuter = () => new Promise((resolve) => {
-  if (window.puter) return resolve(true);
+const waitForEverything = () => new Promise((resolve) => {
+  if (window.everything) return resolve(true);
   // A script that failed to load has already said so (index.html marks it):
   // waiting out the poll only kept a skeleton up for ten more seconds.
-  if (window.puterSdkFailed) return resolve(false);
+  if (window.everythingSdkFailed) return resolve(false);
   let tries = 0;
   const timer = setInterval(() => {
-    if (window.puter || window.puterSdkFailed || ++tries > 100) {
+    if (window.everything || window.everythingSdkFailed || ++tries > 100) {
       clearInterval(timer);
-      resolve(Boolean(window.puter));
+      resolve(Boolean(window.everything));
     }
   }, 100);
 });
@@ -39,11 +39,11 @@ const waitForPuter = () => new Promise((resolve) => {
  * The account-scoped key-value store behind read and starred state, so flags
  * follow the account across devices instead of belonging to one browser. No
  * filesystem permission is involved, so this costs no prompt. Absent on a
- * Puter without kv, in which case the flag stores stay local.
+ * Everything without kv, in which case the flag stores stay local.
  */
-const accountStore = () => (window.puter?.kv ? {
-  get: (key) => puter.kv.get(key),
-  set: (key, value) => puter.kv.set(key, value),
+const accountStore = () => (window.everything?.kv ? {
+  get: (key) => everything.kv.get(key),
+  set: (key, value) => everything.kv.set(key, value),
 } : null);
 
 /**
@@ -55,7 +55,7 @@ const unreachable = (error) => !error?.code || error instanceof TypeError
   || error.code === 'network_error' || error.code === 'request_timeout';
 
 /**
- * Whether the folder can be read. Puter answers a refused or missing path
+ * Whether the folder can be read. Everything answers a refused or missing path
  * with a coded API error, which is the answer "no". A request that failed
  * to get an answer at all is thrown, not taken for "no": a network blip at
  * start-up showed the permission screen, whose only way on asked for a
@@ -63,7 +63,7 @@ const unreachable = (error) => !error?.code || error instanceof TypeError
  */
 const canRead = async (path) => {
   try {
-    await puter.fs.stat(path);
+    await everything.fs.stat(path);
     return true;
   } catch (error) {
     if (unreachable(error)) throw error;
@@ -72,31 +72,31 @@ const canRead = async (path) => {
 };
 
 const requestPermission = (permission) =>
-  puter.perms?.request
-    ? puter.perms.request(permission)
-    : puter.ui.requestPermission({ permission });
+  everything.perms?.request
+    ? everything.perms.request(permission)
+    : everything.ui.requestPermission({ permission });
 
-// Puter apps have their own session chrome; a logout option inside the app
+// Everything apps have their own session chrome; a logout option inside the app
 // would fight it, so it only exists in the web environment.
-const canSignOut = () => window.puter && puter.env !== 'app';
+const canSignOut = () => window.everything && everything.env !== 'app';
 
 const signOut = async () => {
   if (!closeComposers()) return;
   try {
-    await puter.auth.signOut();
+    await everything.auth.signOut();
   } catch {}
   start();
 };
 
 async function start() {
   demoSession = null;
-  if (!window.puter) {
-    renderError(root, 'The Puter SDK could not be loaded. Check your connection and try again.',
+  if (!window.everything) {
+    renderError(root, 'The Everything SDK could not be loaded. Check your connection and try again.',
       () => location.reload());
     return;
   }
 
-  if (!puter.auth.isSignedIn()) {
+  if (!everything.auth.isSignedIn()) {
     renderIntro(root, {
       // A dismissed sign-in popup rejects. Letting that escape the button's
       // click handler was an unhandled rejection and told the user nothing;
@@ -104,7 +104,7 @@ async function start() {
       // is ready to try again.
       onSignIn: async () => {
         try {
-          await puter.auth.signIn();
+          await everything.auth.signIn();
         } catch {
           return;
         }
@@ -118,7 +118,7 @@ async function start() {
 
   let username;
   try {
-    ({ username } = await puter.auth.whoami());
+    ({ username } = await everything.auth.whoami());
   } catch (e) {
     renderError(root, `Could not look up your account: ${e?.message ?? e}`, start);
     return;
@@ -163,19 +163,19 @@ async function start() {
     .find((entry) => !isDraftSending({ username, mailPath, id: entry.id })) ?? null;
 
   const app = renderApp(root, {
-    fs: puter.fs,
+    fs: everything.fs,
     mailPath,
     objectsPath,
     account: { username },
-    getProfilePicture: () => puter.auth.getProfilePicture?.(),
+    getProfilePicture: () => everything.auth.getProfilePicture?.(),
     drafts,
     settings,
     flagStore: accountStore(),
-    // The Events API, where this Puter has it: the shell watches `.mail` over
+    // The Events API, where this Everything has it: the shell watches `.mail` over
     // it instead of polling, so mail shows up as it lands and a change made
     // on another device shows up here. Without it the shell falls back to a
     // timed check.
-    events: window.puter?.events ?? null,
+    events: window.everything?.events ?? null,
     // `hooks` lets the shell hear about the sent copy it has to list, and
     // carries the signature, read fresh on every open.
     onCompose: (prefill, hooks) => openCompose({
@@ -196,17 +196,17 @@ async function start() {
     requestWrite: () => requestPermission(`fs:${mailPath}:write`),
     // An attachment can be saved into the user's own files as well as
     // downloaded to the device. The OS's save dialog writes the bytes itself.
-    saveToPuter: puter.ui?.showSaveFilePicker
-      ? (blob, name) => puter.ui.showSaveFilePicker(blob, name)
+    saveToEverything: everything.ui?.showSaveFilePicker
+      ? (blob, name) => everything.ui.showSaveFilePicker(blob, name)
       : null,
     onSignOut: canSignOut() ? signOut : null,
   });
 
-  demoSession = { fs: puter.fs, mailPath, app };
+  demoSession = { fs: everything.fs, mailPath, app };
   if (shouldOnboard()) openOnboarding();
 }
 
-waitForPuter().then(() => start()).catch((e) => {
+waitForEverything().then(() => start()).catch((e) => {
   renderError(root, `Something went wrong: ${e?.message ?? e}`, () => location.reload());
   toast('Startup failed.', { iconName: 'alert' });
 });

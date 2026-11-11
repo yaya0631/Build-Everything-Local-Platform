@@ -1,6 +1,6 @@
 # Hourly
 
-Timesheets and time tracking. Track billable hours by client, project, or task, stored in your own [Puter](http://localhost:8443) account.
+Timesheets and time tracking. Track billable hours by client, project, or task, stored in your own [Everything](http://localhost:8443) account.
 
 ## Features
 
@@ -32,7 +32,7 @@ Timesheets and time tracking. Track billable hours by client, project, or task, 
 ## Stack
 
 - Vanilla JavaScript, no frameworks
-- [Puter.js](http://localhost:8443) for auth, key-value settings, and per-month entry files
+- [Everything.js](http://localhost:8443) for auth, key-value settings, and per-month entry files
 - [Lucide](https://lucide.dev) icons
 - [Vite](https://vite.dev) for dev/build, [Vitest](https://vitest.dev) for tests
 
@@ -40,14 +40,14 @@ Timesheets and time tracking. Track billable hours by client, project, or task, 
 
 ```sh
 npm install
-npm run dev        # dev server (real Puter sign-in)
+npm run dev        # dev server (real Everything sign-in)
 npm test           # unit tests
 npm run build      # production build to dist/
 ```
 
-Open `/mock.html` on the dev server to run against an in-memory Puter mock
+Open `/mock.html` on the dev server to run against an in-memory Everything mock
 (no account needed). Query switches: `?signedout=1` shows the intro page;
-`?env=app` simulates running inside Puter, where no sign-out is offered;
+`?env=app` simulates running inside Everything, where no sign-out is offered;
 `?slow=800` adds latency to see the boot splash; `?offline=1` fails every
 kv/fs call to exercise the offline mirror and write queue.
 
@@ -81,7 +81,7 @@ their way out too.
 
 ## Storage layout
 
-Small, hot data lives in Puter KV (settings, clients, projects, the month
+Small, hot data lives in Everything KV (settings, clients, projects, the month
 index, and the running timer). Entries live in one JSON file per month under
 `hourly-data/`, so reads scale with the months you look at, not with the
 total number of entries.

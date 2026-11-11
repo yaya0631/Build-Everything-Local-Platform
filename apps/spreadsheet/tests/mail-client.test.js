@@ -97,7 +97,7 @@ describe('the attachment', () => {
   });
 });
 
-/** A puter whose workers.exec runs the real worker, as the app reaches it. */
+/** An everything whose workers.exec runs the real worker, as the app reaches it. */
 function bridged(world) {
   const exec = vi.fn(async (url, init) => {
     const route = url.replace(EMAIL_WORKER_URL, '');
@@ -110,13 +110,13 @@ function bridged(world) {
 describe('the mailer', () => {
   it('posts a copy to the worker, with no credential in the request', async () => {
     const world = loadEmailWorker();
-    const puter = bridged(world);
-    const mailer = createMailer({ getPuter: () => puter });
+    const everything = bridged(world);
+    const mailer = createMailer({ getEverything: () => everything });
     const { doc } = docWithHistory();
     const attachment = await buildAttachment(doc, { format: 'xlsx' });
     const out = await mailer.sendCopy({ workbookName: doc.name, recipients: [{ email: 'ana@example.com' }], subject: 'Plan', message: 'See attached', attachment });
     expect(out.sent).toBe(1);
-    const [url, init] = puter.workers.exec.mock.calls[0];
+    const [url, init] = everything.workers.exec.mock.calls[0];
     expect(url).toBe(`${EMAIL_WORKER_URL}/copies`);
     expect(init.method).toBe('POST');
     const body = JSON.parse(init.body);
@@ -128,23 +128,23 @@ describe('the mailer', () => {
 
   it('posts a link and a mention in the worker’s shape', async () => {
     const world = loadEmailWorker();
-    const puter = bridged(world);
-    const mailer = createMailer({ getPuter: () => puter });
+    const everything = bridged(world);
+    const mailer = createMailer({ getEverything: () => everything });
     await mailer.sendLink({ workbookName: 'B', recipients: ['ana@example.com'], link: 'http://spreadsheet.localhost:8443/#/file/u1', access: 'edit', message: 'hi' });
-    expect(JSON.parse(puter.workers.exec.mock.calls[0][1].body)).toEqual({
+    expect(JSON.parse(everything.workers.exec.mock.calls[0][1].body)).toEqual({
       workbook: { name: 'B' }, recipients: [{ email: 'ana@example.com' }], link: 'http://spreadsheet.localhost:8443/#/file/u1', access: 'edit', message: 'hi',
     });
-    await mailer.sendMentions({ workbookName: 'B', recipients: [{ email: 'ana@puter.email', name: 'ana' }], link: 'http://spreadsheet.localhost:8443/#/file/u1?range=A1',
+    await mailer.sendMentions({ workbookName: 'B', recipients: [{ email: 'ana@everything.email', name: 'ana' }], link: 'http://spreadsheet.localhost:8443/#/file/u1?range=A1',
       comment: { id: '{11111111-2222-3333-4444-555555555555}', text: '@ana hi', cell: 'Sheet1!A1', extra: 'dropped' } });
-    expect(JSON.parse(puter.workers.exec.mock.calls[1][1].body).comment).toEqual({ id: '{11111111-2222-3333-4444-555555555555}', text: '@ana hi', cell: 'Sheet1!A1' });
-    expect(world.sent.map((m) => m.to)).toEqual(['ana@example.com', 'ana@puter.email']);
+    expect(JSON.parse(everything.workers.exec.mock.calls[1][1].body).comment).toEqual({ id: '{11111111-2222-3333-4444-555555555555}', text: '@ana hi', cell: 'Sheet1!A1' });
+    expect(world.sent.map((m) => m.to)).toEqual(['ana@example.com', 'ana@everything.email']);
   });
 
   it('turns a refusal into words and says when email is not available', async () => {
-    const mailer = createMailer({ getPuter: () => ({ workers: { exec: async () => new Response(JSON.stringify({ error: 'daily_limit' }), { status: 429 }) } }) });
+    const mailer = createMailer({ getEverything: () => ({ workers: { exec: async () => new Response(JSON.stringify({ error: 'daily_limit' }), { status: 429 }) } }) });
     await expect(mailer.sendLink({ workbookName: 'B', recipients: ['a@example.com'], link: 'http://localhost:8443/' })).rejects.toThrow("today's email limit");
-    expect(createMailer({ getPuter: () => ({}) }).available()).toBe(false);
-    await expect(createMailer({ getPuter: () => ({}) }).sendLink({ workbookName: 'B', recipients: ['a@example.com'], link: 'x' })).rejects.toThrow(/not available/);
+    expect(createMailer({ getEverything: () => ({}) }).available()).toBe(false);
+    await expect(createMailer({ getEverything: () => ({}) }).sendLink({ workbookName: 'B', recipients: ['a@example.com'], link: 'x' })).rejects.toThrow(/not available/);
     expect(failureMessage(401, null)).toMatch(/Sign in/);
   });
 

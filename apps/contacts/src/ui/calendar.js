@@ -18,7 +18,7 @@
  * says so (see calendar.localhost:8443/src/js/api/protocol.js).
  *
  * The connection is opened lazily and closed again seconds after the last call.
- * Where there is no Puter desktop — the open web, or a user without the
+ * Where there is no Everything desktop — the open web, or a user without the
  * Calendar app — every function here is inert: the menu item is not offered,
  * and the card shows no upcoming section.
  */

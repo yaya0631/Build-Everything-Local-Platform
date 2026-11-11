@@ -1,11 +1,11 @@
 # Contacts
 
-A clean, fast, private address book that lives in your [Puter](https://localhost:8443) cloud. Store contacts, search instantly, and sync across every device — no servers to run, no ads, and your data stays in your own account.
+A clean, fast, private address book that lives in your [Everything](https://localhost:8443) cloud. Store contacts, search instantly, and sync across every device — no servers to run, no ads, and your data stays in your own account.
 
 **Live demo:** http://contacts.localhost:8443
-**Source:** https://github.com/HeyPuter/contacts
+**Source:** https://github.com/yaya0631/Build-Everything-Local-Platform
 
-Tags: `puter` `puter-app` `puter-auth` `puter-kv` `puter-ai`
+Tags: `everything` `everything-app` `everything-auth` `everything-kv` `everything-ai`
 
 ## Features
 
@@ -13,43 +13,43 @@ Tags: `puter` `puter-app` `puter-auth` `puter-kv` `puter-ai`
 - **Rich contacts** — multiple emails, phones, links and addresses, plus company, job title, birthday, notes, tags, and favorites.
 - **Instant search** across every field, with A–Z sections and sort by first/last name, recently updated, or recently added.
 - **Favorites & tags** for quick filtering.
-- **Smart add (AI)** — paste an email signature or business card and Puter AI extracts a structured contact for you to review.
-- **Right-click context menus** using Puter's native [`puter.ui.contextMenu()`](http://localhost:8443/UI/contextMenu/) inside the Puter desktop, with a matching fallback menu on the open web.
-- **Import / export** standard `.vcf` (vCard 3.0) files — interoperable with Google and Apple Contacts. **Drop a `.vcf` anywhere on the app** to import it, from your desktop or from Puter's own file manager.
-- **A contacts API for other Puter apps** — an allowlisted app (today: Calendar, which may only read, and AI) can search your address book over an [`AppConnection`](http://localhost:8443/Objects/AppConnection/), so it can suggest people instead of asking you to retype them. See [App-to-app API](#app-to-app-api).
+- **Smart add (AI)** — paste an email signature or business card and Everything AI extracts a structured contact for you to review.
+- **Right-click context menus** using Everything's native [`everything.ui.contextMenu()`](http://localhost:8443/UI/contextMenu/) inside the Everything desktop, with a matching fallback menu on the open web.
+- **Import / export** standard `.vcf` (vCard 3.0) files — interoperable with Google and Apple Contacts. **Drop a `.vcf` anywhere on the app** to import it, from your desktop or from Everything's own file manager.
+- **A contacts API for other Everything apps** — an allowlisted app (today: Calendar, which may only read, and AI) can search your address book over an [`AppConnection`](http://localhost:8443/Objects/AppConnection/), so it can suggest people instead of asking you to retype them. See [App-to-app API](#app-to-app-api).
 - **An MCP server**, on that same connection — the address book as tools an AI agent can call ([Model Context Protocol](https://modelcontextprotocol.io)), so an assistant app can find, add and edit people for you. See [MCP](#mcp).
-- **Calendar, both ways** — inside the Puter desktop, add a contact's birthday to your [Calendar](http://calendar.localhost:8443) as a yearly all-day event, and see what's coming up with whoever you're looking at. See [Calendar integration](#calendar-integration).
+- **Calendar, both ways** — inside the Everything desktop, add a contact's birthday to your [Calendar](http://calendar.localhost:8443) as a yearly all-day event, and see what's coming up with whoever you're looking at. See [Calendar integration](#calendar-integration).
 - **Light & dark themes** that follow your system preference and remember your choice.
 - **Keyboard shortcuts** — `/` to search, `n` for a new contact, `↑`/`↓` to move through the list.
 - **SEO & social** meta tags, PWA manifest, and a generated social card.
 
-## Powered by Puter
+## Powered by Everything
 
-Puter.js is the only cloud/AI backend — there is no other server.
+Everything.js is the only cloud/AI backend — there is no other server.
 
-| Capability | Puter API |
+| Capability | Everything API |
 | --- | --- |
-| Sign in / account | `puter.auth` |
-| Contact storage (one key per contact) | `puter.kv` |
-| Smart-add extraction | `puter.ai.chat` |
-| Native context menus & window title | `puter.ui` |
-| Files dropped from the Puter desktop | `puter.ui.onItemsOpened()` |
-| App-to-app API and MCP | `puter.ui.parentApp()` + [`AppConnection`](http://localhost:8443/Objects/AppConnection/) |
-| Reading & writing the user's calendar | `puter.ui.launchApp` + the same `AppConnection` |
+| Sign in / account | `everything.auth` |
+| Contact storage (one key per contact) | `everything.kv` |
+| Smart-add extraction | `everything.ai.chat` |
+| Native context menus & window title | `everything.ui` |
+| Files dropped from the Everything desktop | `everything.ui.onItemsOpened()` |
+| App-to-app API and MCP | `everything.ui.parentApp()` + [`AppConnection`](http://localhost:8443/Objects/AppConnection/) |
+| Reading & writing the user's calendar | `everything.ui.launchApp` + the same `AppConnection` |
 
 Contacts are stored under per-user, per-app keys (`contact:<id>`), so each user only ever sees their own data and there is nothing to provision.
 
 ## App-to-app API
 
-Other Puter apps can use your address book through Contacts, rather than keeping
+Other Everything apps can use your address book through Contacts, rather than keeping
 their own copy of it. The Calendar app uses this to suggest people as you type
 guests into an event.
 
-**How a caller connects.** Inside the Puter desktop, launch Contacts in service
+**How a caller connects.** Inside the Everything desktop, launch Contacts in service
 mode and talk to the connection you get back:
 
 ```js
-const contacts = await puter.ui.launchApp({
+const contacts = await everything.ui.launchApp({
   name: 'contacts',
   args: { service: 'contacts-api' },
   background: true, // no window on screen; older desktops ignore this
@@ -68,7 +68,7 @@ contacts.on('message', (msg) => {
 A service-mode instance mounts no UI, so the caller gets an API rather than
 something the user has to look at. It closes itself after a few idle minutes, and
 closing the connection closes it immediately. Pass `background: true` to the
-launch as well: the Puter desktop creates and shows an app's window *before* the
+launch as well: the Everything desktop creates and shows an app's window *before* the
 app's own code runs, so without it a service window briefly appears on screen no
 matter how early the app hides itself.
 
@@ -120,17 +120,17 @@ gets no listener at all. The Calendar reads the address book to suggest guests
 and has never written a contact, so it cannot: an app that puts a name into a
 guest field has no business renaming or deleting the person behind it, and a
 grant is the cheapest place to say so. The caller's identity comes from the
-`puter.source_app.name`
-launch parameter, which the Puter desktop stamps onto the app window from the
+`everything.source_app.name`
+launch parameter, which the Everything desktop stamps onto the app window from the
 *calling process*: an app cannot claim to be Calendar, and cannot set that
 parameter for a window it did not launch. A caller may only ever touch the
 signed-in user's own contacts, since the API runs inside their session.
 
 Worth being plain about the limit of that: the iframe/postMessage model gives a
 child window no way to cryptographically verify its parent, so these checks hold
-inside a genuine Puter desktop session — the environment they are written for —
+inside a genuine Everything desktop session — the environment they are written for —
 and are not a defence against a page that embeds this app itself and forges
-launch parameters. The API is never served outside `puter.env === 'app'`.
+launch parameters. The API is never served outside `everything.env === 'app'`.
 
 ## MCP
 
@@ -143,7 +143,7 @@ they always were. There is no mode to negotiate and no second window to open, so
 one app can use both.
 
 ```js
-const contacts = await puter.ui.launchApp({
+const contacts = await everything.ui.launchApp({
   name: 'contacts',
   args: { service: 'mcp' },   // 'contacts-api' works too — same server
   background: true,
@@ -180,8 +180,8 @@ book are announced as `notifications/resources/list_changed`.
 
 **Seeing it work.** `npm run mcp:demo` plays a whole session — handshake, tool
 calls, a vCard read, both kinds of failure — against the real server, with an
-in-memory Map standing in for `puter.kv` and a fake AppConnection for the one the
-desktop hands over. No Puter account, no desktop, nothing to install.
+in-memory Map standing in for `everything.kv` and a fake AppConnection for the one the
+desktop hands over. No Everything account, no desktop, nothing to install.
 
 **Discovery.** [`public/.well-known/mcp.json`](public/.well-known/mcp.json)
 publishes the whole tool catalogue — names, descriptions, JSON Schemas — as a
@@ -193,10 +193,10 @@ it drifts from the code.
 
 ## Calendar integration
 
-The [Calendar](https://github.com/HeyPuter/calendar) app serves an API of its
-own, and inside the Puter desktop Contacts uses it — the same door, in the other
+The [Calendar](https://github.com/yaya0631/Build-Everything-Local-Platform) app serves an API of its
+own, and inside the Everything desktop Contacts uses it — the same door, in the other
 direction. [`src/calendar.js`](src/calendar.js) launches Calendar in service mode
-(no UI, `background: true`) and talks to the connection `puter.ui.launchApp`
+(no UI, `background: true`) and talks to the connection `everything.ui.launchApp`
 returns; Calendar grants `contacts` exactly the methods used below and no others,
 identifying the caller from the app name the desktop stamps on the window it
 launched.
@@ -242,7 +242,7 @@ npm run build      # run tests, then build to dist/
 npm run preview    # preview the production build
 ```
 
-Puter.js itself is loaded from the CDN (`/sdk/puter.js`) in `index.html`, so there is nothing to install for the cloud features.
+Everything.js itself is loaded from the CDN (`/sdk/everything.js`) in `index.html`, so there is nothing to install for the cloud features.
 
 ### Regenerating icons
 
@@ -259,8 +259,8 @@ index.html             App shell + SEO/social meta + theme pre-paint
 public/                Icons, manifest, robots.txt, social card
 src/
   main.js              Bootstrap: auth gate, then mount + load
-  store.js             Reactive store backed by puter.kv
-  env.js               Puter runtime helpers + local prefs
+  store.js             Reactive store backed by everything.kv
+  env.js               Everything runtime helpers + local prefs
   model.js             Contact shape, normalization, validation
   search.js            Filtering, sorting, grouping
   calendar.js          The Calendar app's events, over AppConnection
@@ -268,11 +268,11 @@ src/
   vcard.js             vCard 3.0 import / export
   avatar.js            Initials + deterministic colors
   format.js            Escaping & formatting helpers
-  contextmenu.js       puter.ui.contextMenu with DOM fallback
+  contextmenu.js       everything.ui.contextMenu with DOM fallback
   icons.js, toast.js   UI primitives
   styles.css           Design system (tokens, light/dark, responsive)
   ui/                  app, list, detail, editor, smartadd, confirm
-  ui/dropimport.js     Drop a .vcf on the app to import it (OS + Puter desktop)
+  ui/dropimport.js     Drop a .vcf on the app to import it (OS + Everything desktop)
   ui/calendar.js       The two things Contacts does with the Calendar app
   api/                 protocol.js  wire format + access control
                        methods.js   the operations, transport-free
@@ -284,7 +284,7 @@ src/
 
 ## Testing
 
-Tests run on [Vitest](https://vitest.dev). The pure logic (model, validation, search/sort, vCard round-trip, formatting, avatars) is covered by fast unit tests, and a happy-dom smoke test boots the whole app against a stubbed Puter SDK to catch wiring regressions.
+Tests run on [Vitest](https://vitest.dev). The pure logic (model, validation, search/sort, vCard round-trip, formatting, avatars) is covered by fast unit tests, and a happy-dom smoke test boots the whole app against a stubbed Everything SDK to catch wiring regressions.
 
 ```bash
 npm test
@@ -300,7 +300,7 @@ await contacts.populateSampleData()
 
 Available in development and production builds. Creates 18 fictional contacts with
 companies, roles, notes, birthdays, favorites and tags, then opens the **Sample data**
-group. Contacts are saved to your Puter account and survive reloads. Existing contacts
+group. Contacts are saved to your Everything account and survive reloads. Existing contacts
 are preserved. Each completed call adds a fresh batch; overlapping calls share one
 operation. Returns `{ created, ids, tag }`. Remove the samples through the normal
 contact selection/delete controls. A failed operation rejects and reports how many

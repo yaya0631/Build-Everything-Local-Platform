@@ -91,7 +91,7 @@ describe('rsvp.html page', () => {
     expect(root.textContent).toContain('Join');
 
     // A worker gone rogue must not turn this page into a relay: anything but
-    // the exact Puter Meetings shape renders nothing at all.
+    // the exact Everything Meetings shape renders nothing at all.
     for (const bad of [
       'https://evil.example/#/m/abcd-efgh-ijkl',
       'http://meetings.localhost:8443/#/m/ABCD-EFGH-IJKL',

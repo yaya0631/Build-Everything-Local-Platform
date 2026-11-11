@@ -1,23 +1,23 @@
-// Sharing a cloud project with other Puter users. Sharing is per file: the
+// Sharing a cloud project with other Everything users. Sharing is per file: the
 // other person opens it from "Shared with me", and with edit access their
 // saves go back to the same file.
 
 import { h, clear } from '../ui/dom.js';
 import { icon } from '../ui/icons.js';
 import { openDialog } from '../ui/dialog.js';
-import { puter, cloudAvailable } from './puter.js';
+import { everything, cloudAvailable } from './everything.js';
 
 const MODES = [['read', 'Can view'], ['write', 'Can edit']];
 
 export async function shareDialog(app) {
   const loc = app.location;
   if (!cloudAvailable() || loc?.type !== 'cloud') {
-    app.toast('Save the project to your Puter cloud first, then share it.', { kind: 'info', title: 'Share' });
+    app.toast('Save the project to your Everything cloud first, then share it.', { kind: 'info', title: 'Share' });
     return;
   }
   if (app.project.dirty) await app.save({ quiet: true });
-  const fs = puter().fs;
-  const who = h('input', { type: 'text', placeholder: 'Puter username or email', 'aria-label': 'Person to share with', autocomplete: 'off', spellcheck: 'false' });
+  const fs = everything().fs;
+  const who = h('input', { type: 'text', placeholder: 'Everything username or email', 'aria-label': 'Person to share with', autocomplete: 'off', spellcheck: 'false' });
   const mode = h('select', { 'aria-label': 'Access' }, MODES.map(([v, l]) => h('option', { value: v }, l)));
   const status = h('div.small', { role: 'status', style: { minHeight: '18px', marginTop: '6px' } });
   const list = h('div');
@@ -78,9 +78,9 @@ function recipient(v) {
 
 /** Projects other people shared with the current user. */
 export async function sharedWithMe() {
-  if (!cloudAvailable() || !puter()?.fs?.listShared) return [];
+  if (!cloudAvailable() || !everything()?.fs?.listShared) return [];
   try {
-    const { items } = await puter().fs.listShared();
+    const { items } = await everything().fs.listShared();
     return (items || []).filter((i) => !i.is_dir && !i.isDir && /\.circuits$/i.test(i.name)).map((i) => ({
       name: i.name.replace(/\.circuits$/i, ''),
       location: { type: 'cloud', path: i.path },

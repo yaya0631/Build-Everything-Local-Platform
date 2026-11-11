@@ -1,8 +1,8 @@
 # Teamchat
 
-Team messaging on Puter: workspaces, public and private channels, threads,
+Team messaging on Everything: workspaces, public and private channels, threads,
 direct messages, reactions, mentions, and file attachments. Vanilla
-JavaScript (no frameworks), Vite, and [Puter.js](http://localhost:8443)
+JavaScript (no frameworks), Vite, and [Everything.js](http://localhost:8443)
 as the only backend.
 
 ## Features
@@ -23,7 +23,7 @@ as the only backend.
   route; they are labelled everywhere people appear, channels containing
   guests say so, and an admin can add them to more channels, make them a
   full member, or revoke their access from Workspace settings. Each workspace runs on a small server in its
-  owner's own Puter account, created by the app the first time they need one.
+  owner's own Everything account, created by the app the first time they need one.
 - **Channels**: public channels anyone in the workspace can browse and join,
   private channels with invited members, topics (short, in the header) and
   descriptions (longer, in the details and the channel's intro), archive,
@@ -120,7 +120,7 @@ as the only backend.
   reschedule, send now, or delete it before it goes out. "Remind me about
   this" on any message brings it back at the chosen time as an entry in
   Activity and a line in your own space linking to the message, with snooze
-  and done. Delivery is honest: a Puter worker only runs while handling a
+  and done. Delivery is honest: an Everything worker only runs while handling a
   request, so anything due is delivered by the first sync poll after its
   time from anyone with the workspace open — usually within 20 seconds (the
   safety-poll floor of the realtime section below; sooner with more than one
@@ -137,7 +137,7 @@ as the only backend.
   row's menu, or the header menu, or drag its row onto the Starred section
   (and back out to remove the star); starred ones move to that section at
   the top of the sidebar, which is always there, saying what it is for
-  while it is empty. Stars are kept in your own Puter account, so they
+  while it is empty. Stars are kept in your own Everything account, so they
   follow you across devices without touching the workspace.
 - **Directory**: a row above the channel list opens everyone in the
   workspace as cards (searchable by name, username, or title, each with a
@@ -148,7 +148,7 @@ as the only backend.
   "Move to…" menu, move rows in from that menu or by dragging them onto the
   section (and back out onto Channels or Direct messages), rename or delete
   a section from its header. A row lives in one place: Starred, a section,
-  or its default list. Sections are kept with your stars in your own Puter
+  or its default list. Sections are kept with your stars in your own Everything
   account, so they follow you across devices and nobody else sees them.
 - **Manage my sidebar**: the gear beside the workspace name sorts channels
   and conversations alphabetically or by recent activity, hides muted ones
@@ -241,7 +241,7 @@ as the only backend.
   opens the window. One huddle at a time; joining another leaves the first, after
   asking. Without a microphone (or permission for one) you can still join
   and listen. Up to 20 people per huddle. Media goes directly between the
-  people in it over Puter's Peer API (see *Huddles* under Architecture);
+  people in it over Everything's Peer API (see *Huddles* under Architecture);
   the workspace's server only keeps who is in which huddle.
 - **Notifications**: optional browser notifications while the tab is in the
   background, with a setting per channel and conversation (All messages,
@@ -289,7 +289,7 @@ as the only backend.
   only as a hash, rate-limited to 60 calls a minute, and can be rotated or
   revoked.
 - **Theme**: system (default), light, or dark; applied before first paint and
-  kept in your Puter account, so it follows you across devices.
+  kept in your Everything account, so it follows you across devices.
 - **Installable, offline, and reachable when closed**: a service worker
   precaches the app shell (versioned per build, with a "new version ready,
   reload" prompt), so the installed app opens without a network and shows
@@ -328,36 +328,36 @@ as the only backend.
   focus-trapped dialogs, menus with arrow keys, Escape closes the side panel),
   landmarks for the sidebar, conversation, and panel, live regions for new
   messages, reduced-motion support, 4.5:1 text contrast in both themes.
-- Signing out is hidden when the app runs inside Puter (`puter.env === 'app'`).
+- Signing out is hidden when the app runs inside Everything (`everything.env === 'app'`).
 
 ## Architecture
 
-A team chat app needs data that many users read and write. Puter's key-value
+A team chat app needs data that many users read and write. Everything's key-value
 store and filesystem are strictly per user, so Teamchat uses
-[Puter Serverless Workers](http://localhost:8443/Workers/) as the shared
-backend, and it keeps Puter's user-scoped, user-pays model by giving **every
+[Everything Serverless Workers](http://localhost:8443/Workers/) as the shared
+backend, and it keeps Everything's user-scoped, user-pays model by giving **every
 workspace owner their own worker, in their own account**: the first time a
 user creates a workspace, the app copies the worker bundle it ships
 (`public/worker/teamchat-worker.js`) to their drive and calls
-`puter.workers.create()`. That worker's KV and filesystem hold every
-workspace the user owns; the owner's Puter allowance pays for storage and
+`everything.workers.create()`. That worker's KV and filesystem hold every
+workspace the user owns; the owner's Everything allowance pays for storage and
 execution. Nothing runs under the app developer's account.
 
 Members reach a workspace through its owner's worker with
-`puter.workers.exec()`, which forwards the signed-in user's Puter session.
-The worker identifies the caller with `user.puter.auth.getUser()` and
+`everything.workers.exec()`, which forwards the signed-in user's Everything session.
+The worker identifies the caller with `user.everything.auth.getUser()` and
 authorizes every request against workspace membership; only the account the
 worker runs in may create workspaces on it. Nothing about identity is trusted
 from request bodies.
 
 ```
 Alice's browser ──exec()──> Alice's worker (teamchat-x7k2q9pw1a.localhost:8443)
-Bob's browser   ──exec()──>   me.puter.kv   Alice's workspaces, all data
-                              me.puter.fs   attachments
+Bob's browser   ──exec()──>   me.everything.kv   Alice's workspaces, all data
+                              me.everything.fs   attachments
 Bob's browser   ──exec()──> Bob's worker (teamchat-m3r8t2vq0z.localhost:8443)
                               ...           Bob's workspaces
 
-each browser ── puter.kv ──> the user's own account: profile, preferences,
+each browser ── everything.kv ──> the user's own account: profile, preferences,
                              workspace list, which worker is theirs
 ```
 
@@ -369,7 +369,7 @@ workspace and no directory is needed anywhere.
 
 ### What lives where
 
-| In the user's own account (`puter.kv`, one document `tcu:me`) | In a workspace owner's worker (`me.puter.kv`) |
+| In the user's own account (`everything.kv`, one document `tcu:me`) | In a workspace owner's worker (`me.everything.kv`) |
 | --- | --- |
 | profile card (name, title, avatar color, status, photo version), starred conversations and custom sidebar sections per workspace | a copy of each member's card, per workspace |
 | the photo itself, in the user's drive (`teamchat/avatar.jpg`) | a copy of the photo per worker (`teamchat-avatars/{uuid}` in the owner's drive), paid for by the owner like attachments |
@@ -400,16 +400,16 @@ deployments. `npm run build:worker` hashes the worker's source into a build
 id, compiles it into the bundle, and writes it in the bundle's first line.
 The worker reports its build in `/health` and `/api/me`; when an owner opens
 the app and their worker's build differs from the one the app ships, the app
-overwrites the worker's source file in their drive (Puter redeploys at the
+overwrites the worker's source file in their drive (Everything redeploys at the
 same URL) and the workspace continues on the new code. Members of a
 workspace whose owner has not opened the app lately keep talking to the
 older build, so route changes must stay backward compatible for a while.
 
-The puter.js runtime a worker calls into is baked in at that same deploy and
+The everything.js runtime a worker calls into is baked in at that same deploy and
 does not move on its own — only a source redeploy picks up a new one. Any
 edit under `worker/` changes the build id, so it redeploys every owner's
 worker on their next visit and refreshes its runtime along with the code.
-`/health` reports the baked-in puter.js as `runtime`.
+`/health` reports the baked-in everything.js as `runtime`.
 
 ### Trade-offs of per-owner workers
 
@@ -417,7 +417,7 @@ worker on their next visit and refreshes its runtime along with the code.
   portable: any admin can **export** the whole workspace (a paged, resumable
   `GET /api/ws/:ws/export`; the list of conversations it walks is kept in
   the worker under a token the cursor names, never taken from the cursor,
-  so an export can only ever read its own workspace) into their own Puter drive as `messages.json`
+  so an export can only ever read its own workspace) into their own Everything drive as `messages.json`
   plus plain HTML pages and the attachment bytes; an export can be
   **imported** onto another account's worker with ids intact (a
   conversation whose id is already in use on the receiving worker gets a
@@ -430,7 +430,7 @@ worker on their next visit and refreshes its runtime along with the code.
   refs are followed, and so are old invite links for the members carried
   across, while someone new is told to ask for a fresh invite, the copy
   having minted its own) until its owner deletes it, so an interrupted
-  transfer never loses anything. Deleting the owner's Puter
+  transfer never loses anything. Deleting the owner's Everything
   account still deletes their workspaces, which is why Workspace settings
   asks owners with a team and no second admin to name one.
 - Creating the first workspace takes a few seconds (deploy) instead of
@@ -446,7 +446,7 @@ it with `?worker=http://my-teamchat.localhost:8443` or `VITE_WORKER_URL`. A
 remembered and given the user's session from then on; a host elsewhere is
 the operator's to set at build time.
 
-Because `puter.workers.exec()` attaches the caller's Puter session to
+Because `everything.workers.exec()` attaches the caller's Everything session to
 whatever URL it is given, the app only ever calls hosts it has reason to
 trust: any `*.localhost:8443` worker (that is the design: members talk to the
 workspace owner's worker) and the shared worker it was configured with. A
@@ -469,7 +469,7 @@ Every read is a direct `get` of a known key. `kv.list()` is never used
 | `tc:connect:{id}`, `tc:connect:{id}:partner` | one connection between two workspaces sharing a channel: the host's record `{ ws, ch, partner, name, secret }` and the partner's `{ ws, ch, ref, rch, secret }`; two keys since both may live on one worker |
 | `tc:conv:{conv}:seq` | the message counter |
 | `tc:conv:{conv}:b:{n}` | message block *n*: `{ m: [...], x: {overlays} }` |
-| `tc:file:{id}` | attachment metadata; bytes live in `me.puter.fs` |
+| `tc:file:{id}` | attachment metadata; bytes live in `me.everything.fs` |
 | `tc:hook:{id}`, `tc:bot:{id}` | an integration: workspace, channel(s), name, colour, scopes, and the SHA-256 of its token's secret |
 | `tc:ws:{id}:idx:m{yyyymm}:{n}` | search index, one month's bucket, shard *n* (of 64): `{ word: [postings] }` |
 | `tc:ws:{id}:idx:meta` | the index's counters and months: `{ c, folded, failed, months }` |
@@ -594,9 +594,9 @@ New workspaces and the sample workspace are indexed from the start.
 
 `dist/sw.js` is emitted by a Vite plugin with the build's asset list and a
 version hash: hashed assets are served cache-first, navigations network-first
-with the cached shell as the offline fallback, the Puter SDK
+with the cached shell as the offline fallback, the Everything SDK
 stale-while-revalidate so the app can boot offline, and API traffic
-(`puter.workers.exec`) is left alone. The app stores each workspace's
+(`everything.workers.exec`) is left alone. The app stores each workspace's
 bootstrap and the newest page of every conversation it opens in IndexedDB
 and reads them back only when the network is gone, marking them stale.
 
@@ -654,7 +654,7 @@ quiet workspace sends nothing extra. A poll that finds the typing map grown
 past twenty entries removes the long-expired ones, so it cannot accumulate
 one key per member per conversation forever.
 
-What changed is *when* a tab polls. Puter Events lets an account subscribe
+What changed is *when* a tab polls. Everything Events lets an account subscribe
 to a change on a key-value region and be told about it over the same
 session socket the app already holds; Teamchat uses that only to decide when
 to poll sooner, never as a second source of truth, so a missed or duplicate
@@ -710,12 +710,12 @@ else's data:
   receiving even the opaque shard pings and the slot they held frees for
   someone still here. Where the platform refuses (an older build, a
   withdrawn consent, the mint/revoke budget the two share), the grant stands
-  until the owner revokes it from an actual Puter session, and while it
+  until the owner revokes it from an actual Everything session, and while it
   stands it still says nothing but "a shard changed".
 
-All of this needs the worker to run as the same Puter app as the tab talking
+All of this needs the worker to run as the same Everything app as the tab talking
 to it. A worker deployed from the app itself does; one deployed from the
-Puter GUI or the CLI with a user token runs as an auto-created
+Everything GUI or the CLI with a user token runs as an auto-created
 `sandbox-<name>` app instead, and then every tab falls back to polling. A
 share handle is bound to the app whose namespace it shares, so the worker
 reads the caller's own token before minting and skips a member whose app
@@ -757,13 +757,13 @@ subscription gone quiet — it is one working exactly as intended.
 
 The one failure mode events can't announce is a subscription that looks
 live but has gone quiet — a shard past its ~50-watcher fidelity ceiling, a
-grant revoked from the Puter GUI, a region where dispatch is off — so the
+grant revoked from the Everything GUI, a region where dispatch is off — so the
 client watches for it itself: three consecutive safety polls (not poked, not
 signal-driven) that turn up a change of a kind the worker always signals
 fall back to the classic cadence for five minutes, then try again; any real
 delivery resets the count. Every piece of this is feature-detected and
 falls back to exactly today's polling with nothing else changed: no
-`puter.events` in the SDK, Events or KV share handles off in the platform
+`everything.events` in the SDK, Events or KV share handles off in the platform
 region, no owner consent, a worker with no app identity of its own (a
 user-scoped deployment), an app-uid mismatch, an old worker talking to a new
 client (no `events` key) or the reverse (an unknown key, ignored) — every
@@ -844,7 +844,7 @@ next poll.
 A huddle is a call, and a worker cannot carry one: it runs only while it
 answers a request. So the audio and video of a huddle never touch the
 worker. They go directly between the browsers of the people in it over
-[Puter's Peer API](http://localhost:8443/Peer/), which gives every
+[Everything's Peer API](http://localhost:8443/Peer/), which gives every
 participant a WebRTC connection with the signalling and TURN relays taken
 care of (the relays are metered to each person's own account, keeping the
 user-pays model). The worker keeps only the roster:
@@ -856,11 +856,11 @@ only the conversation's own members are sent it), and
 `src/shared/huddle.js` describes the shape for both sides.
 
 Nobody hosts. Every participant runs a peer server of their own
-(`puter.peer.serve()`) and posts its invite code to
+(`everything.peer.serve()`) and posts its invite code to
 `POST /api/ws/:ws/conv/:conv/huddle`, which takes the seat (starting the
 huddle when nobody is in it, and posting the "started" line) and answers
 with the roster. The newcomer then dials everyone listed
-(`puter.peer.connect(invite)`); beyond that, when two participants both
+(`everything.peer.connect(invite)`); beyond that, when two participants both
 know of each other and hold no link, the one with the greater id dials,
 which also settles which connection stays when both dialled at once. Each
 side's hello names the server it serves, so a second connection from an
@@ -874,7 +874,7 @@ the wire: a server learns who connected from `event.user.uuid`, a dialler
 learns whose server answered from `conn.owner.uuid`, and a link carries
 nothing until that account is one of the direct message's people or, in a
 channel, a member of the conversation's workspace. On
-each link the Puter data channel carries a small JSON protocol (hello,
+each link the Everything data channel carries a small JSON protocol (hello,
 state, signal, bye), and `src/lib/rtc.js` puts the mic, camera, and screen
 tracks on the `RTCPeerConnection` under it, renegotiating over that same
 channel (the "perfect negotiation" pattern, with the dialled side polite).
@@ -955,7 +955,7 @@ and a **connection** is what makes the host believe them:
    **attestation**: `{ conn, uuid, kind: 'join', exp }` signed with the
    secret (HMAC-SHA256, ten minutes). The client presents it to the host
    (`POST /api/connect/join`), which checks the signature against the
-   connection's secret and the uuid against the Puter identity of whoever
+   connection's secret and the uuid against the Everything identity of whoever
    is calling, then makes them an external member of that channel. A token
    is therefore only ever good for the person it names, for a few minutes.
 4. The client then bootstraps and polls the host as that external member,
@@ -1037,7 +1037,7 @@ cannot be detected; the guards work on the URL and on every redirect.
 ### Invite security
 
 Invite codes are 12 symbols from a 32-letter alphabet (2^60 possibilities),
-generated with `crypto.getRandomValues`. Every guess needs a signed-in Puter
+generated with `crypto.getRandomValues`. Every guess needs a signed-in Everything
 account, each account gets 8 failed attempts per 10 minutes before the join
 route answers 429 without touching storage, codes expire (7 days by default,
 admins choose 1, 7, or 30 when replacing one), and missing, expired, and
@@ -1048,16 +1048,15 @@ dies and no new one exists until they mint it.
 ### Invitation emails: one shared sender
 
 Workspace workers can never send email — outbound mail is a capability only
-the app's developer holds, which is a platform security feature, not a gap.
+the app's owner holds, which is a platform security feature, not a gap.
 So invitation emails go through **one** shared worker, `worker/email.js`,
-deployed once by the developer (`npm run deploy:email-worker`, which runs
-`puter worker deploy worker/email.js teamchat-email`; the client finds it at
-`EMAIL_WORKER_URL` in `src/config.js`). The app calls it with
-`puter.workers.exec()`, which forwards the signed-in sender's Puter token:
+registered automatically by the local server as `teamchat-email`; the client
+finds it at `EMAIL_WORKER_URL` in `src/config.js`. The app calls it with
+`everything.workers.exec()`, which forwards the signed-in sender's Everything token:
 the worker's own token authorizes the send, the sender's pays for it, so the
-developer never foots a spammer's bill. It is deployed by hand, not
-auto-updated like workspace workers, so picking up a new puter.js runtime
-means bumping `WORKER_VERSION` and re-running `npm run deploy:email-worker`.
+owner never foots a spammer's bill. The worker source is reloaded whenever the
+server starts, so picking up a new everything.js runtime means bumping
+`WORKER_VERSION` and restarting the local server.
 
 It is not a relay. The caller hands over the *parts* of an invitation —
 kind (`workspace`, `guest`, or `connect`), server, code, names, an optional
@@ -1068,7 +1067,7 @@ or it falls back to the canonical app URL, names and the note are clamped
 and HTML-escaped, newlines cannot reach a subject, recipients are capped at
 10 per request and 100 per sender per UTC day (counted in the worker's own
 KV under a SHA-256 of the sender's id — no addresses are stored anywhere),
-and a caller with no Puter session gets 401. The invite dialog's Email tab,
+and a caller with no Everything session gets 401. The invite dialog's Email tab,
 the guest invite dialog, and the share-channel dialog all send through it;
 when the worker is unreachable the UI says to copy the link instead, and
 in the mock (`/mock.html`) sends are recorded to `__mock.emails()` rather
@@ -1095,7 +1094,7 @@ than delivered.
 - The worker revokes a member's KV share handle (see "Realtime" above)
   whenever their membership ends. When the platform refuses the revoke (an
   older build, a withdrawn consent, the mint/revoke budget), the grant stands
-  until the owner takes it back from an actual Puter session, and someone
+  until the owner takes it back from an actual Everything session, and someone
   removed goes on learning "a shard had activity at this time" (nothing more:
   no content, no conversation, no participant) until they do.
 - The platform caps live handles per app namespace and per plan (its
@@ -1107,7 +1106,7 @@ than delivered.
 ## API (worker routes)
 
 All routes except `/health`, `/webhook/:token`, and `/bot/:token/...`
-require a Puter session (via `puter.workers.exec`). The token routes take
+require an Everything session (via `everything.workers.exec`). The token routes take
 no session: the token is the credential (`tch_{id}_{secret}` for webhooks,
 `tcb_{id}_{secret}` for bots; only a hash of the secret is stored, compared
 in constant time), each token is limited to 60 calls a minute, and bodies
@@ -1184,8 +1183,8 @@ npm test           # vitest
 the UI:
 
 - **`/mock.html`** runs the real worker code in the page against a
-  localStorage-backed fake KV, with no Puter account needed. It fakes
-  `puter.kv`, `puter.fs`, `puter.workers`, and `puter.peer` (real
+  localStorage-backed fake KV, with no Everything account needed. It fakes
+  `everything.kv`, `everything.fs`, `everything.workers`, and `everything.peer` (real
   `RTCPeerConnection`s between tabs, signalled over a `BroadcastChannel`, so
   two mock users can huddle; `?fakemic=1` stands in a tone and a canvas for
   the microphone and camera, so no device permission is needed), so each mock user deploys
@@ -1194,9 +1193,9 @@ the UI:
   `/mock.html?as=alice` and `/mock.html?as=bob` side by side, create a
   workspace as alice, paste the invite as bob, and watch messages, presence,
   and unread state flow. `?reset=1` wipes everything; `?env=app` simulates
-  running inside Puter; `?shared=1` runs the single-shared-worker mode.
-- **`/index.html`** uses the live Puter SDK: sign in, create a workspace, and
-  a real worker is created in your Puter account.
+  running inside Everything; `?shared=1` runs the single-shared-worker mode.
+- **`/index.html`** uses the live Everything SDK: sign in, create a workspace, and
+  a real worker is created in your Everything account.
 
 To populate the app for a demo, sign in and wait for it to load, then run
 this in the browser console (available in development and deployed builds):
@@ -1228,64 +1227,53 @@ ImageMagick's `magick` command) and commit the generated files in `public/`.
 This updates the favicon, sign-in and splash artwork, notification icon,
 Apple touch icon, and manifest icons, including the padded maskable version.
 
-There is nothing to deploy but the static app:
+The local server builds the app when `dist/` is missing; `npm run build` does it
+explicitly:
 
 ```bash
 npm run build               # worker bundle -> public/worker/, app -> dist/
 ```
 
 `dist/` is fully static with relative paths and includes the worker bundle,
-so it can be hosted anywhere, including Puter's own hosting
-(`puter.hosting`). Users create their own workers from it; when you ship a
-new build, owners' workers update themselves the next time those owners open
-the app (see *Keeping workers up to date*).
+so it can be served by this local platform or any static host. Users create
+their own workspace workers from it; when you ship a new build, owners' workers
+update themselves the next time those owners open the app (see *Keeping workers
+up to date*).
 
-The one exception is invitation email: the shared sender is deployed once,
-by the developer, under the account that holds the email capability
-(see *Invitation emails: one shared sender*):
-
-```bash
-npm run deploy:email-worker # puter worker deploy worker/email.js teamchat-email
-```
-
-Without it the app still works — the email tab and "Or email it" rows
+Invitation email is the one worker the local server registers itself, as
+`teamchat-email` from `worker/email.js` (see *Invitation emails: one shared
+sender*). Without it the app still works — the email tab and "Or email it" rows
 simply report that email is unavailable and point at the copyable link.
 
 ### Optional: one shared worker
 
-To run a single worker everyone creates workspaces on instead:
-
-```bash
-npm run build:worker        # -> public/worker/teamchat-worker.js
-npm install -g @heyputer/cli
-puter login
-puter worker deploy public/worker/teamchat-worker.js my-teamchat
-```
-
-Then, signed in as the deploying account, `PUT http://my-teamchat.localhost:8443/api/server`
-with `{ "open": true }` (through `puter.workers.exec`), and build the app
-with `VITE_WORKER_URL=http://my-teamchat.localhost:8443` or open it once with
+To run a single worker that everyone creates workspaces on instead, register
+`public/worker/teamchat-worker.js` in the local platform under a name of your
+own (for example in `platform/server/index.js`, beside the bundled workers).
+Then, signed in as the account that owns it, `PUT
+http://my-teamchat.localhost:8443/api/server` with `{ "open": true }` (through
+`everything.workers.exec`), and build the app with
+`VITE_WORKER_URL=http://my-teamchat.localhost:8443` or open it once with
 `?worker=http://my-teamchat.localhost:8443` (remembered in localStorage;
-`?worker=` clears it). To ship changes, overwrite the same file; do not
-create a second worker, or callers end up split across two stores.
+`?worker=` clears it). Update the same worker's source; do not create a second
+one, or callers end up split across two stores.
 
-Events signalling (see "Realtime" above) keys `own` mode on the *deploying*
+Events signalling (see "Realtime" above) keys `own` mode on the *owning*
 account, not on whoever created a given workspace here: a workspace's creator
-gets `mode: 'own'` only when they are also who this worker was deployed as;
-every other workspace creator on a shared worker gets a KV share handle like
-any other member. `puter worker deploy` from the CLI signs in as a user, so
-the worker gets its own `sandbox-my-teamchat` app rather than the app the site
-runs as, and no tab gets events at all there (see "Realtime" above). Workspace
-settings says so for the owner now, in its **Live updates** row: the worker
-and the tab are running as different apps, and the two have to match. A worker
-whose token carries no app at all — no `sandbox-` one either — gets its own
-sentence there. Either way what fixes it is a worker deployed from Teamchat
-itself: a worker's app identity is settled once, when it is created, so
-overwriting the file it runs will never change it.
+gets `mode: 'own'` only when they are also the worker's owner; every other
+workspace creator on a shared worker gets a KV share handle like any other
+member. A worker registered outside the app runs as its own sandbox app rather
+than the app the site runs as, and no tab gets events at all there (see
+"Realtime" above). Workspace settings says so for the owner now, in its **Live
+updates** row: the worker and the tab are running as different apps, and the
+two have to match. A worker whose token carries no app at all — no `sandbox-`
+one either — gets its own sentence there. Either way what fixes it is a worker
+created from Teamchat itself: a worker's app identity is settled once, when it
+is created, so overwriting the file it runs will never change it.
 
 ---
 
-Powered by [Puter](http://localhost:8443).
+Powered by [Everything](http://localhost:8443).
 
 ## License
 

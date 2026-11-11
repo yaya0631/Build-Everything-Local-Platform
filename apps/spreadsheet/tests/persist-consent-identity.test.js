@@ -4,12 +4,12 @@ import { accountStorageKey } from '../src/lib/account-storage.js';
 import { Workbook } from '../src/core/workbook.js';
 import { workbookToXlsx } from '../src/core/io.js';
 import { memoryStorage } from './helpers/memory-storage.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 
 let mock;
 beforeAll(async () => { await workbookToXlsx(new Workbook()); });
-beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); mock = installMockPuter(); });
-afterEach(() => { delete globalThis.puter; });
+beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); mock = installMockEverything(); });
+afterEach(() => { delete globalThis.everything; });
 
 const consentKey = (path) => `${accountStorageKey('spreadsheet:external')}${path}`;
 /** A file at `path`; placed again, it is another file with an id of its own. */
@@ -18,7 +18,7 @@ async function place(path) {
   mock.fs.set(path, { blob, size: blob.size, modified: 1 });
 }
 const opensTrusted = async (path) => (await Doc.fromPath(path)).wb.externalAllowed;
-const unreachableStore = () => { puter.kv.get = async () => { throw new Error('offline'); }; };
+const unreachableStore = () => { everything.kv.get = async () => { throw new Error('offline'); }; };
 
 // The decision this browser kept by path answered for whatever file was at that path: a file
 // allowed to load outside content, replaced outside the app by another at the same address,
@@ -32,7 +32,7 @@ it('does not trust a different file that took the place of an allowed one', asyn
   expect(await opensTrusted(path)).toBe(true);
   await place(path);
   expect(await opensTrusted(path)).toBe(false);
-  expect(await puter.kv.get(`spreadsheet:external:v1:${mock.fs.get(path).uid}`)).toBeNull();
+  expect(await everything.kv.get(`spreadsheet:external:v1:${mock.fs.get(path).uid}`)).toBeNull();
 });
 
 it('honours the record this browser kept when the store cannot be reached, for the same file only', async () => {

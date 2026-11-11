@@ -1,11 +1,11 @@
 /**
- * Email from the spreadsheet: the app's one shared, app-owned Puter worker (deployed to
+ * Email from the spreadsheet: the app's one shared, app-owned Everything worker (served at
  * http://spreadsheet-email.localhost:8443; src/lib/mail.js is the calling side). Adapted from the Calendar
  * app's invitation worker (src/calendar/src/workers/email-worker.js), whose sending arrangement it keeps.
  *
  * Outbound mail has to be authorized by a worker's own token, so the sending capability lives here, in a
- * worker the app owner deployed once. The cost does not: the app calls this worker through
- * puter.workers.exec(), which forwards the signed-in user's Puter session, and each message is sent with
+ * worker the app runs. The cost does not: the app calls this worker through
+ * everything.workers.exec(), which forwards the signed-in user's Everything session, and each message is sent with
  * that session in hand, so every send is billed to, and rate-limited as, the person who asked for it.
  * The browser never hands over a token of its own; the worker never returns one.
  *
@@ -17,13 +17,13 @@
  *
  * An app-owned relay that forwarded whatever it was handed would be a spam cannon wearing the app's
  * sending reputation, so it never does:
- *   - no Puter session, no send: `user` is only populated for callers that come through
- *     puter.workers.exec(); everyone else gets 401.
- *   - the sender is the caller: the mail names them by their own Puter username (read from their
- *     session, never from the request) and replies go to their own address when Puter can tell it.
+ *   - no Everything session, no send: `user` is only populated for callers that come through
+ *     everything.workers.exec(); everyone else gets 401.
+ *   - the sender is the caller: the mail names them by their own Everything username (read from their
+ *     session, never from the request) and replies go to their own address when Everything can tell it.
  *   - the body is composed here. Text the caller supplies (workbook name, subject, message, comment) is
  *     HTML-escaped and length-capped, and the only links written are ones this worker checked: https, on
- *     a Puter host, in the shape the app's own links take.
+ *     an Everything host, in the shape the app's own links take.
  *   - an attachment must be a workbook: an .xlsx (a zip), a PDF or a CSV, recognized by its first bytes
  *     and named with the matching extension, no larger than MAX_ATTACHMENT_BYTES.
  *   - recipients are capped per request (MAX_RECIPIENTS) and per user per day (DAILY_LIMIT); each gets a
@@ -36,7 +36,7 @@
  *   mail:rate:<sha256(callerId)>:<YYYY-MM-DD>               -> count  (expires: RATE_TTL)
  *   mail:mention:<sha256(callerId|commentId|email)>         -> { at }  (expires: SENT_TTL)
  *
- * Deploy with:  npm run deploy:email-worker
+ * Registered automatically by the local server as spreadsheet-email.
  */
 
 const WORKER_VERSION = '1';
@@ -76,8 +76,8 @@ async function identityOf(caller) {
     if (!out.email && typeof o.email === 'string') out.email = lowerEmail(o.email);
   };
   pick(caller);
-  pick(caller.puter);
-  const p = caller.puter;
+  pick(caller.everything);
+  const p = caller.everything;
   if (!out.id || !out.username || !out.email) {
     try {
       pick(p && p.auth && typeof p.auth.getUser === 'function' ? await p.auth.getUser() : null);
@@ -90,7 +90,7 @@ async function identityOf(caller) {
 }
 
 function kvOf(ctx) {
-  return ownerOf(ctx).puter.kv;
+  return ownerOf(ctx).everything.kv;
 }
 
 function coerce(value) {
@@ -148,13 +148,13 @@ function escapeBlock(v) {
 const DEV_ORIGINS = [];
 
 /** The local hosts a link in a mail may point at. */
-function puterHost(hostname) {
+function everythingHost(hostname) {
   return hostname === 'localhost' || hostname === '127.0.0.1'
-    || /^(?:[a-z0-9-]+\.)*(?:puter\.com|puter\.site|puter\.app|localhost)$/i.test(hostname);
+    || /^(?:[a-z0-9-]+\.)*(?:everything\.com|everything\.site|everything\.app|localhost)$/i.test(hostname);
 }
 
 /**
- * A workbook link, or ''. https, on a Puter host, and with the app's own route shapes when it carries
+ * A workbook link, or ''. https, on an Everything host, and with the app's own route shapes when it carries
  * one in its fragment: #/file/<id>[?range=…], #/edit/<path>[?range=…] or #/live/<room>?server=… with
  * an optional invitation. Anything else is refused rather than mailed under the app's name.
  */
@@ -168,7 +168,7 @@ function workbookLink(value) {
   }
   const local = url.hostname === 'localhost' || url.hostname === '127.0.0.1' || /^(?:[a-z0-9-]+\.)+localhost$/i.test(url.hostname);
   const dev = DEV_ORIGINS.includes(url.origin) || local;
-  if (!dev && (url.protocol !== 'https:' || url.port || !puterHost(url.hostname))) return '';
+  if (!dev && (url.protocol !== 'https:' || url.port || !everythingHost(url.hostname))) return '';
   if (url.username || url.password) return '';
   const hash = url.hash;
   if (hash && !/^#\/(?:file|edit|live)\/[^\s<>"`]+$/.test(hash)) return '';
@@ -246,7 +246,7 @@ const FRAME_OPEN =
   `<div style="background:#f6f7f9;padding:24px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">` +
   `<div style="max-width:560px;margin:0 auto;background:#ffffff;border:1px solid #e5e7eb;border-radius:12px;padding:24px">`;
 const FRAME_CLOSE =
-  `<p style="margin:24px 0 0;font-size:12px;color:#9ca3af">Sent from Spreadsheet on Puter at the request of the person named above.</p></div></div>`;
+  `<p style="margin:24px 0 0;font-size:12px;color:#9ca3af">Sent from Spreadsheet on Everything at the request of the person named above.</p></div></div>`;
 
 function button(href, label) {
   return (
@@ -308,8 +308,8 @@ function compose(kind, req, sender) {
  * A send has two halves, who pays (the caller) and what authorizes it (this worker), and the platform
  * accepts them in either arrangement:
  *
- *   me.puter.email.sendTransactional({ …, requesterToken: user.puter.authToken })
- *   user.puter.email.sendTransactional({ …, emailAccessToken: me.puter.authToken })
+ *   me.everything.email.sendTransactional({ …, requesterToken: user.everything.authToken })
+ *   user.everything.email.sendTransactional({ …, emailAccessToken: me.everything.authToken })
  *
  * Both bill the caller. Try the first, fall back to the second, and remember which one answered. The
  * fallback is only taken for an error that reads as a rejected request, never a rejected delivery:
@@ -317,14 +317,14 @@ function compose(kind, req, sender) {
  */
 let preferredForm = 0;
 
-function mailerOf(puter) {
-  const email = puter && puter.email;
+function mailerOf(everything) {
+  const email = everything && everything.email;
   if (email && typeof email.sendTransactional === 'function') return (message) => email.sendTransactional(message);
   return (message) => email.send(message);
 }
 
-function hasMailer(puter) {
-  const email = puter && puter.email;
+function hasMailer(everything) {
+  const email = everything && everything.email;
   return Boolean(email && (typeof email.sendTransactional === 'function' || typeof email.send === 'function'));
 }
 
@@ -335,8 +335,8 @@ async function sendMail(ctx, message) {
   const owner = ownerOf(ctx);
   const caller = callerOf(ctx);
   const forms = [
-    (m) => mailerOf(owner.puter)({ ...m, requesterToken: caller.puter.authToken }),
-    (m) => mailerOf(caller.puter)({ ...m, emailAccessToken: owner.puter.authToken }),
+    (m) => mailerOf(owner.everything)({ ...m, requesterToken: caller.everything.authToken }),
+    (m) => mailerOf(caller.everything)({ ...m, emailAccessToken: owner.everything.authToken }),
   ];
   const order = preferredForm === 0 ? [0, 1] : [1, 0];
   let lastErr = null;
@@ -414,14 +414,14 @@ router.get('/health', async () => json({ ok: true, version: WORKER_VERSION }));
 
 router.get('/whoami', async (ctx) => {
   const caller = callerOf(ctx);
-  const p = caller && caller.puter;
+  const p = caller && caller.everything;
   const who = await identityOf(caller);
   return json({
     ok: true,
     version: WORKER_VERSION,
-    sawAuthHeader: Boolean(ctx.request.headers.get('puter-auth')),
+    sawAuthHeader: Boolean(ctx.request.headers.get('everything-auth')),
     boundAs: ctx.user ? 'user' : ctx.requestor ? 'requestor' : null,
-    has: { puter: Boolean(p), authToken: Boolean(p && p.authToken), email: hasMailer(p) },
+    has: { everything: Boolean(p), authToken: Boolean(p && p.authToken), email: hasMailer(p) },
     identified: Boolean(who.id),
   });
 });
@@ -461,7 +461,7 @@ function readRequest(kind, body) {
 /** The one send pipeline: auth, the cap, one private message per recipient, a result per recipient. */
 async function deliver(ctx, kind) {
   const caller = callerOf(ctx);
-  if (!caller || !caller.puter) return json({ error: 'sign_in_required', detail: 'no_caller' }, 401);
+  if (!caller || !caller.everything) return json({ error: 'sign_in_required', detail: 'no_caller' }, 401);
   const sender = await identityOf(caller);
   if (!sender.id) return json({ error: 'sign_in_required', detail: 'no_identity' }, 401);
 

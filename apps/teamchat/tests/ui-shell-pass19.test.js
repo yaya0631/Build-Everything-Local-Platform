@@ -4,7 +4,7 @@
  * (a small DOM: elements, selectors, bubbling events, focus with the focus
  * fixup rule, a hash location that fires hashchange on the next tick,
  * matchMedia by viewport and pointer; no CSS). Every test boots a fresh DOM
- * and a fresh module registry. Puter is faked at `puter.workers.exec`, as
+ * and a fresh module registry. Everything is faked at `everything.workers.exec`, as
  * in tests/ui-shell-pass18.test.js.
  */
 import { describe, it, expect, afterEach, vi } from 'vitest';
@@ -55,7 +55,7 @@ async function boot({ hash = '', width = 1280, routes = {}, ...env } = {}) {
   dom = installDom({ hash, width, ...env });
   vi.resetModules();
   const calls = [];
-  globalThis.puter = {
+  globalThis.everything = {
     workers: {
       exec: async (url, init = {}) => {
         const u = new URL(url);
@@ -99,7 +99,7 @@ async function boot({ hash = '', width = 1280, routes = {}, ...env } = {}) {
 afterEach(() => {
   dom?.uninstall();
   dom = null;
-  delete globalThis.puter;
+  delete globalThis.everything;
 });
 
 describe('a toast\'s buttons pressed on a touch screen', () => {
@@ -330,7 +330,7 @@ describe('the Threads view over many threads', () => {
   });
 });
 
-describe('the worker refusing every request for want of a Puter sign-in', () => {
+describe('the worker refusing every request for want of an Everything sign-in', () => {
   /** The shell mounted over an open workspace; the toast that offers to sign in again, if any. */
   async function shell() {
     const ctx = await boot({ hash: `#/ws/${encodeURIComponent(REF)}/c/c1`, routes: { '/messages': () => json({ messages: [], seq: 0 }) } });
@@ -348,16 +348,16 @@ describe('the worker refusing every request for want of a Puter sign-in', () => 
   it('says so once, with a way to sign in again, where before nothing was said at all', async () => {
     const { store, dom: d, ApiError, prompt } = await shell();
     expect(prompt()).toBeUndefined();
-    // The poll answers 401, as the worker does when Puter cannot say who is asking.
-    store.emit('error', new ApiError(401, 'unauthorized', 'Your Puter session is not valid'));
+    // The poll answers 401, as the worker does when Everything cannot say who is asking.
+    store.emit('error', new ApiError(401, 'unauthorized', 'Your Everything session is not valid'));
     expect(prompt()).toBeTruthy();
-    expect(prompt().textContent).toContain('Puter could not confirm your sign-in');
+    expect(prompt().textContent).toContain('Everything could not confirm your sign-in');
     const action = prompt().querySelector('.toast-action');
     expect(action?.textContent).toBe('Sign in again');
     expect(prompt().querySelector('.toast-close')).toBeTruthy();
     // The next polls answer the same: said once, and kept until acted on.
-    store.emit('error', new ApiError(401, 'unauthorized', 'Your Puter session is not valid'));
-    store.emit('error', new ApiError(401, 'unauthorized', 'Your Puter session is not valid'));
+    store.emit('error', new ApiError(401, 'unauthorized', 'Your Everything session is not valid'));
+    store.emit('error', new ApiError(401, 'unauthorized', 'Your Everything session is not valid'));
     await d.tick(3000);
     expect(document.querySelectorAll('.toast:not(.leaving)').length).toBe(1);
     // Sign in again reloads the page, which leads to the sign-in page (see main.js boot).

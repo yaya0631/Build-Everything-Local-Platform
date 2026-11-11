@@ -4,13 +4,13 @@ import { Workbook } from '../src/core/workbook.js';
 import { workbookFromFile, workbookToXlsx } from '../src/core/io.js';
 import { listVersions, versionsFolder } from '../src/lib/versions.js';
 
-/** Minimal in-memory Puter for the document controller. */
-function installMockPuter() {
+/** Minimal in-memory Everything for the document controller. */
+function installMockEverything() {
   const fs = new Map();
   const kv = new Map();
   const notFound = (p) => Object.assign(new Error(`${p} does not exist`), { code: 'subject_does_not_exist' });
   const item = (path, f) => ({ path, name: path.split('/').pop(), is_dir: !f, size: f?.size ?? null, modified: f?.modified ?? 1 });
-  globalThis.puter = {
+  globalThis.everything = {
     env: 'web',
     auth: { isSignedIn: () => true, getUser: async () => ({ username: 'demo' }), signIn: async () => true, signOut() {} },
     kv: { get: async (k) => kv.get(k) ?? null, set: async (k, v) => { kv.set(k, v); return true; } },
@@ -53,12 +53,12 @@ describe('Doc', () => {
   // timers cannot advance; warm it up before any test starts a clock.
   beforeAll(async () => { await workbookToXlsx(new Workbook()); });
   beforeEach(() => {
-    mock = installMockPuter();
+    mock = installMockEverything();
     vi.useFakeTimers();
   });
   afterEach(() => {
     vi.useRealTimers();
-    delete globalThis.puter;
+    delete globalThis.everything;
   });
 
   it('starts untitled, saved, and without a path', () => {
@@ -97,9 +97,9 @@ describe('Doc', () => {
     const docs = [Doc.blank(), Doc.blank()];
     docs.forEach((doc, i) => doc.wb.setInput(doc.wb.activeSheetId, 0, 0, `book ${i}`));
     const ready = deferred();
-    const write = globalThis.puter.fs.write;
+    const write = globalThis.everything.fs.write;
     let writes = 0;
-    globalThis.puter.fs.write = async (path, blob, options) => {
+    globalThis.everything.fs.write = async (path, blob, options) => {
       if (!path.includes('/.versions/')) {
         if (++writes === 2) ready.resolve();
         await ready.promise;
@@ -121,9 +121,9 @@ describe('Doc', () => {
   it('keeps a failed first save unassigned and retries without overwriting a newly created file', async () => {
     const doc = Doc.blank();
     doc.wb.setInput(doc.wb.activeSheetId, 0, 0, 'local workbook');
-    const write = globalThis.puter.fs.write;
+    const write = globalThis.everything.fs.write;
     const log = vi.spyOn(console, 'error').mockImplementation(() => {});
-    globalThis.puter.fs.write = async () => { throw new Error('offline'); };
+    globalThis.everything.fs.write = async () => { throw new Error('offline'); };
     try {
       expect(await doc.save({ auto: true })).toBe(false);
       expect(doc.path).toBeNull();
@@ -131,11 +131,11 @@ describe('Doc', () => {
       const target = `Spreadsheets/${UNTITLED}.xlsx`;
       const external = new Blob(['another workbook']);
       mock.fs.set(target, { blob: external, size: external.size });
-      globalThis.puter.fs.write = write;
+      globalThis.everything.fs.write = write;
       expect(await doc.save()).toBe(true);
       expect(doc.path).not.toBe(target);
       expect(mock.fs.get(target).blob).toBe(external);
-    } finally { globalThis.puter.fs.write = write; log.mockRestore(); doc.destroy(); }
+    } finally { globalThis.everything.fs.write = write; log.mockRestore(); doc.destroy(); }
   });
 
   it('writes a real xlsx that reads back with the same content', async () => {
@@ -155,11 +155,11 @@ describe('Doc', () => {
     const doc = Doc.blank();
     const id = doc.wb.sheets[0].id;
     doc.wb.setInput(id, 0, 0, '1');
-    const write = puter.fs.write;
-    puter.fs.write = (...args) => {
-      puter.fs.write = write;
+    const write = everything.fs.write;
+    everything.fs.write = (...args) => {
+      everything.fs.write = write;
       doc.wb.setInput(id, 0, 0, '2'); // lands while the encoded book is being written
-      return write.apply(puter.fs, args);
+      return write.apply(everything.fs, args);
     };
     await doc.save();
     expect(doc.wb.dirty).toBe(true);
@@ -243,9 +243,9 @@ describe('Doc', () => {
     doc.wb.setInput(doc.wb.activeSheetId, 0, 0, 'original');
     const entered = deferred();
     const release = deferred();
-    const readdir = globalThis.puter.fs.readdir;
+    const readdir = globalThis.everything.fs.readdir;
     const originalFolder = versionsFolder(`Spreadsheets/${UNTITLED}.xlsx`);
-    globalThis.puter.fs.readdir = async (path) => {
+    globalThis.everything.fs.readdir = async (path) => {
       if (path === originalFolder) { entered.resolve(); await release.promise; }
       return readdir(path);
     };
@@ -273,8 +273,8 @@ describe('Doc', () => {
     await vi.advanceTimersByTimeAsync(10);
     const entered = deferred();
     const release = deferred();
-    const rename = globalThis.puter.fs.rename;
-    globalThis.puter.fs.rename = async (...args) => { entered.resolve(); await release.promise; return rename(...args); };
+    const rename = globalThis.everything.fs.rename;
+    globalThis.everything.fs.rename = async (...args) => { entered.resolve(); await release.promise; return rename(...args); };
     try {
       const renaming = doc.rename('Renamed');
       await entered.promise;
@@ -311,8 +311,8 @@ describe('Doc', () => {
     doc.wb.setInput(id, 0, 0, 'before restore');
     const entered = deferred();
     const release = deferred();
-    const write = globalThis.puter.fs.write;
-    globalThis.puter.fs.write = async (path, ...args) => {
+    const write = globalThis.everything.fs.write;
+    globalThis.everything.fs.write = async (path, ...args) => {
       if (path.includes('Before restore')) { entered.resolve(); await release.promise; }
       return write(path, ...args);
     };
@@ -326,7 +326,7 @@ describe('Doc', () => {
       expect(result).toBeInstanceOf(Error);
       expect(result.message).toMatch(/changed.*restor/i);
       expect(doc.wb.undoLabels().length).toBeGreaterThan(0);
-      globalThis.puter.fs.write = write;
+      globalThis.everything.fs.write = write;
       expect(await doc.restoreVersion(old.path)).toBe(true);
       expect(doc.wb.getValue(doc.wb.activeSheetId, 0, 0)).toBe('old version');
       const backups = (await listVersions(doc.path)).filter((v) => v.label === 'Before restore');
@@ -346,8 +346,8 @@ describe('Doc', () => {
     doc.wb.setInput(doc.wb.activeSheetId, 0, 0, 'before restore');
     const entered = deferred();
     const release = deferred();
-    const read = globalThis.puter.fs.read;
-    globalThis.puter.fs.read = async (path) => {
+    const read = globalThis.everything.fs.read;
+    globalThis.everything.fs.read = async (path) => {
       if (path === old.path) { entered.resolve(); await release.promise; }
       return read(path);
     };
@@ -389,8 +389,8 @@ describe('Doc', () => {
     doc.wb.setInput(doc.wb.activeSheetId, 0, 0, 'unsaved edit');
     const target = 'Spreadsheets/Copy.xlsx';
     const external = new Blob(['another workbook']);
-    const write = globalThis.puter.fs.write;
-    globalThis.puter.fs.write = async (path, blob, options) => {
+    const write = globalThis.everything.fs.write;
+    globalThis.everything.fs.write = async (path, blob, options) => {
       if (path === target) mock.fs.set(target, { blob: external, size: external.size });
       return write(path, blob, options);
     };
@@ -403,7 +403,7 @@ describe('Doc', () => {
       expect(await doc.saveAs('Safe copy')).toBeNull();
       const saved = await workbookFromFile(mock.fs.get(doc.path).blob, doc.fileName);
       expect(saved.getValue(saved.activeSheetId, 0, 0)).toBe('unsaved edit');
-    } finally { globalThis.puter.fs.write = write; doc.destroy(); }
+    } finally { globalThis.everything.fs.write = write; doc.destroy(); }
   });
 
   it('uses the copied file timestamp for subsequent conflict checks', async () => {
@@ -433,8 +433,8 @@ describe('Doc', () => {
     doc.wb.setInput(id, 0, 0, 'before');
     const entered = deferred();
     const release = deferred();
-    const write = globalThis.puter.fs.write;
-    globalThis.puter.fs.write = async (path, blob) => {
+    const write = globalThis.everything.fs.write;
+    globalThis.everything.fs.write = async (path, blob) => {
       if (path === 'Spreadsheets/Copy.xlsx') { entered.resolve(); await release.promise; }
       return write(path, blob);
     };
@@ -459,11 +459,11 @@ describe('Doc', () => {
     doc.wb.setInput(id, 0, 0, 'first');
     const entered = deferred();
     const release = deferred();
-    const write = globalThis.puter.fs.write;
+    const write = globalThis.everything.fs.write;
     let active = 0;
     let maxActive = 0;
     let count = 0;
-    globalThis.puter.fs.write = async (path, blob) => {
+    globalThis.everything.fs.write = async (path, blob) => {
       if (path.includes('/.versions/')) return write(path, blob);
       maxActive = Math.max(maxActive, ++active);
       if (++count === 1) { entered.resolve(); await release.promise; }
@@ -493,8 +493,8 @@ describe('Doc', () => {
     const originalPath = doc.path;
     const entered = deferred();
     const release = deferred();
-    const write = globalThis.puter.fs.write;
-    globalThis.puter.fs.write = async (path, blob) => {
+    const write = globalThis.everything.fs.write;
+    globalThis.everything.fs.write = async (path, blob) => {
       if (path === originalPath) { entered.resolve(); await release.promise; }
       return write(path, blob);
     };
@@ -515,13 +515,13 @@ describe('Doc', () => {
 
   it('reports errors and retries later when a write fails', async () => {
     const doc = Doc.blank();
-    const original = globalThis.puter.fs.write;
-    globalThis.puter.fs.write = async () => { throw new Error('boom'); };
+    const original = globalThis.everything.fs.write;
+    globalThis.everything.fs.write = async () => { throw new Error('boom'); };
     doc.wb.setInput(doc.wb.sheets[0].id, 0, 0, '1');
     await vi.advanceTimersByTimeAsync(2000);
     expect(['error', 'offline']).toContain(doc.status);
     expect(doc.error).toBe('boom');
-    globalThis.puter.fs.write = original;
+    globalThis.everything.fs.write = original;
     await vi.advanceTimersByTimeAsync(9000);
     expect(doc.status).toBe('saved');
     doc.destroy();
@@ -553,10 +553,10 @@ describe('save conflicts', () => {
     const original = await workbookToXlsx(wb);
     const path = 'Spreadsheets/Unknown.xlsx';
     mock.fs.set(path, { blob: original, size: original.size, modified: Date.now() / 1000 - 60 });
-    const stat = globalThis.puter.fs.stat;
-    globalThis.puter.fs.stat = async () => { throw new Error('Temporary metadata failure'); };
+    const stat = globalThis.everything.fs.stat;
+    globalThis.everything.fs.stat = async () => { throw new Error('Temporary metadata failure'); };
     const doc = await Doc.fromPath(path);
-    globalThis.puter.fs.stat = stat;
+    globalThis.everything.fs.stat = stat;
     // The file is written elsewhere meanwhile: reading it back cannot confirm the bytes just opened
     // (an unchanged file would let the save through even with the baseline unknown).
     const elsewhere = new Blob([original, 'x']);
@@ -579,8 +579,8 @@ describe('save conflicts', () => {
     const path = 'Spreadsheets/Opening.xlsx';
     const modified = Date.now() / 1000 - 60;
     mock.fs.set(path, { blob: original, size: original.size, modified });
-    const read = globalThis.puter.fs.read;
-    globalThis.puter.fs.read = async (p) => {
+    const read = globalThis.everything.fs.read;
+    globalThis.everything.fs.read = async (p) => {
       const blob = await read(p);
       mock.fs.set(path, { blob: theirs, size: theirs.size, modified: modified + 30 });
       return blob;
@@ -605,15 +605,15 @@ describe('save conflicts', () => {
       await doc.save();
       const theirs = new Blob(['remote version']);
       mock.fs.set(doc.path, { blob: theirs, size: theirs.size, modified: doc.remoteModified / 1000 + 60 });
-      const stat = globalThis.puter.fs.stat;
-      globalThis.puter.fs.stat = async () => { throw new Error('Temporary stat failure'); };
+      const stat = globalThis.everything.fs.stat;
+      globalThis.everything.fs.stat = async () => { throw new Error('Temporary stat failure'); };
       doc.wb.setInput(doc.wb.activeSheetId, 0, 0, 'Local edit');
       if (auto) expect(await doc.save({ auto })).toBe(false);
       else await expect(doc.save()).rejects.toThrow('Temporary stat failure');
       expect(doc.wb.dirty).toBe(true);
       expect(doc.error).toBe('Temporary stat failure');
       expect(mock.fs.get(doc.path).blob).toBe(theirs);
-      globalThis.puter.fs.stat = stat;
+      globalThis.everything.fs.stat = stat;
       expect(await doc.save()).toBe(false);
       expect(doc.status).toBe('conflict');
       expect(await doc.forceSave()).toBe(true);
@@ -639,8 +639,8 @@ describe('save conflicts', () => {
 
   let mock;
   beforeAll(async () => { await workbookToXlsx(new Workbook()); });
-  beforeEach(() => { mock = installMockPuter(); });
-  afterEach(() => { delete globalThis.puter; });
+  beforeEach(() => { mock = installMockEverything(); });
+  afterEach(() => { delete globalThis.everything; });
 
   it('refuses to overwrite a file written elsewhere until told to', async () => {
     const doc = Doc.blank();

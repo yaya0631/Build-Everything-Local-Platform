@@ -19,7 +19,7 @@ import { initWorkers, createWorkersService, handleWorkers } from './workers.js';
 const ROOT_DIR = path.resolve(import.meta.dirname, '../..');
 const DEFAULT_APPS_DIR = path.join(ROOT_DIR, 'apps');
 const DEFAULT_DATA_DIR = path.join(ROOT_DIR, 'platform/data');
-const SDK_FILE = path.join(ROOT_DIR, 'platform/sdk/puter.js');
+const SDK_FILE = path.join(ROOT_DIR, 'platform/sdk/everything.js');
 const SETTINGS_FILE = path.join(ROOT_DIR, 'platform/web/settings.html');
 
 const MIME = {
@@ -112,7 +112,7 @@ function registerBundledWorkers(ctx) {
     ['calendar', 'calendar-rsvp', 'src/workers/rsvp-worker.js'], ['invoicing', 'invoicing-email', 'src/workers/email-worker.js'],
     ['field-service', 'field-service-email', 'src/workers/email-worker.js'], ['property-management', 'property-management-email', 'src/workers/email-worker.js'],
     ['signatures', 'signatures-email', 'src/workers/email-worker.js'], ['signatures', 'signatures-sign', 'src/workers/sign-worker.js'],
-    ['teamchat', 'teamchat-email', 'worker/email.js'], ['meetings', 'puter-meetings-rooms', 'worker/rooms.js'],
+    ['teamchat', 'teamchat-email', 'worker/email.js'], ['meetings', 'everything-meetings-rooms', 'worker/rooms.js'],
   ];
   const sysUser = ensureUser(ctx.db, 'local');
   for (const [app, workerName, relPath] of systemDefs) {
@@ -191,7 +191,7 @@ export async function createPlatformServer(options = {}) {
     if (origin && isValidLocalOrigin(origin)) {
       res.setHeader('Access-Control-Allow-Origin', origin);
       res.setHeader('Access-Control-Allow-Credentials', 'true');
-      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Puter-Token, X-Puter-Signed-Out, X-Puter-User, puter-auth');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Everything-Token, X-Everything-Signed-Out, X-Everything-User, everything-auth');
       res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     }
     if (req.method === 'OPTIONS') { res.writeHead(204); res.end(); return; }
@@ -199,7 +199,7 @@ export async function createPlatformServer(options = {}) {
     const url = new URL(req.url || '/', `http://${req.headers.host}`);
     const p = url.pathname;
 
-    if (p === '/sdk/puter.js' || p === '/v2/' || p === '/v2') {
+    if (p === '/sdk/everything.js' || p === '/v2/' || p === '/v2') {
       res.writeHead(200, { 'Content-Type': 'application/javascript; charset=utf-8', 'Cache-Control': 'no-store' });
       res.end(fs.readFileSync(SDK_FILE, 'utf8'));
       return;
@@ -283,7 +283,7 @@ export async function createPlatformServer(options = {}) {
       if (serveStaticFile(res, path.join(distRoot, 'index.html'))) return;
     }
 
-    const listHtml = `<!doctype html><html><head><meta charset="utf-8"><title>Everything Local</title><script src="/sdk/puter.js"></script></head><body><h1>Everything Local</h1><p><a href="/settings">AI settings</a></p><ul>${[...appNames].sort().map((a) => `<li><a href="http://${a}.localhost:${ctx.port}/">${a}</a></li>`).join('')}</ul></body></html>`;
+    const listHtml = `<!doctype html><html><head><meta charset="utf-8"><title>Everything Local</title><script src="/sdk/everything.js"></script></head><body><h1>Everything Local</h1><p><a href="/settings">AI settings</a></p><ul>${[...appNames].sort().map((a) => `<li><a href="http://${a}.localhost:${ctx.port}/">${a}</a></li>`).join('')}</ul></body></html>`;
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(listHtml);
   });

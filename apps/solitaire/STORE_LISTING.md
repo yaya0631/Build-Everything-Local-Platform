@@ -37,7 +37,7 @@ Nothing here is timed. There is no clock ticking and no penalty for
 thinking. The only number on screen while you play is your move count, and
 when you win the game tells you whether you have beaten your own best. That
 record is kept on the device you play on. If you happen to be signed in to
-Puter, it quietly follows you to your other devices as well. You are never
+Everything, it quietly follows you to your other devices as well. You are never
 asked to sign in, and nothing about the game changes if you would rather
 not.
 
@@ -56,7 +56,7 @@ not.
   once you have opened it online at least once.
 - Games played, games won, and your lowest winning move count are kept on
   your device, and carried over to your other devices on their own if you
-  are signed in to Puter.
+  are signed in to Everything.
 - Free, and there is no sign up to play.
 
 ## Who it is for
@@ -67,7 +67,7 @@ not.
 - Phone players who are tired of cards too small to read.
 - Anyone who wants a game that still works on a plane, on the train, or
   anywhere with no signal.
-- Puter users who would like their record waiting on the next device without
+- Everything users who would like their record waiting on the next device without
   having to ask for it.
 
 ## What is new in this version

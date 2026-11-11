@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   buildMessage, encodeWords, foldHeader, parseAddresses, draftProblem,
   draftProblemField, rfc2822Date, bytesToBase64, safeFilename,
-  replyRecipients, replySubject, forwardSubject, forwardBlock, MAX_ATTACHMENT_BYTES, PUTER_DOMAINS,
+  replyRecipients, replySubject, forwardSubject, forwardBlock, MAX_ATTACHMENT_BYTES, EVERYTHING_DOMAINS,
 } from '../src/lib/compose.js';
 import {
   splitMessage, parseHeaders, parseAddress, decodeWords, extractText,
@@ -10,17 +10,17 @@ import {
 } from '../src/lib/mime.js';
 
 const headersOf = (lines) => parseHeaders(lines.join('\r\n'));
-const ME = ['me@puter.email', 'me@puterstaging.email'];
+const ME = ['me@everything.email', 'me@everythingstaging.email'];
 
 const CRLF = '\r\n';
 
 const build = (over = {}) => buildMessage({
-  from: 'alice@puter.email',
+  from: 'alice@everything.email',
   to: ['bob@example.com'],
   cc: [],
   subject: 'Hello',
   body: 'Hi Bob,\n\nJust checking in.\n',
-  messageId: '<test-id@puter.email>',
+  messageId: '<test-id@everything.email>',
   date: new Date(Date.UTC(2026, 7, 22, 9, 30, 5)),
   ...over,
 });
@@ -43,10 +43,10 @@ const bytesOf = (text) => new TextEncoder().encode(text);
 describe('buildMessage', () => {
   it('round-trips headers and body through the app parser', () => {
     const { headers, text } = roundTrip(build());
-    expect(parseAddress(headers.get('from'))).toEqual({ name: 'alice@puter.email', email: 'alice@puter.email' });
+    expect(parseAddress(headers.get('from'))).toEqual({ name: 'alice@everything.email', email: 'alice@everything.email' });
     expect(headers.get('to')).toBe('bob@example.com');
     expect(headers.get('subject')).toBe('Hello');
-    expect(headers.get('message-id')).toBe('<test-id@puter.email>');
+    expect(headers.get('message-id')).toBe('<test-id@everything.email>');
     expect(headers.get('mime-version')).toBe('1.0');
     expect(text).toBe('Hi Bob,\n\nJust checking in.\n');
   });
@@ -237,9 +237,9 @@ describe('draftProblemField', () => {
   });
 });
 
-describe('PUTER_DOMAINS', () => {
+describe('EVERYTHING_DOMAINS', () => {
   it('lists the domains offered in the composer From field', () => {
-    expect(PUTER_DOMAINS).toEqual(['puter.email']);
+    expect(EVERYTHING_DOMAINS).toEqual(['everything.email']);
   });
 });
 
@@ -500,8 +500,8 @@ describe('threading headers', () => {
 describe('replyRecipients', () => {
   const headers = headersOf([
     'From: Ana Petrova <ana@example.com>',
-    'To: me@puter.email, Bob <bob@example.com>',
-    'Cc: "Doe, Jane" <jane@example.com>, ME@PUTER.EMAIL',
+    'To: me@everything.email, Bob <bob@example.com>',
+    'Cc: "Doe, Jane" <jane@example.com>, ME@EVERYTHING.EMAIL',
   ]);
 
   it('answers the sender alone by default', () => {
@@ -518,7 +518,7 @@ describe('replyRecipients', () => {
   it('removes the user case-insensitively, on either sending domain', () => {
     const both = headersOf([
       'From: Ana <ana@example.com>',
-      'To: Me@Puter.Email, me@puterstaging.email, bob@example.com',
+      'To: Me@Everything.Email, me@everythingstaging.email, bob@example.com',
     ]);
     expect(replyRecipients(both, ME, { all: true }).cc).toEqual(['bob@example.com']);
   });
@@ -539,7 +539,7 @@ describe('replyRecipients', () => {
     const withReplyTo = headersOf([
       'From: notifications@example.com',
       'Reply-To: Ana Petrova <ana@example.com>',
-      'To: me@puter.email',
+      'To: me@everything.email',
     ]);
     expect(replyRecipients(withReplyTo, ME).to).toEqual(['ana@example.com']);
     // From is not silently added back as a copy.
@@ -548,7 +548,7 @@ describe('replyRecipients', () => {
 
   it('answers the recipients when the message is one the user sent', () => {
     const sent = headersOf([
-      'From: me@puter.email',
+      'From: me@everything.email',
       'To: ana@example.com, bob@example.com',
       'Cc: carol@example.com',
     ]);
@@ -563,12 +563,12 @@ describe('replyRecipients', () => {
   });
 
   it('keeps a comma inside a quoted display name out of the split', () => {
-    const quoted = headersOf(['From: "Petrova, Ana" <ana@example.com>', 'To: me@puter.email']);
+    const quoted = headersOf(['From: "Petrova, Ana" <ana@example.com>', 'To: me@everything.email']);
     expect(replyRecipients(quoted, ME).to).toEqual(['ana@example.com']);
   });
 
   it('is empty rather than wrong when there is nobody to answer', () => {
-    expect(replyRecipients(headersOf(['From: me@puter.email']), ME, { all: true }))
+    expect(replyRecipients(headersOf(['From: me@everything.email']), ME, { all: true }))
       .toEqual({ to: [], cc: [] });
     expect(replyRecipients(headersOf(['Subject: no addresses at all']), ME))
       .toEqual({ to: [], cc: [] });
@@ -577,7 +577,7 @@ describe('replyRecipients', () => {
   it('does not remove anything when the sender addresses are unknown', () => {
     expect(replyRecipients(headers, []).to).toEqual(['ana@example.com']);
     expect(replyRecipients(headers, [], { all: true }).cc)
-      .toEqual(['me@puter.email', 'bob@example.com', 'jane@example.com']);
+      .toEqual(['me@everything.email', 'bob@example.com', 'jane@example.com']);
   });
 });
 
@@ -613,14 +613,14 @@ describe('forwardBlock', () => {
       from: 'Ana Petrova <ana@example.com>',
       date: 'Thu, Aug 20, 2026, 4:30 PM',
       subject: 'Q3 usage report attached',
-      to: 'me@puter.email',
+      to: 'me@everything.email',
       cc: 'team@example.com',
     }).split('\n')).toEqual([
       '---------- Forwarded message ----------',
       'From: Ana Petrova <ana@example.com>',
       'Date: Thu, Aug 20, 2026, 4:30 PM',
       'Subject: Q3 usage report attached',
-      'To: me@puter.email',
+      'To: me@everything.email',
       'Cc: team@example.com',
     ]);
   });

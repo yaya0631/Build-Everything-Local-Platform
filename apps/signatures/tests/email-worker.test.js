@@ -7,7 +7,7 @@ const LINK = `http://doc-sign-abc12.localhost:8443/sign/${'a'.repeat(40)}`;
 function makeCaller(sendImpl) {
   return {
     uuid: 'user-1',
-    puter: {
+    everything: {
       authToken: 'caller-token',
       email: { send: vi.fn(sendImpl || (async () => ({}))) },
     },
@@ -19,7 +19,7 @@ function makeOwner(sendImpl) {
   return {
     kv,
     me: {
-      puter: {
+      everything: {
         kv,
         authToken: 'owner-token',
         email: { send: vi.fn(sendImpl || (async () => ({}))) },
@@ -50,7 +50,7 @@ describe('email worker', () => {
   it('refuses anonymous callers: no session, no send', async () => {
     const res = await worker.call('POST', '/send', { json: request() });
     expect(res.status).toBe(401);
-    expect(owner.me.puter.email.send).not.toHaveBeenCalled();
+    expect(owner.me.everything.email.send).not.toHaveBeenCalled();
   });
 
   it('sends one private mail per signer, billed via the caller token', async () => {
@@ -59,7 +59,7 @@ describe('email worker', () => {
     const out = await res.json();
     expect(out.sent).toBe(1);
     expect(out.results[0]).toMatchObject({ email: 'ava@example.com', status: 'sent' });
-    const message = owner.me.puter.email.send.mock.calls[0][0];
+    const message = owner.me.everything.email.send.mock.calls[0][0];
     expect(message.to).toBe('ava@example.com');
     expect(message.subject).toContain('Alex sent you "NDA" to sign');
     expect(message.requesterToken).toBe('caller-token');
@@ -83,7 +83,7 @@ describe('email worker', () => {
     })).json();
     expect(out.sent).toBe(1);
     expect(out.results).toHaveLength(1);
-    expect(owner.me.puter.email.send).toHaveBeenCalledTimes(1);
+    expect(owner.me.everything.email.send).toHaveBeenCalledTimes(1);
   });
 
   it('deduplicates by version, and force overrides', async () => {
@@ -113,7 +113,7 @@ describe('email worker', () => {
     evil.recipients[0].signUrl = 'https://phish.example/sign/' + 'a'.repeat(40);
     const out = await (await worker.call('POST', '/send', { json: evil, user })).json();
     expect(out.sent).toBe(1); // the mail goes, without any link
-    const message = owner.me.puter.email.send.mock.calls[0][0];
+    const message = owner.me.everything.email.send.mock.calls[0][0];
     expect(message.text).not.toContain('phish.example');
     expect(message.html).not.toContain('phish.example');
   });
@@ -123,7 +123,7 @@ describe('email worker', () => {
     const sneaky = request();
     sneaky.doc.title = 'NDA\r\nBcc: everyone@example.com';
     await worker.call('POST', '/send', { json: sneaky, user });
-    const message = owner.me.puter.email.send.mock.calls[0][0];
+    const message = owner.me.everything.email.send.mock.calls[0][0];
     expect(message.subject).not.toMatch(/[\r\n]/);
     expect(message.subject).toContain('NDA Bcc: everyone@example.com');
   });
@@ -132,7 +132,7 @@ describe('email worker', () => {
     const user = makeCaller();
     const sneaky = request({ note: '<script>alert(1)</script>' });
     await worker.call('POST', '/send', { json: sneaky, user });
-    const message = owner.me.puter.email.send.mock.calls[0][0];
+    const message = owner.me.everything.email.send.mock.calls[0][0];
     expect(message.html).not.toContain('<script>');
     expect(message.html).toContain('&lt;script&gt;');
   });
@@ -149,9 +149,9 @@ describe('email worker', () => {
   it('composes reminder and completed subjects distinctly', async () => {
     const user = makeCaller();
     await worker.call('POST', '/send', { json: request({ kind: 'reminder', force: true }), user });
-    expect(owner.me.puter.email.send.mock.calls[0][0].subject).toContain('Reminder:');
+    expect(owner.me.everything.email.send.mock.calls[0][0].subject).toContain('Reminder:');
     await worker.call('POST', '/send', { json: request({ kind: 'completed', force: true }), user });
-    expect(owner.me.puter.email.send.mock.calls[1][0].subject).toContain('Completed:');
+    expect(owner.me.everything.email.send.mock.calls[1][0].subject).toContain('Completed:');
   });
 
   it('enforces the daily cap', async () => {
@@ -183,7 +183,7 @@ describe('email worker', () => {
     const user = makeCaller(async () => ({}));
     const out = await (await worker.call('POST', '/send', { json: request(), user })).json();
     expect(out.sent).toBe(1);
-    const viaCaller = user.puter.email.send.mock.calls[0][0];
+    const viaCaller = user.everything.email.send.mock.calls[0][0];
     expect(viaCaller.emailAccessToken).toBe('owner-token');
   });
 
@@ -195,14 +195,14 @@ describe('email worker', () => {
     const user = makeCaller();
     const out = await (await worker.call('POST', '/send', { json: request(), user })).json();
     expect(out.failed).toBe(1);
-    expect(user.puter.email.send).not.toHaveBeenCalled();
+    expect(user.everything.email.send).not.toHaveBeenCalled();
   });
 
   it('health and whoami answer without sending anything', async () => {
     expect((await (await worker.call('GET', '/health')).json()).ok).toBe(true);
     const who = await (await worker.call('GET', '/whoami', { user: makeCaller() })).json();
     expect(who.identified).toBe(true);
-    expect(who.has.puter).toBe(true);
+    expect(who.has.everything).toBe(true);
     expect(JSON.stringify(who)).not.toContain('caller-token');
   });
 });

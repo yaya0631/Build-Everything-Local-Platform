@@ -412,11 +412,11 @@ test('Review panes fit a phone screen', async ({ page }, info) => {
   await page.screenshot({ path: info.outputPath('phone-thesaurus.png') });
 });
 
-/** A stand-in for Puter's AI: it reviews and translates deterministically, so the flows can be checked offline. */
+/** A stand-in for Everything's AI: it reviews and translates deterministically, so the flows can be checked offline. */
 async function fakeAi(page) {
   await page.addInitScript(() => {
     window.__prompts = [];
-    window.puter = { ai: { chat: async prompt => {
+    window.everything = { ai: { chat: async prompt => {
       window.__prompts.push(prompt);
       const items = [...prompt.matchAll(/^\[(\d+)\] (.*)$/gm)].map(m => m[2]);
       if (prompt.includes('proofreader')) return { message: { content: JSON.stringify(items.flatMap((text, i) => [...(text.includes('alot') ? [{ paragraph: i + 1, original: 'alot', suggestion: 'a lot', kind: 'grammar', reason: 'Two words.' }] : []), ...(text.includes('claim .') ? [{ paragraph: i + 1, original: 'claim .', suggestion: 'claim.', kind: 'punctuation', reason: 'No space before a period.' }] : [])])) } };

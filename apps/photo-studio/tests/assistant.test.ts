@@ -10,8 +10,8 @@ import { newPixelLayer } from '../src/model/pixel-layer';
 import { gridFromImage } from '../src/model/tiles';
 import { commands, registerCommand } from '../src/app/registry';
 import type { Editor } from '../src/editor';
-import type { ChatMessage, ChatReply } from '../src/imaging/ai/puter-ai';
-import { parseChatReply } from '../src/imaging/ai/puter-ai';
+import type { ChatMessage, ChatReply } from '../src/imaging/ai/everything-ai';
+import { parseChatReply } from '../src/imaging/ai/everything-ai';
 import { coerceArgs, coerceValue, matchOption, parseColor, parseNumber, type Param } from '../src/features/assistant/params';
 import { parseAspect, stepRect, adjustmentParams } from '../src/features/assistant/ops';
 import { buildPlan, commandArg, setArgs, stepDetail, validatePlan, type PlanEnv } from '../src/features/assistant/plan';
@@ -198,7 +198,7 @@ describe('Assistant plan validation', () => {
     // A selection made by an earlier step satisfies the crop.
     expect(s[7].problems).toEqual([]);
     expect(commandArg(s[8])).toEqual({ prefill: { prompt: 'a kite', via: 'assistant' } });
-    expect(stepDetail(s[8])).toContain('uses Puter AI credits');
+    expect(stepDetail(s[8])).toContain('uses Everything AI credits');
   });
   it('tracks the selection through steps and rechecks after edits', () => {
     const e = env({ hasSelection: true });
@@ -371,10 +371,10 @@ describe('Assistant consent text', () => {
   it('says the image preview is sent whenever it is', () => {
     const was = assistantSettings.seeImage;
     assistantSettings.seeImage = true;
-    expect(sentNote(true)).toBe('Sends your request, the document’s size and layer list and a small preview to Puter’s AI service (Puter account; may use credits).');
+    expect(sentNote(true)).toBe('Sends your request, the document’s size and layer list and a small preview to Everything’s AI service (Everything account; may use credits).');
     assistantSettings.seeImage = false;
     expect(sentNote(true)).not.toContain('preview');
-    expect(sentNote(false)).toBe('Sends your request to Puter’s AI service (Puter account; may use credits).');
+    expect(sentNote(false)).toBe('Sends your request to Everything’s AI service (Everything account; may use credits).');
     assistantSettings.seeImage = was;
   });
 });
@@ -520,7 +520,7 @@ describe('Assistant requests', () => {
     registerCommand({ id: 'test.needs-selection', label: 'Needs Selection', enabled: (ed) => !!ed.doc.selection, run: () => {} });
     // Signing in takes a while; meanwhile the other document is shown.
     let signedIn = false;
-    (globalThis as { puter?: unknown }).puter = { auth: { isSignedIn: () => signedIn, signIn: async () => ((e.session = b), (signedIn = true)) } };
+    (globalThis as { everything?: unknown }).everything = { auth: { isSignedIn: () => signedIn, signIn: async () => ((e.session = b), (signedIn = true)) } };
     const seen: string[] = [];
     setChat(async (messages) => (seen.push(JSON.stringify(messages)), proposal([{ action: 'test.needs-selection' }])));
     await ask(e as unknown as Editor, 'do it');
@@ -536,7 +536,7 @@ describe('Assistant requests', () => {
   });
   it('stop when their document is closed', async () => {
     const { e, a } = twoDocuments();
-    (globalThis as { puter?: unknown }).puter = { auth: { isSignedIn: () => true } };
+    (globalThis as { everything?: unknown }).everything = { auth: { isSignedIn: () => true } };
     let signal: AbortSignal | undefined;
     let release!: () => void;
     setChat(async (_m, opts) => {

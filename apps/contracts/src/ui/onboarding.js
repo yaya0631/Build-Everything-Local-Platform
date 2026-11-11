@@ -45,7 +45,7 @@ export function openOnboarding() {
     el('div.empty.onboard-hero', {},
       el('img.onboard-logo', { src: './icon-128.png', width: 72, height: 72, alt: '' }),
       el('h3', {}, 'Every agreement, one calm place'),
-      el('p', {}, 'Store contracts, get ahead of renewal deadlines, track who owes what to whom, and keep documents next to the people behind them. Everything lives in your own Puter cloud.')
+      el('p', {}, 'Store contracts, get ahead of renewal deadlines, track who owes what to whom, and keep documents next to the people behind them. Everything lives in your own Everything cloud.')
     ),
     el('ul.onboard-points', {},
       point('calendar-clock', 'Renewal and notice-period tracking that warns you before deadlines'),

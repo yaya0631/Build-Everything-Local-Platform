@@ -1,7 +1,7 @@
 // Audio export: the song or the current pattern to a WAV file, or one WAV
 // per mixer insert (stems) in a ZIP. Renders offline through
 // app.engine.render with a progress bar; closing the dialog cancels.
-// When signed in, a copy can also go to Exports in the app's Puter folder.
+// When signed in, a copy can also go to Exports in the app's Everything folder.
 
 import { h } from '../lib/dom.js';
 import { openDialog } from '../ui/dialog.js';
@@ -11,7 +11,7 @@ import { downloadBlob, safeFileName } from '../io/download.js';
 import { songLength, patternLength } from '../model/project.js';
 import { formatTime } from '../model/time.js';
 import { tempoMap } from '../engine/compile.js';
-import * as puter from '../storage/puter.js';
+import * as everything from '../storage/everything.js';
 
 export const EXPORT_RATES = [44100, 48000, 88200, 96000];
 /** Longest effect tail rendered after the end, in seconds (long reverbs decay up to 20 s). */
@@ -76,7 +76,7 @@ export async function openExportDialog(app, { stems = false } = {}) {
   const bits = h('select.select', { id: bitsId }, EXPORT_BITS.map((b) => h('option', { value: String(b.bits), selected: b.bits === fmt.bits }, b.label)));
   const tailId = id('tail');
   const tail = h('input', { type: 'checkbox', id: tailId, checked: fmt.tail !== false });
-  const signedIn = puter.isSignedIn();
+  const signedIn = everything.isSignedIn();
   const cloudId = id('cloud');
   const cloud = h('input', { type: 'checkbox', id: cloudId, checked: Boolean(fmt.cloudCopy) });
 
@@ -95,7 +95,7 @@ export async function openExportDialog(app, { stems = false } = {}) {
     range,
     h('div.form-grid', h('label', { for: rateId }, 'Sample rate'), rate, h('label', { for: bitsId }, 'Format'), bits),
     h('label.check', { for: tailId }, tail, h('span', 'Include effect tails (reverb and delay ring out)')),
-    signedIn ? h('label.check', { for: cloudId }, cloud, h('span', 'Also save a copy to Exports in your Puter cloud')) : null,
+    signedIn ? h('label.check', { for: cloudId }, cloud, h('span', 'Also save a copy to Exports in your Everything cloud')) : null,
     progress,
     status,
   );
@@ -189,13 +189,13 @@ async function runExport(app, { mode, rate, bits, tail, stems, inserts, signal, 
   }
   setProgress(1);
   downloadBlob(blob, filename);
-  if (cloudCopy && puter.isSignedIn()) {
-    setStatus('Saving a copy to Puter...');
+  if (cloudCopy && everything.isSignedIn()) {
+    setStatus('Saving a copy to Everything...');
     try {
-      const item = await puter.writeNew(puter.joinPath(await puter.appSubdir('Exports'), filename), blob);
-      app.notify(`Exported ${filename} (a copy is in Exports in your Puter cloud as ${item?.name || filename})`);
+      const item = await everything.writeNew(everything.joinPath(await everything.appSubdir('Exports'), filename), blob);
+      app.notify(`Exported ${filename} (a copy is in Exports in your Everything cloud as ${item?.name || filename})`);
     } catch (err) {
-      app.notify(`Downloaded ${filename}, but the Puter copy failed: ${puter.errorMessage(err)}`, { error: true });
+      app.notify(`Downloaded ${filename}, but the Everything copy failed: ${everything.errorMessage(err)}`, { error: true });
     }
   } else {
     app.notify(`Exported ${filename}`);

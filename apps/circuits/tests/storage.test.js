@@ -1,13 +1,13 @@
-// Storage, settings, history and sharing against an in-memory Puter mock.
+// Storage, settings, history and sharing against an in-memory Everything mock.
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { setPuterForTests } from '../src/app/puter.js';
+import { setEverythingForTests } from '../src/app/everything.js';
 import * as storage from '../src/app/storage.js';
 import { Settings, DEFAULTS } from '../src/app/settings.js';
 import { recordVersion, listVersions } from '../src/app/history.js';
 import { sharedWithMe } from '../src/app/share.js';
 
-/** Minimal in-memory puter.fs + kv with Unix-second timestamps like the real API. */
-function memoryPuter() {
+/** Minimal in-memory everything.fs + kv with Unix-second timestamps like the real API. */
+function memoryEverything() {
   const files = new Map();
   const kv = new Map();
   let clock = 1_700_000_000;
@@ -44,8 +44,8 @@ function memoryPuter() {
 }
 
 let mock;
-beforeEach(() => { localStorage.clear(); mock = memoryPuter(); setPuterForTests(mock); });
-afterEach(() => setPuterForTests(null));
+beforeEach(() => { localStorage.clear(); mock = memoryEverything(); setEverythingForTests(mock); });
+afterEach(() => setEverythingForTests(null));
 
 describe('cloud projects', () => {
   it('picks unique file names and lists projects newest first', async () => {
@@ -78,7 +78,7 @@ describe('cloud projects', () => {
   });
 
   it('uses local storage when signed out', async () => {
-    setPuterForTests(null);
+    setEverythingForTests(null);
     expect(await storage.newLocation('Amp', 'p9')).toEqual({ type: 'local', id: 'p9' });
   });
 });

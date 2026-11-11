@@ -116,7 +116,7 @@ it('recomputes independent automatic ranges after native XLSX round trips, dupli
     wb.deleteChart(sheet.id,sheet.charts[1].id);
     const zip = X.CFB.read(new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()),{type:'array'});
     const book = X.CFB.find(zip,'/xl/workbook.xml');
-    book.content = new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,''));
+    book.content = new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,''));
     book.size = book.content.length;
     wb = await workbookFromFile(X.CFB.write(zip,{type:'array',fileType:'zip'}),'automatic.xlsx');
   }

@@ -95,7 +95,7 @@ it.each([false, true])('retains replaced formats through XLSX export and reimpor
   const bytes = new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer());
   const zip = X.CFB.read(bytes, { type: 'array' }), part = X.CFB.find(zip, '/xl/workbook.xml');
   if (nativeOnly) {
-    part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+    part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
     part.size = part.content.length;
   }
   wb = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'copies.xlsx');

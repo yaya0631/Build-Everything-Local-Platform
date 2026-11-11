@@ -52,7 +52,7 @@ export const GROUP_BLOCKED_COMMANDS = new Set([
   'validation', 'insertCheckbox', 'insertDropdown', 'datePicker', 'circleInvalid',
   'condFormat', 'condFormatMenu', 'quickRule', 'clearRules', 'bands',
   'insertSparklines', 'editSparkline', 'groupSparklines', 'clearSparklines',
-  'insertChart', 'quickChart', 'chart', 'insertChartSheet', 'insertTextBox', 'smartArt', 'insertImage', 'insertImagePuter', 'insertImageUrl',
+  'insertChart', 'quickChart', 'chart', 'insertChartSheet', 'insertTextBox', 'smartArt', 'insertImage', 'insertImageEverything', 'insertImageUrl',
   'shapesMenu', 'insertShape', 'iconsDialog', 'insertIcons', 'wordArtMenu', 'insertEquation', 'drawTool',
   'note', 'deleteNote', 'link', 'newComment', 'replyComment', 'deleteComment',
   'protectSheet', 'protectRanges', 'freeze', 'split', 'renameSheet', 'moveOrCopySheet', 'copySheetTo', 'duplicateSheet',

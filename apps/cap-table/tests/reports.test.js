@@ -599,7 +599,7 @@ describe('form3921Report', () => {
 describe('reporting assumptions in the store', () => {
   function liveStore() {
     const kv = new Map();
-    globalThis.puter = {
+    globalThis.everything = {
       kv: {
         get: async (k) => (kv.has(k) ? kv.get(k) : null),
         set: async (k, v) => { kv.set(k, v); return true; },

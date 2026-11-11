@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { createStore } from '../src/lib/store.js';
 import { createEmailer, digest, describeResult, failureMessage } from '../src/lib/emailer.js';
-import { makeFakePuter } from './helpers/fake-puter.js';
+import { makeFakeEverything } from './helpers/fake-everything.js';
 
 const PDF = new Uint8Array([0x25, 0x50, 0x44, 0x46]);
 const LINK = `http://doc-sign-abc12.localhost:8443/sign/${'a'.repeat(40)}`;
@@ -44,11 +44,11 @@ describe('emailer', () => {
   let doc;
 
   beforeEach(async () => {
-    p = makeFakePuter();
-    store = createStore({ getPuter: () => p });
+    p = makeFakeEverything();
+    store = createStore({ getEverything: () => p });
     await store.init();
     await store.updateSettings({ fullName: 'Alex Rivera' });
-    emailer = createEmailer({ store, getPuter: () => p });
+    emailer = createEmailer({ store, getEverything: () => p });
     const created = await store.createDoc({ title: 'NDA', fileName: 'nda.pdf', pdfBytes: PDF, pageCount: 1 });
     await store.patchDoc(created.id, {
       signers: [

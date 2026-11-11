@@ -7,14 +7,14 @@
  *                      formats/scales with suffixes, zip or separate files
  *   Export Selection   the same panel for the selected artwork
  *   Print              artboard range and scaling, then the browser's print
- *   Place              choose the source (device or Puter) when signed in
+ *   Place              choose the source (device or Everything) when signed in
  */
 import { UserError } from '../../lib/errors.js';
 import { h } from '../../lib/dom.js';
 import { icon } from '../../ui/icons.js';
 import { FORMATS, allFormats, parseRange, artworkBounds, renderFile, outlinesFor } from './jobs.js';
 import { exportFormats } from './hooks.js';
-import { canSaveToPuter, deliverFiles, safeFileName } from './deliver.js';
+import { canSaveToEverything, deliverFiles, safeFileName } from './deliver.js';
 import { thumbnail } from './raster.js';
 import { placeFile } from './place.js';
 import { pickDeviceFiles, PLACE_ACCEPT } from './kinds.js';
@@ -67,8 +67,8 @@ function setPref(app, key, value) {
 }
 
 function destinationField(app, value) {
-  if (!canSaveToPuter(app)) return null;
-  return radios(fid('dest'), [{ value: 'device', label: 'This device (download)' }, { value: 'puter', label: 'Puter' }], value === 'puter' ? 'puter' : 'device', 'Save to');
+  if (!canSaveToEverything(app)) return null;
+  return radios(fid('dest'), [{ value: 'device', label: 'This device (download)' }, { value: 'everything', label: 'Everything' }], value === 'everything' ? 'everything' : 'device', 'Save to');
 }
 
 // ---------------------------------------------------------------- format options
@@ -532,8 +532,8 @@ export async function exportScreensDialog(app, mode = 'artboards') {
 
 // ---------------------------------------------------------------- place
 
-async function pickPuterFiles(app) {
-  const p = app.puter.ui.showOpenFilePicker({ multiple: true, accept: PLACE_ACCEPT.split(',').filter((x) => x.startsWith('.')) });
+async function pickEverythingFiles(app) {
+  const p = app.everything.ui.showOpenFilePicker({ multiple: true, accept: PLACE_ACCEPT.split(',').filter((x) => x.startsWith('.')) });
   // Resolves undefined on cancel where the SDK supports it (the plain promise never settles then).
   const picked = await (p && p.undefinedOnCancel ? p.undefinedOnCancel : p);
   const items = Array.isArray(picked) ? picked : picked ? [picked] : [];
@@ -544,8 +544,8 @@ async function pickPuterFiles(app) {
     const ext = name.split('.').pop().toLowerCase();
     const type = blob.type || (ext === 'svg' ? 'image/svg+xml' : ext === 'jpg' ? 'image/jpeg' : ext === 'pdf' || ext === 'ai' ? 'application/pdf' : ext === 'eps' || ext === 'ps' ? 'application/postscript' : ext === 'dxf' ? 'application/dxf' : `image/${ext === 'tif' ? 'tiff' : ext}`);
     const file = new File([blob], name, { type });
-    // Images placed from Puter stay linked to their file (Links panel: Update Link, Edit Original).
-    if (it.path) file.puterPath = it.path;
+    // Images placed from Everything stay linked to their file (Links panel: Update Link, Edit Original).
+    if (it.path) file.everythingPath = it.path;
     files.push(file);
   }
   return files;
@@ -555,11 +555,11 @@ export async function placeCommand(app) {
   const editor = app.editor;
   if (!editor) return;
   let source = 'device';
-  if (canSaveToPuter(app) && app.puter.ui.showOpenFilePicker) {
+  if (canSaveToEverything(app) && app.everything.ui.showOpenFilePicker) {
     source = await app.dialogs.open({
       title: 'Place',
       className: 'io-dialog',
-      body: h('div.io-place', h('p.dialog-message', 'Place artwork (SVG, PDF, EPS, DXF) or an image (PNG, JPEG, WebP, GIF, TIFF, BMP, PSD) in the center of the view.'), h('div.io-place-buttons', h('button.btn.block', { type: 'button', 'data-src': 'device' }, icon('file-down', 16), 'From This Device...'), h('button.btn.block', { type: 'button', 'data-src': 'puter' }, icon('folder-open', 16), 'From Puter...'))),
+      body: h('div.io-place', h('p.dialog-message', 'Place artwork (SVG, PDF, EPS, DXF) or an image (PNG, JPEG, WebP, GIF, TIFF, BMP, PSD) in the center of the view.'), h('div.io-place-buttons', h('button.btn.block', { type: 'button', 'data-src': 'device' }, icon('file-down', 16), 'From This Device...'), h('button.btn.block', { type: 'button', 'data-src': 'everything' }, icon('folder-open', 16), 'From Everything...'))),
       buttons: [{ label: 'Cancel', value: null }],
       onOpen: ({ content, close }) => {
         for (const b of content.querySelectorAll('[data-src]')) b.addEventListener('click', () => close(b.dataset.src));
@@ -569,7 +569,7 @@ export async function placeCommand(app) {
   }
   let files;
   try {
-    files = source === 'puter' ? await pickPuterFiles(app) : await pickDeviceFiles();
+    files = source === 'everything' ? await pickEverythingFiles(app) : await pickDeviceFiles();
   } catch (err) {
     app.notify(err?.message || 'Could not read the file.', { error: true });
     return;

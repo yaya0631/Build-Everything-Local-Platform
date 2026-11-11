@@ -1,5 +1,5 @@
 /**
- * Rolling automatic backups to the user's own Puter cloud.
+ * Rolling automatic backups to the user's own Everything cloud.
  *
  * The whole book of business lives in a handful of KV keys; the trash
  * covers deletes for 30 days, but a corrupt write or a bad bulk edit
@@ -56,7 +56,7 @@ function isMissingDir(err) {
 export async function listBackups() {
   let items;
   try {
-    items = await puter.fs.readdir(DIR);
+    items = await everything.fs.readdir(DIR);
   } catch (err) {
     if (isMissingDir(err)) return [];
     throw err;
@@ -74,7 +74,7 @@ export async function listBackups() {
 
 /** The stored JSON of one backup, parsed. */
 export async function readBackup(path) {
-  const blob = await puter.fs.read(path);
+  const blob = await everything.fs.read(path);
   const text = typeof blob === 'string' ? blob : await blob.text();
   return JSON.parse(text);
 }
@@ -88,13 +88,13 @@ export async function writeBackup(store) {
   const at = Date.now();
   const name = backupName(at);
   const payload = JSON.stringify(store.exportAll());
-  await puter.fs.write(`${DIR}/${name}`, payload, { createMissingParents: true });
+  await everything.fs.write(`${DIR}/${name}`, payload, { createMissingParents: true });
   // Best-effort, and that now includes the listing: the backup is already
   // written, so a folder we can't read is no reason to report a failure.
   const all = await listBackups().catch(() => []);
   for (const old of all.slice(BACKUP_KEEP)) {
     try {
-      await puter.fs.delete(old.path);
+      await everything.fs.delete(old.path);
     } catch {}
   }
   return { name, path: `${DIR}/${name}`, at, size: payload.length };

@@ -1,6 +1,6 @@
 /**
  * Owner side of Share for review: render a review copy with the exporter,
- * save it in the owner's Puter files (video-studio/reviews/<project>/),
+ * save it in the owner's Everything files (video-studio/reviews/<project>/),
  * then publish it on the owner's review worker as a new version.
  */
 import { exportProject, detectCapabilities, outputSize, CONTAINERS } from '../engine/exporter.js';
@@ -46,10 +46,10 @@ export function reviewFilePath(projectId, clientId, ext, now = new Date()) {
  * 'server', 'render' ({ fraction }), 'save', 'publish'. Returns
  * { server, review, version }.
  */
-export async function shareForReview({ puter, project, library, scope = 'all', title, signal, onPhase = () => {}, deps = {} }) {
+export async function shareForReview({ everything, project, library, scope = 'all', title, signal, onPhase = () => {}, deps = {} }) {
   const d = { ensureWorker, call, exportProject, detectCapabilities, ...deps };
   onPhase('server');
-  const server = await d.ensureWorker(puter, { progress: (text) => onPhase('server', { text }) });
+  const server = await d.ensureWorker(everything, { progress: (text) => onPhase('server', { text }) });
   const { project: source, range } = reviewSource(project, scope);
   const duration = projectDuration(source);
   if (duration <= 0) throw new Error('Add something to the timeline first.');
@@ -64,10 +64,10 @@ export async function shareForReview({ puter, project, library, scope = 'all', t
     onPhase('save', { bytes: result.blob.size });
     const clientId = randomId('pub');
     const ext = CONTAINERS[settings.format]?.ext || 'mp4';
-    const item = await puter.fs.write(reviewFilePath(project.id, clientId, ext), result.blob, { overwrite: false, dedupeName: true, createMissingParents: true });
+    const item = await everything.fs.write(reviewFilePath(project.id, clientId, ext), result.blob, { overwrite: false, dedupeName: true, createMissingParents: true });
     if (signal?.aborted) {
       // Cancelled while saving: nothing is published, and the copy isn't left behind.
-      await puter.fs.delete(item.path).catch(() => {});
+      await everything.fs.delete(item.path).catch(() => {});
       throw new DOMException('Canceled', 'AbortError');
     }
     onPhase('publish');
@@ -77,11 +77,11 @@ export async function shareForReview({ puter, project, library, scope = 'all', t
     const input = { op: 'review.publish', clientId, projectId: project.id, title: cleanTitle(title || project.name), video };
     let published;
     try {
-      published = await d.call(puter, server, input);
+      published = await d.call(everything, server, input);
     } catch (err) {
       // The publish is keyed by clientId, so one retry after a lost answer is safe.
       if (err.status) throw err;
-      published = await d.call(puter, server, input);
+      published = await d.call(everything, server, input);
     }
     return { server, review: published.review, version: published.version };
   } finally {

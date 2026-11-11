@@ -1,13 +1,13 @@
 import { cleanName, MIME, validateImportSize } from "./model.js";
 export const FOLDER = "Presentations";
 const sdk = () => {
-  if (!globalThis.puter)
+  if (!globalThis.everything)
     throw new Error(
-      "Puter is unavailable. Check your connection and try again.",
+      "Everything is unavailable. Check your connection and try again.",
     );
-  return globalThis.puter;
+  return globalThis.everything;
 };
-export const isApp = () => globalThis.puter?.env === "app";
+export const isApp = () => globalThis.everything?.env === "app";
 export const canSignOut = () => !isApp();
 export async function user() {
   try {
@@ -35,12 +35,12 @@ export async function signIn() {
       });
     if (error?.error === "popup_blocked")
       throw new Error(
-        "The browser blocked the Puter sign-in window. Allow pop-ups for this site and try again.",
+        "The browser blocked the Everything sign-in window. Allow pop-ups for this site and try again.",
         { cause: error },
       );
     if (error instanceof Error) throw error;
     throw new Error(
-      error?.msg || error?.message || "Puter sign-in failed. Please try again.",
+      error?.msg || error?.message || "Everything sign-in failed. Please try again.",
       { cause: error },
     );
   }
@@ -50,10 +50,10 @@ export async function signOut() {
   if (!canSignOut()) return;
   await sdk().auth.signOut();
 }
-// On the open web the SDK opens Puter's sign-in before any cloud call made
+// On the open web the SDK opens Everything's sign-in before any cloud call made
 // without a session, then reports the user here.
 export function onAuth(handler) {
-  if (globalThis.puter) globalThis.puter.onAuth = handler;
+  if (globalThis.everything) globalThis.everything.onAuth = handler;
 }
 export async function listFiles() {
   try {
@@ -101,7 +101,7 @@ export function inAppFolder(path) {
   const parts = String(path || "").split("/");
   return parts.length >= 2 && parts.at(-2) === FOLDER;
 }
-// A file's modification time in milliseconds (Puter reports seconds), or
+// A file's modification time in milliseconds (Everything reports seconds), or
 // null when it is not reported.
 export function modifiedMs(item) {
   const m = item?.modified ?? item?.created;
@@ -118,7 +118,7 @@ export function sizeOf(item) {
 }
 // Looking a file up is what tells a save whether the file changed, moved, or
 // went away since it was opened. An SDK without it saves as before.
-export const canStat = () => typeof globalThis.puter?.fs?.stat === "function";
+export const canStat = () => typeof globalThis.everything?.fs?.stat === "function";
 // The file at `path` (null when there is none).
 export async function stat(path) {
   try {
@@ -174,21 +174,21 @@ export async function deleteFile(path) {
   return sdk().fs.delete(path);
 }
 export const canPickFiles = () =>
-  typeof globalThis.puter?.ui?.showOpenFilePicker === "function";
+  typeof globalThis.everything?.ui?.showOpenFilePicker === "function";
 export const canSaveFiles = () =>
-  typeof globalThis.puter?.ui?.showSaveFilePicker === "function";
-// Puter's pickers never settle when they are cancelled; the SDK hangs a
+  typeof globalThis.everything?.ui?.showSaveFilePicker === "function";
+// Everything's pickers never settle when they are cancelled; the SDK hangs a
 // promise on them that does, with undefined, and older SDKs leave the
 // original to wait.
 const settleOnCancel = (pending) => pending?.undefinedOnCancel ?? pending;
-// Puter's Open dialog: the chosen file, or null when it was cancelled.
+// Everything's Open dialog: the chosen file, or null when it was cancelled.
 export async function pickFile({ accept = [".pptx"] } = {}) {
   const item = await settleOnCancel(
     sdk().ui.showOpenFilePicker({ multiple: false, accept }),
   );
   return (Array.isArray(item) ? item[0] : item) || null;
 }
-// Puter's Save dialog, which writes `blob` where the person chooses: the file
+// Everything's Save dialog, which writes `blob` where the person chooses: the file
 // it wrote, or null when it was cancelled.
 export async function saveFileAs(blob, suggestedName) {
   const item = await settleOnCancel(
@@ -196,11 +196,11 @@ export async function saveFileAs(blob, suggestedName) {
   );
   return item || null;
 }
-// Inside the Puter desktop a presentation's first file, and a copy, go where
-// the person chooses in Puter's Save dialog. Elsewhere they go to the app's
+// Inside the Everything desktop a presentation's first file, and a copy, go where
+// the person chooses in Everything's Save dialog. Elsewhere they go to the app's
 // Presentations folder, a relative path the SDK keeps under the app's data.
 export const asksWhereToSave = () => isApp() && canSaveFiles();
-// Puter's Save dialog never answers when the desktop fails to write the file.
+// Everything's Save dialog never answers when the desktop fails to write the file.
 // A save made while one is open waits for that one, under the same `key`,
 // rather than opening another; once the app has the focus back (the desktop
 // holds it while its dialog is up) the dialog is gone, answered or not, and
@@ -223,27 +223,27 @@ export function oneDialog(key, open) {
 // handed on, so a folder or another kind of file can be explained.
 export function onLaunch(handler) {
   try {
-    globalThis.puter?.ui?.onLaunchedWithItems?.((items) => {
+    globalThis.everything?.ui?.onLaunchedWithItems?.((items) => {
       const list = (Array.isArray(items) ? items : [items]).filter(Boolean);
       if (list.length) handler(list);
     });
   } catch {}
 }
-// The Puter desktop window's title follows the open presentation.
+// The Everything desktop window's title follows the open presentation.
 export function setWindowTitle(title) {
   if (!isApp()) return;
   try {
-    globalThis.puter?.ui?.setWindowTitle?.(title)?.catch?.(() => {});
+    globalThis.everything?.ui?.setWindowTitle?.(title)?.catch?.(() => {});
   } catch {}
 }
-// Take over the Puter window's close button: the window stays open until
+// Take over the Everything window's close button: the window stays open until
 // exitApp(). False where the window could then never close.
 export function onWindowClose(handler) {
-  const ui = globalThis.puter?.ui;
+  const ui = globalThis.everything?.ui;
   if (
     !isApp() ||
     typeof ui?.onWindowClose !== "function" ||
-    typeof globalThis.puter?.exit !== "function"
+    typeof globalThis.everything?.exit !== "function"
   )
     return false;
   try {
@@ -255,7 +255,7 @@ export function onWindowClose(handler) {
 }
 export function exitApp() {
   try {
-    globalThis.puter?.exit?.();
+    globalThis.everything?.exit?.();
   } catch {}
 }
 export async function download(bytes, name) {
@@ -264,9 +264,9 @@ export async function download(bytes, name) {
     `${cleanName(name, { stripExtension: false, maxLength: Infinity })}.pptx`,
   );
 }
-// A file the app exports is downloaded to this device, inside the Puter
+// A file the app exports is downloaded to this device, inside the Everything
 // desktop too (its app frames allow downloads): exporting is the reverse of
-// importing from this device, and Save is what puts a file in Puter.
+// importing from this device, and Save is what puts a file in Everything.
 export async function downloadBlob(blob, filename) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -288,12 +288,12 @@ export class SaveQueue {
     return next;
   }
 }
-// Puter's AI answers the assistant. It is there wherever the SDK loaded; the
+// Everything's AI answers the assistant. It is there wherever the SDK loaded; the
 // SDK asks for a sign-in itself on the first request made without one.
-export const canAI = () => !!globalThis.puter?.ai?.chat;
-// One reply from Puter's AI to a conversation, as it arrives: yields
+export const canAI = () => !!globalThis.everything?.ai?.chat;
+// One reply from Everything's AI to a conversation, as it arrives: yields
 // { type: "text", text } and { type: "tool", id, name, input } for each
-// function the model calls. `messages` take the OpenAI shape Puter accepts
+// function the model calls. `messages` take the OpenAI shape Everything accepts
 // (system, user, assistant with tool_calls, tool). A reply the SDK hands back
 // whole rather than streamed is yielded in the same pieces. A failure throws
 // an Error carrying the service's own message and code where it gives them.
@@ -301,7 +301,7 @@ export async function* aiChatStream(
   messages,
   { model, tools, maxTokens } = {},
 ) {
-  const ai = globalThis.puter?.ai;
+  const ai = globalThis.everything?.ai;
   if (!ai?.chat) throw new Error("AI is not available here.");
   const options = {
     stream: true,

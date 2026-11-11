@@ -38,7 +38,7 @@ it.each(['xlsx', 'ods'])('preserves all comparisons and candidate validity throu
   let blob = await (format === 'xlsx' ? workbookToXlsx(wb) : workbookToOds(wb)), data = await blob.arrayBuffer();
   if (format === 'xlsx') {
     const zip = X.CFB.read(new Uint8Array(data), { type: 'array' }), part = X.CFB.find(zip, '/xl/workbook.xml');
-    part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')); part.size = part.content.length;
+    part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')); part.size = part.content.length;
     data = X.CFB.write(zip, { type: 'array', fileType: 'zip' });
   }
   const back = await workbookFromFile(data, `comparisons.${format}`), out = back.activeSheetId;

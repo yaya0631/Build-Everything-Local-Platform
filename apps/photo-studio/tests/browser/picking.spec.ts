@@ -8,7 +8,7 @@ const selectedRows = (page: Page) => page.locator('#layers .layer-row.selected')
 const fixtureX = (page: Page) => page.evaluate(() => window.photoStudio.sessions[0].doc.layers.find((l) => l.name === 'A')!.transform.x);
 
 test.beforeEach(async ({ page }) => {
-  await boot(page, 'default', 'window.puter={};');
+  await boot(page, 'default', 'window.everything={};');
 });
 
 for (const backend of ['default', 'WebGL']) {

@@ -70,7 +70,7 @@ export function writeGltf(scene: ExportScene, opts: GltfWriteOptions): { bytes: 
   const Dinv = D.clone().invert();
   const bin = new BinWriter();
   const json: Json = {
-    asset: { version: '2.0', generator: opts.generator ?? 'Puter 3D glTF exporter' },
+    asset: { version: '2.0', generator: opts.generator ?? 'Everything 3D glTF exporter' },
     scene: 0,
     scenes: [{ name: scene.doc.scene.name, nodes: [] as number[] }],
     nodes: [] as Json[],

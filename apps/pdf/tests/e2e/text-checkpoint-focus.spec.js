@@ -21,7 +21,7 @@ for (const action of ['move', 'resize'])
     test(`text ${action} checkpoint ${moved ? 'preserves newer focus' : 'restores handle focus'}`, async ({
       page,
     }) => {
-      await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
+      await page.route('**/sdk/everything.js', (route) => route.fulfill({ body: '' }));
       await page.goto('/#library');
       const doc = await PDFDocument.create();
       doc

@@ -25,7 +25,7 @@ const actOn = async (s, label) => {
   [...rowFor(s).querySelectorAll('.row-action')].find((b) => (b.getAttribute('aria-label') || '').startsWith(label)).click();
   await settle();
 };
-const SUBJECT = 'Welcome to your Puter mailbox';
+const SUBJECT = 'Welcome to your Everything mailbox';
 beforeEach(() => {
   root = document.createElement('div');
   document.body.append(root);

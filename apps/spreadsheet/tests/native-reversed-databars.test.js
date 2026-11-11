@@ -28,7 +28,7 @@ it.each(['automatic','middle'])('%s continues to normalize descending bounds',ba
 const look=(w,r,c=2)=>w.conditionalStyle(w.activeSheetId,r,c,w.getValue(w.activeSheetId,r,c));
 const nativeSave=async w=>{
  const zip=X.CFB.read(new Uint8Array(await(await workbookToXlsx(w)).arrayBuffer()),{type:'array'}),p=X.CFB.find(zip,'/xl/workbook.xml');
- p.content=new TextEncoder().encode(new TextDecoder().decode(p.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,''));p.size=p.content.length;
+ p.content=new TextEncoder().encode(new TextDecoder().decode(p.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,''));p.size=p.content.length;
  return workbookFromFile(X.CFB.write(zip,{type:'array',fileType:'zip'}),'descending-bars.xlsx');
 };
 it.each(['num','formula'])('preserves descending %s stops through native saves, copies and live edits',async type=>{

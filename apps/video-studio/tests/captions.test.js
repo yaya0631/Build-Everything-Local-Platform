@@ -211,19 +211,19 @@ describe('buildCaptionClips', () => {
 
 describe('Generate captions in the Captions tab', () => {
   afterEach(() => {
-    delete globalThis.puter;
+    delete globalThis.everything;
     delete globalThis.__vsFakeTranscript;
     document.body.replaceChildren();
   });
 
   it('Generate adds captions from the speech', async () => {
     setPref('captionOpts', {});
-    globalThis.puter = { ai: {} };
+    globalThis.everything = { ai: {} };
     globalThis.__vsFakeTranscript = async () => [W('Hello', 0.2, 0.5), W('there', 0.6, 0.9)];
     const p = fixture();
     onMain(p, clip('video', 0, 6));
     const store = new EditorStore(p);
-    const ctx = { store, player: null, library: { backend: { kind: 'puter' } }, account: {} };
+    const ctx = { store, player: null, library: { backend: { kind: 'everything' } }, account: {} };
     ctx.actions = createActions(ctx);
     const tab = captionsTab(ctx);
     document.body.append(tab.el);
@@ -242,19 +242,19 @@ describe('Generate captions in the Captions tab', () => {
 
 describe('Transcript in the Captions tab', () => {
   afterEach(() => {
-    delete globalThis.puter;
+    delete globalThis.everything;
     delete globalThis.__vsFakeTranscript;
     document.body.replaceChildren();
   });
 
   it('keeps words on their media after a timeline edit', async () => {
     setPref('captionOpts', {});
-    globalThis.puter = { ai: {} };
+    globalThis.everything = { ai: {} };
     globalThis.__vsFakeTranscript = async () => [W('Hello', 0.5, 1), W('there', 4.5, 5)];
     const p = fixture();
     const [first] = onMain(p, clip('video', 0, 4), clip('video', 4, 4, { in: s(4) }));
     const store = new EditorStore(p);
-    const ctx = { store, player: null, library: { backend: { kind: 'puter' } }, account: {} };
+    const ctx = { store, player: null, library: { backend: { kind: 'everything' } }, account: {} };
     ctx.actions = createActions(ctx);
     const tab = captionsTab(ctx);
     document.body.append(tab.el);

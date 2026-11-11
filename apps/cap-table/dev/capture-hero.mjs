@@ -1,6 +1,6 @@
 /** Capture the actual sample-data UI for the public hero. Start Vite first.
  * Run with PLAYWRIGHT_MODULE=/path/to/playwright node dev/capture-hero.mjs.
- * Uses only /mock.html and its in-memory storage, never a real Puter account.
+ * Uses only /mock.html and its in-memory storage, never a real Everything account.
  */
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';

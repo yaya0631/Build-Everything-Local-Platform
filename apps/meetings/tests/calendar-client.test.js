@@ -2,7 +2,7 @@ import { describe, it, expect, afterEach, vi } from 'vitest';
 import { createCalendar, CalendarApiError, LIST_LIMIT } from '../src/lib/calendar.js';
 
 /*
- * The Calendar app's API, as we call it: launched headless inside the Puter
+ * The Calendar app's API, as we call it: launched headless inside the Everything
  * desktop, one `list` for the meetings in a window, closed again when idle.
  */
 
@@ -48,7 +48,7 @@ function makeService({ answer = null, ready = true, scope = { has: ['meeting'] }
       service.closed = true;
     },
   };
-  const puter = {
+  const everything = {
     env: 'app',
     ui: {
       launchApp: vi.fn(async (opts) => {
@@ -60,30 +60,30 @@ function makeService({ answer = null, ready = true, scope = { has: ['meeting'] }
       }),
     },
   };
-  return { service, connection, puter };
+  return { service, connection, everything };
 }
 
 function harness(options = {}, clientOptions = {}) {
-  const { service, puter } = makeService(options);
+  const { service, everything } = makeService(options);
   const calendar = createCalendar({
-    getPuter: () => puter,
+    getEverything: () => everything,
     launchTimeoutMs: 60,
     requestTimeoutMs: 60,
     idleCloseMs: 20,
     ...clientOptions,
   });
   clients.push(calendar);
-  return { service, puter, calendar };
+  return { service, everything, calendar };
 }
 
 describe('calendar client — where it works at all', () => {
-  it('is inert outside the Puter desktop, and with no SDK', async () => {
-    const web = createCalendar({ getPuter: () => ({ env: 'web', ui: { launchApp: vi.fn() } }) });
+  it('is inert outside the Everything desktop, and with no SDK', async () => {
+    const web = createCalendar({ getEverything: () => ({ env: 'web', ui: { launchApp: vi.fn() } }) });
     clients.push(web);
     expect(web.supported()).toBe(false);
     await expect(web.listMeetings({ from: 0, to: 1 })).rejects.toThrow();
 
-    const none = createCalendar({ getPuter: () => undefined });
+    const none = createCalendar({ getEverything: () => undefined });
     clients.push(none);
     expect(none.supported()).toBe(false);
   });
@@ -146,8 +146,8 @@ describe('calendar client — when the Calendar is not there', () => {
   });
 
   it('fails fast when the service closes before it is ready', async () => {
-    const { service, puter } = makeService({ ready: false });
-    const calendar = createCalendar({ getPuter: () => puter, launchTimeoutMs: 5000, retryAfterMs: 1000 });
+    const { service, everything } = makeService({ ready: false });
+    const calendar = createCalendar({ getEverything: () => everything, launchTimeoutMs: 5000, retryAfterMs: 1000 });
     clients.push(calendar);
     const pending = calendar.listMeetings({ from: 0, to: 1 });
     await sleep(0);
@@ -163,9 +163,9 @@ describe('calendar client — when the Calendar is not there', () => {
 
   it('doubles the backoff per failure, up to a ceiling', async () => {
     let t = 0;
-    const { puter } = makeService({ ready: false });
+    const { everything } = makeService({ ready: false });
     const calendar = createCalendar({
-      getPuter: () => puter,
+      getEverything: () => everything,
       now: () => t,
       launchTimeoutMs: 10,
       retryAfterMs: 100,

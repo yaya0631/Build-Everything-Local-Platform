@@ -6,7 +6,7 @@
  *   recovery/<id>.vstudio      the document (same format as a saved file)
  *
  * Several backends can be given: writes go to the first that works (the
- * Puter appdata folder when signed in, then this browser's OPFS when the
+ * Everything appdata folder when signed in, then this browser's OPFS when the
  * cloud is unreachable), and listing merges all of them. Operations are
  * serialized so the index read-modify-write never races.
  */

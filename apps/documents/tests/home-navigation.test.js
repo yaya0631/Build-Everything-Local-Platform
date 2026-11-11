@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { homeView } from '../src/views/home.js';
-import * as P from '../src/lib/puter.js';
+import * as P from '../src/lib/everything.js';
 import { closeMenu } from '../src/ui/menu.js';
 import { closeAllModals } from '../src/ui/modal.js';
 
@@ -25,7 +25,7 @@ const leave = () => { view.destroy(); view.el.remove(); };
 
 it('ignores a cloud picker result after leaving the document list', async () => {
   const picked = pending(); vi.spyOn(P, 'pickFile').mockReturnValue(picked.promise);
-  [...view.el.querySelectorAll('button')].find((b) => b.textContent === 'Open from Puter').click();
+  [...view.el.querySelectorAll('button')].find((b) => b.textContent === 'Open from Everything').click();
   leave(); picked.resolve({ path: 'Documents/Old selection.docx' });
   await vi.advanceTimersByTimeAsync(0);
   expect(openPath).not.toHaveBeenCalled();
@@ -101,7 +101,7 @@ it.each(['stale listing', 'listing error', 'earlier listing error', 'failed dele
 
 it('still opens a cloud selection while the document list is active', async () => {
   vi.spyOn(P, 'pickFile').mockResolvedValue({ path: 'Documents/Selected.docx' });
-  [...view.el.querySelectorAll('button')].find((b) => b.textContent === 'Open from Puter').click();
+  [...view.el.querySelectorAll('button')].find((b) => b.textContent === 'Open from Everything').click();
   await vi.advanceTimersByTimeAsync(0);
   expect(openPath).toHaveBeenCalledWith('Documents/Selected.docx');
 });
@@ -109,7 +109,7 @@ it('still opens a cloud selection while the document list is active', async () =
 it('duplicates a document without joining the room of a shared one deleted elsewhere under the copy’s name', async () => {
   const { rememberRoom, rememberedRoom } = await import('../src/collab/room-memory.js');
   const kv = new Map();
-  vi.stubGlobal('puter', { kv: { get: async (k) => kv.get(k) ?? null, set: async (k, v) => { kv.set(k, v); }, del: async (k) => { kv.delete(k); } } });
+  vi.stubGlobal('everything', { kv: { get: async (k) => kv.get(k) ?? null, set: async (k, v) => { kv.set(k, v); }, del: async (k) => { kv.delete(k); } } });
   const original = { name: 'Plan.docx', path: 'Documents/Plan.docx' };
   P.listFiles.mockResolvedValue([original]);
   await view.reload();

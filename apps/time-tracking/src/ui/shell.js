@@ -11,7 +11,7 @@ import { initShortcuts } from './shortcuts.js';
 import { store } from '../lib/store.js';
 import { wipeSampleData } from '../lib/sample.js';
 import { fmtTimer, todayISO } from '../lib/time.js';
-import { isPuterApp } from '../lib/env.js';
+import { isEverythingApp } from '../lib/env.js';
 import { timerView } from '../views/timer.js';
 import { timesheetView } from '../views/timesheet.js';
 import { reportsView } from '../views/reports.js';
@@ -130,7 +130,7 @@ export function mountShell(appRoot) {
   }
 
   /* Sidebar (desktop) */
-  const username = store.user?.username || 'Puter user';
+  const username = store.user?.username || 'Everything user';
   const sidebarNav = el('div', { style: { display: 'contents' } });
   const sidebar = el('nav.sidebar', { 'aria-label': 'Main navigation' },
     el('div.brand', {},
@@ -146,8 +146,8 @@ export function mountShell(appRoot) {
     el('div.sidebar-user', {},
       el('span.user-avatar', {}, username.charAt(0).toUpperCase()),
       el('span.name', { title: username }, username),
-      // Inside Puter, the platform owns the session; no sign-out here.
-      !isPuterApp() && el('button.icon-btn', {
+      // Inside Everything, the platform owns the session; no sign-out here.
+      !isEverythingApp() && el('button.icon-btn', {
         html: icon('logout', 18, 2),
         'aria-label': 'Sign out',
         title: 'Sign out',

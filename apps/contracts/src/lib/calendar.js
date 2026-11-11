@@ -1,7 +1,7 @@
 /**
  * Turning the contract book into a calendar the user's own calendar app can
  * read: a downloadable .ics, and an optional subscribable feed hosted from
- * their own Puter storage.
+ * their own Everything storage.
  *
  * The feed is the better version of the same thing — a download is a snapshot,
  * a subscription keeps up — but it is also a URL that anyone holding it can
@@ -64,17 +64,17 @@ export function calendarFilename(title = null) {
 /* ------------------------------------------------------------------ */
 
 export function feedSupported() {
-  return typeof puter !== 'undefined' && !!puter.hosting?.create;
+  return typeof everything !== 'undefined' && !!everything.hosting?.create;
 }
 
 async function writeFeedFile() {
   const { text, count } = bookCalendar();
-  await puter.fs.write(FEED_PATH, text, { createMissingParents: true });
+  await everything.fs.write(FEED_PATH, text, { createMissingParents: true });
   return count;
 }
 
 /**
- * Publish the feed: write the file, then point a Puter subdomain at the folder
+ * Publish the feed: write the file, then point an Everything subdomain at the folder
  * it lives in. Returns the URL to paste into a calendar app.
  */
 export async function publishFeed() {
@@ -83,7 +83,7 @@ export async function publishFeed() {
   // web, so it is a real secret, not a readable id.
   const subdomain = `cm-${randomToken()}`;
   await writeFeedFile();
-  const site = await puter.hosting.create(subdomain, FEED_DIR);
+  const site = await everything.hosting.create(subdomain, FEED_DIR);
   const name = site?.subdomain || subdomain;
   const url = `http://${name}.localhost:8443/${FEED_FILE}`;
   await store.updateSettings({ feed: { subdomain: name, url, createdAt: Date.now() } });
@@ -125,8 +125,8 @@ export async function revokeFeed() {
   const feed = store.settings.feed;
   if (feed?.subdomain && !feedSupported()) throw new Error('Hosting is not available');
   const [, site] = await Promise.allSettled([
-    puter.fs.delete(FEED_PATH),
-    feed?.subdomain ? puter.hosting.delete(feed.subdomain) : Promise.resolve(),
+    everything.fs.delete(FEED_PATH),
+    feed?.subdomain ? everything.hosting.delete(feed.subdomain) : Promise.resolve(),
   ]);
   const siteGone = site.status === 'fulfilled' || isAlreadyGone(site.reason);
   if (!siteGone) throw site.reason;

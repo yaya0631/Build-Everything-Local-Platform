@@ -4,13 +4,13 @@
 //   app.importAudio / app.importAudioFromPath / app.recentMenuItems / app.signIn.
 //   Session autosave to this device and the startup restore: the first ever
 //   launch opens the demo song, later launches restore the last session.
-//   Optional cloud autosave for projects saved in Puter (Preferences).
-//   Unsaved-changes warning on unload, Puter desktop window title and
+//   Optional cloud autosave for projects saved in Everything (Preferences).
+//   Unsaved-changes warning on unload, Everything desktop window title and
 //   "open with" launches, and drops of project, MIDI and audio files.
 //
 // Also installs the app dialogs (src/dialogs).
 
-import * as puter from './puter.js';
+import * as everything from './everything.js';
 import { openDB } from './idb.js';
 import { Library } from './library.js';
 import { Autosave } from './autosave.js';
@@ -27,7 +27,7 @@ import '../styles/dialogs.css';
 /** Longest the startup waits for the last session before showing the app. */
 export const RESTORE_WAIT_MS = 1500;
 
-/** Preference: autosave projects that live in the Puter cloud (default on). */
+/** Preference: autosave projects that live in the Everything cloud (default on). */
 export const cloudAutosaveOn = (prefs) => prefs.get('cloudAutosave') !== false;
 
 export function install(app, { db = openDB(), tab = claimTab() } = {}) {
@@ -43,13 +43,13 @@ export function install(app, { db = openDB(), tab = claimTab() } = {}) {
   app.openLocalProject = (key) => files.openLocalKey(key);
   app.signIn = async () => {
     try {
-      await puter.signIn();
+      await everything.signIn();
     } catch (err) {
       if (err?.error !== 'auth_window_closed') app.notify(err?.msg || err?.message || 'Sign in did not finish.', { error: true });
     }
-    puter.resetAccountCache();
+    everything.resetAccountCache();
     await app.refreshAccount?.();
-    return puter.isSignedIn();
+    return everything.isSignedIn();
   };
 
   // ---------------------------------------------------------------- commands
@@ -79,7 +79,7 @@ export function install(app, { db = openDB(), tab = claimTab() } = {}) {
     store,
     writeDraft: async () => lib.saveDraft({ json: serializeProject(store.project, store.view), file: app.file, dirty: store.dirty }, (await tab).key),
     writeCloud: () => files.save({ auto: true }),
-    cloudEnabled: () => Boolean(app.file?.path) && cloudAutosaveOn(prefs) && puter.isSignedIn(),
+    cloudEnabled: () => Boolean(app.file?.path) && cloudAutosaveOn(prefs) && everything.isSignedIn(),
   });
   app.autosave = autosave;
   app.on('file', () => autosave.scheduleDraft());
@@ -100,13 +100,13 @@ export function install(app, { db = openDB(), tab = claimTab() } = {}) {
         await lib.clearDraft(picked.key).catch(() => {});
       }
       if (picked.busy && !firstLaunch) app.notify('Your last session is open in another tab, so this tab started a new project.');
-      // A file opened by the Puter desktop, a project opened meanwhile, or
+      // A file opened by the Everything desktop, a project opened meanwhile, or
       // edits made meanwhile win over the draft.
       if (!launched && draft?.json && !store.undoStack.length && files.loads === startLoads) {
         let project = parseProject(draft.json);
         // A saved cloud project may have been changed elsewhere since: open
         // the file itself (the draft stays the fallback when it cannot be read).
-        if (!draft.dirty && draft.file?.path && puter.isSignedIn()) {
+        if (!draft.dirty && draft.file?.path && everything.isSignedIn()) {
           project = await lib.loadCloud(draft.file.path).catch(() => project);
           if (files.loads !== startLoads || store.undoStack.length) project = null;
         }
@@ -142,14 +142,14 @@ export function install(app, { db = openDB(), tab = claimTab() } = {}) {
     });
   }
 
-  // Inside the Puter desktop: open the file the app was launched with.
-  launched = puter.onLaunchedWithItems(async (items) => {
+  // Inside the Everything desktop: open the file the app was launched with.
+  launched = everything.onLaunchedWithItems(async (items) => {
     await app.restored;
     for (const item of items || []) {
       const name = item.name || baseName(item.path || '');
       try {
         if (name.toLowerCase().endsWith(FILE_EXT)) await files.openPath(item.path);
-        else if (/\.midi?$/i.test(name)) await files.importMidiBlob(await puter.readFile(item.path), name);
+        else if (/\.midi?$/i.test(name)) await files.importMidiBlob(await everything.readFile(item.path), name);
         else if (isAudioName(name)) await files.runImport(() => files.importAudioFromPath(item.path), name);
       } catch (err) {
         app.reportError(err);
@@ -165,10 +165,10 @@ export function install(app, { db = openDB(), tab = claimTab() } = {}) {
   }, () => {
     persistent = false;
   });
-  // Inside the Puter desktop the close button asks about unsaved changes
+  // Inside the Everything desktop the close button asks about unsaved changes
   // (beforeunload never fires there), then writes what is pending and exits.
   let closing = false;
-  puter.onWindowClose(async () => {
+  everything.onWindowClose(async () => {
     if (closing) return;
     closing = true;
     try {
@@ -184,7 +184,7 @@ export function install(app, { db = openDB(), tab = claimTab() } = {}) {
         }
       }
       await autosave.flushAll().catch(() => {});
-      puter.exitApp();
+      everything.exitApp();
     } finally {
       closing = false;
     }
@@ -210,9 +210,9 @@ export function install(app, { db = openDB(), tab = claimTab() } = {}) {
     const t = `${store.dirty ? '* ' : ''}${store.project.name} - Music Studio`;
     if (t === lastTitle) return;
     lastTitle = t;
-    puter.setWindowTitle(t);
+    everything.setWindowTitle(t);
   };
-  if (puter.env() === 'app') {
+  if (everything.env() === 'app') {
     store.on('change', syncTitle);
     store.on('saved', syncTitle);
     app.on('file', syncTitle);
@@ -223,10 +223,10 @@ export function install(app, { db = openDB(), tab = claimTab() } = {}) {
     if (k === 'hints') syncHints();
   });
   syncHints();
-  let wasSignedIn = puter.isSignedIn();
+  let wasSignedIn = everything.isSignedIn();
   app.on('account', () => {
-    const now = puter.isSignedIn();
-    if (!now) puter.resetAccountCache();
+    const now = everything.isSignedIn();
+    if (!now) everything.resetAccountCache();
     // Samples that were missing while signed out can load from the cloud now.
     else if (!wasSignedIn) files.loadSamples(store.project, { quiet: true }).catch((err) => console.warn(err));
     wasSignedIn = now;

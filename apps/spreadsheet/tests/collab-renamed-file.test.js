@@ -9,7 +9,7 @@ import { memoryStorage } from './helpers/memory-storage.js';
 import { environment, owner, editor, SERVER, until } from './collab-helpers.js';
 
 Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true });
-afterEach(() => { delete globalThis.puter; setAutoSaveEnabled(true); });
+afterEach(() => { delete globalThis.everything; setAutoSaveEnabled(true); });
 
 const before = '/alice/Spreadsheets/Budget.xlsx';
 const after = '/alice/Documents/Budget 2026.xlsx';
@@ -18,13 +18,13 @@ async function renamedRoom() {
   const env = environment();
   const wb = new Workbook({ sheets: [{ name: 'Budget' }] });
   env.files.set(before, new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()));
-  const room = await RoomClient.create({ puter: env.sdk(owner), server: SERVER, wb, name: 'Budget', file: { path: before, uid: 'u1' } });
+  const room = await RoomClient.create({ everything: env.sdk(owner), server: SERVER, wb, name: 'Budget', file: { path: before, uid: 'u1' } });
   // The owner renames and moves the file on the desktop; opening it again finds its room by the file's id.
   env.files.set(after, env.files.get(before));
   env.files.delete(before);
-  globalThis.puter = env.sdk(owner);
+  globalThis.everything = env.sdk(owner);
   const join = async (user, token) => {
-    const client = new RoomClient({ puter: env.sdk(user), server: SERVER, room, token, store: memoryOutbox(), poll: 50, noPeers: true, toXlsx: (w) => workbookToXlsx(w) });
+    const client = new RoomClient({ everything: env.sdk(user), server: SERVER, room, token, store: memoryOutbox(), poll: 50, noPeers: true, toXlsx: (w) => workbookToXlsx(w) });
     await client.open();
     return client;
   };
@@ -82,12 +82,12 @@ it("writes the owner's file under its new name after the owner renames it, whoev
   const env = environment();
   const wb = new Workbook({ sheets: [{ name: 'Budget' }] });
   env.files.set(before, new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()));
-  const room = await RoomClient.create({ puter: env.sdk(owner), server: SERVER, wb, name: 'Budget', file: { path: before, uid: 'u1' } });
+  const room = await RoomClient.create({ everything: env.sdk(owner), server: SERVER, wb, name: 'Budget', file: { path: before, uid: 'u1' } });
   const sdk = env.sdk(owner);
-  // Puter says a file that is not there is not found.
-  globalThis.puter = { ...sdk, fs: { ...sdk.fs, stat: async (p) => { if (!env.files.has(p)) throw Object.assign(new Error('Not found'), { code: 'subject_does_not_exist' }); return { path: p, size: env.files.get(p).length }; } } };
+  // Everything says a file that is not there is not found.
+  globalThis.everything = { ...sdk, fs: { ...sdk.fs, stat: async (p) => { if (!env.files.has(p)) throw Object.assign(new Error('Not found'), { code: 'subject_does_not_exist' }); return { path: p, size: env.files.get(p).length }; } } };
   const join = async (user, token) => {
-    const client = new RoomClient({ puter: env.sdk(user), server: SERVER, room, token, store: memoryOutbox(), poll: 50, noPeers: true, toXlsx: (w) => workbookToXlsx(w) });
+    const client = new RoomClient({ everything: env.sdk(user), server: SERVER, room, token, store: memoryOutbox(), poll: 50, noPeers: true, toXlsx: (w) => workbookToXlsx(w) });
     await client.open();
     return client;
   };

@@ -1,7 +1,7 @@
 /**
  * Attachments on detail pages: the proposal PDF, the signed order form,
  * the pricing sheet - tied to the record they belong to instead of a
- * Downloads folder. Bytes live in the user's Puter cloud (lib/files.js);
+ * Downloads folder. Bytes live in the user's Everything cloud (lib/files.js);
  * this renders the list, uploads, downloads, and deletes.
  */
 
@@ -89,7 +89,7 @@ function attachmentRow(a) {
       onclick: async () => {
         const ok = await confirmDialog({
           title: 'Delete this file?',
-          message: 'It goes to Recently deleted for 30 days; the file itself is removed from your Puter cloud when that runs out.',
+          message: 'It goes to Recently deleted for 30 days; the file itself is removed from your Everything cloud when that runs out.',
         });
         if (!ok) return;
         try {
@@ -125,6 +125,6 @@ export function attachmentsSection(owner) {
     files.length
       ? el('div.attachment-list', {}, files.map(attachmentRow))
       : el('p.card-empty', {},
-          `Proposals, order forms, and pricing sheets, kept with the record in your own Puter cloud. Up to ${formatBytes(MAX_FILE_BYTES)} each.`)
+          `Proposals, order forms, and pricing sheets, kept with the record in your own Everything cloud. Up to ${formatBytes(MAX_FILE_BYTES)} each.`)
   );
 }

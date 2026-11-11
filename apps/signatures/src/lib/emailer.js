@@ -4,7 +4,7 @@
  * The sign worker mints each signer a personal capability link (signlinks.js),
  * and this module hands those links to the app's shared email worker, which
  * composes and sends one private message per signer. The call goes through
- * puter.workers.exec(), which forwards the signed-in user's Puter token: that
+ * everything.workers.exec(), which forwards the signed-in user's Everything token: that
  * is what makes the worker able to send at all, and what makes the send bill
  * the sender rather than the app owner.
  *
@@ -92,7 +92,7 @@ export function describeResult(out) {
 export function failureMessage(status, data) {
   const code = (data && data.error) || '';
   if (status === 401 || code === 'sign_in_required') {
-    return 'Sign in to Puter again to send emails.';
+    return 'Sign in to Everything again to send emails.';
   }
   if (status === 429 || code === 'daily_limit') {
     return 'You have reached the daily email limit. Try again tomorrow.';
@@ -104,13 +104,13 @@ export function failureMessage(status, data) {
 export function createEmailer({
   store,
   workerUrl = EMAIL_WORKER_URL,
-  getPuter = () => (typeof puter !== 'undefined' ? puter : null),
+  getEverything = () => (typeof everything !== 'undefined' ? everything : null),
   fetchFn = (...args) => fetch(...args),
 }) {
   /** Sending needs the worker bridge (it carries the user's session); without
    *  it there is no authenticated caller and the worker would refuse anyway. */
   function available() {
-    const p = getPuter();
+    const p = getEverything();
     return Boolean(p && p.workers && typeof p.workers.exec === 'function');
   }
 
@@ -170,7 +170,7 @@ export function createEmailer({
    * for a toast.
    */
   async function send(doc, { signerIds = null, kind = 'request', note = '', force = false } = {}) {
-    if (!available()) throw new Error('Sending email needs the Puter SDK.');
+    if (!available()) throw new Error('Sending email needs the Everything SDK.');
     const plan = planFor(doc, kind);
     const wanted = signerIds ? new Set(signerIds) : null;
     const recipients = (wanted
@@ -183,7 +183,7 @@ export function createEmailer({
 
     let res;
     try {
-      res = await getPuter().workers.exec(`${workerUrl}/send`, {
+      res = await getEverything().workers.exec(`${workerUrl}/send`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
@@ -284,7 +284,7 @@ export function createEmailer({
     const version = digest([doc.id, events.map((e) => `${e.type}:${e.who}:${e.at}`), 'owner']);
     let res;
     try {
-      res = await getPuter().workers.exec(`${workerUrl}/send`, {
+      res = await getEverything().workers.exec(`${workerUrl}/send`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({

@@ -10,7 +10,7 @@
  *
  * Text variables replace a text object's content; visibility variables
  * show or hide any object; linked file variables swap a placed image for
- * the file at a URL or Puter path; graph data variables replace a graph's
+ * the file at a URL or Everything path; graph data variables replace a graph's
  * data (tab-separated rows). Everything is stored in the document, so it
  * is saved with it and undoable. In CSV headers a leading # marks a
  * visibility variable, @ a linked file and % graph data.

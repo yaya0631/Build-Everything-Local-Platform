@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { unzipSync, strFromU8 } from 'fflate';
 
 /**
- * With AutoSave off only Save writes the file. Leaving the document (All Documents, or the Puter window's close
+ * With AutoSave off only Save writes the file. Leaving the document (All Documents, or the Everything window's close
  * button) with changes Save has not written asks whether to save them, as closing does in a desktop word
  * processor: leaving used to write them without asking, so an experiment the user meant to throw away
  * replaced the file.
@@ -11,7 +11,7 @@ import { unzipSync, strFromU8 } from 'fflate';
 const text = page => page.getByRole('textbox', { name: 'Document text' });
 const status = page => page.locator('.canvas-save-status');
 async function fileText(page, path) {
-  const bytes = await page.evaluate(async p => [...new Uint8Array(await (await puter.fs.read(p)).arrayBuffer())], path);
+  const bytes = await page.evaluate(async p => [...new Uint8Array(await (await everything.fs.read(p)).arrayBuffer())], path);
   const xml = strFromU8(unzipSync(Uint8Array.from(bytes))['word/document.xml']);
   return [...xml.matchAll(/<w:t(?: [^>]*)?>([^<]*)<\/w:t>/g)].map(m => m[1]).join('');
 }
@@ -22,7 +22,7 @@ async function savedWithAutoSaveOff(page, query = '') {
   await expect(page.getByRole('button', { name: 'Bold', exact: true })).toBeEnabled();
   await text(page).fill('Kept');
   await text(page).press('ControlOrMeta+s');
-  await expect(status(page)).toHaveAttribute('aria-label', 'Saved to Puter');
+  await expect(status(page)).toHaveAttribute('aria-label', 'Saved to Everything');
   await page.locator('label.ed-autosave').click();
   await expect(page.getByRole('switch', { name: 'AutoSave' })).not.toBeChecked();
   await text(page).press('End');
@@ -57,7 +57,7 @@ test('leaving with AutoSave off and choosing Save writes the changes', async ({ 
   expect(await fileText(page, path)).toBe('Kept experiment');
 });
 
-test('the Puter window’s close button asks too with AutoSave off', async ({ page }) => {
+test('the Everything window’s close button asks too with AutoSave off', async ({ page }) => {
   const path = await savedWithAutoSaveOff(page, '?env=app');
   const closing = page.evaluate(() => window.__closeWindow());
   const question = page.getByRole('dialog', { name: 'Save changes?' });

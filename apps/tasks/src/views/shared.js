@@ -88,7 +88,7 @@ export function sharedView() {
         taskCard(done, { readonly: true })
       ) : null,
       el('p.small.muted', { style: { margin: '26px 2px', textAlign: 'center' } },
-        'Powered by Tasks on Puter')
+        'Powered by Tasks on Everything')
     );
   }
 

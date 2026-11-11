@@ -54,7 +54,7 @@ Heap snapshots varied rather than uniformly falling: cold 100k was
 102.1 → 97.9 MB; warm 100k was 108.0 → 123.0 MB. These include fixtures and GC
 variation, not retained app-only or peak memory. The reliable bound is 60 visible
 cards plus the newest reply card. Single runs are directional, not latency
-percentiles. These are **simulations, not signed-in Puter measurements**.
+percentiles. These are **simulations, not signed-in Everything measurements**.
 
 ## Verification
 
@@ -80,7 +80,7 @@ reads and zero listings; abandoned-folder work made zero subsequent requests.
 These confirm the earlier work remains effective, not new savings from this change.
 
 API review reconfirmed the official [readdir contract](http://localhost:8443/FS/readdir/)
-and [read contract](http://localhost:8443/FS/read/). Local Puter source inspected
+and [read contract](http://localhost:8443/FS/read/). Local Everything source inspected
 at `0be3bc55c28b125ec42ec85fd4b0c5fa7478a3a9` still uses direct name/id seeks,
 recursive ascending-path seeks with depth filtering, per-entry SDK caching,
 and SDK `byte_count` query parameters. These costs support retaining the existing

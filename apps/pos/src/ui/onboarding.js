@@ -53,7 +53,7 @@ export function openOnboarding() {
           style: { background: 'var(--accent-wash)', color: 'var(--accent)' },
         }),
         el('h3', { style: { fontSize: '19px' } }, 'Your register, your cloud'),
-        el('p', {}, 'Ring up sales, print receipts, and watch your numbers. Everything is stored in your own Puter account.')
+        el('p', {}, 'Ring up sales, print receipts, and watch your numbers. Everything is stored in your own Everything account.')
       ),
       el('button.btn.btn-primary.btn-block', {
         type: 'button', style: { padding: '13px' },

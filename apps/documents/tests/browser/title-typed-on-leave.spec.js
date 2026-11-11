@@ -7,7 +7,7 @@ async function savedDocument(page) {
   await page.goto('/mock.html#/new');
   await expect(page.getByRole('button', { name: 'Bold', exact: true })).toBeEnabled();
   await text(page).fill('Hello world.');
-  await expect(page.locator('.canvas-save-status')).toHaveAttribute('aria-label', 'Saved to Puter', { timeout: 15000 });
+  await expect(page.locator('.canvas-save-status')).toHaveAttribute('aria-label', 'Saved to Everything', { timeout: 15000 });
 }
 
 test('a name typed in the title is kept when All Documents is pressed before confirming it', async ({ page }) => {

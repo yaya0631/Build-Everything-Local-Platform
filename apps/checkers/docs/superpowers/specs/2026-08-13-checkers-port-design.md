@@ -64,7 +64,7 @@ checkers/
     game/clock.js         carried over unchanged
     game/persistence.js   saved game, move paths
     game/pdn.js           PDN export          (replaces game/pgn.js)
-    net/online.js         Puter Peer session
+    net/online.js         Everything Peer session
   tests/
     rules.test.js  perft.test.js  notation.test.js  pdn.test.js
     ai.test.js     clock.test.js  persistence.test.js  online.test.js
@@ -320,7 +320,7 @@ receives one increment.
 
 ## Online play — `src/net/online.js`
 
-Same Puter Peer session, lazily loaded SDK, same host/guest handshake, invite
+Same Everything Peer session, lazily loaded SDK, same host/guest handshake, invite
 codes, invite links, auto-join, resign, rematch, flag, and bye handling. Same
 lifecycle guarantees (`_conn === conn` guards, host reverts to waiting on a
 failed join, `onClose` fires exactly once).

@@ -79,7 +79,7 @@ export function createApp(root, { store, user, rsvp = null, contacts = null, inv
   // `invites` emails those links to the guests; `contacts` suggests people from
   // the user's address book in the guest field; `booking` powers the details
   // card's cancel action for events booked through a booking link; `meetings`
-  // mints the editor's Puter Meetings links.
+  // mints the editor's Everything Meetings links.
   const modal = createEventModal({
     store,
     user,

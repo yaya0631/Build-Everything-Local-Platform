@@ -149,7 +149,7 @@ export class RequestView {
     menuButton(sendMore, () => [
       { label: 'Send', icon: 'sendH', kbd: shortcut('Mod+Enter'), run: () => this.app.sendTab(this.tab) },
       { label: 'Send from the browser', icon: 'globe', run: () => this.app.sendTab(this.tab, { transport: 'browser' }) },
-      { label: this.app.session.signedIn ? 'Send through Puter relay' : 'Send through Puter relay (sign in)', icon: 'server', disabled: !this.app.session.signedIn, run: () => this.app.sendTab(this.tab, { transport: 'relay' }) },
+      { label: this.app.session.signedIn ? 'Send through Everything relay' : 'Send through Everything relay (sign in)', icon: 'server', disabled: !this.app.session.signedIn, run: () => this.app.sendTab(this.tab, { transport: 'relay' }) },
       '-',
       { label: 'Copy as cURL', icon: 'terminal', run: () => this.copyAs('curl') },
       { label: 'Show code snippet', icon: 'code', run: () => this.app.toggleRightPanel('code', true) },
@@ -743,7 +743,7 @@ export class RequestView {
     const transport = h(
       'select.select',
       { id: transportId, 'aria-labelledby': `${transportId}-l`, onchange: (e) => { s.transport = e.target.value; this.changed(); } },
-      [['auto', 'App default'], ['browser', 'Browser'], ['relay', 'Puter relay']].map(([v, l]) => h('option', { value: v, selected: s.transport === v }, l)),
+      [['auto', 'App default'], ['browser', 'Browser'], ['relay', 'Everything relay']].map(([v, l]) => h('option', { value: v, selected: s.transport === v }, l)),
     );
     fill(
       panel,

@@ -52,7 +52,7 @@ describe('native Office HTML error value hints', () => {
     const data = await new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = () => reject(reader.error); reader.readAsArrayBuffer(blob); });
     const zip = X.CFB.read(new Uint8Array(data), { type: 'array' });
     const part = X.CFB.find(zip, '/xl/workbook.xml');
-    part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')); part.size = part.content.length;
+    part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')); part.size = part.content.length;
     const back = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'native.xlsx');
     expect(back.getValue(back.activeSheetId, 0, 0)).toEqual({ error: '#CALC!' });
     expect(back.getValue(back.activeSheetId, 0, 1)).toBe('#CALC!');

@@ -18,7 +18,7 @@ const paste=(wb,rows=[2,3,4],c=2,target=null)=>wb.pasteCells(wb.activeSheetId,wb
 async function roundtrip(wb,privateData=false){
  const zip=X.CFB.read(new Uint8Array(await(await workbookToXlsx(wb)).arrayBuffer()),{type:'array'});
  const xml=new TextDecoder().decode(X.CFB.find(zip,'/xl/worksheets/sheet1.xml').content);
- if(!privateData){const p=X.CFB.find(zip,'/xl/workbook.xml');p.content=new TextEncoder().encode(new TextDecoder().decode(p.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,''));p.size=p.content.length;}
+ if(!privateData){const p=X.CFB.find(zip,'/xl/workbook.xml');p.content=new TextEncoder().encode(new TextDecoder().decode(p.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,''));p.size=p.content.length;}
  return {xml,wb:await workbookFromFile(X.CFB.write(zip,{type:'array',fileType:'zip'}),'thresholds.xlsx')};
 }
 it.each([

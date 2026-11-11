@@ -74,7 +74,7 @@ describe('camera and screen capture helpers', () => {
 
 describe('AI pictures', () => {
   afterEach(() => {
-    delete globalThis.puter;
+    delete globalThis.everything;
   });
 
   it('builds prompts with a style phrase', () => {
@@ -116,16 +116,16 @@ describe('AI pictures', () => {
     await expect(imageBlobFrom(null)).rejects.toThrow(/No picture/);
   });
 
-  it('generates through puter.ai.txt2img and reports failures readably', async () => {
-    await expect(generateImage('a cat')).rejects.toThrow(/needs Puter/);
+  it('generates through everything.ai.txt2img and reports failures readably', async () => {
+    await expect(generateImage('a cat')).rejects.toThrow(/needs Everything/);
     await expect(generateImage('   ')).rejects.toThrow(/Describe/);
     const txt2img = vi.fn(async () => ({ src: 'data:image/png;base64,iVBORw0KGgo=' }));
-    globalThis.puter = { ai: { txt2img } };
+    globalThis.everything = { ai: { txt2img } };
     const out = await generateImage('a cat', { aspect: '9:16', style: 'photo' });
     expect(out.blob.size).toBe(8);
     expect(out.prompt).toBe('a cat');
     expect(txt2img).toHaveBeenCalledWith(expect.stringMatching(/^a cat\. Style: photorealistic/), { ratio: { w: 9, h: 16 } });
-    globalThis.puter = { ai: { txt2img: async () => { throw { code: 'moderation_flagged' }; } } };
+    globalThis.everything = { ai: { txt2img: async () => { throw { code: 'moderation_flagged' }; } } };
     await expect(generateImage('x')).rejects.toThrow(/content filter/);
   });
 });

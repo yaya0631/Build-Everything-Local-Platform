@@ -3,13 +3,13 @@ import { describe, it, expect, afterEach } from 'vitest';
 import { signOut } from '../src/platform.js';
 
 afterEach(() => {
-  delete globalThis.puter;
+  delete globalThis.everything;
   localStorage.clear();
 });
 
 describe('signing out', () => {
   it('leaves no account or firm details behind on the device', () => {
-    globalThis.puter = { auth: { signOut() {} } };
+    globalThis.everything = { auth: { signOut() {} } };
     localStorage.setItem('legal.user', JSON.stringify({ uuid: 'u-1', username: 'eleanor' }));
     localStorage.setItem('legal.workspaces.u-1', JSON.stringify({ current: 'http://legalfirm-abc.localhost:8443', joined: [{ business: 'Rivera Law' }] }));
     localStorage.setItem('legal.theme', 'dark');

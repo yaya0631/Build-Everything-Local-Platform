@@ -9,7 +9,7 @@ for (const inherited of [false, true])
       test(`form spellchecking follows PDF flags (${surface}, inherited=${inherited}, readOnly=${readOnly})`, async ({
         page,
       }) => {
-        await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
+        await page.route('**/sdk/everything.js', (route) => route.fulfill({ body: '' }));
         await page.goto('/#library');
         const { doc, fields } = await spellcheckFormPdf({ inherited, readOnly });
         const open = async (document) => {

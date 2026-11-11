@@ -1,4 +1,4 @@
-/** Settings > Team: let teammates sign in with their own Puter accounts. */
+/** Settings > Team: let teammates sign in with their own Everything accounts. */
 import { h } from '../ui/dom.js';
 import { icon } from '../ui/icons.js';
 import { app, reloadApp } from '../app.js';
@@ -21,7 +21,7 @@ export function teamAccessCard() {
   const head = (extra) => h('div.card-head', h('h2.grow#team-access-title', 'Team access'), extra || null);
 
   if (app.demo) {
-    card.append(head(), h('div.card-body', h('p.muted', 'In your own account, you can invite drivers, technicians, and managers to sign in with their own Puter accounts and work on the same fleet. This is not available in the demo.')));
+    card.append(head(), h('div.card-body', h('p.muted', 'In your own account, you can invite drivers, technicians, and managers to sign in with their own Everything accounts and work on the same fleet. This is not available in the demo.')));
     return card;
   }
 
@@ -33,7 +33,7 @@ export function teamAccessCard() {
       const ok = await confirmDialog({
         title: 'Turn on team access?',
         message:
-          'A small server (a Puter worker) is created in your own Puter account to share this fleet with people you invite. Your data is copied to it and stays in your account. This may take a minute.',
+          'A small server (an Everything worker) is created in your own Everything account to share this fleet with people you invite. Your data is copied to it and stays in your account. This may take a minute.',
         confirmLabel: 'Turn on',
       });
       if (!ok) return;
@@ -49,7 +49,7 @@ export function teamAccessCard() {
         await app.store.flush();
         const { own, skipped } = await team.enableTeam({ store: app.store, onProgress: (text) => (progress.textContent = text) });
         const ws = { ...app.workspaces, own, current: 'own' };
-        await team.saveWorkspaces(globalThis.puter.kv, ws);
+        await team.saveWorkspaces(globalThis.everything.kv, ws);
         app.workspaces = ws; // this device made the switch; it reloads below
         progress.textContent = skipped.length ? `Done. ${skipped.length} file${skipped.length === 1 ? ' was' : 's were'} not copied: ${skipped.slice(0, 3).join(', ')}${skipped.length > 3 ? '...' : ''}. Reloading...` : 'Done. Reloading...';
         setTimeout(() => {
@@ -68,9 +68,9 @@ export function teamAccessCard() {
       head(),
       h(
         'div.card-body.stack',
-        h('p', 'Invite drivers, technicians, and managers to sign in with their own Puter accounts. Everyone works on the same vehicles, inspections, and service records, and changes sync between devices.'),
+        h('p', 'Invite drivers, technicians, and managers to sign in with their own Everything accounts. Everyone works on the same vehicles, inspections, and service records, and changes sync between devices.'),
         h('ul.welcome-points', [
-          ['shield', 'Your data stays in your Puter account. You can remove anyone at any time.'],
+          ['shield', 'Your data stays in your Everything account. You can remove anyone at any time.'],
           ['users', 'Admins manage the team and settings. Members can do everything else.'],
           ['clipboard-check', 'Drivers see the fleet and can submit inspections, fuel, meter readings, and issues.'],
         ].map(([ic, text]) => h('li', icon(ic), h('span', text)))),
@@ -84,7 +84,7 @@ export function teamAccessCard() {
   const manage = t.role === 'owner' || t.role === 'admin';
   const body = h('div.card-body.stack');
   card.append(head(h('span.pill.success', 'On')), body);
-  body.append(h('p.muted', t.role === 'owner' ? 'People you invite sign in with their own Puter account and work in this fleet.' : `You are signed in to ${t.business || 'this fleet'} as ${A(t.role)}.`));
+  body.append(h('p.muted', t.role === 'owner' ? 'People you invite sign in with their own Everything account and work in this fleet.' : `You are signed in to ${t.business || 'this fleet'} as ${A(t.role)}.`));
 
   // Everyone but the owner can leave.
   const leaveBtn = () => {
@@ -247,7 +247,7 @@ function inviteDialog(onDone) {
     title: 'Invite someone',
     body: h(
       'div.stack',
-      h('p.muted', 'Create a link and send it to the person you want to invite. It works once, for 7 days. They sign in with their own Puter account to join.'),
+      h('p.muted', 'Create a link and send it to the person you want to invite. It works once, for 7 days. They sign in with their own Everything account to join.'),
       h('div.form-grid', field('Who is it for?', label, { hint: 'Only the owner and admins see this' }), field('Role', role)),
       out,
     ),

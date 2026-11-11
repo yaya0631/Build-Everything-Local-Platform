@@ -3,8 +3,8 @@
  * pixel size, effective resolution, placed size, scale, rotation, file
  * size, linked or embedded), and Relink, Go To Link, Update Link, Edit
  * Original and Embed. Images are always embedded in the document (so a file
- * opens anywhere); an image placed from Puter also keeps `node.link`
- * ({ source: 'puter', path, name, size, modified }) to its file, which
+ * opens anywhere); an image placed from Everything also keeps `node.link`
+ * ({ source: 'everything', path, name, size, modified }) to its file, which
  * Update Link re-reads and Edit Original opens. Embed drops the link;
  * Unembed saves the image as a file and links to it. The panel menu adds
  * Placement Options (how a relinked image fits), Link Information, a
@@ -98,21 +98,21 @@ export async function replaceImage(app, editor, nodeIds, blob, { link = null, la
 }
 
 async function pickImage(app) {
-  if (app.user && app.puter?.ui?.showOpenFilePicker) {
+  if (app.user && app.everything?.ui?.showOpenFilePicker) {
     const source = await app.dialogs.open({
       title: 'Relink',
       body: h('p.dialog-message', 'Choose the replacement image.'),
-      buttons: [{ label: 'Cancel', value: null }, { label: 'From This Device...', value: 'device' }, { label: 'From Puter...', value: 'puter', primary: true }],
+      buttons: [{ label: 'Cancel', value: null }, { label: 'From This Device...', value: 'device' }, { label: 'From Everything...', value: 'everything', primary: true }],
     });
     if (!source) return null;
-    if (source === 'puter') {
-      const p = app.puter.ui.showOpenFilePicker({ multiple: false, accept: ['.png', '.jpg', '.jpeg', '.webp', '.gif'] });
+    if (source === 'everything') {
+      const p = app.everything.ui.showOpenFilePicker({ multiple: false, accept: ['.png', '.jpg', '.jpeg', '.webp', '.gif'] });
       let item = await (p && p.undefinedOnCancel ? p.undefinedOnCancel : p);
       if (Array.isArray(item)) item = item[0];
       if (!item) return null;
       const blob = await item.read();
       const file = new File([blob], item.name || 'image', { type: blob.type });
-      return { file, link: item.path ? { source: 'puter', path: item.path, name: item.name, size: blob.size, modified: Date.now() } : null };
+      return { file, link: item.path ? { source: 'everything', path: item.path, name: item.name, size: blob.size, modified: Date.now() } : null };
     }
   }
   const [file] = await pickDeviceFiles();
@@ -129,15 +129,15 @@ export async function relink(app, editor, ids) {
   return true;
 }
 
-/** Re-read linked files from Puter. Returns the number of images updated. */
+/** Re-read linked files from Everything. Returns the number of images updated. */
 export async function updateLinks(app, editor, ids) {
   const doc = editor.doc;
-  const fs = app.puter?.fs;
+  const fs = app.everything?.fs;
   let n = 0;
   for (const id of ids) {
     const node = doc.get(id);
     if (!node?.link?.path) continue;
-    if (!fs?.read) throw new UserError('Linked files can be updated when Vector Studio runs with Puter.');
+    if (!fs?.read) throw new UserError('Linked files can be updated when Vector Studio runs with Everything.');
     const blob = await fs.read(node.link.path);
     const file = new File([blob], node.link.name || 'image', { type: blob.type });
     await replaceImage(app, editor, [id], file, { link: { ...node.link, size: blob.size, modified: Date.now() }, label: 'Update Link' });
@@ -155,8 +155,8 @@ export function embedImages(editor, ids) {
 }
 
 /**
- * Unembed: save each image as a file in Puter and link to it. Returns the
- * number linked. Without Puter the image is saved to the device instead and
+ * Unembed: save each image as a file in Everything and link to it. Returns the
+ * number linked. Without Everything the image is saved to the device instead and
  * stays embedded (a browser download cannot be linked to).
  */
 export async function unembedImages(app, editor, ids) {
@@ -170,12 +170,12 @@ export async function unembedImages(app, editor, ids) {
     const ext = { PNG: 'png', JPEG: 'jpg', WebP: 'webp', GIF: 'gif' }[info.format] || 'png';
     const name = `${String(info.name).replace(/\.[^.]+$/, '') || 'Image'}.${ext}`;
     const blob = await (await fetch(a.data)).blob();
-    const ui = app.puter?.ui;
+    const ui = app.everything?.ui;
     if (app.user && ui?.showSaveFilePicker) {
       const p = ui.showSaveFilePicker(blob, name);
       const item = await (p && p.undefinedOnCancel ? p.undefinedOnCancel : p);
       if (!item?.path) continue;
-      doc.transact('Unembed', () => doc.update(id, { link: { source: 'puter', path: item.path, name: item.name || name, size: blob.size, modified: Date.now() } }));
+      doc.transact('Unembed', () => doc.update(id, { link: { source: 'everything', path: item.path, name: item.name || name, size: blob.size, modified: Date.now() } }));
       n++;
     } else {
       const { downloadBlob } = await import('../io/deliver.js');
@@ -232,7 +232,7 @@ export function goToLink(editor, id) {
 }
 
 /**
- * Edit Original: open a Puter-linked image in Puter's image editor; any
+ * Edit Original: open an Everything-linked image in Everything's image editor; any
  * other image is saved to the device to edit elsewhere and bring back with
  * Relink.
  */
@@ -240,9 +240,9 @@ export async function editOriginal(app, editor, id) {
   const doc = editor.doc;
   const n = doc.get(id);
   if (!n || n.type !== 'image') return false;
-  if (n.link?.path && app.puter?.ui?.launchApp) {
+  if (n.link?.path && app.everything?.ui?.launchApp) {
     try {
-      await app.puter.ui.launchApp({ name: 'photo-studio', file_paths: [n.link.path] });
+      await app.everything.ui.launchApp({ name: 'photo-studio', file_paths: [n.link.path] });
       app.notify('Edit and save the image, then choose Update Link.', { polite: true });
       return true;
     } catch {
@@ -295,7 +295,7 @@ export class LinksPanel extends Panel {
       { label: 'Show', submenu: [show('all', 'Show All'), show('missing', 'Show Missing'), show('modified', 'Show Modified'), show('linked', 'Show Linked'), show('embedded', 'Show Embedded')] },
       { label: 'Sort', submenu: [sort('order', 'Stacking Order'), sort('name', 'Sort by Name'), sort('kind', 'Sort by Kind'), sort('status', 'Sort by Status')] },
       '-',
-      { label: 'Check for Modified Links', enabled: Boolean(app.puter?.fs?.stat) && Boolean(ed && placedImages(ed.doc).some((n) => n.link?.path)), run: () => this.checkModified() },
+      { label: 'Check for Modified Links', enabled: Boolean(app.everything?.fs?.stat) && Boolean(ed && placedImages(ed.doc).some((n) => n.link?.path)), run: () => this.checkModified() },
       { label: 'Panel Options...', run: () => this.panelOptions() },
     ];
   }
@@ -352,10 +352,10 @@ export class LinksPanel extends Panel {
     });
   }
 
-  /** Stat linked Puter files and mark the ones changed since they were placed or updated. */
+  /** Stat linked Everything files and mark the ones changed since they were placed or updated. */
   async checkModified() {
     const ed = this.app.editor;
-    const fs = this.app.puter?.fs;
+    const fs = this.app.everything?.fs;
     if (!ed || !fs?.stat) return 0;
     this.modified = new Set();
     for (const n of placedImages(ed.doc)) {
@@ -388,7 +388,7 @@ export class LinksPanel extends Panel {
       (this.goBtn = btn('go-to', 'Go To Link', (ed, ids) => goToLink(ed, ids[0]))),
       (this.updateBtn = btn('refresh-cw-2', 'Update Link', async (ed, ids) => {
         const n = await updateLinks(this.app, ed, ids);
-        this.app.notify(n ? `Updated ${n} link${n === 1 ? '' : 's'}.` : 'Only images placed from Puter can be updated.', { polite: Boolean(n) });
+        this.app.notify(n ? `Updated ${n} link${n === 1 ? '' : 's'}.` : 'Only images placed from Everything can be updated.', { polite: Boolean(n) });
       })),
       (this.editBtn = btn('external-link', 'Edit Original', (ed, ids) => editOriginal(this.app, ed, ids[0]))),
       (this.embedBtn = btn('arrow-down-to-line', 'Embed Image', (ed, ids) => embedImages(ed, ids))),

@@ -7,7 +7,7 @@
  * `act.h[conv] = { by, at, m: { [uuid]: { at, j, inv, s } } }` in the
  * workspace's activity document: who started it and when, and for each
  * participant their last heartbeat (`at`), when they joined (`j`), the
- * invite code of the Puter Peer server they are running (`inv`), and a
+ * invite code of the Everything Peer server they are running (`inv`), and a
  * session id of the tab holding the seat (`s`, kept on the worker alone: a
  * heartbeat from another tab of the same account does not take the seat
  * back from the tab that joined last). Media never touches the worker:
@@ -37,7 +37,7 @@ export const HUDDLE_HEARTBEAT_MS = 15_000;
  * on an ordinary uplink.
  */
 export const HUDDLE_MAX = 20;
-/** An invite code from puter.peer.serve() (`NJ-7F3A9C`), or a room name; nothing else is written. */
+/** An invite code from everything.peer.serve() (`NJ-7F3A9C`), or a room name; nothing else is written. */
 export const INVITE_RE = /^[A-Za-z0-9][A-Za-z0-9_-]{2,63}$/;
 /** A tab's session id for its seat, made by the client; nothing else is written. */
 export const SESSION_RE = /^[A-Za-z0-9_-]{1,64}$/;

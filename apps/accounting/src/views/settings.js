@@ -7,7 +7,7 @@ import { confirmDialog, promptDialog } from '../ui/dialog.js';
 import { applyTheme, currentTheme } from '../ui/theme.js';
 import { pageHead, tabs, viewState, pageDraft, clearDraft } from './page.js';
 import { store } from '../lib/store.js';
-import { sdk } from '../lib/puter.js';
+import { sdk } from '../lib/everything.js';
 import { exportBackup, restoreBackup, validateBackup, eraseAll } from '../lib/backup.js';
 import { loadSample, sampleConflicts } from '../lib/sample.js';
 import { monthName, today, formatDate } from '../lib/dates.js';
@@ -84,9 +84,9 @@ export function renderSettings(main, route) {
             try {
               const path = `backups/books-backup-${today()}-${Date.now()}.json`;
               await sdk().fs.write(path, JSON.stringify(exportBackup(store)), { createMissingParents: true });
-              toast('Backup saved to your Puter drive');
+              toast('Backup saved to your Everything drive');
             } catch (e) { toastError(`Could not save: ${e.message || e}`); }
-          } }, el('span', { html: icon('cloud', 16) }), 'Save backup to Puter'),
+          } }, el('span', { html: icon('cloud', 16) }), 'Save backup to Everything'),
           el('button.btn', { type: 'button', onclick: restore }, el('span', { html: icon('upload', 16) }), 'Restore from backup'))),
       section('Sample company', 'Fill the books with nine months of a sample design studio, to explore every screen.',
         el('button.btn', { type: 'button', onclick: async () => {
@@ -117,7 +117,7 @@ export function renderSettings(main, route) {
           el('dt', {}, 'Transactions'), el('dd', {}, String(stats.txns)),
           el('dt', {}, 'Ledger postings'), el('dd', {}, String(stats.postings)),
           el('dt', {}, 'Ledger balance check'), el('dd', {}, stats.imbalance === 0 ? 'Debits equal credits' : `Out of balance by ${formatMoney(stats.imbalance)}`),
-          el('dt', {}, 'Storage'), el('dd', {}, 'Your own Puter account. ', el('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Powered by Puter')))));
+          el('dt', {}, 'Storage'), el('dd', {}, 'Your own Everything account. ', el('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Powered by Everything')))));
   }
 
   swap(main, el('div.page.settings', {},

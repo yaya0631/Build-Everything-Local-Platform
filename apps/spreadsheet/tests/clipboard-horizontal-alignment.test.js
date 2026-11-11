@@ -79,7 +79,7 @@ it('preserves alignment through edit/undo, outgoing HTML and metadata-free XLSX'
   });
   const zip = X.CFB.read(data, { type: 'array' }), part = X.CFB.find(zip, '/xl/workbook.xml');
   X.CFB.utils.cfb_add(zip, '/xl/workbook.xml', new TextEncoder().encode(new TextDecoder().decode(part.content)
-    .replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')));
+    .replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')));
   const back = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'alignment.xlsx');
   for (const [c, align] of aligns.entries()) {
     expect(back.getValue(back.activeSheetId, 0, c)).toBe(12.5);

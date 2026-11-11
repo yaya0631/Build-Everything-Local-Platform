@@ -341,7 +341,7 @@ function renderJobDetail(ctx, jobId) {
           'p',
           { class: 'muted small publish-note' },
           job.status === 'open'
-            ? 'Publish this posting as a public page on your own Puter site, with an apply-by-email button.'
+            ? 'Publish this posting as a public page on your own Everything site, with an apply-by-email button.'
             : 'Only open jobs can be published. Open the job first.'
         ),
     el(
@@ -431,7 +431,7 @@ function renderJobDetail(ctx, jobId) {
             // the one thing this dialog has to say out loud.
             const pooled = jobCandidates.filter((c) => c.pool).length;
             // And their uploaded files, which are not in the app's storage
-            // at all: they sit in the user's own Puter drive, and the
+            // at all: they sit in the user's own Everything drive, and the
             // directory goes with the candidate.
             const files = jobCandidates.reduce((n, c) => n + (c.attachments?.length ?? 0), 0);
             const ok = await confirmDialog({
@@ -439,7 +439,7 @@ function renderJobDetail(ctx, jobId) {
               message: [
                 `“${job.title}” and its ${plural(jobCandidates.length, 'candidate')} will be permanently removed, including their interviews, scorecards, offers, and onboarding checklists.`,
                 pooled > 0 ? `${plural(pooled, 'talent-pool member')} ${pooled === 1 ? 'is' : 'are'} among them.` : null,
-                files > 0 ? `${plural(files, 'uploaded file')} ${files === 1 ? 'is' : 'are'} deleted from your Puter drive too.` : null,
+                files > 0 ? `${plural(files, 'uploaded file')} ${files === 1 ? 'is' : 'are'} deleted from your Everything drive too.` : null,
               ]
                 .filter(Boolean)
                 .join(' '),
@@ -550,7 +550,7 @@ function openPublishDialog(ctx, job) {
       el(
         'p',
         { class: 'confirm-message' },
-        'The posting becomes a public page on your own Puter site, with an apply-by-email button. Republishing happens automatically when you edit the job; closing it takes the page down.'
+        'The posting becomes a public page on your own Everything site, with an apply-by-email button. Republishing happens automatically when you edit the job; closing it takes the page down.'
       ),
       field('Applications go to', email, 'pub-email'),
     ],

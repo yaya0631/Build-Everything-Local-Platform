@@ -1,8 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
 
-// An in-memory folder: writing without overwrite fails on a file that exists, as Puter's does.
+// An in-memory folder: writing without overwrite fails on a file that exists, as Everything's does.
 const files = vi.hoisted(() => new Map());
-vi.mock('../src/lib/puter.js', async (importOriginal) => ({
+vi.mock('../src/lib/everything.js', async (importOriginal) => ({
   ...await importOriginal(),
   fileExists: async (path) => files.has(path),
   writeFile: async (path, blob, { overwrite = true } = {}) => {

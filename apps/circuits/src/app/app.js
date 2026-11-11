@@ -14,7 +14,7 @@ import { buildMenus } from './menus.js';
 import { registerCommands } from './actions.js';
 import { Settings, uiState } from './settings.js';
 import { applyTheme, resolvedTheme, currentTheme } from './theme.js';
-import * as P from './puter.js';
+import * as P from './everything.js';
 import * as storage from './storage.js';
 import * as dialogs from './dialogs.js';
 import { newComponentDialog, libraryDialog } from './lib-dialogs.js';
@@ -54,7 +54,7 @@ function pickFiles(accept) {
   });
 }
 
-export const REPO_URL = 'https://github.com/heyputer/everything';
+export const REPO_URL = 'https://github.com/yaya0631/Build-Everything-Local-Platform';
 const ALPHA_KEY = 'circuits:alpha-notice-seen';
 const LAST_KEY = 'circuits:last-project';
 const COMPACT = '(max-width: 900px)';
@@ -64,10 +64,10 @@ const RIGHT_PANELS = ['properties', 'components', 'layers'];
 const PANEL_LABEL = { projects: 'Projects', navigator: 'Navigator', properties: 'Properties', components: 'Components', layers: 'Layers', messages: 'Messages' };
 
 export class App extends Emitter {
-  constructor(root, { puterTimeout = 4000 } = {}) {
+  constructor(root, { everythingTimeout = 4000 } = {}) {
     super();
     this.root = root;
-    this.puterTimeout = puterTimeout;
+    this.everythingTimeout = everythingTimeout;
     this.settings = new Settings();
     this.commands = new CommandRegistry();
     this.kernel = new KernelClient();
@@ -111,14 +111,14 @@ export class App extends Emitter {
     this._wireGlobal();
     this.renderAccount();
 
-    const sdk = await P.loadPuter(this.puterTimeout);
+    const sdk = await P.loadEverything(this.everythingTimeout);
     this.env = P.env();
     if (sdk && (this.env === 'app' || P.isSignedIn())) await this._loadUser();
     this.renderAccount();
     this.userLibrary.load();
 
     let opened = false;
-    // Launched from the Puter desktop with a file.
+    // Launched from the Everything desktop with a file.
     if (sdk?.ui?.onLaunchedWithItems) {
       try {
         sdk.ui.onLaunchedWithItems(async (items) => {
@@ -423,17 +423,17 @@ export class App extends Emitter {
   renderAccount() {
     const el = this.accountEl;
     clear(el);
-    if (!P.puter()) return;
+    if (!P.everything()) return;
     if (!this.user) {
       if (this.env === 'app') return;
-      el.append(h('button.btn.sm', { type: 'button', onClick: () => this.signIn(), 'data-tip': 'Sign in to save projects to your Puter cloud' }, icon('login', 14), h('span.phone-hide', 'Sign in')));
+      el.append(h('button.btn.sm', { type: 'button', onClick: () => this.signIn(), 'data-tip': 'Sign in to save projects to your Everything cloud' }, icon('login', 14), h('span.phone-hide', 'Sign in')));
       return;
     }
     const avatar = this.picture ? h('img.avatar', { src: this.picture, alt: '' }) : h('span.avatar.initial', (this.user.username || '?')[0].toUpperCase());
     const btn = h('button.account-btn', { type: 'button', 'aria-label': `Account: ${this.user.username}`, 'aria-haspopup': 'menu' }, avatar);
     btn.addEventListener('click', () => {
       const items = [{ heading: this.user.username }, { label: 'Preferences', icon: 'settings', run: () => this.preferences() }];
-      // Inside the Puter desktop the session belongs to Puter, so there is no sign out here.
+      // Inside the Everything desktop the session belongs to Everything, so there is no sign out here.
       if (this.env !== 'app') items.push({ separator: true }, { label: 'Sign out', icon: 'logout', run: () => this.signOut() });
       openMenu(items, { anchor: btn, label: 'Account' });
     });
@@ -446,7 +446,7 @@ export class App extends Emitter {
       await this._loadUser();
       this.renderAccount();
       this.userLibrary.load();
-      toast(`Signed in as ${this.user?.username || 'you'}. New projects are saved to your Puter cloud.`, { kind: 'success' });
+      toast(`Signed in as ${this.user?.username || 'you'}. New projects are saved to your Everything cloud.`, { kind: 'success' });
       if (this.project && this.location?.type === 'local') {
         toast('This project is stored in this browser only.', {
           title: 'Keep it in your cloud?', timeout: 0,
@@ -474,7 +474,7 @@ export class App extends Emitter {
     this.location = await storage.newLocation(this.project.name, this.project.id);
     await this.save();
     if (old?.type === 'local' && this.location.type === 'cloud') await storage.deleteProject(old).catch(() => {});
-    toast('Project moved to your Puter cloud.', { kind: 'success' });
+    toast('Project moved to your Everything cloud.', { kind: 'success' });
     this.panels.projects.refresh();
   }
 
@@ -698,7 +698,7 @@ export class App extends Emitter {
     const p = this.project;
     if (!p) return;
     const text = JSON.stringify(p.toJSON());
-    if (P.cloudAvailable() && P.puter()?.ui?.showSaveFilePicker) {
+    if (P.cloudAvailable() && P.everything()?.ui?.showSaveFilePicker) {
       try {
         const loc = await storage.pickCloudSave(text, p.name);
         if (!loc) return;
@@ -899,7 +899,7 @@ export class App extends Emitter {
       const b = h('button', { type: 'button', onClick: () => this.openLocation(r.location) }, icon(r.location.type === 'cloud' ? 'cloud' : 'drive', 16), h('span.grow', r.name), h('span.small.muted', storage.locationLabel(r.location)));
       list.append(h('li', b));
     }
-    const signedOut = P.puter() && !P.cloudAvailable();
+    const signedOut = P.everything() && !P.cloudAvailable();
     this.start = h('div.start-page', { role: 'region', 'aria-label': 'Start' }, h('div.start-inner',
       h('h1', 'Design circuit boards in your browser'),
       h('p.lead', 'Draw schematics, lay out and route boards, pour copper, check design rules and export Gerber files for manufacturing.',
@@ -907,10 +907,10 @@ export class App extends Emitter {
       h('div.start-actions',
         card('new', 'New project', 'A schematic sheet and a board, ready to go', () => this.newProject()),
         card('chip', 'Open the example', 'A 555 LED blinker with its board', () => this.openExample()),
-        card('open', 'Open a project', P.cloudAvailable() ? 'From your Puter cloud or this browser' : 'Stored in this browser', () => this.openProjectDialog()),
+        card('open', 'Open a project', P.cloudAvailable() ? 'From your Everything cloud or this browser' : 'Stored in this browser', () => this.openProjectDialog()),
         card('upload', 'Open a file', 'A .circuits project, or KiCad schematic and board files', () => this.importFromDevice())),
       recent.length ? h('section.start-section', h('h2', 'Recent'), list) : null,
-      signedOut ? h('p.muted', { style: { marginTop: '24px' } }, h('button.btn', { type: 'button', onClick: () => this.signIn() }, icon('login', 14), 'Sign in to Puter'), ' to keep projects in your own cloud storage and open them anywhere.') : null));
+      signedOut ? h('p.muted', { style: { marginTop: '24px' } }, h('button.btn', { type: 'button', onClick: () => this.signIn() }, icon('login', 14), 'Sign in to Everything'), ' to keep projects in your own cloud storage and open them anywhere.') : null));
     this.editorHost.append(this.start);
     this.updateTitle();
   }
@@ -1013,7 +1013,7 @@ export class App extends Emitter {
       const e = msgs.filter((m) => m.severity === 'error').length, w = msgs.length - e;
       s.append(cell([h('span.sev-error', icon('error', 13), e), h('span.sev-warning', icon('warning', 13), w)], { onClick: () => this.setBottomDock(!this.bottomOpen), class: 'msg-count', 'aria-label': `${e} errors, ${w} warnings. Show messages` }));
     }
-    s.append(h('span.cell.powered.tablet-hide', 'Built on ', h('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener noreferrer' }, 'Puter')));
+    s.append(h('span.cell.powered.tablet-hide', 'Built on ', h('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener noreferrer' }, 'Everything')));
     s.append(cell([icon('panel-right', 14), 'Panels'], { onClick: (e) => openMenu([{ command: 'panel.projects' }, { command: 'panel.navigator' }, { command: 'panel.properties' }, { command: 'panel.components' }, { command: 'panel.layers' }, { command: 'panel.messages' }, { separator: true }, { command: 'window.resetLayout' }], { anchor: e.currentTarget, label: 'Panels' }) }));
   }
 

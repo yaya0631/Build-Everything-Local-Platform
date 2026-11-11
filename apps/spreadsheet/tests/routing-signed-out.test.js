@@ -10,7 +10,7 @@ vi.mock('../src/views/editor.js', () => ({ editorView: mocks.editor }));
 vi.mock('../src/views/home.js', () => ({ homeView: mocks.home }));
 vi.mock('../src/lib/session.js', () => ({ session: mocks.session }));
 vi.mock('../src/lib/recent.js', () => ({ rememberRecent: vi.fn(), forgetRecent: vi.fn() }));
-vi.mock('../src/lib/puter.js', () => ({
+vi.mock('../src/lib/everything.js', () => ({
   hasSDK: () => true, isSignedIn: async () => false, onAuth() {}, onLaunchedWithItems() {}, onWindowClose() {}, setWindowTitle() {}, isNotFound: () => false, samePath: (a, b) => a === b,
 }));
 
@@ -73,7 +73,7 @@ describe('opening the app without a session', () => {
     expect(mocks.fromPath).not.toHaveBeenCalled();
     expect(location.hash).toBe('#/edit/Spreadsheets%2FBudget.xlsx');
 
-    [...app.querySelectorAll('button')].find((b) => b.textContent === 'Sign in to Puter').click();
+    [...app.querySelectorAll('button')].find((b) => b.textContent === 'Sign in to Everything').click();
     await vi.waitFor(() => expect(mocks.session.signIn).toHaveBeenCalledOnce());
     await vi.waitFor(() => expect(editors).toHaveLength(1));
     expect(mocks.fromPath).toHaveBeenCalledWith('Spreadsheets/Budget.xlsx');

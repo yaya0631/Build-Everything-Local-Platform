@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { puterBackend, isMissing, localKv } from '../src/data/backend.js';
+import { everythingBackend, isMissing, localKv } from '../src/data/backend.js';
 
 function fakeFs() {
   const files = new Map();
@@ -35,13 +35,13 @@ function fakeFs() {
   };
 }
 
-describe('Puter storage adapter', () => {
+describe('Everything storage adapter', () => {
   it('writes files under wiki/ in the app folder, replacing and creating folders', async () => {
     const f = fakeFs();
-    const b = puterBackend({ fs: f.fs });
+    const b = everythingBackend({ fs: f.fs });
     const res = await b.write('pages/a.ywk', new Uint8Array([1, 2, 3]));
     expect(f.calls[0]).toEqual(['write', 'wiki/pages/a.ywk', { overwrite: true, dedupeName: false, createMissingParents: true }]);
-    // Puter reports seconds; the adapter uses milliseconds.
+    // Everything reports seconds; the adapter uses milliseconds.
     expect(res.modified).toBe(1700000000 * 1000);
     expect(res.size).toBe(3);
     const read = await b.read('pages/a.ywk');
@@ -50,7 +50,7 @@ describe('Puter storage adapter', () => {
   });
 
   it('treats missing files as empty, not as errors', async () => {
-    const b = puterBackend({ fs: fakeFs().fs });
+    const b = everythingBackend({ fs: fakeFs().fs });
     expect(await b.read('nope')).toBe(null);
     expect(await b.stat('nope')).toBe(null);
     expect(await b.list('nothing')).toEqual([]);
@@ -62,18 +62,18 @@ describe('Puter storage adapter', () => {
     f.fs.read = async () => {
       throw Object.assign(new Error('Too many requests'), { code: 'too_many_requests' });
     };
-    await expect(puterBackend({ fs: f.fs }).read('x')).rejects.toThrow(/Too many/);
+    await expect(everythingBackend({ fs: f.fs }).read('x')).rejects.toThrow(/Too many/);
   });
 
   it('lists folders', async () => {
     const f = fakeFs();
-    const b = puterBackend({ fs: f.fs });
+    const b = everythingBackend({ fs: f.fs });
     await b.write('history/p1/1.ywk', new Uint8Array([1]));
     await b.write('history/p1/2.ywk', new Uint8Array([2]));
     expect((await b.list('history/p1')).map((x) => x.name).sort()).toEqual(['1.ywk', '2.ywk']);
   });
 
-  it('recognizes Puter missing-file errors', () => {
+  it('recognizes Everything missing-file errors', () => {
     expect(isMissing({ code: 'subject_does_not_exist' })).toBe(true);
     expect(isMissing({ status: 404 })).toBe(true);
     expect(isMissing(new Error('Item does not exist'))).toBe(true);

@@ -1,7 +1,7 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { openContextMenu, isContextMenuOpen, closeContextMenu } from '../src/js/context-menu.js';
 
-// Outside the Puter GUI (puter is undefined here) openContextMenu renders the
+// Outside the Everything GUI (everything is undefined here) openContextMenu renders the
 // styled, keyboard-accessible fallback menu.
 function openAt(items) {
   const evt = new MouseEvent('contextmenu', { clientX: 20, clientY: 20, cancelable: true });

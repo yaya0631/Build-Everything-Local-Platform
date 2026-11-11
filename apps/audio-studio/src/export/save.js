@@ -1,4 +1,4 @@
-// Saving and exporting documents: Save (back to the document's Puter file in
+// Saving and exporting documents: Save (back to the document's Everything file in
 // its own format), Save As, Save a Copy, Export File, Save Selection As and
 // Download. Encoding always runs in the export worker behind a cancellable
 // progress dialog.
@@ -8,7 +8,7 @@ import { exportFileDialog } from './dialog.js';
 import { withProgress } from './progress.js';
 import { conformOptions, defaultOptions, docBitDepth, formatForName, getFormat } from './formats.js';
 import { confirmDialog } from '../ui/dialog.js';
-import * as puter from '../storage/puter.js';
+import * as everything from '../storage/everything.js';
 import { downloadBlob, rememberRecent } from '../storage/files.js';
 
 /** Encodes frames [start, end) of a document with export options. */
@@ -28,18 +28,18 @@ function encodeWithProgress(doc, options, range, label) {
   return withProgress(label, (onProgress, signal) => encodeDoc(doc, options, { ...range, onProgress, signal }), { detail: label });
 }
 
-/** File > Save: in place when the document has a Puter file in a writable format, else Save As. */
+/** File > Save: in place when the document has an Everything file in a writable format, else Save As. */
 export async function saveDocument(app, doc, { saveAs = false, copy = false } = {}) {
   if (!doc) return false;
-  const path = doc.source?.type === 'puter' ? doc.source.path : null;
+  const path = doc.source?.type === 'everything' ? doc.source.path : null;
   const format = path ? formatForName(path) : null;
   if (!saveAs && !copy && path && format && getFormat(format)) {
-    if (!puter.isSignedIn() && !(await puter.signIn().catch(() => false))) return false;
+    if (!everything.isSignedIn() && !(await everything.signIn().catch(() => false))) return false;
     const options = optionsForSave(doc, format);
     const state = doc.state;
     const blob = await encodeWithProgress(doc, options, {}, `Saving ${doc.name}`);
     if (!blob) return false;
-    await withProgress(`Saving ${doc.name}`, () => puter.writeFile(path, blob), { delay: 600, detail: 'Uploading to Puter' });
+    await withProgress(`Saving ${doc.name}`, () => everything.writeFile(path, blob), { delay: 600, detail: 'Uploading to Everything' });
     // Only mark saved if nothing changed while encoding.
     if (doc.state === state) doc.markSaved();
     app.setStatus(`Saved ${doc.name}`);
@@ -60,16 +60,16 @@ export async function saveFlow(app, doc, { mode = 'export', range = null } = {})
     if (!r) return false;
     let path = null;
     let dir = null;
-    if (r.location.type === 'puter') {
-      if (!puter.isSignedIn() && !(await puter.signIn().catch(() => false))) {
-        app.notify('Sign in to Puter to save there, or choose This device.', { error: true });
+    if (r.location.type === 'everything') {
+      if (!everything.isSignedIn() && !(await everything.signIn().catch(() => false))) {
+        app.notify('Sign in to Everything to save there, or choose This device.', { error: true });
         initialName = r.fileName;
         continue;
       }
-      dir = r.location.dir || (await puter.appDir());
-      path = puter.joinPath(dir, r.fileName);
-      const isCurrent = mode === 'saveAs' && doc.source?.type === 'puter' && doc.source.path === path;
-      if (!isCurrent && (await puter.exists(path))) {
+      dir = r.location.dir || (await everything.appDir());
+      path = everything.joinPath(dir, r.fileName);
+      const isCurrent = mode === 'saveAs' && doc.source?.type === 'everything' && doc.source.path === path;
+      if (!isCurrent && (await everything.exists(path))) {
         const ok = await confirmDialog({ title: 'Replace File?', message: `"${r.fileName}" already exists in ${dir}. Do you want to replace it?`, confirm: 'Replace', danger: true });
         if (!ok) {
           initialName = r.fileName;
@@ -86,11 +86,11 @@ export async function saveFlow(app, doc, { mode = 'export', range = null } = {})
     }
     let item = null;
     if (path) {
-      item = await withProgress(label, () => puter.writeFile(path, blob), { delay: 600, detail: 'Uploading to Puter' });
+      item = await withProgress(label, () => everything.writeFile(path, blob), { delay: 600, detail: 'Uploading to Everything' });
       rememberRecent(app, { name: r.fileName, path });
     } else downloadBlob(blob, r.fileName);
     if (mode === 'saveAs') {
-      doc.source = path ? { type: 'puter', path, uid: item?.uid } : { type: 'download' };
+      doc.source = path ? { type: 'everything', path, uid: item?.uid } : { type: 'download' };
       doc.info = { ...doc.info, format: r.options.format, exportOptions: r.options, size: blob.size };
       if (doc.name !== r.fileName) doc.rename(r.fileName);
       if (doc.state === state) doc.markSaved();

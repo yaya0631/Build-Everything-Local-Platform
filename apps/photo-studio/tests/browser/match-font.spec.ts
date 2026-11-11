@@ -73,7 +73,7 @@ test('Match Font finds the font of boxed text and applies it to the text layer',
 });
 
 test('Ask AI re-ranks matches only when pressed', async ({ page }) => {
-  await boot(page, 'default', 'window.puter={env:"app",auth:{isSignedIn:()=>true},ai:{calls:[],txt2img:async()=>({src:""}),chat:async(prompt,file)=>{window.puter.ai.calls.push({prompt,type:file&&file.type});return {message:{content:window.aiAnswer}};}}};');
+  await boot(page, 'default', 'window.everything={env:"app",auth:{isSignedIn:()=>true},ai:{calls:[],txt2img:async()=>({src:""}),chat:async(prompt,file)=>{window.everything.ai.calls.push({prompt,type:file&&file.type});return {message:{content:window.aiAnswer}};}}};');
   await setup(page, 'Crimson Pro');
   await page.evaluate(() => window.photoStudio.runCommand('select.all'));
   await idle(page);
@@ -82,7 +82,7 @@ test('Ask AI re-ranks matches only when pressed', async ({ page }) => {
   // The selection is the box, so matching starts at once.
   const matches = dialog.locator('.mf-match');
   await expect(matches.first()).toBeVisible({ timeout: 60_000 });
-  const calls = () => page.evaluate(() => (window as unknown as { puter: { ai: { calls: unknown[] } } }).puter.ai.calls.length);
+  const calls = () => page.evaluate(() => (window as unknown as { everything: { ai: { calls: unknown[] } } }).everything.ai.calls.length);
   expect(await calls()).toBe(0);
   const before = await matches.evaluateAll((list) => list.map((b) => (b as HTMLElement).dataset.family));
   expect(before).toContain('Crimson Pro');
@@ -93,7 +93,7 @@ test('Ask AI re-ranks matches only when pressed', async ({ page }) => {
   await expect(matches.first()).toHaveAttribute('data-family', other);
   await expect(matches.first().locator('.mf-score em')).toHaveText('AI');
   expect(await calls()).toBe(1);
-  const sent = await page.evaluate(() => (window as unknown as { puter: { ai: { calls: { prompt: string; type: string }[] } } }).puter.ai.calls[0]);
+  const sent = await page.evaluate(() => (window as unknown as { everything: { ai: { calls: { prompt: string; type: string }[] } } }).everything.ai.calls[0]);
   expect(sent.type).toBe('image/png');
   expect(sent.prompt).toContain('Crimson Pro');
   await dialog.locator('#mf-cancel').click();

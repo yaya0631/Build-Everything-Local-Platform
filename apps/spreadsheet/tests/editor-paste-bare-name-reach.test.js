@@ -39,7 +39,7 @@ async function mount() {
   expect(wb.externalAllowed).toBe(true);
   view = editorView({ doc, goHome: vi.fn(), openPath: vi.fn(), newDoc: vi.fn(), templateDoc: vi.fn(), importFile: vi.fn() });
   document.querySelector('#app').append(view.el);
-  // Stand in for the editor's own IMPORTDATA provider (Puter's fetch) once it is installed.
+  // Stand in for the editor's own IMPORTDATA provider (Everything's fetch) once it is installed.
   const calls = [];
   wb.setAsyncProvider('IMPORTDATA', async (text) => { calls.push(text); return [['fetched']]; });
   await vi.advanceTimersByTimeAsync(1);

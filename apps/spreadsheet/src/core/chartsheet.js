@@ -25,6 +25,6 @@ const CHART_SHEET_COMMANDS = new Set([
   'protectSheet', 'sheetColor', 'copySheetTo', 'moveOrCopySheet', 'placeSheet', 'sheet', 'focusMode', 'fullscreen', 'zoom', 'zoomTo', 'zoomCustom', 'zoomFit',
   'customViews', 'addCustomView', 'deleteCustomView', 'showCustomView',
   'editChart', 'deleteChart', 'duplicateChart', 'copyChart', 'downloadChart', 'chart',
-  'insertImage', 'insertImagePuter', 'insertImageUrl', 'replaceImage', 'insertTextBox', 'copy', 'paste', 'find', 'goTo', 'goToName',
+  'insertImage', 'insertImageEverything', 'insertImageUrl', 'replaceImage', 'insertTextBox', 'copy', 'paste', 'find', 'goTo', 'goToName',
 ]);
 export const chartSheetCommand = command => CHART_SHEET_COMMANDS.has(command);

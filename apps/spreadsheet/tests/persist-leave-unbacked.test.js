@@ -8,7 +8,7 @@ vi.mock('../src/views/editor.js', () => ({ editorView: mocks.editor }));
 vi.mock('../src/views/home.js', () => ({ homeView: mocks.home }));
 vi.mock('../src/lib/session.js', () => ({ session: { init: async () => {}, signedOut: true, addEventListener() {}, removeEventListener() {} } }));
 vi.mock('../src/lib/recent.js', () => ({ rememberRecent: vi.fn(), forgetRecent: vi.fn() }));
-vi.mock('../src/lib/puter.js', () => ({
+vi.mock('../src/lib/everything.js', () => ({
   hasSDK: () => true, isSignedIn: async () => false, onAuth() {}, onLaunchedWithItems() {}, onWindowClose() {}, setWindowTitle() {}, isNotFound: () => false, samePath: (a, b) => a === b,
 }));
 
@@ -59,7 +59,7 @@ it('says the edits stay on this device and where to find them, while the local d
   await vi.waitFor(() => expect(mocks.editor).toHaveBeenCalledOnce());
   const { leaveDialog } = mocks.editor.mock.calls[0][0];
   const pending = leaveDialog();
-  expect(dialogText()).toMatch(/not saved to Puter yet\. Sign in/);
+  expect(dialogText()).toMatch(/not saved to Everything yet\. Sign in/);
   expect(dialogText()).toMatch(/stays? on this device/);
   expect(dialogText()).toMatch(/Unsaved spreadsheets/);
   expect(dialogText()).not.toMatch(/discard|lose|could not keep a copy/);

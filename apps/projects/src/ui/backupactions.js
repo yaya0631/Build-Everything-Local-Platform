@@ -6,7 +6,7 @@ import { openModal, confirmDialog } from './modal.js';
 import { parseBackupFile, describeBackup, validateBackup } from '../lib/backup.js';
 import { formatBytes } from '../lib/util.js';
 import { todayISO } from '../lib/dates.js';
-import { canSaveFiles, saveToPuter } from '../lib/puterui.js';
+import { canSaveFiles, saveToEverything } from '../lib/everythingui.js';
 
 /** Hand a blob to the browser as a download. */
 export function downloadBlob(blob, filename) {
@@ -33,7 +33,7 @@ const safeSlug = (name) => String(name || 'project')
  * the UI says which is which rather than quietly dropping files.
  */
 export async function exportBackup(btn, {
-  ids = null, withAttachments = true, name = null, toPuter = false,
+  ids = null, withAttachments = true, name = null, toEverything = false,
 } = {}) {
   if (btn) btn.disabled = true;
   try {
@@ -57,8 +57,8 @@ export async function exportBackup(btn, {
 
     // A backup that lands in your own Drive is more useful than one in
     // ~/Downloads, on a platform where the Drive is the point.
-    if (toPuter) {
-      const saved = await saveToPuter(blob, filename);
+    if (toEverything) {
+      const saved = await saveToEverything(blob, filename);
       if (!saved) return;   // the picker was dismissed; nothing to report
       toast(`Saved to ${saved.path}${note}`, { icon: 'cloud' });
       return;

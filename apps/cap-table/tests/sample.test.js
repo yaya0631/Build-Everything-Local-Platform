@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { sampleDataset, wipeSampleData } from '../src/lib/sample.js';
 import { auditActionLabel } from '../src/lib/audit.js';
-import { puterBackend } from './helpers/puter-kv.js';
+import { everythingBackend } from './helpers/everything-kv.js';
 import { Store } from '../src/lib/store.js';
 import { fullyDiluted, poolRemaining, ownershipByStakeholder } from '../src/lib/captable.js';
 import { foldRows } from '../src/charts/ownership.js';
@@ -36,7 +36,7 @@ describe('sampleDataset', () => {
   });
 
   it('journals the wipe under its own name, beside the load it undoes', async () => {
-    puterBackend().install();
+    everythingBackend().install();
     const s = new Store();
     await s.init();
     await s.importAll(sampleDataset(), { label: 'Before loading sample data', operation: 'loadSampleData', settings: { sampleData: true, onboarded: true } });

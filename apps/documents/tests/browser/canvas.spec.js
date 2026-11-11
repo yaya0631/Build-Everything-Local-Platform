@@ -1,4 +1,4 @@
-import { showAllTools, saveToPuter, onTab } from './helpers/editor-tools.js';
+import { showAllTools, saveToEverything, onTab } from './helpers/editor-tools.js';
 import { reopenDocx } from './helpers/reopen-docx.js';
 import { test, expect } from '@playwright/test';
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -190,7 +190,7 @@ test('pointer dragging selects across paragraphs, and a rejected file leaves cur
   await expect(input).toHaveValue(original);
 });
 
-test('the app uses the canvas engine and saves and reopens through Puter storage', async ({ page }) => {
+test('the app uses the canvas engine and saves and reopens through Everything storage', async ({ page }) => {
   await page.goto('/mock.html'); await showAllTools(page);
   const input = page.getByRole('textbox', { name: 'Document text' });
   await expect(input).toBeVisible();
@@ -207,8 +207,8 @@ test('the app uses the canvas engine and saves and reopens through Puter storage
   await page.getByRole('combobox', { name: 'Paragraph style', exact: true }).selectOption('Heading2');
   await input.press('ControlOrMeta+a');
   await page.getByRole('combobox', { name: 'Character style', exact: true }).selectOption('Emphasis');
-  await saveToPuter(page);
-  await expect(page.locator('.canvas-save-status')).toHaveText('Saved to Puter');
+  await saveToEverything(page);
+  await expect(page.locator('.canvas-save-status')).toHaveText('Saved to Everything');
   const url = page.url();
   expect(url).toContain('edit/');
   await page.reload(); await showAllTools(page);
@@ -224,8 +224,8 @@ test('the app uses the canvas engine and saves and reopens through Puter storage
   await (await onTab(page, 'insert')).getByRole('button', { name: 'Insert table', exact: true }).click();
   await page.getByRole('button', { name: 'Insert', exact: true }).click();
   await page.keyboard.insertText('Cloud cell');
-  await saveToPuter(page);
-  await expect(page.locator('.canvas-save-status')).toHaveText('Saved to Puter');
+  await saveToEverything(page);
+  await expect(page.locator('.canvas-save-status')).toHaveText('Saved to Everything');
   await page.reload(); await showAllTools(page); await expect(input).toHaveValue(/Cloud cell/);
   await input.evaluate(el => { const at = el.value.indexOf('Cloud cell'); el.setSelectionRange(at, at); el.dispatchEvent(new Event('select', { bubbles: true })); });
   await expect(page.getByRole('combobox', { name: 'Table actions', exact: true })).toBeEnabled();

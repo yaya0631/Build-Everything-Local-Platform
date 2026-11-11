@@ -255,10 +255,10 @@ export function createApp({ backend, root }) {
           'sep',
           { label: 'Keyboard shortcuts', icon: 'keyboard', hint: singleKeysOn() ? '?' : undefined, run: () => openShortcuts() },
           { label: 'About Surveys', icon: 'info', run: () => aboutDialog() },
-          // Inside the Puter desktop the app lives in the user's session:
+          // Inside the Everything desktop the app lives in the user's session:
           // signing out is the desktop's job, not ours.
-          backend.env !== 'app' && backend.mode === 'puter' ? 'sep' : null,
-          backend.env !== 'app' && backend.mode === 'puter'
+          backend.env !== 'app' && backend.mode === 'everything' ? 'sep' : null,
+          backend.env !== 'app' && backend.mode === 'everything'
             ? { label: 'Sign out', icon: 'logout', run: () => signOut() }
             : null,
         ],
@@ -287,9 +287,9 @@ export function createApp({ backend, root }) {
         body: h(
           'div',
           { class: 'about' },
-          h('p', null, 'Build surveys, share them with a link, and analyze the results. Your surveys and responses are stored in your own Puter account.'),
+          h('p', null, 'Build surveys, share them with a link, and analyze the results. Your surveys and responses are stored in your own Everything account.'),
           h('p', { class: 'muted' }, 'Surveys is open source and in early development (alpha).'),
-          h('p', null, h('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Powered by Puter')),
+          h('p', null, h('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Powered by Everything')),
         ),
         foot: h('button', { type: 'button', class: 'btn btn-primary', onclick: () => close() }, 'Close'),
       }),
@@ -514,12 +514,12 @@ export function renderSignIn(root, { onSignIn }) {
         { class: 'signin-card' },
         brandMark(48),
         h('h1', null, 'Surveys'),
-        h('p', { class: 'muted' }, 'Create surveys, share them with a link, and see the results as they come in. Everything is stored in your own Puter account.'),
+        h('p', { class: 'muted' }, 'Create surveys, share them with a link, and see the results as they come in. Everything is stored in your own Everything account.'),
         btn,
         err,
         h('a', { class: 'signin-alt', href: localUrl.href.replace('local=', 'local') }, 'Try it without an account (stays in this browser)'),
       ),
-      h('p', { class: 'signin-foot' }, h('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Powered by Puter')),
+      h('p', { class: 'signin-foot' }, h('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Powered by Everything')),
     ),
   );
 }

@@ -26,7 +26,7 @@ function book(rows, subtype, range = { r1: 0, c1: 0, r2: rows.length - 1, c2: ro
 async function cycle(wb, { meta = false, edit = null } = {}) {
   const zip = X.CFB.read(new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()), { type: 'array' });
   const parts = Object.fromEntries(zip.FullPaths.map((p, i) => [p.slice(zip.FullPaths[0].length - 1), zip.FileIndex[i]]).filter(([, f]) => f.content?.length).map(([p, f]) => [p, decode(f)]));
-  if (!meta) X.CFB.utils.cfb_add(zip, '/xl/workbook.xml', new TextEncoder().encode(parts['/xl/workbook.xml'].replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')));
+  if (!meta) X.CFB.utils.cfb_add(zip, '/xl/workbook.xml', new TextEncoder().encode(parts['/xl/workbook.xml'].replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')));
   if (edit) for (const [path, xml] of Object.entries(edit(parts))) X.CFB.utils.cfb_add(zip, path, new TextEncoder().encode(xml));
   return { wb: await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'cycle.xlsx'), parts };
 }
@@ -79,7 +79,7 @@ describe('extended chart parts', () => {
     const { wb: back } = await cycle(wb, { edit: parts => ({
       '/xl/charts/chartEx1_1.xml': parts['/xl/charts/chartEx1_1.xml'].replace('<cx:f>Sheet1!$A$2:$B$6</cx:f>', '<cx:f dir="row">_xlchart.v1.0</cx:f>')
         .replace('<cx:f>Sheet1!$C$2:$C$6</cx:f>', '<cx:f>_xlchart.v1.1</cx:f>'),
-      '/xl/workbook.xml': parts['/xl/workbook.xml'].replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '').replace('</workbook>', '<definedNames><definedName name="_xlchart.v1.0" hidden="1">Sheet1!$A$2:$B$6</definedName>'
+      '/xl/workbook.xml': parts['/xl/workbook.xml'].replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '').replace('</workbook>', '<definedNames><definedName name="_xlchart.v1.0" hidden="1">Sheet1!$A$2:$B$6</definedName>'
         + '<definedName name="_xlchart.v1.1" hidden="1">Sheet1!$C$2:$C$6</definedName></definedNames></workbook>').replace(/<definedNames>([\s\S]*?)<\/definedNames><definedNames>/, '<definedNames>$1'),
     }) });
     const chart = back.sheets[0].charts[0];

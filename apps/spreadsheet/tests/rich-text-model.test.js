@@ -135,7 +135,7 @@ it('round-trips mixed text formats through native inline strings with no private
   const wb = new Workbook({ sheets: [{ name: 'Rich', cells: { '0,0': cell() } }] });
   const zip = X.CFB.read(new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()), { type: 'array' });
   const book = X.CFB.find(zip, '/xl/workbook.xml');
-  book.content = new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  book.content = new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   book.size = book.content.length;
   const bytes = X.CFB.write(zip, { type: 'array', fileType: 'zip' });
   expect(X.read(bytes, { type: 'array' }).Sheets.Rich.A1.r).toContain('<rPr>');

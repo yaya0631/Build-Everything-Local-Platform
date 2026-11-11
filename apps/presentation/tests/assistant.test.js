@@ -757,7 +757,7 @@ describe("what the model is told", () => {
   });
 });
 
-describe("Puter AI streaming", () => {
+describe("Everything AI streaming", () => {
   it("yields text and tool calls from a stream", async () => {
     const chat = vi.fn().mockResolvedValue(
       (async function* () {
@@ -771,7 +771,7 @@ describe("Puter AI streaming", () => {
         };
       })(),
     );
-    vi.stubGlobal("puter", { ai: { chat } });
+    vi.stubGlobal("everything", { ai: { chat } });
     const parts = [];
     for await (const p of aiChatStream([{ role: "user", content: "x" }], {
       model: "m",
@@ -800,7 +800,7 @@ describe("Puter AI streaming", () => {
         ],
       },
     });
-    vi.stubGlobal("puter", { ai: { chat } });
+    vi.stubGlobal("everything", { ai: { chat } });
     const parts = [];
     for await (const p of aiChatStream([])) parts.push(p);
     expect(parts).toEqual([

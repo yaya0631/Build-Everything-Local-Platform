@@ -6,10 +6,10 @@ import { point, rotateAroundCenter } from '../../src/core/image-edit.js';
 import { drawMark } from '../../src/core/document.js';
 import * as pdfjs from 'pdfjs-dist/legacy/build/pdf.mjs';
 
-const PUTER_MOCK = `window.puter = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async () => ({}) }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
-async function mockPuter(page) {
-  await page.route('**/sdk/puter.js', (route) =>
-    route.fulfill({ contentType: 'application/javascript', body: PUTER_MOCK }),
+const EVERYTHING_MOCK = `window.everything = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async () => ({}) }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
+async function mockEverything(page) {
+  await page.route('**/sdk/everything.js', (route) =>
+    route.fulfill({ contentType: 'application/javascript', body: EVERYTHING_MOCK }),
   );
 }
 async function openPdf(page, doc, name = 'test.pdf') {
@@ -22,7 +22,7 @@ async function openPdf(page, doc, name = 'test.pdf') {
 }
 
 test('a dropped shape keeps its preview until the updated PDF is painted', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([400, 400]);
@@ -85,7 +85,7 @@ test('a dropped shape keeps its preview until the updated PDF is painted', async
 
 for (const tool of ['Shape', 'Draw', 'Highlight'])
   test(`${tool} keeps the released preview until the PDF paint replaces it`, async ({ page }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     const doc = await PDFDocument.create();
     doc.addPage([400, 400]);
@@ -149,7 +149,7 @@ for (const rotation of [0, 90, 180, 270])
   test(`check marks stay upright on rotated crop ${rotation} after click, drag, and keyboard placement`, async ({
     page,
   }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     const doc = await PDFDocument.create(),
       pdfPage = doc.addPage([400, 400]);
@@ -204,7 +204,7 @@ for (const rotation of [0, 90, 180, 270])
 test('the shape tool draws rectangles, ellipses, lines, and arrows as editable paths', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([400, 400]);
@@ -256,7 +256,7 @@ test('the shape tool draws rectangles, ellipses, lines, and arrows as editable p
 test('Shift keeps rectangles square, ellipses round, and snaps lines to 45 degrees', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([400, 400]);
@@ -278,7 +278,7 @@ test('Shift keeps rectangles square, ellipses round, and snaps lines to 45 degre
 });
 
 test('placing a shape from the keyboard uses the chosen type', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([400, 400]);
@@ -297,7 +297,7 @@ test('check marks and crosses are placed with a click or sized with a drag', asy
   page,
   isMobile,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([400, 400]);
@@ -332,7 +332,7 @@ for (const rotation of [0, 45])
   test(`thin drawing outlines allow a nearby pointer hit at ${rotation} degrees`, async ({
     page,
   }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     const doc = await PDFDocument.create();
     doc.addPage([400, 400]);
@@ -367,7 +367,7 @@ for (const [zoom, userUnit] of [
   test(`arrow preview matches the PDF at zoom ${zoom} and UserUnit ${userUnit}`, async ({
     page,
   }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     const doc = await PDFDocument.create(),
       pdfPage = doc.addPage([400, 400]);
@@ -415,7 +415,7 @@ for (const [sx, sy] of [
   test(`stretched ${sx} by ${sy} shape strokes match their visible pointer target`, async ({
     page,
   }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     const doc = await PDFDocument.create();
     doc

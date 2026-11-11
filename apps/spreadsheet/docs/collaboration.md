@@ -2,7 +2,7 @@
 
 Several people can work in the same spreadsheet at once. Everyone sees the others' edits within a second or two, sees where each of them is (their selection outlined in their colour, with their name), and keeps their own Undo. The `.xlsx` file stays the durable copy its owner keeps: it is written back as people work, so it still opens anywhere.
 
-Choose **Share**, then **Start editing together**. The first time, this deploys the owner's own collaboration server (a Puter Worker) to their account; then the workbook opens as a shared workbook. From the same dialog the owner copies an **invitation link** that lets people edit or only view (valid for seven days), invites people by their Puter username, changes anyone's access, removes them, or **stops editing together**. People open the link, sign in to Puter if they have not, and join. Opening the file again later, its owner joins the shared workbook automatically; members reopen the link (without the invitation part, it opens the workbook for members only).
+Choose **Share**, then **Start editing together**. The first time, this deploys the owner's own collaboration server (an Everything Worker) to their account; then the workbook opens as a shared workbook. From the same dialog the owner copies an **invitation link** that lets people edit or only view (valid for seven days), invites people by their Everything username, changes anyone's access, removes them, or **stops editing together**. People open the link, sign in to Everything if they have not, and join. Opening the file again later, its owner joins the shared workbook automatically; members reopen the link (without the invitation part, it opens the workbook for members only).
 
 The design follows the Whiteboard app in this repository (`src/whiteboard/docs/collaboration.md`): its worker per owner, signed requests with restricted credentials, the outbox, peer links for presence and test fakes were ported and adapted. The document model is different, for the reasons below.
 
@@ -66,14 +66,14 @@ One tab per shared workbook keeps the outbox; two tabs of the same shared workbo
 
 ## The room worker
 
-`npm run build:worker` bundles `src/collab/server` (it does not include the spreadsheet engine: the worker orders, checks and stores, browsers compute). `npm run build` runs it first. Sharing deploys or updates the owner's worker with `puter.workers.create()`; only a worker recorded in the owner's private app KV is ever updated, and invitation links never deploy anything.
+`npm run build:worker` bundles `src/collab/server` (it does not include the spreadsheet engine: the worker orders, checks and stores, browsers compute). `npm run build` runs it first. Sharing deploys or updates the owner's worker with `everything.workers.create()`; only a worker recorded in the owner's private app KV is ever updated, and invitation links never deploy anything.
 
 | Key / file | Contents |
 | --- | --- |
 | `ss:<room>:meta` | Owner, name, room signing keys, the initial state file, the owner's file, closed flag |
 | `ss:<room>:member:<user>` | Role (`owner`, `editor`, `viewer`, `removed`), join time, optional expiry |
 | `ss:<room>:invite:<sha256(token)>` | Invitation role, creator, expiry (7 days by default) |
-| `ss:<room>:named:<username>` | Invitation by Puter username |
+| `ss:<room>:named:<username>` | Invitation by Everything username |
 | `ss:<room>:claim:<rev>` | Who claimed a log position (atomic `incr`: the first claimant owns it) |
 | `ss:<room>:log:<rev>` | The record: author, session, time, changes (large ones in a file) |
 | `ss:<room>:cp`, `ss:<room>:cps` | The latest checkpoint and the last 50 (an older one's file is deleted as it leaves the list) |
@@ -81,7 +81,7 @@ One tab per shared workbook keeps the outbox; two tabs of the same shared workbo
 | `ss:<room>:ev:signal` | Change notice (carries no data) |
 | `spreadsheet/shared/<room>/…` | Initial state, checkpoints (gzipped JSON), large records |
 
-Requests (`create`, `join`, `load`, `sync`, `commit`, `checkpoint`, `presence`, `leave`, `members`, `invite`, `invite-user`, `role`, `revoke-invites`, `stop`, `events`) are signed as in the Whiteboard app: the browser never sends its app session to a worker; it mints a restricted Puter token that can only read a small identity file with its public key, and signs the worker's origin, the file path and the body digest. The worker validates the token with Puter (`fs.stat` with strong consistency of an unshared file owned by the caller) and checks the signature.
+Requests (`create`, `join`, `load`, `sync`, `commit`, `checkpoint`, `presence`, `leave`, `members`, `invite`, `invite-user`, `role`, `revoke-invites`, `stop`, `events`) are signed as in the Whiteboard app: the browser never sends its app session to a worker; it mints a restricted Everything token that can only read a small identity file with its public key, and signs the worker's origin, the file path and the body digest. The worker validates the token with Everything (`fs.stat` with strong consistency of an unshared file owned by the caller) and checks the signature.
 
 The worker enforces roles on every request, independently of the interface:
 
@@ -112,11 +112,11 @@ Each person shares their sheet, their selection, their active cell and whether t
 - Presence positions are each sender's; during a concurrent structural change a selection may be shown one row off until the sender moves. A comment being written, like a cell being typed in, follows its cell.
 - Members see the shared workbook under the name it had when sharing started, the owner under the file's name; only the owner can rename it (by renaming the file), and members keep the first name.
 - A comment's @mention is mailed with the shared workbook's link, which opens for its members: the owner may share with and invite someone mentioned who is not in it; anyone else is told to ask the owner.
-- Puter Workers may not allow writing to the owner's absolute file path; then the owner's browser writes the file when it next saves.
-- Room size is not load-tested against the hosted Puter service; the peer topology (full mesh up to eight, relays beyond) is the Whiteboard app's.
+- Everything Workers may not allow writing to the owner's absolute file path; then the owner's browser writes the file when it next saves.
+- Room size is not load-tested against the hosted Everything service; the peer topology (full mesh up to eight, relays beyond) is the Whiteboard app's.
 
 ## Tests
 
 - `tests/collab-model.test.js`: the merge model with an in-memory room: concurrent edits to different and to the same cells, value and format together, style properties, row and column insertions and deletions against edits and each other, formulas through insertions, sheet renames against formulas typed meanwhile (both orders), sheet additions, moves and deletions, widths, merges and freezing, names, per-person Undo with remote edits interleaved (and of deletions of rows and sheets), viewers, a long offline session, and random three-person sessions.
-- `tests/collab-sessions.test.js`: two and three browsers against the real worker service with an in-memory Puter: joining with invitations, edits both ways, ordering, viewer enforcement in the worker, outsiders, presence, the offline outbox across a reload, checkpoints and the `.xlsx` write-back, role changes and removal, stopping, and a second worker instance.
+- `tests/collab-sessions.test.js`: two and three browsers against the real worker service with an in-memory Everything: joining with invitations, edits both ways, ordering, viewer enforcement in the worker, outsiders, presence, the offline outbox across a reload, checkpoints and the `.xlsx` write-back, role changes and removal, stopping, and a second worker instance.
 - `tests/collab-protocol.test.js`: change validation, position mapping and structural transforms, links, colours, packing, signatures, topology, presence sanitizing, and worker permission checks (room creation, invitation expiry and revocation, invitations by username, malformed and stale commits, forged signatures).

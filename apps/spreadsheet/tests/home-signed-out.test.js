@@ -24,7 +24,7 @@ beforeEach(() => {
     },
     ui: {},
   };
-  vi.stubGlobal('puter', sdk);
+  vi.stubGlobal('everything', sdk);
 });
 afterEach(() => {
   view?.destroy();
@@ -54,7 +54,7 @@ it('offers the sign-in in place of the list, then lists the spreadsheets once si
   [...list.querySelectorAll('button')].find((b) => b.textContent === 'New spreadsheet').click();
   expect(newDoc).toHaveBeenCalledTimes(1);
 
-  [...list.querySelectorAll('button')].find((b) => b.textContent === 'Sign in to Puter').click();
+  [...list.querySelectorAll('button')].find((b) => b.textContent === 'Sign in to Everything').click();
   await vi.waitFor(() => expect(sdk.auth.signIn).toHaveBeenCalledTimes(1));
   await vi.waitFor(() => expect(list.querySelector('.file-row .file-name')?.textContent).toBe('Budget'));
   expect(list.textContent).not.toContain('Sign in to see your spreadsheets');
@@ -62,13 +62,13 @@ it('offers the sign-in in place of the list, then lists the spreadsheets once si
   expect(account.textContent).toBe('n');
 });
 
-it('asks for the sign-in before opening Puter\'s file picker', async () => {
+it('asks for the sign-in before opening Everything\'s file picker', async () => {
   sdk.ui = { showOpenFilePicker: vi.fn(async () => ({ path: 'Desktop/Picked.xlsx', name: 'Picked.xlsx' })) };
   await session.init();
   const openPath = vi.fn();
   view = homeView({ openPath, newDoc: vi.fn(), sampleDoc: vi.fn(), templateDoc: vi.fn(), importFile: vi.fn() });
   document.body.append(view.el);
-  [...view.el.querySelectorAll('.home-actions button')].find((b) => b.textContent === 'Open from Puter').click();
+  [...view.el.querySelectorAll('.home-actions button')].find((b) => b.textContent === 'Open from Everything').click();
   await vi.waitFor(() => expect(openPath).toHaveBeenCalledWith('Desktop/Picked.xlsx'));
   expect(sdk.auth.signIn).toHaveBeenCalledTimes(1);
   expect(sdk.auth.signIn.mock.invocationCallOrder[0]).toBeLessThan(sdk.ui.showOpenFilePicker.mock.invocationCallOrder[0]);

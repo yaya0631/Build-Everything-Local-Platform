@@ -4,10 +4,10 @@ import { PDFDocument, PDFName, PDFString, StandardFonts } from 'pdf-lib';
 import { readFile } from 'node:fs/promises';
 import { addNote, listNotes } from '../../src/core/notes.js';
 
-const PUTER_MOCK = `window.puter = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async () => ({}) }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
-async function mockPuter(page) {
-  await page.route('**/sdk/puter.js', (route) =>
-    route.fulfill({ contentType: 'application/javascript', body: PUTER_MOCK }),
+const EVERYTHING_MOCK = `window.everything = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async () => ({}) }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
+async function mockEverything(page) {
+  await page.route('**/sdk/everything.js', (route) =>
+    route.fulfill({ contentType: 'application/javascript', body: EVERYTHING_MOCK }),
   );
 }
 async function openPdf(page, doc) {
@@ -84,7 +84,7 @@ const centerPixel = (page) =>
 test('Insert pages from PDF puts a chosen range after the current page and can go first or last', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await pagesOf([300, 300]));
   const other = Buffer.from(await (await pagesOf([401, 402, 403])).save());
@@ -121,7 +121,7 @@ test('Insert pages from PDF puts a chosen range after the current page and can g
 });
 
 test('Duplicate page copies the current page right after it', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await pagesOf([300, 500]));
   await menu(page, 'Duplicate page');
@@ -139,7 +139,7 @@ test('Duplicate page copies the current page right after it', async ({ page }) =
 test('inserting an unresolved named link cannot target an unrelated existing page', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const target = await pagesOf([300]),
     source = await pagesOf([400]),
@@ -195,7 +195,7 @@ test('inserting an unresolved named link cannot target an unrelated existing pag
 test('Duplicate page preserves page events and chained destinations in the download', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const source = await pagesOf([300, 500]),
     ctx = source.context,
@@ -234,7 +234,7 @@ test('Duplicate page preserves page events and chained destinations in the downl
 });
 
 test('Duplicate page keeps hidden layers hidden through download and undo', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const center = () => centerPixel(page);
   await openPdf(page, await layeredPage());
@@ -259,7 +259,7 @@ test('Duplicate page keeps hidden layers hidden through download and undo', asyn
 });
 
 test('inserting pages preserves the existing and incoming layer visibility', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await layeredPage());
   await settled(page);
@@ -296,7 +296,7 @@ test('inserting pages preserves the existing and incoming layer visibility', asy
 test('inserting the same page twice gives each copy independently editable notes', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await pagesOf([300]));
   const source = await pagesOf([300]);
@@ -346,7 +346,7 @@ test('inserting the same page twice gives each copy independently editable notes
 });
 
 async function pendingInsertion(page) {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const target = await pagesOf([300]);
   const field = target.getForm().createTextField('Name');
@@ -446,7 +446,7 @@ for (const cancel of [false, true])
   });
 
 test('opening page insertion parses an ordinary source PDF only once', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await pagesOf([300]));
   const bytes = Buffer.from(
@@ -487,7 +487,7 @@ for (const next of ['library', 'new PDF'])
   test(`closing the destination before a source read finishes stops parsing in the ${next}`, async ({
     page,
   }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     await openPdf(page, await pagesOf([300]));
     const bytes = Buffer.from(await (await pagesOf([401, 402])).save());

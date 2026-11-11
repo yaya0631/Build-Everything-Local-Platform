@@ -18,7 +18,7 @@ const fakeStore = {
 describe('buildBackup', () => {
   it('stamps provenance and carries every collection', () => {
     const b = buildBackup(fakeStore, 1000);
-    expect(b).toMatchObject({ app: 'puter-inventory', version: 1, exportedAt: 1000 });
+    expect(b).toMatchObject({ app: 'everything-inventory', version: 1, exportedAt: 1000 });
     expect(Object.keys(b.data).sort()).toEqual(['activity', 'families', 'locations', 'orders', 'products', 'settings', 'snapshots', 'stocktakes', 'suppliers']);
     expect(b.data.products).toHaveLength(1);
   });
@@ -211,7 +211,7 @@ describe('validateBackup', () => {
  */
 describe('lists that arrived as something other than lists', () => {
   const junk = {
-    app: 'puter-inventory',
+    app: 'everything-inventory',
     version: 1,
     data: {
       products: [{

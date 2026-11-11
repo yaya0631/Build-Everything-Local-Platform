@@ -6,11 +6,11 @@ import { nodeTransport } from './helpers/script-transport.js';
 const exited = (worker) => new Promise((resolve) => { if (worker.threadId === -1) resolve(); else worker.once('exit', resolve); });
 
 describe('script isolation', () => {
-  it('leaves the script no window, document, puter, network or storage', async () => {
+  it('leaves the script no window, document, everything, network or storage', async () => {
     const wb = new Workbook();
     const logs = [];
     const res = await runScript({ wb, transport: nodeTransport(), onLog: (l) => logs.push(l.text), code: `async function main(workbook) {
-      const names = ['window', 'document', 'puter', 'fetch', 'XMLHttpRequest', 'WebSocket', 'importScripts', 'indexedDB', 'caches', 'navigator', 'Worker', 'BroadcastChannel', 'localStorage', 'location', 'parent', 'top'];
+      const names = ['window', 'document', 'everything', 'fetch', 'XMLHttpRequest', 'WebSocket', 'importScripts', 'indexedDB', 'caches', 'navigator', 'Worker', 'BroadcastChannel', 'localStorage', 'location', 'parent', 'top'];
       console.log(names.filter((n) => typeof globalThis[n] !== 'undefined').join(',') || 'none');
       let refused = false;
       try { fetch('https://example.com'); } catch (e) { refused = e instanceof TypeError; }

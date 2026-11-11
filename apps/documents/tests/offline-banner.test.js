@@ -11,7 +11,7 @@ vi.mock('../src/views/editor.js', () => ({
 it('saves only pending edits when the connection comes back', async () => {
   vi.stubGlobal('matchMedia', () => ({ matches: false, addEventListener() {} }));
   const write = vi.fn(async (path) => ({ path }));
-  vi.stubGlobal('puter', {
+  vi.stubGlobal('everything', {
     auth: { isSignedIn: () => true, getUser: async () => ({ username: 'test' }) },
     fs: { readdir: async () => [], read: async () => new Blob(['A']), mkdir: async () => {}, stat: vi.fn(async () => null), write },
   });
@@ -38,7 +38,7 @@ it('saves only pending edits when the connection comes back', async () => {
   await new Promise((resolve) => setTimeout(resolve, 100));
   // An untouched new document gets no file from a reconnect alone.
   expect(write).not.toHaveBeenCalled();
-  expect(puter.fs.stat).not.toHaveBeenCalled();
+  expect(everything.fs.stat).not.toHaveBeenCalled();
 
   doc.changed();
   onLine.mockReturnValue(false);

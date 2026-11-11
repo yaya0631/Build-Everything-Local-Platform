@@ -44,7 +44,7 @@ The client secret is stored only in the organization's worker storage with shari
 | `EventId`                              | string   | Unique, sortable event identifier                                                                                    |
 | `Category`                             | string   | `admin`, `security`, `access`, `sharing`, `content`, or `api`                                                        |
 | `Action`                               | string   | For example `board.visibility.link`, `board.role.changed`, `user.deactivated`, `apikey.created`, `scim.user.updated` |
-| `ActorId`, `ActorName`                 | string   | Puter account UUID and username, or the API key for API and SCIM calls                                               |
+| `ActorId`, `ActorName`                 | string   | Everything account UUID and username, or the API key for API and SCIM calls                                               |
 | `TargetType`, `TargetId`, `TargetName` | string   | What the action affected (board, user, team, space, API key, webhook, organization)                                  |
 | `BoardId`                              | string   | Board the event relates to, if any                                                                                   |
 | `SourceIp`, `UserAgent`                | string   | Request origin when available                                                                                        |

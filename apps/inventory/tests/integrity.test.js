@@ -14,7 +14,7 @@ beforeEach(async () => {
   rejectWrite = rejectRead = () => false;
   writes = []; onSet = null;
   vi.stubGlobal('navigator', { onLine: true });
-  vi.stubGlobal('puter', {
+  vi.stubGlobal('everything', {
     auth: { getUser: async () => ({ username: 'tester' }) },
     kv: {
       get: async (key) => { if (rejectRead(key)) throw new Error('Read rejected'); return copy(db.get(key) ?? null); },

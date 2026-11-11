@@ -9,7 +9,7 @@ import { h } from './lib/dom.js';
 import { icon, appIcon } from './lib/icons.js';
 import { applyTheme } from './ui/prefs.js';
 import { Library } from './storage/library.js';
-import { puterBackend, opfsBackend, opfsAvailable, memoryBackend } from './storage/backends.js';
+import { everythingBackend, opfsBackend, opfsAvailable, memoryBackend } from './storage/backends.js';
 import { Home } from './ui/home.js';
 import { importProjectBundle } from './storage/bundle.js';
 import { toast, confirmDialog } from './ui/dialog.js';
@@ -129,7 +129,7 @@ async function openBundle(file) {
 
 async function profilePicture() {
   try {
-    return await puter.auth.getProfilePicture();
+    return await everything.auth.getProfilePicture();
   } catch {
     return null;
   }
@@ -139,18 +139,18 @@ async function startSignedIn(env) {
   loading('Loading your projects...');
   let user = null;
   try {
-    user = await puter.auth.getUser();
+    user = await everything.auth.getUser();
   } catch {
     /* the avatar falls back to an icon */
   }
-  library = new Library(puterBackend(puter));
+  library = new Library(everythingBackend(everything));
   account = {
     user,
     env,
     picture: await profilePicture(),
     onSignOut: env === 'app' ? null : async () => {
       if (!(await leavePage())) return;
-      await puter.auth.signOut();
+      await everything.auth.signOut();
       location.hash = '';
       location.reload();
     },
@@ -159,11 +159,11 @@ async function startSignedIn(env) {
   route();
 }
 
-/** Inside the Puter desktop: save (or ask) before the window closes, from any screen. */
+/** Inside the Everything desktop: save (or ask) before the window closes, from any screen. */
 function watchWindowClose() {
-  if (typeof puter === 'undefined' || puter.env !== 'app' || !puter.ui?.onWindowClose) return;
-  puter.ui.onWindowClose(async () => {
-    if (await leavePage()) puter.exit();
+  if (typeof everything === 'undefined' || everything.env !== 'app' || !everything.ui?.onWindowClose) return;
+  everything.ui.onWindowClose(async () => {
+    if (await leavePage()) everything.exit();
   });
 }
 
@@ -191,9 +191,9 @@ function startLocal(env) {
     user: null,
     env,
     picture: null,
-    onSignIn: typeof puter !== 'undefined' ? async () => {
+    onSignIn: typeof everything !== 'undefined' ? async () => {
       try {
-        await puter.auth.signIn();
+        await everything.auth.signIn();
         location.reload();
       } catch {
         /* closed */
@@ -218,7 +218,7 @@ async function openReview(link) {
   loading('Opening review...');
   const { ReviewPage } = await import('./ui/review/review-page.js');
   view = new ReviewPage(root, {
-    puter: typeof puter !== 'undefined' ? puter : null,
+    everything: typeof everything !== 'undefined' ? everything : null,
     account,
     link,
     onHome: () => showHome(),
@@ -239,14 +239,14 @@ function route() {
   if (review) openReview(review);
   else if (m) openProject(decodeURIComponent(m[1]));
   else showHome();
-  // Files opened with the app from the Puter desktop start a new project.
-  if (typeof puter !== 'undefined' && puter.ui?.onLaunchedWithItems) {
-    puter.ui.onLaunchedWithItems(async (items) => {
+  // Files opened with the app from the Everything desktop start a new project.
+  if (typeof everything !== 'undefined' && everything.ui?.onLaunchedWithItems) {
+    everything.ui.onLaunchedWithItems(async (items) => {
       const files = [];
       for (const it of items || []) {
         if (it.is_dir) continue;
         try {
-          const blob = await puter.fs.read(it.path || it.uid);
+          const blob = await everything.fs.read(it.path || it.uid);
           files.push(new File([blob], it.name, { type: blob.type }));
         } catch {
           /* skip unreadable */
@@ -268,15 +268,15 @@ async function boot() {
     startLocal('web');
     return;
   }
-  // Wait briefly for the deferred Puter.js script.
-  for (let i = 0; i < 50 && typeof puter === 'undefined'; i++) await new Promise((r) => setTimeout(r, 100));
-  if (typeof puter === 'undefined') {
+  // Wait briefly for the deferred Everything.js script.
+  for (let i = 0; i < 50 && typeof everything === 'undefined'; i++) await new Promise((r) => setTimeout(r, 100));
+  if (typeof everything === 'undefined') {
     // Offline or blocked: still usable, saving in this browser.
     startLocal('web');
     return;
   }
-  const env = puter.env;
-  if (env === 'app' || puter.auth.isSignedIn()) startSignedIn(env);
+  const env = everything.env;
+  if (env === 'app' || everything.auth.isSignedIn()) startSignedIn(env);
   else startLocal(env);
 }
 
@@ -315,7 +315,7 @@ if (import.meta.env.DEV) {
     get ctx() {
       return view?.ctx;
     },
-    // What signing out and closing the Puter window do before the page goes.
+    // What signing out and closing the Everything window do before the page goes.
     leavePage: () => leavePage(),
     async importDev(names, { add = false } = {}) {
       const files = [];

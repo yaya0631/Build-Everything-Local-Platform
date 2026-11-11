@@ -7,7 +7,7 @@ import { validateContact } from './model.js'
 let kv, populate
 beforeEach(async () => {
   kv = new Map()
-  window.puter = { kv: {
+  window.everything = { kv: {
     set: vi.fn(async (key, value) => { kv.set(key, structuredClone(value)) }),
     list: async () => [...kv].map(([key, value]) => ({ key, value })),
   } }
@@ -41,8 +41,8 @@ describe('console sample contacts', () => {
   it('rejects before loading and reports partial failure without claiming success', async () => {
     const notReady = createSampleDataPopulator(() => null)
     await expect(notReady()).rejects.toThrow('Sign in')
-    expect(window.puter.kv.set).not.toHaveBeenCalled()
-    window.puter.kv.set.mockImplementationOnce(async (key, value) => kv.set(key, value))
+    expect(window.everything.kv.set).not.toHaveBeenCalled()
+    window.everything.kv.set.mockImplementationOnce(async (key, value) => kv.set(key, value))
       .mockRejectedValueOnce(new Error('offline'))
     await expect(populate()).rejects.toThrow('after 1 contacts were saved')
     await store.load()

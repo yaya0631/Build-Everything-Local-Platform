@@ -9,7 +9,7 @@ import { outputName, variablesOf, type DataSet } from '../../model/variables';
 import type { PhotoDocument } from '../../model/document';
 import { serialize } from '../../model/serialization';
 import { Renderer } from '../../renderer/renderer';
-import { download } from '../../persistence/puter';
+import { download } from '../../persistence/everything';
 import { bytesBlob, documentSource, effectiveSettings, encodeOffThread, exportContext, formatBytes, loadSettings } from '../files/pipeline';
 import { uniqueName, zipStore, type ZipEntry } from '../files/zip';
 import { fieldValue, modal } from '../files/ui';

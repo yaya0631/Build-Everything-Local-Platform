@@ -8,12 +8,12 @@ import { Channel } from '../audio/channel.js';
 import * as E from '../model/edits.js';
 import { createMarker, nextMarkerName, sortMarkers, MARKER_TYPES } from '../model/markers.js';
 import { openDialog, confirmDialog } from '../ui/dialog.js';
-import { openFiles, pickLocalFiles, openFromPuter, saveDocument, encodeDocument, downloadBlob } from '../storage/files.js';
+import { openFiles, pickLocalFiles, openFromEverything, saveDocument, encodeDocument, downloadBlob } from '../storage/files.js';
 import { TIME_FORMATS, parseTime } from '../lib/time.js';
 import { appIcon } from '../ui/icons.js';
 import { dsp } from '../audio/dsp.js';
 import { baseName } from '../audio/decode.js';
-import * as puter from '../storage/puter.js';
+import * as everything from '../storage/everything.js';
 import { shortcutsDialog } from '../ui/shortcuts-dialog.js';
 import { preferencesDialog } from '../ui/preferences.js';
 import { deleteSmoothFrames, zoomInFactor } from '../editor/view-prefs.js';
@@ -129,7 +129,7 @@ function aboutDialog() {
     body: h(
       'div.about',
       h('div.about-logo', appIcon(64)),
-      h('p', 'Audio Studio is a waveform and multitrack audio editor that runs in your browser. Audio is processed on your device; files you save go to your own Puter cloud storage.'),
+      h('p', 'Audio Studio is a waveform and multitrack audio editor that runs in your browser. Audio is processed on your device; files you save go to your own Everything cloud storage.'),
       h('p.muted', 'Signal processing runs in WebAssembly compiled from Rust, playback in an AudioWorklet, and waveforms and spectrograms are drawn with WebGL2.'),
       h('p.muted', 'Icons from Lucide (ISC license) plus original glyphs.'),
     ),
@@ -161,7 +161,7 @@ export function installCoreCommands(app) {
         app.addDocument(doc);
       },
     },
-    { id: 'file.open', label: 'Open...', shortcut: 'Mod+O', run: () => openFromPuter(app) },
+    { id: 'file.open', label: 'Open...', shortcut: 'Mod+O', run: () => openFromEverything(app) },
     { id: 'file.openLocal', label: 'Open from This Device...', shortcut: 'Mod+Shift+O', run: async () => openFiles(app, await pickLocalFiles()) },
     {
       id: 'file.appendCurrent',
@@ -200,7 +200,7 @@ export function installCoreCommands(app) {
       label: 'File...',
       shortcut: 'Mod+I',
       run: async () => {
-        if (puter.sdk() && puter.isSignedIn()) return openFiles(app, await puter.pickFiles({ multiple: true }), { activate: false });
+        if (everything.sdk() && everything.isSignedIn()) return openFiles(app, await everything.pickFiles({ multiple: true }), { activate: false });
         return openFiles(app, await pickLocalFiles(), { activate: false });
       },
     },
@@ -841,8 +841,8 @@ export function installCoreCommands(app) {
         enabled: true,
         run: async () => {
           try {
-            const blob = await puter.readFile(r.path);
-            await openFiles(app, [Object.assign(blob, { name: r.name })]).then((docs) => docs[0] && (docs[0].source = { type: 'puter', path: r.path }));
+            const blob = await everything.readFile(r.path);
+            await openFiles(app, [Object.assign(blob, { name: r.name })]).then((docs) => docs[0] && (docs[0].source = { type: 'everything', path: r.path }));
           } catch {
             app.notify(`"${r.name}" could not be opened. It may have been moved or deleted.`, { error: true });
           }

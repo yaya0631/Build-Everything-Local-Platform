@@ -15,11 +15,11 @@ describe('signatureBlock', () => {
   });
 
   it('puts the signature under the standard separator', () => {
-    expect(signatureBlock('Ana\nPuter')).toBe('\n\n-- \nAna\nPuter');
+    expect(signatureBlock('Ana\nEverything')).toBe('\n\n-- \nAna\nEverything');
   });
 
   it('normalises line endings and trims the edges', () => {
-    expect(signatureBlock('\r\nAna\r\nPuter\r\n')).toBe('\n\n-- \nAna\nPuter');
+    expect(signatureBlock('\r\nAna\r\nEverything\r\n')).toBe('\n\n-- \nAna\nEverything');
   });
 });
 
@@ -88,21 +88,21 @@ const lines = (modal) => [...modal.panel.querySelectorAll('.rte-body > div')]
   .map((node) => node.textContent);
 
 beforeEach(() => {
-  globalThis.puter = { ui: {}, fs: {}, APIOrigin: 'https://api.example', authToken: 't' };
+  globalThis.everything = { ui: {}, fs: {}, APIOrigin: 'https://api.example', authToken: 't' };
 });
 
 afterEach(() => {
   document.querySelectorAll('.modal-root').forEach((node) => node.remove());
-  delete globalThis.puter;
+  delete globalThis.everything;
 });
 
 describe('the compose dialog with a signature', () => {
   it('starts a new message with the signature at the foot', () => {
     const modal = openCompose({
       username: 'me', mailPath: '/me/.mail', prefill: null, drafts: draftStore(),
-      signature: 'Ana\nPuter',
+      signature: 'Ana\nEverything',
     });
-    expect(lines(modal)).toEqual(['', '', '-- ', 'Ana', 'Puter']);
+    expect(lines(modal)).toEqual(['', '', '-- ', 'Ana', 'Everything']);
     modal.close(true);
   });
 
@@ -122,7 +122,7 @@ describe('the compose dialog with a signature', () => {
   it('does not sign a resumed draft a second time', () => {
     const drafts = draftStore();
     const draft = {
-      id: 'd1', updated: 1, attachments: 0, domain: 'puter.email', to: 'a@b.co', cc: '',
+      id: 'd1', updated: 1, attachments: 0, domain: 'everything.email', to: 'a@b.co', cc: '',
       subject: 's', body: 'so far\n\n-- \nAna', html: '', inReplyTo: '', references: '',
     };
     drafts.save(draft);
@@ -182,13 +182,13 @@ describe('the signature dialog', () => {
     expect(input.value).toBe('Ana');
     expect(modal.panel.querySelector('.signature-preview').textContent).toBe('-- \nAna');
 
-    input.value = 'Ana\nPuter  \n';
+    input.value = 'Ana\nEverything  \n';
     input.dispatchEvent(new Event('input'));
-    expect(modal.panel.querySelector('.signature-preview').textContent).toBe('-- \nAna\nPuter');
+    expect(modal.panel.querySelector('.signature-preview').textContent).toBe('-- \nAna\nEverything');
     modal.panel.querySelector('.signature-form')
       .dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
 
-    expect(saved).toBe('Ana\nPuter');
+    expect(saved).toBe('Ana\nEverything');
     expect(document.querySelector('.modal-root')).toBe(null);
   });
 

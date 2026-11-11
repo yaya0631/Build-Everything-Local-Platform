@@ -2,7 +2,7 @@ import { el } from '../ui/dom.js';
 import { icon } from '../ui/icons.js';
 
 export function authView({ onSignedIn, pendingInvite = null }) {
-  // One press at a time while Puter answers, said with aria-busy rather than
+  // One press at a time while Everything answers, said with aria-busy rather than
   // by disabling the button (as pressOnce in dom.js has it): a focused
   // button that is disabled hands its focus to the page body, so a sign-in
   // given up (its window closed) came back with the button live and nobody
@@ -14,9 +14,9 @@ export function authView({ onSignedIn, pendingInvite = null }) {
     onclick: async () => {
       if (busy()) return;
       cta.setAttribute('aria-busy', 'true');
-      cta.textContent = 'Waiting for Puter';
+      cta.textContent = 'Waiting for Everything';
       try {
-        await puter.auth.signIn();
+        await everything.auth.signIn();
       } catch {
         cta.removeAttribute('aria-busy');
         cta.textContent = 'Sign in';
@@ -35,10 +35,10 @@ export function authView({ onSignedIn, pendingInvite = null }) {
     el('div.auth-features', {},
       feature('hash', 'Organize work in public and private channels'),
       feature('messages', 'Keep side conversations in threads, not in the way'),
-      feature('cloud', 'Runs on Puter: no servers to run, sign in with one account')),
+      feature('cloud', 'Runs on Everything: no servers to run, sign in with one account')),
     cta,
     el('p.auth-note', {}, 'Free. No ads. Powered by ',
-      el('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Puter')));
+      el('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Everything')));
 
   function feature(ic, text) {
     return el('div.auth-feature', { html: icon(ic, 20, 1.8) }, el('span', {}, text));

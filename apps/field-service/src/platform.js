@@ -1,47 +1,47 @@
 /**
- * Everything that touches Puter directly (besides KV inside the backend):
+ * Everything that touches Everything directly (besides KV inside the backend):
  * auth, environment, profile pictures.
  */
 const PIC_KEY = 'fieldservice.profilePicture';
 
-export function puterAvailable() {
-  return typeof globalThis.puter !== 'undefined';
+export function everythingAvailable() {
+  return typeof globalThis.everything !== 'undefined';
 }
 
-export function puterEnv() {
+export function everythingEnv() {
   try {
-    return globalThis.puter?.env || 'web';
+    return globalThis.everything?.env || 'web';
   } catch {
     return 'web';
   }
 }
 
-/** Inside the Puter desktop the user is always signed in and can't sign out. */
+/** Inside the Everything desktop the user is always signed in and can't sign out. */
 export function canSignOut() {
-  return puterEnv() !== 'app';
+  return everythingEnv() !== 'app';
 }
 
 export async function isSignedIn() {
-  if (!puterAvailable()) return false;
+  if (!everythingAvailable()) return false;
   try {
-    return (await Promise.resolve(puter.auth.isSignedIn())) === true;
+    return (await Promise.resolve(everything.auth.isSignedIn())) === true;
   } catch {
     return false;
   }
 }
 
 export async function signIn() {
-  await puter.auth.signIn();
+  await everything.auth.signIn();
 }
 
 export function signOut() {
   try {
-    puter.auth.signOut();
+    everything.auth.signOut();
   } catch {}
 }
 
 export async function getUser() {
-  return puter.auth.getUser();
+  return everything.auth.getUser();
 }
 
 /**
@@ -59,7 +59,7 @@ export function cachedProfilePicture(username) {
 
 export async function fetchProfilePicture(username) {
   try {
-    const url = await puter.auth.getProfilePicture?.();
+    const url = await everything.auth.getProfilePicture?.();
     if (typeof url === 'string' && url.startsWith('data:image/') && url.length < 2_000_000) {
       try {
         localStorage.setItem(PIC_KEY, JSON.stringify({ user: username, url }));

@@ -11,18 +11,18 @@ async function mockSDK(page, { protectedPdf = false, initialListError = false } 
         ).readFile(new URL('../fixtures/security/owner-only.pdf', import.meta.url))
       ).toString('base64')
     : Buffer.from(await doc.save()).toString('base64');
-  await page.route('**/sdk/puter.js', (route) =>
+  await page.route('**/sdk/everything.js', (route) =>
     route.fulfill({
       contentType: 'application/javascript',
       body: `window.account={username:'Alice',uuid:'alice'};window.writes=[];window.listReads=0;window.profileReads=0;window.signInCalls=0;window.savePickers=0;
     const item={path:'PDF Editor/report.pdf',name:'report.pdf'};
-    window.puter={env:'web',authToken:'token:alice',auth:{isSignedIn:()=>!!window.account,
+    window.everything={env:'web',authToken:'token:alice',auth:{isSignedIn:()=>!!window.account,
       getUser:async()=>{
         window.profileReads++;
         const account=window.account;
         if(window.holdProfile){window.holdProfile=false;await new Promise(resolve=>{window.releaseProfile=()=>{resolve();setTimeout(()=>{window.profileDone=true;},0);};});}
         if(!account)throw new Error('No account');return account;
-      },signOut:async()=>{window.account=null;window.puter.authToken=null;},signIn:async()=>{window.signInCalls++;window.account={username:'Bob',uuid:'bob'};window.puter.authToken='token:bob';}},
+      },signOut:async()=>{window.account=null;window.everything.authToken=null;},signIn:async()=>{window.signInCalls++;window.account={username:'Bob',uuid:'bob'};window.everything.authToken='token:bob';}},
       fs:{readdir:async()=>{window.listReads++;if(${initialListError}&&window.listReads===1)throw new Error('Try later');return [{name:window.account.username+' file.pdf',path:'PDF Editor/report.pdf'}];},
         read:async()=>{if(window.holdRead)await new Promise(resolve=>{window.releaseRead=()=>{resolve();setTimeout(()=>{window.readDone=true;},0);};});
           return new Blob([Uint8Array.from(atob(${JSON.stringify(encoded)}),c=>c.charCodeAt(0))]);},
@@ -35,7 +35,7 @@ async function openCloud(page) {
   const bar = page.getByRole('menubar');
   if (await bar.isVisible()) await bar.getByRole('menuitem', { name: 'File', exact: true }).click();
   else await page.getByRole('button', { name: 'Menu', exact: true }).click();
-  await page.getByRole('menuitem', { name: 'Open from Puter…', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'Open from Everything…', exact: true }).click();
   await expect(page).toHaveTitle('report.pdf · PDF Editor');
   await expect(page.locator('.editor')).toHaveAttribute('aria-busy', 'false');
 }
@@ -62,8 +62,8 @@ for (const same of [false, true])
       window.account = same
         ? { username: 'Alice renamed', uuid: 'alice' }
         : { username: 'Bob', uuid: 'bob' };
-      window.puter.authToken = 'token:' + window.account.uuid;
-      return window.puter.onAuth(window.account);
+      window.everything.authToken = 'token:' + window.account.uuid;
+      return window.everything.onAuth(window.account);
     }, same);
     await expect(page.locator('.account-label')).toHaveText(same ? 'Alice renamed' : 'Bob');
     await expect(search).toHaveValue(same ? 'file' : '');
@@ -86,11 +86,11 @@ for (const account of [
     await openCloud(page);
     await page.evaluate((account) => {
       window.account = account;
-      window.puter.authToken = 'token:' + account.uuid;
-      return window.puter.onAuth(account);
+      window.everything.authToken = 'token:' + account.uuid;
+      return window.everything.onAuth(account);
     }, account);
-    await page.getByRole('button', { name: /^Save(?: to Puter)?$/ }).click();
-    await expect(page.locator('.save-status')).toHaveText('Saved to Puter');
+    await page.getByRole('button', { name: /^Save(?: to Everything)?$/ }).click();
+    await expect(page.locator('.save-status')).toHaveText('Saved to Everything');
     const write = await page.evaluate(() => window.writes.at(-1));
     expect(write.account).toBe(account.username);
     expect(write.options.overwrite).toBe(account.uuid === 'alice');
@@ -109,11 +109,11 @@ for (const newer of ['sign-out', 'other account'])
       await page.getByRole('button', { name: 'Settings', exact: true }).click();
       await page
         .getByRole('dialog', { name: 'Settings', exact: true })
-        .getByRole('button', { name: 'Sign in with Puter', exact: true })
+        .getByRole('button', { name: 'Sign in with Everything', exact: true })
         .click();
       await expect(page.locator('.account-label')).toHaveText('Bob');
     }
-    await page.evaluate(() => window.puter.onAuth({ username: 'Alice', uuid: 'alice' }));
+    await page.evaluate(() => window.everything.onAuth({ username: 'Alice', uuid: 'alice' }));
     await expect(page.locator('.account-label')).toHaveText(
       newer === 'sign-out' ? 'Local workspace' : 'Bob',
     );
@@ -128,12 +128,12 @@ test('a save waits for SDK account verification and does not overwrite the older
   await openCloud(page);
   await page.evaluate(() => {
     window.account = { username: 'Bob', uuid: 'bob' };
-    window.puter.authToken = 'token:bob';
+    window.everything.authToken = 'token:bob';
     window.holdProfile = true;
-    window.puter.onAuth(window.account);
+    window.everything.onAuth(window.account);
   });
   await expect.poll(() => page.evaluate(() => typeof window.releaseProfile)).toBe('function');
-  const save = page.getByRole('button', { name: /^Save(?: to Puter)?$/ });
+  const save = page.getByRole('button', { name: /^Save(?: to Everything)?$/ });
   await save.click();
   await expect(page.locator('.save-status')).toHaveText('Saving…');
   expect(await page.evaluate(() => window.writes)).toEqual([]);
@@ -142,7 +142,7 @@ test('a save waits for SDK account verification and does not overwrite the older
   await expect(save).toBeEnabled();
   expect(await page.evaluate(() => window.writes)).toEqual([]);
   await save.click();
-  await expect(page.locator('.save-status')).toHaveText('Saved to Puter');
+  await expect(page.locator('.save-status')).toHaveText('Saved to Everything');
   expect(await page.evaluate(() => window.writes.at(-1).options.overwrite)).toBe(false);
 });
 
@@ -161,9 +161,9 @@ test('an older duplicate cannot write while SDK account verification is pending'
   await page.keyboard.press('Escape');
   await page.evaluate(() => {
     window.account = { username: 'Bob', uuid: 'bob' };
-    window.puter.authToken = 'token:bob';
+    window.everything.authToken = 'token:bob';
     window.holdProfile = true;
-    window.puter.onAuth(window.account);
+    window.everything.onAuth(window.account);
   });
   await expect.poll(() => page.evaluate(() => typeof window.releaseProfile)).toBe('function');
   await page.evaluate(() => window.releaseRead());
@@ -188,16 +188,16 @@ for (const initiallySignedOut of [false, true])
     } else await openCloud(page);
     await page.evaluate(() => {
       window.account = { username: 'Bob', uuid: 'bob' };
-      window.puter.authToken = 'token:bob';
+      window.everything.authToken = 'token:bob';
     });
-    const save = page.getByRole('button', { name: /^(?:Save(?: to Puter)?|Sign in to save)$/ });
+    const save = page.getByRole('button', { name: /^(?:Save(?: to Everything)?|Sign in to save)$/ });
     await save.click();
     if (!initiallySignedOut) {
       await expect(save).toBeEnabled();
       expect(await page.evaluate(() => window.writes)).toEqual([]);
       await save.click();
     }
-    await expect(page.locator('.save-status')).toHaveText('Saved to Puter');
+    await expect(page.locator('.save-status')).toHaveText('Saved to Everything');
     const state = await page.evaluate(() => ({
       writes: window.writes,
       signIns: window.signInCalls,
@@ -216,14 +216,14 @@ test('another token change during verification adopts the latest account without
   await expect(page.locator('.account-label')).toHaveText('Alice');
   await page.evaluate(() => {
     window.account = { username: 'Bob', uuid: 'bob' };
-    window.puter.authToken = 'token:bob';
+    window.everything.authToken = 'token:bob';
     window.holdProfile = true;
-    window.puter.onAuth(window.account);
+    window.everything.onAuth(window.account);
   });
   await expect.poll(() => page.evaluate(() => typeof window.releaseProfile)).toBe('function');
   await page.evaluate(() => {
     window.account = { username: 'Carol', uuid: 'carol' };
-    window.puter.authToken = 'token:carol';
+    window.everything.authToken = 'token:carol';
     window.releaseProfile();
   });
   await expect(page.locator('.account-label')).toHaveText('Carol');
@@ -237,14 +237,14 @@ test('duplicate callbacks share a pending profile verification', async ({ page }
   const reads = await page.evaluate(() => window.profileReads);
   await page.evaluate(() => {
     window.account = { username: 'Bob', uuid: 'bob' };
-    window.puter.authToken = 'token:bob';
+    window.everything.authToken = 'token:bob';
     window.holdProfile = true;
-    window.puter.onAuth(window.account);
+    window.everything.onAuth(window.account);
   });
   await expect.poll(() => page.evaluate(() => typeof window.releaseProfile)).toBe('function');
   await page.evaluate(() => {
-    window.puter.onAuth(window.account);
-    window.puter.onAuth(window.account);
+    window.everything.onAuth(window.account);
+    window.everything.onAuth(window.account);
   });
   expect(await page.evaluate(() => window.profileReads)).toBe(reads + 1);
   await page.evaluate(() => window.releaseProfile());
@@ -263,9 +263,9 @@ for (const freshSignIn of [false, true])
     await expect(page.locator('.account-label')).toHaveText('Alice');
     await page.evaluate(() => {
       window.account = { username: 'Carol', uuid: 'carol' };
-      window.puter.authToken = 'token:carol';
+      window.everything.authToken = 'token:carol';
       window.holdProfile = true;
-      window.puter.onAuth(window.account);
+      window.everything.onAuth(window.account);
     });
     await expect.poll(() => page.evaluate(() => typeof window.releaseProfile)).toBe('function');
     await signOut(page);
@@ -273,7 +273,7 @@ for (const freshSignIn of [false, true])
       await page.getByRole('button', { name: 'Settings', exact: true }).click();
       await page
         .getByRole('dialog', { name: 'Settings', exact: true })
-        .getByRole('button', { name: 'Sign in with Puter', exact: true })
+        .getByRole('button', { name: 'Sign in with Everything', exact: true })
         .click();
       await expect(page.locator('.account-label')).toHaveText('Bob');
     }
@@ -294,20 +294,20 @@ test('a stale callback during a save preserves the verified current destination'
   await expect(page.locator('.editor')).toHaveAttribute('aria-busy', 'false');
   await page.evaluate(() => {
     window.account = { username: 'Bob', uuid: 'bob' };
-    window.puter.authToken = 'token:bob';
-    return window.puter.onAuth(window.account);
+    window.everything.authToken = 'token:bob';
+    return window.everything.onAuth(window.account);
   });
   await openCloud(page);
   await page.evaluate(() => {
     window.holdProfile = true;
-    window.puter.onAuth({ username: 'Alice', uuid: 'alice' });
+    window.everything.onAuth({ username: 'Alice', uuid: 'alice' });
   });
   await expect.poll(() => page.evaluate(() => typeof window.releaseProfile)).toBe('function');
   await page.getByRole('button', { name: 'Save', exact: true }).click();
   await expect(page.locator('.save-status')).toHaveText('Saving…');
   expect(await page.evaluate(() => window.writes)).toEqual([]);
   await page.evaluate(() => window.releaseProfile());
-  await expect(page.locator('.save-status')).toHaveText('Saved to Puter');
+  await expect(page.locator('.save-status')).toHaveText('Saved to Everything');
   expect(await page.evaluate(() => window.writes[0].options.overwrite)).toBe(true);
   expect(await page.evaluate(() => window.writes[0].account)).toBe('Bob');
 });
@@ -338,11 +338,11 @@ test('a folder save rechecks an SDK token changed during encryption', async ({ p
   const bar = page.getByRole('menubar');
   if (await bar.isVisible()) await bar.getByRole('menuitem', { name: 'File', exact: true }).click();
   else await page.getByRole('button', { name: 'Menu', exact: true }).click();
-  await page.getByRole('menuitem', { name: 'Save to another Puter folder…', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'Save to another Everything folder…', exact: true }).click();
   await expect.poll(() => page.evaluate(() => typeof window.releaseExport)).toBe('function');
   await page.evaluate(() => {
     window.account = { username: 'Bob', uuid: 'bob' };
-    window.puter.authToken = 'token:bob';
+    window.everything.authToken = 'token:bob';
     window.releaseExport();
   });
   await expect.poll(() => page.evaluate(() => window.exportDone)).toBe(true);
@@ -367,11 +367,11 @@ for (const folder of [false, true])
           window.finishCloudSave = () =>
             resolve({ path: 'PDF Editor/previous.pdf', name: 'previous.pdf' });
         });
-      if (folder) window.puter.ui.showSaveFilePicker = hold;
+      if (folder) window.everything.ui.showSaveFilePicker = hold;
       else {
-        const write = window.puter.fs.write;
-        window.puter.fs.write = (...args) => {
-          window.puter.fs.write = write;
+        const write = window.everything.fs.write;
+        window.everything.fs.write = (...args) => {
+          window.everything.fs.write = write;
           return hold(...args);
         };
       }
@@ -382,19 +382,19 @@ for (const folder of [false, true])
         await bar.getByRole('menuitem', { name: 'File', exact: true }).click();
       else await page.getByRole('button', { name: 'Menu', exact: true }).click();
       await page
-        .getByRole('menuitem', { name: 'Save to another Puter folder…', exact: true })
+        .getByRole('menuitem', { name: 'Save to another Everything folder…', exact: true })
         .click();
     } else await page.getByRole('button', { name: 'Save', exact: true }).click();
     await expect.poll(() => page.evaluate(() => typeof window.finishCloudSave)).toBe('function');
     await page.evaluate(() => {
       window.account = { username: 'Bob', uuid: 'bob' };
-      window.puter.authToken = 'token:bob';
+      window.everything.authToken = 'token:bob';
       window.finishCloudSave();
     });
-    await expect(page.getByRole('button', { name: 'Save to Puter', exact: true })).toBeEnabled();
+    await expect(page.getByRole('button', { name: 'Save to Everything', exact: true })).toBeEnabled();
     await expect(page).toHaveTitle('report.pdf · PDF Editor');
-    await page.getByRole('button', { name: 'Save to Puter', exact: true }).click();
-    await expect(page.locator('.save-status')).toHaveText('Saved to Puter');
+    await page.getByRole('button', { name: 'Save to Everything', exact: true }).click();
+    await expect(page.locator('.save-status')).toHaveText('Saved to Everything');
     const write = await page.evaluate(() => window.writes.at(-1));
     expect(write.account).toBe('Bob');
     expect(write.path).toBe('PDF Editor/report.pdf');
@@ -409,10 +409,10 @@ test('an old callback for the same account cannot roll back its verified profile
   await expect(page.locator('.account-label')).toHaveText('Alice');
   await page.evaluate(() => {
     window.account = { username: 'Alice renamed', uuid: 'alice' };
-    return window.puter.onAuth(window.account);
+    return window.everything.onAuth(window.account);
   });
   await expect(page.locator('.account-label')).toHaveText('Alice renamed');
-  await page.evaluate(() => window.puter.onAuth({ username: 'Alice', uuid: 'alice' }));
+  await page.evaluate(() => window.everything.onAuth({ username: 'Alice', uuid: 'alice' }));
   await expect(page.locator('.account-label')).toHaveText('Alice renamed');
 });
 
@@ -425,9 +425,9 @@ test('a library retry awaiting verification does not reread files after its acco
   await expect(page.getByRole('button', { name: 'Try again', exact: true })).toBeVisible();
   await page.evaluate(() => {
     window.account = { username: 'Bob', uuid: 'bob' };
-    window.puter.authToken = 'token:bob';
+    window.everything.authToken = 'token:bob';
     window.holdProfile = true;
-    window.puter.onAuth(window.account);
+    window.everything.onAuth(window.account);
   });
   await expect.poll(() => page.evaluate(() => typeof window.releaseProfile)).toBe('function');
   await page.getByRole('button', { name: 'Try again', exact: true }).click();

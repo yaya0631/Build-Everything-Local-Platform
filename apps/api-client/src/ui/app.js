@@ -10,7 +10,7 @@ import { displayUrl } from '../core/url.js';
 import { websocketRequest } from '../core/websocket.js';
 import { createResolver } from '../core/variables.js';
 import { execute, scopesFor, resolveScriptRequest } from '../core/execute.js';
-import { send as sendResolved, puterSockets, charsetOf } from '../core/send.js';
+import { send as sendResolved, everythingSockets, charsetOf } from '../core/send.js';
 import { decodeText } from '../core/pretty.js';
 import { CookieJar } from '../core/cookies.js';
 import { icon } from './icons.js';
@@ -52,7 +52,7 @@ function lazySandbox(options) {
 
 const VIEW_FOR = () => ({ request: RequestView, websocket: WebSocketView, collection: CollectionView, folder: CollectionView, environment: EnvironmentView, runner: RunnerView });
 
-export const REPO_URL = 'https://github.com/heyputer/everything';
+export const REPO_URL = 'https://github.com/yaya0631/Build-Everything-Local-Platform';
 
 /** The sidebar never grows past what leaves the editor this much room. */
 const MIN_EDITOR_WIDTH = 480;
@@ -148,7 +148,7 @@ export class App {
     if (Date.now() - (this.storageErrorAt || 0) < 10000) return;
     this.storageErrorAt = Date.now();
     console.error(err);
-    const where = this.sync ? 'It is still saved to your Puter cloud.' : 'It will be lost when you close the app.';
+    const where = this.sync ? 'It is still saved to your Everything cloud.' : 'It will be lost when you close the app.';
     const cause = err?.name === 'QuotaExceededError' ? 'This browser is out of storage space.' : 'This browser refused to store it.';
     toast({ kind: 'error', title: 'Could not save on this device', text: `${cause} ${where}` });
   }
@@ -349,9 +349,9 @@ export class App {
   // Account, sync, theme ----------------------------------------------------
 
   async #loadPicture() {
-    if (!this.session.signedIn || !this.session.puter) return;
+    if (!this.session.signedIn || !this.session.everything) return;
     try {
-      this.picture = await this.session.puter.auth.getProfilePicture?.();
+      this.picture = await this.session.everything.auth.getProfilePicture?.();
     } catch {
       this.picture = null;
     }
@@ -360,7 +360,7 @@ export class App {
 
   #renderAccount() {
     const s = this.session;
-    if (!s.puter) {
+    if (!s.everything) {
       fill(this.accountEl);
       return;
     }
@@ -393,7 +393,7 @@ export class App {
   async signOut() {
     const ok = await confirmDialog({
       title: 'Sign out?',
-      message: 'Your collections stay in your Puter account. This browser will show the signed-out workspace.',
+      message: 'Your collections stay in your Everything account. This browser will show the signed-out workspace.',
       confirmLabel: 'Sign out',
     });
     if (ok) await this.onSignOut();
@@ -401,16 +401,16 @@ export class App {
 
   #renderSync() {
     if (!this.session.signedIn) {
-      fill(this.syncEl, h('span.sync-local', { title: 'Saved in this browser only. Sign in to sync with your Puter account.' }, icon('cloudOff', 15), h('span.sr-only', 'Saved in this browser only')));
+      fill(this.syncEl, h('span.sync-local', { title: 'Saved in this browser only. Sign in to sync with your Everything account.' }, icon('cloudOff', 15), h('span.sr-only', 'Saved in this browser only')));
       return;
     }
     const status = this.sync?.status || 'idle';
     const map = {
-      idle: ['cloud', 'Synced with Puter'],
-      synced: ['cloudCheck', 'All changes saved to Puter'],
+      idle: ['cloud', 'Synced with Everything'],
+      synced: ['cloudCheck', 'All changes saved to Everything'],
       pending: ['cloud', 'Saving changes...'],
-      syncing: ['refresh', 'Syncing with Puter...'],
-      error: ['cloudOff', 'Could not reach Puter. Changes are kept on this device and will sync later.'],
+      syncing: ['refresh', 'Syncing with Everything...'],
+      error: ['cloudOff', 'Could not reach Everything. Changes are kept on this device and will sync later.'],
     };
     const [ic, text] = map[status] || map.idle;
     fill(this.syncEl, h(`span.sync-state${status === 'syncing' ? '.spin' : ''}${status === 'error' ? '.error' : ''}`, { title: text }, icon(ic, 15), h('span.sr-only', text)));
@@ -433,8 +433,8 @@ export class App {
   // Transport -------------------------------------------------------------
 
   relay() {
-    if (!this.session.signedIn || !this.session.puter?.net) return null;
-    return { openSocket: puterSockets(this.session.puter), cookieJar: this.cookieJar };
+    if (!this.session.signedIn || !this.session.everything?.net) return null;
+    return { openSocket: everythingSockets(this.session.everything), cookieJar: this.cookieJar };
   }
 
   #transportItems() {
@@ -444,7 +444,7 @@ export class App {
       { heading: 'Send requests through' },
       { label: 'Automatic', icon: 'zap', checked: t === 'auto', run: () => this.setTransport('auto') },
       { label: 'Browser only', icon: 'globe', checked: t === 'browser', run: () => this.setTransport('browser') },
-      { label: signed ? 'Puter relay' : 'Puter relay (sign in)', icon: 'server', checked: t === 'relay', disabled: !signed, run: () => this.setTransport('relay') },
+      { label: signed ? 'Everything relay' : 'Everything relay (sign in)', icon: 'server', checked: t === 'relay', disabled: !signed, run: () => this.setTransport('relay') },
       '-',
       { label: 'What is the difference?', icon: 'help', run: () => openSettingsDialog(this, 'requests') },
     ];
@@ -836,7 +836,7 @@ export class App {
           action('plug', 'New WebSocket', () => this.newWebSocket()),
           action('play', 'Run a collection', () => (this.ws.collections.length ? this.runCollection(this.ws.collections[0].id) : this.createCollection())),
         ),
-        this.session.signedIn || !this.session.puter
+        this.session.signedIn || !this.session.everything
           ? null
           : h('p.launch-note', icon('info', 14), h('span', 'You are not signed in, so your work is saved in this browser. '), h('button.link-btn', { type: 'button', onclick: () => this.signIn() }, 'Sign in'), h('span', ' to sync it across devices.')),
       ),
@@ -1017,7 +1017,7 @@ export class App {
 
   async shareCollection(id) {
     if (!this.session.signedIn || !this.shared) {
-      toast({ kind: 'info', title: 'Sign in to share', text: 'Sharing uses your Puter account.', actions: this.session.puter ? [{ label: 'Sign in', run: () => this.signIn() }] : [] });
+      toast({ kind: 'info', title: 'Sign in to share', text: 'Sharing uses your Everything account.', actions: this.session.everything ? [{ label: 'Sign in', run: () => this.signIn() }] : [] });
       return;
     }
     const { openShareDialog } = await import('./share-dialog.js');

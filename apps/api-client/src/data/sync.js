@@ -1,5 +1,5 @@
 /**
- * Mirrors the workspace into the user's Puter cloud as plain JSON files in
+ * Mirrors the workspace into the user's Everything cloud as plain JSON files in
  * the app's own folder, so the same work shows up on every device:
  *
  *   workspace/collections/<id>.json

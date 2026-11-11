@@ -3117,7 +3117,7 @@ test("boards migrated to this device appear in the library, and rollback removes
     this.dispatchEvent(new w.Event("close"));
   };
   const files = new Map();
-  w.puter = {
+  w.everything = {
     auth: {
       isSignedIn: () => true,
       getUser: async () => ({ uuid: "u1", username: "alice" }),
@@ -3616,7 +3616,7 @@ test("migrating into a shared board keeps no copy of its images on this device",
             : {};
         },
       },
-      puter: () => ({
+      everything: () => ({
         net: { fetch },
         auth: { getUser: async () => ({ uuid: "admin", username: "Ada" }) },
         fs: {

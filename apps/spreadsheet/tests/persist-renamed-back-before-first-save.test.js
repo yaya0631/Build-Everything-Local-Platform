@@ -1,13 +1,13 @@
 import { afterEach, beforeAll, beforeEach, expect, it, vi } from 'vitest';
 import { Doc } from '../src/lib/doc.js';
 import { memoryStorage } from './helpers/memory-storage.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 
 let mock;
 // SheetJS is loaded on first use with a real dynamic import; warm it up so no test waits on it.
 beforeAll(async () => { await Doc.blank().toXlsxBlob(); });
-beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); mock = installMockPuter(); vi.useFakeTimers(); });
-afterEach(() => { vi.useRealTimers(); delete globalThis.puter; });
+beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); mock = installMockEverything(); vi.useFakeTimers(); });
+afterEach(() => { vi.useRealTimers(); delete globalThis.everything; });
 
 const PATH = 'Spreadsheets/Budget.xlsx';
 
@@ -30,8 +30,8 @@ async function openFile() {
 it('saves after the file was renamed away and back elsewhere before any save in the session, instead of reporting a change made elsewhere', async () => {
   const { doc, conflicts } = await openFile();
   await vi.advanceTimersByTimeAsync(5000);
-  await puter.fs.rename(PATH, 'Other.xlsx');
-  await puter.fs.rename('Spreadsheets/Other.xlsx', 'Budget.xlsx');
+  await everything.fs.rename(PATH, 'Other.xlsx');
+  await everything.fs.rename('Spreadsheets/Other.xlsx', 'Budget.xlsx');
   expect(mock.fs.get(PATH).modified * 1000).toBeGreaterThan(doc.remoteModified);
   doc.wb.setInput(doc.wb.activeSheetId, 0, 0, 'edited after the rename');
   try {
@@ -64,9 +64,9 @@ it('saves over a file whose look-up failed at open once the read-back shows its 
   doc.wb.setInput(doc.wb.activeSheetId, 0, 0, 'saved');
   const bytes = await doc.toXlsxBlob();
   mock.fs.set(PATH, { blob: bytes, size: bytes.size, modified: 1 });
-  const stat = puter.fs.stat.bind(puter.fs);
+  const stat = everything.fs.stat.bind(everything.fs);
   let fail = true;
-  puter.fs.stat = async (p) => { if (fail) { fail = false; throw new Error('Network request failed'); } return stat(p); };
+  everything.fs.stat = async (p) => { if (fail) { fail = false; throw new Error('Network request failed'); } return stat(p); };
   const opened = await Doc.fromPath(PATH);
   expect(opened.remoteModified).toBe(0);
   const conflicts = [];

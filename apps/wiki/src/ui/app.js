@@ -36,21 +36,21 @@ const STATUS = {
 };
 
 export class App {
-  constructor(root, { ws, user, env, onSignOut = null, picture = null, puter = null }) {
+  constructor(root, { ws, user, env, onSignOut = null, picture = null, everything = null }) {
     this.root = root;
     this.ws = ws;
     this.user = user;
     this.env = env;
     this.onSignOut = onSignOut;
     this.picture = picture;
-    this.puter = puter;
+    this.everything = everything;
     this.route = null;
     this.view = null;
     this.mobile = matchMedia('(max-width: 760px)');
   }
 
   async start() {
-    if (this.puter?.auth?.getProfilePicture) setPictureSource((name) => (name === this.user?.username ? this.puter.auth.getProfilePicture() : this.puter.auth.getProfilePicture(name)));
+    if (this.everything?.auth?.getProfilePicture) setPictureSource((name) => (name === this.user?.username ? this.everything.auth.getProfilePicture() : this.everything.auth.getProfilePicture(name)));
     this.build();
     installTooltips(document);
     this.ws.on('spaces', () => {
@@ -326,7 +326,7 @@ export class App {
 
   setDocumentTitle(t) {
     document.title = `${t} - Wiki`;
-    this.puter?.ui?.setWindowTitle?.(`${t} - Wiki`);
+    this.everything?.ui?.setWindowTitle?.(`${t} - Wiki`);
   }
 
   /* ---------- top bar ---------- */
@@ -536,9 +536,9 @@ export class App {
   }
 
   async fetchTitle(url) {
-    if (!this.puter?.net?.fetch) return null;
+    if (!this.everything?.net?.fetch) return null;
     try {
-      const res = await Promise.race([this.puter.net.fetch(url), new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 6000))]);
+      const res = await Promise.race([this.everything.net.fetch(url), new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 6000))]);
       const html = (await res.text()).slice(0, 200000);
       const doc = new DOMParser().parseFromString(html, 'text/html');
       return (doc.querySelector('meta[property="og:title"]')?.content || doc.title || '').trim() || null;
@@ -712,7 +712,7 @@ export class App {
       { label: 'Settings', icon: 'settings', run: () => this.openSettings() },
       { label: 'Keyboard shortcuts', icon: 'keyboard', hint: `${modLabel}/`, run: () => openShortcuts() },
     ];
-    // Inside the Puter desktop the session belongs to Puter, so there is no sign-out here.
+    // Inside the Everything desktop the session belongs to Everything, so there is no sign-out here.
     if (this.env !== 'app' && this.onSignOut) items.push({ type: 'sep' }, { label: 'Sign out', icon: 'logOut', run: () => this.signOut() });
     openMenu(anchor, items, { label: 'Account' });
   }

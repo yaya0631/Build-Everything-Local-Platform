@@ -10,13 +10,13 @@
     <title>Contacts — Your address book, in the cloud</title>
     <meta
       name="description"
-      content="A clean, fast, private address book that lives in your cloud. Store contacts, search instantly, and sync across every device. Free, no ads, powered by Puter."
+      content="A clean, fast, private address book that lives in your cloud. Store contacts, search instantly, and sync across every device. Free, no ads, powered by Everything."
     />
     <meta
       name="keywords"
       content="contacts, address book, contact manager, online contacts, cloud contacts, vcard, private contacts, free contacts app"
     />
-    <meta name="author" content="Puter" />
+    <meta name="author" content="Everything" />
     <meta name="application-name" content="Contacts" />
     <meta name="robots" content="index, follow, max-image-preview:large" />
     <link rel="canonical" href="http://contacts.localhost:8443/" />
@@ -43,7 +43,7 @@
     <meta property="og:title" content="Contacts — Your address book, in the cloud" />
     <meta
       property="og:description"
-      content="A clean, fast, private address book that lives in your cloud. Store contacts, search instantly, and sync across every device. Free, no ads, powered by Puter."
+      content="A clean, fast, private address book that lives in your cloud. Store contacts, search instantly, and sync across every device. Free, no ads, powered by Everything."
     />
     <meta property="og:url" content="http://contacts.localhost:8443/" />
     <meta property="og:image" content="http://contacts.localhost:8443/social-graph.png" />
@@ -57,7 +57,7 @@
     <meta name="twitter:title" content="Contacts — Your address book, in the cloud" />
     <meta
       name="twitter:description"
-      content="A clean, fast, private address book that lives in your cloud. Free, no ads, powered by Puter."
+      content="A clean, fast, private address book that lives in your cloud. Free, no ads, powered by Everything."
     />
     <meta name="twitter:image" content="http://contacts.localhost:8443/social-graph.png" />
     <meta name="twitter:image:alt" content="Contacts — a clean, private address book in the cloud." />
@@ -75,7 +75,7 @@
         "browserRequirements": "Requires JavaScript and a modern web browser.",
         "isAccessibleForFree": true,
         "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-        "creator": { "@type": "Organization", "name": "Puter", "url": "http://localhost:8443/" }
+        "creator": { "@type": "Organization", "name": "Everything", "url": "http://localhost:8443/" }
       }
     </script>
 
@@ -99,11 +99,11 @@
       })();
     </script>
 
-    <!-- Puter.js: the only cloud/AI backend this app uses. -->
-    <script src="/sdk/puter.js"></script>
+    <!-- Everything.js: the only cloud/AI backend this app uses. -->
+    <script src="/sdk/everything.js"></script>
 
-    <!-- When another Puter app launches Contacts as its headless contacts API
-         (see src/api/protocol.js) there is nothing to show. The Puter desktop
+    <!-- When another Everything app launches Contacts as its headless contacts API
+         (see src/api/protocol.js) there is nothing to show. The Everything desktop
          creates and shows an app's window before the app itself loads, so hide
          it here — the earliest moment the SDK exists — rather than waiting for
          the app bundle, which would flash an empty window on screen. main.js
@@ -111,11 +111,11 @@
     <script>
       (function () {
         try {
-          var raw = new URLSearchParams(location.search).get('puter.args') || ''
+          var raw = new URLSearchParams(location.search).get('everything.args') || ''
           // Keep in step with SERVICE_ARGS in src/api/protocol.js.
           if (!/"service"\s*:\s*"(contacts-api|mcp)"/.test(raw)) return
-          if (window.puter && puter.ui && typeof puter.ui.hideWindow === 'function') {
-            puter.ui.hideWindow()
+          if (window.everything && everything.ui && typeof everything.ui.hideWindow === 'function') {
+            everything.ui.hideWindow()
           }
         } catch (_e) {
           /* main.js will hide the window a moment later */

@@ -2,7 +2,7 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { Workbook } from '../src/core/workbook.js';
 import * as IO from '../src/core/io.js';
-import * as P from '../src/lib/puter.js';
+import * as P from '../src/lib/everything.js';
 import { openCopySheetDialog } from '../src/ui/copysheet.js';
 import { closeAllModals } from '../src/ui/modal.js';
 import { toast } from '../src/ui/toast.js';

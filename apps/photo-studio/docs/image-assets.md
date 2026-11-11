@@ -6,7 +6,7 @@ one or more file names is written out as those files a moment after each edit
 (and when the document is saved). The setting is saved with the `.photo`
 project and can be undone like any edit.
 
-- A document saved on Puter gets a folder next to it named after the
+- A document saved on Everything gets a folder next to it named after the
   document: `Poster.photo` writes into `Poster-assets/`. Only files whose
   layer changed are written again.
 - Other documents keep the latest files in memory: File → Generate →
@@ -72,7 +72,7 @@ layer is used.
 ## Limitations
 
 - Files are written, not deleted: renaming or removing a layer leaves its old
-  file in the Puter folder.
+  file in the Everything folder.
 - Assets are generated for the document that is active; a document in the
   background catches up when it is shown again.
 - GIF assets hold one frame; palette PNG uses on/off transparency.

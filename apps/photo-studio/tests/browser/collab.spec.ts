@@ -53,9 +53,9 @@ test('two people edit and comment on one shared document', async ({ browser }, i
   await expect(access.locator('.collab-invites')).toHaveText('No active invitation links');
   await expect(access.getByRole('button', { name: 'Revoke Invitation Links' })).toBeDisabled();
   await expect(access.getByRole('button', { name: 'Invite', exact: true })).toBeDisabled();
-  await access.getByRole('textbox', { name: 'Puter username' }).fill('carol');
+  await access.getByRole('textbox', { name: 'Everything username' }).fill('carol');
   await expect(access.getByRole('button', { name: 'Invite', exact: true })).toBeEnabled();
-  await access.getByRole('textbox', { name: 'Puter username' }).fill('');
+  await access.getByRole('textbox', { name: 'Everything username' }).fill('');
   await access.locator('select[name="role"]').selectOption('editor');
   await access.getByRole('button', { name: 'Create Link' }).click();
   const linkInput = access.getByRole('textbox', { name: 'Invitation link' });

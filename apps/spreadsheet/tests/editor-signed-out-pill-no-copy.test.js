@@ -4,7 +4,7 @@ import { memoryStorage } from './helpers/memory-storage.js';
 import { editorView } from '../src/views/editor.js';
 import { Doc } from '../src/lib/doc.js';
 import { session } from '../src/lib/session.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 
 let view;
 beforeEach(async () => {
@@ -18,8 +18,8 @@ beforeEach(async () => {
   Object.defineProperty(HTMLElement.prototype, 'clientHeight', { configurable: true, get: () => 400 });
   vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({ measureText: (t) => ({ width: t.length * 7 }), font: '' });
   document.body.innerHTML = '<div id="app"></div>';
-  installMockPuter();
-  puter.auth = { isSignedIn: () => false, signIn: vi.fn(async () => false), getUser: async () => null };
+  installMockEverything();
+  everything.auth = { isSignedIn: () => false, signIn: vi.fn(async () => false), getUser: async () => null };
   await session.init();
   expect(session.signedOut).toBe(true);
 });
@@ -30,7 +30,7 @@ afterEach(() => {
   session.user = null;
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
-  delete globalThis.puter;
+  delete globalThis.everything;
   document.body.replaceChildren();
 });
 

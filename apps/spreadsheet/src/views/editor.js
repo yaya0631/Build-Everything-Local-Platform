@@ -153,7 +153,7 @@ import { createPeopleBar, peopleHere, roomStatus } from '../ui/coauthor.js';
 import { mapLine, mapGap } from '../collab/ops.js';
 import { openShortcuts } from '../ui/shortcuts.js';
 import { session } from '../lib/session.js';
-import * as P from '../lib/puter.js';
+import * as P from '../lib/everything.js';
 import { trackEvent } from '../lib/analytics.js';
 import { VIEW_ONLY, CANCELLED, autoSaveEnabled } from '../lib/doc.js';
 import { cellName, colName, normalizeRange, rangeName, parseRange, parseCellRef, parseKey } from '../core/cell.js';
@@ -211,7 +211,7 @@ export function editorView({ doc, goHome, openPath, newDoc, templateDoc, importF
   wb.addEventListener('change', syncChartTheme);
   // The app's options (File ▸ Options): applied before anything reads them, AI features among them.
   installAppOptions();
-  // AI() formulas ask Puter's AI; without the SDK, or with AI features turned off in the options, they show #N/A.
+  // AI() formulas ask Everything's AI; without the SDK, or with AI features turned off in the options, they show #N/A.
   // TRANSLATE and DETECTLANGUAGE: the same AI, with the reply tidied to just the answer. Review ▸ Translate asks the same way.
   const aiTranslate = async (prompt) => String(await P.aiChat(prompt, { feature: 'translate' })).trim().replace(/^["'\u201c\u2018]+|["'\u201d\u2019]+$/g, '');
   const setAiProviders = () => {
@@ -233,7 +233,7 @@ export function editorView({ doc, goHome, openPath, newDoc, templateDoc, importF
     if (!/^https?:\/\/\S+$/i.test(text)) return 'Enter a web address starting with http:// or https://';
     return (P.isPublicHttpUrl?.(text) ?? true) ? null : NOT_PUBLIC;
   };
-  // IMPORTDATA: a CSV or TSV from the web, through Puter's fetch.
+  // IMPORTDATA: a CSV or TSV from the web, through Everything's fetch.
   wb.setAsyncProvider('IMPORTDATA', async (text) => {
     const [url, delimiter] = JSON.parse(text);
     let body;
@@ -2912,7 +2912,7 @@ export function editorView({ doc, goHome, openPath, newDoc, templateDoc, importF
       case 'docInfo': {
         if (!committed()) return;
         const st = doc.path ? await P.statFile(doc.path).catch(() => null) : null;
-        if (destroyed) return; // the editor was left while Puter answered
+        if (destroyed) return; // the editor was left while Everything answered
         let cells = 0;
         let formulas = 0;
         const rows = wb.sheets.map((sh) => {
@@ -2998,7 +2998,7 @@ export function editorView({ doc, goHome, openPath, newDoc, templateDoc, importF
         return;
       }
       case 'importUrl': {
-        // A file on the web (a published CSV, an .xlsx on a server) fetched through Puter.
+        // A file on the web (a published CSV, an .xlsx on a server) fetched through Everything.
         if (session.signedOut && (!await session.signIn() || destroyed)) return;
         const url = await promptDialog({
           title: 'Import from URL', label: 'Address of a .csv, .tsv, .xlsx, or .ods file', placeholder: 'https://example.com/data.csv', confirmLabel: 'Import',
@@ -3198,7 +3198,7 @@ export function editorView({ doc, goHome, openPath, newDoc, templateDoc, importF
         return;
       }
       case 'copySheetTo': {
-        // Copying reads and writes other files on Puter; the document itself stays open, so this is not a leave.
+        // Copying reads and writes other files on Everything; the document itself stays open, so this is not a leave.
         if (session.signedOut && (!await session.signIn() || destroyed)) return;
         if (!committed()) return;
         openCopySheetDialog(ctx, arg || grid.sheetId);
@@ -4178,7 +4178,7 @@ export function editorView({ doc, goHome, openPath, newDoc, templateDoc, importF
         }
         replaceImageId = id; imageIntoCell = false; if (replaceImageId) imageInput.click(); return;
       }
-      case 'insertImagePuter': {
+      case 'insertImageEverything': {
         if (!P.canPickFiles() || !committed()) return;
         if (refusedByProtection('insert images')) return;
         // The picker and file read may finish after the user has moved to another cell or sheet.
@@ -4199,13 +4199,13 @@ export function editorView({ doc, goHome, openPath, newDoc, templateDoc, importF
           await insertImageFile(new File([bytes], picked.name, { type }), target);
         } catch (e) {
           if (destroyed) return;
-          toast(`Could not load that image from Puter: ${e?.message || e?.error?.message || 'unknown error'}`, { icon: 'alert', duration: 4000 });
+          toast(`Could not load that image from Everything: ${e?.message || e?.error?.message || 'unknown error'}`, { icon: 'alert', duration: 4000 });
           keepFocus();
         }
         return;
       }
       case 'insertImageUrl': {
-        // A picture from the web, fetched through Puter so it lands in the file like an uploaded one.
+        // A picture from the web, fetched through Everything so it lands in the file like an uploaded one.
         const url = await promptDialog({
           title: arg === 'cell' ? 'Place picture in cell from URL' : 'Insert image from URL', label: 'Address of a PNG, JPEG, GIF, WebP, or SVG image', placeholder: 'https://example.com/logo.png', confirmLabel: arg === 'cell' ? 'Place in Cell' : 'Insert',
           validate: urlProblem,
@@ -5821,7 +5821,7 @@ export function editorView({ doc, goHome, openPath, newDoc, templateDoc, importF
       if (!await session.signIn() || destroyed) return false;
       if (grid.editing && !grid.commitEdit()) return false;
     }
-    // A new file is saved where the user puts it, in Puter's Save dialog (see doc.asksWhereToSave). On the way
+    // A new file is saved where the user puts it, in Everything's Save dialog (see doc.asksWhereToSave). On the way
     // out leaving is offered beside it, the draft keeping the edits: the dialog alone would be no way out but saving.
     const asked = wb.dirty && doc.asksWhereToSave;
     if (asked && leaving) {
@@ -5869,13 +5869,13 @@ export function editorView({ doc, goHome, openPath, newDoc, templateDoc, importF
       return saved;
     } catch (e) {
       if (destroyed) return false;
-      if (!leaving) { toast('Could not save to Puter. Your changes are still open', { icon: 'alert', duration: 5000 }); return false; }
-      // Puter would not take the save (offline, out of space). The draft
+      if (!leaving) { toast('Could not save to Everything. Your changes are still open', { icon: 'alert', duration: 5000 }); return false; }
+      // Everything would not take the save (offline, out of space). The draft
       // written above keeps the edits on this device, so a save that keeps
       // failing must not keep the user in the editor for ever.
       if (abandoned) return true;
       const kept = !wb.dirty || doc.writeDraft();
-      const choice = await saveFailedDialog(!P.unreachable(e) ? e?.message : navigator.onLine === false ? 'you are offline' : 'Puter could not be reached', kept);
+      const choice = await saveFailedDialog(!P.unreachable(e) ? e?.message : navigator.onLine === false ? 'you are offline' : 'Everything could not be reached', kept);
       if (destroyed) return false;
       if (choice === 'retry') return runFlush({ leaving });
       if (choice === 'leave') { abandoned = true; return true; }
@@ -5950,8 +5950,8 @@ export function editorView({ doc, goHome, openPath, newDoc, templateDoc, importF
   }
 
   /**
-   * A new spreadsheet, never saved, is left: save it (Puter's Save dialog asks where), keep editing, or leave (the local
-   * draft keeps the edits). A file of another kind opened from the drive (a .csv) is on Puter already, and its draft is
+   * A new spreadsheet, never saved, is left: save it (Everything's Save dialog asks where), keep editing, or leave (the local
+   * draft keeps the edits). A file of another kind opened from the drive (a .csv) is on Everything already, and its draft is
    * kept under its address, offered again when it is opened, not listed under Unsaved spreadsheets.
    */
   function unsavedLeaveDialog(kept) {
@@ -5963,8 +5963,8 @@ export function editorView({ doc, goHome, openPath, newDoc, templateDoc, importF
             ? `Your changes to "${file}" are not saved yet: they are saved as a new .xlsx file, where you choose. Save it, or leave: your changes stay on this device, and are offered again when you open ${file} here.`
             : `Your changes to "${file}" are not saved yet: they are saved as a new .xlsx file, where you choose. This browser could not keep a copy of them either: save it, or leave and lose them.`)
           : kept
-            ? `"${doc.name}" is not saved to Puter yet. Save it where you choose, or leave: your edits stay on this device, and can be recovered from Unsaved spreadsheets on the home screen.`
-            : `"${doc.name}" is not saved to Puter yet, and this browser could not keep a copy of it either. Save it where you choose, or leave and lose it.`),
+            ? `"${doc.name}" is not saved to Everything yet. Save it where you choose, or leave: your edits stay on this device, and can be recovered from Unsaved spreadsheets on the home screen.`
+            : `"${doc.name}" is not saved to Everything yet, and this browser could not keep a copy of it either. Save it where you choose, or leave and lose it.`),
         el('div.row.row-end', { style: { flexWrap: 'wrap' } },
           el('button.btn.btn-ghost', { type: 'button', onclick: () => modal.close() }, 'Keep editing'),
           el(`button.btn${kept ? '' : '.btn-danger'}`, { type: 'button', onclick: () => { resolve('leave'); modal.close(); } }, kept ? 'Leave' : 'Leave without saving'),
@@ -5979,8 +5979,8 @@ export function editorView({ doc, goHome, openPath, newDoc, templateDoc, importF
       const why = reason ? ` (${String(reason).replace(/\.$/, '')})` : '';
       const content = el('div', {},
         el('p.modal-text', {}, kept
-          ? `Puter could not save this spreadsheet${why}. Your changes are kept in this browser, ${room ? 'and sent to the shared workbook when you open it here again' : 'and saving is offered again when you open it here'}.`
-          : `Puter could not save this spreadsheet${why}, and this browser could not keep a copy of your changes either. Leaving now discards them.`),
+          ? `Everything could not save this spreadsheet${why}. Your changes are kept in this browser, ${room ? 'and sent to the shared workbook when you open it here again' : 'and saving is offered again when you open it here'}.`
+          : `Everything could not save this spreadsheet${why}, and this browser could not keep a copy of your changes either. Leaving now discards them.`),
         el('div.row.row-end', { style: { flexWrap: 'wrap' } },
           el('button.btn.btn-ghost', { type: 'button', onclick: () => modal.close() }, 'Keep editing'),
           el(`button.btn${kept ? '' : '.btn-danger'}`, { type: 'button', onclick: () => { resolve('leave'); modal.close(); } }, kept ? 'Leave' : 'Leave without saving'),
@@ -6004,7 +6004,7 @@ export function editorView({ doc, goHome, openPath, newDoc, templateDoc, importF
 
   async function saveNow() {
     if (grid.editing && !grid.commitEdit()) return;
-    // Saving needs a session; Puter's own dialog asks for it, then the save goes ahead.
+    // Saving needs a session; Everything's own dialog asks for it, then the save goes ahead.
     if (session.signedOut && (!await session.signIn() || destroyed)) return;
     try {
       const saved = await doc.save();
@@ -6024,7 +6024,7 @@ export function editorView({ doc, goHome, openPath, newDoc, templateDoc, importF
     });
     if (name == null || name === doc.name) return;
     const err = await doc.rename(name);
-    if (destroyed) return; // the editor was left while Puter renamed; the next screen keeps its own title
+    if (destroyed) return; // the editor was left while Everything renamed; the next screen keeps its own title
     if (err) toast(err, { icon: 'alert' });
     else refreshTitle();
   }
@@ -6042,7 +6042,7 @@ export function editorView({ doc, goHome, openPath, newDoc, templateDoc, importF
       try { await doc.save(); } catch (e) { toast(e?.message || 'Could not save the spreadsheet', { icon: 'alert', duration: 4000 }); return false; }
       if (destroyed) return false;
     }
-    // Puter's Save dialog cancelled (see doc.asksWhereToSave), there is no file, or only the .csv the edits never reach.
+    // Everything's Save dialog cancelled (see doc.asksWhereToSave), there is no file, or only the .csv the edits never reach.
     if (!doc.path || !doc.isXlsxPath) { toast('Save the spreadsheet first, then share it', { icon: 'info' }); return false; }
     return true;
   }
@@ -6050,10 +6050,10 @@ export function editorView({ doc, goHome, openPath, newDoc, templateDoc, importF
   async function saveAs() {
     if (grid.editing && !grid.commitEdit()) return;
     if (session.signedOut && (!await session.signIn() || destroyed)) return;
-    // Inside Puter its Save dialog asks for the name and the folder; elsewhere the copy goes in the app folder, named here.
+    // Inside Everything its Save dialog asks for the name and the folder; elsewhere the copy goes in the app folder, named here.
     const name = P.asksWhereToSave() ? `${doc.name} copy` : await promptDialog({
       title: 'Save a copy', label: 'Name', value: `${doc.name} copy`, confirmLabel: 'Save copy',
-      hint: `Saved to ${P.FOLDER}/ in your Puter cloud. You will continue in the copy.`,
+      hint: `Saved to ${P.FOLDER}/ in your Everything cloud. You will continue in the copy.`,
       validate: (v) => (fileBaseName(v) ? null : 'Enter a name'),
     });
     if (name == null) return;
@@ -6075,7 +6075,7 @@ export function editorView({ doc, goHome, openPath, newDoc, templateDoc, importF
       const perSheet = kind === 'csv' || kind === 'tsv' || kind === 'html';
       const blob = kind === 'csv' ? doc.toCsvBlob(grid.sheetId) : kind === 'tsv' ? doc.toTsvBlob(grid.sheetId) : kind === 'html' ? doc.toHtmlBlob(grid.sheetId) : kind === 'ods' ? await doc.toOdsBlob() : await doc.toXlsxBlob();
       const name = perSheet ? `${P.sanitizeName(doc.name)}${wb.sheets.length > 1 ? ` - ${sheet.name}` : ''}.${kind}` : `${P.sanitizeName(doc.name)}.${kind === 'ods' ? 'ods' : 'xlsx'}`;
-      // An export goes to this device, as an import comes from it; saving to Puter is Save and Save a copy.
+      // An export goes to this device, as an import comes from it; saving to Everything is Save and Save a copy.
       P.downloadBlob(blob, name);
     } catch (e) {
       toast(`Could not export: ${e?.message || 'unknown error'}`, { icon: 'alert' });
@@ -6398,8 +6398,8 @@ export function editorView({ doc, goHome, openPath, newDoc, templateDoc, importF
       status.className = 'save-status signed-out';
       status.disabled = false;
       status.replaceChildren(el('span', { html: icon('cloudOff', 14, 2) }), el('span.save-label', {}, noCopy ? 'Sign in to save. This browser could not keep a copy' : 'Sign in to save'));
-      status.title = noCopy ? 'Not saved, and this browser could not keep a copy of the changes. Sign in to Puter to save this spreadsheet to your own cloud' : 'Not saved. Sign in to Puter to save this spreadsheet to your own cloud';
-      status.setAttribute('aria-label', noCopy ? 'Not saved, and this browser could not keep a copy. Sign in to Puter to save this spreadsheet' : 'Not saved. Sign in to Puter to save this spreadsheet');
+      status.title = noCopy ? 'Not saved, and this browser could not keep a copy of the changes. Sign in to Everything to save this spreadsheet to your own cloud' : 'Not saved. Sign in to Everything to save this spreadsheet to your own cloud';
+      status.setAttribute('aria-label', noCopy ? 'Not saved, and this browser could not keep a copy. Sign in to Everything to save this spreadsheet' : 'Not saved. Sign in to Everything to save this spreadsheet');
       return;
     }
     // A new file waits for Save, which asks where it goes (see doc.asksWhereToSave): AutoSave does not write it,
@@ -6426,7 +6426,7 @@ export function editorView({ doc, goHome, openPath, newDoc, templateDoc, importF
     const label = noCopy ? `${base}. This browser could not keep a copy` : base;
     status.className = `save-status ${doc.status}`;
     status.replaceChildren(el('span', { html: icon(ic, 14, 2), className: ic === 'spinner' ? 'spin' : '' }), el('span.save-label', {}, label));
-    status.title = doc.error ? `${label}: ${doc.error}` : doc.viewOnly ? `${label}: ${VIEW_ONLY}` : unplaced ? `${label}. Save (${MOD_KEY}+S) to choose where it goes in Puter` : (doc.path ? `${label} · ${doc.path}` : label);
+    status.title = doc.error ? `${label}: ${doc.error}` : doc.viewOnly ? `${label}: ${VIEW_ONLY}` : unplaced ? `${label}. Save (${MOD_KEY}+S) to choose where it goes in Everything` : (doc.path ? `${label} · ${doc.path}` : label);
   }
 
   function refreshTitle() {
@@ -6465,7 +6465,7 @@ export function editorView({ doc, goHome, openPath, newDoc, templateDoc, importF
   const statusBar = createStatusBar(ctx);
   const watchWindow = createWatchWindow({ ...ctx, run, docName: () => doc.name, goTo: (sid, r, c) => selectLocation(sid, { r1: r, c1: c, r2: r, c2: c }) });
   // Review ▸ Check Accessibility: a finding goes to its cells, or selects its object.
-  // Review ▸ Thesaurus and Translate, answered by Puter's AI.
+  // Review ▸ Thesaurus and Translate, answered by Everything's AI.
   languagePane = createLanguagePane({ ...ctx, run,
     ai: P.canAI() ? (prompt) => P.aiChat(prompt, { feature: 'thesaurus' }) : null,
     translate: P.canAI() ? (text, from, to) => aiTranslate(translatePrompt(text, from || '', to || 'English')) : null });
@@ -6529,7 +6529,7 @@ export function editorView({ doc, goHome, openPath, newDoc, templateDoc, importF
   ctx.subscribe(() => comments.sync());
   // The AI assistant, beside the sheet. Its tools act on the workbook directly; what only the editor knows
   // (the selection, how wide a column's text is, the document's trust in outside content) comes through here.
-  // Made wherever Puter's AI is, and shown only while AI features are turned on (Options ▸ Privacy), so that turning
+  // Made wherever Everything's AI is, and shown only while AI features are turned on (Options ▸ Privacy), so that turning
   // them on brings it without opening the workbook again.
   aiPanel = P.hasAI() ? createAiPanel(ctx, {
     sheetId: () => grid.sheetId,
@@ -6856,7 +6856,7 @@ export function editorView({ doc, goHome, openPath, newDoc, templateDoc, importF
     if (grid.editing) grid.commitEdit();
     if (doc.status === 'saved' && !doc.hasPendingWrites && !grid.editing) return;
     doc.writeDraft();
-    // A new file waits for Puter's Save dialog, which is not to be opened by a page on its way out: the draft keeps it.
+    // A new file waits for Everything's Save dialog, which is not to be opened by a page on its way out: the draft keeps it.
     if (!doc.asksWhereToSave) doc.save().catch(() => {});
     e.preventDefault();
     e.returnValue = '';
@@ -7030,7 +7030,7 @@ export function editorView({ doc, goHome, openPath, newDoc, templateDoc, importF
   refreshTitle();
   requestAnimationFrame(() => { fitColumnsOnOpen(); grid.refresh(); grid.focus(); });
 
-  // Edits made here that never reached Puter (a closed tab while offline, a
+  // Edits made here that never reached Everything (a closed tab while offline, a
   // save that failed) come back from the local draft, if wanted.
   let recoveryTimer = null;
   let keptDraftToast = null; // the offer to restore a draft dismissed without a decision: it goes with the editor
@@ -7044,8 +7044,8 @@ export function editorView({ doc, goHome, openPath, newDoc, templateDoc, importF
       const restore = await confirmDialog({
         title: 'Unsaved changes found',
         message: doc.recoverableMayBeOlder
-          ? `This spreadsheet was edited here at ${stamp}, but those changes never reached Puter, and the file has been saved since. Restoring replaces what is in the file now with those older edits; discarding keeps the file as it is.`
-          : `This spreadsheet was edited here at ${stamp}, but those changes never reached Puter. Restore them? Discarding keeps the file as it is now.`,
+          ? `This spreadsheet was edited here at ${stamp}, but those changes never reached Everything, and the file has been saved since. Restoring replaces what is in the file now with those older edits; discarding keeps the file as it is.`
+          : `This spreadsheet was edited here at ${stamp}, but those changes never reached Everything. Restore them? Discarding keeps the file as it is now.`,
         confirmLabel: 'Restore', cancelLabel: 'Discard', danger: false, dismissValue: null,
       });
       // The editor was left while the question was up (the router closes the dialog as dismissed after the
@@ -7070,7 +7070,7 @@ export function editorView({ doc, goHome, openPath, newDoc, templateDoc, importF
 
   /**
    * Someone else's spreadsheet (its address starts with another user's name, as a shared one's does) may be
-   * shared with this user only to view. Puter says so only in the list of what is shared with them, and a save
+   * shared with this user only to view. Everything says so only in the list of what is shared with them, and a save
    * would be refused: the status says View only from the start, and a notice says how to keep changes.
    */
   async function checkViewOnly() {

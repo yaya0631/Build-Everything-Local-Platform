@@ -28,14 +28,14 @@ function showError(title, message, onRetry) {
 }
 
 async function start() {
-  if (typeof puter === 'undefined') {
+  if (typeof everything === 'undefined') {
     showLanding();
     return;
   }
 
   let signedIn = false;
   try {
-    signedIn = await Promise.resolve(puter.auth.isSignedIn());
+    signedIn = await Promise.resolve(everything.auth.isSignedIn());
   } catch {
     signedIn = false;
   }
@@ -60,13 +60,13 @@ async function boot() {
     /* The offline mirror and write queue belong to whoever used this
        browser last; a different account signing in must not read them
        or have them replayed into its data. Before any KV read. */
-    const user = await puter.auth.getUser().catch(() => null);
+    const user = await everything.auth.getUser().catch(() => null);
     await adoptAccount(user?.uuid || user?.username);
     await initSync();
     await store.init();
   } catch (err) {
     console.error(err);
-    showError('Couldn’t load your inventory', err.recovery ? err.message : 'Something went wrong talking to your Puter cloud. Check your connection and try again.', () => location.reload());
+    showError('Couldn’t load your inventory', err.recovery ? err.message : 'Something went wrong talking to your Everything cloud. Check your connection and try again.', () => location.reload());
     if (err.recovery) appRoot.firstElementChild.append(el('button.btn', { onclick: () =>
       downloadFile('inventory-recovery.json', JSON.stringify(err.recovery, null, 2), 'application/json'),
     }, 'Download recovery data'));

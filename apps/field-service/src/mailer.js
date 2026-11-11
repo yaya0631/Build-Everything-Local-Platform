@@ -1,19 +1,19 @@
 /**
  * Emailing a quote or invoice from the app: the calling side of
  * src/workers/email-worker.js. The message is posted through
- * puter.workers.exec(), which forwards the signed-in user's session, so every
+ * everything.workers.exec(), which forwards the signed-in user's session, so every
  * send is billed to and rate-limited as that user.
  */
 
-/** The one shared, app-owned worker (deploy with npm run deploy:email-worker). */
+/** The one shared, app-owned worker, registered automatically by the local server. */
 export const EMAIL_WORKER_URL = 'http://field-service-email.localhost:8443';
 export const MAX_RECIPIENTS = 5;
 export const SEND_TIMEOUT_MS = 120_000;
 
-const puterOf = () => (typeof puter !== 'undefined' ? puter : null);
+const everythingOf = () => (typeof everything !== 'undefined' ? everything : null);
 
-export function mailerAvailable(getPuter = puterOf) {
-  const p = getPuter();
+export function mailerAvailable(getEverything = everythingOf) {
+  const p = getEverything();
   return Boolean(p && p.workers && typeof p.workers.exec === 'function');
 }
 
@@ -48,7 +48,7 @@ export function parseRecipients(input) {
 /** Why a send did not happen, in words the user can act on. */
 export function failureMessage(status, data) {
   const code = (data && data.error) || '';
-  if (status === 401 || code === 'sign_in_required') return 'Sign in to Puter again to send email.';
+  if (status === 401 || code === 'sign_in_required') return 'Sign in to Everything again to send email.';
   if (status === 429 || code === 'daily_limit') return "You've reached today's email limit. Try again tomorrow.";
   if (status === 503 || code === 'temporarily_unavailable') return 'The email service is busy. Try again in a moment, or open the message in your email app.';
   if (status === 404) return 'The email service is not available. Open the message in your email app instead.';
@@ -59,8 +59,8 @@ export function failureMessage(status, data) {
  * sendDocument({ kind, doc, settings, to: [emails], subject, body, force })
  * Resolves the worker's summary; rejects with a message fit for a toast.
  */
-export async function sendDocument({ kind, doc, settings, to, subject, body, force = false }, { getPuter = puterOf, workerUrl = EMAIL_WORKER_URL, timeoutMs = SEND_TIMEOUT_MS } = {}) {
-  if (!mailerAvailable(getPuter)) throw new Error('Sending email needs a Puter session. Open the message in your email app instead.');
+export async function sendDocument({ kind, doc, settings, to, subject, body, force = false }, { getEverything = everythingOf, workerUrl = EMAIL_WORKER_URL, timeoutMs = SEND_TIMEOUT_MS } = {}) {
+  if (!mailerAvailable(getEverything)) throw new Error('Sending email needs an Everything session. Open the message in your email app instead.');
   const recipients = to.map((email) => ({ email, version: digest([email, subject, body]) }));
   const request = {
     method: 'POST',
@@ -83,7 +83,7 @@ export async function sendDocument({ kind, doc, settings, to, subject, body, for
   let timer;
   try {
     res = await Promise.race([
-      getPuter().workers.exec(`${workerUrl}/send`, request),
+      getEverything().workers.exec(`${workerUrl}/send`, request),
       new Promise((_, reject) => (timer = setTimeout(() => reject(new Error('timeout')), timeoutMs))),
     ]);
   } catch (err) {

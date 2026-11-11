@@ -1,5 +1,5 @@
 // The Thesaurus pane (Shift+F7): synonyms and antonyms for the selected
-// word, from Puter's AI, or from a small built-in list when the AI cannot be
+// word, from Everything's AI, or from a small built-in list when the AI cannot be
 // reached. Insert puts the chosen word in place of the selection; Copy puts
 // it on the clipboard. Double-click a word to look it up in turn.
 import { el, icon, toast } from "../ui.js";

@@ -92,7 +92,7 @@ export function writeUsda(scene: ExportScene, opts: UsdWriteOptions = {}): UsdOu
   const aspect = (res.resolution_x * res.pixel_aspect_x) / (res.resolution_y * res.pixel_aspect_y || 1) || 1;
   w.lines.push('#usda 1.0', '(');
   w.lines.push('    defaultPrim = "root"');
-  w.lines.push('    doc = "Puter 3D USD exporter"');
+  w.lines.push('    doc = "Everything 3D USD exporter"');
   w.lines.push(`    metersPerUnit = ${fmt(mpu)}`);
   w.lines.push(`    upAxis = "${opts.upAxis === 'Y' ? 'Y' : 'Z'}"`);
   if (anim) {
@@ -178,7 +178,7 @@ export function writeUsda(scene: ExportScene, opts: UsdWriteOptions = {}): UsdOu
 
   // ------------------------------------------------------------ hierarchy
   const rootNames = new Names();
-  w.open('def Xform "root"', ['customData = {', '    dictionary puter3d = {', '        bool generated = 1', '    }', '}']);
+  w.open('def Xform "root"', ['customData = {', '    dictionary everything3d = {', '        bool generated = 1', '    }', '}']);
   if (opts.upAxis === 'Y') {
     w.line('float3 xformOp:rotateXYZ = (-90, 0, 0)');
     w.line('uniform token[] xformOpOrder = ["xformOp:rotateXYZ"]');

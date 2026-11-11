@@ -1,12 +1,12 @@
 /**
- * Where Puter.js is running: 'app' (inside a Puter app window), 'web', or
- * 'gui'. Inside a Puter app the platform owns the session, so the app never
+ * Where Everything.js is running: 'app' (inside an Everything app window), 'web', or
+ * 'gui'. Inside an Everything app the platform owns the session, so the app never
  * offers sign-out there.
  */
-export function puterEnv() {
-  return typeof puter !== 'undefined' ? puter.env : 'web';
+export function everythingEnv() {
+  return typeof everything !== 'undefined' ? everything.env : 'web';
 }
 
-export function isPuterApp() {
-  return puterEnv() === 'app';
+export function isEverythingApp() {
+  return everythingEnv() === 'app';
 }

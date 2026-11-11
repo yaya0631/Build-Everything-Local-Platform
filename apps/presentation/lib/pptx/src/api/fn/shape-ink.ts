@@ -6,7 +6,7 @@
 //
 //   <a:extLst>
 //     <a:ext uri="{9C3B6F1E-5B0D-4E8A-9A41-7F2D6C1B0E57}">
-//       <pk:inkTiming xmlns:pk="urn:puter:presentation:ink:2026"
+//       <pk:inkTiming xmlns:pk="urn:everything:presentation:ink:2026"
 //                     start="1760000000000" t="0 16 40 …"/>
 //     </a:ext>
 //   </a:extLst>
@@ -31,7 +31,7 @@ import { findCNvPr } from "./shape-click-action.ts";
 
 /** The extension's identifier on `<a:ext uri>`. */
 export const INK_TIMING_EXT_URI = "{9C3B6F1E-5B0D-4E8A-9A41-7F2D6C1B0E57}";
-const INK_NS = "urn:puter:presentation:ink:2026";
+const INK_NS = "urn:everything:presentation:ink:2026";
 
 /** When a stroke was drawn: its start, and each point's offset from it. */
 export interface InkTiming {

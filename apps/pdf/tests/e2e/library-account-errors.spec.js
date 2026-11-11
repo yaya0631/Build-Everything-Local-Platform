@@ -5,14 +5,14 @@ for (const action of ['Download', 'Rename', 'Delete', 'Duplicate'])
     test(`${action}'s late cloud failure respects ${newer}`, async ({ page }) => {
       const errors = [];
       page.on('pageerror', (error) => errors.push(error.message));
-      await page.route('**/sdk/puter.js', (route) =>
+      await page.route('**/sdk/everything.js', (route) =>
         route.fulfill({
           contentType: 'application/javascript',
           body: `window.account={username:'Alice'};
         const fail=()=>new Promise((resolve,reject)=>{window.failAction=()=>{
           reject(new Error(${JSON.stringify(`${action} failed for Alice`)}));setTimeout(()=>{window.failureDone=true;},0);
         };});
-        window.puter={env:'web',auth:{isSignedIn:()=>!!window.account,getUser:async()=>window.account,
+        window.everything={env:'web',auth:{isSignedIn:()=>!!window.account,getUser:async()=>window.account,
           signOut:async()=>{window.account=null;},signIn:async()=>{window.account={username:'Bob'};}},
           fs:{readdir:async()=>[{name:'private.pdf',path:'PDF Editor/private.pdf'}],
             read:async()=>${JSON.stringify(action)}==='Download'?fail():new Blob(['private content']),
@@ -43,7 +43,7 @@ for (const action of ['Download', 'Rename', 'Delete', 'Duplicate'])
         await expect(page.locator('.account-label')).toHaveText('Local workspace');
         if (newer === 'other account') {
           await page.getByRole('button', { name: 'Settings', exact: true }).click();
-          await settings.getByRole('button', { name: 'Sign in with Puter', exact: true }).click();
+          await settings.getByRole('button', { name: 'Sign in with Everything', exact: true }).click();
           await expect(page.locator('.account-label')).toHaveText('Bob');
         }
       }

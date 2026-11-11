@@ -12,7 +12,7 @@ import { parseRefText } from '../core/refs.js';
 import { getLocale } from '../core/format.js';
 import * as S from '../core/selection.js';
 import { createPrintPreview } from './print-preview.js';
-import { resolvedAbsolutePath } from '../lib/puter.js';
+import { resolvedAbsolutePath } from '../lib/everything.js';
 import { sectionEditText, sectionStoredText } from './page-layout.js';
 
 /** The saved print preferences of this account, as the dialog would start from them. */

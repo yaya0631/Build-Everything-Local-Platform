@@ -18,7 +18,7 @@ const nativeOnly = async wb => {
   if (wb.sheets[0].charts[0].type === 'donut') expect(chartXml).not.toContain('<c:dLblPos');
   expect(chartXml).toContain('<c:showLegendKey val="0"');
   const book = X.CFB.find(zip, '/xl/workbook.xml');
-  book.content = new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  book.content = new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   book.size = book.content.length;
   return workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'native.xlsx');
 };

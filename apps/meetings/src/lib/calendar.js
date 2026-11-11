@@ -1,14 +1,14 @@
 /**
  * The user's meetings, borrowed from the Calendar app (calendar.localhost:8443).
  *
- * The Calendar attaches Puter Meetings links to events; this is where those
+ * The Calendar attaches Everything Meetings links to events; this is where those
  * links come back to us, so the home screen can show the day's meetings with
  * a Join button instead of sending people to dig the link out of an email.
  *
- * Inside the Puter desktop, apps can talk to each other: we launch the
+ * Inside the Everything desktop, apps can talk to each other: we launch the
  * Calendar as a headless API server — no UI, `background: true` so the
  * desktop never puts a window on screen — and talk to it over the
- * AppConnection `puter.ui.launchApp` hands back
+ * AppConnection `everything.ui.launchApp` hands back
  * (http://localhost:8443/Objects/AppConnection/). The Calendar only answers
  * apps on its own allowlist, and it identifies the caller from what the
  * desktop stamps on the window it launched, not from anything we send: this
@@ -20,7 +20,7 @@
  * `has: ['meeting']` anyway, so the request says what it is for.
  *
  * Everything here degrades to "no calendar": on the open web there is no
- * desktop to launch anything into (puter.env !== 'app'), the Calendar may not
+ * desktop to launch anything into (everything.env !== 'app'), the Calendar may not
  * be installed, and the user may not have one. Reads reject; the panel that
  * calls them decides what to show. After a failure we back off, doubling, so
  * a missing Calendar costs one launch attempt rather than one per refresh —
@@ -65,11 +65,11 @@ export class CalendarApiError extends Error {
 
 /**
  * @param {object} [options]
- * @param {() => object|undefined} [options.getPuter]
+ * @param {() => object|undefined} [options.getEverything]
  * @param {() => number} [options.now]
  */
 export function createCalendar({
-  getPuter = () => (typeof window !== 'undefined' ? window.puter : undefined),
+  getEverything = () => (typeof window !== 'undefined' ? window.everything : undefined),
   appName = APP_NAME,
   now = () => Date.now(),
   idleCloseMs = IDLE_CLOSE_MS,
@@ -88,9 +88,9 @@ export function createCalendar({
   let failures = 0; // consecutive failures, for how long that block lasts
   const listeners = new Set();
 
-  /** Can we talk to other apps at all? Only true inside the Puter desktop. */
+  /** Can we talk to other apps at all? Only true inside the Everything desktop. */
   function supported() {
-    const p = getPuter();
+    const p = getEverything();
     return Boolean(p && p.env === 'app' && p.ui && typeof p.ui.launchApp === 'function');
   }
 
@@ -196,7 +196,7 @@ export function createCalendar({
     if (connecting) return connecting;
     if (!available()) return Promise.reject(new Error('Calendar is not available here'));
 
-    const p = getPuter();
+    const p = getEverything();
     const gen = generation;
     connecting = new Promise((resolve, reject) => {
       let settled = false;

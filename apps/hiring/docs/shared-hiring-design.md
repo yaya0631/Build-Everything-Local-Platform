@@ -5,7 +5,7 @@ Status: proposal · Owner: app maintainers · Scope: issue #8
 ## Problem
 
 Interview panels are inherently multi-user, but every record in this app
-lives in one Puter account's private KV store. Consequences today:
+lives in one Everything account's private KV store. Consequences today:
 
 - Scorecard authorship is a free-text name typed by the account owner,
   usually on someone else's behalf. Secondhand feedback is lossy and
@@ -17,16 +17,16 @@ lives in one Puter account's private KV store. Consequences today:
 
 ## Constraints
 
-1. No server of ours. Everything must run on Puter primitives plus static
+1. No server of ours. Everything must run on Everything primitives plus static
    pages. This rules out invitation emails with magic tokens that a
    backend would validate, and any central queue.
-2. `puter.kv` is scoped per user per app. It cannot be shared, so full
+2. `everything.kv` is scoped per user per app. It cannot be shared, so full
    collaboration cannot keep KV as the source of truth.
-3. `puter.fs` supports sharing directories with other Puter users
+3. `everything.fs` supports sharing directories with other Everything users
    (read or read-write), and files can also be served publicly through
-   `puter.hosting`. This is the only primitive that lets two accounts see
+   `everything.hosting`. This is the only primitive that lets two accounts see
    the same mutable data today.
-4. Unauthenticated writes do not exist. Any contributor must have a Puter
+4. Unauthenticated writes do not exist. Any contributor must have an Everything
    account. An anonymous "submit feedback" form is out of scope until the
    platform offers a drop-box primitive.
 
@@ -50,15 +50,15 @@ shared workspace and mounts it instead of its own.
   minimum, or per-record files (one JSON per candidate) to shrink the
   conflict surface. Polling (or fs change notifications, if available)
   is needed for freshness. Offline behavior gets harder.
-- Unknowns to validate: sharing API ergonomics (`puter.sharing` /
-  `puter.fs.share`), whether a shared path can be opened by path from
+- Unknowns to validate: sharing API ergonomics (`everything.sharing` /
+  `everything.fs.share`), whether a shared path can be opened by path from
   another account's app instance, latency, and quota accounting.
 
 ### B. Scorecard request links (narrow write path)
 
 Keep the owner's dataset private. For one interview, the owner creates a
 "feedback drop": a per-interview directory shared read-write with the
-interviewer's Puter account, seeded with a `request.json` describing the
+interviewer's Everything account, seeded with a `request.json` describing the
 candidate, role, and rating dimensions (but nothing else from the
 pipeline). The interviewer opens a lightweight "give feedback" route in
 this same app, which reads the request and writes `scorecard-<user>.json`
@@ -70,7 +70,7 @@ and retires the drop.
   interviewer, attributed) with almost no concurrency risk: each writer
   owns a distinct file. The import path reuses `addScorecard` untouched.
   No change to the owner's source of truth.
-- Cons: teammates still need Puter accounts; the interviewer sees only
+- Cons: teammates still need Everything accounts; the interviewer sees only
   what the owner shares (this is also a feature); the owner's app must
   poll while open (same constraint as notifications, acceptable).
 
@@ -91,7 +91,7 @@ Phase the work; do not attempt A first.
 
 1. **Phase 1: scorecard request drops (option B).** Highest value per
    unit of risk, no migration, and it forces us to build the two pieces
-   any deeper sharing also needs: identity stamping (`puter.auth
+   any deeper sharing also needs: identity stamping (`everything.auth
    .getUser().username` on events and scorecards) and a poll-and-import
    loop. Ship behind a "Shared feedback" section on the interview row.
    Fall back to option C's file flow automatically when sharing APIs are
@@ -109,7 +109,7 @@ existing data needs no migration.
 
 ## API dependencies to confirm before Phase 1
 
-- Sharing a directory read-write with a named Puter user from the SDK,
+- Sharing a directory read-write with a named Everything user from the SDK,
   and revoking it.
 - Whether the recipient can resolve the shared path from a link the app
   can construct (deep link into this app with the drop path as a route

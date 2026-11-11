@@ -67,16 +67,16 @@ describe('sign-in required', () => {
     const info = baseInfo();
     info.portal.signInRequired = true;
     let signedIn = false;
-    window.puter = { auth: { isSignedIn: () => signedIn, signIn: async () => { signedIn = true; }, getUser: async () => ({ uuid: 'u1', username: 'ann', email: 'ann@x.io' }) } };
+    window.everything = { auth: { isSignedIn: () => signedIn, signIn: async () => { signedIn = true; }, getUser: async () => ({ uuid: 'u1', username: 'ann', email: 'ann@x.io' }) } };
     try {
       await mount('#/help/hd-a/desk111/new', null, info);
       expect(root.querySelector('form')).toBeNull();
-      const btn = [...root.querySelectorAll('button')].find((b) => b.textContent === 'Sign in with Puter');
+      const btn = [...root.querySelectorAll('button')].find((b) => b.textContent === 'Sign in with Everything');
       btn.click();
       await tick(30);
       expect(root.querySelector('form.hc-form')).toBeTruthy();
     } finally {
-      delete window.puter;
+      delete window.everything;
     }
   });
 });

@@ -23,7 +23,7 @@ import { songLength, patternById } from '../model/project.js';
 import { SNAPS, snapTicks, snapFloor, snapRound, ticksPerBar, ticksPerBeat, barLabel, formatBST, STEP } from '../model/time.js';
 import { evaluateAutomation } from '../automation/evaluate.js';
 import { hitPoint } from '../automation/points.js';
-import { isSignedIn, readFile } from '../storage/puter.js';
+import { isSignedIn, readFile } from '../storage/everything.js';
 import * as C from './clips.js';
 import { trackLayout, trackAt, trackTop, trackHeight, clipZone } from './geometry.js';
 import { drawCanvas, drawRulerLayer, resetColors, AUTO_EDIT_MIN_H } from './render.js';
@@ -913,7 +913,7 @@ export function createPlaylistView(app, host) {
         return;
       }
       if (!isSignedIn()) {
-        app.notify('Sign in to use files from your Puter cloud');
+        app.notify('Sign in to use files from your Everything cloud');
         return;
       }
       const blob = await readFile(payload.path);

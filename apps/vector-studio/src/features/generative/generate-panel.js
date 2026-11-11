@@ -2,7 +2,7 @@
  * The Generate panel: Generate Vectors, Generative Shape Fill and Generate
  * Patterns. Describe what you want, pick a content type, style, colors and
  * detail (optionally matching the selected artwork's style), and Generate:
- * pictures from Puter AI are traced into vector art and offered as
+ * pictures from Everything AI are traced into vector art and offered as
  * variations. The first one is placed (fitted to the selection or the
  * artboard, or clipped into the selected shape); choosing another swaps it
  * in place. Pattern variations become pattern swatches when chosen.

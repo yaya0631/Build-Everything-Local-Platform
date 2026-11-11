@@ -1,6 +1,6 @@
 /**
  * IndexedDB snapshot cache, one entry per signed-in user and firm. Holds the
- * last known data plus writes that have not reached Puter yet.
+ * last known data plus writes that have not reached Everything yet.
  */
 const DB = 'legal';
 const STORE = 'snapshots';

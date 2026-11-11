@@ -13,7 +13,7 @@
  * the only thing that holds a backend.
  */
 
-/** Where snapshots live in the user's own Puter drive. */
+/** Where snapshots live in the user's own Everything drive. */
 export const SNAPSHOT_DIR = 'hiring-backups';
 
 /** The metadata sidecar, so a list does not have to read every snapshot. */

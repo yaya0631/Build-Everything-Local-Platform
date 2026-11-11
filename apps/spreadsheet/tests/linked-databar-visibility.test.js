@@ -48,7 +48,7 @@ it.each([['0','1'],['1','0']])('keeps base=%s/extension=%s visibility through co
  for(let pass=0;pass<2;pass++){
   const id=w.activeSheetId,rows=[2,3,4];
   w.pasteCells(id,w.copyCells(id,rows,[2]),10,7,{r:2,c:2},null,{conditionalFormats:w.copyConditionalFormats(id,rows,[2])});
-  const zip=await zipOf(w);edit(zip,'/xl/workbook.xml',s=>s.replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,''));w=await open(zip);
+  const zip=await zipOf(w);edit(zip,'/xl/workbook.xml',s=>s.replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,''));w=await open(zip);
   for(let i=0;i<3;i++)for(const [r,c]of [[i+2,2],[i+10,7]]){
    expect(!!look(w,r,c).barOnly).toBe(base==='0');expect(look(w,r,c).bar).toBe(i/2);
   }

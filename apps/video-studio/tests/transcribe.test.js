@@ -4,15 +4,15 @@ import { transcribePiece } from '../src/media/transcribe.js';
 const RATE = 16000;
 
 describe('speech to text', () => {
-  const real = globalThis.puter;
+  const real = globalThis.everything;
   afterEach(() => {
-    globalThis.puter = real;
+    globalThis.everything = real;
   });
 
-  /** A Puter stand-in answering each speech2txt call with the next of answers (an Error is thrown). */
+  /** An Everything stand-in answering each speech2txt call with the next of answers (an Error is thrown). */
   function answering(...answers) {
     const calls = [];
-    globalThis.puter = { ai: { speech2txt: async (...args) => {
+    globalThis.everything = { ai: { speech2txt: async (...args) => {
       calls.push(args);
       const a = answers.shift();
       if (a instanceof Error) throw a;

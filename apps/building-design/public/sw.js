@@ -5,7 +5,7 @@
  *   page loads        network first, cached copy when offline
  *   /assets/ files    cache first (build file names carry content hashes)
  *   other own files   cached copy right away, refreshed in the background
- *   cross-origin      untouched (Puter's SDK and API)
+ *   cross-origin      untouched (Everything's SDK and API)
  */
 const CACHE = 'building-design-shell-v1';
 const SHELL = ['./', './index.html', './manifest.json', './icons/icon-32.png', './icons/icon-192.png'];

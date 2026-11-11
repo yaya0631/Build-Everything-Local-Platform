@@ -1,7 +1,7 @@
 {
   "name": "project-management",
   "version": "1.0.0",
-  "description": "Lightweight project management — kanban boards, timelines, milestones, comments, and attachments on Puter",
+  "description": "Lightweight project management — kanban boards, timelines, milestones, comments, and attachments on Everything",
   "type": "module",
   "private": true,
   "license": "MIT",
@@ -15,9 +15,9 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/HeyPuter/project-management.git"
+    "url": "git+https://github.com/yaya0631/Build-Everything-Local-Platform"
   },
-  "homepage": "https://github.com/HeyPuter/project-management#readme",
+  "homepage": "https://github.com/yaya0631/Build-Everything-Local-Platform",
   "devDependencies": {
     "vite": "^8.2.0",
     "vitest": "^4.0.18"

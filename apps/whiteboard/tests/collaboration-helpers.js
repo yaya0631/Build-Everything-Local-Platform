@@ -45,13 +45,13 @@ export function environment({ compressedTokens = true } = {}) {
     calls,
     offline: false,
     dropEvents: false,
-    // Events delivered without their values, as past the limits Puter sets.
+    // Events delivered without their values, as past the limits Everything sets.
     dropValues: false,
     lostAck: false,
     now: Date.now(),
   };
   const kv = {
-    // Several keys at once, as Puter reads them, in one request.
+    // Several keys at once, as Everything reads them, in one request.
     async get(key) {
       return Array.isArray(key)
         ? key.map((k) => structuredClone(data.get(k) ?? null))
@@ -168,21 +168,21 @@ export function environment({ compressedTokens = true } = {}) {
         ) +
         ".signature";
       credentials.set(token, { user, path });
-      return `https://api.puter.test/token-read?uid=proof&token=${encodeURIComponent(token)}`;
+      return `https://api.everything.test/token-read?uid=proof&token=${encodeURIComponent(token)}`;
     },
   });
   const fs = fsFor(owner);
-  const puter = {
+  const everything = {
     kv,
     fs,
     auth: { getUser: async () => owner },
-    APIOrigin: "https://api.puter.test",
+    APIOrigin: "https://api.everything.test",
     authToken:
       "header." +
       btoa(JSON.stringify({ app_uid: "app-whiteboard" })) +
       ".signature",
   };
-  const service = new BoardService(puter, {
+  const service = new BoardService(everything, {
     now: () => env.now,
     fetcher: async (url, options) => {
       if (options.method === "DELETE") {
@@ -234,7 +234,7 @@ export function environment({ compressedTokens = true } = {}) {
     };
   };
   env.sdk = (user) => ({
-    ...puter,
+    ...everything,
     // Client KV belongs to the signed-in account. The worker's KV remains the
     // owner's, so a guest cannot discover or update the owner's deployment.
     kv:
@@ -296,7 +296,7 @@ export function environment({ compressedTokens = true } = {}) {
         const input = JSON.parse(options.body);
         calls.push({ user: user.uuid, ...input });
         try {
-          const token = options.headers["puter-auth"];
+          const token = options.headers["everything-auth"];
           const identity = await authenticate(
             // Only HTTP data crosses into the worker, not the browser's
             // AbortSignal (which belongs to a different realm in jsdom).

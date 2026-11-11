@@ -3,13 +3,13 @@ import { Worker } from 'node:worker_threads';
 import { Store, StaleWriteError, CorruptDataError } from '../src/lib/store.js';
 import { getKV } from '../src/lib/kv.js';
 import { sharesOutstanding, fullyDiluted } from '../src/lib/captable.js';
-import { puterBackend, deferred } from './helpers/puter-kv.js';
+import { everythingBackend, deferred } from './helpers/everything-kv.js';
 
 // Real Store + real conditional KV, with only the remote SDK replaced.
 describe('concurrent saves through the complete persistence layer', () => {
   let backend;
   beforeEach(() => {
-    backend = puterBackend();
+    backend = everythingBackend();
     backend.install();
   });
   const reload = async () => { const s = new Store(); await s.init(); return s; };
@@ -106,9 +106,9 @@ describe('concurrent saves through the complete persistence layer', () => {
     const { a, b, holder } = await fixture();
     const started = deferred();
     const release = deferred();
-    const add = puter.kv.add;
+    const add = everything.kv.add;
     let pause = true;
-    puter.kv.add = async (k, v) => {
+    everything.kv.add = async (k, v) => {
       if (k.startsWith(key(a, 'stakeholders')) && pause) {
         pause = false;
         started.resolve();
@@ -171,9 +171,9 @@ describe('concurrent saves through the complete persistence layer', () => {
     const pauseUpload = (field) => {
       const paused = deferred();
       const release = deferred();
-      const set = puter.kv.set;
+      const set = everything.kv.set;
       let once = true;
-      puter.kv.set = async (k, v) => {
+      everything.kv.set = async (k, v) => {
         if (once && k.startsWith(`${key(a, field)}:revision:`) && k.endsWith(':value')) {
           once = false;
           paused.resolve();
@@ -244,9 +244,9 @@ describe('concurrent saves through the complete persistence layer', () => {
     await b.init();
     const started = deferred();
     const release = deferred();
-    const set = puter.kv.set;
+    const set = everything.kv.set;
     let pause = true;
-    puter.kv.set = async (k, v) => {
+    everything.kv.set = async (k, v) => {
       if (k.startsWith(key(a, 'stakeholders')) && k.includes(':part1') && pause) {
         pause = false;
         started.resolve();
@@ -282,9 +282,9 @@ describe('concurrent saves through the complete persistence layer', () => {
   it.each([false, true])('restores all collections after a failed multi-key commit (append landed=%s)', async (landed) => {
     const { a, holder } = await fixture();
     const before = JSON.stringify(a.exportAll().securities);
-    const add = puter.kv.add;
+    const add = everything.kv.add;
     let fail = true;
-    puter.kv.add = async (k, v) => {
+    everything.kv.add = async (k, v) => {
       if (k.startsWith(key(a, 'securities')) && fail) {
         fail = false;
         if (landed) await add(k, v);
@@ -301,9 +301,9 @@ describe('concurrent saves through the complete persistence layer', () => {
 
   it('retries an owed rollback after the connection returns', async () => {
     const { a, holder } = await fixture();
-    const add = puter.kv.add;
+    const add = everything.kv.add;
     let offline = false;
-    puter.kv.add = async (k, v) => {
+    everything.kv.add = async (k, v) => {
       if (offline) throw new Error('offline');
       const result = await add(k, v);
       if (k.startsWith(key(a, 'securities'))) {
@@ -314,7 +314,7 @@ describe('concurrent saves through the complete persistence layer', () => {
     };
     await expect(a.deleteStakeholder(holder.id)).rejects.toThrow();
     expect(a.unsaved).toBe(true);
-    puter.kv.add = add;
+    everything.kv.add = add;
     expect(await a.retryUnsaved()).toBe(true);
     const saved = await reload();
     expect(saved.stakeholders).toHaveLength(1);

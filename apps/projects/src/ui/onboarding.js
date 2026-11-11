@@ -26,7 +26,7 @@ export function openOnboarding() {
     el('div.empty.onboard-hero', {},
       el('div.empty-icon', { html: icon('board', 30) }),
       el('h3', {}, 'Plan it. Move it. Ship it.'),
-      el('p', {}, 'Kanban boards, timelines, and milestones for small teams. Everything is stored in your own Puter account, never sold or shared.')
+      el('p', {}, 'Kanban boards, timelines, and milestones for small teams. Everything is stored in your own Everything account, never sold or shared.')
     ),
     el('button.btn.btn-primary.btn-block.btn-tall', {
       type: 'button',

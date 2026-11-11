@@ -35,7 +35,7 @@ export function openOnboarding({ onCapture } = {}) {
       el('div.empty', { style: { padding: '8px 8px 4px' } },
         el('div.empty-icon', { html: icon('scan', 28), style: { background: 'var(--accent-wash)', color: 'var(--accent-strong)' } }),
         el('h3', {}, 'Receipts in, reports out'),
-        el('p', {}, 'Capture receipts and let AI read them, bundle them into reports, and reconcile against your statement. Stored in your own Puter account.')
+        el('p', {}, 'Capture receipts and let AI read them, bundle them into reports, and reconcile against your statement. Stored in your own Everything account.')
       ),
       el('button.btn.btn-primary.btn-block.btn-lg', { type: 'button', onclick: renderCurrency }, 'Set up my expenses'),
       el('button.btn.btn-outline.btn-block', {

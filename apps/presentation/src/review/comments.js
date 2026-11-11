@@ -143,7 +143,7 @@ export function createComments(env, host) {
         el(
           "p",
           { class: "helper" },
-          "Comments show who wrote them. Sign in to use your Puter name, or enter the name to show.",
+          "Comments show who wrote them. Sign in to use your Everything name, or enter the name to show.",
         ),
         el("label", {}, "Name", input),
       ),

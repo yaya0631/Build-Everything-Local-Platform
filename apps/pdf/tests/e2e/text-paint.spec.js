@@ -33,7 +33,7 @@ async function redPaint(bytes) {
 
 for (const name of [StandardFonts.Helvetica, StandardFonts.TimesRoman, StandardFonts.Courier]) {
   test(`editing ${name} retains PDF glyph spacing`, async ({ page }) => {
-    await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
+    await page.route('**/sdk/everything.js', (route) => route.fulfill({ body: '' }));
     await page.goto('/#library');
     const doc = await PDFDocument.create();
     const font = await doc.embedFont(name);
@@ -91,7 +91,7 @@ for (const mode of [1, 2]) {
       test(`text paint mode ${mode}, width ${lineWidth}, ${transformKind} transform preserves its preview and edits on rotated page ${rotation}`, async ({
         page,
       }) => {
-        await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
+        await page.route('**/sdk/everything.js', (route) => route.fulfill({ body: '' }));
         await page.goto('/#library');
         const doc = await PDFDocument.create();
         const font = await doc.embedFont(StandardFonts.Helvetica);

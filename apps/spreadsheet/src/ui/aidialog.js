@@ -9,7 +9,7 @@ import { el, isComposing } from './dom.js';
 import { icon } from './icons.js';
 import { openModal, fieldAlert } from './modal.js';
 import { toast } from './toast.js';
-import * as P from '../lib/puter.js';
+import * as P from '../lib/everything.js';
 import { describeSheet, describeRange, dataBounds, sampleRange, formulaPrompt, explainPrompt, askPrompt, extractFormula } from '../core/aiformula.js';
 import { cellName, colName, rangeName } from '../core/cell.js';
 import { looksLikeHeader } from './sortdialog.js';
@@ -162,7 +162,7 @@ export function openAiDialog(ctx, { mode = 'write' } = {}) {
     busy = true;
     askBtn.disabled = true;
     askBtn.setAttribute('aria-busy', 'true');
-    status.textContent = 'Asking Puter AI…';
+    status.textContent = 'Asking Everything AI…';
     result.hidden = true;
     insertBtn.hidden = true;
     copyBtn.hidden = true;

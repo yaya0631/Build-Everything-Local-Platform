@@ -23,7 +23,7 @@ for (const kind of ['image', 'typed signature', 'drawn signature', 'uploaded sig
     test(`${kind} insertion ${moved ? 'preserves newer focus' : 'focuses the new object'}`, async ({
       page,
     }) => {
-      await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
+      await page.route('**/sdk/everything.js', (route) => route.fulfill({ body: '' }));
       await page.goto('/#library');
       const doc = await PDFDocument.create();
       doc.addPage([400, 500]);

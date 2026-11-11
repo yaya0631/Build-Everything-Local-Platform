@@ -7,13 +7,13 @@ async function setup(page, launch = false) {
   doc.addPage([300, 300]);
   doc.addPage([300, 300]);
   const bytes = Buffer.from(await doc.save()).toString('base64');
-  await page.route('**/sdk/puter.js', (route) =>
+  await page.route('**/sdk/everything.js', (route) =>
     route.fulfill({
       contentType: 'application/javascript',
       body: `
       window.exits=0; window.signIns=0; window.reads=[]; window.writes=[];
       window.requestClose=()=>{ if(window.closeApp) window.closeApp(); else window.exits++; };
-      window.puter={env:'app',auth:{
+      window.everything={env:'app',auth:{
         getUser:()=>new Promise((resolve,reject)=>{
           window.finishProfile=fail=>{
             if(fail) reject(new Error('Profile unavailable')); else resolve({username:'test-user'});
@@ -93,7 +93,7 @@ for (const timing of ['before', 'during'])
           await expect(page.getByRole('button', { name: 'Undo', exact: true })).toBeDisabled();
           await page.getByRole('button', { name: 'Settings', exact: true }).click();
           await expect(page.getByRole('dialog', { name: 'Settings', exact: true })).toContainText(
-            `Signed in as ${outcome === 'success' ? 'test-user' : 'Puter user'}`,
+            `Signed in as ${outcome === 'success' ? 'test-user' : 'Everything user'}`,
           );
         }
         expect(await page.evaluate(() => window.signIns)).toBe(0);
@@ -114,8 +114,8 @@ for (const activity of ['launch', 'open', 'save'])
         activity === 'launch' ? 'launch.pdf' : activity === 'open' ? 'opened.pdf' : 'Untitled.pdf';
       if (activity === 'save') {
         await rotate(page);
-        await page.getByRole('button', { name: 'Save to Puter', exact: true }).click();
-        await expect(page.locator('.save-status')).toHaveText('Saved to Puter');
+        await page.getByRole('button', { name: 'Save to Everything', exact: true }).click();
+        await expect(page.locator('.save-status')).toHaveText('Saved to Everything');
         const writes = await page.evaluate(() => window.writes);
         expect(writes).toHaveLength(1);
         expect(writes[0].path).toBe('PDF Editor/Untitled.pdf');
@@ -131,7 +131,7 @@ for (const activity of ['launch', 'open', 'save'])
       expect(saved.getPage(0).getRotation().angle).toBe(activity === 'save' ? 90 : 0);
       await page.getByRole('button', { name: 'Settings', exact: true }).click();
       await expect(page.getByRole('dialog', { name: 'Settings', exact: true })).toContainText(
-        `Signed in as ${outcome === 'success' ? 'test-user' : 'Puter user'}`,
+        `Signed in as ${outcome === 'success' ? 'test-user' : 'Everything user'}`,
       );
       expect(await page.evaluate(() => window.signIns)).toBe(0);
       expect(errors).toEqual([]);

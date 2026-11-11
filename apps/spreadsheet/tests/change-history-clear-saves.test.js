@@ -3,7 +3,7 @@ import { Doc } from '../src/lib/doc.js';
 import { clearChangeHistory } from '../src/core/change-history.js';
 import { workbookFromFile } from '../src/core/io.js';
 import { memoryStorage } from './helpers/memory-storage.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 
 // Clear in the Show Changes pane emptied the record and marked the book changed, but left its version as it
 // was: the save that followed took the book for the one it had just encoded, wrote those bytes again, and
@@ -11,8 +11,8 @@ import { installMockPuter } from './helpers/mock-puter.js';
 // Clearing is now a new version of the book, which the save encodes afresh.
 let mock;
 beforeAll(async () => { await Doc.blank().toXlsxBlob(); });
-beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); mock = installMockPuter(); });
-afterEach(() => { delete globalThis.puter; });
+beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); mock = installMockEverything(); });
+afterEach(() => { delete globalThis.everything; });
 
 it('writes the cleared record to the file', async () => {
   const doc = Doc.blank();

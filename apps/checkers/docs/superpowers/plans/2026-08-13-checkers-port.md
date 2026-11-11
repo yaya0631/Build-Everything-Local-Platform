@@ -4,9 +4,9 @@
 
 **Goal:** Rebuild the single-file checkers game as a structural mirror of `chess.localhost:8443` — same architecture, visual design, and feature set, with American checkers in place of chess.
 
-**Architecture:** Vanilla JS, no runtime framework, built with Vite. A pure rules engine over a 32-cell board (`src/engine/checkers.js`) that deals only in complete turns; a negamax AI over it; a DOM-only board view; a controller (`src/main.js`) that owns all app state including the hop-at-a-time jump chain; and four supporting modules for clock, persistence, PDN export, and Puter Peer online play.
+**Architecture:** Vanilla JS, no runtime framework, built with Vite. A pure rules engine over a 32-cell board (`src/engine/checkers.js`) that deals only in complete turns; a negamax AI over it; a DOM-only board view; a controller (`src/main.js`) that owns all app state including the hop-at-a-time jump chain; and four supporting modules for clock, persistence, PDN export, and Everything Peer online play.
 
-**Tech Stack:** Vite 8, Vitest 4, `lucide` icons, `@fontsource/inter`, Puter Peer API (loaded lazily from the CDN, not an npm dependency).
+**Tech Stack:** Vite 8, Vitest 4, `lucide` icons, `@fontsource/inter`, Everything Peer API (loaded lazily from the CDN, not an npm dependency).
 
 **Reference implementation:** `../chess.localhost:8443` is the app being mirrored. Many tasks say "port from" a file there. That means: read that file, keep its structure, comments, and naming, and change only what the spec says changes. It does **not** mean rewrite from scratch.
 
@@ -45,7 +45,7 @@
 | `src/game/clock.js` | time controls and the two countdowns (ported verbatim) |
 | `src/game/persistence.js` | saved-game read/write/validate |
 | `src/game/pdn.js` | PDN export |
-| `src/net/online.js` | Puter Peer session |
+| `src/net/online.js` | Everything Peer session |
 | `tests/*.test.js` | one file per module under test |
 
 Geometry is split out of `checkers.js` because it is pure data with no dependency on position state, it is the single most important thing to get right, and it deserves its own test file. `chain.js` is split out of `main.js` for the same reason: it is the one piece of genuinely new logic in the port, and in the controller it would be untestable without a DOM.
@@ -68,7 +68,7 @@ Geometry is split out of `checkers.js` because it is pure data with no dependenc
 
 ```json
 {
-  "name": "checkers-puter",
+  "name": "checkers-everything",
   "private": true,
   "version": "1.0.0",
   "type": "module",
@@ -2258,7 +2258,7 @@ git commit -m "Review a finished game and export it as PDN"
 - Reference: `../chess.localhost:8443/src/net/online.js`, `../chess.localhost:8443/tests/online.test.js`
 
 **Interfaces:**
-- Produces: `class OnlineSession(handlers)`, `loadPuter()`
+- Produces: `class OnlineSession(handlers)`, `loadEverything()`
 - `sendMove(move, clock)` takes the engine's `Move` and sends `{t:'move', path, clock}`
 - `onMove({ path, clock })`
 
@@ -2475,7 +2475,7 @@ In `index.html`, in place of the chess analytics script:
 
 - [ ] **Step 2: Port `customHttp.yml`**
 
-Copy it across. The CSP is unchanged in substance — `js.localhost:8443` and `api.localhost:8443` for the SDK, `wss:` for peer signalling, inline styles allowed for the Puter consent dialog.
+Copy it across. The CSP is unchanged in substance — `js.localhost:8443` and `api.localhost:8443` for the SDK, `wss:` for peer signalling, inline styles allowed for the Everything consent dialog.
 
 **Recompute the inline-script hashes** after building, since the theme script's text changed (`chess-settings` → `checkers-settings`) and the Plausible block changed:
 

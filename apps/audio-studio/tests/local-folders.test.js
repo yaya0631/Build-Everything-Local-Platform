@@ -58,8 +58,8 @@ describe('device folders', () => {
     await expect(readLocalDir(roots, 'local:zz')).rejects.toThrow();
   });
 
-  it('passes Puter drag items through unchanged', async () => {
-    const puterItem = { name: 'x.wav', path: '/u/x.wav' };
-    expect(await resolveMediaItems([puterItem])).toEqual([puterItem]);
+  it('passes Everything drag items through unchanged', async () => {
+    const everythingItem = { name: 'x.wav', path: '/u/x.wav' };
+    expect(await resolveMediaItems([everythingItem])).toEqual([everythingItem]);
   });
 });

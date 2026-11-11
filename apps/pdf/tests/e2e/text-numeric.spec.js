@@ -4,7 +4,7 @@ import { PDFDocument } from 'pdf-lib';
 import { readFile } from 'node:fs/promises';
 
 async function openParagraph(page) {
-  await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
+  await page.route('**/sdk/everything.js', (route) => route.fulfill({ body: '' }));
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([500, 500]).drawText('One two three\nfour five.', {

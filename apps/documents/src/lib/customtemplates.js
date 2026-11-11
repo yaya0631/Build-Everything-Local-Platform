@@ -1,12 +1,12 @@
 /**
  * Templates of your own: any document saved into Documents/Templates on
- * Puter. They show up next to the built-in templates, and a new document
+ * Everything. They show up next to the built-in templates, and a new document
  * from one starts as a copy of the file (saved under its own name once the
  * engine is ready). The id "file:<path>" travels in the #/new/<template>
  * route like the built-in ids do.
  */
 
-import * as P from './puter.js';
+import * as P from './everything.js';
 import { documentRoot } from './document-paths.js';
 import { session } from './session.js';
 

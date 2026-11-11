@@ -11,9 +11,9 @@ afterEach(() => { for (const c of open.splice(0)) c.close(); });
 async function setup() {
   const env = environment();
   const wb = new Workbook({ sheets: [{ name: 'Data' }] });
-  const room = await RoomClient.create({ puter: env.sdk(owner), server: SERVER, wb, name: 'Data', file: null });
+  const room = await RoomClient.create({ everything: env.sdk(owner), server: SERVER, wb, name: 'Data', file: null });
   const join = async () => {
-    const client = new RoomClient({ puter: env.sdk(owner), server: SERVER, room, store: memoryOutbox(), poll: 50, noPeers: true });
+    const client = new RoomClient({ everything: env.sdk(owner), server: SERVER, room, store: memoryOutbox(), poll: 50, noPeers: true });
     open.push(client);
     await client.open();
     return client;

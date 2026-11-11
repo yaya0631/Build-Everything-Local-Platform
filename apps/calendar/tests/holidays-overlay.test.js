@@ -15,7 +15,7 @@ import { renderAgenda } from '../src/js/views/agenda.js';
 import { clearHolidayCache } from '../src/js/holidays.js';
 import { clearClockChangeCache } from '../src/js/dst.js';
 
-/** In-memory stand-in matching the subset of puter.kv the store uses. */
+/** In-memory stand-in matching the subset of everything.kv the store uses. */
 function makeKv(initial = {}) {
   const map = new Map(Object.entries(initial));
   const globToRe = (glob) =>

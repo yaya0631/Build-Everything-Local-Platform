@@ -6,8 +6,8 @@ import { RoomClient } from '/src/collab/client.js';
 import { memoryOutbox } from '/src/collab/outbox.js';
 import { call } from '/src/collab/api.js';
 
-const puter = window.puter;
-if (puter && !puter.workers) {
+const everything = window.everything;
+if (everything && !everything.workers) {
   const data = new Map(), files = new Map(), listeners = new Map();
   const kv = {
     async get(key) { return data.has(key) ? structuredClone(data.get(key)) : null; },
@@ -27,9 +27,9 @@ if (puter && !puter.workers) {
     async stat(path) { if (!files.has(path)) throw new Error('missing'); return { path }; },
     async delete(path) { if (!files.delete(path)) throw new Error('missing'); },
   };
-  const service = new RoomService({ kv, fs: workerFs, auth: { getUser: async () => me }, authToken: `h.${btoa(JSON.stringify({ app_uid: 'app-sheet' }))}.s`, APIOrigin: 'https://api.puter.test' });
+  const service = new RoomService({ kv, fs: workerFs, auth: { getUser: async () => me }, authToken: `h.${btoa(JSON.stringify({ app_uid: 'app-sheet' }))}.s`, APIOrigin: 'https://api.everything.test' });
   const sdkFor = (user, base = {}) => Object.assign(base, {
-    APIOrigin: 'https://api.puter.test',
+    APIOrigin: 'https://api.everything.test',
     authToken: base.authToken || `h.${btoa(JSON.stringify({ type: 'app-under-user', user_uid: user.uuid }))}.s`,
     workers: {
       async create(name) { return { url: `http://${name}.localhost:8443` }; },
@@ -43,9 +43,9 @@ if (puter && !puter.workers) {
     events: { async onLocal(subject, fn) { const id = crypto.randomUUID(); listeners.set(id, { key: subject.split(':').slice(2).join(':'), fn }); return { off: () => listeners.delete(id) }; } },
   });
   // The page's own account: credentials and the worker bundle are stood in for.
-  sdkFor(me, puter);
-  puter.authToken = `h.${btoa(JSON.stringify({ type: 'app-under-user', user_uid: me.uuid }))}.s`;
-  puter.fs.getReadURL = async () => `https://api.puter.test/token-read?token=${encodeURIComponent(`h.${btoa(JSON.stringify({ type: 'access-token', user_uid: me.uuid, exp: Math.floor(Date.now() / 1000) + 86400 }))}.s`)}`;
+  sdkFor(me, everything);
+  everything.authToken = `h.${btoa(JSON.stringify({ type: 'app-under-user', user_uid: me.uuid }))}.s`;
+  everything.fs.getReadURL = async () => `https://api.everything.test/token-read?token=${encodeURIComponent(`h.${btoa(JSON.stringify({ type: 'access-token', user_uid: me.uuid, exp: Math.floor(Date.now() / 1000) + 86400 }))}.s`)}`;
   const realFetch = window.fetch.bind(window);
   window.fetch = (url, init) => (String(url).includes('worker/spreadsheet-worker.js') ? Promise.resolve(new Response('/* spreadsheet-worker build=0123456789abcdef */')) : realFetch(url, init));
   window.__collabBuild = '0123456789abcdef';
@@ -62,13 +62,13 @@ if (puter && !puter.workers) {
       else {
         const roomKeys = [...data.keys()].filter((k) => k.endsWith(':meta'));
         room = roomKeys.at(-1)?.split(':')[1];
-        server = (await puter.kv.get('spreadsheet-collab-worker-v1'))?.server;
+        server = (await everything.kv.get('spreadsheet-collab-worker-v1'))?.server;
       }
       const user = { uuid: crypto.randomUUID(), username };
-      const sdk = sdkFor(user, { kv: { get: async () => null, set: async () => true }, fs: puter.fs, auth: { getUser: async () => user } });
-      sdk.fs = { ...puter.fs, getReadURL: puter.fs.getReadURL };
-      const { token } = await call(puter, server, { op: 'invite', room, role });
-      const client = new RoomClient({ puter: sdk, server, room, token, store: memoryOutbox(), poll: 400, noPeers: true });
+      const sdk = sdkFor(user, { kv: { get: async () => null, set: async () => true }, fs: everything.fs, auth: { getUser: async () => user } });
+      sdk.fs = { ...everything.fs, getReadURL: everything.fs.getReadURL };
+      const { token } = await call(everything, server, { op: 'invite', room, role });
+      const client = new RoomClient({ everything: sdk, server, room, token, store: memoryOutbox(), poll: 400, noPeers: true });
       await client.open();
       bots.push(client);
       if (at) client.setPresence(at);

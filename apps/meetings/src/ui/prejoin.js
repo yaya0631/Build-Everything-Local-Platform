@@ -19,7 +19,7 @@ import {
 import { withDeadline } from '../lib/timers.js';
 import { startInstant } from './instant.js';
 import { sanitizeName } from '../lib/protocol.js';
-import { hasPuter } from '../lib/env.js';
+import { hasEverything } from '../lib/env.js';
 import { ensureSession, isAnonymous } from '../lib/account.js';
 
 const ROOM_POLL_MS = 4500;
@@ -64,7 +64,7 @@ export const INVITE_DEAD_FOR_MS = LEASE_TTL_MS;
 export const AUTO_START_RETRY_MS = 30_000;
 /**
  * A dial that never reached the signaller at all — our own socket to it
- * would not open, or Puter could not be asked where it is — says nothing
+ * would not open, or Everything could not be asked where it is — says nothing
  * about the invite, so it is neither a dial failure nor a reason to write
  * it off: the same invite is dialed again, with backoff, until the
  * way there is back (see isSignallerUnreachableError). A capped backoff:
@@ -233,9 +233,9 @@ export function mountPrejoin(root, params, ctx) {
   nameInput.focus();
 
   // Warm up TURN relays while the user is still on this screen.
-  if (hasPuter()) {
+  if (hasEverything()) {
     try {
-      window.puter.peer?.ensureTurnRelays?.().catch?.(() => {});
+      window.everything.peer?.ensureTurnRelays?.().catch?.(() => {});
     } catch {
       /* noop */
     }
@@ -247,19 +247,19 @@ export function mountPrejoin(root, params, ctx) {
    * Fill an empty name field with the name used last time. It is stored
    * locally, so the common case is already in the input above; on a device
    * that has never joined from here it may still be on its way down from
-   * puter.kv, which is what the wait is for. The Puter account username is
+   * everything.kv, which is what the wait is for. The Everything account username is
    * only a fallback, and typing beats both.
    */
   async function prefillName() {
     await prefsReady();
     if (!alive || nameInput.value) return;
     let name = getPref('name');
-    if (!name && hasPuter()) {
+    if (!name && hasEverything()) {
       try {
-        if (window.puter.auth?.isSignedIn?.()) {
-          // Skip a username Puter generated when it made the account for a
+        if (window.everything.auth?.isSignedIn?.()) {
+          // Skip a username Everything generated when it made the account for a
           // guest: nobody chose it, so nobody wants to be introduced by it.
-          const account = await window.puter.auth.getUser();
+          const account = await window.everything.auth.getUser();
           if (!account?.is_temp) name = account?.username;
         }
       } catch {
@@ -372,7 +372,7 @@ export function mountPrejoin(root, params, ctx) {
       return;
     }
     const name = sanitizeName(nameInput.value);
-    // Remember it now: a join that fails below (Puter.js missing, sign-in
+    // Remember it now: a join that fails below (Everything.js missing, sign-in
     // dismissed, nothing running yet) shouldn't cost the user their name
     // on the next attempt. The cloud copy needs sign-in, so it waits.
     setLocalPref('name', name);
@@ -388,23 +388,23 @@ export function mountPrejoin(root, params, ctx) {
     joinBtn.textContent = params.mode === 'create' ? 'Starting…' : 'Joining…';
 
     try {
-      if (!hasPuter()) {
-        throw new Error('Puter.js failed to load. Check your connection and reload.');
+      if (!hasEverything()) {
+        throw new Error('Everything.js failed to load. Check your connection and reload.');
       }
-      // Starting a meeting takes a Puter account: the host serves the room,
+      // Starting a meeting takes an Everything account: the host serves the room,
       // publishes its link and pays for its relays. Joining a room takes
       // none — the guest goes in anonymously, on the grant the host published
       // next to the invite. Only a one-time link from an older deploy still
-      // needs a session, having no room to carry a grant; Puter makes that
+      // needs a session, having no room to carry a grant; Everything makes that
       // guest an account on the spot (see src/lib/account.js).
       if (params.mode === 'create') {
-        if (isAnonymous()) toast('Sign in with Puter to continue', { icon: 'info' });
+        if (isAnonymous()) toast('Sign in with Everything to continue', { icon: 'info' });
         await ensureSession();
       } else if (!roomCode) {
         await ensureSession({ autoCreate: true });
       }
 
-      // Local always; to puter.kv as well where there is a session.
+      // Local always; to everything.kv as well where there is a session.
       setPref('name', name);
 
       const call =
@@ -451,7 +451,7 @@ export function mountPrejoin(root, params, ctx) {
 
   /**
    * Persistent room: ask the directory what is running, then join the
-   * meeting that is, or start one — anyone with a Puter account does, the
+   * meeting that is, or start one — anyone with an Everything account does, the
    * first to arrive hosting. A visitor with no account, or a room the
    * directory cannot be asked about, sits in the waiting room polling until
    * a meeting appears. Resolves null when the wait is cancelled or the view
@@ -484,7 +484,7 @@ export function mountPrejoin(root, params, ctx) {
     let unreachableSince = null;
     // Why: 'invite' — the invite itself failed us (the host is replacing
     // it, or it is dead); 'signaller' — we never got as far as the signaller,
-    // which is our side, or Puter's, and no verdict on the invite; 'network'
+    // which is our side, or Everything's, and no verdict on the invite; 'network'
     // — the dial went through, but no path could be built from here.
     let unreachableReason = null;
     // Consecutive dials that never reached the signaller — sets the backoff.
@@ -601,7 +601,7 @@ export function mountPrejoin(root, params, ctx) {
 
       // Nothing is running — or the meeting that is cannot be reached from
       // here, or is still being set up. Whoever holds the link and has a
-      // Puter account starts the meeting as a matter of course when nothing
+      // Everything account starts the meeting as a matter of course when nothing
       // runs: the first to arrive is the host, the way it works on a call
       // with friends, rather than being told to wait for a host who may be
       // them. Only a visitor with no account has to ask: hosting takes an
@@ -734,7 +734,7 @@ export function mountPrejoin(root, params, ctx) {
     // A meeting that is running but out of reach is not "waiting for the
     // host" — the host is there. Say so, and once it has gone on for a
     // while, say what to do about it: the person inside can re-share the
-    // link, and knows to when told. When it is Puter's connection service
+    // link, and knows to when told. When it is Everything's connection service
     // we cannot reach, say that instead of blaming the host's link. And a
     // meeting someone is starting this very moment is neither: connecting.
     const running = unreachableSince !== null;
@@ -747,12 +747,12 @@ export function mountPrejoin(root, params, ctx) {
           : Date.now() - unreachableSince >= UNREACHABLE_HELP_AFTER_MS
             ? 'Still trying to get you in. Ask the host to check their connection, or to share the link again.'
             : unreachableReason === 'signaller'
-              ? 'Can’t reach Puter’s connection service — retrying…'
+              ? 'Can’t reach Everything’s connection service — retrying…'
               : 'The host is here, but their link is being refreshed. Connecting you — this usually takes a few seconds.'
         : !sawRoom && attempt >= ROOM_MISSING_HINT_AFTER
           ? 'We can’t reach the meeting service right now. Check your connection — you’ll join automatically once it’s back.'
           : isAnonymous()
-            ? 'The meeting hasn’t started yet. You’ll join automatically when it starts — or sign in with Puter to start it yourself.'
+            ? 'The meeting hasn’t started yet. You’ll join automatically when it starts — or sign in with Everything to start it yourself.'
             : 'The meeting hasn’t started yet. You’ll join automatically when it starts, or you can start it now.';
     if (sideTitle.textContent !== title) sideTitle.textContent = title;
     // Rewriting the live region with identical text would re-announce it to
@@ -800,14 +800,14 @@ export function mountPrejoin(root, params, ctx) {
     startRoomBtn.disabled = true;
     startRoomBtn.textContent = 'Starting…';
     errorLine.textContent = '';
-    // Starting a meeting takes a Puter account, here as on the home page:
+    // Starting a meeting takes an Everything account, here as on the home page:
     // the host serves the room, publishes its link and pays for its relays.
     // A guest waiting here may well have none — joining never asked. The
     // sign-in is a popup, which browsers allow only during the click, so it
     // is asked for now rather than from the waiting loop; declined, the
     // button is theirs to try again.
     if (isAnonymous()) {
-      toast('Sign in with Puter to continue', { icon: 'info' });
+      toast('Sign in with Everything to continue', { icon: 'info' });
       try {
         await ensureSession();
       } catch (err) {
@@ -930,7 +930,7 @@ function fillSelect(select, devices, currentId, fallbackLabel) {
  * home screen's direct start (src/main.js).
  */
 export function friendlyError(err) {
-  // Puter's sign-in rejects with a plain `{error, msg}` object rather than an
+  // Everything's sign-in rejects with a plain `{error, msg}` object rather than an
   // Error, so reaching only for `.message` used to print "[object Object]" at
   // the one moment the user most needs to be told what happened. The codes
   // are checked before the text below, or "window was closed" would be read
@@ -938,13 +938,13 @@ export function friendlyError(err) {
   const code = err?.error ?? '';
   const msg = err?.message ?? err?.msg ?? String(err);
   if (code === 'popup_blocked')
-    return 'Your browser blocked the Puter window. Allow pop-ups for this site, then try again.';
+    return 'Your browser blocked the Everything window. Allow pop-ups for this site, then try again.';
   if (code === 'auth_window_closed' || /cancel|dismiss|denied/i.test(msg))
-    return 'The Puter window closed before we could get you in. Try again.';
+    return 'The Everything window closed before we could get you in. Try again.';
   if (/version-mismatch/i.test(msg))
-    return 'You and the host are on different versions of Puter Meetings. Both of you should hard-refresh the page (⌘/Ctrl+Shift+R) and try again with a new meeting link.';
+    return 'You and the host are on different versions of Everything Meetings. Both of you should hard-refresh the page (⌘/Ctrl+Shift+R) and try again with a new meeting link.';
   if (isSignallerUnreachableError(err))
-    return 'Can’t reach Puter’s connection service. Check your connection and try again.';
+    return 'Can’t reach Everything’s connection service. Check your connection and try again.';
   if (err?.kind === 'no-media-path')
     return 'Your network is blocking the connection. Try another network or a phone hotspot, or ask the host to check that guests can use relays.';
   if (/handshake-timeout/i.test(msg))

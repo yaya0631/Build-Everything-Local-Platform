@@ -5,7 +5,7 @@ import { openAiDialog } from '../src/ui/aidialog.js';
 import { closeAllModals } from '../src/ui/modal.js';
 import { textReachesOut } from '../src/core/reaches-out.js';
 import { sampleRange } from '../src/core/aiformula.js';
-import * as P from '../src/lib/puter.js';
+import * as P from '../src/lib/everything.js';
 
 vi.mock('../src/ui/toast.js', () => ({ toast: vi.fn() }));
 // The scan the open and paste paths share, made switchable so a test can flag any formula.

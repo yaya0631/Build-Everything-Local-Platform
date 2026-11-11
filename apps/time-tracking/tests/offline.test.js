@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { createPuterMock } from './puter-mock.js';
+import { createEverythingMock } from './everything-mock.js';
 
 /* offline.js touches localStorage at import time; give Node one first.
    Vitest isolates test files, so this stub never leaks to other suites. */
@@ -48,9 +48,9 @@ async function seedProject() {
 beforeEach(async () => {
   localStorage._clear();
   offline.clearAll();
-  mock = createPuterMock();
+  mock = createEverythingMock();
   mock.auth.getUser = async () => ({ uuid: 'user-1', username: 'tester' });
-  globalThis.puter = mock;
+  globalThis.everything = mock;
   store = createStore();
   await store.init();
 });

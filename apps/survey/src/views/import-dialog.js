@@ -38,7 +38,7 @@ Any other comments?`;
 /** A survey from an exported file's JSON, or an error message. */
 export function surveyFromFile(data) {
   if (!data || typeof data !== 'object') return { error: 'This file does not contain a survey.' };
-  const raw = data.format === 'puter-survey' ? data.survey : data;
+  const raw = data.format === 'everything-survey' ? data.survey : data;
   if (!raw || typeof raw !== 'object' || !Array.isArray(raw.pages)) return { error: 'This file does not contain a survey.' };
   const survey = normalizeSurvey({ ...raw, id: surveyId() });
   if (!questionCount(survey) && !survey.pages.some((p) => p.questions.length)) return { error: 'This survey file has no questions.' };

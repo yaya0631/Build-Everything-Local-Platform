@@ -49,7 +49,7 @@ and [mail-messages.js](../../src/lib/mail-messages.js). OOXML details are in
 - Use an Existing List: .csv, .tsv/.txt (delimiter detected, quoting, line
   breaks in cells, byte order mark) and .xlsx (shared and inline strings, dates,
   booleans, sparse cells; a sheet chooser when there are several) from the
-  device, or from Puter when its file picker is available. Export List as CSV
+  device, or from Everything when its file picker is available. Export List as CSV
   and Remove Recipient List.
 - Edit Recipient List: include/exclude check boxes, click-to-sort columns, Sort
   and Filter (up to three sort keys, and/or conditions), Find Duplicates (choose
@@ -90,10 +90,10 @@ and [mail-messages.js](../../src/lib/mail-messages.js). OOXML details are in
 - Print Documents: prints every merged copy in one print job through the
   document's normal print path (up to 300 recipients at a time).
 - Send Email Messages: To column, subject, HTML or plain text, record range.
-  Messages are sent from the user's Puter email address with
-  `puter.email.send`, the same API the Calendar app uses for replies, after a
+  Messages are sent from the user's Everything email address with
+  `everything.email.send`, the same API the Calendar app uses for replies, after a
   confirmation (the mail permission is requested if needed). Without a signed-in
-  Puter session (or by choice) each message is saved as an unsent .eml file
+  Everything session (or by choice) each message is saved as an unsent .eml file
   (several in a .zip) that any mail app opens as a draft.
 
 ## Approximations

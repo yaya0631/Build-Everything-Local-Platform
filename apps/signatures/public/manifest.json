@@ -1,7 +1,7 @@
 {
   "name": "Signatures",
   "short_name": "Signatures",
-  "description": "Send documents for signature, track who signed, and download the completed copy. Your documents live in your own Puter cloud.",
+  "description": "Send documents for signature, track who signed, and download the completed copy. Your documents live in your own Everything cloud.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

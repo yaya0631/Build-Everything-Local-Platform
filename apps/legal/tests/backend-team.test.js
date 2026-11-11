@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
-import { createPuterBackend } from '../src/core/backend.js';
+import { createEverythingBackend } from '../src/core/backend.js';
 import { createStore } from '../src/core/store.js';
 import { createWorkerBackend, parseJoin, isTrustedWorkerUrl, activeWorker, inviteLink } from '../src/team.js';
 
 /**
- * A fake of the parts of puter.kv the app uses, following the documented
+ * A fake of the parts of everything.kv the app uses, following the documented
  * semantics: prefix list with cursor paging and optional values, batch set,
  * and incr with a path map that returns the whole object.
  */
@@ -56,10 +56,10 @@ function fakeKV({ pageSize = 1000 } = {}) {
   };
 }
 
-describe('Puter KV backend', () => {
+describe('Everything KV backend', () => {
   it('stores one item per record under a collection prefix', async () => {
     const kv = fakeKV();
-    const b = createPuterBackend({ kv });
+    const b = createEverythingBackend({ kv });
     await b.putRecords('matters', [
       { id: 'a', n: 1 },
       { id: 'b', n: 2 },
@@ -70,7 +70,7 @@ describe('Puter KV backend', () => {
 
   it('pages through large collections with the cursor', async () => {
     const kv = fakeKV({ pageSize: 3 });
-    const b = createPuterBackend({ kv });
+    const b = createEverythingBackend({ kv });
     const recs = Array.from({ length: 10 }, (_, i) => ({ id: `r${String(i).padStart(2, '0')}` }));
     await b.putRecords('activities', recs);
     const out = await b.loadCollection('activities');
@@ -80,7 +80,7 @@ describe('Puter KV backend', () => {
 
   it('does not mix collections that share a name prefix', async () => {
     const kv = fakeKV();
-    const b = createPuterBackend({ kv });
+    const b = createEverythingBackend({ kv });
     await b.putRecords('tasks', [{ id: 'x' }]);
     await b.putRecords('taskLists', [{ id: 'y' }]);
     expect((await b.loadCollection('tasks')).map((r) => r.id)).toEqual(['x']);
@@ -88,7 +88,7 @@ describe('Puter KV backend', () => {
 
   it('bumps versions and numbers atomically with incr', async () => {
     const kv = fakeKV();
-    const b = createPuterBackend({ kv });
+    const b = createEverythingBackend({ kv });
     expect(await b.bumpVersions(['matters', 'bills'])).toEqual({ matters: 1, bills: 1 });
     expect(await b.nextNumber('bill', 1)).toBe(1);
     expect(await b.nextNumber('bill', 40)).toBe(40);
@@ -97,7 +97,7 @@ describe('Puter KV backend', () => {
 
   it('runs the store end to end', async () => {
     const kv = fakeKV();
-    const store = createStore({ backend: createPuterBackend({ kv }), flushDelay: 0 });
+    const store = createStore({ backend: createEverythingBackend({ kv }), flushDelay: 0 });
     await store.init();
     const t = store.put('tasks', { name: 'File motion' });
     await store.flush();
@@ -111,7 +111,7 @@ describe('Puter KV backend', () => {
 // ---- Team worker -------------------------------------------------------------------
 
 const SOURCE = fs.readFileSync(new URL('../public/worker/legal-team-worker.js', import.meta.url), 'utf8');
-const person = (uuid, username) => ({ puter: { auth: { getUser: async () => ({ uuid, username }) } } });
+const person = (uuid, username) => ({ everything: { auth: { getUser: async () => ({ uuid, username }) } } });
 
 function loadWorker() {
   const routes = [];
@@ -131,7 +131,7 @@ function loadWorker() {
       files.delete(p);
     },
   };
-  const me = { puter: { kv, fs: fsys, auth: { getUser: async () => ({ uuid: 'owner-1', username: 'eleanor' }) } } };
+  const me = { everything: { kv, fs: fsys, auth: { getUser: async () => ({ uuid: 'owner-1', username: 'eleanor' }) } } };
   const handler = (method, path) => routes.find(([m, p]) => m === method && p === path)?.[2];
   const api = async (user, body) => {
     const res = await handler('POST', '/api')({ me, user, request: { json: async () => body } });
@@ -212,7 +212,7 @@ describe('firm team worker', () => {
 
   it('runs the app store unchanged through the worker backend', async () => {
     const w = loadWorker();
-    const backend = createWorkerBackend('http://legalfirm-abc.localhost:8443', { getPuter: () => ({ workers: { exec: w.exec(owner) } }) });
+    const backend = createWorkerBackend('http://legalfirm-abc.localhost:8443', { getEverything: () => ({ workers: { exec: w.exec(owner) } }) });
     const store = createStore({ backend, flushDelay: 0 });
     await store.init();
     store.put('matters', { description: 'Shared matter' });
@@ -240,19 +240,19 @@ describe('firm team worker', () => {
     const inv = (await w.api(owner, { op: 'invite' })).body;
     // A freshly started server that cannot identify its owner at that moment.
     const fresh = loadWorker();
-    fresh.me.puter.kv = w.kv;
-    const getUser = fresh.me.puter.auth.getUser;
-    fresh.me.puter.auth.getUser = async () => {
+    fresh.me.everything.kv = w.kv;
+    const getUser = fresh.me.everything.auth.getUser;
+    fresh.me.everything.auth.getUser = async () => {
       throw new Error('503');
     };
     expect((await fresh.api(daniel, { op: 'join', token: inv.token })).status).toBe(503);
-    fresh.me.puter.auth.getUser = getUser;
+    fresh.me.everything.auth.getUser = getUser;
     expect((await fresh.api(daniel, { op: 'join', token: inv.token })).body).toMatchObject({ ok: true, role: 'member' });
   });
 
   it('does not tell the owner they are not a member when it cannot identify them', async () => {
     const w = loadWorker();
-    w.me.puter.auth.getUser = async () => {
+    w.me.everything.auth.getUser = async () => {
       throw new Error('503');
     };
     const res = await w.api(owner, { op: 'meta' });
@@ -331,7 +331,7 @@ describe('firm team worker', () => {
 });
 
 describe('team links', () => {
-  it('only trusts Puter worker hosts', () => {
+  it('only trusts Everything worker hosts', () => {
     expect(isTrustedWorkerUrl('http://legalfirm-x1.localhost:8443')).toBe(true);
     expect(isTrustedWorkerUrl('http://legalfirm-x1.localhost:8443')).toBe(false);
     expect(isTrustedWorkerUrl('https://evil.example.com')).toBe(false);

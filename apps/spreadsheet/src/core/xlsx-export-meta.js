@@ -4,7 +4,7 @@ import { xlsxAttr } from './xlsx-styles.js';
 import { stringifyXlsxMetadata } from './xlsx-metadata-codec.js';
 
 export function writeExportMetadata(X, book, { get, set }) {
-  const meta = book.PuterExportMeta;
+  const meta = book.EverythingExportMeta;
   if (!meta) return;
   const json = stringifyXlsxMetadata(meta.data), chunks = [];
   // Excel's per-cell string limit is 32,767 UTF-16 code units. Leave the same

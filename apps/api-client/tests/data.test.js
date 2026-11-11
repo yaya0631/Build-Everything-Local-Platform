@@ -268,7 +268,7 @@ describe('Workspace', () => {
   });
 });
 
-/** Fake puter.fs over a Map of path -> { text, modified }. */
+/** Fake everything.fs over a Map of path -> { text, modified }. */
 function fakeFs() {
   const files = new Map();
   let clock = 1000;

@@ -88,7 +88,7 @@ it.each(['en-US', 'de-DE'])('exports current native values under %s', async loca
     });
     const zip = X.CFB.read(new Uint8Array(bytes), { type: 'array' });
     const part = X.CFB.find(zip, '/xl/workbook.xml');
-    X.CFB.utils.cfb_add(zip, '/xl/workbook.xml', new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')));
+    X.CFB.utils.cfb_add(zip, '/xl/workbook.xml', new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')));
     wb = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }));
     expect(value(wb)).toEqual(expected);
   }

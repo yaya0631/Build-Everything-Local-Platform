@@ -10,13 +10,13 @@ import { steadyInterval, steadyTimeout } from './timers.js';
  * of indirection: whoever hosts writes the invite that is live *right now*
  * to the ROOM DIRECTORY, and guests ask the directory where the meeting is.
  *
- * The directory is one Puter Worker with one key-value store behind it
- * (worker/rooms.js — `http://puter-meetings-rooms.localhost:8443`), so a room
+ * The directory is one Everything Worker with one key-value store behind it
+ * (worker/rooms.js — `http://everything-meetings-rooms.localhost:8443`), so a room
  * has exactly one record, written and read in one place, judged fresh by
  * one clock (the worker's). There is nothing to propagate, nothing to
  * cache, no copy that can lag another, and no account that has to own
  * anything: a room code is the capability, as the link already is. A
- * visitor with no Puter session reads and writes it like anyone else.
+ * visitor with no Everything session reads and writes it like anyone else.
  *
  * The record is a LEASE. The first host to write claims the room under a
  * secret of its choosing; every later write repeats the secret, and a write
@@ -31,7 +31,7 @@ import { steadyInterval, steadyTimeout } from './timers.js';
  * Two code classes share the directory:
  *  - classic codes (abc-defg-hij, 10 letters), minted by this app;
  *  - open codes (abcd-efgh-ijkl, 12 letters), minted STATELESSLY by other
- *    apps (a calendar dropping a link into an event) with no Puter calls at
+ *    apps (a calendar dropping a link into an event) with no Everything calls at
  *    all — the two extra letters buy collision headroom, since uncoordinated
  *    minters can't check for existing rooms.
  * Neither costs anything to mint: a room exists from the moment someone
@@ -105,7 +105,7 @@ export function isOpenRoomCode(input) {
 
 /** Where the room directory lives (worker/rooms.js). */
 export const ROOMS_ORIGIN =
-  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_ROOMS_ORIGIN) || 'http://puter-meetings-rooms.localhost:8443';
+  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_ROOMS_ORIGIN) || 'http://everything-meetings-rooms.localhost:8443';
 
 /** How often a host renews its lease. */
 export const HEARTBEAT_MS = 20_000;
@@ -133,7 +133,7 @@ export const ROOM_SETUP_TIMEOUT_MS = 15_000;
 /** Caps on each directory request — a poll loop must never stall on one. */
 export const READ_TIMEOUT_MS = 6000;
 export const WRITE_TIMEOUT_MS = 8000;
-/** Longest guest grant an entry may carry (Puter caps its own at 512). */
+/** Longest guest grant an entry may carry (Everything caps its own at 512). */
 const MAX_GRANT_CHARS = 512;
 
 function roomUrl(code, suffix = '') {

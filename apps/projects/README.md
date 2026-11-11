@@ -1,8 +1,8 @@
 # Project Management
 
-Lightweight project management on [Puter](https://localhost:8443): kanban boards, timelines, milestones, assignees, comments, and attachments. Think Trello or Asana, not enterprise Jira.
+Lightweight project management on [Everything](https://localhost:8443): kanban boards, timelines, milestones, assignees, comments, and attachments. Think Trello or Asana, not enterprise Jira.
 
-Built with vanilla JavaScript and [Puter.js](http://localhost:8443) — no frontend framework, no backend of our own. Every byte of your data lives in your own Puter account.
+Built with vanilla JavaScript and [Everything.js](http://localhost:8443) — no frontend framework, no backend of our own. Every byte of your data lives in your own Everything account.
 
 ## Features
 
@@ -15,7 +15,7 @@ Built with vanilla JavaScript and [Puter.js](http://localhost:8443) — no front
 - **Project brief** — a Markdown overview on the project itself: what it is for, what "done" means, where the spec and the files live. Collapsed to two lines above the board (remembered per project), expandable, editable in place, summarized on the home cards, and carried through duplication, templates, and backups
 - **Column settings** — an optional WIP limit per column (the header reads `6 / 4` in a warning tone; nothing is ever blocked), a one-shot "sort this column" by due date, priority, or title with an Undo, and on done columns an "archive tasks after N days" rule applied when the project opens, which says what it archived and offers it back
 - **Milestones** — dated targets with progress bars and expandable task lists
-- **Tasks** — description, start/due dates, priority, milestone, multiple assignees, labels, checklists, threaded comments, and file attachments — uploaded, or **linked from your Puter Drive** so there is one copy of the truth (a link that breaks says so instead of failing quietly)
+- **Tasks** — description, start/due dates, priority, milestone, multiple assignees, labels, checklists, threaded comments, and file attachments — uploaded, or **linked from your Everything Drive** so there is one copy of the truth (a link that breaks says so instead of failing quietly)
 - **Reminders** — an optional "remind me" on a task (on the due date, or 1/2/7 days before) that surfaces as a toast while the app is open, a system notification when it is not (permission is asked for in Settings, never on load), and a count in the tab title that needs no permission at all; each fires once a day at most. For notifications that do not need the app running at all, export a calendar file
 - **All tasks** — the list view over every project: filter, sort, and group across boards (by project, by column *name*, by assignee, by milestone, or by due bucket), with the label and assignee facets unioned by name and the project shown when a name spans several. Bulk due, priority, duplicate, archive, and delete work across projects; the moves that only mean something inside one (column, label, assignee, milestone) are shown disabled, with the reason
 - **Today** — one cross-project agenda of dated, unfinished work grouped into Overdue, Today, This week, and Later, with a checkbox that finishes a task in its own project, and a sidebar count
@@ -30,28 +30,28 @@ Built with vanilla JavaScript and [Puter.js](http://localhost:8443) — no front
 - **Dark, light, and system themes** (system by default), fully responsive, keyboard-accessible board (Alt+arrows moves the focused card)
 - **Calendar file** — an `.ics` of every dated, unfinished task and every milestone, for this project or all of them: all-day events (dates here have no time of day), with stable UIDs and a moving `SEQUENCE`, so re-importing updates your calendar instead of triplicating it. Downloaded, or saved over the same file in your Drive. A snapshot, not a published feed
 - **Export for people** — one project as **Markdown** (brief, milestones, then tasks by column with their dates, priority, assignees, labels, and checklists), as **CSV** (one flat row per task, for a spreadsheet), or printed: `⌘P` on a board, list, or timeline gives a page with no chrome, columns that break cleanly, ink-friendly timeline bars, and the project and date in a header. Exports respect the filter on screen and say so — "5 of 15 tasks (filter applied)"
-- **Backup and restore** — export everything (or one project) as a `.zip` that includes attachment blobs, or plain JSON; save it straight to your Puter Drive instead of `~/Downloads`; import a backup back in as new projects, never overwriting what is there
+- **Backup and restore** — export everything (or one project) as a `.zip` that includes attachment blobs, or plain JSON; save it straight to your Everything Drive instead of `~/Downloads`; import a backup back in as new projects, never overwriting what is there
 - **Import from elsewhere** — a **Trello** board's JSON (lists → columns, cards → tasks, labels, members, checklists, card comments, archived cards → the archive, attachments as links to Trello rather than copies) or a **CSV** from Asana or any spreadsheet, with header auto-detection, a column picker with sample values, and a preview of exactly what will come across — and the same account of it afterwards. Always a new project
 - **Duplicate and templates** — copy a task, copy a project with or without its tasks, and save any project's structure as a template the new-project form can start from
 - **Archive** — retire finished tasks (one at a time, or a whole done column) and completed projects without deleting them; archived work stays out of every board, count, and timeline
 - **Restore points** — the first change to a project on any day leaves a copy behind (about 7 daily and 4 weekly are kept, then pruned), listed in Settings and the project menu; restoring takes a copy of the current state first, so it is itself reversible, and a project whose sidebar entry was deleted comes back with it
 - **Undo and redo** — `⌘/Ctrl+Z` walks back the gestures a board is made of (a card dragged or Alt+arrowed to another column, a timeline bar rescheduled or resized, a backlog task dated, an inline due date or priority, a bulk list edit, a one-shot column sort, a renamed column, a moved checklist item), `⇧⌘/Ctrl+Z` puts them back, and both say what they did — "Undid move of "Billing page copy review" to Done". Per project, per session, 50 deep, and cleared whenever the ground moves under it (a conflict, a restored snapshot, replayed offline work, or leaving the project)
 - **Undo and trash** — deletes show an Undo toast; deleted tasks and projects sit in a trash for 30 days, restorable from the project menu and Settings
-- **Offline and installable** — a web app manifest and a service worker that caches the shell (and the Puter SDK), so the app starts with no connection; every project is mirrored to IndexedDB as it is saved, so work survives a closed tab and reads fall back to the last version this device saw, clearly labelled; unsent changes queue and replay when the connection returns, still checking that nothing changed underneath
+- **Offline and installable** — a web app manifest and a service worker that caches the shell (and the Everything SDK), so the app starts with no connection; every project is mirrored to IndexedDB as it is saved, so work survives a closed tab and reads fall back to the last version this device saw, clearly labelled; unsent changes queue and replay when the connection returns, still checking that nothing changed underneath
 - **Sample data** — one-click explorable project on first run, wipeable at any time
 
 ## Storage design
 
 | Where | What |
 | --- | --- |
-| Puter KV | Settings, the project index, templates, and saved views (small, hot, single-key reads) |
-| Puter FS | One JSON document per project, plus attachment blobs and daily restore points |
+| Everything KV | Settings, the project index, templates, and saved views (small, hot, single-key reads) |
+| Everything FS | One JSON document per project, plus attachment blobs and daily restore points |
 
 Reads scale with the projects you open, not the total number of tasks. Mutations are optimistic: the UI updates instantly, a debounced write persists the document, and failed writes surface a retry toast.
 
 The service worker caches the app shell only — never a byte of anyone's data, because a stale document served silently would be worse than an error. Data has its own mirror in IndexedDB, which the app labels as offline when it shows it.
 
-Two windows on the same account cannot silently overwrite each other. Same-browser tabs announce their writes over a `BroadcastChannel`; across devices, every save first checks that the file is still the one this window loaded (`puter.fs.stat`) and stops if it is not, offering Reload, Keep mine, or a download of the local copy. The project index is merged by id rather than clobbered, so two windows creating projects at once both keep theirs.
+Two windows on the same account cannot silently overwrite each other. Same-browser tabs announce their writes over a `BroadcastChannel`; across devices, every save first checks that the file is still the one this window loaded (`everything.fs.stat`) and stops if it is not, offering Reload, Keep mine, or a download of the local copy. The project index is merged by id rather than clobbered, so two windows creating projects at once both keep theirs.
 
 ## Development
 
@@ -60,7 +60,7 @@ npm install
 npm run dev          # Vite dev server
 ```
 
-Open `http://localhost:5174/mock.html` to run against an in-memory Puter stub (no account needed; state persists per browser session). Add `?signedout` to exercise the intro page. The real entry point, `index.html`, loads the live Puter SDK.
+Open `http://localhost:5174/mock.html` to run against an in-memory Everything stub (no account needed; state persists per browser session). Add `?signedout` to exercise the intro page. The real entry point, `index.html`, loads the live Everything SDK.
 
 ```sh
 npm test             # vitest unit tests (board logic, dates, store, sample data)

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Workbook } from '../src/core/workbook.js';
-import * as P from '../src/lib/puter.js';
+import * as P from '../src/lib/everything.js';
 import { openCustomFormatDialog } from '../src/ui/numfmtdialog.js';
 import { openTableDialog } from '../src/ui/tabledialog.js';
 import { openChartDialog } from '../src/ui/chartdialog.js';

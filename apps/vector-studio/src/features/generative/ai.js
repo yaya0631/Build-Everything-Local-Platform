@@ -1,10 +1,10 @@
 /**
- * Access to Puter AI for the generative features.
+ * Access to Everything AI for the generative features.
  *
  * aiClient(app) is { txt2img(prompt, options), chat(prompt, image?) }: the
  * client set on app.generativeAI (tests and embedders inject one there),
- * else the Puter SDK's puter.ai reached through app.puter. aiStatus(app)
- * says whether generative features can run now (online, Puter present,
+ * else the Everything SDK's everything.ai reached through app.everything. aiStatus(app)
+ * says whether generative features can run now (online, Everything present,
  * signed in) and requireAI(app) asks the user to sign in when needed.
  *
  * Every request can be cancelled with an AbortSignal: the SDK calls cannot
@@ -25,18 +25,18 @@ export function aiStatus(app) {
     return { ok: false, reason: 'offline', message: 'You are offline. Generative features need an internet connection.' };
   }
   if (app.generativeAI) return { ok: true };
-  const ai = app.puter?.ai;
+  const ai = app.everything?.ai;
   if (!ai || typeof ai.chat !== 'function') {
-    return { ok: false, reason: 'unavailable', message: 'Generative features run on Puter AI. Open Vector Studio from Puter to use them.' };
+    return { ok: false, reason: 'unavailable', message: 'Generative features run on Everything AI. Open Vector Studio from Everything to use them.' };
   }
-  if (!app.user) return { ok: false, reason: 'signedOut', message: 'Sign in to Puter to use generative features.' };
+  if (!app.user) return { ok: false, reason: 'signedOut', message: 'Sign in to Everything to use generative features.' };
   return { ok: true };
 }
 
 /** The AI client: { txt2img, chat }. */
 export function aiClient(app) {
   if (app.generativeAI) return app.generativeAI;
-  const ai = app.puter?.ai;
+  const ai = app.everything?.ai;
   if (!ai) return null;
   return {
     txt2img: (prompt, options) => ai.txt2img(prompt, options),
@@ -52,7 +52,7 @@ export function aiClient(app) {
 export async function requireAI(app, { ask = true } = {}) {
   let st = aiStatus(app);
   if (!st.ok && st.reason === 'signedOut' && ask && app.onSignIn) {
-    const go = await app.dialogs.confirm({ title: 'Sign In to Generate', message: 'Generative features use Puter AI with your Puter account. Sign in to continue.', okLabel: 'Sign In' });
+    const go = await app.dialogs.confirm({ title: 'Sign In to Generate', message: 'Generative features use Everything AI with your Everything account. Sign in to continue.', okLabel: 'Sign In' });
     if (go) {
       await app.onSignIn();
       st = aiStatus(app);
@@ -99,9 +99,9 @@ export function aiErrorMessage(err, fallback = 'The request did not go through. 
   if (err instanceof AIError) return err.message;
   const code = String(err.code || err.error?.code || '');
   if (code === 'moderation_flagged' || /moderat|content policy|safety/i.test(err.message || '')) return 'The request was declined by the content filter. Try a different description.';
-  if (code === 'insufficient_funds') return 'Your Puter AI balance is too low for this request.';
-  if (code === 'network_error' || code === 'request_timeout' || err instanceof TypeError) return 'Puter AI could not be reached. Check your connection and try again.';
-  if (code === 'unauthorized' || code === 'token_auth_failed') return 'Your Puter session expired. Sign in again and retry.';
+  if (code === 'insufficient_funds') return 'Your Everything AI balance is too low for this request.';
+  if (code === 'network_error' || code === 'request_timeout' || err instanceof TypeError) return 'Everything AI could not be reached. Check your connection and try again.';
+  if (code === 'unauthorized' || code === 'token_auth_failed') return 'Your Everything session expired. Sign in again and retry.';
   return err.error?.message || err.message || (typeof err.error === 'string' ? err.error : '') || fallback;
 }
 

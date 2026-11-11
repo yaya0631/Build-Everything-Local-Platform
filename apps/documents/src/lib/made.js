@@ -1,12 +1,12 @@
 /**
  * The documents the app made elsewhere on the drive, kept on this device for
- * the account. Inside the Puter desktop, Save and Save a Copy write a new file
- * where the user puts it in Puter's Save dialog, outside the app folder that
+ * the account. Inside the Everything desktop, Save and Save a Copy write a new file
+ * where the user puts it in Everything's Save dialog, outside the app folder that
  * the home screen and Open recent list. Remembered here, they are listed with
  * the folder's own, wherever they are now.
  */
 
-import * as P from './puter.js';
+import * as P from './everything.js';
 import { accountKey } from './account-key.js';
 import { documentPathKey } from './document-paths.js';
 
@@ -37,7 +37,7 @@ export function inAppFolder(path) {
   return typeof key === 'string' && key.startsWith(`${P.FOLDER}/`) && !key.slice(P.FOLDER.length + 1).includes('/');
 }
 
-/** Whether a path is in the Puter trash (a file put there from the desktop). */
+/** Whether a path is in the Everything trash (a file put there from the desktop). */
 export function inTrash(path) {
   return typeof path === 'string' && /^(?:\/[^/]+|~)\/Trash(?:\/|$)/.test(path);
 }

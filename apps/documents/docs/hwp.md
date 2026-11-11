@@ -5,7 +5,7 @@ packages (`.hwpx`) entirely in the browser to DOCX. These helpers are retained
 for future porting and are not connected to the current canvas editor. The
 browser findings below describe the previous editor integration. The Hanword
 original is never overwritten.
-Device import, drag and drop, batch import, Puter open, and incoming file paths
+Device import, drag and drop, batch import, Everything open, and incoming file paths
 share this conversion. Batch imports choose unique DOCX names and report
 individual failures without discarding successful imports.
 
@@ -298,7 +298,7 @@ the open-source [Open XML SDK validator](https://github.com/dotnet/Open-XML-SDK)
 SDK were temporary development tools, not new application dependencies. This
 checks conversion and package conformance, not visual equivalence with Hanword.
 
-Historical browser verification used the previous editor and the local Puter mock:
+Historical browser verification used the previous editor and the local Everything mock:
 `SimpleEquation.hwpx`, `ChangeTrack.hwpx`, an independent HWPX sample containing
 a comment, text box and ruby, and `basicsReport.hwp` were imported, exported,
 and reopened. Native math, inserted/deleted text, comment content and shape

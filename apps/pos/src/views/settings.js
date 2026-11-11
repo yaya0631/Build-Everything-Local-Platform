@@ -8,7 +8,7 @@ import { logoDataUrl } from '../ui/image.js';
 import { validPin, makePinRecord } from '../lib/pin.js';
 import { requirePin, pinUnlocked, grantPinGrace, relockPin } from '../ui/pin-gate.js';
 import { applyTheme, currentTheme } from '../ui/theme.js';
-import { isPuterApp } from '../lib/env.js';
+import { isEverythingApp } from '../lib/env.js';
 import { todayISO, formatMonth, formatDay, formatDayFull, formatTime } from '../lib/dates.js';
 import { readBackupFile, BackupError, summarizeBackup } from '../lib/backup.js';
 import {
@@ -34,7 +34,7 @@ export async function confirmSignOut() {
       ? `${plural(pending, 'sale hasn’t', 'sales haven’t')} reached your cloud yet. `
         + 'They stay saved on this device and finish syncing after you sign back in with this account here; '
         + 'you can also wait for the sync bar to clear before signing out.'
-      : 'Your data stays safe in your Puter account and is here when you sign back in.',
+      : 'Your data stays safe in your Everything account and is here when you sign back in.',
     confirmLabel: 'Sign out',
     danger: pending > 0,
   });
@@ -44,7 +44,7 @@ export async function confirmSignOut() {
   // outbox stays: it is account-scoped, and queued sales finish syncing
   // when this account signs back in.)
   store.clearBootCache();
-  puter.auth.signOut();
+  everything.auth.signOut();
   location.reload();
 }
 
@@ -605,7 +605,7 @@ function buildSettings() {
             html: icon('lock', 16, 2), onclick: () => openPinForm(false),
           }, ' Set a manager PIN')),
       has && el('p.small.muted', { style: { marginTop: '12px' } },
-        'Forgot it? Signing out and back in with your Puter account removes the PIN. The account is the real authority; this is a counter-height barrier, not a vault.'),
+        'Forgot it? Signing out and back in with your Everything account removes the PIN. The account is the real authority; this is a counter-height barrier, not a vault.'),
     ]);
   }
   renderPinCard();
@@ -1249,7 +1249,7 @@ function buildSettings() {
       el('p.small.muted', { style: { margin: '-6px 0 0' } },
         `Once a day, at every day close, and before anything destructive — a restore, `
         + `a catalog import, a posted stocktake. The newest ${KEEP_RECENT} are kept, then one `
-        + `a week for ${KEEP_WEEKS} weeks; the rest are pruned. They live in your own Puter `
+        + `a week for ${KEEP_WEEKS} weeks; the rest are pruned. They live in your own Everything `
         + 'account, under pos-data/snapshots.'),
       // A backup that quietly stopped working is worse than none.
       failure && el('div.callout.callout-warn', { style: { marginTop: '14px' } },
@@ -1325,7 +1325,7 @@ function buildSettings() {
   const dataCard = el('section.card', { 'aria-label': 'Your data' },
     el('div.card-head', {}, el('h2.card-title', {}, 'Your data')),
     el('p.small.muted', { style: { marginBottom: '12px' } },
-      `Everything lives in your own Puter account. Next receipt number: #${store.settings.nextReceipt}.`),
+      `Everything lives in your own Everything account. Next receipt number: #${store.settings.nextReceipt}.`),
     el('div.row.wrap', {},
       el('button.btn.btn-ghost', { html: icon('fileDown', 16, 2), onclick: exportData }, ' Export JSON'),
       el('button.btn.btn-ghost', { html: icon('fileUp', 16, 2), onclick: pickBackup }, ' Restore backup')
@@ -1338,14 +1338,14 @@ function buildSettings() {
         onclick: () => openCsvExport({ from: `${todayISO().slice(0, 7)}-01`, to: todayISO() }),
       }, ' Export CSV')
     ),
-    // Inside a Puter app window the platform owns the session - no sign-out.
-    !isPuterApp() && el('div.card-divider'),
-    !isPuterApp() && el('div.row.wrap', {},
+    // Inside an Everything app window the platform owns the session - no sign-out.
+    !isEverythingApp() && el('div.card-divider'),
+    !isEverythingApp() && el('div.row.wrap', {},
       el('button.btn.btn-ghost', { html: icon('logout', 16, 2), onclick: confirmSignOut }, ' Sign out')
     ),
     el('p.small.muted', { style: { marginTop: '14px' } },
       'Point of Sale · Powered by ',
-      el('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Puter'))
+      el('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Everything'))
   );
 
   const node = el('div.view.settings', {},

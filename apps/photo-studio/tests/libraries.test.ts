@@ -12,7 +12,7 @@ import {
   type Library,
   type LibraryItem,
 } from '../src/features/libraries/model';
-import { compactOps, LibraryRepository, MemoryLocalStore, PuterLibraryCloud } from '../src/features/libraries/storage';
+import { compactOps, LibraryRepository, MemoryLocalStore, EverythingLibraryCloud } from '../src/features/libraries/storage';
 import type { QueuedOp, LibraryOp, LibraryIndex } from '../src/features/libraries/model';
 import { sha256Hex } from '../src/model/provenance';
 
@@ -21,7 +21,7 @@ const at = (n: number) => new Date(Date.parse(T0) + n * 1000).toISOString();
 const lib = (id: string, name: string, items: LibraryItem[] = []): Library => ({ id, name, created: T0, modified: T0, items });
 const color = (id: string, name: string, hex: string, t = 0): LibraryItem => ({ id, type: 'color', name, created: at(t), modified: at(t), data: { hex } });
 
-/** A Puter file system stand-in: paths map to blobs; hooks let a test act between calls. */
+/** An Everything file system stand-in: paths map to blobs; hooks let a test act between calls. */
 class FakeFs {
   files = new Map<string, Blob>();
   writes: string[] = [];
@@ -39,7 +39,7 @@ class FakeFs {
   }
 }
 const device = (fs: FakeFs | undefined, signedIn = () => true) => {
-  const cloud = fs ? new PuterLibraryCloud(fs, 'libraries', 200) : undefined;
+  const cloud = fs ? new EverythingLibraryCloud(fs, 'libraries', 200) : undefined;
   return new LibraryRepository(new MemoryLocalStore(), () => (signedIn() ? cloud : undefined));
 };
 
@@ -298,7 +298,7 @@ describe('library storage and sync', () => {
     const a = device(fs);
     await a.apply([{ op: 'create-library', library: lib('L', 'Many') }]);
     await a.sync();
-    // Puter stops answering: edits queue up.
+    // Everything stops answering: edits queue up.
     const read = fs.read.bind(fs);
     fs.read = () => new Promise(() => {});
     for (let n = 0; n < 400; n++) await a.apply([{ op: 'put-item', library: 'L', item: color(`c${n}`, `C${n}`, '#123456', n) }]);
@@ -338,7 +338,7 @@ describe('library storage and sync', () => {
     for (const base of bases) expect(applyOps(base, short)).toEqual(applyOps(base, ops));
   });
 
-  it('keeps working in the browser when Puter does not answer', async () => {
+  it('keeps working in the browser when Everything does not answer', async () => {
     const fs = new FakeFs();
     fs.read = () => new Promise(() => {});
     const a = device(fs);

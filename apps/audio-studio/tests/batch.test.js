@@ -14,13 +14,13 @@ const file = (name, size = 10) => ({ name, size, lastModified: 1 });
 describe('batch queue', () => {
   it('adds sources once each', () => {
     const d = doc('f1', 'a.wav');
-    let r = addSources([], [{ type: 'doc', doc: d }, { type: 'local', file: file('b.mp3') }, { type: 'puter', path: '/u/c.flac' }]);
+    let r = addSources([], [{ type: 'doc', doc: d }, { type: 'local', file: file('b.mp3') }, { type: 'everything', path: '/u/c.flac' }]);
     expect(r.added).toBe(3);
     expect(r.items.map((i) => i.name)).toEqual(['a.wav', 'b.mp3', 'c.flac']);
     expect(r.items.every((i) => i.status === 'ready')).toBe(true);
     r = addSources(r.items, [{ type: 'doc', doc: d }, { type: 'local', file: file('b.mp3') }, { type: 'local', file: file('b.mp3', 11) }]);
     expect(r.added).toBe(1);
-    expect(sourceIdentity({ type: 'puter', path: '/x' })).toBe('puter:/x');
+    expect(sourceIdentity({ type: 'everything', path: '/x' })).toBe('everything:/x');
     const items = removeItems(r.items, [r.items[0].id]);
     expect(items).toHaveLength(3);
     const done = items.map((i) => ({ ...i, status: 'done', progress: 1, message: 'x' }));

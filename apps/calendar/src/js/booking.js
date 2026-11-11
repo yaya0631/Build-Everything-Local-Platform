@@ -71,7 +71,7 @@ const POLL_MS = 30_000;
 const USER_RETRY_MS = 5 * 60_000; // how often to re-ask getUser() for a still-missing email
 const ORPHAN_GRACE_MS = 10 * 60_000;
 // How often the host's profile picture is re-read for the pages that publish
-// it. It lives in their Puter drive and changes almost never, while a pass runs
+// it. It lives in their Everything drive and changes almost never, while a pass runs
 // on every calendar change — so a settled answer is reused for half an hour,
 // and only an inconclusive one is retried soon.
 const PICTURE_TTL_MS = 30 * 60_000;
@@ -239,11 +239,11 @@ export function normalizePage(input = {}, now = Date.now()) {
     tz: isValidTimeZone(input.tz) ? input.tz : localTz() || 'UTC',
     hours: normalizeHours(input.hours == null ? defaultHours() : input.hours),
     color: isValidColor(input.color) ? input.color : DEFAULT_COLOR,
-    // Mint a Puter Meetings link for each booking (the worker does the
+    // Mint an Everything Meetings link for each booking (the worker does the
     // minting — see rsvp-worker.js). Absent means ON, so pages saved before
     // the field existed start attaching links without being re-saved.
     meet: input.meet !== false,
-    // Show the host's Puter profile picture to guests. Absent means OFF — the
+    // Show the host's Everything profile picture to guests. Absent means OFF — the
     // opposite of `meet`, and deliberately: this publishes the host's face on
     // a page strangers hold the link to, so a page saved before the field
     // existed must not start doing it unasked. (The editor defaults it ON for
@@ -756,7 +756,7 @@ export function createBooking({
             location: (typeof b.location === 'string' && b.location) || (page && page.location) || '',
             description: bookingDescription(b),
             // The worker minted the room, but its pull payload is still input:
-            // hold the URL to the exact Puter Meetings shape (like the email
+            // hold the URL to the exact Everything Meetings shape (like the email
             // worker does) so nothing else can land on the calendar as a
             // clickable Join row.
             meeting: isMeetingUrl(b.meetingUrl) ? { url: b.meetingUrl } : null,
@@ -1053,7 +1053,7 @@ export function createBooking({
     } catch {
       /* an unreadable map only delays the refresh until the next pass */
     }
-    // The organizer stamp needs my email; if Puter's grant landed since boot,
+    // The organizer stamp needs my email; if Everything's grant landed since boot,
     // getUser() now includes it (no prompt is triggered). It is a network
     // call, and passes run every half-minute: for a host who has simply not
     // granted their email that was two requests a minute for the whole
@@ -1180,7 +1180,7 @@ export function createBooking({
   /** Coming back to the calendar is the moment to have the latest bookings.
    *  Two events, because they fire in different worlds: `visibilitychange`
    *  covers a hidden/restored browser tab, and `focus` covers coming back to
-   *  the calendar's own window — inside the Puter desktop, moving between app
+   *  the calendar's own window — inside the Everything desktop, moving between app
    *  windows never hides the tab, so visibilitychange alone never fires. Both
    *  are cheap: the pull floor throttles what they can actually ask for. */
   function onVisible() {

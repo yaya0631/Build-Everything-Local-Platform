@@ -4,7 +4,7 @@
 
 import { h } from '../lib/dom.js';
 import { openDialog } from '../ui/dialog.js';
-import * as puter from '../storage/puter.js';
+import * as everything from '../storage/everything.js';
 
 const LATENCY = [
   { value: 'interactive', label: 'Lowest latency', hint: 'Best for playing live. Needs a fast device.' },
@@ -119,15 +119,15 @@ export async function openPreferences(app, { section = 'general' } = {}) {
   }
 
   // ---------------------------------------------------------------- saving
-  const signedIn = puter.isSignedIn();
-  const where = h('p.pref-note', signedIn ? 'Projects save to your Puter cloud (Music Studio files, Projects). Your current session is also kept in this browser, so a reload never loses work.' : 'You are not signed in, so projects save in this browser on this device. Your current session is kept automatically, so a reload never loses work.');
+  const signedIn = everything.isSignedIn();
+  const where = h('p.pref-note', signedIn ? 'Projects save to your Everything cloud (Music Studio files, Projects). Your current session is also kept in this browser, so a reload never loses work.' : 'You are not signed in, so projects save in this browser on this device. Your current session is kept automatically, so a reload never loses work.');
   const saving = h(
     'div.pref-section',
     where,
-    checkRow('Autosave cloud projects', prefs.get('cloudAutosave') !== false, (v) => prefs.set('cloudAutosave', v), 'Saves a project that is in your Puter cloud a minute after you stop editing, and when you leave the page.'),
+    checkRow('Autosave cloud projects', prefs.get('cloudAutosave') !== false, (v) => prefs.set('cloudAutosave', v), 'Saves a project that is in your Everything cloud a minute after you stop editing, and when you leave the page.'),
   );
-  if (!signedIn && puter.sdk() && puter.env() !== 'app') {
-    saving.append(buttonRow('Puter cloud', 'Sign in', () => app.signIn?.(), 'Save projects to your Puter cloud and open them on any device.'));
+  if (!signedIn && everything.sdk() && everything.env() !== 'app') {
+    saving.append(buttonRow('Everything cloud', 'Sign in', () => app.signIn?.(), 'Save projects to your Everything cloud and open them on any device.'));
   }
   const usage = h('div.pref-hint');
   saving.append(h('div.pref-row', h('span.pref-label', 'This browser'), h('div.pref-control', usage)));

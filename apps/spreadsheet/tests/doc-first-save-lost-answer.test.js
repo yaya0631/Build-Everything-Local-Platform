@@ -1,20 +1,20 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { Doc, UNTITLED } from '../src/lib/doc.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 
 let mock;
 beforeEach(() => {
-  mock = installMockPuter();
+  mock = installMockEverything();
   vi.stubGlobal('navigator', { ...globalThis.navigator, onLine: true });
   vi.spyOn(console, 'error').mockImplementation(() => {});
 });
-afterEach(() => { delete globalThis.puter; vi.unstubAllGlobals(); vi.restoreAllMocks(); });
+afterEach(() => { delete globalThis.everything; vi.unstubAllGlobals(); vi.restoreAllMocks(); });
 
 /** The next write reaches the drive, but its answer is lost on the way back. */
 function loseNextAnswer() {
-  const write = puter.fs.write;
-  puter.fs.write = async (...args) => {
-    puter.fs.write = write;
+  const write = everything.fs.write;
+  everything.fs.write = async (...args) => {
+    everything.fs.write = write;
     await write(...args);
     throw new Error('Failed to fetch');
   };
@@ -37,8 +37,8 @@ it('saves into the file a first save made when its answer was lost, not into a s
 it('still saves under a new name when the file at that name is not the one this document wrote', async () => {
   const doc = Doc.blank();
   doc.wb.setInput(doc.wb.activeSheetId, 0, 0, 'x');
-  const write = puter.fs.write;
-  puter.fs.write = async () => { puter.fs.write = write; throw new Error('Failed to fetch'); };
+  const write = everything.fs.write;
+  everything.fs.write = async () => { everything.fs.write = write; throw new Error('Failed to fetch'); };
   expect(await doc.save({ auto: true })).toBe(false);
   // Another tab took the name meanwhile.
   await write(`Spreadsheets/${UNTITLED}.xlsx`, new Blob(['theirs']));

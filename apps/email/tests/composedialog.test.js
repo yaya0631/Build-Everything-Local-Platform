@@ -34,7 +34,7 @@ const A_DRAFT = {
   id: 'draft-1',
   updated: 1_700_000_000_000,
   attachments: 0,
-  domain: 'puter.email',
+  domain: 'everything.email',
   to: 'ana@example.com',
   cc: '',
   subject: 'Half written',
@@ -78,13 +78,13 @@ const pressRemove = (modal, address, input) => {
 };
 
 beforeEach(() => {
-  globalThis.puter = { ui: {}, fs: {}, APIOrigin: 'https://api.example', authToken: 't' };
+  globalThis.everything = { ui: {}, fs: {}, APIOrigin: 'https://api.example', authToken: 't' };
 });
 
 afterEach(() => {
   document.querySelectorAll('.modal-root').forEach((node) => node.remove());
   document.getElementById('app')?.remove();
-  delete globalThis.puter;
+  delete globalThis.everything;
 });
 
 describe('openCompose', () => {
@@ -274,7 +274,7 @@ describe('openCompose', () => {
     });
 
     // An attachment's bytes are not stored with a draft, so closing loses it.
-    // window.confirm answers false in the cross-origin iframe a Puter app runs
+    // window.confirm answers false in the cross-origin iframe an Everything app runs
     // in, which used to veto every close and trap the dialog for good.
     const file = new File(['hello'], 'notes.txt', { type: 'text/plain' });
     const input = modal.panel.querySelector('input[type="file"]');

@@ -383,7 +383,7 @@ function SSF_init_table(t/*:any*/) {
 	t[40]= '#,##0.00;[Red](#,##0.00)';
 	t[45]= 'mm:ss';
 	t[46]= '[h]:mm:ss';
-	/* Puter Spreadsheet local patch: Excel shows built-in 47 as mm:ss.0 (30:00.0); the spec's listing drops the colon. */
+	/* Everything Spreadsheet local patch: Excel shows built-in 47 as mm:ss.0 (30:00.0); the spec's listing drops the colon. */
 	t[47]= 'mm:ss.0';
 	t[48]= '##0.0E+0';
 	t[49]= '@';
@@ -1337,7 +1337,7 @@ var SSF = {
 	load: SSF_load,
 	_table: table_fmt,
 	load_table: SSF_load_table,
-	/* Puter Spreadsheet local patch: the built-in table on its own, so that a read or a write can
+	/* Everything Spreadsheet local patch: the built-in table on its own, so that a read or a write can
 	 * start from it rather than from the codes files read earlier left in this module-wide table. */
 	init_table: make_ssf,
 	parse_date_code: SSF_parse_date_code,
@@ -2255,7 +2255,7 @@ function _write(cfb/*:CFBContainer*/, options/*:CFBWriteOpts*/)/*:RawBytes|strin
 }
 /* [MS-CFB] 2.6.4 (Unicode 3.0.1 case conversion) */
 function find(cfb/*:CFBContainer*/, path/*:string*/)/*:?CFBEntry*/ {
-	/* Puter Spreadsheet local patch: a full path spelled as stored is found without upper-casing every
+	/* Everything Spreadsheet local patch: a full path spelled as stored is found without upper-casing every
 	 * path of the container, which made each look-up cost a pass over a package of many parts. */
 	if(path.charCodeAt(0) === 47 /* "/" */ && cfb.FullPaths.length) {
 		var exact = cfb.FullPaths.indexOf(cfb.FullPaths[0].slice(0, -1) + path);
@@ -2313,7 +2313,7 @@ function write_file(cfb/*:CFBContainer*/, filename/*:string*/, options/*:CFBWrit
 }
 
 function a2s(o/*:RawBytes*/)/*:string*/ {
-	/* Puter Spreadsheet local patch: a ZIP can contain hundreds of megabytes.
+	/* Everything Spreadsheet local patch: a ZIP can contain hundreds of megabytes.
 	 * One array slot per byte exhausts the heap before the binary string exists.
 	 * Keep the conversion temporary bounded, including in browsers without Buffer.
 	 * This is byte-preserving binary text, not a Unicode/Windows-1252 decode. */
@@ -2895,7 +2895,7 @@ function parse_local_file(blob/*:CFBlob*/, csz/*:number*/, usz/*:number*/, o/*:C
 
 	/* [file data] */
 	var data = blob.slice(blob.l, blob.l + _csz);
-	/* Puter Spreadsheet local patch: a local header that leaves the sizes to a data descriptor (flag 8)
+	/* Everything Spreadsheet local patch: a local header that leaves the sizes to a data descriptor (flag 8)
 	 * says 0, which inflated without bound; the central directory's size, which the app checks against
 	 * its limits before reading, bounds it instead. */
 	if(!_usz && (flags & 8)) _usz = usz;
@@ -2934,7 +2934,7 @@ function write_zip(cfb/*:CFBContainer*/, options/*:CFBWriteOpts*/)/*:RawBytes*/ 
 	var crcs = [];
 	var sz_cd = 0;
 
-	/* Puter Spreadsheet local patch: an OpenDocument package (ODF 1.2 part 3, 3.3) must have its mimetype entry
+	/* Everything Spreadsheet local patch: an OpenDocument package (ODF 1.2 part 3, 3.3) must have its mimetype entry
 	 * first and stored whatever the other entries' method, so it is written first and with method 0. */
 	var order = [], mimeIndex = -1;
 	for(i = 1; i < cfb.FullPaths.length; ++i) { if(cfb.FullPaths[i].slice(root.length) == "mimetype") mimeIndex = i; else order.push(i); }
@@ -3436,7 +3436,7 @@ function datenum(v/*:Date*/, date1904/*:?boolean*/)/*:number*/ {
 	var epoch = /*#__PURE__*/v.getTime();
 	var res = (epoch - dnthresh) / (24 * 60 * 60 * 1000);
 	if(date1904) { res -= 1462; return res < -1402 ? res - 1 : res; }
-	/* Puter Spreadsheet: all real instants before March 1 precede the
+	/* Everything Spreadsheet: all real instants before March 1 precede the
 	 * fictitious 1900 leap day, including the whole of February 28. */
 	return res < 61 ? res - 1 : res;
 }
@@ -3449,7 +3449,7 @@ function numdate(v/*:number*/)/*:Date|number*/ {
 
 /* ISO 8601 Duration */
 function parse_isodur(s) {
-	/* Puter Spreadsheet local patch: a duration may be negative (LibreOffice writes -PT01H30M00S for a
+	/* Everything Spreadsheet local patch: a duration may be negative (LibreOffice writes -PT01H30M00S for a
 	 * negative time), may carry fractional seconds (PT00H01M23.45S) and a day count (P1DT02H00M00S, a
 	 * time past 24 hours); the sign was dropped, every field was read as a whole number, and a day count
 	 * fell through to the month check and refused the file. Years and months still have no fixed length. */
@@ -4118,7 +4118,7 @@ var utf8write/*:StringConv*/ = has_buf ? function(data) { return Buffer_from(dat
 };
 
 var htmldecode/*:{(s:string):string}*/ = /*#__PURE__*/(function() {
-	/* Puter Spreadsheet: HTML's own character references, numeric (&#233; &#xE9;) and named
+	/* Everything Spreadsheet: HTML's own character references, numeric (&#233; &#xE9;) and named
 	   (HTML 4's set: &eacute; &euro; &mdash; ...), not only the seven XML ones, decoded in one
 	   pass so that "&amp;eacute;" stays the text "&eacute;". nbsp is a plain space, as before. */
 	var named/*:{[string]:number}*/ = {quot:34, amp:38, apos:39, lt:60, gt:62, OElig:338, oelig:339, Scaron:352, scaron:353, Yuml:376,
@@ -4153,7 +4153,7 @@ var htmldecode/*:{(s:string):string}*/ = /*#__PURE__*/(function() {
 		return String.fromCodePoint(code);
 	}
 	return function htmldecode(str/*:string*/)/*:string*/ {
-		/* Puter Spreadsheet: whitespace collapses to one space as a browser renders it, also where
+		/* Everything Spreadsheet: whitespace collapses to one space as a browser renders it, also where
 		   it meets a tag, so "<b>Total</b> due" reads "Total due" rather than "Totaldue". Spaces
 		   beside a line break and at either end are dropped, as indentation of the markup is. */
 		var o = str
@@ -5433,7 +5433,7 @@ var BErr = {
 	0x24: "#NUM!",
 	0x2A: "#N/A",
 	0x2B: "#GETTING_DATA",
-	/* Puter Spreadsheet local patch: the errors Excel added since dynamic arrays, numbered as
+	/* Everything Spreadsheet local patch: the errors Excel added since dynamic arrays, numbered as
 	 * its XlCVError constants minus 2000 (xlErrSpill = 2045 and so on, as #GETTING_DATA is
 	 * xlErrGettingData 2043); the .xlsx reader and writer spell them out by name. */
 	0x2D: "#SPILL!",
@@ -5454,7 +5454,7 @@ var RBErr = {
 	"#NUM!":         0x24,
 	"#N/A":          0x2A,
 	"#GETTING_DATA": 0x2B,
-	/* Puter Spreadsheet local patch: see BErr above. */
+	/* Everything Spreadsheet local patch: see BErr above. */
 	"#SPILL!":       0x2D,
 	"#CONNECT!":     0x2E,
 	"#BLOCKED!":     0x2F,
@@ -8612,7 +8612,7 @@ var SYLK = /*#__PURE__*/(function() {
 				case 'X': C = parseInt(record[rj].slice(1), 10)-1; C_seen_X = true; break;
 				case 'Y':
 					R = parseInt(record[rj].slice(1), 10)-1; if(!C_seen_X) C = 0;
-					/* Puter Spreadsheet local patch: only the row named gets a list. Every row up to it got one, so a
+					/* Everything Spreadsheet local patch: only the row named gets a list. Every row up to it got one, so a
 					 * file of thirty bytes naming row 99,999,999 made a hundred million and ran the tab out of memory. */
 					if(!arr[R]) arr[R] = [];
 					break;
@@ -8672,7 +8672,7 @@ var SYLK = /*#__PURE__*/(function() {
 				case 'X': C = parseInt(record[rj].slice(1), 10)-1; ++F_seen; break;
 				case 'Y':
 					R = parseInt(record[rj].slice(1), 10)-1; /*C = 0;*/
-					if(!arr[R]) arr[R] = []; /* Puter Spreadsheet local patch: see the cell record's */
+					if(!arr[R]) arr[R] = []; /* Everything Spreadsheet local patch: see the cell record's */
 					break;
 				case 'M': Mval = parseInt(record[rj].slice(1), 10) / 20; break;
 				case 'F': break; /* ??? */
@@ -12798,7 +12798,7 @@ function parse_drawing(data, rels/*:any*/) {
 	   the actual type is based on the URI of the graphicData
 		TODO: handle embedded charts and other types of graphics
 	*/
-	/* Puter Spreadsheet: an empty drawing (or one containing only shapes)
+	/* Everything Spreadsheet: an empty drawing (or one containing only shapes)
 	 * has no chart cache to read. Namespace prefixes are not fixed by OOXML. */
 	var chart = data.match(/<(?:[\w.-]+:)?chart\b[^<>]*>/);
 	if(!chart) return null;
@@ -13281,7 +13281,7 @@ var rc_to_a1 = /*#__PURE__*/(function(){
 		if(rRel) R += rcbase.r; else --R;
 		return $1 + (cRel ? "" : "$") + encode_col(C) + (rRel ? "" : "$") + encode_row(R);
 	}
-	/* Puter Spreadsheet local patch: whole rows and columns (C2 is column B, C[-1]:C[1] the columns either
+	/* Everything Spreadsheet local patch: whole rows and columns (C2 is column B, C[-1]:C[1] the columns either
 	 * side, R[1] the next row) were left as they were, so =SUM(C2) and =VLOOKUP(RC1,C1:C3,2,FALSE) opened
 	 * as #NAME?; and string literals and quoted sheet names were rewritten as formulas, so ="RC Cola" and
 	 * a sheet 'R1C1 notes' changed. A cell reads as above; text between quotes is left alone. */
@@ -13325,7 +13325,7 @@ function shift_formula_str(f/*:string*/, delta/*:Cell*/)/*:string*/ {
 	});
 }
 
-/* Puter Spreadsheet local patch: the regex shift above also renumbers anything shaped like a cell address
+/* Everything Spreadsheet local patch: the regex shift above also renumbers anything shaped like a cell address
  * inside quoted sheet names, string literals and defined names ('Q1 2024', "A1", TAX1). The app installs
  * its token-aware rewriter here; a null answer falls back to the regex. */
 var shared_formula_shifter/*:?function*/ = null;
@@ -15998,12 +15998,12 @@ function ods_to_csf_formula(f/*:string*/)/*:string*/ {
 				++end;
 				if(replacement == null) { i = end - 1; continue; }
 			} else if(f.slice(i, i + 14) == "COM.MICROSOFT.") { replacement = ""; end = i + 14; }
-			/* Puter Spreadsheet local patch: OpenFormula spells NORMSDIST, CHIDIST, TDIST, FDIST, NORMSINV,
+			/* Everything Spreadsheet local patch: OpenFormula spells NORMSDIST, CHIDIST, TDIST, FDIST, NORMSINV,
 			 * CHIINV, FINV and CHITEST as LEGACY.* (as LibreOffice writes them), and its intersection operator is
 			 * "!" between two references or parenthesized expressions where Excel's is a space. An error literal
 			 * such as #REF! keeps its "!", as does a sheet name before one ('Data'![.A1]). */
 			else if((i == 0 || !/[\w.]/.test(f.charAt(i - 1))) && (replacement = /^LEGACY\.(?=[A-Za-z]+\s*\()/i.exec(f.slice(i)))) { end = i + replacement[0].length; replacement = ""; }
-			/* Puter Spreadsheet local patch: the functions OpenFormula names otherwise than Excel (FORMULA for FORMULATEXT,
+			/* Everything Spreadsheet local patch: the functions OpenFormula names otherwise than Excel (FORMULA for FORMULATEXT,
 			 * FDIST and FINV for F.DIST and F.INV, SKEWP for SKEW.P), as LibreOffice writes them. */
 			else if((i == 0 || !/[\w.]/.test(f.charAt(i - 1))) && (replacement = /^(FORMULA|FDIST|FINV|SKEWP|CEILING|FLOOR)(?=\s*\()/i.exec(f.slice(i)))) { end = i + replacement[0].length; replacement = ods_excel_names[replacement[1].toUpperCase()]; }
 			else if(ch == "#" && (replacement = /^#[A-Za-z0-9\/]+[!?]?/.exec(f.slice(i)))) { i += replacement[0].length - 1; continue; }
@@ -16034,13 +16034,13 @@ function csf_formula_reference(match) {
 	return "[" + first + (cells.length == 2 || sheets.length == 2 ? ":" + last : "") + "]";
 }
 
-/* Puter Spreadsheet local patch: Excel's file spelling marks the functions added since Excel 2007 with _xlfn. (and
+/* Everything Spreadsheet local patch: Excel's file spelling marks the functions added since Excel 2007 with _xlfn. (and
  * SORT and FILTER with _xlfn._xlws.), and LET and LAMBDA names with _xlpm.; LibreOffice reads none of these in an
  * .ods, so every XLOOKUP or IFS there turned to #NAME? on its first recalculation. OpenFormula has some of them under
  * their own names (IFNA, XOR, DAYS); the others are spelled COM.MICROSOFT.* as LibreOffice writes them. */
 var ods_plain_functions = {};
 "ACOT ACOTH ARABIC BASE BINOM.DIST.RANGE BITAND BITLSHIFT BITOR BITRSHIFT BITXOR COMBINA COT COTH CSC CSCH DAYS DECIMAL GAMMA GAUSS IFNA IMCOSH IMCOT IMCSC IMCSCH IMSEC IMSECH IMSINH IMTAN ISFORMULA ISOWEEKNUM MUNIT NUMBERVALUE PDURATION PERMUTATIONA PHI RRI SEC SECH SHEET SHEETS UNICHAR UNICODE XOR".split(" ").forEach(function(name) { ods_plain_functions[name] = true; });
-/* Puter Spreadsheet local patch: the functions OpenFormula (and LibreOffice) names otherwise than Excel. */
+/* Everything Spreadsheet local patch: the functions OpenFormula (and LibreOffice) names otherwise than Excel. */
 var ods_renamed_functions = { "FORMULATEXT": "FORMULA", "F.DIST": "FDIST", "F.INV": "FINV", "SKEW.P": "SKEWP" };
 /* OpenFormula's CEILING and FLOOR take a mode, as Excel's CEILING.MATH and FLOOR.MATH do (LibreOffice saves them as
  * those in an .xlsx); Excel's two-argument CEILING, FLOOR and ISO.CEILING are COM.MICROSOFT.* there. */
@@ -16062,7 +16062,7 @@ function csf_to_ods_formula(f/*:string*/)/*:string*/ {
 		var out = [], start = 0, operandEnd = -1;
 		for(var i = 0; i < f.length; ++i) {
 			var ch = f.charAt(i), replacement = null, end = i + 1, match;
-			/* Puter Spreadsheet local patch: Excel's intersection operator is the space between two references
+			/* Everything Spreadsheet local patch: Excel's intersection operator is the space between two references
 			 * (A1:B3 B1:C3); OpenFormula's is "!". */
 			if(i == operandEnd && /\s/.test(ch)) {
 				while(end < f.length && /\s/.test(f.charAt(end))) ++end;
@@ -16086,7 +16086,7 @@ function csf_to_ods_formula(f/*:string*/)/*:string*/ {
 				i = end - 1; continue;
 			} else if(/[A-Za-z_\u0080-\uFFFF]/.test(ch)) {
 				while(end < f.length && /[\w.\u0080-\uFFFF]/.test(f.charAt(end))) ++end;
-				/* Puter Spreadsheet local patch: the functions OpenFormula spells as LEGACY.* (see ods_to_csf_formula). */
+				/* Everything Spreadsheet local patch: the functions OpenFormula spells as LEGACY.* (see ods_to_csf_formula). */
 				if(/^(?:CHIDIST|CHIINV|CHITEST|FDIST|FINV|NORMSDIST|NORMSINV|TDIST)$/i.test(f.slice(i, end)) && /^\s*\(/.test(f.slice(end))) replacement = "LEGACY." + f.slice(i, end);
 				else if(/^(?:CEILING|FLOOR|ISO\.CEILING)$/i.test(f.slice(i, end)) && /^\s*\(/.test(f.slice(end))) replacement = "COM.MICROSOFT." + f.slice(i, end);
 				else if(/^_xl(?:fn|pm)\./i.test(f.slice(i, end)) && (replacement = ods_function_name(f.slice(i, end))) != null) {}
@@ -16278,7 +16278,7 @@ function safe_format(p/*:Cell*/, fmtid/*:number*/, fillid/*:?number*/, opts, the
 		else p.w = SSF_format(fmtid,p.v,_ssfopts);
 	} catch(e) { if(opts.WTF) throw e; }
 	if(!opts.cellStyles) return;
-	/* Puter Spreadsheet local patch: a file without a styles part has no fills to look up; the lookup threw and was
+	/* Everything Spreadsheet local patch: a file without a styles part has no fills to look up; the lookup threw and was
 	 * caught for every cell, which made such a file open about ten times slower than one with the part. */
 	if(fillid != null && styles.Fills) try {
 		p.s = styles.Fills[fillid];
@@ -16328,7 +16328,7 @@ function parse_ws_xml(data/*:?string*/, opts, idx/*:number*/, rels, wb/*:WBWBPro
 		data1 = data.slice(0, mtch.index);
 		data2 = data.slice(mtch.index + mtch[0].length);
 	} else data1 = data2 = data;
-	/* Puter Spreadsheet local patch: a custom view's AutoFilter and page margins are the view's, not the sheet's. */
+	/* Everything Spreadsheet local patch: a custom view's AutoFilter and page margins are the view's, not the sheet's. */
 	data2 = data2.replace(/<(?:\w+:)?customSheetViews\b[\s\S]*?<\/(?:\w+:)?customSheetViews>/g, "");
 
 	/* 18.3.1.82 sheetPr CT_SheetPr */
@@ -16362,7 +16362,7 @@ function parse_ws_xml(data/*:?string*/, opts, idx/*:number*/, rels, wb/*:WBWBPro
 	/* 18.3.1.2  autoFilter CT_AutoFilter */
 	var afilter = data2.match(afregex);
 	if(afilter) s['!autofilter'] = parse_ws_xml_autofilter(afilter[0]);
-	/* Puter Spreadsheet local patch: keep the element's XML so the app can read its filterColumn conditions. */
+	/* Everything Spreadsheet local patch: keep the element's XML so the app can read its filterColumn conditions. */
 	if(afilter) { var afxml = str_match_xml_ns(data2, "autoFilter"); if(afxml) s['!autofilter'].xml = utf8read(afxml[0]); }
 
 	if(data2.indexOf('dataValidation') !== -1) {
@@ -16370,7 +16370,7 @@ function parse_ws_xml(data/*:?string*/, opts, idx/*:number*/, rels, wb/*:WBWBPro
 		s['!validations'] = readXlsxValidations(utf8read(data2), validationRoot ? utf8read(validationRoot[0]) : '', { attributes: function(tag) { return parsexmltagraw(tag, true, true); }, decode: unescapexml_entities, decodeString: unescapexml, date1904: !!(wb.WBProps || {}).date1904 });
 	}
 
-	/* Puter Spreadsheet local patch: table relationships are activated by
+	/* Everything Spreadsheet local patch: table relationships are activated by
 	 * worksheet tablePart elements, not merely by existing in the package. */
 	s['!tableIds'] = [];
 	var tableParts = str_match_xml_ns(data2, "tableParts");
@@ -16477,7 +16477,7 @@ function write_ws_xml_protection(sp)/*:string*/ {
 	return writextag('sheetProtection', null, o);
 }
 
-/* Puter Spreadsheet local patch: the cells a sheet holds, counted, and those in a range given a link (see below). */
+/* Everything Spreadsheet local patch: the cells a sheet holds, counted, and those in a range given a link (see below). */
 function hlink_stored_count(s, dense) {
 	var n = 0;
 	if(dense) (s["!data"] || []).forEach(function(row) { if(row) row.forEach(function(cell) { if(cell) ++n; }); });
@@ -16511,7 +16511,7 @@ function parse_ws_xml_hlinks(s, data/*:Array<string>*/, rels, guess, opts) {
 			rel = {Target: val.Target, TargetMode: 'Internal'};
 		} else continue;
 		if(val.tooltip) { val.Tooltip = val.tooltip; delete val.tooltip; }
-		/* Puter Spreadsheet local patch: a link over more than 65,536 coordinates, and more than the sheet has cells
+		/* Everything Spreadsheet local patch: a link over more than 65,536 coordinates, and more than the sheet has cells
 		 * (a file can stretch one over whole columns or the whole sheet), goes on the cells it holds there, rather than
 		 * a cell made for each coordinate: seventeen billion of them never finished. Smaller ranges link their empty
 		 * cells too. */
@@ -16564,7 +16564,7 @@ function parse_ws_xml_cols(columns, cols) {
 	for(var coli = 0; coli != cols.length; ++coli) {
 		var coll = parsexmltag(cols[coli], true);
 		if(coll.hidden) coll.hidden = parsexmlbool(coll.hidden);
-		/* Puter Spreadsheet local patch: validate before expanding a range.
+		/* Everything Spreadsheet local patch: validate before expanding a range.
 		 * CT_Col bounds are one-based Excel columns, not arbitrary array sizes. */
 		var colm=Number(coll.min)-1, colM=Number(coll.max)-1;
 		if(!/^\+?\d+$/.test(String(coll.min).trim()) || !/^\+?\d+$/.test(String(coll.max).trim()) || !(colm >= 0 && colm <= colM && colM < 16384)) throw new Error("Invalid XLSX column range");
@@ -16575,7 +16575,7 @@ function parse_ws_xml_cols(columns, cols) {
 		while(colm <= colM) columns[colm++] = dup(coll);
 	}
 }
-/* Puter Spreadsheet local patch: neighbouring columns with the same width, visibility and outline level
+/* Everything Spreadsheet local patch: neighbouring columns with the same width, visibility and outline level
  * share one <col min max> element, as Excel writes them; a hidden span to the last column is otherwise
  * sixteen thousand elements. */
 function same_col_attrs(a, b) {
@@ -16616,7 +16616,7 @@ function write_ws_xml_autofilter(data, ws, wb, idx)/*:string*/ {
 		name.Ref = formula_quote_sheet_name(wb.SheetNames[idx]) + "!" + fix_range(ref); break;
 	}
 	if(i == names.length) names.push({ Name: '_xlnm._FilterDatabase', Sheet: idx, Ref: "'" + wb.SheetNames[idx] + "'!" + ref  });
-	/* Puter Spreadsheet local patch: the app hands the filterColumn elements for its conditions as XML. */
+	/* Everything Spreadsheet local patch: the app hands the filterColumn elements for its conditions as XML. */
 	return writextag("autoFilter", data.filterColumns || null, {ref:ref});
 }
 
@@ -16849,7 +16849,7 @@ return function parse_ws_xml_data(sdata/*:string*/, s, opts, guess/*:Range*/, th
 						p.t = 'z';
 					} else {
 						sstr = strs[parseInt(p.v, 10)];
-						/* Puter Spreadsheet local patch: an unresolved string index is a blank stub,
+						/* Everything Spreadsheet local patch: an unresolved string index is a blank stub,
 						 * not an explicitly stored empty string. Keep the rest of the sheet readable. */
 						if(!sstr) { p.t = "z"; delete p.v; break; }
 						p.v = sstr.t;
@@ -16884,7 +16884,7 @@ return function parse_ws_xml_data(sdata/*:string*/, s, opts, guess/*:Range*/, th
 			/* formatting */
 			fmtid = fillid = 0;
 			cf = null;
-			/* Puter Spreadsheet local patch: an omitted cell style selects XF zero,
+			/* Everything Spreadsheet local patch: an omitted cell style selects XF zero,
 			 * whose number format and fill need not be General and none. */
 			if(do_format) {
 				cf = styles.CellXf[tag.s === undefined ? 0 : tag.s];
@@ -16896,7 +16896,7 @@ return function parse_ws_xml_data(sdata/*:string*/, s, opts, guess/*:Range*/, th
 				}
 			}
 			safe_format(p, fmtid, fillid, opts, themes, styles, date1904);
-			/* Puter Spreadsheet local patch: an ISO date cell (t="d") made a serial above keeps looking like a date, or a
+			/* Everything Spreadsheet local patch: an ISO date cell (t="d") made a serial above keeps looking like a date, or a
 			 * date and time when it has a time of day, spelled as the file spelled it, unless it has a format of its own. */
 			if(tag.t == 'd' && p.t == 'n' && fmtid == 0 && typeof p.v == "number") {
 				var timeOfDay = Math.round((p.v % 1) * 86400);
@@ -16929,7 +16929,7 @@ function write_ws_xml_data(ws/*:Worksheet*/, opts, idx/*:number*/, wb/*:Workbook
 	var params = ({r:rr}/*:any*/), row/*:RowInfo*/, height = -1;
 	var date1904 = (((wb||{}).Workbook||{}).WBProps||{}).date1904;
 	for(C = range.s.c; C <= range.e.c; ++C) cols[C] = encode_col(C);
-	/* Puter Spreadsheet: a sparse sheet is walked by its stored cells rather
+	/* Everything Spreadsheet: a sparse sheet is walked by its stored cells rather
 	 * than by every coordinate of !ref, so one far-off cell does not turn a
 	 * save into millions of lookups. */
 	var sparse = null;
@@ -19224,7 +19224,7 @@ function process_style_xlml(styles, stag, opts) {
 }
 
 /* TODO: there must exist some form of OSP-blessed spec */
-/* Puter Spreadsheet local patch: the text of a rich string or a comment is all of its text, its references
+/* Everything Spreadsheet local patch: the text of a rich string or a comment is all of its text, its references
  * decoded once the tags are out. Only the text inside <Font> runs was kept, so a cell Excel wrote as
  * <B>Total</B><Font html:Color="#FF0000"> due</Font> opened as " due", and a comment kept "&lt;" as typed;
  * decoding before taking the tags out also took out text such as "<b>" written as "&lt;b&gt;". */
@@ -19238,7 +19238,7 @@ function parse_xlml_data(xml, ss, data, cell/*:any*/, base, styles, csty, row, a
 	var chain = [];
 	while(styles[sid] !== undefined) {
 		var ssid = styles[sid];
-		/* Puter Spreadsheet local patch: the style chain's font, fill, alignment and borders (see xlml-styles.js). */
+		/* Everything Spreadsheet local patch: the style chain's font, fill, alignment and borders (see xlml-styles.js). */
 		if(chain.indexOf(ssid) > -1) break;
 		chain.push(ssid);
 		if(ssid.nf) nf = ssid.nf;
@@ -19313,7 +19313,7 @@ function xlml_clean_comment(comment/*:any*/) {
 }
 
 /* TODO: Everything */
-/* Puter Spreadsheet local patch: a row's height and hidden state, read from an empty row (<Row .../>) as from
+/* Everything Spreadsheet local patch: a row's height and hidden state, read from an empty row (<Row .../>) as from
  * one holding cells; an empty row's were not read. ss:Height is in points, as Excel writes it (15 for a
  * standard row of 20 pixels). */
 function xlml_rowinfo(row, r, rowinfo) {
@@ -19333,7 +19333,7 @@ function parse_xlml_xml(d, _opts)/*:Workbook*/ {
 		else str = utf8read(str);
 	}
 	var opening = str.slice(0, 1024).toLowerCase(), ishtml = false;
-	/* Puter Spreadsheet: a comment before the markup ("<!-- saved from url=(0040)https://...;id=1 -->",
+	/* Everything Spreadsheet: a comment before the markup ("<!-- saved from url=(0040)https://...;id=1 -->",
 	   which browsers write into a saved page) is not delimited text, and an XHTML page, which starts
 	   with an XML declaration, is a web page rather than an XML spreadsheet. */
 	opening = opening.replace(/<!--[\s\S]*?-->/g, "").replace(/".*?"/g, "");
@@ -19351,7 +19351,7 @@ function parse_xlml_xml(d, _opts)/*:Workbook*/ {
 		"Medium Time": table_fmt[18],
 		"Short Time": table_fmt[20],
 		"Currency": '"$"#,##0.00_);[Red]\\("$"#,##0.00\\)',
-		/* Puter Spreadsheet local patch: Euro Currency was missing and read as a code of its letters
+		/* Everything Spreadsheet local patch: Euro Currency was missing and read as a code of its letters
 		 * ("1903uro Curr1903nc03"), and On/Off was given Yes/No's words. */
 		"Euro Currency": '"€"#,##0.00_);[Red]\\("€"#,##0.00\\)',
 		"Fixed": table_fmt[2],
@@ -19396,7 +19396,7 @@ function parse_xlml_xml(d, _opts)/*:Workbook*/ {
 			else { ss = ""; dtag = xlml_parsexmltag(Rn[0]); didx = Rn.index + Rn[0].length; }
 			break;
 		case 'cell' /*case 'Cell'*/:
-			/* Puter Spreadsheet local patch: an empty cell (<Cell .../>) is read as one with a closing tag is.
+			/* Everything Spreadsheet local patch: an empty cell (<Cell .../>) is read as one with a closing tag is.
 			 * Only its column was counted: a merged block's ss:MergeAcross was not, so the cells after an empty
 			 * merged heading landed that many columns to the left, and the block, its format, a formula with no
 			 * value cached (ss:Formula with no <Data>) and a comment on a cell with no value were all dropped. */
@@ -19442,7 +19442,7 @@ function parse_xlml_xml(d, _opts)/*:Workbook*/ {
 					if(row.Index) r = +row.Index - 1;
 					xlml_rowinfo(row, r, rowinfo);
 				}
-				/* Puter Spreadsheet local patch: a row with ss:Span stands for that many more rows like it, which
+				/* Everything Spreadsheet local patch: a row with ss:Span stands for that many more rows like it, which
 				 * the file leaves out; the rows after it were read that many rows too high. A long run of
 				 * spanned rows is filler, not layout, as the .ods reader judges repeated rows. */
 				var _rspan = Math.min(parseInt(row && row.Span, 10) || 0, 1048575 - r);
@@ -19513,7 +19513,7 @@ function parse_xlml_xml(d, _opts)/*:Workbook*/ {
 			if(Rn[1]==='/') break;
 			csty = xlml_parsexmltag(Rn[0]);
 			if(csty.Hidden) { csty.hidden = true; delete csty.Hidden; }
-			/* Puter Spreadsheet local patch: ss:Width is in points (Excel writes the standard column as 48 and
+			/* Everything Spreadsheet local patch: ss:Width is in points (Excel writes the standard column as 48 and
 			 * one of 129 pixels as 96.75), as ss:Height is; it was read as whole pixels. */
 			if(csty.Width) csty.wpx = Math.round(parseFloat(csty.Width) * 4 / 3);
 			if(!seencol && csty.wpx > 10) {
@@ -19521,7 +19521,7 @@ function parse_xlml_xml(d, _opts)/*:Workbook*/ {
 				for(var _col = 0; _col < cstys.length; ++_col) if(cstys[_col]) process_col(cstys[_col]);
 			}
 			if(seencol) process_col(csty);
-			/* Puter Spreadsheet local patch: a sheet has 16,384 columns. A column past them is not read, and a
+			/* Everything Spreadsheet local patch: a sheet has 16,384 columns. A column past them is not read, and a
 			 * span stops at the last: ss:Span="99999999" made a copy of the column for each, which ran the tab
 			 * out of memory, and an ss:Index that far made a list as long. */
 			var _cidx = csty.Index-1||cstys.length;
@@ -19553,7 +19553,7 @@ function parse_xlml_xml(d, _opts)/*:Workbook*/ {
 		case 'sub' /*case 'Sub'*/: break;
 		case 'sup' /*case 'Sup'*/: break;
 		case 'span' /*case 'Span'*/: break;
-		/* Puter Spreadsheet local patch: a style's alignment, borders and font are kept for its cells. */
+		/* Everything Spreadsheet local patch: a style's alignment, borders and font are kept for its cells. */
 		case 'alignment' /*case 'Alignment'*/:
 			if(instyle && Rn[1]!=='/') stag.Alignment = xlml_parsexmltag(Rn[0]);
 			break;
@@ -19798,7 +19798,7 @@ function parse_xlml_xml(d, _opts)/*:Workbook*/ {
 						Workbook.Views[0].RTL = true;
 						break;
 
-					/* Puter Spreadsheet local patch: frozen panes (FreezePanes with the rows above and the columns left of
+					/* Everything Spreadsheet local patch: frozen panes (FreezePanes with the rows above and the columns left of
 					 * the split) and hidden gridlines, as the sheet's '!xlmlView' for the importer. */
 					case 'freezepanes' /*case 'FreezePanes'*/:
 						if(Rn[1]!=='/') (cursheet['!xlmlView'] || (cursheet['!xlmlView'] = {})).frozen = true;
@@ -23275,7 +23275,7 @@ function html_to_sheet(str/*:string*/, _opts)/*:Workbook*/ {
 			else if(m === 'FALSE') o = {t:'b', v:false};
 			else if(!isNaN(fuzzynum(m))) o = {t:'n', v:fuzzynum(m)};
 			else if(!isNaN(fuzzydate(m).getDate())) {
-				/* Puter Spreadsheet: the date the text names, read as fuzzydate reads it (in UTC, as
+				/* Everything Spreadsheet: the date the text names, read as fuzzydate reads it (in UTC, as
 				   datenum counts). parseDate read "05/01/2024" at local midnight, so east of UTC the
 				   cell opened as the day before and west of it with hours added. */
 				o = ({t:'d', v:fuzzydate(m)}/*:any*/);
@@ -23487,7 +23487,7 @@ function get_get_computed_style_function(element/*:HTMLElement*/)/*:?function*/ 
 	return null;
 }
 /* OpenDocument */
-/* Puter Spreadsheet: a paragraph's text as runs [{t, p}], p the properties of the text style a run's
+/* Everything Spreadsheet: a paragraph's text as runs [{t, p}], p the properties of the text style a run's
  * text:span names, read with parse_text_p's whitespace rules; null when they do not spell `expected`. */
 function parse_text_p_runs(text, textStyles, expected) {
 	if(/[\uE000-\uF8FF]/.test(text)) return null;
@@ -23531,11 +23531,11 @@ function parse_text_p_runs(text, textStyles, expected) {
 
 function parse_text_p(text/*:string*//*::, tag*/)/*:Array<any>*/ {
 	/* 6.1.2 White Space Characters */
-	/* Puter Spreadsheet local patch: only the four XML white space characters are trimmed, as ODF says; trim()
+	/* Everything Spreadsheet local patch: only the four XML white space characters are trimmed, as ODF says; trim()
 	 * also took a no-break space ("Note:\u00a0") or an ideographic space (U+3000) off the text's ends. */
 	var fixed = text
 		.replace(/[\t\r\n]/g, " ").replace(/^ +| +$/g, "").replace(/ +/g, " ")
-		/* Puter Spreadsheet local patch: the same elements written with a space before the slash, or a line
+		/* Everything Spreadsheet local patch: the same elements written with a space before the slash, or a line
 		 * break written as an open and close tag, are well-formed XML too and were dropped with their whitespace. */
 		.replace(/<text:s\s*\/>/g," ")
 		.replace(/<text:s text:c="(\d+)"\s*\/>/g, function($$,$1) { return Array(parseInt($1,10)+1).join(" "); })
@@ -23588,7 +23588,7 @@ function parse_ods_styles(d/*:string*/, _opts, _nfm, _styles) {
 				commonStyle = y["family"] == "table-cell" && y["name"] && Rn[0].slice(-2) !== "/>" ? y : null;
 			}
 			break;
-		/* Puter Spreadsheet local patch: a common cell style's font, fill, borders and alignment (odsProps, as the
+		/* Everything Spreadsheet local patch: a common cell style's font, fill, borders and alignment (odsProps, as the
 		 * content reader keeps an automatic style's): LibreOffice's Heading, Accent, Good and Bad styles, applied to
 		 * cells or by conditional formats, carry their look here. */
 		case 'table-cell-properties':
@@ -23609,7 +23609,7 @@ function parse_ods_styles(d/*:string*/, _opts, _nfm, _styles) {
 					else if(NF.match(/m/)) NF = NF.replace(/m+/, "[$&]");
 					else if(NF.match(/s/)) NF = NF.replace(/s+/, "[$&]");
 				}
-				/* Puter Spreadsheet local patch: the sections a style's maps name come before its own, in Excel's order:
+				/* Everything Spreadsheet local patch: the sections a style's maps name come before its own, in Excel's order:
 				 * >=0 then the rest, or >0, <0 and the rest (zero), as LibreOffice writes positive;negative;zero. */
 				var section = function(name) { return typeof number_format_map[name] == "string" ? number_format_map[name] : null; };
 				var ge = section(NFmaps["value()>=0"]), gt = section(NFmaps["value()>0"]), lt = section(NFmaps["value()<0"]);
@@ -23645,7 +23645,7 @@ function parse_ods_styles(d/*:string*/, _opts, _nfm, _styles) {
 			if(Rn[1]==='/') {
 				payload = parse_ods_format_text(str.slice(tidx, xlmlregex.lastIndex - Rn[0].length));
 				// NOTE: Excel has a different interpretation of "%%" and friends
-				/* Puter Spreadsheet local patch: the sign of a percentage is the % operator wherever it is in its text,
+				/* Everything Spreadsheet local patch: the sign of a percentage is the % operator wherever it is in its text,
 				 * as LibreOffice writes " %" in France and Germany; quoted whole, 12,3 % was read as 0,1 %. */
 				var pctAt = NFtag[0] == '<number:percentage-style' ? payload.indexOf("%") : -1;
 				if(pctAt > -1 && payload.indexOf("%", pctAt + 1) == -1) NF += (pctAt > 0 ? ods_format_literal(payload.slice(0, pctAt)) : "") + "%" + (pctAt < payload.length - 1 ? ods_format_literal(payload.slice(pctAt + 1)) : "");
@@ -23660,7 +23660,7 @@ function parse_ods_styles(d/*:string*/, _opts, _nfm, _styles) {
 			switch(y["style"]) {
 				case "short": NF += "d"; break;
 				case "long": NF += "dd"; break;
-				default: NF += "d"; break; /* Puter Spreadsheet local patch: number:style defaults to short (ODF 19.474.1) */
+				default: NF += "d"; break; /* Everything Spreadsheet local patch: number:style defaults to short (ODF 19.474.1) */
 			}
 		} break;
 
@@ -23687,7 +23687,7 @@ function parse_ods_styles(d/*:string*/, _opts, _nfm, _styles) {
 			switch(y["style"]) {
 				case "short": NF += "h"; break;
 				case "long": NF += "hh"; break;
-				default: NF += "h"; break; /* Puter Spreadsheet local patch: LibreOffice writes a short element without the attribute */
+				default: NF += "h"; break; /* Everything Spreadsheet local patch: LibreOffice writes a short element without the attribute */
 			}
 		} break;
 
@@ -23696,7 +23696,7 @@ function parse_ods_styles(d/*:string*/, _opts, _nfm, _styles) {
 			switch(y["style"]) {
 				case "short": NF += "m"; break;
 				case "long": NF += "mm"; break;
-				default: NF += "m"; break; /* Puter Spreadsheet local patch: number:style defaults to short */
+				default: NF += "m"; break; /* Everything Spreadsheet local patch: number:style defaults to short */
 			}
 		} break;
 
@@ -23716,7 +23716,7 @@ function parse_ods_styles(d/*:string*/, _opts, _nfm, _styles) {
 			switch(y["style"]) {
 				case "short": NF += "s"; break;
 				case "long": NF += "ss"; break;
-				default: NF += "s"; break; /* Puter Spreadsheet local patch: number:style defaults to short */
+				default: NF += "s"; break; /* Everything Spreadsheet local patch: number:style defaults to short */
 			}
 			if(y["decimal-places"]) NF += "." + fill("0", +y["decimal-places"]);
 		} break;
@@ -23749,11 +23749,11 @@ function parse_ods_styles(d/*:string*/, _opts, _nfm, _styles) {
 			} break;
 
 		case 'scientific-number': // <number:scientific-number> 16.29.6
-			/* Puter Spreadsheet local patch: the code comes from the opening tag alone; a separate closing tag used to add it again. */
+			/* Everything Spreadsheet local patch: the code comes from the opening tag alone; a separate closing tag used to add it again. */
 			if(Rn[1]==='/') break;
 			// TODO: find a mapping for all parameters
 			y = parsexmltag(Rn[0], false);
-			/* Puter Spreadsheet local patch: forced-exponent-sign defaults to true (ODF 1.3 19.343), as every
+			/* Everything Spreadsheet local patch: forced-exponent-sign defaults to true (ODF 1.3 19.343), as every
 			 * LibreOffice shows E+ for a file without it; false is Excel's E-. A bare E is no Excel code at all. */
 			NF += "0." + fill("0", +y["min-decimal-places"] || +y["decimal-places"] || 2) + fill("?", +y["decimal-places"] - +y["min-decimal-places"] || 0) + "E" + (y["forced-exponent-sign"] != null && !parsexmlbool(y["forced-exponent-sign"]) ? "-" : "+") + fill("0", +y["min-exponent-digits"] || 2);
 			break;
@@ -23782,7 +23782,7 @@ function parse_ods_styles(d/*:string*/, _opts, _nfm, _styles) {
 		case 'text-properties': // <style:text-properties> 16.29.29
 			if(commonStyle && !infmt && Rn[1] !== '/') { ods_common_props(commonStyle, Rn[0]); break; }
 			y = parsexmltag(Rn[0], false);
-			/* Puter Spreadsheet local patch: each colour Excel names, not only red ([Blue]0;[Red]0). */
+			/* Everything Spreadsheet local patch: each colour Excel names, not only red ([Blue]0;[Red]0). */
 			var inkName = { "000000": "Black", "0000ff": "Blue", "00ffff": "Cyan", "00ff00": "Green", "ff00ff": "Magenta", "ff0000": "Red", "red": "Red", "ffffff": "White", "ffff00": "Yellow" }[(y["color"]||"").toLowerCase().replace("#", "")];
 			if(infmt && inkName) NF = "[" + inkName + "]" + NF;
 			break;
@@ -23794,14 +23794,14 @@ function parse_ods_styles(d/*:string*/, _opts, _nfm, _styles) {
 		case 'map': // <style:map> 16.3
 			// TODO: handle more complex maps
 			y = parsexmltag(Rn[0], false);
-			/* Puter Spreadsheet local patch: kept until the style closes, where the sections are put in order. */
+			/* Everything Spreadsheet local patch: kept until the style closes, where the sections are put in order. */
 			var condition = unescapexml(y["condition"] || "").replace(/\s+/g, "");
 			if(["value()>=0", "value()>0", "value()<0"].indexOf(condition) > -1 && y["apply-style-name"]) NFmaps[condition] = y["apply-style-name"];
 			break;
 
 		case 'number': // <number:number> 16.29.3
 			// TODO: handle all the attributes
-			/* Puter Spreadsheet local patch: the number's embedded texts go in when it closes, each before the count of
+			/* Everything Spreadsheet local patch: the number's embedded texts go in when it closes, each before the count of
 			 * integer digits its position names, whatever order they come in; a character offset from the end of the
 			 * code put a second one inside the first and counted the decimals as digits. */
 			if(Rn[1]==='/') {
@@ -23821,14 +23821,14 @@ function parse_ods_styles(d/*:string*/, _opts, _nfm, _styles) {
 			}
 			y = parsexmltag(Rn[0], false);
 			tNF = "";
-			/* Puter Spreadsheet local patch: optional digits are #, as LibreOffice writes "#.##": no required integer
+			/* Everything Spreadsheet local patch: optional digits are #, as LibreOffice writes "#.##": no required integer
 			 * digit (min-integer-digits="0"), and decimals past min-decimal-places where that is given (ODF 1.3). */
 			tNF += y["min-integer-digits"] != null && +y["min-integer-digits"] === 0 ? "#" : fill("0", +y["min-integer-digits"] || 1);
 			if(parsexmlbool(y["grouping"])) tNF = commaify(fill("#", Math.max(0, 4 - tNF.length)) + tNF);
 			if(+y["min-decimal-places"] || +y["decimal-places"]) tNF += ".";
 			if(+y["min-decimal-places"]) tNF += fill("0", +y["min-decimal-places"] || 1);
 			if(+y["decimal-places"] - (+y["min-decimal-places"]||0)) tNF += fill(y["min-decimal-places"] != null ? "#" : "0", +y["decimal-places"] - (+y["min-decimal-places"]||0));
-			/* Puter Spreadsheet local patch: a display factor of a thousand per comma scales the number shown. */
+			/* Everything Spreadsheet local patch: a display factor of a thousand per comma scales the number shown. */
 			for(var factor = +y["display-factor"] || 1; factor >= 1000; factor /= 1000) tNF += ",";
 			etnum = Rn[0].charAt(Rn[0].length-2) !== '/' ? { at: NF.length, texts: [] } : null;
 			NF += tNF;
@@ -23904,7 +23904,7 @@ function parse_content_xml(d/*:string*/, _opts, _nfm, _styles)/*:Workbook*/ {
 		var ctag = ({value:""}/*:any*/), ctag2 = ({}/*:any*/);
 		var textp = "", textpidx = 0, textptag/*:: = {}*/, oldtextp = "", oldtextpidx = 0;
 		var textR = [], oldtextR = [];
-		/* Puter Spreadsheet local patch: how many paragraphs the current cell (or note) has closed, so that
+		/* Everything Spreadsheet local patch: how many paragraphs the current cell (or note) has closed, so that
 		 * an empty first paragraph still separates from the next one; saved and restored like textp. */
 		var textpn = 0, oldtextpn = 0;
 		var R = -1, C = -1, range = {s: {r:1000000,c:10000000}, e: {r:0, c:0}};
@@ -23912,12 +23912,12 @@ function parse_content_xml(d/*:string*/, _opts, _nfm, _styles)/*:Workbook*/ {
 		var number_format_map = _nfm || Object.create(null), styles = Object.create(null);
 		var commonStyles = _styles || Object.create(null), inCommonStyles = false, styleNumberFormats = new WeakMap();
 		var columnNumberFormats = [], columnCount = 0, rowNumberFormatName = null;
-		/* Puter Spreadsheet local patch: where the rows and columns to repeat on every printed page start. */
+		/* Everything Spreadsheet local patch: where the rows and columns to repeat on every printed page start. */
 		var headerRowStart = null, headerColStart = null;
 		function ods_number_format(name) {
 			return resolve_ods_style_number_format(name && (styles[name] || commonStyles[name]), commonStyles, styleNumberFormats);
 		}
-		/* Puter Spreadsheet: a cell style's font, fill, border and alignment properties (odsProps), its parents'
+		/* Everything Spreadsheet: a cell style's font, fill, border and alignment properties (odsProps), its parents'
 		 * under its own; the app reads them into its cell style (ods-cell-styles.js). The common style named
 		 * Default is every cell's base, the workbook's normal look, and not a format of the cell's own. */
 		var columnStyleNames = [], rowStyleName = null, styleProps = new WeakMap(), textStyles = Object.create(null);
@@ -23945,22 +23945,22 @@ function parse_content_xml(d/*:string*/, _opts, _nfm, _styles)/*:Workbook*/ {
 			var props = ods_cell_props(name);
 			if(!props) return false;
 			if(props["background-color"] && props["background-color"] !== "transparent") return true;
-			/* Puter Spreadsheet local patch: so is one whose protection is not the default, a form's blank input cell left unlocked. */
+			/* Everything Spreadsheet local patch: so is one whose protection is not the default, a form's blank input cell left unlocked. */
 			if(props["cell-protect"] && !/^\s*protected\s*$/i.test(props["cell-protect"])) return true;
 			return ["border", "border-top", "border-bottom", "border-left", "border-right"].some(function(k) { return props[k] && !/^\s*none\b/i.test(props[k]); });
 		}
 		var merges/*:Array<Range>*/ = [], mrange = {}, mR = 0, mC = 0;
 		var rowinfo/*:Array<RowInfo>*/ = [], rowpeat = 1, colpeat = 1;
-		/* Puter Spreadsheet local patch: a file of a few hundred bytes can repeat one cell across the whole grid,
+		/* Everything Spreadsheet local patch: a file of a few hundred bytes can repeat one cell across the whole grid,
 		 * billions of cells. The cells materialised from repeats are counted against the app's own grid
 		 * (MAX_ROWS x MAX_COLS in src/core/workbook.js) and the file refused past it, like an oversized repeat. */
 		var materialised = 0, ODS_CELL_BUDGET = 20000 * 702;
 		/* Local fix: column widths and row heights declared in the automatic styles are read back. */
 		var colinfo/*:Array<ColInfo>*/ = [], colStyleWidths = {}, rowStyleHeights = {}, curStyle = null;
-		/* Puter Spreadsheet local patch: table styles whose table:display is false hide the sheets that use them. */
+		/* Everything Spreadsheet local patch: table styles whose table:display is false hide the sheets that use them. */
 		var tableStyleHidden = {};
 		var arrayf/*:Array<[Range, string]>*/ = [];
-		var WB = {Names:[], WBProps:{}, Sheets:[]}; /* Puter Spreadsheet local patch: Sheets records each sheet's visibility, as for .xlsx */
+		var WB = {Names:[], WBProps:{}, Sheets:[]}; /* Everything Spreadsheet local patch: Sheets records each sheet's visibility, as for .xlsx */
 		var atag = ({}/*:any*/);
 		var _Ref/*:[string, string]*/ = ["", ""];
 		var comments/*:Array<Comment>*/ = [], comment/*:Comment*/ = ({}/*:any*/);
@@ -23973,7 +23973,7 @@ function parse_content_xml(d/*:string*/, _opts, _nfm, _styles)/*:Workbook*/ {
 
 			case 'table': case '工作表': // 9.1.2 <table:table>
 				if(Rn[1]==='/') {
-					/* Puter Spreadsheet local patch: the cell style a column gives the cells that have none of their own
+					/* Everything Spreadsheet local patch: the cell style a column gives the cells that have none of their own
 					 * (table:default-cell-style-name, LibreOffice's whole-column format), other than the Default style. */
 					columnStyleNames.forEach(function(name, c) {
 						var props = name && name !== "Default" ? ods_cell_props(name) : null;
@@ -23987,13 +23987,13 @@ function parse_content_xml(d/*:string*/, _opts, _nfm, _styles)/*:Workbook*/ {
 						ws['!ref'] = encode_range(range);
 					}
 					if(merges.length) ws['!merges'] = merges;
-					/* Puter Spreadsheet local patch: a protected table (Tools ▸ Protect Sheet in LibreOffice). Its password key is not kept.
+					/* Everything Spreadsheet local patch: a protected table (Tools ▸ Protect Sheet in LibreOffice). Its password key is not kept.
 					 * Not where the Default cell style is itself unprotected (a form made by unlocking Default and locking a few
 					 * cells by a style of their own): every cell without a style of its own, blank ones too, is open for input
 					 * there, which the app cannot say, and protected here they were all locked. */
 					var defaultProtect = commonStyles["Default"] && commonStyles["Default"].odsProps && commonStyles["Default"].odsProps["cell-protect"];
 					if(parsexmlbool(sheetag["protected"]) && !(defaultProtect && !/^\s*protected\s*$/i.test(defaultProtect))) ws['!odsProtected'] = true;
-					/* Puter Spreadsheet local patch: the sheet's print ranges, as their ODF addresses (read in io.js). */
+					/* Everything Spreadsheet local patch: the sheet's print ranges, as their ODF addresses (read in io.js). */
 					if(sheetag["print-ranges"]) ws['!odsPrintRanges'] = unescapexml(sheetag["print-ranges"]);
 					if(ws['!odsConditionalFormats']) ws['!odsConditionalFormats'] = odsConditionalFormatsXml(ws['!odsConditionalFormats'], { convert: ods_to_csf_formula, address: ods_to_csf_3D });
 					if(rowinfo.length) ws["!rows"] = rowinfo;
@@ -24003,7 +24003,7 @@ function parse_content_xml(d/*:string*/, _opts, _nfm, _styles)/*:Workbook*/ {
 					if(typeof JSON !== 'undefined') JSON.stringify(sheetag);
 					SheetNames.push(sheetag.name);
 					Sheets[sheetag.name] = ws;
-					/* Puter Spreadsheet local patch: a sheet whose table style does not display is hidden (Workbook.Sheets[i].Hidden, as the .xlsx reader sets it). */
+					/* Everything Spreadsheet local patch: a sheet whose table style does not display is hidden (Workbook.Sheets[i].Hidden, as the .xlsx reader sets it). */
 					WB.Sheets.push({name: sheetag.name, Hidden: tableStyleHidden[sheetag['style-name']] ? 1 : 0});
 					intable = false;
 				}
@@ -24013,7 +24013,7 @@ function parse_content_xml(d/*:string*/, _opts, _nfm, _styles)/*:Workbook*/ {
 					range.s.r = range.s.c = 10000000; range.e.r = range.e.c = 0;
 					ws = ({}/*:any*/); if(opts.dense) ws["!data"] = []; merges = [];
 					rowinfo = []; colinfo = [];
-					/* Puter Spreadsheet local patch: an array formula's block is its own sheet's. The list was kept for
+					/* Everything Spreadsheet local patch: an array formula's block is its own sheet's. The list was kept for
 					 * the whole file, so a value on a later sheet where an earlier sheet has an array formula was read
 					 * as part of that array, and opened blank. */
 					arrayf = [];
@@ -24036,7 +24036,7 @@ function parse_content_xml(d/*:string*/, _opts, _nfm, _styles)/*:Workbook*/ {
 				if(rowpeat <= 1000) {
 					var rowHeightPx = rowStyleHeights[rowtag['style-name']];
 					var rowHidden = rowtag['visibility'] == 'collapse';
-					/* Puter Spreadsheet local patch: ODF's other invisible state, the one a filter sets, read
+					/* Everything Spreadsheet local patch: ODF's other invisible state, the one a filter sets, read
 					 * apart from a by-hand hide, as the writer below already spells it (table:visibility="filter"). */
 					var rowFiltered = rowtag['visibility'] == 'filter';
 					if(rowHeightPx || rowHidden || rowFiltered) for(i = 0; i < rowpeat; ++i) {
@@ -24079,8 +24079,8 @@ function parse_content_xml(d/*:string*/, _opts, _nfm, _styles)/*:Workbook*/ {
 					ctag = parsexmltag(Rn[0], false);
 					/* Empty runs can span entire sheets; keep skipping them without allocation. */
 					var cellValueType = ctag['数据类型'] || ctag['value-type'];
-					/* Puter Spreadsheet: an empty cell that anchors a merge must still record its span. */
-					/* Puter Spreadsheet: so does one whose style paints it, unless it repeats over a large area. */
+					/* Everything Spreadsheet: an empty cell that anchors a merge must still record its span. */
+					/* Everything Spreadsheet: so does one whose style paints it, unless it repeats over a large area. */
 					var paintedEmpty = opts.sheetStubs && ods_paints(ctag['style-name']) && (rowpeat || 1) * parse_ods_repeat(ctag['number-columns-repeated'], 16384 - (C + 1), "column") <= 4096;
 					if(!ctag.formula && (!cellValueType || cellValueType === 'void') && !ctag['number-columns-spanned'] && !ctag['number-rows-spanned'] && !paintedEmpty) {
 						C += parse_ods_repeat(ctag['number-columns-repeated'], 16383 - C, "column");
@@ -24091,7 +24091,7 @@ function parse_content_xml(d/*:string*/, _opts, _nfm, _styles)/*:Workbook*/ {
 				if(Rn[1]!=='/') {
 					++C;
 					textp = oldtextp = ""; textpidx = oldtextpidx = 0; textR = []; oldtextR = [];
-					textpn = oldtextpn = 0; /* Puter Spreadsheet local patch: see textpn */
+					textpn = oldtextpn = 0; /* Everything Spreadsheet local patch: see textpn */
 					colpeat = 1;
 					var rptR = rowpeat ? R + rowpeat - 1 : R;
 					if(C > range.e.c) range.e.c = C;
@@ -24219,11 +24219,11 @@ function parse_content_xml(d/*:string*/, _opts, _nfm, _styles)/*:Workbook*/ {
 				if(Rn[1]==='/'){
 					if((tmp=state.pop())[0]!==Rn[3]) throw "Bad state: "+tmp;
 					comment.t = textp;
-					/* Puter Spreadsheet: a note's text keeps no runs. */
+					/* Everything Spreadsheet: a note's text keeps no runs. */
 					comment.a = creator;
 					comments.push(comment);
 					textp = oldtextp; textpidx = oldtextpidx; textR = oldtextR;
-					textpn = oldtextpn; /* Puter Spreadsheet local patch: see textpn */
+					textpn = oldtextpn; /* Everything Spreadsheet local patch: see textpn */
 				}
 				else if(Rn[0].charAt(Rn[0].length-2) !== '/') {
 					state.push([Rn[3], false]);
@@ -24232,7 +24232,7 @@ function parse_content_xml(d/*:string*/, _opts, _nfm, _styles)/*:Workbook*/ {
 					if(!(annotag["display"] && parsexmlbool(annotag["display"]))) comments.hidden = true;
 					oldtextp = textp; oldtextpidx = textpidx; oldtextR = textR;
 					textp = ""; textpidx = 0; textR = [];
-					oldtextpn = textpn; textpn = 0; /* Puter Spreadsheet local patch: see textpn */
+					oldtextpn = textpn; textpn = 0; /* Everything Spreadsheet local patch: see textpn */
 				}
 				creator = ""; creatoridx = 0;
 				break;
@@ -24267,7 +24267,7 @@ function parse_content_xml(d/*:string*/, _opts, _nfm, _styles)/*:Workbook*/ {
 				if(Rn[1]==='/'){if((tmp=state.pop())[0]!==Rn[3]) throw "Bad state: "+tmp;}
 				else if(Rn[0].charAt(Rn[0].length-2) !== '/') state.push([Rn[3], false]);
 				textp = ""; textpidx = 0; textR = [];
-				textpn = 0; /* Puter Spreadsheet local patch: see textpn */
+				textpn = 0; /* Everything Spreadsheet local patch: see textpn */
 				break;
 
 			case 'scientific-number': // <number:scientific-number>
@@ -24298,11 +24298,11 @@ function parse_content_xml(d/*:string*/, _opts, _nfm, _styles)/*:Workbook*/ {
 			case 'page-layout': curStyle = null; break; // TODO: <style:page-layout>
 			case 'style': { // 16.2 <style:style>
 				var styletag = parsexmltag(Rn[0], false);
-				/* Puter Spreadsheet: a self-closing style has no properties; the ones that follow are another element's. */
+				/* Everything Spreadsheet: a self-closing style has no properties; the ones that follow are another element's. */
 				curStyle = Rn[1] === '/' || Rn[0].charAt(Rn[0].length-2) === '/' ? null : styletag;
 				/* Local fix: number formats can be declared after the cell styles that use them. */
 				if(styletag["family"] == "table-cell" && styletag["name"]) (inCommonStyles ? commonStyles : styles)[styletag["name"]] = styletag;
-				/* Puter Spreadsheet: text styles, which a rich-text cell's spans name. */
+				/* Everything Spreadsheet: text styles, which a rich-text cell's spans name. */
 				if(styletag["family"] == "text" && styletag["name"] && !inCommonStyles) textStyles[styletag["name"]] = styletag;
 			} break;
 			case 'map': break; // 16.3 <style:map>
@@ -24316,7 +24316,7 @@ function parse_content_xml(d/*:string*/, _opts, _nfm, _styles)/*:Workbook*/ {
 				}
 				break;
 			case 'table-properties': { // 17.15 <style:table-properties>
-				/* Puter Spreadsheet local patch: remember the table styles that hide their sheet. */
+				/* Everything Spreadsheet local patch: remember the table styles that hide their sheet. */
 				if(curStyle && curStyle['family'] == 'table' && curStyle['name'] && parsexmltag(Rn[0], false)['display'] == 'false') tableStyleHidden[curStyle['name']] = true;
 			} break;
 			case 'table-column-properties': { // 17.16 <style:table-column-properties>
@@ -24413,7 +24413,7 @@ function parse_content_xml(d/*:string*/, _opts, _nfm, _styles)/*:Workbook*/ {
 				}
 				break;
 			case 'table-header-rows': // 9.1.7 <table:table-header-rows>
-				/* Puter Spreadsheet local patch: the rows LibreOffice repeats at the top of every printed page (!odsTitleRows). */
+				/* Everything Spreadsheet local patch: the rows LibreOffice repeats at the top of every printed page (!odsTitleRows). */
 				if(Rn[1] === '/') { if(headerRowStart != null && R - 1 >= headerRowStart) ws['!odsTitleRows'] = [headerRowStart, R - 1]; headerRowStart = null; }
 				else if(Rn[0].charAt(Rn[0].length-2) !== '/') headerRowStart = R < 0 ? 0 : R;
 				break;
@@ -24421,7 +24421,7 @@ function parse_content_xml(d/*:string*/, _opts, _nfm, _styles)/*:Workbook*/ {
 			/* TODO: outline levels */
 			case 'table-column-group': break; // 9.1.10 <table:table-column-group>
 			case 'table-header-columns': // 9.1.11 <table:table-header-columns>
-				/* Puter Spreadsheet local patch: the columns repeated at the left of every printed page (!odsTitleCols). */
+				/* Everything Spreadsheet local patch: the columns repeated at the left of every printed page (!odsTitleCols). */
 				if(Rn[1] === '/') { if(headerColStart != null && columnCount - 1 >= headerColStart) ws['!odsTitleCols'] = [headerColStart, columnCount - 1]; headerColStart = null; }
 				else if(Rn[0].charAt(Rn[0].length-2) !== '/') headerColStart = columnCount;
 				break;
@@ -24456,13 +24456,13 @@ function parse_content_xml(d/*:string*/, _opts, _nfm, _styles)/*:Workbook*/ {
 			case 'span': break; // 6.1.7 <text:span>
 			case 'p': case '文本串': // 5.1.3 <text:p>
 				if(['master-styles'].indexOf(state[state.length-1][0]) > -1) break;
-				/* Puter Spreadsheet local patch: paragraphs are joined by counting those closed so far rather than
+				/* Everything Spreadsheet local patch: paragraphs are joined by counting those closed so far rather than
 				 * by testing the text so far, so a cell whose first paragraph is empty (text that starts with a
 				 * line break) keeps that break; a self-closing paragraph is such an empty paragraph, not a break of its own. */
 				var ptext = !ctag || !ctag['string-value'] || state.some(function(entry) { return entry[0] === 'annotation'; });
 				if(Rn[1]==='/' && ptext) {
 					var pxml = str.slice(textpidx,Rn.index), ptp = parse_text_p(pxml, textptag);
-					/* Puter Spreadsheet: the paragraph's runs (textR), each with its text style's properties. */
+					/* Everything Spreadsheet: the paragraph's runs (textR), each with its text style's properties. */
 					var pruns = pxml.indexOf("span") > -1 ? parse_text_p_runs(pxml, textStyles, ptp[0]) : null;
 					if(textpn > 0) textR.push({t: "\n"});
 					if(pruns) Array.prototype.push.apply(textR, pruns); else if(ptp[0]) textR.push({t: ptp[0]});
@@ -24609,7 +24609,7 @@ function parse_content_xml(d/*:string*/, _opts, _nfm, _styles)/*:Workbook*/ {
 					atag.Target = unescapexml_entities(atag.href); delete atag.href;
 					if(atag.Target.charAt(0) == "#" && atag.Target.indexOf(".") > -1) {
 						_Ref = ods_to_csf_3D(atag.Target.slice(1));
-						/* Puter Spreadsheet local patch: a sheet name written bare that the A1 grammar needs quoted
+						/* Everything Spreadsheet local patch: a sheet name written bare that the A1 grammar needs quoted
 						 * ("Data Sheet", "O'Brien") is quoted, or the link points nowhere. */
 						var linkSheet = _Ref[0];
 						if(linkSheet && linkSheet.charAt(0) != "'" && !/^[A-Za-z_][\w.]*$/.test(linkSheet)) linkSheet = "'" + linkSheet.replace(/'/g, "''") + "'";
@@ -24623,7 +24623,7 @@ function parse_content_xml(d/*:string*/, _opts, _nfm, _styles)/*:Workbook*/ {
 			case 'data-pilot-grand-total': break; // <table:
 			case 'office-document-common-attrs': break; // bare
 			default: switch(Rn[2]) {
-				/* Puter Spreadsheet local patch: LibreOffice's conditional formats, gathered for ods-condformat.js. */
+				/* Everything Spreadsheet local patch: LibreOffice's conditional formats, gathered for ods-condformat.js. */
 				case 'calcext:':
 					if(intable && Rn[1] !== '/') {
 						var cfTag = parsexmltag(Rn[0], false), cfList = ws['!odsConditionalFormats'], cfLast = cfList && cfList[cfList.length - 1];
@@ -24667,7 +24667,7 @@ function parse_content_xml(d/*:string*/, _opts, _nfm, _styles)/*:Workbook*/ {
 			SheetNames: SheetNames,
 			Workbook: WB
 		}/*:any*/);
-		if(has_ods_settings) { out.PuterSettings = readOdsSettings(str, unescapexml_entities); out.OdsView = readOdsViewSettings(str, unescapexml_entities); }
+		if(has_ods_settings) { out.EverythingSettings = readOdsSettings(str, unescapexml_entities); out.OdsView = readOdsViewSettings(str, unescapexml_entities); }
 		if(opts.bookSheets) delete /*::(*/out/*:: :any)*/.Sheets;
 		return out;
 }
@@ -24675,7 +24675,7 @@ function parse_content_xml(d/*:string*/, _opts, _nfm, _styles)/*:Workbook*/ {
 function parse_ods(zip/*:ZIPFile*/, opts/*:?ParseOpts*/)/*:Workbook*/ {
 	opts = opts || ({}/*:any*/);
 	if(safegetzipfile(zip, 'META-INF/manifest.xml')) parse_manifest(getzipdata(zip, 'META-INF/manifest.xml'), opts);
-	/* Puter Spreadsheet local patch: styles.xml is optional in a package; a spreadsheet without one still opens. */
+	/* Everything Spreadsheet local patch: styles.xml is optional in a package; a spreadsheet without one still opens. */
 	var styles = getzipstr(zip, 'styles.xml', true);
 	var cellStyles = Object.create(null);
 	var Styles = styles && parse_ods_styles(utf8read(styles), opts, null, cellStyles);
@@ -24684,7 +24684,7 @@ function parse_ods(zip/*:ZIPFile*/, opts/*:?ParseOpts*/)/*:Workbook*/ {
 	var wb = parse_content_xml(utf8read(content), opts, Styles, cellStyles);
 	if(safegetzipfile(zip, 'meta.xml')) wb.Props = parse_core_props(getzipdata(zip, 'meta.xml'));
 	var settings = safegetzipfile(zip, "settings.xml") && getzipstr(zip, "settings.xml");
-	if(settings) { wb.PuterSettings = readOdsSettings(utf8read(settings), unescapexml_entities); wb.OdsView = readOdsViewSettings(utf8read(settings), unescapexml_entities); }
+	if(settings) { wb.EverythingSettings = readOdsSettings(utf8read(settings), unescapexml_entities); wb.OdsView = readOdsViewSettings(utf8read(settings), unescapexml_entities); }
 	wb.bookType = "ods";
 	return wb;
 }
@@ -24738,7 +24738,7 @@ function read_ods_format_literal(nf, start) {
 	throw new Error("Cannot export ODS number format: unterminated quoted literal");
 }
 
-/* Puter Spreadsheet local patch: a run of text a number format shows as it is, from `start`: quoted literals,
+/* Everything Spreadsheet local patch: a run of text a number format shows as it is, from `start`: quoted literals,
  * backslash escapes (Excel writes #,##0.00\ "€" and 0.00\ \k\g), and the characters Excel shows unquoted. */
 function read_ods_format_text_run(nf, start) {
 	var text = "", end = start;
@@ -24753,7 +24753,7 @@ function read_ods_format_text_run(nf, start) {
 }
 
 // TODO: find out if anyone actually read the spec.  LO has some wild errors
-/* Puter Spreadsheet local patch: a format's sections, split at the semicolons outside quotes, escapes and brackets. */
+/* Everything Spreadsheet local patch: a format's sections, split at the semicolons outside quotes, escapes and brackets. */
 function split_ods_format_sections(nf) {
 	var sections = [], start = 0, inLiteral = false;
 	for(var at = 0; at < nf.length; ++at) {
@@ -24770,7 +24770,7 @@ function split_ods_format_sections(nf) {
 	return sections;
 }
 
-/* Puter Spreadsheet local patch: Excel's sections (positive;negative;zero) as ODF writes them, as LibreOffice
+/* Everything Spreadsheet local patch: Excel's sections (positive;negative;zero) as ODF writes them, as LibreOffice
  * does: one style per section, the last section's style naming the others in style:map conditions. A negative
  * section shows its number without a sign there as in Excel, so "-" and the red ink of #,##0.00;[Red]-#,##0.00
  * are its own. A code whose sections test their own conditions ([>100]) or are of different kinds keeps its first. */
@@ -24797,7 +24797,7 @@ function write_number_format_ods(nf/*:string*/, nfidx/*:string*/)/*:string*/ {
 function write_number_format_ods_section(nf/*:string*/, nfidx/*:string*/)/*:string*/ {
 	var type = "number", payload = "", nopts = { "style:name": nfidx }, c = "", i = 0;
 	nf = nf.replace(/"[$]"/g, "$");
-	/* Puter Spreadsheet local patch: a section's colour ([Red]) is the style's text colour. */
+	/* Everything Spreadsheet local patch: a section's colour ([Red]) is the style's text colour. */
 	var ink = /^\[(black|blue|cyan|green|magenta|red|white|yellow)\]/i.exec(nf);
 	var inks = { black: "#000000", blue: "#0000ff", cyan: "#00ffff", green: "#00ff00", magenta: "#ff00ff", red: "#ff0000", white: "#ffffff", yellow: "#ffff00" };
 	if(ink) { nf = nf.slice(ink[0].length); payload += '<style:text-properties fo:color="' + inks[ink[1].toLowerCase()] + '"/>'; }
@@ -24822,11 +24822,11 @@ function write_number_format_ods_section(nf/*:string*/, nfidx/*:string*/)/*:stri
 		}
 		/* Validate before the literal-reading loops, which require a closing quote. */
 		if(inLiteral) throw new Error("Cannot export ODS number format: unterminated quoted literal");
-		/* Puter Spreadsheet local patch: ODF has no style map here, so the first section stands for the code; the
+		/* Everything Spreadsheet local patch: ODF has no style map here, so the first section stands for the code; the
 		 * library logged an error for every save of a two-section format. */
 		if(sectionEnd < nf.length) nf = nf.slice(0, sectionEnd);
 
-		/* Puter Spreadsheet local patch: Excel's padding tokens (_x leaves the width of x, *x fills the cell with x)
+		/* Everything Spreadsheet local patch: Excel's padding tokens (_x leaves the width of x, *x fills the cell with x)
 		 * have no element here and hid the currency symbol and digits they surround in an accounting code; they are
 		 * dropped outside quoted literals, and a bracketed currency ([$€-407]) becomes its symbol as a literal. */
 		nf = nf.replace(/("(?:[^"]|"")*")|\[\$([^\]\-]*)(?:-[^\]]*)?\]|[_*]./g, function($$, literal, symbol) { return literal || (symbol != null ? '"' + symbol + '"' : ""); }).replace(/"[$]"/g, "$");
@@ -24834,7 +24834,7 @@ function write_number_format_ods_section(nf/*:string*/, nfidx/*:string*/)/*:stri
 		if(nf == "@") { type = "text"; payload = "<number:text-content/>"; break j; }
 
 		/* opening string literal */
-		/* Puter Spreadsheet local patch: the whole leading run, with the space between "€" and the digits, and the
+		/* Everything Spreadsheet local patch: the whole leading run, with the space between "€" and the digits, and the
 		 * sign or parenthesis a negative section starts with. */
 		if(/^["\\ \-+(]/.test(nf)) {
 			var lead = read_ods_format_text_run(nf, i);
@@ -24843,12 +24843,12 @@ function write_number_format_ods_section(nf/*:string*/, nfidx/*:string*/)/*:stri
 		}
 
 		/* currency flag */
-		/* Puter Spreadsheet local patch: a leading $ is written as a currency symbol below, which belongs in a currency style. */
+		/* Everything Spreadsheet local patch: a leading $ is written as a currency symbol below, which belongs in a currency style. */
 		if(nf[0] == "$") { type = "currency"; }
 
 		/* fractions */
 		var t = nf.match(/# (\?+)\/(\?+)/);
-		/* Puter Spreadsheet local patch: the denominator's width too (# ??/?? shows 1241 46/81), which a reader takes
+		/* Everything Spreadsheet local patch: the denominator's width too (# ??/?? shows 1241 46/81), which a reader takes
 		 * from min-denominator-digits: without it the format came back as # ??/? and showed 1241  4/7. */
 		if(t) { payload += writextag("number:fraction", null, {"number:min-integer-digits":0, "number:min-numerator-digits": t[1].length, "number:min-denominator-digits": t[2].length, "number:max-denominator-value": Math.max(+(t[1].replace(/./g, "9")), +(t[2].replace(/./g, "9"))) }); break j; }
 		if((t=nf.match(/# (\?+)\/(\d+)/))) { payload += writextag("number:fraction", null, {"number:min-integer-digits":0, "number:min-numerator-digits": t[1].length, "number:denominator-value": +t[2]}); break j; }
@@ -24856,7 +24856,7 @@ function write_number_format_ods_section(nf/*:string*/, nfidx/*:string*/)/*:stri
 		/* percentages */
 		/* Local fix: preserve percentage grouping and the actual decimal count. */
 		/* A token boundary avoids retrying at every digit in long number formats. */
-		/* Puter Spreadsheet local patch: a regional format's percentage keeps its no-break space before the sign
+		/* Everything Spreadsheet local patch: a regional format's percentage keeps its no-break space before the sign
 		 * (#,##0.0" "% for 12,3 % in France) or writes the sign first (%#,##0.0 for %12,3 in Turkey); either was
 		 * written as a plain number, the % left out, so LibreOffice showed 0,1 for 12,3 %. */
 		var lead = nf.match(/^%("[\u00a0\u202f]")?([#0][0#,]*)(|\.[0#]+)$/);
@@ -24951,7 +24951,7 @@ function write_number_format_ods_section(nf/*:string*/, nfidx/*:string*/)/*:stri
 
 		/* should be in a char loop */
 		if(nf[0] == "$") { payload += '<number:currency-symbol number:language="en" number:country="US">$</number:currency-symbol>'; nf = nf.slice(1); i = 0; }
-		/* Puter Spreadsheet local patch: the text between the currency symbol and the digits, as the leading run. */
+		/* Everything Spreadsheet local patch: the text between the currency symbol and the digits, as the leading run. */
 		i = 0; if(/^["\\ \-+(]/.test(nf)) {
 			var between = read_ods_format_text_run(nf, i);
 			if(between.text) payload += '<number:text>' + escapexml(between.text) + '</number:text>';
@@ -24959,13 +24959,13 @@ function write_number_format_ods_section(nf/*:string*/, nfidx/*:string*/)/*:stri
 		}
 
 		/* number TODO: interstitial text e.g. 000)000-0000 */
-		/* Puter Spreadsheet local patch: E- (a sign on negative exponents only) is a scientific code too, written with
+		/* Everything Spreadsheet local patch: E- (a sign on negative exponents only) is a scientific code too, written with
 		 * forced-exponent-sign="false"; it used to stop the whole export on its missing exponent digits. */
 		var np = nf.match(/([#0][0#,]*)(\.[0#]*|)(E[+-]?0*|)/i);
-		/* Puter Spreadsheet local patch: a section of text alone (an accounting zero, "$" "-") has no digits to find. */
+		/* Everything Spreadsheet local patch: a section of text alone (an accounting zero, "$" "-") has no digits to find. */
 		if(!np || !np[0]) { if(!payload) console.error("Could not find numeric part of " + nf); }
 		else {
-			/* Puter Spreadsheet local patch: text between the integer digits (000-00-0000, (000) 000-0000) is embedded
+			/* Everything Spreadsheet local patch: text between the integer digits (000-00-0000, (000) 000-0000) is embedded
 			 * text, placed by the count of integer digits to its right; the number used to end before the first of it. */
 			var digits = np[1], decimals = np[2], exponent = np[3], numEnd = np.index + np[0].length, embedded = [];
 			if(!decimals && !exponent) for(var more;;) {
@@ -24976,7 +24976,7 @@ function write_number_format_ods_section(nf/*:string*/, nfidx/*:string*/)/*:stri
 				if(decimals) break;
 			}
 			var base = digits.replace(/,/g, "");
-			/* Puter Spreadsheet local patch: a comma after the digits scales by a thousand (#,##0,"K" shows 1,235K for
+			/* Everything Spreadsheet local patch: a comma after the digits scales by a thousand (#,##0,"K" shows 1,235K for
 			 * 1234567), which ODF spells as a display factor; only a comma between digits asks for grouping. */
 			var scaling = (digits.match(/,+$/) || [""])[0].length, trailing = nf.slice(numEnd).match(/^,+/);
 			if(trailing) scaling += trailing[0].length;
@@ -24984,7 +24984,7 @@ function write_number_format_ods_section(nf/*:string*/, nfidx/*:string*/)/*:stri
 				' number:min-integer-digits="' + (base.indexOf("0") == -1 ? "0" : base.length - base.indexOf("0")) + '"' +
 				(/[#0],[#0]/.test(digits) ? ' number:grouping="true"' : "") +
 				(decimals && ' number:decimal-places="' + (decimals.length - 1) + '"' || ' number:decimal-places="0"') +
-				/* Puter Spreadsheet local patch: optional decimals (0.## shows 1.5) need the count of required ones. */
+				/* Everything Spreadsheet local patch: optional decimals (0.## shows 1.5) need the count of required ones. */
 				(!exponent && decimals.indexOf("#") > -1 ? ' number:min-decimal-places="' + (decimals.match(/0/g) || []).length + '"' : "") +
 				(scaling ? ' number:display-factor="' + Math.pow(1000, scaling) + '"' : "") +
 				(exponent ? ' number:forced-exponent-sign="' + (exponent.indexOf("-") > -1 ? "false" : "true") + '"' : "" ) +
@@ -24996,7 +24996,7 @@ function write_number_format_ods_section(nf/*:string*/, nfidx/*:string*/)/*:stri
 		}
 
 		/* residual text */
-		/* Puter Spreadsheet local patch: the text after the digits is one run: the spaces before a trailing literal
+		/* Everything Spreadsheet local patch: the text after the digits is one run: the spaces before a trailing literal
 		 * (#,##0.00 "€"), an escaped one (#,##0.00\ "€", Excel's own euro format), several literals, a bare unit. */
 		var tail = read_ods_format_text_run(nf, i);
 		if(/\S/.test(tail.text)) payload += '<number:text>' + escapexml(tail.text) + '</number:text>';
@@ -25069,10 +25069,10 @@ var write_content_ods/*:{(wb:any, opts:any):string}*/ = /* @__PURE__ */(function
 	};
 
 	var null_cell_xml = '          <table:table-cell />\n';
-	/* Puter Spreadsheet: a cell's font, fill, borders and alignment (cell.odsStyle, an app style) are written
+	/* Everything Spreadsheet: a cell's font, fill, borders and alignment (cell.odsStyle, an app style) are written
 	 * as a table-cell style of their own, with the cell's number format; equal cells share one. */
 	var ods_cell_styles = null, ods_cell_props = new WeakMap();
-	/* Puter Spreadsheet: a rich-text cell's runs (cell.odsRuns, app runs) are text:spans naming text styles. */
+	/* Everything Spreadsheet: a rich-text cell's runs (cell.odsRuns, app runs) are text:spans naming text styles. */
 	var ods_text_styles = null, ods_run_props = new WeakMap();
 	var ods_run_style_name = function(run) {
 		if(!run || !run.s || typeof run.s !== "object" || !ods_text_styles) return null;
@@ -25094,25 +25094,25 @@ var write_content_ods/*:{(wb:any, opts:any):string}*/ = /* @__PURE__ */(function
 	var write_ws = function(ws, wb/*:Workbook*/, i/*:number*/, opts, nfs, date1904)/*:string*/ {
 		/* Section 9 Tables */
 		var o/*:Array<string>*/ = [];
-		/* Puter Spreadsheet local patch: a hidden sheet (Workbook.Sheets[i].Hidden) uses the table style that does not display. */
+		/* Everything Spreadsheet local patch: a hidden sheet (Workbook.Sheets[i].Hidden) uses the table style that does not display. */
 		var sheetHidden = (wb.Workbook||{}).Sheets && wb.Workbook.Sheets[i] && wb.Workbook.Sheets[i].Hidden;
-		/* Puter Spreadsheet local patch: a protected sheet (!odsProtected) is a protected table, with no password. */
+		/* Everything Spreadsheet local patch: a protected sheet (!odsProtected) is a protected table, with no password. */
 		o.push('      <table:table table:name="' + escapexml(wb.SheetNames[i]) + '" table:style-name="' + (sheetHidden ? "ta2" : "ta1") + '"' + (ws['!odsProtected'] ? ' table:protected="true"' : '') + (ws['!odsPrintRanges'] ? ' table:print-ranges="' + escapexml(ws['!odsPrintRanges']) + '"' : '') + '>\n');
 		var R=0,C=0, range = decode_range(ws['!ref']||"A1");
 		var marr/*:Array<Range>*/ = ws['!merges'] || [], mi = 0;
 		var validationLayout = ws['!validations'] && ws['!validations'].length ? odsValidationLayout(ws['!validations'], range, i) : null;
 		var lastRow = validationLayout ? validationLayout.lastRow : range.e.r, lastCol = validationLayout ? validationLayout.lastCol : range.e.c;
-		/* Puter Spreadsheet local patch: a column past the used range that has a width or is hidden (!cols) is declared
+		/* Everything Spreadsheet local patch: a column past the used range that has a width or is hidden (!cols) is declared
 		 * too, as a row with a height or hidden state past it is written, so the layout is not lost with the file. */
 		if(ws["!cols"]) for(var lastLayoutCol = ws["!cols"].length - 1; lastLayoutCol > lastCol; --lastLayoutCol) if(ws["!cols"][lastLayoutCol]) { lastCol = lastLayoutCol; break; }
 		var dense = ws["!data"] != null;
 		/* ODF requires column declarations even when every column uses defaults.
 		 * Repeat identical declarations to cover large validation-only areas. */
 		var columnStyle = function(c) { return ws["!cols"] && ws["!cols"][c] && ws["!cols"][c].ods != null ? "co" + ws["!cols"][c].ods : null; };
-		/* Puter Spreadsheet local patch: a column's format (!cols[c].odsCell, a cell's style and number format) is the
+		/* Everything Spreadsheet local patch: a column's format (!cols[c].odsCell, a cell's style and number format) is the
 		 * cell style it gives the cells that have none of their own, as LibreOffice keeps a whole-column format. */
 		var columnDefault = function(c) { return ws["!cols"] && ws["!cols"][c] && ws["!cols"][c].odsCell ? ods_cell_style_name(ws["!cols"][c].odsCell, nfs) : null; };
-		/* Puter Spreadsheet local patch: a hidden column (!cols[c].hidden) is declared collapsed, and a run of
+		/* Everything Spreadsheet local patch: a hidden column (!cols[c].hidden) is declared collapsed, and a run of
 		 * columns is repeated as one declaration only when its visibility matches as well as its style. */
 		var columnHidden = function(c) { return !!(ws["!cols"] && ws["!cols"][c] && ws["!cols"][c].hidden); };
 		for(C = 0; C <= lastCol;) {
@@ -25128,15 +25128,15 @@ var write_content_ods/*:{(wb:any, opts:any):string}*/ = /* @__PURE__ */(function
 			C += colCount;
 		}
 		var H = "", ROWS = ws["!rows"]||[];
-		/* Puter Spreadsheet local patch: a hidden row (!rows[r].hidden) is written collapsed along with its style,
+		/* Everything Spreadsheet local patch: a hidden row (!rows[r].hidden) is written collapsed along with its style,
 		 * and a row a filter hides (!rows[r].filtered) with the filter visibility, which clearing the filter lifts. */
 		var rowAttrs = function(r) { return ROWS[r] ? ' table:style-name="ro' + ROWS[r].ods + '"' + (ROWS[r].hidden ? ' table:visibility="collapse"' : ROWS[r].filtered ? ' table:visibility="filter"' : '') : ""; };
-		/* Puter Spreadsheet: rows and cells that hold nothing collapse into ODF repeats, so one far-off
+		/* Everything Spreadsheet: rows and cells that hold nothing collapse into ODF repeats, so one far-off
 		 * cell does not cost a table-cell element for every coordinate of the rectangle. */
 		var occupied = {}, occupiedCols = {};
 		if(!dense) for(var key in ws) { if(key.charCodeAt(0) === 33) continue; var rc = decode_cell(key); occupied[rc.r] = 1; (occupiedCols[rc.r] || (occupiedCols[rc.r] = [])).push(rc.c); }
 		for(var occupiedRow in occupiedCols) occupiedCols[occupiedRow].sort(function(a, b) { return a - b; });
-		/* Puter Spreadsheet local patch: merges are indexed by row, so a sheet of thousands of merged blocks
+		/* Everything Spreadsheet local patch: merges are indexed by row, so a sheet of thousands of merged blocks
 		 * is not searched through for every row and cell. rowSpans is the union of their rows, sorted; mergesAt
 		 * gives the merges covering a row in their original order, following the writer's rows downward. */
 		var mergeOrder = marr.map(function(m, i) { return i; }).sort(function(a, b) { return marr[a].s.r - marr[b].s.r || a - b; });
@@ -25159,7 +25159,7 @@ var write_content_ods/*:{(wb:any, opts:any):string}*/ = /* @__PURE__ */(function
 			}
 			return rowMerges;
 		};
-		/* Puter Spreadsheet local patch: the last column of the run of plain empty cells from c, a cell outside every
+		/* Everything Spreadsheet local patch: the last column of the run of plain empty cells from c, a cell outside every
 		 * merge, found from the row's own cells and merges: probing each column made a row as costly as the sheet
 		 * was wide, so a far-off cell took a 4,000-row sheet half a minute to save. */
 		var plainEmptyEnd = function(r, c) {
@@ -25187,7 +25187,7 @@ var write_content_ods/*:{(wb:any, opts:any):string}*/ = /* @__PURE__ */(function
 				continue;
 			}
 			var validationRows = validationLayout ? validationLayout.rows(R) : 1;
-			/* Puter Spreadsheet: one row element repeated for a run of validated rows stops at a row with a
+			/* Everything Spreadsheet: one row element repeated for a run of validated rows stops at a row with a
 			 * height or visibility of its own, or where a merged block starts or ends, which the repeat would
 			 * otherwise give to every row of the run or to none. */
 			for(var runRow = 1; runRow < validationRows; ++runRow) if(rowAttrs(R + runRow) !== rowAttrs(R) || mergeEdges[R + runRow]) { validationRows = runRow; break; }
@@ -25221,7 +25221,7 @@ var write_content_ods/*:{(wb:any, opts:any):string}*/ = /* @__PURE__ */(function
 						}
 					}
 				}
-				/* Puter Spreadsheet: an empty cell that anchors a merge (or carries validation) keeps its attributes. */
+				/* Everything Spreadsheet: an empty cell that anchors a merge (or carries validation) keeps its attributes. */
 				if(!cell) {
 					if(!dense && !validationLayout && !Object.keys(ct).length) {
 						/* A run of empty cells outside every merge is one repeated cell. */
@@ -25275,7 +25275,7 @@ var write_content_ods/*:{(wb:any, opts:any):string}*/ = /* @__PURE__ */(function
 						ct['calcext:value-type'] = "error";
 						break;
 					case 'z':
-						// Puter Spreadsheet: an annotation does not give a blank cell a string value.
+						// Everything Spreadsheet: an annotation does not give a blank cell a string value.
 						if(cell.c) { textp = ""; break; }
 						// fall through
 					default:
@@ -25284,7 +25284,7 @@ var write_content_ods/*:{(wb:any, opts:any):string}*/ = /* @__PURE__ */(function
 						o.push(validationLayout || Object.keys(ct).length ? '          ' + writextag('table:table-cell', null, ct) + '\n' : null_cell_xml); continue;
 				}
 				var text_p = write_text_p(textp);
-				/* Puter Spreadsheet: a rich-text cell is one paragraph of runs, its line breaks text:line-break. */
+				/* Everything Spreadsheet: a rich-text cell is one paragraph of runs, its line breaks text:line-break. */
 				if(Array.isArray(cell.odsRuns) && (cell.t === 's' || cell.t === 'str') && cell.odsRuns.map(function(run) { return run.text; }).join("") === textp) {
 					text_p = cell.odsRuns.map(function(run) {
 						var body = write_text_p(run.text, true), styleName = ods_run_style_name(run);
@@ -25316,7 +25316,7 @@ var write_content_ods/*:{(wb:any, opts:any):string}*/ = /* @__PURE__ */(function
 			o.push('        </table:table-row>\n');
 			R += validationRows - 1;
 		}
-		/* Puter Spreadsheet local patch: rows past the used range that only carry a height or hidden state
+		/* Everything Spreadsheet local patch: rows past the used range that only carry a height or hidden state
 		 * are written after it, each run of plain rows between them as one repeated empty row, so the
 		 * styles declared for them are referenced rather than lost. */
 		var lastLayoutRow = ROWS.length - 1, tailCell = '<table:table-cell table:number-columns-repeated="' + (lastCol + 1) + '"/>';
@@ -25374,7 +25374,7 @@ var write_content_ods/*:{(wb:any, opts:any):string}*/ = /* @__PURE__ */(function
 		o.push('  <style:style style:name="ta1" style:family="table" style:master-page-name="mp1">\n');
 		o.push('   <style:table-properties table:display="true" style:writing-mode="lr-tb"/>\n');
 		o.push('  </style:style>\n');
-		/* Puter Spreadsheet local patch: hidden sheets (Workbook.Sheets[i].Hidden) use this table style, which does not display. */
+		/* Everything Spreadsheet local patch: hidden sheets (Workbook.Sheets[i].Hidden) use this table style, which does not display. */
 		if(((wb.Workbook||{}).Sheets||[]).some(function(s) { return s && s.Hidden; })) {
 			o.push('  <style:style style:name="ta2" style:family="table" style:master-page-name="mp1">\n');
 			o.push('   <style:table-properties table:display="false" style:writing-mode="lr-tb"/>\n');
@@ -25430,14 +25430,14 @@ var write_content_ods/*:{(wb:any, opts:any):string}*/ = /* @__PURE__ */(function
 				for(var R = 0; R <= range.e.r; ++R) for(var C = 0; C <= range.e.c; ++C) noteFormat((ws["!data"][R]||[])[C]);
 				for(R = 0; R <= range.e.r; ++R) for(C = 0; C <= range.e.c; ++C) { noteCellStyle((ws["!data"][R]||[])[C]); noteRunStyles((ws["!data"][R]||[])[C]); }
 			} else {
-				/* Puter Spreadsheet: visit the stored cells in row-major order instead of every coordinate of the rectangle. */
+				/* Everything Spreadsheet: visit the stored cells in row-major order instead of every coordinate of the rectangle. */
 				var addrs = [];
 				for(var key in ws) if(key.charCodeAt(0) !== 33) addrs.push(decode_cell(key));
 				addrs.sort(function(a, b) { return a.r - b.r || a.c - b.c; });
 				for(var ai = 0; ai < addrs.length; ++ai) noteFormat(ws[encode_cell(addrs[ai])]);
 				for(ai = 0; ai < addrs.length; ++ai) { noteCellStyle(ws[encode_cell(addrs[ai])]); noteRunStyles(ws[encode_cell(addrs[ai])]); }
 			}
-			/* Puter Spreadsheet local patch: the styles columns give their cells (see columnDefault). */
+			/* Everything Spreadsheet local patch: the styles columns give their cells (see columnDefault). */
 			(ws["!cols"] || []).forEach(function(col) { if(col && col.odsCell) { noteFormat(col.odsCell); noteCellStyle(col.odsCell); } });
 		});
 		o.push('  <style:style style:name="ce1" style:family="table-cell" style:parent-style-name="Default" style:data-style-name="N37"/>\n');
@@ -25505,7 +25505,7 @@ var write_content_ods/*:{(wb:any, opts:any):string}*/ = /* @__PURE__ */(function
 			// TODO: settings (equiv of settings.xml for ODS)
 		} else o.push('<office:document-content' + attr  + '>\n');
 		// o.push('  <office:scripts/>\n');
-		if(opts.bookType == "fods" && (wb.PuterSettings || wb.OdsView)) o.push(writeOdsSettings(wb.PuterSettings, escapexml, wb.OdsView));
+		if(opts.bookType == "fods" && (wb.EverythingSettings || wb.OdsView)) o.push(writeOdsSettings(wb.EverythingSettings, escapexml, wb.OdsView));
 		var nfs = write_automatic_styles_ods(o, wb);
 		o.push('  <office:body>\n');
 		o.push('    <office:spreadsheet>\n');
@@ -25553,9 +25553,9 @@ function write_ods(wb/*:any*/, opts/*:any*/) {
 	manifest.push([f, "text/xml"]);
 	rdf.push([f, "MetadataFile"]);
 
-	if(wb.PuterSettings || wb.OdsView) {
+	if(wb.EverythingSettings || wb.OdsView) {
 		f = "settings.xml";
-		zip_add_file(zip, f, XML_HEADER + '<office:document-settings xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" office:version="1.2">' + writeOdsSettings(wb.PuterSettings, escapexml, wb.OdsView) + '</office:document-settings>');
+		zip_add_file(zip, f, XML_HEADER + '<office:document-settings xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" office:version="1.2">' + writeOdsSettings(wb.EverythingSettings, escapexml, wb.OdsView) + '</office:document-settings>');
 		manifest.push([f, "text/xml"]);
 	}
 
@@ -27958,7 +27958,7 @@ function safe_parse_sheet(zip, path/*:string*/, relsPath/*:string*/, sheet, idx/
 		}
 		sheets[sheet] = _ws;
 
-		/* Puter Spreadsheet local patch: keep the XML of the sheet's table parts (xl/tables/tableN.xml),
+		/* Everything Spreadsheet local patch: keep the XML of the sheet's table parts (xl/tables/tableN.xml),
 		 * which the library does not parse, so the app can read Excel tables and their column formulas. */
 		if(_ws && sheetRels && sheetRels[sheet]) {
 			var tableType = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/table";
@@ -28005,7 +28005,7 @@ function safe_parse_sheet(zip, path/*:string*/, relsPath/*:string*/, sheet, idx/
 		parse_sheet_legacy_drawing(_ws, stype, zip, path, idx, opts, wb, comments);
 	} catch(e) {
 		if(opts.WTF) throw e;
-		/* Puter Spreadsheet local patch: name the sheets that failed to parse, so the caller can
+		/* Everything Spreadsheet local patch: name the sheets that failed to parse, so the caller can
 		 * refuse the file rather than import them as empty and save over the original. */
 		(wb.UnreadableSheets || (wb.UnreadableSheets = [])).push(sheet);
 	}

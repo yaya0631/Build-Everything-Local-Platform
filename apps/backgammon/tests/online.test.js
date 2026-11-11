@@ -4,7 +4,7 @@ import { hashNonce, randomNonce } from '../src/engine/dice.js';
 
 /**
  * The protocol layer, driven without a network. host()/join() are what need
- * the Puter SDK; everything after the connection exists is message handling,
+ * the Everything SDK; everything after the connection exists is message handling,
  * so these tests hand a session a fake connection and talk to it directly.
  */
 function fakeConn() {

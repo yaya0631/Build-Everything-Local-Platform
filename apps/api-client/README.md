@@ -2,8 +2,8 @@
 
 Build, send and test HTTP requests in your browser. API Client is an
 open-source alternative to Postman and Insomnia, built on
-[Puter](https://localhost:8443). It uses no framework and has no backend of its
-own: it is vanilla JavaScript, built with Vite, with Puter.js for accounts,
+[Everything](https://localhost:8443). It uses no framework and has no backend of its
+own: it is vanilla JavaScript, built with Vite, with Everything.js for accounts,
 cloud storage and networking.
 
 > **Alpha.** Features may change and data could be lost. Please do not rely on
@@ -48,7 +48,7 @@ cloud storage and networking.
   delay, and a CSV or JSON data file. You can pick and reorder requests,
   stop on the first error, keep or discard variable changes, filter the
   results, rerun the failures and export the results.
-- **Sharing.** Share a collection with other Puter users by username or
+- **Sharing.** Share a collection with other Everything users by username or
   email, so they can view it or edit it with you. Shared collections appear
   under "Shared with you", and changes reach everyone when the app is
   opened or regains focus.
@@ -61,7 +61,7 @@ cloud storage and networking.
 - **Code snippets.** 17 languages and libraries, including cURL, HTTPie,
   wget, JavaScript fetch, Node.js, axios, Python requests and http.client,
   Go, PHP, Java, Kotlin, C#, Ruby, Rust, Swift and PowerShell.
-- **Cookies.** A cookie jar for requests sent through the Puter relay, with
+- **Cookies.** A cookie jar for requests sent through the Everything relay, with
   a manager to view, add, edit and delete cookies.
 - **Console.** Requests with their full headers, script logs, warnings and
   errors, with filters.
@@ -80,7 +80,7 @@ cloud storage and networking.
 Requests can be sent two ways. Pick one in the status bar or in Settings,
 or override it per request.
 
-| | Browser | Puter relay |
+| | Browser | Everything relay |
 | --- | --- | --- |
 | Needs an account | No | Yes |
 | CORS | The server must allow requests from web pages | Not affected |
@@ -89,7 +89,7 @@ or override it per request.
 | Local servers (localhost, LAN) | Yes | No |
 
 The relay is a small HTTP/1.1 client (`src/core/http1.js`) running over
-Puter's socket relay. TLS runs in your browser, so Puter's servers only see
+Everything's socket relay. TLS runs in your browser, so Everything's servers only see
 encrypted bytes. **Automatic** mode (the default) tries the browser first. It
 switches to the relay only when the browser is blocked and retrying cannot
 send the request twice. For example, a plain POST that may already have
@@ -98,7 +98,7 @@ reached the server is not retried automatically.
 ## Where your data lives
 
 - **Signed out:** everything is stored in this browser (IndexedDB).
-- **Signed in:** the workspace is also saved to your Puter cloud, as one JSON
+- **Signed in:** the workspace is also saved to your Everything cloud, as one JSON
   file per collection and environment in the app's folder, so it syncs
   across devices. Changes upload a moment after you make them. Remote changes
   are picked up when the app starts or regains focus. When the same item was
@@ -147,7 +147,7 @@ Available globals: `request`, `response`, `env`, `collectionVars`,
 
 ```sh
 npm install
-npm run dev        # http://api-client.puter.localhost:5297/
+npm run dev        # http://api-client.localhost:8443/
 npm test           # unit and DOM tests (Vitest + jsdom)
 npm run test:e2e   # browser tests (Playwright)
 npm run build

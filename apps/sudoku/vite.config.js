@@ -3,7 +3,7 @@ import { defineConfig } from 'vite';
 export default defineConfig({
   plugins: [],
   // Relative asset URLs so a build can be dropped at any path — including a
-  // Puter app subdirectory — without a rebuild.
+  // Everything app subdirectory — without a rebuild.
   base: './',
   build: {
     target: 'es2022',

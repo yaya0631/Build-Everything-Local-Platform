@@ -27,7 +27,7 @@ import {
   loadLocalSave, saveLocalSave, clearLocalSave, loadModePref, saveModePref,
   modeStats, recordVegasResult, vegasBank, isVegasSettled, deviceId,
 } from './services/stats.js';
-import * as cloud from './services/puter-sync.js';
+import * as cloud from './services/everything-sync.js';
 import { shouldAdoptRemote } from './services/save-arbitration.js';
 
 // Start the cardmeister download immediately rather than waiting for the
@@ -471,11 +471,11 @@ if (bootSave) adoptSave(bootSave.save);
 requestRender();
 
 // Load-time cloud path: only touch the cloud if already signed in, so opening
-// the game never throws a login dialog at anyone. Puter's docs state that an
+// the game never throws a login dialog at anyone. Everything's docs state that an
 // app published on localhost:8443 has the user automatically signed in there, so
 // isSignedIn() alone already gives silent auto-sync in the one place this
 // game expects to run; loaded as a plain website instead, it stays silent
-// too, because isSignedIn() itself never prompts (see puter-sync.js).
+// too, because isSignedIn() itself never prompts (see everything-sync.js).
 (async () => {
   signedIn = await cloud.isSignedIn();
   if (!signedIn) return;

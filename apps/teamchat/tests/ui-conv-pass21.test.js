@@ -1,8 +1,8 @@
 /**
  * Conversation UI (review pass 21), driven in node through
  * tests/helpers/dom.js as the pass-19 and pass-20 files are: a fresh DOM and
- * a fresh module registry for every test, Puter faked at
- * `puter.workers.exec`, the toast, the theme, the modal layer and navigation
+ * a fresh module registry for every test, Everything faked at
+ * `everything.workers.exec`, the toast, the theme, the modal layer and navigation
  * mocked.
  */
 import { describe, it, expect, afterEach, vi } from 'vitest';
@@ -33,7 +33,7 @@ async function boot({ width = 1280, ...env } = {}) {
   dom?.uninstall();
   dom = installDom({ width, ...env });
   vi.resetModules();
-  globalThis.puter = { workers: { exec: async () => json({ code: 'not_found', message: 'nope' }, 404) } };
+  globalThis.everything = { workers: { exec: async () => json({ code: 'not_found', message: 'nope' }, 404) } };
   ({ store } = await import('../src/lib/store.js'));
   const { api } = await import('../src/lib/api.js');
   store.wsId = REF;
@@ -65,7 +65,7 @@ afterEach(async () => {
   store = null;
   dom?.uninstall();
   dom = null;
-  delete globalThis.puter;
+  delete globalThis.everything;
   vi.restoreAllMocks();
 });
 
@@ -583,7 +583,7 @@ describe('a message menu open on a Threads view card while the card is drawn aga
     const { dom: d } = await boot({ hash: `#/ws/${encodeURIComponent(REF)}/threads` });
     // The worker, for the Threads view: one thread, its replies already read.
     const root = { seq: 1, user: 'u2', ts: 1_700_000_000_001, text: 'root 1', kind: 'msg', replyCount: 2, attachments: [], mentions: [], reactions: {} };
-    globalThis.puter.workers.exec = async (url) => {
+    globalThis.everything.workers.exec = async (url) => {
       const u = new URL(url);
       if (u.pathname.endsWith('/threads')) return json({ threads: [{ id: 'c1_t1', conv: 'c1', seq: 1, at: 5000, unread: 0, root }] });
       if (u.pathname.endsWith('/messages')) return json({ messages: [], seq: 0 });

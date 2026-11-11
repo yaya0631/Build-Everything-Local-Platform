@@ -18,7 +18,7 @@ import {
 } from './dates.js';
 import { repeatMonths, occurrenceDue, withinSeries } from './store.js';
 
-export const PRODID = '-//Puter//Contract Manager//EN';
+export const PRODID = '-//Everything//Contract Manager//EN';
 
 /** Reminders before each deadline, in days. */
 export const DEFAULT_ALARMS = [7, 1];
@@ -131,7 +131,7 @@ export function buildCalendar(events, { name = 'Contract deadlines', stamp = ics
 /* Contract → events                                                   */
 /* ------------------------------------------------------------------ */
 
-const uidFor = (parts) => `${parts.filter(Boolean).join('-')}@contract-manager.puter`;
+const uidFor = (parts) => `${parts.filter(Boolean).join('-')}@contract-manager.everything`;
 
 function money(contract) {
   if (contract.value === null || contract.value === undefined) return '';

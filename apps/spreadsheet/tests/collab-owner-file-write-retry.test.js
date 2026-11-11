@@ -8,7 +8,7 @@ import { memoryStorage } from './helpers/memory-storage.js';
 import { environment, owner, SERVER, until } from './collab-helpers.js';
 
 Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true });
-afterEach(() => { delete globalThis.puter; vi.useRealTimers(); });
+afterEach(() => { delete globalThis.everything; vi.useRealTimers(); });
 
 const path = '/alice/Spreadsheets/Budget.xlsx';
 
@@ -19,15 +19,15 @@ it("keeps the owner's file due, and tries it again, when writing it failed", asy
   const env = environment();
   const wb = new Workbook({ sheets: [{ name: 'Budget' }] });
   env.files.set(path, new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()));
-  const room = await RoomClient.create({ puter: env.sdk(owner), server: SERVER, wb, name: 'Budget', file: { path, uid: 'u1' } });
-  globalThis.puter = env.sdk(owner);
-  const client = new RoomClient({ puter: env.sdk(owner), server: SERVER, room, store: memoryOutbox(), poll: 60_000, noPeers: true, toXlsx: (w) => workbookToXlsx(w) });
+  const room = await RoomClient.create({ everything: env.sdk(owner), server: SERVER, wb, name: 'Budget', file: { path, uid: 'u1' } });
+  globalThis.everything = env.sdk(owner);
+  const client = new RoomClient({ everything: env.sdk(owner), server: SERVER, room, store: memoryOutbox(), poll: 60_000, noPeers: true, toXlsx: (w) => workbookToXlsx(w) });
   await client.open();
   const doc = Doc.forRoom(client, { path, uid: 'u1' });
   const fileA1 = async () => { const file = await workbookFromFile(env.files.get(path).buffer, 'Budget.xlsx'); return file.getValue(file.sheets[0].id, 0, 0); };
   // Neither the worker nor the owner's browser can write the file for now.
   let full = true;
-  for (const fs of [env.workerPuter.fs, puter.fs]) {
+  for (const fs of [env.workerEverything.fs, everything.fs]) {
     const write = fs.write;
     fs.write = async (p, ...rest) => { if (full && p === path) throw new Error('Storage capacity limit reached.'); return write(p, ...rest); };
   }

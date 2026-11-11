@@ -24,11 +24,11 @@ export function cleanReviewHash(review, server) {
 
 export class ReviewPage {
   /**
-   * opts: { puter, account, link: { review, server, token }, onHome, interval, Session }
+   * opts: { everything, account, link: { review, server, token }, onHome, interval, Session }
    */
-  constructor(root, { puter, account = null, link, onHome = null, onSignedIn = null, interval = 8000, Session = ReviewSession } = {}) {
+  constructor(root, { everything, account = null, link, onHome = null, onSignedIn = null, interval = 8000, Session = ReviewSession } = {}) {
     this.root = root;
-    this.puter = puter;
+    this.everything = everything;
     this.account = account;
     this.link = link;
     this.onHome = onHome;
@@ -53,31 +53,31 @@ export class ReviewPage {
   }
 
   async start() {
-    const { puter } = this;
-    if (!puter) {
-      this.splash(h('h1.splash-title', 'Sign in needed'), h('p.splash-sub', 'Reviews open in Video Studio with a Puter account. Open this link where Puter is available.'));
+    const { everything } = this;
+    if (!everything) {
+      this.splash(h('h1.splash-title', 'Sign in needed'), h('p.splash-sub', 'Reviews open in Video Studio with an Everything account. Open this link where Everything is available.'));
       return;
     }
-    if (puter.env !== 'app' && !puter.auth.isSignedIn()) {
-      const btn = h('button.btn.primary', { type: 'button' }, 'Sign in with Puter');
+    if (everything.env !== 'app' && !everything.auth.isSignedIn()) {
+      const btn = h('button.btn.primary', { type: 'button' }, 'Sign in with Everything');
       btn.addEventListener('click', async () => {
         btn.disabled = true;
         try {
-          await puter.auth.signIn();
+          await everything.auth.signIn();
           if (this.onSignedIn) this.onSignedIn();
           else this.start();
         } catch {
           btn.disabled = false;
         }
       });
-      this.splash(h('h1.splash-title', 'You are invited to review a video'), h('p.splash-sub', 'Sign in with Puter to watch it and leave comments. Your Puter username is shown next to your comments.'), btn);
+      this.splash(h('h1.splash-title', 'You are invited to review a video'), h('p.splash-sub', 'Sign in with Everything to watch it and leave comments. Your Everything username is shown next to your comments.'), btn);
       return;
     }
     this.root.setAttribute('aria-busy', 'true');
     this.root.replaceChildren(h('div.splash', { role: 'status' }, appIcon(56), h('div.spinner'), h('p', 'Opening review...')));
     const { review, server, token } = this.link;
     try {
-      this.session = new this.Session({ puter, server, review, interval: this.interval });
+      this.session = new this.Session({ everything, server, review, interval: this.interval });
       await this.session.open({ token });
     } catch (err) {
       this.session?.dispose();

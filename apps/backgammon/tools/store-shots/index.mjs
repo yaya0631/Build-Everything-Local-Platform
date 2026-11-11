@@ -66,13 +66,13 @@ const FREEZE = `
 `;
 
 /**
- * A stand-in for the Puter peer API. `loadPuter` hands back `window.puter` if
+ * A stand-in for the Everything peer API. `loadEverything` hands back `window.everything` if
  * it is already there, so defining it before the app boots keeps the whole
  * hosting path (and every pixel of the panel it renders) the app's own, while
  * the invite code becomes sample data like any other in a store screenshot.
  */
-const PUTER_STUB = `
-  window.puter = {
+const EVERYTHING_STUB = `
+  window.everything = {
     auth: {
       isSignedIn: () => true,
       signIn: async () => ({}),
@@ -172,7 +172,7 @@ function scenes(games) {
       subhead: 'Send a code or a link. Every roll is agreed between both browsers.',
       settings: { mode: 'online', time: '5+3' },
       game: null,
-      boot: PUTER_STUB,
+      boot: EVERYTHING_STUB,
       async setup(page) {
         await page.waitFor(`!document.getElementById('online-card').classList.contains('hidden')`);
         await page.eval(`document.getElementById('host-btn').click()`);

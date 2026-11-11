@@ -1,6 +1,6 @@
 /**
  * Activity-log logic: labels, filtering, and day grouping for the
- * history view. Pure — no DOM, no Puter; unit-tested.
+ * history view. Pure — no DOM, no Everything; unit-tested.
  *
  * Entries look like { id, at, kind, productId, name, delta, quantity, note }
  * and are kept newest-first everywhere.

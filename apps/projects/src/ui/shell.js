@@ -140,7 +140,7 @@ export function mountShell(appRoot) {
   });
   store.addEventListener('outbox', (e) => {
     const { sent } = e.detail;
-    if (sent) toast(`${sent} project${sent === 1 ? '' : 's'} saved to Puter`, { icon: 'cloud' });
+    if (sent) toast(`${sent} project${sent === 1 ? '' : 's'} saved to Everything`, { icon: 'cloud' });
   });
 
   // Failed writes surface once with a retry; success stays quiet.

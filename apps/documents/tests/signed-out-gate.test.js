@@ -21,7 +21,7 @@ it('asks for the sign-in before reading a cloud document from the URL, then open
     },
     fs: { readdir: vi.fn(async () => []), read, mkdir: async () => {}, stat: async () => null, write: async () => ({}) },
   };
-  vi.stubGlobal('puter', sdk);
+  vi.stubGlobal('everything', sdk);
   document.body.innerHTML = '<div id="app"></div>';
   history.replaceState(null, '', '#/edit/Documents%2FA.docx');
   await import('../src/main.js');
@@ -42,7 +42,7 @@ it('asks for the sign-in before reading a cloud document from the URL, then open
   // Back at the document's URL, signing in opens it.
   location.hash = '#/edit/Documents%2FA.docx';
   await vi.waitFor(() => expect(window.__docs.current?.kind).toBe('gate'));
-  [...document.getElementById('app').querySelectorAll('button')].find((b) => b.textContent === 'Sign in to Puter').click();
+  [...document.getElementById('app').querySelectorAll('button')].find((b) => b.textContent === 'Sign in to Everything').click();
   await vi.waitFor(() => expect(sdk.auth.signIn).toHaveBeenCalledTimes(1));
   await vi.waitFor(() => expect(window.__docs.current?.view.doc?.path).toBe('Documents/A.docx'));
   expect(read).toHaveBeenCalledWith('Documents/A.docx');

@@ -10,7 +10,7 @@
  *   bumpVersions(names)        -> { [collection]: version } (whole map)
  *   nextNumber(kind, atLeast)  -> integer, atomically increasing, >= atLeast
  *
- * Puter KV layout (one item per record keeps writes small and lets a whole
+ * Everything KV layout (one item per record keeps writes small and lets a whole
  * collection load with a single prefix query, the access pattern KV is
  * cheapest at):
  *
@@ -58,10 +58,10 @@ export function readMeta(meta) {
   return out;
 }
 
-export function createPuterBackend(puter) {
-  const kv = puter.kv;
+export function createEverythingBackend(everything) {
+  const kv = everything.kv;
   return {
-    kind: 'puter',
+    kind: 'everything',
     async loadMeta() {
       return readMeta(await kv.get(`${PREFIX}meta`));
     },

@@ -21,7 +21,7 @@
  * constraint keeps the maths one pass, keeps the UI a flat list, and
  * avoids the entire BOM-explosion problem this otherwise turns into.
  *
- * Pure — no DOM, no Puter; unit-tested.
+ * Pure — no DOM, no Everything; unit-tested.
  */
 
 import { roundQty, isCountUnit, qtyValue } from './units.js';

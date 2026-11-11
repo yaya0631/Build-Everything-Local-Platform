@@ -177,8 +177,8 @@ describe('AI tool manage_name', () => {
 
   it('leaves the workbook\'s own hidden names alone', () => {
     const { wb, run } = setup();
-    wb.names = [{ name: '_PuterPivot_Source', ref: 'Sheet1!$A$1:$B$4', hidden: true, sheet: 'Sheet1' }];
-    const res = run('manage_name', { action: 'delete', name: '_PuterPivot_Source', scope: 'Sheet1' });
+    wb.names = [{ name: '_EverythingPivot_Source', ref: 'Sheet1!$A$1:$B$4', hidden: true, sheet: 'Sheet1' }];
+    const res = run('manage_name', { action: 'delete', name: '_EverythingPivot_Source', scope: 'Sheet1' });
     expect(res.ok).toBe(false);
     expect(res.content).toMatch(/hidden name/);
     expect(wb.names.length).toBe(1);

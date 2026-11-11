@@ -21,9 +21,9 @@ commands. OOXML behaviour (document properties, `w:lang`) is recorded in `docs/c
 **File view** (`src/views/backstage.js`)
 - New (blank, built-in templates, your templates), Open (this device, all documents, recent),
   Info (properties stored in `docProps/core.xml`, file facts, statistics, View Only, version history
-  with save-a-version and restore for documents saved to Puter), Save (save, download a copy, save as
-  template, rename, Save As to a new Puter file), Print (page previews, copies, all/current/custom
-  page range, page setup), Share (publish/update/unpublish a web page on Puter hosting, copy its
+  with save-a-version and restore for documents saved to Everything), Save (save, download a copy, save as
+  template, rename, Save As to a new Everything file), Print (page previews, copies, all/current/custom
+  page range, page setup), Share (publish/update/unpublish a web page on Everything hosting, copy its
   link, send .docx or PDF), Export (.docx, PDF, web page, Markdown, plain text), Close, Preferences.
 - Full-window, focus-trapped, Escape or Back returns to the document (or to the File button when it
   was opened from the keyboard).
@@ -100,7 +100,7 @@ Changes apply at once.
 - Find Next/Previous use the Navigation pane's query (or the selection); on a Mac Cmd+G remains
   Go To (as before in this app) rather than Find Next.
 - Web page, Markdown and plain-text exports cover the body only.
-- Version history and Share need a document saved to Puter; on this device they are left out.
+- Version history and Share need a document saved to Everything; on this device they are left out.
 - Viewing is a session state, not saved as document protection.
 
 ## Gaps

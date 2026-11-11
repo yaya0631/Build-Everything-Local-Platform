@@ -4,7 +4,7 @@
  *
  * Flags belong to the account, not to a browser. They are kept in two places
  * at once: a synchronous local cache the list renders from immediately, and
- * the account store (`puter.kv`, injected as `remote`) which is read and
+ * the account store (`everything.kv`, injected as `remote`) which is read and
  * written in the background. Nothing here awaits the network on the way to
  * the screen -- a flag is a display detail and must never delay the list.
  *
@@ -86,7 +86,7 @@ const same = (a, b) => {
 /**
  * One flag set: local cache in front, account store behind.
  * `remote` is `{ get(key), set(key, value) }` over JSON strings, or null when
- * there is no account store to talk to (a Puter without kv, or the tests).
+ * there is no account store to talk to (an Everything without kv, or the tests).
  */
 function createFlagStore({ key, storage, remote = null, onChange = null }) {
   const readLocal = () => {
@@ -232,7 +232,7 @@ function createFlagStore({ key, storage, remote = null, onChange = null }) {
 }
 
 export function createReadState(scope, storage = window.localStorage, options = {}) {
-  const store = createFlagStore({ key: `puter-mail:read:${scope}`, storage, ...options });
+  const store = createFlagStore({ key: `everything-mail:read:${scope}`, storage, ...options });
   return {
     isRead: (name) => store.has(name),
     markRead: (name) => store.set(name, true),
@@ -243,7 +243,7 @@ export function createReadState(scope, storage = window.localStorage, options = 
 }
 
 export function createStarState(scope, storage = window.localStorage, options = {}) {
-  const store = createFlagStore({ key: `puter-mail:star:${scope}`, storage, ...options });
+  const store = createFlagStore({ key: `everything-mail:star:${scope}`, storage, ...options });
   return {
     isStarred: (name) => store.has(name),
     /** Returns the new starred state. */
@@ -273,7 +273,7 @@ const pendingOrigins = new WeakMap();
 const ORIGIN_WRITE_MS = 250;
 
 export function createOriginState(scope, storage = window.localStorage) {
-  const key = `puter-mail:origin:${scope}`;
+  const key = `everything-mail:origin:${scope}`;
   pendingOrigins.get(storage)?.get(key)?.();
   const load = () => {
     try {
@@ -339,7 +339,7 @@ export function createOriginState(scope, storage = window.localStorage) {
  * tracking pixel that ever arrives".
  */
 export function createImageState(scope, storage = window.localStorage) {
-  const key = `puter-mail:images:${scope}`;
+  const key = `everything-mail:images:${scope}`;
   const load = () => {
     try {
       const value = JSON.parse(storage.getItem(key) || '{}');
@@ -367,7 +367,7 @@ export function createImageState(scope, storage = window.localStorage) {
           Object.fromEntries(names.slice(names.length - 500).map((n) => [n, 1])));
       }
       try {
-        storage.setItem(`puter-mail:images:${scope}`, JSON.stringify(senders));
+        storage.setItem(`everything-mail:images:${scope}`, JSON.stringify(senders));
       } catch {}
     },
   };

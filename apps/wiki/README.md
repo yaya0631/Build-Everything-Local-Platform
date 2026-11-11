@@ -1,9 +1,9 @@
 # Wiki
 
-Docs, notes and databases for you and your team, on [Puter](https://localhost:8443).
+Docs, notes and databases for you and your team, on [Everything](https://localhost:8443).
 Write with blocks, organize pages in a tree, track work in databases, and
 share pages with people who can view, comment or edit them in real time. No
-framework and no backend of its own: vanilla JavaScript, Vite and Puter.js.
+framework and no backend of its own: vanilla JavaScript, Vite and Everything.js.
 
 ## Features
 
@@ -53,7 +53,7 @@ framework and no backend of its own: vanilla JavaScript, Vite and Puter.js.
 
 ## Where your data lives
 
-- **Private pages** are files in the app's folder of your own Puter cloud:
+- **Private pages** are files in the app's folder of your own Everything cloud:
   `wiki/tree.ywk` for the page tree, `wiki/pages/<id>.ywk` for each page,
   `wiki/pages/<id>.c.ywk` for its comments and `wiki/assets/<sha256>` for
   images. Each file is a Yjs document. Before a save, the app merges in what
@@ -62,28 +62,28 @@ framework and no backend of its own: vanilla JavaScript, Vite and Puter.js.
   reloads and time offline.
 - **Shared spaces** live on the account of the person who shared them. As in
   the Whiteboard app, each owner runs a small collaboration worker on their
-  own Puter account (`worker/`, deployed with `puter.workers.create` the
+  own Everything account (`worker/`, deployed with `everything.workers.create` the
   first time they share). Shared pages are stored as an edit log and
   checkpoints in the owner's KV and files. Invited people call that worker
   with a restricted credential that cannot act as their account, and the
   worker checks their role on every request. Live updates come through
-  Puter events, with periodic synchronization as a fallback.
-- **puter.kv** holds only small per-person lists: favorites, recent pages
+  Everything events, with periodic synchronization as a fallback.
+- **everything.kv** holds only small per-person lists: favorites, recent pages
   and the shared spaces you joined. Page content and files never go there.
-- Inside the Puter desktop (`puter.env === 'app'`) there is no sign-out,
-  because the session belongs to Puter. Your profile picture comes from
-  `puter.auth.getProfilePicture()`.
+- Inside the Everything desktop (`everything.env === 'app'`) there is no sign-out,
+  because the session belongs to Everything. Your profile picture comes from
+  `everything.auth.getProfilePicture()`.
 
 ## Development
 
 ```sh
 npm install
-npm run dev     # http://wiki.puter.localhost:5251/
+npm run dev     # http://wiki.localhost:8443/
 npm test        # Vitest with jsdom
 npm run build   # checks dependency licenses, then builds into dist/
 ```
 
-Add `?local` to the dev URL to use the app without a Puter account. Pages
+Add `?local` to the dev URL to use the app without an Everything account. Pages
 are then kept in IndexedDB in that browser, and sharing runs on a copy of
 the real collaboration service inside the browser (`src/dev/local-collab.js`,
 stored in localStorage). Open a second tab with `?local&as=bob` to be

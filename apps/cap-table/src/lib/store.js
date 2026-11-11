@@ -1,5 +1,5 @@
 /**
- * Data layer on top of Puter KV.
+ * Data layer on top of Everything KV.
  *
  * A cap table is small, hot data - tens to a few hundred records - so every
  * collection is read by key (never a kv.list() scan). kv.js conditionally
@@ -231,7 +231,7 @@ function boundedEvidence(raw) {
 /** How many restore points a company keeps; the oldest drops off. */
 const RESTORE_MAX = 5;
 
-/* All five snapshots ride in one logical value - and Puter caps a KV value at
+/* All five snapshots ride in one logical value - and Everything caps a KV value at
    400 KB, so the set is trimmed oldest-first until it fits under that with
    room to spare, and the newest is always kept. Measured in bytes of the
    UTF-8 the value is sent as, not in string length: a budget of 1.5 MB
@@ -249,7 +249,7 @@ const textBytes = (text) => new TextEncoder().encode(text).length;
 /** The size of a value as the KV store receives it. */
 const byteLength = (value) => textBytes(JSON.stringify(value));
 
-/* Puter takes at most 400 KB in one KV value (docs.localhost:8443/KV/set), and a
+/* Everything takes at most 400 KB in one KV value (docs.localhost:8443/KV/set), and a
    restore point is the one value that carries the whole dataset at once -
    every collection of a cap table whose collections each fit comfortably.
    Trimming the set cannot bring that under the limit, because the set is
@@ -261,7 +261,7 @@ const byteLength = (value) => textBytes(JSON.stringify(value));
    for the marker and for a backend that counts a little differently. */
 const KV_VALUE_MAX_BYTES = 380_000;
 
-/** The one directory attachments may live in, in the user's Puter cloud. */
+/** The one directory attachments may live in, in the user's Everything cloud. */
 const ATTACHMENT_ROOT = 'captable-attachments';
 /** How many files one record carries. */
 const ATTACHMENTS_MAX = 20;
@@ -784,7 +784,7 @@ export class Store extends EventTarget {
 
   /**
    * Attachment references on a record: the file itself lives in the user's
-   * Puter cloud; the record keeps only the path and a display name.
+   * Everything cloud; the record keeps only the path and a display name.
    *
    * A path is only ever written by #attachmentPath, so anything outside that
    * directory arrived through an imported backup - and the app both reads
@@ -1432,7 +1432,7 @@ export class Store extends EventTarget {
     try { marker = Store.#decode(raw, null, key); } catch { return; }
     if (!marker || typeof marker !== 'object' || Array.isArray(marker)) return;
     await Promise.allSettled(Array.from({ length: int(marker.__parts) }, (_, i) =>
-      puter.kv.del?.(Store.#partKey(key, i + 1, marker.generation))));
+      everything.kv.del?.(Store.#partKey(key, i + 1, marker.generation))));
   }
 
   static async #kvDelete(key) {
@@ -1514,7 +1514,7 @@ export class Store extends EventTarget {
        after another a three-part collection cost three sequential round
        trips on every load and on every write's check of it. */
     const parts = await Promise.all(Array.from({ length: int(value.__parts) }, (_, i) =>
-      puter.kv.get(Store.#partKey(key, i + 1, value.generation)).then((raw) => Store.#bytes(raw))));
+      everything.kv.get(Store.#partKey(key, i + 1, value.generation)).then((raw) => Store.#bytes(raw))));
     if (parts.some((part) => part === null)) throw new CorruptDataError(key);
     const text = parts.join('');
     if (value.digest && Store.#digest(text) !== value.digest) throw new CorruptDataError(key);
@@ -1876,7 +1876,7 @@ export class Store extends EventTarget {
       /* Together, and settled together: written one after another the parts
          cost one round trip each, and a failure raced to before the others
          had settled could leave a late one landing after the cleanup below. */
-      await finishWrites(parts.map((part, i) => puter.kv.set(Store.#partKey(key, i + 1, marker.generation), part)));
+      await finishWrites(parts.map((part, i) => everything.kv.set(Store.#partKey(key, i + 1, marker.generation), part)));
       this.#sending(key, encoded);
       published = true;
       await this.#publish(key, expected, encoded, { owed, revision: auditRevision });
@@ -2331,7 +2331,7 @@ export class Store extends EventTarget {
   }
 
   async init() {
-    this.user = await puter.auth.getUser().catch(() => null);
+    this.user = await everything.auth.getUser().catch(() => null);
     const [globalSettings, registryRaw] = await Promise.all([
       // The theme carries no data and is rebuilt from the default, so a
       // damaged value here is not worth refusing to start over.
@@ -2773,7 +2773,7 @@ export class Store extends EventTarget {
    * read, nothing is removed at all rather than guessed at.
    */
   async #deleteOrphanedFiles(paths) {
-    if (!paths.size || typeof puter.fs?.delete !== 'function') return;
+    if (!paths.size || typeof everything.fs?.delete !== 'function') return;
     const kept = new Set();
     try {
       for (const c of this.companies) {
@@ -2784,7 +2784,7 @@ export class Store extends EventTarget {
     }
     await Promise.allSettled([...paths]
       .filter((p) => !kept.has(p))
-      .map((p) => puter.fs.delete(p)));
+      .map((p) => everything.fs.delete(p)));
   }
 
   /* ---------- Settings & company ---------- */
@@ -6477,11 +6477,11 @@ export class Store extends EventTarget {
     }, ['hiring']);
   }
 
-  /* ---------- Attachments (puter.fs) ---------- */
+  /* ---------- Attachments (everything.fs) ---------- */
 
   /**
    * Where an attachment lives: under the app's own directory in the user's
-   * Puter cloud, namespaced by company and record so nothing collides and a
+   * Everything cloud, namespaced by company and record so nothing collides and a
    * backup manifest can name every file.
    */
   #attachmentPath(recordId, fileName) {
@@ -6502,7 +6502,7 @@ export class Store extends EventTarget {
   async #attachFile(recordId, file, fields, attach) {
     const epoch = this.#dataEpoch;
     const path = this.#attachmentPath(recordId, file.name);
-    await puter.fs.write(path, file, { createMissingParents: true });
+    await everything.fs.write(path, file, { createMissingParents: true });
     const att = {
       id: uid(), name: str(file.name).slice(0, 120) || 'file',
       path, size: int(file.size), addedAt: Date.now(),
@@ -6521,7 +6521,7 @@ export class Store extends EventTarget {
     } catch (err) {
       // An ambiguous commit may have completed with its acknowledgement lost.
       // Keep the file until recovery determines whether its reference survived.
-      if (!this.unsaved) await puter.fs.delete(att.path).catch(() => {});
+      if (!this.unsaved) await everything.fs.delete(att.path).catch(() => {});
       throw err;
     }
     return att;
@@ -7154,7 +7154,7 @@ export class Store extends EventTarget {
       hiring: this.hiring,
       activity: this.activity,
       // What files belong to this backup. Contents stay in the user's own
-      // Puter cloud; the manifest tells a backup which paths are its.
+      // Everything cloud; the manifest tells a backup which paths are its.
       attachmentManifest: this.attachmentManifest(),
     };
   }

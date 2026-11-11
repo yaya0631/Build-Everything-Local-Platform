@@ -2,7 +2,7 @@
  * Local drafts: a copy of unsaved changes kept in this browser, so a tab
  * closed while offline (or before an autosave landed) loses nothing. The
  * draft is written shortly after each edit and removed once the file on
- * Puter holds the same version; opening a file whose draft is newer offers
+ * Everything holds the same version; opening a file whose draft is newer offers
  * to restore it.
  */
 

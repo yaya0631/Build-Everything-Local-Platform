@@ -142,7 +142,7 @@ describe('Excel files', () => {
   // The file as Excel saves it: without this app's own record of the workbook.
   const asExcelFile = zip => {
     const book = X.CFB.find(zip, '/xl/workbook.xml');
-    book.content = new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+    book.content = new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
     book.size = book.content.length;
     return X.CFB.write(zip, { type: 'array', fileType: 'zip' });
   };

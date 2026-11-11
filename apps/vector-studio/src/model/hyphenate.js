@@ -210,7 +210,7 @@ let exceptionLists = new Map(); // language code (lower case) -> Map(word -> poi
 let exceptionVersion = 0;
 
 /**
- * Exception words by language code: { 'en-US': ['ty-po-graph-ic', 'Puter'] }.
+ * Exception words by language code: { 'en-US': ['ty-po-graph-ic', 'Everything'] }.
  * An entry's hyphens are its only breaks; an entry without hyphens is never
  * hyphenated.
  */

@@ -5,7 +5,7 @@ import { addComment, getThread } from '../src/core/comments.js';
 import { findMentions, mentionedPeople } from '../src/core/mentions.js';
 import { createMentionNotifier } from '../src/ui/mention-notify.js';
 import { parseAppHash } from '../src/lib/links.js';
-import * as P from '../src/lib/puter.js';
+import * as P from '../src/lib/everything.js';
 import * as T from '../src/ui/toast.js';
 
 // A mention in a shared workbook was mailed with a link to the owner's file by its id: a member the file itself was

@@ -21,7 +21,7 @@ output path on the command line to generate another workload.
 Open `/tmp/scale/preview.html` on the dev server to inspect the real People,
 Boards, Reports, Audit log and Organization library components and pan/zoom the
 sample workshop. These panels call the real organization worker using the
-integration tests' in-memory Puter SDK. There is no live organization connection.
+integration tests' in-memory Everything SDK. There is no live organization connection.
 Changes reset on reload. Directory boards open the same sample workshop canvas;
 this fixture does not simulate their individual collaborative documents or
 500 simultaneous network connections.
@@ -143,9 +143,9 @@ network latency; they do not simulate concurrent network sessions.
 
 Measured on an M-series Mac: boards in headless Chromium with generated content
 (frames of notes, shapes, text and connectors), the worker and browser sessions
-in Node with the real worker and an in-memory Puter, and rooms with the
+in Node with the real worker and an in-memory Everything, and rooms with the
 capacity simulation in `tests/worker-capacity.test.js` (three worker instances,
-Puter's listing quota, storage visible after a delay).
+Everything's listing quota, storage visible after a delay).
 
 A 5,000-object board opens in about 100 ms and pans in about 2.5 ms per frame
 at any zoom. Deleting, undoing or adding one object no longer rewrites the

@@ -1,5 +1,5 @@
 /**
- * The offline-tolerant KV gate, run against a fake Puter whose failures
+ * The offline-tolerant KV gate, run against a fake Everything whose failures
  * we script: network failures queue, real API errors surface, and the
  * queue replays latest-value-per-key on reconnect.
  */
@@ -23,8 +23,8 @@ function gateNextSet() {
   return { entered, release };
 }
 
-globalThis.puter = globalThis.puter || {};
-globalThis.puter.kv = {
+globalThis.everything = globalThis.everything || {};
+globalThis.everything.kv = {
   get: async (k) => { boom(); return kvData.has(k) ? kvData.get(k) : null; },
   set: async (k, v) => {
     boom();

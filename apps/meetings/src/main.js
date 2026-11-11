@@ -23,12 +23,12 @@ import { RoomSession } from './net/session.js';
 import { LocalMedia } from './net/media.js';
 import { LinkHealth } from './lib/link-health.js';
 import { getPref, prefsReady, syncPrefsFromCloud } from './lib/prefs.js';
-import { hasPuter } from './lib/env.js';
+import { hasEverything } from './lib/env.js';
 import { silenceClosedPeerConnectionNoise } from './lib/webrtc-noise.js';
 import { createCalendar } from './lib/calendar.js';
 
 initTheme();
-// Quiet the one benign uncaught rejection puter.js's peer layer throws when a
+// Quiet the one benign uncaught rejection everything.js's peer layer throws when a
 // connection is torn down mid-handshake (the host self-probe does, every 15 s).
 silenceClosedPeerConnectionNoise();
 
@@ -38,16 +38,16 @@ const root = document.getElementById('app');
 let activeCall = null;
 /** @type {(() => void)|null} cleanup for the mounted view */
 let unmount = null;
-/** In-memory name (the Puter account username, when we have nothing else). */
+/** In-memory name (the Everything account username, when we have nothing else). */
 let userName = null;
 
 const ctx = {
   // The Calendar app, for the home screen's list of the day's meetings.
-  // Inert outside the Puter desktop (see lib/calendar.js).
+  // Inert outside the Everything desktop (see lib/calendar.js).
   calendar: createCalendar(),
 
   // A name the user actually entered outranks the account username: it is
-  // stored locally the moment they join, and synced down from puter.kv on a
+  // stored locally the moment they join, and synced down from everything.kv on a
   // device that has never joined here.
   getUserName: () => getPref('name') ?? userName,
   setUserName: (name) => {
@@ -86,7 +86,7 @@ const ctx = {
   async startInstantMeeting() {
     const from = unmount; // the view the click came from
     // A device that has never joined from here may still be waiting on the
-    // saved name to come down from puter.kv.
+    // saved name to come down from everything.kv.
     await prefsReady();
     if (unmount !== from) return; // they went elsewhere meanwhile
     if (!canStartWithoutPrejoin()) {
@@ -369,7 +369,7 @@ function onGrantFailed(call, inForce) {
   if (call !== activeCall || !call.session.isHost || inForce) return;
   notifyOnce('grant-failed', LINK_TROUBLE_TOAST_EVERY_MS, () => {
     call.grantAlerted = true;
-    toast('Guests without a Puter account may not be able to connect until Puter can be reached again.', {
+    toast('Guests without an Everything account may not be able to connect until Everything can be reached again.', {
       icon: 'info',
     });
   });
@@ -379,7 +379,7 @@ function onGrantRestored(call) {
   lastNotified.delete('grant-failed'); // the next failure is news again
   if (call !== activeCall || !call.grantAlerted) return;
   call.grantAlerted = false;
-  toast('Puter can be reached again — guests without an account can connect.', { icon: 'info' });
+  toast('Everything can be reached again — guests without an account can connect.', { icon: 'info' });
 }
 
 /** A heartbeat did not land: the entry is ageing towards gone while the meeting hums along. */
@@ -665,5 +665,5 @@ window.addEventListener('hashchange', route);
 
 // Boot: start the cloud pref pull (best-effort; views that prefill from a
 // preference await it through prefsReady), then route.
-if (hasPuter()) void syncPrefsFromCloud();
+if (hasEverything()) void syncPrefsFromCloud();
 route();

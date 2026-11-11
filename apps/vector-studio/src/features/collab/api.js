@@ -1,6 +1,6 @@
 /**
  * Talking to a collaboration server: signed requests (see auth.js) and,
- * for the owner, deploying the server as a Puter worker in their own
+ * for the owner, deploying the server as an Everything worker in their own
  * account. The worker bundle ships with the app (npm run build:worker);
  * an account's deployment is recorded in its private app storage and
  * updated when the bundled build changes. A share link never causes a
@@ -24,24 +24,24 @@ export class CollabError extends Error {
 }
 
 /** POST one operation to a server's /api and return its JSON reply. */
-export async function call(puter, server, input, { timeout = 30000 } = {}) {
+export async function call(everything, server, input, { timeout = 30000 } = {}) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeout);
   try {
     server = workerURL(server);
     const body = JSON.stringify(input);
-    let headers = await authorize(puter, server, body);
+    let headers = await authorize(everything, server, body);
     const unreachable = () => new CollabError('Could not reach the shared document. Check your connection.', { offline: true });
     const send = async () => {
       try {
-        return await puter.workers.exec(`${server}/api`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...headers }, body, signal: controller.signal, redirect: 'error' });
+        return await everything.workers.exec(`${server}/api`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...headers }, body, signal: controller.signal, redirect: 'error' });
       } catch {
         throw unreachable();
       }
     };
     let res = await send();
-    if (res.status === 401 && refuseCredential(puter, headers)) {
-      headers = await authorize(puter, server, body);
+    if (res.status === 401 && refuseCredential(everything, headers)) {
+      headers = await authorize(everything, server, body);
       res = await send();
     }
     const reply = await res.json().catch(() => null);
@@ -54,13 +54,13 @@ export async function call(puter, server, input, { timeout = 30000 } = {}) {
 }
 
 /** This account's collaboration server, deploying or updating it as needed. */
-export async function deploy(puter, progress = () => {}) {
-  if (!puter?.workers?.create || !puter.fs?.write || !puter.kv) throw new CollabError('Sharing needs the Puter workers service, which is not available here.');
-  const account = puter.authToken;
+export async function deploy(everything, progress = () => {}) {
+  if (!everything?.workers?.create || !everything.fs?.write || !everything.kv) throw new CollabError('Sharing needs the Everything workers service, which is not available here.');
+  const account = everything.authToken;
   const sameAccount = () => {
-    if (puter.authToken !== account) throw new CollabError('Your Puter account changed. Try sharing again.');
+    if (everything.authToken !== account) throw new CollabError('Your Everything account changed. Try sharing again.');
   };
-  let config = await puter.kv.get(WORKER_KEY);
+  let config = await everything.kv.get(WORKER_KEY);
   sameAccount();
   progress('Preparing the collaboration server...');
   const res = await fetch(new URL(BUNDLE, document.baseURI), { cache: 'no-cache' });
@@ -71,22 +71,22 @@ export async function deploy(puter, progress = () => {}) {
   if (!build) throw new CollabError('The collaboration server bundle is not valid.');
   if (!config) {
     const name = `vector-studio-${crypto.randomUUID().replaceAll('-', '').slice(0, 20)}`;
-    const file = await puter.fs.write('collab/vector-studio-worker.js', source, { overwrite: true, dedupeName: false, createMissingParents: true });
+    const file = await everything.fs.write('collab/vector-studio-worker.js', source, { overwrite: true, dedupeName: false, createMissingParents: true });
     sameAccount();
-    const deployed = await puter.workers.create(name, file.path);
+    const deployed = await everything.workers.create(name, file.path);
     sameAccount();
     config = { name, server: workerURL(deployed?.url || `http://${name}.localhost:8443`), path: file.path, build, builtAt };
-    await puter.kv.set(WORKER_KEY, config);
+    await everything.kv.set(WORKER_KEY, config);
   } else if (config.build !== build && !(config.builtAt > builtAt)) {
-    await puter.fs.write(config.path, source, { overwrite: true, dedupeName: false });
+    await everything.fs.write(config.path, source, { overwrite: true, dedupeName: false });
     sameAccount();
     config = { ...config, build, builtAt };
-    await puter.kv.set(WORKER_KEY, config);
+    await everything.kv.set(WORKER_KEY, config);
   }
   progress('Starting the collaboration server...');
   for (let attempt = 0; attempt < 20; attempt++) {
     try {
-      const r = await puter.workers.exec(`${workerURL(config.server)}/health`, { headers: { 'x-puter-no-auth': '1' }, redirect: 'error' });
+      const r = await everything.workers.exec(`${workerURL(config.server)}/health`, { headers: { 'x-everything-no-auth': '1' }, redirect: 'error' });
       if (r.ok && (await r.json()).build === config.build) return config.server;
     } catch {
       // Still starting.
@@ -98,9 +98,9 @@ export async function deploy(puter, progress = () => {}) {
 }
 
 /** This account's own server address, if it has deployed one (no deployment). */
-export async function ownServer(puter) {
+export async function ownServer(everything) {
   try {
-    const config = await puter?.kv?.get(WORKER_KEY);
+    const config = await everything?.kv?.get(WORKER_KEY);
     return config?.server ? workerURL(config.server) : null;
   } catch {
     return null;

@@ -13,7 +13,7 @@ import { EXPIRY_CHOICES, REMINDER_CHOICES } from '../lib/model.js';
 export async function confirmSignOut() {
   const ok = await confirmDialog({
     title: 'Sign out?',
-    message: 'Your documents stay safe in your Puter account. Sign back in anytime.',
+    message: 'Your documents stay safe in your Everything account. Sign back in anytime.',
     confirmLabel: 'Sign out',
     danger: false,
   });
@@ -21,7 +21,7 @@ export async function confirmSignOut() {
   try {
     // signOut may be async; reloading before it settles can leave the
     // session token in place.
-    await Promise.resolve(puter.auth.signOut());
+    await Promise.resolve(everything.auth.signOut());
   } finally {
     location.reload();
   }
@@ -30,9 +30,9 @@ export async function confirmSignOut() {
 export function settingsView({ navigate } = {}) {
   const root = el('div.main-inner');
   const user = store.user;
-  // Inside the Puter desktop the platform owns the session; the app never
+  // Inside the Everything desktop the platform owns the session; the app never
   // offers its own sign-out there.
-  const inPuterApp = typeof puter !== 'undefined' && puter.env === 'app';
+  const inEverythingApp = typeof everything !== 'undefined' && everything.env === 'app';
 
   /* Profile */
   const nameId = fieldId('name');
@@ -57,7 +57,7 @@ export function settingsView({ navigate } = {}) {
       el('span.avatar.c1', { style: { width: '42px', height: '42px', fontSize: '15px' } },
         initialsOf(store.settings.fullName || user?.username || '?')),
       el('div.grow', {},
-        el('div', { style: { fontWeight: 650 } }, user?.username || 'Puter user'),
+        el('div', { style: { fontWeight: 650 } }, user?.username || 'Everything user'),
         user?.email && el('div.small.faint', {}, user.email))),
     el('div.field', {},
       el('label', { for: nameId }, 'Name shown to signers'),
@@ -118,7 +118,7 @@ export function settingsView({ navigate } = {}) {
     notifyWrap.append(el('p.small.faint', { style: { marginTop: '12px' } },
       user?.email
         ? `Sent to ${user.email} by your own signing service, so they arrive even when this app is closed.`
-        : 'Sent to your Puter account address.'));
+        : 'Sent to your Everything account address.'));
   }
   renderNotify();
   const notifyCard = el('div.card', {},
@@ -265,17 +265,17 @@ export function settingsView({ navigate } = {}) {
   const aboutCard = el('div.card', {},
     el('div.card-title', {}, 'About'),
     el('div.settings-list', {},
-      el('a.settings-row', { href: 'https://github.com/HeyPuter/signatures', target: '_blank', rel: 'noopener' },
+      el('a.settings-row', { href: 'https://github.com/yaya0631/Build-Everything-Local-Platform', target: '_blank', rel: 'noopener' },
         el('span', { html: icon('externalLink', 19), style: { color: 'var(--ink-3)' } }),
         el('div.grow', {},
           el('div.title', {}, 'Signatures on GitHub'),
-          el('div.sub', {}, 'Send documents for signature, powered by Puter'))),
+          el('div.sub', {}, 'Send documents for signature, powered by Everything'))),
       el('a.settings-row', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' },
         el('span', { html: icon('cloud', 19), style: { color: 'var(--ink-3)' } }),
         el('div.grow', {},
-          el('div.title', {}, 'Puter'),
-          el('div.sub', {}, 'Your documents live in your own Puter cloud')))),
-    !inPuterApp && el('button.btn.btn-danger.btn-block', {
+          el('div.title', {}, 'Everything'),
+          el('div.sub', {}, 'Your documents live in your own Everything cloud')))),
+    !inEverythingApp && el('button.btn.btn-danger.btn-block', {
       type: 'button', style: { marginTop: '14px' }, html: icon('logout', 15, 2),
       onclick: confirmSignOut,
     }, ' Sign out')

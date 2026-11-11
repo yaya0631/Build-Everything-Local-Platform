@@ -42,7 +42,7 @@ interface Block extends EncodedFrame {
 /** Build a WebM file with video (track 1) and Opus audio (track 2). */
 export function muxWebMAV(video: EncodedFrame[], audio: EncodedFrame[], o: { width: number; height: number; codec: 'V_VP8' | 'V_VP9'; duration: number; channels: number; rate: number }): Uint8Array[] {
   const header = element(0x1a45dfa3, [...uintEl(0x4286, 1), ...uintEl(0x42f7, 1), ...uintEl(0x42f2, 4), ...uintEl(0x42f3, 8), ...strEl(0x4282, 'webm'), ...uintEl(0x4287, 4), ...uintEl(0x4285, 2)]);
-  const info = element(0x1549a966, [...uintEl(0x2ad7b1, 1000000), ...strEl(0x4d80, 'puter-3d'), ...strEl(0x5741, 'puter-3d'), ...floatEl(0x4489, o.duration)]);
+  const info = element(0x1549a966, [...uintEl(0x2ad7b1, 1000000), ...strEl(0x4d80, 'everything-3d'), ...strEl(0x5741, 'everything-3d'), ...floatEl(0x4489, o.duration)]);
   const vtrack = element(0xae, [...uintEl(0xd7, 1), ...uintEl(0x73c5, 1), ...uintEl(0x9c, 0), ...strEl(0x86, o.codec), ...uintEl(0x83, 1), ...element(0xe0, [...uintEl(0xb0, o.width), ...uintEl(0xba, o.height)])]);
   const atrack = element(0xae, [
     ...uintEl(0xd7, 2),

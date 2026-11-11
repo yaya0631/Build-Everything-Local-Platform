@@ -14,7 +14,7 @@ import { openTextBoxDialog } from '../src/ui/textboxdialog.js';
 import { openCopySheetDialog } from '../src/ui/copysheet.js';
 import { closeAllModals } from '../src/ui/modal.js';
 import * as S from '../src/core/selection.js';
-import * as P from '../src/lib/puter.js';
+import * as P from '../src/lib/everything.js';
 
 vi.mock('../src/ui/toast.js', () => ({ toast: vi.fn() }));
 beforeEach(() => {

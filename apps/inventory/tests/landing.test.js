@@ -15,13 +15,13 @@ describe('public landing sign-in', () => {
   it('opens only one sign-in window across all calls to action and boots after success', async () => {
     let complete;
     const signIn = vi.fn(() => new Promise((resolve) => { complete = resolve; }));
-    vi.stubGlobal('puter', { auth: { signIn } });
+    vi.stubGlobal('everything', { auth: { signIn } });
     const { buttons, onSignedIn, status } = mount();
     buttons[1].querySelector('svg').dispatchEvent(new MouseEvent('click', { bubbles: true }));
     buttons[0].click();
     expect(signIn).toHaveBeenCalledTimes(1);
     expect(buttons.every((button) => button.disabled)).toBe(true);
-    expect(status.textContent).toContain('Puter window');
+    expect(status.textContent).toContain('Everything window');
     expect(onSignedIn).not.toHaveBeenCalled();
     complete();
     await vi.waitFor(() => expect(onSignedIn).toHaveBeenCalledTimes(1));
@@ -29,7 +29,7 @@ describe('public landing sign-in', () => {
 
   it('allows retry after a canceled or blocked popup', async () => {
     const signIn = vi.fn().mockRejectedValueOnce(new Error('Closed')).mockResolvedValueOnce();
-    vi.stubGlobal('puter', { auth: { signIn } });
+    vi.stubGlobal('everything', { auth: { signIn } });
     const { buttons, onSignedIn, status } = mount();
     buttons[1].click();
     await vi.waitFor(() => expect(status.textContent).toContain('wasn’t completed'));
@@ -41,7 +41,7 @@ describe('public landing sign-in', () => {
   });
 
   it('keeps the introduction usable when the SDK is unavailable', () => {
-    vi.stubGlobal('puter', undefined);
+    vi.stubGlobal('everything', undefined);
     const { buttons, status, onSignedIn, view } = mount();
     buttons[0].click();
     expect(status.textContent).toContain('reload this page');

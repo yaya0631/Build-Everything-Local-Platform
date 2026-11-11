@@ -7,7 +7,7 @@ let errors, readdir;
 beforeEach(() => {
   vi.stubGlobal('matchMedia', () => ({ matches: false, addEventListener() {} }));
   readdir = vi.fn(async () => []);
-  vi.stubGlobal('puter', {
+  vi.stubGlobal('everything', {
     auth: { isSignedIn: () => true, getUser: async () => ({ username: 'test' }) },
     fs: { readdir, read: async () => { throw Object.assign(new Error('gone'), { code: 'subject_does_not_exist' }); } },
   });

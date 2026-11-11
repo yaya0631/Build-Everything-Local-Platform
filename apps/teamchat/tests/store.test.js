@@ -1,5 +1,5 @@
 /**
- * Client-side message window bookkeeping. The store talks to Puter through
+ * Client-side message window bookkeeping. The store talks to Everything through
  * api.js, so only the pure pieces are exercised here.
  */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
@@ -63,7 +63,7 @@ describe('loadOlder', () => {
 
   it('pages back from the oldest sequence it knows', async () => {
     const seen = [];
-    globalThis.puter = {
+    globalThis.everything = {
       workers: {
         exec: async (url) => {
           seen.push(new URL(url).searchParams.get('before'));
@@ -82,7 +82,7 @@ describe('loadOlder', () => {
     expect(c.messages.map((m) => m.seq)).toEqual([8, 9, 10, null]);
     store.wsId = null;
     store.convs.clear();
-    delete globalThis.puter;
+    delete globalThis.everything;
   });
 });
 
@@ -92,7 +92,7 @@ describe('fetchNewer', () => {
   /** Answer message reads the way the worker does, recording every request. */
   function fakeWorker(reply) {
     const seen = [];
-    globalThis.puter = {
+    globalThis.everything = {
       workers: {
         exec: async (url) => {
           const q = new URL(url).searchParams;
@@ -115,7 +115,7 @@ describe('fetchNewer', () => {
   afterEach(() => {
     store.wsId = null;
     store.convs.clear();
-    delete globalThis.puter;
+    delete globalThis.everything;
   });
 
   it('asks from the newest sequence it knows, not from an unsent message', async () => {
@@ -163,12 +163,12 @@ describe('outbox delivery', () => {
     store.outbox = realOutbox;
     store.wsId = null;
     store.convs.clear();
-    delete globalThis.puter;
+    delete globalThis.everything;
   });
 
   it('sends a queued message under its client id and replaces its placeholder with the real one', async () => {
     const posts = [];
-    globalThis.puter = {
+    globalThis.everything = {
       workers: {
         exec: async (url, init) => {
           const body = JSON.parse(init.body);
@@ -202,7 +202,7 @@ describe('outbox delivery', () => {
   it('queues a send that failed for want of a connection while the browser still said online, under its client id', async () => {
     let down = true;
     const posts = [];
-    globalThis.puter = {
+    globalThis.everything = {
       workers: {
         exec: async (url, init) => {
           if (down) throw new TypeError('fetch failed');
@@ -237,7 +237,7 @@ describe('outbox delivery', () => {
 
   it('marks the placeholder failed when the worker refuses, and clears it on retry', async () => {
     let refuse = true;
-    globalThis.puter = {
+    globalThis.everything = {
       workers: {
         exec: async () => (refuse
           ? new Response(JSON.stringify({ error: 'read_only', code: 'read_only', message: 'Only admins can post' }), { status: 403, headers: { 'Content-Type': 'application/json' } })
@@ -283,12 +283,12 @@ describe('sync after the newest message was deleted', () => {
     store.wsId = null;
     store.convs.clear();
     store.act = { c: {}, p: {}, ps: {}, w: 0, u: 0 };
-    delete globalThis.puter;
+    delete globalThis.everything;
   });
 
   it('stops asking for newer messages and re-reads the overlays instead', async () => {
     const seen = [];
-    globalThis.puter = {
+    globalThis.everything = {
       workers: {
         exec: async (url) => {
           const q = new URL(url).searchParams;
@@ -328,12 +328,12 @@ describe('a message posted while the window was being re-read for an overlay cha
     store.wsId = null;
     store.convs.clear();
     store.act = { c: {}, p: {}, ps: {}, w: 0, u: 0 };
-    delete globalThis.puter;
+    delete globalThis.everything;
   });
 
   it('is fetched by the next poll rather than taken as already reached', async () => {
     const seen = [];
-    globalThis.puter = {
+    globalThis.everything = {
       workers: {
         exec: async (url) => {
           const q = new URL(url).searchParams;
@@ -373,13 +373,13 @@ describe('a page that fails while newer messages are being read a few blocks at 
     store.wsId = null;
     store.convs.clear();
     store.act = { c: {}, p: {}, ps: {}, w: 0, u: 0 };
-    delete globalThis.puter;
+    delete globalThis.everything;
   });
 
   it('leaves the rest to the next poll instead of taking the counter as reached', async () => {
     const seen = [];
     let down = true;
-    globalThis.puter = {
+    globalThis.everything = {
       workers: {
         exec: async (url) => {
           const after = Number(new URL(url).searchParams.get('after'));
@@ -422,7 +422,7 @@ describe('a poll the worker does not answer', () => {
   });
 
   async function pollWith(res) {
-    globalThis.puter = { workers: { exec: async () => res } };
+    globalThis.everything = { workers: { exec: async () => res } };
     store.wsId = REF;
     store._timer = setTimeout(() => {}, 60_000); // the loop is armed, as after startPolling
     const errors = [];
@@ -449,13 +449,13 @@ describe('the user document', () => {
   afterEach(() => {
     store.user = null;
     store.identity = null;
-    delete globalThis.puter;
+    delete globalThis.everything;
   });
 
   it('applies changes made close together one after another, so none is lost', async () => {
     let saved = { v: 1, profile: {}, prefs: { theme: 'dark' }, workspaces: [], worker: null };
     const tick = () => new Promise((r) => setTimeout(r, 5));
-    globalThis.puter = {
+    globalThis.everything = {
       kv: {
         get: async () => { await tick(); return JSON.parse(JSON.stringify(saved)); },
         set: async (k, v) => { await tick(); saved = JSON.parse(JSON.stringify(v)); },
@@ -480,13 +480,13 @@ describe('retrying a failed send', () => {
   afterEach(() => {
     store.wsId = null;
     store.convs.clear();
-    delete globalThis.puter;
+    delete globalThis.everything;
   });
 
   it('posts under the same client id, so a message the worker did receive is not doubled', async () => {
     const posts = [];
     let fail = true;
-    globalThis.puter = {
+    globalThis.everything = {
       workers: {
         exec: async (url, init) => {
           const body = JSON.parse(init.body);
@@ -521,13 +521,13 @@ describe('opening a permalink while the newest page is loading', () => {
   afterEach(() => {
     store.wsId = null;
     store.convs.clear();
-    delete globalThis.puter;
+    delete globalThis.everything;
   });
 
   it('keeps the permalink window when the older request answers last', async () => {
     let releaseNewest;
     const newest = new Promise((r) => { releaseNewest = r; });
-    globalThis.puter = {
+    globalThis.everything = {
       workers: {
         exec: async (url) => {
           const q = new URL(url).searchParams;
@@ -562,12 +562,12 @@ describe('a page in flight when a permalink replaces the window', () => {
   afterEach(() => {
     store.wsId = null;
     store.convs.clear();
-    delete globalThis.puter;
+    delete globalThis.everything;
   });
 
   function server(release) {
     const json = (b) => new Response(JSON.stringify(b), { status: 200, headers: { 'Content-Type': 'application/json' } });
-    globalThis.puter = {
+    globalThis.everything = {
       workers: {
         exec: async (url) => {
           const q = new URL(url).searchParams;
@@ -618,12 +618,12 @@ describe('jumping to a date', () => {
   afterEach(() => {
     store.wsId = null;
     store.convs.clear();
-    delete globalThis.puter;
+    delete globalThis.everything;
   });
 
   function history(total, deleted) {
     const reads = [];
-    globalThis.puter = {
+    globalThis.everything = {
       workers: {
         exec: async (url) => {
           const q = new URL(url).searchParams;
@@ -684,7 +684,7 @@ describe('shared channel links', () => {
   /** Route each call by path; a handler may throw to stand for a network failure. */
   function worker(routes) {
     const calls = [];
-    globalThis.puter = {
+    globalThis.everything = {
       workers: {
         exec: async (url, init = {}) => {
           const path = new URL(url).pathname;
@@ -705,7 +705,7 @@ describe('shared channel links', () => {
     store.profile = null;
     store.links = new Map();
     store.convs.clear();
-    delete globalThis.puter;
+    delete globalThis.everything;
   });
 
   it('counts the saved items, reminders, and scheduled messages kept on a host once its link has loaded', async () => {
@@ -1385,13 +1385,13 @@ describe('a send that lands past the newest message the window holds', () => {
     store.wsId = null;
     store.me = null;
     store.convs.clear();
-    delete globalThis.puter;
+    delete globalThis.everything;
   });
 
   it('reads what others posted in between, which the poll would never come back for', async () => {
     let next = 12;
     const reads = [];
-    globalThis.puter = {
+    globalThis.everything = {
       workers: {
         exec: async (url, init) => {
           const u = new URL(url);
@@ -1469,7 +1469,7 @@ describe('presence on screen', () => {
     setUp();
     store.act.p['u-ana'] = Date.now() - 1000;
     store._presenceMoved();
-    globalThis.puter = { workers: { exec: async () => { throw new Error('offline'); } } };
+    globalThis.everything = { workers: { exec: async () => { throw new Error('offline'); } } };
     store._timer = setTimeout(() => {}, 60_000);
     let events = 0;
     const off = store.on('activity', () => events++);
@@ -1531,7 +1531,7 @@ describe('presence as a workspace opens', () => {
     const REF = 'abc123def0@teamchat-test';
     const urls = [];
     const json = (data) => new Response(JSON.stringify(data), { status: 200, headers: { 'Content-Type': 'application/json' } });
-    globalThis.puter = {
+    globalThis.everything = {
       workers: {
         exec: async (url) => {
           urls.push(url);
@@ -1564,7 +1564,7 @@ describe('a tab that closes', () => {
   let calls;
   const arm = () => {
     calls = [];
-    globalThis.puter = { workers: { exec: async (url, init = {}) => { calls.push(`${init.method || 'GET'} ${new URL(url).pathname}${init.keepalive ? ' keepalive' : ''}`); return new Response('{"ok":true}', { status: 200, headers: { 'Content-Type': 'application/json' } }); } } };
+    globalThis.everything = { workers: { exec: async (url, init = {}) => { calls.push(`${init.method || 'GET'} ${new URL(url).pathname}${init.keepalive ? ' keepalive' : ''}`); return new Response('{"ok":true}', { status: 200, headers: { 'Content-Type': 'application/json' } }); } } };
     store.wsId = REF;
     store.identity = { uuid: 'u-me' };
     store.links = new Map();
@@ -1647,7 +1647,7 @@ describe('a change of do not disturb', () => {
 
   it('goes out with the very next poll, paused or resumed, rather than at the next heartbeat', async () => {
     const urls = [];
-    globalThis.puter = { workers: { exec: async (url) => { urls.push(new URL(url)); return new Response(JSON.stringify({ now: Date.now() - 2000, ts: Date.now(), c: {}, p: {}, w: 0, u: 0 }), { status: 200, headers: { 'Content-Type': 'application/json' } }); } } };
+    globalThis.everything = { workers: { exec: async (url) => { urls.push(new URL(url)); return new Response(JSON.stringify({ now: Date.now() - 2000, ts: Date.now(), c: {}, p: {}, w: 0, u: 0 }), { status: 200, headers: { 'Content-Type': 'application/json' } }); } } };
     store.wsId = REF;
     store.identity = { uuid: 'u-me' };
     store.profile = { uuid: 'u-me', prefs: {} };
@@ -1691,7 +1691,7 @@ describe('a tab left alone', () => {
 
   it('stops heartbeating after ten idle minutes, unless in a huddle, and starts again at the first touch', async () => {
     const urls = [];
-    globalThis.puter = { workers: { exec: async (url) => { urls.push(new URL(url)); return new Response(JSON.stringify({ now: Date.now() - 2000, ts: Date.now(), c: {}, p: {}, w: 0, u: 0 }), { status: 200, headers: { 'Content-Type': 'application/json' } }); } } };
+    globalThis.everything = { workers: { exec: async (url) => { urls.push(new URL(url)); return new Response(JSON.stringify({ now: Date.now() - 2000, ts: Date.now(), c: {}, p: {}, w: 0, u: 0 }), { status: 200, headers: { 'Content-Type': 'application/json' } }); } } };
     store.wsId = REF;
     store.identity = { uuid: 'u-me' };
     store.profile = { uuid: 'u-me', prefs: {} };
@@ -1760,7 +1760,7 @@ describe('the Later lists and the pins answered after a switch of workspace', ()
 
   beforeEach(() => {
     const gate = new Promise((r) => { release = r; });
-    globalThis.puter = {
+    globalThis.everything = {
       workers: {
         exec: async (url) => {
           const path = new URL(url).pathname;
@@ -1786,7 +1786,7 @@ describe('the Later lists and the pins answered after a switch of workspace', ()
     store._scheduledCount = 0;
     store._reminderCount = 0;
     store._pins = new Map();
-    delete globalThis.puter;
+    delete globalThis.everything;
   });
 
   /** What openWorkspace does to these on a switch. */
@@ -1892,12 +1892,12 @@ describe('a send that lands far past the newest message the window holds', () =>
     store.wsId = null;
     store.me = null;
     store.convs.clear();
-    delete globalThis.puter;
+    delete globalThis.everything;
   });
 
   it('reads the whole stretch in between, page after page, when the worker answers it a few blocks at a time', async () => {
     const reads = [];
-    globalThis.puter = {
+    globalThis.everything = {
       workers: {
         exec: async (url, init) => {
           const u = new URL(url);
@@ -1930,7 +1930,7 @@ describe('a send that lands far past the newest message the window holds', () =>
 
   it('reads nothing in between when the window had reached the counter with every message of its page deleted', async () => {
     const reads = [];
-    globalThis.puter = {
+    globalThis.everything = {
       workers: {
         exec: async (url, init) => {
           const u = new URL(url);

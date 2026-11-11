@@ -24,7 +24,7 @@ async function roundtrip(wb, mutate=x=>x) {
   const xml=path=>new TextDecoder().decode(X.CFB.find(zip,path).content);
   for(const path of ['/xl/workbook.xml','/xl/worksheets/sheet1.xml']) {
     const part=X.CFB.find(zip,path);
-    part.content=new TextEncoder().encode(path.includes('workbook.xml') ? xml(path).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,'') : mutate(xml(path)));
+    part.content=new TextEncoder().encode(path.includes('workbook.xml') ? xml(path).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,'') : mutate(xml(path)));
     part.size=part.content.length;
   }
   return {xml:xml('/xl/worksheets/sheet1.xml'),wb:await workbookFromFile(X.CFB.write(zip,{type:'array',fileType:'zip'}),'extended.xlsx')};

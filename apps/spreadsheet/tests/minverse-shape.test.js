@@ -40,7 +40,7 @@ it('recalculates a changing input shape and preserves the error through native X
   expect(native.Sheets[native.SheetNames[0]].D5).toMatchObject({ t: 'e', v: 15 });
   const zip = X.CFB.read(new Uint8Array(data), { type: 'array' });
   const part = X.CFB.find(zip, '/xl/workbook.xml');
-  part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')); part.size = part.content.length;
+  part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')); part.size = part.content.length;
   const back = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'native.xlsx');
   expect(back.getValue(back.activeSheetId, 4, 3)).toEqual({ error: '#VALUE!' });
   back.setInput(back.activeSheetId, 2, 0, '1');

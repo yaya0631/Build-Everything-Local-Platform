@@ -19,7 +19,7 @@ import { openBinding, type SharedBinding } from '../../collab/shared-history';
 import { SharedComments } from '../../collab/shared-comments';
 import { TileIndex } from '../../collab/tile-index';
 import { colorFor, initials, roleLabel, shareLink, type RoomLink } from '../../collab/protocol';
-import { collabPuter } from '../../collab/puter-types';
+import { collabEverything } from '../../collab/everything-types';
 import { adoptLocalComments, dropLocalComments, shared, sharedOf, type SharedHandle } from './state';
 
 let outbox: Outbox | undefined;
@@ -75,7 +75,7 @@ export class CollabSession implements SharedHandle {
     if (!force && Date.now() - this.membersAt < 10_000) return;
     this.membersAt = Date.now();
     try {
-      const res = await call<{ members: Member[] }>(this.client.o.puter, this.link.server, { op: 'members', room: this.link.room });
+      const res = await call<{ members: Member[] }>(this.client.o.everything, this.link.server, { op: 'members', room: this.link.room });
       this.members = res.members;
       renderBar(this.e);
     } catch {
@@ -248,8 +248,8 @@ export class CollabSession implements SharedHandle {
 
 /** Join a room and show its document (in a new tab, or in `target`). */
 export async function openShared(e: Editor, link: RoomLink, o: { target?: DocumentSession; review?: boolean; client?: RoomClient } = {}) {
-  const puter = collabPuter();
-  if (!puter.auth.isSignedIn()) await puter.auth.signIn();
+  const everything = collabEverything();
+  if (!everything.auth.isSignedIn()) await everything.auth.signIn();
   const target = o.target;
   const assets = target?.assets;
   let session: DocumentSession | undefined = target;
@@ -257,7 +257,7 @@ export async function openShared(e: Editor, link: RoomLink, o: { target?: Docume
   let cs: CollabSession | undefined;
   if (!client) {
     const a = assets ?? new (await import('../../model/assets')).Assets();
-    client = new RoomClient({ puter, server: link.server, room: link.room, token: link.token, tiles: new TileIndex(a.tiles), assets: a, store: outboxStore() });
+    client = new RoomClient({ everything, server: link.server, room: link.room, token: link.token, tiles: new TileIndex(a.tiles), assets: a, store: outboxStore() });
     e.message('Joining the shared document…');
     await client.join();
   }

@@ -9,9 +9,9 @@ import { fakeKV, fakeFS } from './helpers.js';
 
 const SOURCE = fs.readFileSync(new URL('../public/worker/childcare-team-worker.js', import.meta.url), 'utf8');
 
-const person = (uuid, username) => ({ puter: { auth: { getUser: async () => ({ uuid, username }) } } });
+const person = (uuid, username) => ({ everything: { auth: { getUser: async () => ({ uuid, username }) } } });
 
-/** The worker with Puter's fs semantics for `overwrite: false`. */
+/** The worker with Everything's fs semantics for `overwrite: false`. */
 function strictFS() {
   const f = fakeFS();
   const write = f.write;
@@ -28,7 +28,7 @@ function loadWorker() {
   new Function('router', SOURCE)(router);
   const kv = fakeKV();
   const fsys = strictFS();
-  const me = { puter: { kv, fs: fsys, auth: { getUser: async () => ({ uuid: 'owner-1', username: 'director' }) } } };
+  const me = { everything: { kv, fs: fsys, auth: { getUser: async () => ({ uuid: 'owner-1', username: 'director' }) } } };
   const handler = (method, path) => routes.find(([m, p]) => m === method && p === path)?.[2];
   return {
     kv,

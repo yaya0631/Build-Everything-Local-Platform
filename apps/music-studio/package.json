@@ -1,7 +1,7 @@
 {
   "name": "music-studio",
   "version": "0.1.0",
-  "description": "Music Studio: a pattern-based music production workstation on Puter. Program beats in the channel rack, write melodies in the piano roll, arrange in the playlist and mix with studio effects, in your browser.",
+  "description": "Music Studio: a pattern-based music production workstation on Everything. Program beats in the channel rack, write melodies in the piano roll, arrange in the playlist and mix with studio effects, in your browser.",
   "type": "module",
   "private": true,
   "engines": {

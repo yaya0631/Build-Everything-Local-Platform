@@ -109,7 +109,7 @@ test("organization members' AI requests go through the organization and honor it
   const ai = createAI({
     org,
     session: () => ({ room: "r1" }),
-    puter: () => null,
+    everything: () => null,
   });
   assert.match(ai.availability(), /turned off AI/);
   await assert.rejects(ai.ask("summarize", "x"), /turned off/);
@@ -121,7 +121,7 @@ test("organization members' AI requests go through the organization and honor it
   ]);
 });
 
-test("guests use their own Puter AI within the organization's policy", async () => {
+test("guests use their own Everything AI within the organization's policy", async () => {
   const calls = [];
   const org = {
     info: { role: "guest", policy: { ai: { enabled: true } } },
@@ -131,7 +131,7 @@ test("guests use their own Puter AI within the organization's policy", async () 
   const ai = createAI({
     org,
     session: () => ({ room: "r1" }),
-    puter: () => ({
+    everything: () => ({
       ai: { chat: async () => "Personal" },
       auth: { isSignedIn: () => true },
     }),
@@ -146,7 +146,7 @@ test("guests use their own Puter AI within the organization's policy", async () 
 test("a shared board's organization policy applies to guests and people from other organizations", async () => {
   let chats = 0;
   const features = { ai: { enabled: false, summaries: true } };
-  const puter = () => ({
+  const everything = () => ({
     ai: { chat: async () => (chats++, "Personal") },
     auth: { isSignedIn: () => true },
   });
@@ -155,7 +155,7 @@ test("a shared board's organization policy applies to guests and people from oth
   const guest = createAI({
     org: { info: null, allows: () => true },
     session: () => ({ room: "r1", features }),
-    puter,
+    everything,
   });
   assert.equal(
     guest.availability(),
@@ -171,7 +171,7 @@ test("a shared board's organization policy applies to guests and people from oth
       request: async () => (chats++, { text: "Theirs" }),
     },
     session: () => ({ room: "r1", features }),
-    puter,
+    everything,
   });
   await assert.rejects(other.ask("summarize", "x"), /board’s organization/);
   assert.equal(chats, 0);
@@ -188,17 +188,17 @@ test("a shared board's organization policy applies to guests and people from oth
   const personal = createAI({
     org: { info: null, allows: () => true },
     session: () => null,
-    puter,
+    everything,
   });
   assert.equal(personal.availability(), null);
 });
 
-test("a Puter AI failure that is not an Error still explains itself", async () => {
+test("an Everything AI failure that is not an Error still explains itself", async () => {
   let failure;
   const ai = createAI({
     org: { info: null, allows: () => true, request: async () => ({}) },
     session: () => null,
-    puter: () => ({
+    everything: () => ({
       ai: { chat: async () => Promise.reject(failure) },
       auth: { isSignedIn: () => true },
     }),
@@ -224,7 +224,7 @@ test("signing in for AI applies the organization found at sign-in", async () => 
   const ai = createAI({
     org,
     session: () => null,
-    puter: () => ({
+    everything: () => ({
       ai: { chat: async () => "Personal" },
       auth: { isSignedIn: () => signedIn },
     }),
@@ -261,7 +261,7 @@ test("AI summaries include only what the person may see", async () => {
     view: () => ({ ...b, items: b.items.filter((i) => i.id === "seen") }),
     selection: () => new Set(),
     toast: () => {},
-    puter: () => null,
+    everything: () => null,
   });
   globalThis.document = dom.window.document;
   try {
@@ -295,7 +295,7 @@ test("a second AI request waits until the first one finishes", async () => {
     view: () => b,
     selection: () => new Set(),
     toast: () => {},
-    puter: () => null,
+    everything: () => null,
   });
   globalThis.document = dom.window.document;
   try {
@@ -607,7 +607,7 @@ test("suggested themes count one note in the singular", async () => {
     selection: () => new Set(["n0", "n1", "n2"]),
     canEdit: () => true,
     toast: () => {},
-    puter: () => null,
+    everything: () => null,
   });
   globalThis.document = dom.window.document;
   try {
@@ -652,7 +652,7 @@ test("a themes reply in the wrong shape says it could not be read", async () => 
       canEdit: () => true,
       toast: () => {},
       refresh: () => {},
-      puter: () => null,
+      everything: () => null,
     });
     globalThis.document = dom.window.document;
     try {
@@ -729,7 +729,7 @@ test("AI results refused by a lock report the refusal, not success", async () =>
     center: () => ({ x: 0, y: 0 }),
     toast: (m) => toasts.push(m),
     refresh: () => {},
-    puter: () => null,
+    everything: () => null,
   });
   globalThis.document = dom.window.document;
   try {
@@ -778,7 +778,7 @@ test("adding reviewed ideas counts one sticky note in the singular", async () =>
     center: () => ({ x: 0, y: 0 }),
     toast: (m) => toasts.push(m),
     refresh: () => {},
-    puter: () => null,
+    everything: () => null,
   });
   globalThis.document = dom.window.document;
   try {
@@ -815,7 +815,7 @@ test("reviewed notes keep their own colours after a note is removed", async () =
     center: () => ({ x: 0, y: 0 }),
     toast: () => {},
     refresh: () => {},
-    puter: () => null,
+    everything: () => null,
   });
   globalThis.document = dom.window.document;
   try {
@@ -888,7 +888,7 @@ test("theme prompts for many long notes fit the organization's AI limit", async 
     canEdit: () => true,
     toast: () => {},
     refresh: () => {},
-    puter: () => null,
+    everything: () => null,
   });
   globalThis.document = dom.window.document;
   try {
@@ -1281,7 +1281,7 @@ async function feedbackFixture(request, lang = "en", feedback = null) {
   };
 }
 
-test("help's buttons for the organization's rating and for feedback through Puter have different names", async () => {
+test("help's buttons for the organization's rating and for feedback through Everything have different names", async () => {
   const app = await feedbackFixture(async () => {}, "en", {
     available: () => true,
     send() {},

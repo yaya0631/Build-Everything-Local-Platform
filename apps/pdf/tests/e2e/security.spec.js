@@ -11,10 +11,10 @@ import {
 } from '../../src/core/security.js';
 import { createSelfSignedId, signPdf } from '../../src/core/digital-signature.js';
 
-const PUTER_MOCK = `window.puter = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async () => ({}) }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
-async function mockPuter(page) {
-  await page.route('**/sdk/puter.js', (route) =>
-    route.fulfill({ contentType: 'application/javascript', body: PUTER_MOCK }),
+const EVERYTHING_MOCK = `window.everything = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async () => ({}) }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
+async function mockEverything(page) {
+  await page.route('**/sdk/everything.js', (route) =>
+    route.fulfill({ contentType: 'application/javascript', body: EVERYTHING_MOCK }),
   );
 }
 const fixture = (name) => readFile(new URL(`../fixtures/security/${name}.pdf`, import.meta.url));
@@ -60,7 +60,7 @@ const badge = (page) => page.getByRole('button', { name: 'Protected', exact: tru
 test('asks for the password of a protected PDF, rejects wrong ones, and keeps the protection on download', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await chooseFile(page, await fixture('aes-256'));
   const dialog = passwordDialog(page);
@@ -100,7 +100,7 @@ test('asks for the password of a protected PDF, rejects wrong ones, and keeps th
 test('opens a PDF that only restricts permissions without a prompt and keeps them on download', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await chooseFile(page, await fixture('owner-only'));
   await expect(page.locator('.page-caption')).toHaveText('Page 1 of 2');
@@ -124,7 +124,7 @@ test('opens a PDF that only restricts permissions without a prompt and keeps the
 });
 
 test('cancelling the password prompt keeps the PDF that was open', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/');
   await expect(page.locator('.page-caption')).toHaveText('Page 1 of 1');
   const chooser = page.waitForEvent('filechooser');
@@ -167,7 +167,7 @@ for (const view of ['library', 'editor'])
   test(`a password check cancelled from the ${view} cannot report its error inside a later dialog`, async ({
     page,
   }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto(view === 'library' ? '/#library' : '/');
     if (view === 'library')
       await expect(page.getByRole('button', { name: /Open a PDF/ })).toBeVisible();
@@ -206,7 +206,7 @@ for (const [password, label] of [
   test(`protection remembers the submitted ${password} password when the field changes during verification`, async ({
     page,
   }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     await chooseFile(page, await fixture('aes-256-r5'));
     const dialog = passwordDialog(page);
@@ -239,7 +239,7 @@ for (const name of ['aes-256', 'aes-256-r5', 'rc4-128'])
   test(`changing the restrictions of a ${name} PDF opened with its permissions password keeps its open password`, async ({
     page,
   }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     await chooseFile(page, await fixture(name));
     const dialog = passwordDialog(page);
@@ -262,7 +262,7 @@ for (const name of ['aes-256', 'aes-256-r5', 'rc4-128'])
   });
 
 test('changing the password keeps permissions the dialog does not list', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   // Printing at low resolution only, and filling in forms without commenting, as Acrobat offers.
   const doc = await PDFDocument.create();
@@ -307,7 +307,7 @@ test('changing the password keeps permissions the dialog does not list', async (
 test('the Signatures panel reads the reason and field of a signed PDF opened with its password', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([300, 300]);
@@ -332,7 +332,7 @@ test('the Signatures panel reads the reason and field of a signed PDF opened wit
 test('protects a PDF with an open password, marks it unsaved, and removes the password again', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([300, 300]).drawText('Plain page', { x: 30, y: 200, size: 18 });
@@ -384,7 +384,7 @@ test('protects a PDF with an open password, marks it unsaved, and removes the pa
 });
 
 test('restricts printing with a permissions password and no open password', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([300, 300]);
@@ -426,7 +426,7 @@ for (const [kind, readerPassword, equivalentOwner] of [
   ['SASLprep', 'reader\u00ad', 'reader'],
 ])
   test(`rejects permissions passwords equivalent after ${kind}`, async ({ page }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/');
     await expect(page.locator('.page-caption')).toHaveText('Page 1 of 1');
     await menu(page, 'Protect with password…');
@@ -452,7 +452,7 @@ for (const [kind, readerPassword, equivalentOwner] of [
   });
 
 test('inserting pages from a protected PDF asks for its password first', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([300, 300]);
@@ -483,7 +483,7 @@ test('inserting pages from a protected PDF asks for its password first', async (
 test('a page served without https explains that passwords need a secure connection', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   // Web Crypto belongs to secure contexts; a plain-http deployment has none of it.
   await page.addInitScript(() => {
     Object.defineProperty(crypto, 'subtle', { get: () => undefined, configurable: true });
@@ -508,7 +508,7 @@ test('a page served without https explains that passwords need a secure connecti
 });
 
 test('rejects a password made only of characters that PDF passwords drop', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/');
   await expect(page.locator('.page-caption')).toHaveText('Page 1 of 1');
   await menu(page, 'Protect with password…');

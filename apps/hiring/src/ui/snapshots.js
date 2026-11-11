@@ -44,7 +44,7 @@ export function openSnapshots(ctx) {
     const intro = el(
       'p',
       { class: 'confirm-message' },
-      `The app keeps copies of everything in your own Puter drive, under ${SNAPSHOT_DIR}/ — one a day, and one immediately before a wipe, a restore, or a purge. They are yours: nothing here is sent anywhere.`
+      `The app keeps copies of everything in your own Everything drive, under ${SNAPSHOT_DIR}/ — one a day, and one immediately before a wipe, a restore, or a purge. They are yours: nothing here is sent anywhere.`
     );
 
     if (failed) {

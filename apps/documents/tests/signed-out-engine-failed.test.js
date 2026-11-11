@@ -8,7 +8,7 @@ vi.mock('../src/lib/engine.js', () => ({ loadEngine: async () => { throw new Err
 
 it('does not offer to sign in and save a document that never opened', async () => {
   stubEditorBrowser();
-  vi.stubGlobal('puter', {
+  vi.stubGlobal('everything', {
     auth: { isSignedIn: () => false, getUser: async () => null, signIn: async () => true },
     fs: { readdir: async () => [] },
   });

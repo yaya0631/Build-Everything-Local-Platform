@@ -47,7 +47,7 @@ export const icons = Object.fromEntries(
   Object.entries(RAW).map(([name, body]) => [name, `${P}${body}</svg>`]),
 )
 
-/** Return an icon as a base64 data URI (for puter.ui.contextMenu icons). */
+/** Return an icon as a base64 data URI (for everything.ui.contextMenu icons). */
 export function iconDataUri(name, color = '#1a1d24') {
   const svg = (icons[name] || '').replace('stroke="currentColor"', `stroke="${color}"`)
   return 'data:image/svg+xml;base64,' + btoa(svg)

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { installMockPuter, installMockStorage } from './helpers/mock-puter.js';
+import { installMockEverything, installMockStorage } from './helpers/mock-everything.js';
 import { Store } from '../src/lib/store.js';
 import { Outbox, isTransportError } from '../src/lib/outbox.js';
 import { canRefund } from '../src/lib/refunds.js';
@@ -14,7 +14,7 @@ const monthFile = () => `pos-data/sales-${monthKeyOf(todayISO())}.json`;
 const onDisk = () => JSON.parse(mock.files.get(monthFile()) || '[]');
 
 beforeEach(async () => {
-  mock = installMockPuter();
+  mock = installMockEverything();
   storage = installMockStorage();
   store = new Store();
   await store.init();
@@ -107,7 +107,7 @@ describe('offline boot from the local snapshot', () => {
     mock.goOffline();
     // An unreachable cloud can't say who is signed in either, so init falls
     // back to 'anon' before it fails - the snapshot is what names the account.
-    puter.auth.getUser = async () => { throw new TypeError('Failed to fetch'); };
+    everything.auth.getUser = async () => { throw new TypeError('Failed to fetch'); };
     const cold = new Store();
     await expect(cold.init()).rejects.toThrow();
     expect(cold.initFromBootCache()).toBe(true);
@@ -342,10 +342,10 @@ describe('receipt numbers under failing settings writes', () => {
      Offline is where nothing else can catch it: the month file can't be
      read to floor against, only the outbox knows what was issued. */
   it('a failed settings write can’t hand a queued sale’s number out again', async () => {
-    const realSet = puter.kv.set;
-    puter.kv.set = async (key, value) => {
+    const realSet = everything.kv.set;
+    everything.kv.set = async (key, value) => {
       if (key === 'pos:settings:v1') {
-        puter.kv.set = realSet;   // only this one write hangs, then dies
+        everything.kv.set = realSet;   // only this one write hangs, then dies
         await new Promise((r) => setTimeout(r, 20));
         throw new TypeError('Failed to fetch');
       }
@@ -499,14 +499,14 @@ describe('syncing the outbox', () => {
     });
     expect(store.product(p.id).stock).toBe(3);
 
-    const realSet = puter.kv.set;
-    puter.kv.set = async (k, v) => {
+    const realSet = everything.kv.set;
+    everything.kv.set = async (k, v) => {
       if (k === 'pos:products:v1') throw new TypeError('Failed to fetch');
       return realSet(k, v);
     };
     await store.refundSale({ receiptId: sale.id, date: sale.date, picks: [{ index: 0, qty: 2 }] });
     await new Promise((r) => setTimeout(r, 0));   // let the write's rejection land
-    puter.kv.set = realSet;
+    everything.kv.set = realSet;
     expect(store.product(p.id).stock).toBe(5);
 
     const reloaded = new Store();
@@ -543,8 +543,8 @@ describe('syncing the outbox', () => {
     mock.goOnline();
 
     // Slow the cloud so the merge is still writing when the sale lands.
-    const write = puter.fs.write;
-    puter.fs.write = async (...args) => {
+    const write = everything.fs.write;
+    everything.fs.write = async (...args) => {
       await new Promise((r) => setTimeout(r, 20));
       return write(...args);
     };
@@ -552,7 +552,7 @@ describe('syncing the outbox', () => {
     await new Promise((r) => setTimeout(r, 5));
     const third = await store.completeSale({ lines, payment: { method: 'card' } });
     await draining;
-    puter.fs.write = write;
+    everything.fs.write = write;
 
     expect(onDisk().map((s) => s.id).sort()).toEqual([first.id, queued.id, third.id].sort());
     expect(store.pendingSync).toBe(0);
@@ -569,10 +569,10 @@ describe('syncing the outbox', () => {
      ever rewrite it. */
   it('re-converges stock after a failed post-sale products write', async () => {
     const p = await store.addProduct({ name: 'Mug', price: 16, slot: 1, trackStock: true, stock: 5 });
-    const realSet = puter.kv.set;
-    puter.kv.set = async (k, v) => {
+    const realSet = everything.kv.set;
+    everything.kv.set = async (k, v) => {
       if (k === 'pos:products:v1') {
-        puter.kv.set = realSet;
+        everything.kv.set = realSet;
         throw new Error('quota exceeded');   // a real rejection, not the network
       }
       return realSet(k, v);

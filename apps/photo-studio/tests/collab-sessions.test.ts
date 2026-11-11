@@ -1,5 +1,5 @@
 // Several simulated people on one shared document, against the real room
-// worker service with an in-memory Puter: joining, merging, conflicts, the
+// worker service with an in-memory Everything: joining, merging, conflicts, the
 // offline outbox, server-side roles, comments, Undo and peer links.
 import { afterEach, describe, expect, it } from 'vitest';
 import { findLayer, layer } from '../src/model/document';
@@ -280,7 +280,7 @@ describe('shared documents with several people', () => {
     await expect(b.client.sync()).rejects.toThrow(/expired/);
     await call(sdk, SERVER, { op: 'role', room, uuid: editor.uuid, role: 'removed' });
     await expect(b.client.sync()).rejects.toThrow(/access/);
-    // An invitation by Puter username admits that person without a link token.
+    // An invitation by Everything username admits that person without a link token.
     await call(sdk, SERVER, { op: 'invite-user', room, username: 'cam', role: 'commenter' });
     const c = await connect(env, viewer, room);
     expect(c.client.role).toBe('commenter');

@@ -74,7 +74,7 @@ describe('changes the room refuses', () => {
 
   it('keeps a change the room could not verify the sender of and sends it again', async () => {
     const { people: [ann, bob] } = await room('Start');
-    // The worker answers 401 when it cannot check the request's credential (an expired one, Puter unreachable).
+    // The worker answers 401 when it cannot check the request's credential (an expired one, Everything unreachable).
     const send = bob.transport.send;
     let refusals = 1;
     bob.transport.send = update => (refusals-- > 0 ? Promise.reject(Object.assign(new Error('Could not verify this collaboration request.'), { status: 401 })) : send(update));

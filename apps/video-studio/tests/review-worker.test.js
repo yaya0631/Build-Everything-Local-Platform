@@ -11,7 +11,7 @@ const statusOf = (p) => p.then(() => 200, (e) => e.status ?? 'error');
 describe('review worker: deployment', () => {
   it('deploys once, records the worker in the owner KV and reuses it', async () => {
     const env = await setup();
-    expect(env.server).toMatch(/^https:\/\/video-review-[a-f0-9]{16}\.puter\.work$/);
+    expect(env.server).toMatch(/^https:\/\/video-review-[a-f0-9]{16}\.everything\.work$/);
     const config = await env.sdk.alice.kv.get(WORKER_KEY);
     expect(config.server).toBe(env.server);
     expect(config.path).toBe('/alice/AppData/video-studio/video-studio/worker/review-worker.js');
@@ -54,10 +54,10 @@ describe('review worker: authentication', () => {
     const elsewhere = await authorize(env.sdk.alice, 'http://other-worker.localhost:8443', body);
     expect((await exec(elsewhere)).status).toBe(401);
     // A token without the proof header is refused.
-    expect((await exec({ 'puter-auth': good['puter-auth'] })).status).toBe(401);
+    expect((await exec({ 'everything-auth': good['everything-auth'] })).status).toBe(401);
     // Someone else's token with alice's proof is refused.
     const bobs = await authorize(env.sdk.bob, env.server, body);
-    expect((await exec({ ...good, 'puter-auth': bobs['puter-auth'] })).status).toBe(401);
+    expect((await exec({ ...good, 'everything-auth': bobs['everything-auth'] })).status).toBe(401);
   });
 
   it('identifies the caller by the owner of their proof file', async () => {
@@ -239,7 +239,7 @@ describe('review worker: video links', () => {
     const env = await setup();
     const { review } = await publish(env);
     const a = await env.as('alice')('video.url', { review: review.id, version: 1 });
-    expect(a.url).toMatch(/^https:\/\/api\.puter\.mock\/token-read\?uid=/);
+    expect(a.url).toMatch(/^https:\/\/api\.everything\.mock\/token-read\?uid=/);
     expect(a.expires - env.now()).toBe(4 * 3_600_000);
     const whole = await env.world.fetchReadURL(a.url);
     expect(whole.status).toBe(200);
@@ -248,7 +248,7 @@ describe('review worker: video links', () => {
     expect(part.status).toBe(206);
     expect(part.headers.get('Content-Range')).toBe('bytes 100-199/4096');
     expect((await part.arrayBuffer()).byteLength).toBe(100);
-    // The link is reused (Puter limits how many can be made) until it nears expiry.
+    // The link is reused (Everything limits how many can be made) until it nears expiry.
     const b = await env.as('alice')('video.url', { review: review.id, version: 1 });
     expect(b.url).toBe(a.url);
     env.advance(4 * 3_600_000 - 10 * 60_000);

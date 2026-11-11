@@ -13,7 +13,7 @@ export const WHATS_NEW: WhatsNewEntry[] = [
   {
     id: 'assistant',
     title: 'Describe an Edit',
-    text: 'Describe a change in words and the Assistant plans it with Photo Studio’s own commands. Review or change the steps, then run them as one undo step (Puter AI).',
+    text: 'Describe a change in words and the Assistant plans it with Photo Studio’s own commands. Review or change the steps, then run them as one undo step (Everything AI).',
     release: 'October 2026',
     action: { commands: ['assistant.ask'] },
   },
@@ -27,7 +27,7 @@ export const WHATS_NEW: WhatsNewEntry[] = [
   {
     id: 'shared-documents',
     title: 'Invite to Edit and Share for Review',
-    text: 'Edit one document live with other people, each with their own undo, or send a review link that opens the image for viewing and comments. Everyone signs in with Puter.',
+    text: 'Edit one document live with other people, each with their own undo, or send a review link that opens the image for viewing and comments. Everyone signs in with Everything.',
     release: 'October 2026',
     action: { commands: ['file.invite-to-edit'], needs: 'document' },
   },
@@ -139,7 +139,7 @@ export const WHATS_NEW: WhatsNewEntry[] = [
   {
     id: 'convert-linked',
     title: 'Convert embedded objects to linked files',
-    text: 'Write an embedded object’s contents to a file on this device or in Puter and keep the layer linked to it.',
+    text: 'Write an embedded object’s contents to a file on this device or in Everything and keep the layer linked to it.',
     release: 'October 2026',
     action: { commands: ['layer.embed-convert-linked'], needs: 'document', hint: 'Select an embedded object layer, then choose Layer → Embedded Objects → Convert to Linked.' },
   },

@@ -1,5 +1,5 @@
 /**
- * Share a collection with other Puter users, and see or remove who has access.
+ * Share a collection with other Everything users, and see or remove who has access.
  */
 import { h, fill, domId, announce } from '../lib/dom.js';
 import { icon } from './icons.js';
@@ -12,14 +12,14 @@ const ROLE_LABEL = { read: 'Can view', write: 'Can edit', manage: 'Can edit and 
 function friendlyError(err) {
   const code = err?.code || err?.error?.code || '';
   const map = {
-    user_does_not_exist: 'There is no Puter user with that name.',
+    user_does_not_exist: 'There is no Everything user with that name.',
     cannot_share_with_self: 'This is your own collection.',
     recipient_not_accepting_shares: 'That person is not accepting shares.',
-    email_not_allowed: 'Sharing by email is not available here. Use their Puter username.',
+    email_not_allowed: 'Sharing by email is not available here. Use their Everything username.',
     share_daily_limit_reached: 'You reached the daily sharing limit. Try again tomorrow.',
-    subscription_required: 'Your Puter plan does not allow sharing this way.',
-    phone_verification_required: 'Verify your Puter account to share.',
-    card_verification_required: 'Verify your Puter account to share.',
+    subscription_required: 'Your Everything plan does not allow sharing this way.',
+    phone_verification_required: 'Verify your Everything account to share.',
+    card_verification_required: 'Verify your Everything account to share.',
   };
   return map[code] || err?.message || 'Could not share the collection.';
 }
@@ -29,7 +29,7 @@ export function openShareDialog(app, collectionId) {
   const c = app.ws.getCollection(collectionId);
   if (!c) return;
   const inputId = domId('share');
-  const who = h('input.input', { id: inputId, type: 'text', placeholder: 'Puter username or email', autocomplete: 'off', spellcheck: false });
+  const who = h('input.input', { id: inputId, type: 'text', placeholder: 'Everything username or email', autocomplete: 'off', spellcheck: false });
   const role = h('select.select', { 'aria-label': 'Access' }, h('option', { value: 'read' }, ROLE_LABEL.read), h('option', { value: 'write' }, ROLE_LABEL.write));
   const invite = h('button.btn.primary', { type: 'submit' }, icon('userPlus', 15), 'Share');
   const error = h('p.field-error', { role: 'alert' });
@@ -88,7 +88,7 @@ export function openShareDialog(app, collectionId) {
         e.preventDefault();
         const recipient = who.value.trim().replace(/^@/, '');
         if (!recipient) {
-          error.textContent = 'Enter a Puter username or email.';
+          error.textContent = 'Enter an Everything username or email.';
           who.focus();
           return;
         }
@@ -132,7 +132,7 @@ export function openShareDialog(app, collectionId) {
       h(
         'p.field-hint.share-note',
         icon('info', 13),
-        h('span', 'They will find it under "Shared with you" when they open API Client signed in to Puter. People who can edit change the same collection you see. Environments and files attached to requests are not shared.'),
+        h('span', 'They will find it under "Shared with you" when they open API Client signed in to Everything. People who can edit change the same collection you see. Environments and files attached to requests are not shared.'),
       ),
     ],
     footer: [h('button.btn', { type: 'button', onclick: () => dlg.close() }, 'Done')],

@@ -1,6 +1,6 @@
 /**
  * The shared email worker (worker/email.js): the real route code against the
- * in-memory runtime, with `me.puter.email.sendTransactional` replaced by a recorder. What
+ * in-memory runtime, with `me.everything.email.sendTransactional` replaced by a recorder. What
  * matters here is what an app-owned relay must never do — send for nobody,
  * send anywhere but the app, relay caller markup, or outrun its caps.
  */
@@ -32,7 +32,7 @@ beforeEach(() => {
   sends = [];
   sendImpl = null;
   runtime.setStores({ kv: createMemoryKv() });
-  globalThis.me.puter.email = {
+  globalThis.me.everything.email = {
     sendTransactional: async (message) => {
       sends.push(message);
       return sendImpl ? sendImpl(message) : {};
@@ -66,14 +66,14 @@ async function post(body, caller = alice) {
 describe("the shared email worker", () => {
   it("prefers sendTransactional when the runtime also exposes send", async () => {
     let legacyCalls = 0;
-    globalThis.me.puter.email.send = async () => { legacyCalls++; };
+    globalThis.me.everything.email.send = async () => { legacyCalls++; };
     expect((await post(invite())).data).toMatchObject({ sent: 1, failed: 0 });
     expect(sends).toHaveLength(1);
     expect(legacyCalls).toBe(0);
   });
 
   it("sends with an older runtime exposing only send", async () => {
-    const email = globalThis.me.puter.email;
+    const email = globalThis.me.everything.email;
     email.send = email.sendTransactional;
     delete email.sendTransactional;
     expect((await post(invite())).data).toMatchObject({ sent: 1, failed: 0 });
@@ -82,7 +82,7 @@ describe("the shared email worker", () => {
 
   it("does not retry a rejected delivery through the legacy alias", async () => {
     let legacyCalls = 0;
-    globalThis.me.puter.email.send = async () => { legacyCalls++; };
+    globalThis.me.everything.email.send = async () => { legacyCalls++; };
     sendImpl = () => { throw new Error("mailbox unavailable"); };
     expect((await post(invite())).data).toMatchObject({ sent: 0, failed: 1 });
     expect(sends).toHaveLength(1);
@@ -101,12 +101,12 @@ describe("the shared email worker", () => {
 
     // The module is imported once (beforeAll), so set the global before this
     // dispatch, not before the import.
-    globalThis.__PUTER_PREAMBLE_VERSION__ = "2.6.2+63f857ce3";
+    globalThis.__EVERYTHING_PREAMBLE_VERSION__ = "2.6.2+63f857ce3";
     try {
       const res2 = await runtime.dispatch(`${BASE}/health`, {}, null);
       expect((await res2.json()).runtime).toBe("2.6.2+63f857ce3");
     } finally {
-      delete globalThis.__PUTER_PREAMBLE_VERSION__;
+      delete globalThis.__EVERYTHING_PREAMBLE_VERSION__;
     }
   });
 

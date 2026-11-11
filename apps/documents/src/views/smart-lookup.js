@@ -1,11 +1,11 @@
 /**
- * Smart Lookup: a side pane that explains the selected word or phrase through Puter's AI
- * (puter.ai.chat), with a short definition and related topics to look up next. Only the chosen
+ * Smart Lookup: a side pane that explains the selected word or phrase through Everything's AI
+ * (everything.ai.chat), with a short definition and related topics to look up next. Only the chosen
  * text and the sentence around it are sent. The command is hidden when AI is unavailable.
  */
 import { el, isComposing } from '../ui/dom.js';
 import { iconEl } from '../ui/icons.js';
-import { canUseAi, aiChat } from '../lib/puter.js';
+import { canUseAi, aiChat } from '../lib/everything.js';
 import { responseText, textFence } from '../lib/ai.js';
 
 const SENTENCE_END = /[\p{Sentence_Terminal}\n\v\f]/u, SENTENCE_REACH = 200;
@@ -54,7 +54,7 @@ export function createSmartLookup({ editor }) {
     el('div.canvas-panel-scroll', {},
       el('div.ref-lookup-search', {}, query, el('button.btn.btn-outline', { type: 'button', onclick: () => run({ phrase: query.value.trim(), sentence: query.value.trim() }) }, 'Look up')),
       status, result,
-      el('p.field-hint.ref-lookup-note', {}, 'Looks up the selected text and its sentence with Puter AI. Answers can be wrong; check important facts.')));
+      el('p.field-hint.ref-lookup-note', {}, 'Looks up the selected text and its sentence with Everything AI. Answers can be wrong; check important facts.')));
   pane.addEventListener('keydown', e => { if (e.key === 'Escape' && !isComposing(e)) { e.preventDefault(); close(); } });
   let request = 0;
   function close() { pane.hidden = true; request++; editor()?.focus(); }
@@ -79,8 +79,8 @@ export function createSmartLookup({ editor }) {
       if (id !== request) return;
       // The pane says what went wrong; the SDK's error (often an object, not an Error) is for the console.
       const detail = `${e?.message || ''} ${e?.error?.message || ''} ${e?.error?.code || ''}`;
-      status.textContent = /insufficient|balance|credit|funds|quota|allowance|402/i.test(detail) ? 'Your Puter AI allowance has run out for now.'
-        : 'Smart Lookup could not reach Puter AI. Try again in a moment.';
+      status.textContent = /insufficient|balance|credit|funds|quota|allowance|402/i.test(detail) ? 'Your Everything AI allowance has run out for now.'
+        : 'Smart Lookup could not reach Everything AI. Try again in a moment.';
       result.replaceChildren();
       console.error(e);
     }

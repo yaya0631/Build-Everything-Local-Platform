@@ -165,7 +165,7 @@ describe('agenda panel — a day', () => {
     mount(fakeCalendar([]), { openCalendar });
     await flush();
     await flush();
-    expect(text()).toContain('Add a Puter Meetings link to an event in Calendar');
+    expect(text()).toContain('Add an Everything Meetings link to an event in Calendar');
     host.querySelector('.agenda-open-calendar').click();
     expect(openCalendar).toHaveBeenCalled();
   });

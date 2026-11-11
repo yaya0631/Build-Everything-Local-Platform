@@ -70,7 +70,7 @@ it('shows the text to a program without the sidecar, and leaves a cell another p
   const zip = X.CFB.read(new Uint8Array(await blob.arrayBuffer()), { type: 'array' });
   // The sidecar sheet removed: the cells are plain text, as Excel shows them.
   const stripped = X.CFB.read(new Uint8Array(await blob.arrayBuffer()), { type: 'array' });
-  const meta = X.read(X.CFB.write(stripped, { type: 'array', fileType: 'zip' }), { type: 'array' }).SheetNames.findIndex((n) => /^_puter_meta/.test(n));
+  const meta = X.read(X.CFB.write(stripped, { type: 'array', fileType: 'zip' }), { type: 'array' }).SheetNames.findIndex((n) => /^_everything_meta/.test(n));
   const metaSheet = X.CFB.find(stripped, `/xl/worksheets/sheet${meta + 1}.xml`);
   metaSheet.content = new TextEncoder().encode(new TextDecoder().decode(metaSheet.content).replace(/<sheetData>[\s\S]*<\/sheetData>/, '<sheetData/>'));
   metaSheet.size = metaSheet.content.length;

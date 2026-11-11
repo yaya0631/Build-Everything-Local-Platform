@@ -39,7 +39,7 @@ it.each([false, true])('preserves native hidden buttons and live criteria (table
     if (table) expect(decode(X.CFB.find(zip, '/xl/worksheets/sheet1.xml'))).not.toContain('<autoFilter');
     // Independent readers cannot use the private sidecar to repair lost native state.
     const part = X.CFB.find(zip, '/xl/workbook.xml');
-    part.content = new TextEncoder().encode(decode(part).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+    part.content = new TextEncoder().encode(decode(part).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
     part.size = part.content.length;
     wb = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'native.xlsx');
     sheet = wb.activeSheet;
@@ -97,7 +97,7 @@ it.each([false, true])('retains mixed visibility through native export, copies, 
   expect(xml).toContain('<filterColumn colId="2" hiddenButton="1"/>');
   expect(xml).not.toContain('<filterColumn colId="1"');
   const part = X.CFB.find(zip, '/xl/workbook.xml');
-  part.content = new TextEncoder().encode(decode(part).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  part.content = new TextEncoder().encode(decode(part).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   part.size = part.content.length;
   wb = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'native.xlsx');
   expect(wb.sheets[0].filter.hiddenButtons).toEqual([3, 5]);

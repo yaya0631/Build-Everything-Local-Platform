@@ -87,6 +87,6 @@ it('prints a chart canvas without cells and disables cell-only menu commands', (
   expect(leaves.filter(item => ['merge', 'bold', 'validation', 'downloadCsv'].includes(item.cmd)).every(item => item.disabled)).toBe(true);
   expect(leaves.find(item => item.cmd === 'downloadXlsx').disabled).not.toBe(true);
   expect(leaves.find(item => item.cmd === 'undo').disabled).not.toBe(true);
-  expect(leaves.find(item => item.cmd === 'insertImagePuter').disabled).not.toBe(true);
+  expect(leaves.find(item => item.cmd === 'insertImageEverything').disabled).not.toBe(true);
   expect(leaves.find(item => item.cmd === 'moveOrCopySheet').disabled).not.toBe(true);
 });

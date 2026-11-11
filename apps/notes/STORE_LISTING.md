@@ -16,7 +16,7 @@ Pick up a pen or highlighter on the Draw tab to handwrite or sketch, lasso ink t
 
 Search every notebook at once, read pages in a distraction-free reading view with read-aloud, go back to earlier page versions, and restore anything you delete for 60 days. Share a page as a read-only link, export it as a web page, Markdown or PDF, or back up a whole notebook in one file.
 
-Your notebooks are stored as files in your own Puter cloud, not in a shared database, and are never sold or shown to advertisers. Notes works in any modern browser on a laptop, tablet or phone, and follows your light or dark system setting.
+Your notebooks are stored as files in your own Everything cloud, not in a shared database, and are never sold or shown to advertisers. Notes works in any modern browser on a laptop, tablet or phone, and follows your light or dark system setting.
 
 ## Key features
 

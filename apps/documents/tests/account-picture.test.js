@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { session } from '../src/lib/session.js';
-import * as P from '../src/lib/puter.js';
+import * as P from '../src/lib/everything.js';
 
 const picture = 'data:image/png;base64,aGVsbG8=';
 let auth;
@@ -13,7 +13,7 @@ beforeEach(async () => {
     getUser: async () => ({ username: 'alex', uuid: 'alex-id' }),
     getProfilePicture: vi.fn(async () => picture),
   };
-  vi.stubGlobal('puter', { auth });
+  vi.stubGlobal('everything', { auth });
   await session.refresh();
 });
 
@@ -108,7 +108,7 @@ describe('optional SDK support', () => {
   it('works without the SDK or a profile picture method', async () => {
     delete auth.getProfilePicture;
     expect(await P.getProfilePicture()).toBeNull();
-    vi.stubGlobal('puter', undefined);
+    vi.stubGlobal('everything', undefined);
     expect(await P.getProfilePicture()).toBeNull();
   });
 

@@ -1,12 +1,12 @@
 /**
- * Store tests run against a Map-backed fake of the Puter SDK, exercising
+ * Store tests run against a Map-backed fake of the Everything SDK, exercising
  * the same persistence paths the app uses.
  */
 import { describe, it, expect, beforeEach } from 'vitest';
 
 const kvData = new Map();
 
-globalThis.puter = {
+globalThis.everything = {
   env: 'web',
   auth: {
     isSignedIn: () => true,
@@ -47,12 +47,12 @@ describe('init', () => {
   });
 
   it('rolls a settings change back when it cannot be saved', async () => {
-    const set = puter.kv.set;
-    puter.kv.set = async () => { throw new Error('offline'); };
+    const set = everything.kv.set;
+    everything.kv.set = async () => { throw new Error('offline'); };
     try {
       await expect(store.updateSettings({ currency: 'JPY' })).rejects.toThrow();
     } finally {
-      puter.kv.set = set;
+      everything.kv.set = set;
     }
     expect(store.settings.currency).toBe(DEFAULT_SETTINGS.currency);
   });
@@ -691,8 +691,8 @@ describe('activity archiving', () => {
     // late — the slow network under which unserialized flushes would
     // each merge into the same stale base and the second write erase
     // the first.
-    const get = puter.kv.get;
-    puter.kv.get = async (k) => {
+    const get = everything.kv.get;
+    everything.kv.get = async (k) => {
       const value = await get(k);
       if (k.startsWith('inv:activity:v1:')) await new Promise((r) => setTimeout(r, 5));
       return value;
@@ -703,7 +703,7 @@ describe('activity archiving', () => {
         store.adjustStock(p.id, { delta: -1 }),
       ]);
     } finally {
-      puter.kv.get = get;
+      everything.kv.get = get;
     }
 
     const month = store.archives[0].month;
@@ -717,15 +717,15 @@ describe('activity archiving', () => {
     const p = await store.addProduct({ name: 'Mouse', quantity: 1000 });
     await churn(p.id, 399); // at the cap
 
-    const set = puter.kv.set;
-    puter.kv.set = async (k, v) => {
+    const set = everything.kv.set;
+    everything.kv.set = async (k, v) => {
       if (k.startsWith('inv:activity:v1:')) throw new Error('offline');
       return set(k, v);
     };
     try {
       await store.adjustStock(p.id, { delta: 1 });
     } finally {
-      puter.kv.set = set;
+      everything.kv.set = set;
     }
     // The bucket write failed: the trimmed entry must survive a reload,
     // so it stays in the persisted log alongside the live 400.
@@ -749,15 +749,15 @@ describe('activity archiving', () => {
     __resetMemoryState();
     await store.init();
 
-    const get = puter.kv.get;
-    puter.kv.get = async (k) => {
+    const get = everything.kv.get;
+    everything.kv.get = async (k) => {
       if (k.startsWith('inv:activity:v1:')) throw new TypeError('network down');
       return get(k);
     };
     try {
       await store.adjustStock(p.id, { delta: 1 }); // trims one entry, flush runs
     } finally {
-      puter.kv.get = get;
+      everything.kv.get = get;
     }
     // The flush couldn't read its base: the server bucket must be
     // untouched, not overwritten with only the freshly trimmed entries.
@@ -774,8 +774,8 @@ describe('activity archiving', () => {
 
     // The next trim's bucket write is slow — a flush in flight while
     // the user reaches Settings and erases everything.
-    const set = puter.kv.set;
-    puter.kv.set = async (k, v) => {
+    const set = everything.kv.set;
+    everything.kv.set = async (k, v) => {
       if (k.startsWith('inv:activity:v1:')) await new Promise((r) => setTimeout(r, 10));
       return set(k, v);
     };
@@ -785,7 +785,7 @@ describe('activity archiving', () => {
       await store.wipeAll({ snapshot: false });
       await mutation;
     } finally {
-      puter.kv.set = set;
+      everything.kv.set = set;
     }
 
     // Nothing of the pre-wipe history may survive the wipe.
@@ -1082,13 +1082,13 @@ describe('variant families', () => {
     const { p } = await shirt();
     const family = await store.createFamily(p.id, { axes: ['Size'], values: { Size: 'M' } });
     const writes = [];
-    const set = puter.kv.set;
-    puter.kv.set = async (k, v) => { writes.push([k, JSON.parse(JSON.stringify(v))]); return set(k, v); };
+    const set = everything.kv.set;
+    everything.kv.set = async (k, v) => { writes.push([k, JSON.parse(JSON.stringify(v))]); return set(k, v); };
     let large;
     try {
       large = await store.addVariant(family.id, { values: { Size: 'L' } });
     } finally {
-      puter.kv.set = set;
+      everything.kv.set = set;
     }
     const products = writes.filter(([k]) => k === 'inv:products:v2');
     expect(products).toHaveLength(1);

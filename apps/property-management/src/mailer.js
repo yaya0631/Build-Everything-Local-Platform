@@ -1,12 +1,12 @@
 /**
  * Sending email from the app: the calling side of src/workers/email-worker.js.
- * Messages are posted through puter.workers.exec(), which forwards the
+ * Messages are posted through everything.workers.exec(), which forwards the
  * signed-in user's session, so every send is billed to and rate-limited as
  * that user. The worker sends one private message per recipient, so nobody
  * sees who else received it.
  */
 
-/** The one shared, app-owned worker (deploy with npm run deploy:email-worker). */
+/** The one shared, app-owned worker, registered automatically by the local server. */
 export const EMAIL_WORKER_URL = 'http://property-management-email.localhost:8443';
 
 /**
@@ -22,10 +22,10 @@ export const MAX_SUBJECT_CHARS = 200;
 export const MAX_BODY_CHARS = 20_000;
 export const SEND_TIMEOUT_MS = 120_000;
 
-const puterOf = () => (typeof puter !== 'undefined' ? puter : null);
+const everythingOf = () => (typeof everything !== 'undefined' ? everything : null);
 
-export function mailerAvailable(getPuter = puterOf) {
-  const p = getPuter();
+export function mailerAvailable(getEverything = everythingOf) {
+  const p = getEverything();
   return Boolean(p && p.workers && typeof p.workers.exec === 'function');
 }
 
@@ -73,7 +73,7 @@ export function parseRecipients(input, { max = MAX_TOTAL_RECIPIENTS } = {}) {
 /** Why a send did not happen, in words the user can act on. */
 export function failureMessage(status, data) {
   const code = (data && data.error) || '';
-  if (status === 401 || code === 'sign_in_required') return 'Sign in to Puter again to send email.';
+  if (status === 401 || code === 'sign_in_required') return 'Sign in to Everything again to send email.';
   if (status === 429 || code === 'daily_limit') return "You've reached today's email limit. Try again tomorrow.";
   if (status === 503 || code === 'temporarily_unavailable') return 'The email service is busy. Try again in a moment, or open the message in your email app.';
   if (status === 404) return 'The email service is not available. Open the message in your email app instead.';
@@ -88,12 +88,12 @@ function chunk(list, size) {
   return out;
 }
 
-async function post(getPuter, workerUrl, payload, timeoutMs) {
+async function post(getEverything, workerUrl, payload, timeoutMs) {
   let res;
   let timer;
   try {
     res = await Promise.race([
-      getPuter().workers.exec(`${workerUrl}/send`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) }),
+      getEverything().workers.exec(`${workerUrl}/send`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) }),
       new Promise((_, reject) => (timer = setTimeout(() => reject(new Error('timeout')), timeoutMs))),
     ]);
   } catch (err) {
@@ -114,8 +114,8 @@ async function post(getPuter, workerUrl, payload, timeoutMs) {
  * Resolves { sent, skipped, failed, suppressed, results }; rejects with a
  * message fit for a toast when nothing could be sent.
  */
-export async function sendEmail({ id, kind = 'email', to, subject, body, senderName = '', replyTo = '', force = false }, { getPuter = puterOf, workerUrl = EMAIL_WORKER_URL, timeoutMs = SEND_TIMEOUT_MS } = {}) {
-  if (!mailerAvailable(getPuter)) throw new Error('Sending email needs a Puter session. Open the message in your email app instead.');
+export async function sendEmail({ id, kind = 'email', to, subject, body, senderName = '', replyTo = '', force = false }, { getEverything = everythingOf, workerUrl = EMAIL_WORKER_URL, timeoutMs = SEND_TIMEOUT_MS } = {}) {
+  if (!mailerAvailable(getEverything)) throw new Error('Sending email needs an Everything session. Open the message in your email app instead.');
   const parsed = parseRecipients(to);
   if (parsed.error) throw new Error(parsed.error);
   if (String(subject || '').trim().length > MAX_SUBJECT_CHARS) throw new Error(failureMessage(400, { error: 'subject_too_long' }));
@@ -131,7 +131,7 @@ export async function sendEmail({ id, kind = 'email', to, subject, body, senderN
     const batch = batches[i];
     try {
       const out = await post(
-        getPuter,
+        getEverything,
         workerUrl,
         {
           message: { id: String(id), kind, senderName, senderEmail: replyTo },

@@ -378,7 +378,7 @@ test('a saved document keeps versions to restore and publishes a web page from t
   await openEditor(page);
   await text(page).fill('Version one');
   await text(page).press('ControlOrMeta+s');
-  await expect(page.locator('.canvas-save-status')).toHaveAttribute('aria-label', 'Saved to Puter');
+  await expect(page.locator('.canvas-save-status')).toHaveAttribute('aria-label', 'Saved to Everything');
   await page.getByRole('button', { name: 'File', exact: true }).click();
   const view = page.getByRole('dialog', { name: 'File' });
   const versions = view.locator('#bs-versions');
@@ -388,7 +388,7 @@ test('a saved document keeps versions to restore and publishes a web page from t
   await text(page).press('ControlOrMeta+End');
   await page.keyboard.type(' and two');
   await text(page).press('ControlOrMeta+s');
-  await expect(page.locator('.canvas-save-status')).toHaveAttribute('aria-label', 'Saved to Puter');
+  await expect(page.locator('.canvas-save-status')).toHaveAttribute('aria-label', 'Saved to Everything');
   await page.getByRole('button', { name: 'File', exact: true }).click();
   // The newest entry is the snapshot just before this save's: restore the one holding "Version one".
   await versions.getByRole('button', { name: 'Restore' }).last().click();
@@ -398,7 +398,7 @@ test('a saved document keeps versions to restore and publishes a web page from t
   await page.getByRole('button', { name: 'File', exact: true }).click();
   await view.getByRole('tab', { name: 'Share' }).click();
   await view.getByRole('button', { name: 'Publish to the Web' }).click();
-  await expect(view.locator('.bs-share-status a')).toHaveAttribute('href', /^https:\/\/.+\.puter\.site/);
+  await expect(view.locator('.bs-share-status a')).toHaveAttribute('href', /^https:\/\/.+\.everything\.site/);
   await expect(view.getByRole('button', { name: 'Stop Publishing' })).toBeVisible();
 });
 
@@ -406,14 +406,14 @@ test('AutoSave off waits for Save; Comments opens the review pane; the page coun
   await openEditor(page);
   const status = page.locator('.canvas-save-status');
   await text(page).fill('Autosaved');
-  await expect(status).toHaveAttribute('aria-label', 'Saved to Puter');
+  await expect(status).toHaveAttribute('aria-label', 'Saved to Everything');
   await page.locator('label.ed-autosave').click();
   await expect(page.getByRole('switch', { name: 'AutoSave' })).not.toBeChecked();
   await text(page).press('End'); await page.keyboard.type(' later');
   await page.waitForTimeout(2500);
   await expect(status).toHaveAttribute('aria-label', 'Unsaved changes');
   await page.locator('label.ed-autosave').click();
-  await expect(status).toHaveAttribute('aria-label', 'Saved to Puter');
+  await expect(status).toHaveAttribute('aria-label', 'Saved to Everything');
   // Comments
   await page.getByRole('button', { name: 'Comments', exact: true }).click();
   await expect(page.getByRole('complementary', { name: 'Reviewing Pane' })).toBeVisible();

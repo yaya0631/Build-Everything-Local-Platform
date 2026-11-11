@@ -7,7 +7,7 @@
  *
  * A minimum per product per place (see minMap in stock.js) is what makes
  * that answerable, and this is the arithmetic over it: who is short,
- * how much, and where it could come from. Pure — no DOM, no Puter;
+ * how much, and where it could come from. Pure — no DOM, no Everything;
  * unit-tested.
  *
  * Buying is not this file's business. A shortfall with nothing to move

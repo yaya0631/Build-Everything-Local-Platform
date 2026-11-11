@@ -2,7 +2,7 @@
 
 Free, open-source property management for landlords and property managers: properties and units, leases and tenants, rent collection, double-entry accounting, maintenance, and reports. An open-source alternative to Buildium, AppFolio, and Rent Manager.
 
-Built with vanilla JavaScript, Vite, [Lucide](https://lucide.dev) icons, and [Puter.js](http://localhost:8443) as the only backend. There is no framework and no server of its own.
+Built with vanilla JavaScript, Vite, [Lucide](https://lucide.dev) icons, and [Everything.js](http://localhost:8443) as the only backend. There is no framework and no server of its own.
 
 > **Early alpha.** Features may change and data could be lost. Please do not use it for real tenant, lease or accounting records yet.
 
@@ -21,7 +21,7 @@ Built with vanilla JavaScript, Vite, [Lucide](https://lucide.dev) icons, and [Pu
 - **Communication:** email tenants, owners and vendors from templates, send announcements to a whole property, and keep a log of letters and calls.
 - **Calendar** of move-ins, move-outs, lease ends, due dates, inspections and events.
 - **Reports:** income statement, balance sheet, cash flow, trial balance, general ledger, budget vs actual, rent roll, delinquency, tenant ledger, vacancy, deposits held, unpaid bills, leases ending, renewals, applicants, work orders, vendor insurance, owner statements and more. Every report prints and exports to CSV.
-- **Team sign-in.** The owner invites staff with single-use links. Everyone signs in with their own Puter account and works on the same company.
+- **Team sign-in.** The owner invites staff with single-use links. Everyone signs in with their own Everything account and works on the same company.
 - **Throughout the app:** global search (`/` or Ctrl+K), a New menu (`N`), keyboard navigation (`G` then a letter, `?` lists them), light, dark and system themes, and layouts for desktop, tablet and phone. Files and photos can be attached to almost any record.
 - **Try it without an account.** Explore a realistic sample portfolio with a year of history without signing in. Nothing is saved.
 
@@ -29,7 +29,7 @@ Built with vanilla JavaScript, Vite, [Lucide](https://lucide.dev) icons, and [Pu
 
 ```sh
 npm install
-npm run dev      # http://property-management.puter.localhost:5173/
+npm run dev      # http://property-management.localhost:8443/
 npm test         # unit and screen tests (Vitest)
 npm run build    # production build in dist/
 ```
@@ -38,13 +38,13 @@ Open `/?demo` to start straight in the sample portfolio without the welcome scre
 
 ### Email worker
 
-Sending email goes through one app-owned [Puter worker](http://localhost:8443/Workers/), because outbound mail has to be authorized by a worker's own token. The app calls it with `puter.workers.exec()`, which forwards the signed-in user's session, so each send is billed to, and rate-limited as, that user. The app owner deploys it once:
+Sending email goes through one app-owned [Everything worker](http://localhost:8443/Workers/), because outbound mail has to be authorized by a worker's own token. The app calls it with `everything.workers.exec()`, which forwards the signed-in user's session, so each send is billed to, and rate-limited as, that user. The local server registers it automatically as `property-management-email` from `src/workers/email-worker.js`:
 
 ```sh
-npm run deploy:email-worker   # deploys src/workers/email-worker.js as property-management-email
+curl http://property-management-email.localhost:8443/health
 ```
 
-Until it is deployed, the compose dialog still offers **Open in email app** and **Copy**, and the message is kept in the communication log.
+Until it is registered, the compose dialog still offers **Open in email app** and **Copy**, and the message is kept in the communication log.
 
 ## Architecture
 
@@ -52,13 +52,13 @@ Until it is deployed, the compose dialog still offers **Open in email app** and 
 src/
   main.js            boot: sign-in, demo, welcome screen, automatic posting
   app.js             shared runtime context and memoized derived data
-  platform.js        Puter auth, environment, profile picture
-  files.js           attachments in the app's Puter folder
+  platform.js        Everything auth, environment, profile picture
+  files.js           attachments in the app's Everything folder
   mailer.js          calling side of the email worker
   team.js            team sign-in: worker deploy, worker backend, invitations
   core/              framework-free logic (unit tested)
     store.js           local-first store, sync engine, monthly ledger partitions
-    backend.js         Puter KV and in-memory backends
+    backend.js         Everything KV and in-memory backends
     cache.js           IndexedDB snapshot cache
     accounts.js        default chart of accounts
     ledger.js          double-entry transaction builders and balances
@@ -89,18 +89,18 @@ Each recurring charge on a lease remembers the last due date it was posted for. 
 
 ### Team sign-in
 
-Puter KV and files are private to each account, so a shared company runs through a [Puter worker](http://localhost:8443/Workers/) in the **owner's own account**. The worker source is `public/worker/property-management-team-worker.js`.
+Everything KV and files are private to each account, so a shared company runs through a [Everything worker](http://localhost:8443/Workers/) in the **owner's own account**. The worker source is `public/worker/property-management-team-worker.js`.
 
-- **Turning it on:** when the owner turns on team sign-in, the app writes the worker to their drive and deploys it with `puter.workers.create`. It then copies the owner's records and files into it.
-- **After that:** everyone, owner included, reads and writes through `puter.workers.exec`, which forwards each person's own session.
+- **Turning it on:** when the owner turns on team sign-in, the app writes the worker to their drive and deploys it with `everything.workers.create`. It then copies the owner's records and files into it.
+- **After that:** everyone, owner included, reads and writes through `everything.workers.exec`, which forwards each person's own session.
 - **Access checks:** the worker identifies the caller from that session, never from the request body, and checks membership on every request. Managing the team requires the owner or an admin.
 - **Invitations:** invite tokens are stored only as SHA-256 hashes, work once, and expire after 7 days.
-- **Joining asks first:** joining sends your Puter session to that company's worker, so the app always asks before joining.
+- **Joining asks first:** joining sends your Everything session to that company's worker, so the app always asks before joining.
 - **Key layout:** the worker uses the same KV layout as a single account, so the store and sync engine run unchanged on top of it.
 
 ### Storage design
 
-Puter KV is backed by DynamoDB, so the layout follows DynamoDB practice: small items, writes that touch only what changed, and prefix queries instead of scans. There are no secondary indexes; everything the app filters on is derived in memory from data it already has.
+Everything KV is backed by DynamoDB, so the layout follows DynamoDB practice: small items, writes that touch only what changed, and prefix queries instead of scans. There are no secondary indexes; everything the app filters on is derived in memory from data it already has.
 
 | Key | Holds |
 | --- | --- |
@@ -116,7 +116,7 @@ How sync works:
 - **A growing ledger stays cheap:** transactions are split into one collection per month, each with its own version. Recording today's rent payment makes other devices re-read this month only, not years of history.
 - **Detecting other devices:** when a device bumps a version and gets back anything other than its own last version plus one, it knows another device wrote in between, and refreshes that collection.
 - **Local first:** writes apply locally first, then go out in debounced batches with retry and backoff. An IndexedDB snapshot (including writes not yet sent) makes the app open instantly and keeps working offline.
-- **Files:** attachments live in the app's Puter folder, never in KV. Records keep only a small reference.
+- **Files:** attachments live in the app's Everything folder, never in KV. Records keep only a small reference.
 
 ### Performance notes
 
@@ -130,7 +130,7 @@ This is a forms, tables and ledger app, so the right tools are plain DOM, SVG ch
 
 ## Data and privacy
 
-Each user's data lives in their own Puter account (KV and files). It is not shared with other users, and the app has no server of its own. The only exception is sending email, which passes the message through the email worker.
+Each user's data lives in their own Everything account (KV and files). It is not shared with other users, and the app has no server of its own. The only exception is sending email, which passes the message through the email worker.
 
 ## Credits
 

@@ -78,7 +78,7 @@ test('uses File menu actions to rename, save and start a document', async ({ pag
   await expect(title).toHaveAttribute('title', 'Quarterly notes — Rename');
   await expect(text(page)).toBeFocused();
   await (await fileCommand(page, 'Save')).click();
-  await expect(page.locator('.canvas-save-status')).toHaveText('Saved to Puter');
+  await expect(page.locator('.canvas-save-status')).toHaveText('Saved to Everything');
   await page.reload(); await expect(title).toHaveValue('Quarterly notes'); await expect(text(page)).toHaveValue('Saved through the menu');
   await title.fill('Cancelled name'); await title.press('Escape'); await expect(title).toHaveValue('Quarterly notes');
   await (await fileCommand(page, 'New Document')).click();
@@ -167,7 +167,7 @@ test('keeps the sign-in action visible beside a narrow title and saves after sig
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await text(page).fill('Save these local edits');
   await status.click();
-  await expect(status).toHaveText('Saved to Puter');
+  await expect(status).toHaveText('Saved to Everything');
   await expect(text(page)).toHaveValue('Save these local edits');
 });
 

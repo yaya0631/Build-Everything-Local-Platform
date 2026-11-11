@@ -74,7 +74,7 @@ describe('script to video dialog', () => {
     expect(onProject).toHaveBeenCalledWith(saved[0].id);
   });
 
-  it('only offers AI where Puter is signed in or stubbed for development', () => {
+  it('only offers AI where Everything is signed in or stubbed for development', () => {
     expect(aiReady({ library: { backend: { kind: 'local' } } })).toBe(false);
     globalThis.__vsAiStub = true;
     expect(aiReady({ library: { backend: { kind: 'local' } } })).toBe(true);

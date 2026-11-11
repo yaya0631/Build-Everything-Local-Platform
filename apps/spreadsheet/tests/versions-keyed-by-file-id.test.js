@@ -1,20 +1,20 @@
 import { afterEach, beforeAll, beforeEach, expect, it, vi } from 'vitest';
 import { Doc } from '../src/lib/doc.js';
-import * as P from '../src/lib/puter.js';
+import * as P from '../src/lib/everything.js';
 import { listVersions, saveVersion, versionsFolder } from '../src/lib/versions.js';
 import { Workbook } from '../src/core/workbook.js';
 import { memoryStorage } from './helpers/memory-storage.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 
 let mock;
 // SheetJS is loaded on first use with a real dynamic import; warm it up so no test waits on it.
 beforeAll(async () => { await Doc.blank().toXlsxBlob(); });
 beforeEach(() => {
   Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true });
-  mock = installMockPuter();
+  mock = installMockEverything();
   vi.useFakeTimers();
 });
-afterEach(() => { vi.useRealTimers(); delete globalThis.puter; });
+afterEach(() => { vi.useRealTimers(); delete globalThis.everything; });
 
 const BUDGET = 'Spreadsheets/Budget.xlsx';
 const labels = async (file) => (await listVersions(file)).map((v) => v.label).sort();
@@ -42,7 +42,7 @@ async function budgetWithHistory() {
 // app never sees — left the whole history behind under a name nothing read, pruned or deleted again.
 it('keeps the history when the file is renamed outside the app', async () => {
   const before = await budgetWithHistory();
-  await puter.fs.rename(BUDGET, 'Q3.xlsx'); // the desktop renames it while the app is not looking
+  await everything.fs.rename(BUDGET, 'Q3.xlsx'); // the desktop renames it while the app is not looking
   const doc = await Doc.fromPath('Spreadsheets/Q3.xlsx');
   try {
     expect(doc.uid).toBe(before.uid);
@@ -104,7 +104,7 @@ it('keeps to the name when the drive gave the file no id', async () => {
 
 it('never writes to the drive while a history is read', async () => {
   const before = await budgetWithHistory();
-  await puter.fs.rename(BUDGET, 'Q3.xlsx');
+  await everything.fs.rename(BUDGET, 'Q3.xlsx');
   const doc = await Doc.fromPath('Spreadsheets/Q3.xlsx');
   try {
     const folders = await historyFolders();

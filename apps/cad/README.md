@@ -2,7 +2,7 @@
 
 Free, open-source 2D drafting and design in the browser. An open-source alternative to AutoCAD, DraftSight and BricsCAD for precise technical drawings: draw, edit, dimension, hatch, organize with layers and blocks, and exchange DXF files.
 
-Built with vanilla JavaScript, WebGL2, Vite, [Lucide](https://lucide.dev) icons, and [Puter.js](http://localhost:8443) as the only backend. There is no framework and no server of its own.
+Built with vanilla JavaScript, WebGL2, Vite, [Lucide](https://lucide.dev) icons, and [Everything.js](http://localhost:8443) as the only backend. There is no framework and no server of its own.
 
 > **Early alpha.** Features may change and drawings could be lost. Please do not rely on it for real projects yet, and keep copies of important work.
 
@@ -25,13 +25,13 @@ Built with vanilla JavaScript, WebGL2, Vite, [Lucide](https://lucide.dev) icons,
   - Native `.cad` files (compressed JSON) that keep everything exactly.
   - DXF import and export (R2000 ASCII), parsed and written in a Web Worker.
   - Plot to PDF and PNG on standard paper sizes, fit or to scale, with a live preview. Export SVG, PNG, PDF and DXF.
-  - Cloud files in your Puter drive, or files on your device. Open drawings are kept in the browser for recovery after a reload.
+  - Cloud files in your Everything drive, or files on your device. Open drawings are kept in the browser for recovery after a reload.
 - **Interface:** ribbon with contextual tabs, quick access tools, drawing tabs, command search (`Ctrl+K`), context menus, a navigation bar, a status bar for drafting aids, clean screen mode, and light, dark and system themes.
 - **Devices:** desktop, tablet and phone layouts, touch support (tap to pick, drag to pan, pinch to zoom), and an installable offline app shell.
 
 ## Use without an account
 
-Everything except cloud files works without signing in: drawings can be opened from and saved to your device, and open drawings are kept in this browser between visits. Signing in with Puter adds files in your Puter drive and synced settings.
+Everything except cloud files works without signing in: drawings can be opened from and saved to your device, and open drawings are kept in this browser between visits. Signing in with Everything adds files in your Everything drive and synced settings.
 
 Open `/?sample` to start with a sample drawing.
 
@@ -39,7 +39,7 @@ Open `/?sample` to start with a sample drawing.
 
 ```sh
 npm install
-npm run dev      # http://cad.puter.localhost:5173/
+npm run dev      # http://cad.localhost:8443/
 npm test         # unit and command tests (Vitest)
 npm run build    # production build in dist/
 ```
@@ -50,7 +50,7 @@ npm run build    # production build in dist/
 src/
   main.js              boot
   app.js               open drawings, panels, files, settings, keyboard
-  platform.js          Puter environment, sign-in, profile picture
+  platform.js          Everything environment, sign-in, profile picture
   core/                framework-free model (unit tested)
     schema.js            entity and drawing data model
     drawing.js           transactional drawing with undo and redo
@@ -74,7 +74,7 @@ tests/                 Vitest suites, including command integration tests
 
 Model space is split into chunks of about a thousand objects, each with its own GPU buffers, so an edit only re-uploads the chunks it touches. Lines are drawn as instanced quads whose fragment shader applies linetype patterns and anti-aliasing, and positions are split into high and low float parts so drawings far from the origin stay precise. Curves are tessellated for the current zoom and refreshed in the background when the zoom changes a lot.
 
-Drawings are stored as files (Puter FS or the device) and recovery copies in IndexedDB. The key-value store holds only one small settings record per user.
+Drawings are stored as files (Everything FS or the device) and recovery copies in IndexedDB. The key-value store holds only one small settings record per user.
 
 ## License
 

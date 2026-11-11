@@ -34,11 +34,11 @@ describe('assistant prompts and replies', () => {
 });
 
 describe('sending mail', () => {
-  afterEach(() => { delete globalThis.puter; });
+  afterEach(() => { delete globalThis.everything; });
   it('sends an attachment from the user address and asks for permission once when refused', async () => {
     const sent = [], asked = [];
     let refuse = true;
-    globalThis.puter = {
+    globalThis.everything = {
       email: { async send(message) { sent.push(message); if (refuse) { refuse = false; return { code: 'forbidden' }; } return { delivered: [message.to] }; } },
       perms: { async request(kind, options) { asked.push(options.permission); } },
     };
@@ -49,9 +49,9 @@ describe('sending mail', () => {
     expect(sent[1].attachments).toEqual([{ filename: 'Doc.docx', content: 'UEs=', contentType: 'application/x' }]);
   });
   it('reports a daily limit and a missing service', async () => {
-    globalThis.puter = { email: { send: async () => ({ code: 'too_many_requests' }) } };
+    globalThis.everything = { email: { send: async () => ({ code: 'too_many_requests' }) } };
     expect((await sendMail({ to: 'a@example.com', subject: 's', text: 't' })).message).toMatch(/limit/);
-    globalThis.puter = {};
+    globalThis.everything = {};
     expect((await sendMail({ to: 'a@example.com', subject: 's', text: 't' })).ok).toBe(false);
     expect(EMAIL.test('someone@example.com')).toBe(true);
     expect(EMAIL.test('ada')).toBe(false);
@@ -62,7 +62,7 @@ describe('version details', () => {
   let files;
   beforeEach(() => {
     files = new Map();
-    globalThis.puter = { env: 'web', fs: {
+    globalThis.everything = { env: 'web', fs: {
       async readdir(p) { return [...files.entries()].filter(([k]) => k.startsWith(`${p}/`) && !k.slice(p.length + 1).includes('/')).map(([k, v]) => ({ name: k.split('/').pop(), path: k, size: v.size, modified: 1 })); },
       async write(p, blob, { overwrite = true } = {}) { if (files.has(p) && !overwrite) throw new Error('exists'); files.set(p, blob); return { path: p, name: p.split('/').pop() }; },
       async read(p) { if (!files.has(p)) throw Object.assign(new Error('does not exist'), { code: 'subject_does_not_exist' }); return files.get(p); },
@@ -71,7 +71,7 @@ describe('version details', () => {
       async mkdir() {},
     } };
   });
-  afterEach(() => { delete globalThis.puter; });
+  afterEach(() => { delete globalThis.everything; });
   it('keeps who saved a version and its name beside it, and trims both', async () => {
     const v = await saveVersion('Documents/Plan.docx', new Blob(['x']), { now: Date.UTC(2026, 0, 1), meta: { author: 'ada', label: 'Draft' } });
     expect(await readVersionMeta(v)).toEqual({ author: 'ada', label: 'Draft' });

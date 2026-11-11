@@ -14,7 +14,7 @@ import { createMarker, sortMarkers, MARKER_TYPES } from '../model/markers.js';
 import { pickLocalFiles, saveDocument, downloadBlob } from '../storage/files.js';
 import { AUDIO_ACCEPT, VIDEO_EXTENSIONS, baseName } from '../audio/decode.js';
 import { videoClip } from '../model/session-video.js';
-import * as puter from '../storage/puter.js';
+import * as everything from '../storage/everything.js';
 import { insertDocs, insertFiles, linkSource, newTrack, channelsAtRate, placementOptions, freeTrackShift } from './insert.js';
 import { renderSession, renderedDoc, clipsRange } from './render.js';
 import { saveSession, exportSession, sessionZip } from './storage.js';
@@ -744,7 +744,7 @@ export function installMultitrackCommands(app) {
       run: async () => {
         const doc = session(app);
         const accept = `${VIDEO_EXTENSIONS.map((e) => `.${e}`).join(',')},video/*`;
-        const items = puter.sdk() && puter.isSignedIn() ? await puter.pickFiles({ multiple: false, accept }) : await pickLocalFiles({ accept });
+        const items = everything.sdk() && everything.isSignedIn() ? await everything.pickFiles({ multiple: false, accept }) : await pickLocalFiles({ accept });
         if (items?.length) await insertFiles(app, doc, items.slice(0, 1), { at: doc.cursor });
       },
     },
@@ -860,7 +860,7 @@ export function installMultitrackCommands(app) {
           return insertDocs(app, target, [file], { at: target.cursor });
         }
         let items;
-        if (puter.sdk() && puter.isSignedIn()) items = await puter.pickFiles({ multiple: true, accept: AUDIO_ACCEPT });
+        if (everything.sdk() && everything.isSignedIn()) items = await everything.pickFiles({ multiple: true, accept: AUDIO_ACCEPT });
         else items = await pickLocalFiles({ accept: AUDIO_ACCEPT });
         if (items?.length) await insertFiles(app, doc, items, { at: doc.cursor });
       },

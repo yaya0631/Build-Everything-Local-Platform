@@ -2,8 +2,8 @@ import { describe, it, expect, beforeAll, beforeEach, afterEach, vi } from 'vite
 
 /*
  * The room directory worker (worker/rooms.js), run against a stand-in for
- * the Puter Workers runtime: the `router` it registers its routes on, and
- * `me.puter.kv`, the worker's own key-value store. What is checked is the
+ * the Everything Workers runtime: the `router` it registers its routes on, and
+ * `me.everything.kv`, the worker's own key-value store. What is checked is the
  * contract the app builds on (src/lib/rooms.js): one entry per room, a
  * lease under a secret, freshness judged by the worker's clock, a stranger
  * refused with the live entry while the lease is fresh and let in once it
@@ -20,7 +20,7 @@ let kv;
 function installStore() {
   kv = new Map(); // key -> {value, expireAt}
   globalThis.me = {
-    puter: {
+    everything: {
       kv: {
         get: vi.fn(async (key) => (kv.has(key) ? kv.get(key).value : null)),
         set: vi.fn(async (key, value, expireAt) => {
@@ -128,7 +128,7 @@ describe('the room directory worker', () => {
 
   it('keeps the record in the store with an expiry well past the lease, as a backstop', async () => {
     await post('abc-defg-hij', { secret: 's1', invite: 'NJ-123456' });
-    const [key, value, expireAt] = me.puter.kv.set.mock.calls[0];
+    const [key, value, expireAt] = me.everything.kv.set.mock.calls[0];
     expect(key).toBe('room:abc-defg-hij');
     expect(JSON.parse(value)).toMatchObject({ code: 'abc-defg-hij', secret: 's1', invite: 'NJ-123456' });
     expect(expireAt).toBe(Math.floor(Date.now() / 1000) + 600);
@@ -186,7 +186,7 @@ describe('the room directory worker', () => {
     expect((await get('abc-defg-hij')).body.room).not.toBeNull();
     expect((await end('abc-defg-hij', { secret: 's1' })).body).toMatchObject({ ok: true, ended: true });
     expect((await get('abc-defg-hij')).body.room).toBeNull();
-    expect(me.puter.kv.del).toHaveBeenCalledWith('room:abc-defg-hij');
+    expect(me.everything.kv.del).toHaveBeenCalledWith('room:abc-defg-hij');
 
     await post('abc-defg-hij', { secret: 's1', invite: 'NJ-111111' });
     vi.advanceTimersByTime(61_000);
@@ -196,7 +196,7 @@ describe('the room directory worker', () => {
   it('settles two claims that land in the same instant by whose write stands', async () => {
     // The store hands the loser's write to the winner: whatever this
     // request wrote, the read-back shows the other secret.
-    me.puter.kv.set.mockImplementationOnce(async (key) => {
+    me.everything.kv.set.mockImplementationOnce(async (key) => {
       kv.set(key, { value: JSON.stringify({ code: 'abc-defg-hij', secret: 'other', invite: 'NJ-9', at: Date.now() }) });
       return true;
     });
@@ -224,11 +224,11 @@ describe('the room directory worker', () => {
   });
 
   it('reports a store it cannot reach as such, rather than as an empty room', async () => {
-    me.puter.kv.get.mockRejectedValueOnce(new Error('kv down'));
+    me.everything.kv.get.mockRejectedValueOnce(new Error('kv down'));
     const { status, body } = await get('abc-defg-hij');
     expect(status).toBe(503);
     expect(body).toMatchObject({ ok: false, reason: 'store' });
-    me.puter.kv.set.mockRejectedValueOnce(new Error('kv down'));
+    me.everything.kv.set.mockRejectedValueOnce(new Error('kv down'));
     expect((await post('abc-defg-hij', { secret: 's1', invite: 'NJ-1' })).status).toBe(503);
   });
 

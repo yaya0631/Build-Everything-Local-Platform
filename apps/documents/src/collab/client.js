@@ -73,7 +73,7 @@ export class Outbox {
 
 /**
  * Whether a room refused a change for good, rather than failing to receive it for now. A request whose sender
- * could not be verified (401: a credential that expired, or Puter unreachable from the worker) says nothing
+ * could not be verified (401: a credential that expired, or Everything unreachable from the worker) says nothing
  * about the change: it is sent again, as the connection's synchronization requests are.
  */
 const refusedForGood = error => error?.status >= 400 && error.status < 500 && ![401, 408, 409, 425, 429].includes(error.status);

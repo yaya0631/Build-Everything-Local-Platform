@@ -46,9 +46,9 @@ describe('checking', () => {
   });
   it('supports a user dictionary and ignored words', () => {
     const c = new SpellChecker(words);
-    expect(c.check('Puter')).toBe(false);
-    c.add('Puter');
-    expect(c.check('Puter')).toBe(true);
+    expect(c.check('Everything')).toBe(false);
+    c.add('Everything');
+    expect(c.check('Everything')).toBe(true);
     expect(c.check('zzyzx')).toBe(false);
     c.ignore('zzyzx');
     expect(c.check('zzyzx')).toBe(true);

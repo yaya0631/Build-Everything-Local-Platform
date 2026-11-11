@@ -12,7 +12,7 @@ const PNG = Buffer.from(
 // Choosing a comment is choosing another object: the picture or text being edited lets go,
 // as it does when a highlight or note is chosen, instead of staying selected beside it.
 test('choosing a comment finishes the text draft and lets go of a picture', async ({ page }) => {
-  await page.route('**/sdk/puter.js', (route) => route.abort());
+  await page.route('**/sdk/everything.js', (route) => route.abort());
   const doc = await PDFDocument.create();
   const sheet = doc.addPage([400, 500]);
   sheet.drawText('Some words here', {

@@ -1,5 +1,5 @@
 /**
- * Photos and documents live in the app's own Puter folder (or, for a school
+ * Photos and documents live in the app's own Everything folder (or, for a school
  * with staff and family access, in the director's drive behind the school
  * worker), never in KV. Records keep only a small reference:
  *   { id, name, type, size, path, thumb?, w?, h? }
@@ -67,9 +67,9 @@ function safeName(name) {
 }
 
 async function writeBlob(path, blob) {
-  if (app.demo || typeof puter === 'undefined') memory.set(path, blob);
+  if (app.demo || typeof everything === 'undefined') memory.set(path, blob);
   else if (app.team?.url) await uploadFile(app.team.url, path, blob);
-  else await puter.fs.write(path, blob, { createMissingParents: true, overwrite: true });
+  else await everything.fs.write(path, blob, { createMissingParents: true, overwrite: true });
 }
 
 /**
@@ -139,8 +139,8 @@ export function fileUrl(att, { thumb = false, ref, id } = {}) {
   const p = (async () => {
     let blob = memory.get(path) || (await blobCache.get(path));
     if (!blob) {
-      if (app.demo || typeof puter === 'undefined') throw new Error('File not available');
-      blob = app.team?.url ? await downloadFile(app.team.url, path, { ref, id, type: att.type }) : await puter.fs.read(path);
+      if (app.demo || typeof everything === 'undefined') throw new Error('File not available');
+      blob = app.team?.url ? await downloadFile(app.team.url, path, { ref, id, type: att.type }) : await everything.fs.read(path);
       blobCache.put(path, blob);
     }
     const type = path === att.thumb ? 'image/jpeg' : att.type;
@@ -161,12 +161,12 @@ export async function deleteFile(att) {
     if (url) URL.revokeObjectURL(url);
     urlCache.delete(path);
     blobCache.del(path);
-    if (app.demo || typeof puter === 'undefined') continue;
+    if (app.demo || typeof everything === 'undefined') continue;
     if (app.team?.url) {
       await call(app.team.url, 'fileDelete', { path }).catch(() => {});
     } else {
       try {
-        await puter.fs.delete(path);
+        await everything.fs.delete(path);
       } catch (err) {
         if (!/not.?found|subject_does_not_exist/i.test(String(err?.code || err?.message || err))) throw err;
       }

@@ -16,7 +16,7 @@ function fixture(fit = true) {
 }
 async function native(wb) {
   const zip = X.CFB.read(new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()), { type: 'array' });
-  patch(zip, '/xl/workbook.xml', xml => xml.replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  patch(zip, '/xl/workbook.xml', xml => xml.replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   return { zip, back: await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'native.xlsx') };
 }
 
@@ -71,7 +71,7 @@ it('refuses cell mutations while keeping chart editing and undo available', asyn
 it('exports a valid empty drawing relationship for a chart sheet with no objects', async () => {
   const wb = new Workbook({ sheets: [{ name: 'Chart', kind: 'chart', charts: [] }, { name: 'Data' }] });
   const { zip, back } = await native(wb);
-  expect(read(zip, '/xl/chartsheets/sheet1.xml')).toContain('<drawing r:id="puterDrawing"/>');
+  expect(read(zip, '/xl/chartsheets/sheet1.xml')).toContain('<drawing r:id="everythingDrawing"/>');
   expect(read(zip, '/xl/drawings/drawing1.xml')).toContain('<xdr:wsDr');
   expect(back.sheets[0].kind).toBe('chart'); expect(back.sheets[0].charts).toHaveLength(0);
 });

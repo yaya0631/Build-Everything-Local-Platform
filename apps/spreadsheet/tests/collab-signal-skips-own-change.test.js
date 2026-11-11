@@ -11,9 +11,9 @@ afterEach(() => { for (const c of open.splice(0)) c.close(); });
 // its author a second round trip to the worker for records it already had.
 it("skips the synchronization a notice of its own change asks for, while everyone else still synchronizes", async () => {
   const env = environment();
-  const room = await RoomClient.create({ puter: env.sdk(owner), server: SERVER, wb: new Workbook({ sheets: [{ name: 'Plan' }] }), name: 'Plan' });
+  const room = await RoomClient.create({ everything: env.sdk(owner), server: SERVER, wb: new Workbook({ sheets: [{ name: 'Plan' }] }), name: 'Plan' });
   await env.service.call(owner, { op: 'invite-user', room, username: editor.username, role: 'editor' });
-  const [alice, bob] = [owner, editor].map((user) => new RoomClient({ puter: env.sdk(user), server: SERVER, room, store: memoryOutbox(), poll: 60_000, noPeers: true }));
+  const [alice, bob] = [owner, editor].map((user) => new RoomClient({ everything: env.sdk(user), server: SERVER, room, store: memoryOutbox(), poll: 60_000, noPeers: true }));
   open.push(alice, bob);
   await alice.open();
   await bob.open();

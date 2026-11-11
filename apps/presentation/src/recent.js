@@ -1,4 +1,4 @@
-// Presentations opened from elsewhere on the Puter drive (a double-click on
+// Presentations opened from elsewhere on the Everything drive (a double-click on
 // the desktop, "Open with", the Open dialog) are remembered on this device,
 // per account, so the library can list them beside the Presentations folder.
 // Each record keeps the file's id as well as its address: a file keeps its id

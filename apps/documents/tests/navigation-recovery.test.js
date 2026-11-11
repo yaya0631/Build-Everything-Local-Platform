@@ -8,7 +8,7 @@ vi.mock('../src/lib/engine.js', () => ({ loadEngine: async () => { throw new Err
 
 it('lets the user explicitly discard an imported copy when its engine cannot load', async () => {
   stubEditorBrowser();
-  vi.stubGlobal('puter', {
+  vi.stubGlobal('everything', {
     auth: { isSignedIn: () => true, getUser: async () => ({ username: 'test' }) },
     fs: { readdir: async () => [] },
   });

@@ -233,7 +233,7 @@ function welcome() {
         step(2, 'users', 'Add drivers and technicians', 'Contacts can be assigned vehicles, work orders, and renewals like license expiry.', '#/contacts/new', 'Add contact'),
         step(3, 'clipboard-check', 'Set up an inspection form', 'A ready-made pre-trip checklist is one click away.', '#/inspection-forms', 'Inspection forms'),
         step(4, 'bell', 'Schedule preventive maintenance', 'Create service reminders by time or mileage, or build a service program for many vehicles at once.', '#/service-programs', 'Service programs'),
-        step(5, 'users', 'Invite your team', 'Drivers sign in with their own Puter account to submit inspections, fuel, and issues.', '#/settings/team', 'Team access'),
+        step(5, 'users', 'Invite your team', 'Drivers sign in with their own Everything account to submit inspections, fuel, and issues.', '#/settings/team', 'Team access'),
       ),
     )),
   );

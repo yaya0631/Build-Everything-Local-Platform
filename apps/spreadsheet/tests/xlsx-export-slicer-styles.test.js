@@ -44,10 +44,10 @@ it('escapes font names and serializes all six edges in schema order', () => {
   expect(Array.from(border.childNodes).map(n => n.localName)).toEqual(['left', 'right', 'top', 'bottom', 'vertical', 'horizontal']);
 });
 it('appends both DXF collections without changing existing indexes, style names or extensions', () => {
-  const source = sheet(`<dxfs count="1"><dxf><font><b/></font></dxf></dxfs><tableStyles count="1" defaultTableStyle="TableStyleMedium2"><tableStyle name="puterslicerstyle1" table="1"/></tableStyles><colors/><extLst><ext uri="other"><other xmlns="urn:other"/></ext></extLst>`);
+  const source = sheet(`<dxfs count="1"><dxf><font><b/></font></dxf></dxfs><tableStyles count="1" defaultTableStyle="TableStyleMedium2"><tableStyle name="everythingslicerstyle1" table="1"/></tableStyles><colors/><extLst><ext uri="other"><other xmlns="urn:other"/></ext></extLst>`);
   const paint = { frame: { wholeTable: { bg: '#abcdef' }, headerRow: { bold: true } }, items: { selectedItemWithData: { gradient }, hoveredSelectedItemWithData: { bold: false } } };
   const result = appendSlicerStyles(source, [paint, paint, { frame: {}, items: { selectedItemWithData: { gradient } } }]);
-  expect(result.names).toEqual(['PuterSlicerStyle2', 'PuterSlicerStyle2', 'PuterSlicerStyle3']);
+  expect(result.names).toEqual(['EverythingSlicerStyle2', 'EverythingSlicerStyle2', 'EverythingSlicerStyle3']);
   const root = parseModelXml(result.xml), parsed = readSlicerStyles(root, result.names);
   expect(resolveSlicerPaint(parsed.styles[0])).toMatchObject(paint);
   expect(result.xml).toContain('defaultTableStyle="TableStyleMedium2"');
@@ -67,7 +67,7 @@ it('handles prefixed style sheets, absent sections and repeated append operation
   const paint = { frame: { wholeTable: {} }, items: { unselectedItemWithNoData: { bg: 'transparent' } } };
   const first = appendSlicerStyles(`<m:styleSheet xmlns:m="${MAIN}"><m:fonts count="0"/><m:colors/></m:styleSheet>`, [paint]);
   const second = appendSlicerStyles(first.xml, [paint]);
-  expect(second.names).toEqual(['PuterSlicerStyle2']);
+  expect(second.names).toEqual(['EverythingSlicerStyle2']);
   const root = parseModelXml(second.xml);
   expect(Array.from(root.childNodes).map(n => n.localName)).toEqual(['fonts', 'dxfs', 'tableStyles', 'colors', 'extLst']);
   const styles = readSlicerStyles(root, [...first.names, ...second.names]).styles;

@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { sendEmail, parseRecipients, failureMessage, describeResult, recipientResults, digest, mailerAvailable, mailtoHref, MAX_RECIPIENTS } from '../src/mailer.js';
 
 const res = (status, body) => ({ ok: status < 400, status, json: async () => body });
-const fakePuter = (handler) => ({ workers: { exec: vi.fn(handler) } });
+const fakeEverything = (handler) => ({ workers: { exec: vi.fn(handler) } });
 
 describe('mailer', () => {
   it('validates and deduplicates recipients', () => {
@@ -16,8 +16,8 @@ describe('mailer', () => {
   });
 
   it('posts a message through the worker bridge', async () => {
-    const p = fakePuter(async () => res(200, { ok: true, sent: 1, results: [{ email: 'c@x.com', status: 'sent' }] }));
-    const out = await sendEmail({ id: 'm1', to: [{ name: 'C', email: 'c@x.com' }], subject: 'Rent', body: 'Hello', senderName: 'Acme', replyTo: 'hi@acme.test' }, { getPuter: () => p });
+    const p = fakeEverything(async () => res(200, { ok: true, sent: 1, results: [{ email: 'c@x.com', status: 'sent' }] }));
+    const out = await sendEmail({ id: 'm1', to: [{ name: 'C', email: 'c@x.com' }], subject: 'Rent', body: 'Hello', senderName: 'Acme', replyTo: 'hi@acme.test' }, { getEverything: () => p });
     expect(out.sent).toBe(1);
     const [url, init] = p.workers.exec.mock.calls[0];
     expect(url).toMatch(/\/send$/);
@@ -27,12 +27,12 @@ describe('mailer', () => {
   });
 
   it('sends long lists in batches the worker accepts', async () => {
-    const p = fakePuter(async (url, init) => {
+    const p = fakeEverything(async (url, init) => {
       const n = JSON.parse(init.body).recipients.length;
       return res(200, { ok: true, sent: n, results: [] });
     });
     const to = Array.from({ length: 12 }, (_, i) => `t${i}@x.com`);
-    const out = await sendEmail({ id: 'm2', to, subject: 's', body: 'b' }, { getPuter: () => p });
+    const out = await sendEmail({ id: 'm2', to, subject: 's', body: 'b' }, { getEverything: () => p });
     expect(p.workers.exec).toHaveBeenCalledTimes(Math.ceil(12 / MAX_RECIPIENTS));
     for (const [, init] of p.workers.exec.mock.calls) expect(JSON.parse(init.body).recipients.length).toBeLessThanOrEqual(MAX_RECIPIENTS);
     expect(out.sent).toBe(12);
@@ -40,26 +40,26 @@ describe('mailer', () => {
 
   it('stops after a daily limit and reports partial results', async () => {
     let call = 0;
-    const p = fakePuter(async () => (++call === 1 ? res(200, { ok: true, sent: 5, results: [] }) : res(429, { error: 'daily_limit' })));
-    const out = await sendEmail({ id: 'm3', to: Array.from({ length: 15 }, (_, i) => `t${i}@x.com`), subject: 's', body: 'b' }, { getPuter: () => p });
+    const p = fakeEverything(async () => (++call === 1 ? res(200, { ok: true, sent: 5, results: [] }) : res(429, { error: 'daily_limit' })));
+    const out = await sendEmail({ id: 'm3', to: Array.from({ length: 15 }, (_, i) => `t${i}@x.com`), subject: 's', body: 'b' }, { getEverything: () => p });
     expect(p.workers.exec).toHaveBeenCalledTimes(2);
     expect(out.sent).toBe(5);
     expect(out.failed).toBe(10);
   });
 
   it('turns worker refusals into actionable messages', async () => {
-    const p = fakePuter(async () => res(429, { error: 'daily_limit' }));
-    await expect(sendEmail({ id: 'm4', to: ['a@b.co'], subject: 's', body: 'b' }, { getPuter: () => p })).rejects.toThrow(/email limit/);
+    const p = fakeEverything(async () => res(429, { error: 'daily_limit' }));
+    await expect(sendEmail({ id: 'm4', to: ['a@b.co'], subject: 's', body: 'b' }, { getEverything: () => p })).rejects.toThrow(/email limit/);
     expect(failureMessage(401, {})).toMatch(/Sign in/);
   });
 
   it('reports unreachable workers and missing SDKs', async () => {
-    const p = fakePuter(async () => {
+    const p = fakeEverything(async () => {
       throw new TypeError('Failed to fetch');
     });
-    await expect(sendEmail({ id: 'm5', to: ['a@b.co'], subject: 's', body: 'b' }, { getPuter: () => p })).rejects.toThrow(/Could not reach/);
+    await expect(sendEmail({ id: 'm5', to: ['a@b.co'], subject: 's', body: 'b' }, { getEverything: () => p })).rejects.toThrow(/Could not reach/);
     expect(mailerAvailable(() => null)).toBe(false);
-    await expect(sendEmail({ id: 'm6', to: ['a@b.co'], subject: 's', body: 'b' }, { getPuter: () => null })).rejects.toThrow(/Puter session/);
+    await expect(sendEmail({ id: 'm6', to: ['a@b.co'], subject: 's', body: 'b' }, { getEverything: () => null })).rejects.toThrow(/Everything session/);
   });
 
   it('summarizes results', () => {
@@ -87,8 +87,8 @@ describe('mailer', () => {
   });
 
   it('says a message is too long before sending any of it', async () => {
-    const p = fakePuter(async () => res(200, { ok: true, sent: 1, results: [] }));
-    await expect(sendEmail({ id: 'm', to: 'a@x.com', subject: 'Hi', body: 'x'.repeat(20001) }, { getPuter: () => p })).rejects.toThrow(/too long to email/);
+    const p = fakeEverything(async () => res(200, { ok: true, sent: 1, results: [] }));
+    await expect(sendEmail({ id: 'm', to: 'a@x.com', subject: 'Hi', body: 'x'.repeat(20001) }, { getEverything: () => p })).rejects.toThrow(/too long to email/);
     expect(p.workers.exec).not.toHaveBeenCalled();
   });
 

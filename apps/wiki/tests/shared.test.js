@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import * as Y from 'yjs';
-import { fakePuter, alice, bob } from './helpers/puter.js';
+import { fakeEverything, alice, bob } from './helpers/everything.js';
 import { encode } from '../src/collab/protocol.js';
 import { SharedSpace } from '../src/data/shared.js';
 import { memoryCache } from '../src/data/cache.js';
@@ -11,7 +11,7 @@ import { deltaText } from '../src/data/richtext.js';
 const ROOM = 'room0000wxyz';
 
 async function setup() {
-  const env = fakePuter();
+  const env = fakeEverything();
   env.forget();
   const tree = new Y.Doc();
   const root = addPage(tree, { title: 'Shared root' });

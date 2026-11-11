@@ -5,7 +5,7 @@ import { StorySession } from '../src/engine/story-session.js';
 
 const version = new TextDocument([paragraph('Old text from version 1')]);
 vi.mock('../src/lib/engine-api.js', () => ({ engineApi: () => ({ openCanvasDocument: async () => ({ pkg: version, images: new Map() }) }) }));
-vi.mock('../src/lib/puter.js', async (importOriginal) => ({ ...await importOriginal(), readFile: async () => ({ arrayBuffer: async () => new ArrayBuffer(4) }) }));
+vi.mock('../src/lib/everything.js', async (importOriginal) => ({ ...await importOriginal(), readFile: async () => ({ arrayBuffer: async () => new ArrayBuffer(4) }) }));
 const { createVersionHistory } = await import('../src/views/version-history.js');
 
 globalThis.matchMedia = () => ({ matches: false, addEventListener() {}, removeEventListener() {} });

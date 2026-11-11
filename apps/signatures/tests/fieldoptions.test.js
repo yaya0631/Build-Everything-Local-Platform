@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import rawSource from '../src/workers/sign-worker.js?raw';
 import { SIGN_WORKER_VERSION } from '../src/lib/signlinks.js';
 import { instantiateWorker, makeKv, sha256Hex } from './helpers/worker-harness.js';
-import { makeFs } from './helpers/fake-puter.js';
+import { makeFs } from './helpers/fake-everything.js';
 import {
   isValidInput, displayValue, needsSigner, isFieldComplete, numericText, inputTypeHint,
 } from '../src/lib/model.js';
@@ -89,7 +89,7 @@ async function buildWorker() {
     .replace('__SIGN_PAGE_URL__', 'https://signatures.example/sign.html');
   const fs = makeFs();
   await fs.write('signatures-data/d1/original.pdf', new Uint8Array([1, 2, 3]));
-  return instantiateWorker(source, { me: { puter: { kv: makeKv(), fs } } });
+  return instantiateWorker(source, { me: { everything: { kv: makeKv(), fs } } });
 }
 
 function snapshot(fields) {

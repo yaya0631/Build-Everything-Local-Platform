@@ -1,5 +1,5 @@
 /**
- * A small HTTP/1.1 client that speaks over a raw socket (Puter's relayed TCP
+ * A small HTTP/1.1 client that speaks over a raw socket (Everything's relayed TCP
  * and TLS sockets in the browser). Unlike fetch it can send any header (Cookie,
  * Host, Origin...), never follows redirects on its own and reports response
  * headers exactly as received, in order and with duplicates.

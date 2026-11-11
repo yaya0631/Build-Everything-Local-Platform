@@ -111,8 +111,8 @@ export function createBackstage(api) {
     return [...heading('Open'),
       el('section.bs-section', {}, el('div.bs-tiles', {},
         tile('Browse this device…', 'folderOpen', act(() => api.openDocument()), { hint: '.docx, .hwp, Markdown, HTML or text', primary: true }),
-        api.openFromCloud ? tile('Browse Puter…', 'folderOpen', act(() => api.openFromCloud()), { hint: 'Any document in your Puter files' }) : null,
-        api.goHome ? tile('All documents', 'home', act(() => api.goHome()), { hint: local ? 'The documents screen' : 'Your documents on Puter' }) : null)),
+        api.openFromCloud ? tile('Browse Everything…', 'folderOpen', act(() => api.openFromCloud()), { hint: 'Any document in your Everything files' }) : null,
+        api.goHome ? tile('All documents', 'home', act(() => api.goHome()), { hint: local ? 'The documents screen' : 'Your documents on Everything' }) : null)),
       api.recentDocuments ? el('section.bs-section', {}, el('h2', {}, 'Recent'), list) : null];
   }
 
@@ -141,7 +141,7 @@ export function createBackstage(api) {
       ...fact('Created', props.created ? new Date(props.created).toLocaleString() : '—'),
       ...fact('Last modified', props.modified ? new Date(props.modified).toLocaleString() : '—'),
       ...fact('Last modified by', props.lastModifiedBy || '—'),
-      ...fact('Location', api.location?.() || (local ? 'This device' : 'Puter')),
+      ...fact('Location', api.location?.() || (local ? 'This device' : 'Everything')),
       ...fact('Size', api.size?.() ? formatBytes(api.size()) : '—'));
     const stats = api.statistics?.();
     const statsList = stats ? el('dl.bs-facts', {}, ...fact('Pages', stats.pages), ...fact('Words', stats.words), ...fact('Characters (no spaces)', stats.noSpaces),
@@ -198,7 +198,7 @@ export function createBackstage(api) {
         if (!failure) { api.refreshTitle?.(); }
       } finally { submit.disabled = false; }
     } }, el('label.bs-field', {}, el('span.field-label', {}, 'Save a copy as'), name), submit);
-    // Inside the Puter desktop the copy goes where Puter's Save dialog puts it, under the name chosen there.
+    // Inside the Everything desktop the copy goes where Everything's Save dialog puts it, under the name chosen there.
     const copy = el('button.btn.btn-primary', { type: 'button', onclick: async () => {
       // A second press while the dialog comes up would only ask again.
       if (copy.disabled) return;
@@ -211,7 +211,7 @@ export function createBackstage(api) {
         if (failure === null) api.refreshTitle?.();
       } finally { copy.disabled = false; }
     } }, 'Save a Copy…');
-    const copyWhere = el('div', {}, el('p.bs-muted', {}, 'Choose where on Puter to keep a copy. You then edit the copy, and the original stays as it is.'), el('div.bs-actions', {}, copy));
+    const copyWhere = el('div', {}, el('p.bs-muted', {}, 'Choose where on Everything to keep a copy. You then edit the copy, and the original stays as it is.'), el('div.bs-actions', {}, copy));
     return [...heading('Save', api.saveStatus?.()),
       el('section.bs-section', {}, el('div.bs-tiles', {},
         tile('Save now', 'save', act(() => api.save()), { primary: true, hint: `${MOD_KEY}+S` }),

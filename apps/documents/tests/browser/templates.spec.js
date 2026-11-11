@@ -36,7 +36,7 @@ test('a template keeps its styles, lists and table through editing, export and r
   await place(page, 'Owner'); await expect(page.locator('select[aria-label="Table actions"]')).toBeEnabled();
   await place(page, '[Decisions');
   await page.keyboard.insertText('Agreed. ');
-  await expect(page.locator('.canvas-save-status')).toHaveText('Saved to Puter', { timeout: 10000 });
+  await expect(page.locator('.canvas-save-status')).toHaveText('Saved to Everything', { timeout: 10000 });
   const download = page.waitForEvent('download'); await downloadDocx(page);
   const path = info.outputPath('meeting.docx'); await (await download).saveAs(path);
   const parts = unzipSync(readFileSync(path)), xml = strFromU8(parts['word/document.xml']);

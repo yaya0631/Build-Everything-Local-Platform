@@ -9,7 +9,7 @@ let drafts;
 beforeEach(() => {
   vi.useFakeTimers();
   vi.stubGlobal('indexedDB', undefined);
-  vi.stubGlobal('puter', { ui: {}, APIOrigin: 'https://api.example', authToken: 'test', fs: { write: async () => {} } });
+  vi.stubGlobal('everything', { ui: {}, APIOrigin: 'https://api.example', authToken: 'test', fs: { write: async () => {} } });
   drafts = createDraftStore('test', memoryStorage());
 });
 afterEach(() => {

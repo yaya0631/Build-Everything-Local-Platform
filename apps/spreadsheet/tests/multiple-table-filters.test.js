@@ -149,7 +149,7 @@ function change(zip, path, rewrite) {
   const part = X.CFB.find(zip, path); part.content = new TextEncoder().encode(rewrite(decode(part))); part.size = part.content.length;
 }
 async function read(zip, native = false) {
-  if (native) change(zip, '/xl/workbook.xml', xml => xml.replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  if (native) change(zip, '/xl/workbook.xml', xml => xml.replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   return workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'filters.xlsx');
 }
 

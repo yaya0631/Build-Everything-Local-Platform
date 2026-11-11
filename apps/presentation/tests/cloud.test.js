@@ -24,7 +24,7 @@ import {
   onLaunch,
 } from "../src/cloud.js";
 afterEach(() => vi.unstubAllGlobals());
-describe("Puter storage boundary", () => {
+describe("Everything storage boundary", () => {
   it("checks import size before reading bytes while allowing full downloads", async () => {
     // Only the reported size matters; the bytes stay small.
     const sized = (size) => ({
@@ -33,7 +33,7 @@ describe("Puter storage boundary", () => {
     });
     const blob = sized(201 * 1024 * 1024);
     const read = vi.fn().mockResolvedValue(blob);
-    vi.stubGlobal("puter", { fs: { read } });
+    vi.stubGlobal("everything", { fs: { read } });
     await expect(readFile("/large.pptx", { importing: true })).rejects.toThrow(
       "Please choose a PPTX file smaller than 200 MB.",
     );
@@ -57,7 +57,7 @@ describe("Puter storage boundary", () => {
         },
       },
     );
-    vi.stubGlobal("puter", { fs: { write }, kv });
+    vi.stubGlobal("everything", { fs: { write }, kv });
     await saveFile(new Uint8Array([80, 75]), "Idea");
     expect(write).toHaveBeenCalledWith(
       "Presentations/Idea.pptx",
@@ -68,22 +68,22 @@ describe("Puter storage boundary", () => {
     expect(write.mock.calls[1][2].overwrite).toBe(true);
   });
   it("does not hide permission errors as an empty file list", async () => {
-    vi.stubGlobal("puter", {
+    vi.stubGlobal("everything", {
       fs: { readdir: vi.fn().mockRejectedValue({ code: "permission_denied" }) },
     });
     await expect(listFiles()).rejects.toEqual({ code: "permission_denied" });
   });
   it("treats a missing app folder as a new library", async () => {
-    vi.stubGlobal("puter", {
+    vi.stubGlobal("everything", {
       fs: {
         readdir: vi.fn().mockRejectedValue({ code: "subject_does_not_exist" }),
       },
     });
     expect(await listFiles()).toEqual([]);
   });
-  it("never offers or performs logout inside Puter app environment", async () => {
+  it("never offers or performs logout inside Everything app environment", async () => {
     const logout = vi.fn();
-    vi.stubGlobal("puter", { env: "app", auth: { signOut: logout } });
+    vi.stubGlobal("everything", { env: "app", auth: { signOut: logout } });
     expect(canSignOut()).toBe(false);
     await signOut();
     expect(logout).not.toHaveBeenCalled();
@@ -91,7 +91,7 @@ describe("Puter storage boundary", () => {
   it("turns the SDK's sign-in rejections into actionable errors", async () => {
     const getUser = vi.fn().mockResolvedValue({ username: "nj" });
     const attempt = (rejection) => {
-      vi.stubGlobal("puter", {
+      vi.stubGlobal("everything", {
         auth: { signIn: vi.fn().mockRejectedValue(rejection), getUser },
       });
       return signIn();
@@ -111,7 +111,7 @@ describe("Puter storage boundary", () => {
     ).rejects.toThrow("Service unavailable");
     await expect(attempt(new Error("Offline"))).rejects.toThrow("Offline");
     expect(getUser).not.toHaveBeenCalled();
-    vi.stubGlobal("puter", {
+    vi.stubGlobal("everything", {
       auth: { signIn: vi.fn().mockResolvedValue(undefined), getUser },
     });
     expect(await signIn()).toEqual({ username: "nj" });
@@ -158,18 +158,18 @@ describe("Puter storage boundary", () => {
   });
   it("answers a missing file with null and lets other failures through", async () => {
     const fail = vi.fn().mockRejectedValue({ code: "subject_does_not_exist" });
-    vi.stubGlobal("puter", { fs: { stat: fail } });
+    vi.stubGlobal("everything", { fs: { stat: fail } });
     expect(await stat("/nj/Deck.pptx")).toBeNull();
     expect(await statByUid("uid-1")).toBeNull();
     expect(fail).toHaveBeenLastCalledWith({ uid: "uid-1" });
-    vi.stubGlobal("puter", {
+    vi.stubGlobal("everything", {
       fs: { stat: vi.fn().mockRejectedValue({ code: "forbidden" }) },
     });
     await expect(stat("/nj/Deck.pptx")).rejects.toEqual({ code: "forbidden" });
   });
   it("never renames over another file", async () => {
     const rename = vi.fn().mockResolvedValue({ path: "/u/P/New.pptx" });
-    vi.stubGlobal("puter", {
+    vi.stubGlobal("everything", {
       fs: {
         rename,
         stat: vi.fn().mockResolvedValue({ path: "/u/P/New.pptx" }),
@@ -183,13 +183,13 @@ describe("Puter storage boundary", () => {
     await renameFile("/u/P/new.pptx", "New");
     expect(rename).toHaveBeenCalledWith("/u/P/new.pptx", "New.pptx");
   });
-  it("settles Puter's pickers when they are cancelled", async () => {
+  it("settles Everything's pickers when they are cancelled", async () => {
     const never = () => {
       const pending = new Promise(() => {});
       pending.undefinedOnCancel = Promise.resolve(undefined);
       return pending;
     };
-    vi.stubGlobal("puter", {
+    vi.stubGlobal("everything", {
       env: "app",
       ui: { showOpenFilePicker: never, showSaveFilePicker: never },
     });
@@ -201,14 +201,14 @@ describe("Puter storage boundary", () => {
       pending.undefinedOnCancel = Promise.resolve(saved);
       return pending;
     };
-    vi.stubGlobal("puter", {
+    vi.stubGlobal("everything", {
       env: "app",
       ui: { showOpenFilePicker: () => chosen(), showSaveFilePicker: chosen },
     });
     expect(await pickFile()).toEqual(saved);
     expect(await saveFileAs(new Blob(["x"]), "Deck.pptx")).toEqual(saved);
   });
-  it("downloads exports to this device, inside the Puter desktop too", async () => {
+  it("downloads exports to this device, inside the Everything desktop too", async () => {
     vi.useFakeTimers();
     try {
       const picker = vi.fn();
@@ -228,7 +228,7 @@ describe("Puter storage boundary", () => {
         .mockImplementation(() => {});
       vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:deck");
       for (const env of ["app", "web"]) {
-        vi.stubGlobal("puter", { env, ui: { showSaveFilePicker: picker } });
+        vi.stubGlobal("everything", { env, ui: { showSaveFilePicker: picker } });
         await downloadBlob(new Blob(["x"]), "Deck.pdf");
       }
       expect(picker).not.toHaveBeenCalled();
@@ -244,15 +244,15 @@ describe("Puter storage boundary", () => {
       vi.useRealTimers();
     }
   });
-  it("asks where a new file goes only inside the Puter desktop, with its Save dialog", () => {
+  it("asks where a new file goes only inside the Everything desktop, with its Save dialog", () => {
     const ui = { showSaveFilePicker: () => {} };
-    vi.stubGlobal("puter", { env: "app", ui });
+    vi.stubGlobal("everything", { env: "app", ui });
     expect(asksWhereToSave()).toBe(true);
     // An SDK without the dialog keeps the Presentations folder.
-    vi.stubGlobal("puter", { env: "app", ui: {} });
+    vi.stubGlobal("everything", { env: "app", ui: {} });
     expect(asksWhereToSave()).toBe(false);
     // On the open web a new file goes to the Presentations folder.
-    vi.stubGlobal("puter", { env: "web", ui });
+    vi.stubGlobal("everything", { env: "web", ui });
     expect(asksWhereToSave()).toBe(false);
   });
   it("keeps one Save dialog open per save, until it answers or the app has the focus back", async () => {
@@ -297,11 +297,11 @@ describe("Puter storage boundary", () => {
   it("takes over the window's close button only where the window can still close", () => {
     const handler = () => {};
     const onClose = vi.fn();
-    vi.stubGlobal("puter", { env: "web", ui: { onWindowClose: onClose } });
+    vi.stubGlobal("everything", { env: "web", ui: { onWindowClose: onClose } });
     expect(onWindowClose(handler)).toBe(false);
-    vi.stubGlobal("puter", { env: "app", ui: { onWindowClose: onClose } });
+    vi.stubGlobal("everything", { env: "app", ui: { onWindowClose: onClose } });
     expect(onWindowClose(handler)).toBe(false);
-    vi.stubGlobal("puter", {
+    vi.stubGlobal("everything", {
       env: "app",
       exit: () => {},
       ui: { onWindowClose: onClose },
@@ -311,7 +311,7 @@ describe("Puter storage boundary", () => {
   });
   it("hands on every launch item, folders included", () => {
     const handler = vi.fn();
-    vi.stubGlobal("puter", {
+    vi.stubGlobal("everything", {
       ui: {
         onLaunchedWithItems: (callback) =>
           callback([{ path: "/u/Photos", is_dir: true }, null]),

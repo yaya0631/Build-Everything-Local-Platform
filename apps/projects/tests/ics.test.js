@@ -137,7 +137,7 @@ describe('buildCalendar', () => {
     expect(text.startsWith('BEGIN:VCALENDAR\r\n')).toBe(true);
     expect(text.trimEnd().endsWith('END:VCALENDAR')).toBe(true);
     expect(text).toContain('VERSION:2.0');
-    expect(text).toContain('PRODID:-//Puter//Project Management//EN');
+    expect(text).toContain('PRODID:-//Everything//Project Management//EN');
     expect(text).toContain('X-WR-CALNAME:Launch');
     expect(text.endsWith('\r\n')).toBe(true);
     // CRLF everywhere, never a bare newline.

@@ -31,7 +31,7 @@
     'IDBFactory', 'CacheStorage', 'StorageManager', 'CookieStore', 'cookieStore', 'webkitRequestFileSystem',
     'webkitRequestFileSystemSync', 'webkitResolveLocalFileSystemURL', 'webkitResolveLocalFileSystemSyncURL',
     'location', 'origin', 'window', 'document', 'parent', 'top', 'opener', 'frames', 'localStorage', 'sessionStorage',
-    'puter', 'require', 'process', 'module', 'Deno', 'Bun'];
+    'everything', 'require', 'process', 'module', 'Deno', 'Bun'];
   BLOCKED.forEach(function (name) {
     for (var o = scope; o; o = Object.getPrototypeOf(o)) {
       try { if (Object.prototype.hasOwnProperty.call(o, name)) delete o[name]; } catch (e) { /* not deletable */ }

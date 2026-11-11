@@ -16,7 +16,7 @@ test('a picture added before sharing reaches the people who join', async ({ brow
     const bytes = Uint8Array.from(atob(png), c => c.charCodeAt(0));
     await window.__docs.current.view.engine.insertImageFile(new File([bytes], 'blue.png', { type: 'image/png' }));
   }, PNG);
-  await expect(owner.locator('.canvas-save-status')).toHaveAttribute('aria-label', 'Saved to Puter', { timeout: 15000 });
+  await expect(owner.locator('.canvas-save-status')).toHaveAttribute('aria-label', 'Saved to Everything', { timeout: 15000 });
   await owner.getByRole('button', { name: 'Share', exact: true }).first().click();
   await owner.getByRole('menuitem', { name: 'Invite People…' }).click();
   const dialog = owner.getByRole('dialog', { name: /^Share/ });

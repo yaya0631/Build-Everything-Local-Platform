@@ -1,6 +1,6 @@
 # Photo Studio architecture
 
-Photo Studio is a browser image editor (vanilla TypeScript, Vite, Puter.js).
+Photo Studio is a browser image editor (vanilla TypeScript, Vite, Everything.js).
 This guide is for contributors adding features.
 
 ## Layout of the source
@@ -263,11 +263,11 @@ Options-bar controls get tooltips from `src/app/option-tips.ts` when they have n
 
 ## Assisted editing (`src/features/assist/`)
 
-- Puter AI calls live only in `src/imaging/ai/puter-ai.ts` and run only from an
+- Everything AI calls live only in `src/imaging/ai/everything-ai.ts` and run only from an
   explicit button press in a dialog (or the Assistant's Send) that states what is
-  sent (prompt, pixels, document description) and that it needs a Puter account. Results become new layers; the prompt is
+  sent (prompt, pixels, document description) and that it needs an Everything account. Results become new layers; the prompt is
   kept in `layer.generated` and shown in Properties. Tests replace `aiCodec`
-  and stub `globalThis.puter`.
+  and stub `globalThis.everything`.
 - Classical counterparts run in the assist worker (`worker.ts`): Enhanced
   Upscale (`imaging/filters/upscale.ts`), object detection
   (`imaging/segment/objects.ts`). Denoise and Sharpen Details are ordinary
@@ -285,8 +285,8 @@ Options-bar controls get tooltips from `src/app/option-tips.ts` when they have n
   built from the live command, tool and panel registries with menu paths),
   `get_details` (settings schemas on demand: filter `ParamSpec`s, adjustment
   defaults, AI dialog prefills), `propose_plan` and `answer`. Chat goes through
-  `chatWithTools` in `imaging/ai/puter-ai.ts`; tests pass a scripted chat
-  function (`setChat`, or a stubbed `puter.ai.chat` in the browser).
+  `chatWithTools` in `imaging/ai/everything-ai.ts`; tests pass a scripted chat
+  function (`setChat`, or a stubbed `everything.ai.chat` in the browser).
 - `plan.ts` resolves and checks every step against a `PlanEnv` (registry,
   preloaded settings schemas, whether a command needs a selection, document
   state): arguments are coerced with `params.ts`, and selection effects are
@@ -390,7 +390,7 @@ Options-bar controls get tooltips from `src/app/option-tips.ts` when they have n
   an older replayed edit never undoes a newer one).
   `storage.ts` keeps the working copy in IndexedDB (`photo-studio-libraries`:
   index, queued edits, content-addressed asset blobs) and, while signed in,
-  syncs with the app's Puter folder (`libraries/index.json`,
+  syncs with the app's Everything folder (`libraries/index.json`,
   `libraries/assets/<sha256>`): read, replay, write with a new revision and
   writer nonce, read back to confirm, retry otherwise; recently written edits
   are replayed for a while so a writer that missed them cannot drop them.

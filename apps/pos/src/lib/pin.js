@@ -2,7 +2,7 @@
  * The manager PIN: a counter-height barrier, not a vault.
  *
  * It keeps whoever is standing at an unattended register out of the money-
- * sensitive actions (refunds, voids, drawer, exports, Settings). The Puter
+ * sensitive actions (refunds, voids, drawer, exports, Settings). The Everything
  * account is the real authority: signing out and back in removes the PIN.
  *
  * Stored as a salted, PBKDF2-stretched hash in settings kv - never

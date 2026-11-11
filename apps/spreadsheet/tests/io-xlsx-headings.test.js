@@ -10,7 +10,7 @@ it.each([['',true],['0',false],['false',false],['1',true],['true',true]])('impor
  expect(wb.activeSheet.headers).toBe(expected);expect(wb.activeSheet.gridlines).toBe(false);expect(wb.activeSheet.printSettings.headings).toBe(true);
  const data=new Uint8Array(await(await workbookToXlsx(wb)).arrayBuffer()),zip=X.CFB.read(data,{type:'array'});
  const xml=new TextDecoder().decode(X.CFB.find(zip,'/xl/worksheets/sheet1.xml').content);expect(xml).toContain(`showRowColHeaders="${expected?1:0}"`);
- const part=X.CFB.find(zip,'/xl/workbook.xml');part.content=new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,''));part.size=part.content.length;
+ const part=X.CFB.find(zip,'/xl/workbook.xml');part.content=new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,''));part.size=part.content.length;
  const native=await workbookFromFile(X.CFB.write(zip,{type:'array',fileType:'zip'}),'native.xlsx');expect(native.activeSheet.headers).toBe(expected);
 });
 it('uses the first native view, including when it overrides stale app metadata',async()=>{

@@ -6,7 +6,7 @@
  * Each file is the raw RFC 822 message. uuid v7 sorts chronologically as
  * text, and so do the date folders, so "newest first" needs no metadata
  * lookups. The fs argument only needs readdir/read/stat, so the same code
- * runs against puter.fs and the in-memory sample mailbox.
+ * runs against everything.fs and the in-memory sample mailbox.
  */
 
 import {

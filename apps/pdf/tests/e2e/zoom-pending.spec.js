@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { PDFDocument, degrees } from 'pdf-lib';
 
 async function pendingZoom(page, rotation = 0) {
-  await page.route('**/sdk/puter.js', (route) => route.abort());
+  await page.route('**/sdk/everything.js', (route) => route.abort());
   const doc = await PDFDocument.create();
   const sheet = doc.addPage([400, 500]);
   sheet.setRotation(degrees(rotation));

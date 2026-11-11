@@ -1,7 +1,7 @@
 {
   "name": "Calendar",
   "short_name": "Calendar",
-  "description": "A modern, minimal calendar for the web — month, week, day, and agenda views, recurring events, reminders, search, and iCalendar import/export. Your data stays in your own Puter storage.",
+  "description": "A modern, minimal calendar for the web — month, week, day, and agenda views, recurring events, reminders, search, and iCalendar import/export. Your data stays in your own Everything storage.",
   "id": "/",
   "start_url": "/",
   "scope": "/",

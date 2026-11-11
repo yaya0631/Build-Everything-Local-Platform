@@ -5,7 +5,7 @@ import { readFile } from 'node:fs/promises';
 test('an excessive extraction stays open for correction without downloading an unusable PDF', async ({
   page,
 }) => {
-  await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
+  await page.route('**/sdk/everything.js', (route) => route.fulfill({ body: '' }));
   await page.goto('/');
   await expect(page.locator('.page-caption')).toHaveText('Page 1 of 1');
   const bar = page.getByRole('menubar', { name: 'PDF menus' });

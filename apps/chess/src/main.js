@@ -34,7 +34,7 @@ import {
 import { Chess, colorOf } from './engine/chess.js';
 import { chooseMove, LEVELS } from './engine/ai.js';
 import { BoardView, pieceUrl, pieceLabel } from './ui/boardView.js';
-import { OnlineSession, loadPuter } from './net/online.js';
+import { OnlineSession, loadEverything } from './net/online.js';
 import {
   Clock,
   DEFAULT_TIME_ID,
@@ -1598,9 +1598,9 @@ function enterOnlineIdle({ inviteCode = null } = {}) {
   if (inviteCode) els.joinBtn.focus();
   // Warm up the SDK and TURN relays so create/join feels instant. Only when
   // already signed in — never trigger an auth prompt just by opening the tab.
-  loadPuter()
-    .then((puter) => {
-      if (puter.auth?.isSignedIn?.()) return puter.peer.ensureTurnRelays?.();
+  loadEverything()
+    .then((everything) => {
+      if (everything.auth?.isSignedIn?.()) return everything.peer.ensureTurnRelays?.();
       return null;
     })
     .catch(() => {});
@@ -1690,8 +1690,8 @@ async function joinGame(rawCode) {
  */
 async function attemptAutoJoin(code) {
   try {
-    const puter = await loadPuter();
-    if (!puter.auth?.isSignedIn?.()) return;
+    const everything = await loadEverything();
+    if (!everything.auth?.isSignedIn?.()) return;
   } catch {
     return; // SDK unavailable; the manual Join path is still on screen
   }

@@ -19,7 +19,7 @@
  *
  * One price per source: no price breaks, no quantity tiers, no
  * contracts, no per-source currency. What a note from a phone call
- * actually contains. Pure — no DOM, no Puter; unit-tested.
+ * actually contains. Pure — no DOM, no Everything; unit-tested.
  */
 
 import { round2, asList } from './util.js';

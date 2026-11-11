@@ -34,7 +34,7 @@ const edit = (zip, transform, path = '/xl/worksheets/sheet1.xml') => {
 };
 const zipOf = async wb => X.CFB.read(new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()), { type: 'array' });
 const reopen = zip => workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'thresholds.xlsx');
-const removePrivate = zip => edit(zip, text => text.replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''), '/xl/workbook.xml');
+const removePrivate = zip => edit(zip, text => text.replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''), '/xl/workbook.xml');
 
 // Real Excel: every family uses E4, not H8, for a malformed relative H8
 // threshold applying to D5:D9. Its native copy also continues to use E4.

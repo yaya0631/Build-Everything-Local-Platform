@@ -1,7 +1,7 @@
 /**
- * Runs src/workers/email-worker.js the way the Puter workers runtime would: a `router` global collecting its
- * routes and a `me` global holding the owner's Puter (kv, email, authToken), with the caller's own Puter
- * attached to each request as `user`, as puter.workers.exec() callers have it. Adapted from the Calendar
+ * Runs src/workers/email-worker.js the way the Everything workers runtime would: a `router` global collecting its
+ * routes and a `me` global holding the owner's Everything (kv, email, authToken), with the caller's own Everything
+ * attached to each request as `user`, as everything.workers.exec() callers have it. Adapted from the Calendar
  * app's worker harness. `sent` records every message either mailer was handed.
  */
 import { readFileSync } from 'node:fs';
@@ -32,8 +32,8 @@ export function loadEmailWorker({ outcome = null, caller = { uuid: 'u-1', userna
     sent.push({ via, ...message });
     return { messageId: `m${sent.length}`, suppressed: [], failed: [], ...(out || {}) };
   });
-  const me = { puter: { kv, authToken: 'owner-token', email: { sendTransactional: mailer('me') } } };
-  const user = caller && { puter: { authToken: 'caller-token', email: { sendTransactional: mailer('user') }, auth: { getUser: async () => ({ ...caller }) } } };
+  const me = { everything: { kv, authToken: 'owner-token', email: { sendTransactional: mailer('me') } } };
+  const user = caller && { everything: { authToken: 'caller-token', email: { sendTransactional: mailer('user') }, auth: { getUser: async () => ({ ...caller }) } } };
   const routes = [];
   const router = { get: (p, h) => routes.push(['GET', p, h]), post: (p, h) => routes.push(['POST', p, h]) };
   new Function('router', 'me', 'crypto', `'use strict';\n${WORKER_SOURCE}`)(router, me, webcrypto);

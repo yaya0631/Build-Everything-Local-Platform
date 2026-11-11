@@ -182,7 +182,7 @@ describe('share for review (owner flow)', () => {
     const calls = [];
     const deps = { exportProject: fakeExport(calls), detectCapabilities: caps };
     const phases = [];
-    const r1 = await shareForReview({ puter: env.sdk.alice, project: p, library: null, title: 'Launch film', deps, onPhase: (ph) => phases.push(ph) });
+    const r1 = await shareForReview({ everything: env.sdk.alice, project: p, library: null, title: 'Launch film', deps, onPhase: (ph) => phases.push(ph) });
     expect(r1.version).toBe(1);
     expect(new Set(phases)).toEqual(new Set(['server', 'render', 'save', 'publish']));
     expect(calls[0].settings).toMatchObject({ resolution: 720, codec: 'avc', format: 'mp4' });
@@ -190,7 +190,7 @@ describe('share for review (owner flow)', () => {
     const files = [...env.world.storage.tables.get('files').keys()].filter((k) => k.includes('/reviews/'));
     expect(files[0]).toMatch(/^\/alice\/AppData\/video-studio\/video-studio\/reviews\/proj_ui0001\/\d{8}T\d{6}-pub_.+\.mp4$/);
     p.range = { in: s(1), out: s(4) };
-    const r2 = await shareForReview({ puter: env.sdk.alice, project: p, library: null, scope: 'range', title: 'Launch film v2', deps });
+    const r2 = await shareForReview({ everything: env.sdk.alice, project: p, library: null, scope: 'range', title: 'Launch film v2', deps });
     expect(r2.review.id).toBe(r1.review.id);
     expect(r2.version).toBe(2);
     expect(r2.review.versions[1]).toMatchObject({ range: { in: s(1), out: s(4) }, duration: s(3) });
@@ -201,7 +201,7 @@ describe('share for review (owner flow)', () => {
     const p = projectWithClips();
     const ctl = new AbortController();
     const deps = { exportProject: fakeExport(), detectCapabilities: caps };
-    const run = shareForReview({ puter: env.sdk.alice, project: p, library: null, title: 'Launch film', signal: ctl.signal, deps, onPhase: (ph) => ph === 'save' && ctl.abort() });
+    const run = shareForReview({ everything: env.sdk.alice, project: p, library: null, title: 'Launch film', signal: ctl.signal, deps, onPhase: (ph) => ph === 'save' && ctl.abort() });
     await expect(run).rejects.toMatchObject({ name: 'AbortError' });
     expect((await env.as('alice')('review.find', { projectId: p.id })).review).toBe(null);
     expect([...env.world.storage.tables.get('files').keys()].filter((k) => k.includes('/reviews/'))).toEqual([]);
@@ -212,7 +212,7 @@ describe('share dialog', () => {
   it('shares, creates an invite link, lists links and people, and removes someone', async () => {
     const env = await setup();
     const store = new EditorStore(projectWithClips());
-    const ctx = { store, library: { backend: { kind: 'puter' } }, puter: env.sdk.alice, account: {}, review: { refresh: vi.fn(), toggle: vi.fn() } };
+    const ctx = { store, library: { backend: { kind: 'everything' } }, everything: env.sdk.alice, account: {}, review: { refresh: vi.fn(), toggle: vi.fn() } };
     const deps = { shareForReview: (o) => shareForReview({ ...o, deps: { exportProject: fakeExport(), detectCapabilities: caps } }), base: () => 'https://app.example/' };
     const dlg = openShareDialog(ctx, { deps });
     await until(() => btn(dlg.el, 'Share'));
@@ -251,18 +251,18 @@ describe('share dialog', () => {
     again.close();
   });
 
-  it('asks to sign in when Puter is not available', () => {
+  it('asks to sign in when Everything is not available', () => {
     const store = new EditorStore(projectWithClips());
     const onSignIn = vi.fn();
     const dlg = openShareDialog({ store, library: { backend: { kind: 'local' } }, account: { onSignIn } });
-    expect(dlg.el.textContent).toMatch(/needs a Puter account/);
-    btn(dlg.el, 'Sign in to Puter').click();
+    expect(dlg.el.textContent).toMatch(/needs an Everything account/);
+    btn(dlg.el, 'Sign in to Everything').click();
     expect(onSignIn).toHaveBeenCalled();
     dlg.close();
   });
 
-  it('builds links from the app address without Puter query parameters', () => {
-    expect(appBase('http://x.localhost:8443/index.html?puter.app_instance_id=1#project=p')).toBe('http://x.localhost:8443/index.html');
+  it('builds links from the app address without Everything query parameters', () => {
+    expect(appBase('http://x.localhost:8443/index.html?everything.app_instance_id=1#project=p')).toBe('http://x.localhost:8443/index.html');
   });
 });
 
@@ -275,7 +275,7 @@ describe('review page (reviewer flow)', () => {
     const root = document.createElement('div');
     document.body.append(root);
     history.replaceState(null, '', `/#review=${pub.review.id}&server=${new URL(env.server).host}&invite=${token}`);
-    const page = new ReviewPage(root, { puter: env.sdk.bob, link: { review: pub.review.id, server: env.server, token }, interval: 60_000 });
+    const page = new ReviewPage(root, { everything: env.sdk.bob, link: { review: pub.review.id, server: env.server, token }, interval: 60_000 });
     await until(() => root.querySelector('.rv-page'));
     return { env, page, root, rid: pub.review.id };
   }
@@ -333,7 +333,7 @@ describe('review page (reviewer flow)', () => {
     expect(page.t).toBe(2_000_000);
     expect(root.querySelector('.rv-thread.active .rv-text').textContent).toBe('Logo is cut off');
     // The owner sees both and replies; bob sees the reply after a sync.
-    const owner = new ReviewSession({ puter: env.sdk.alice, server: page.session.server, review: page.session.id });
+    const owner = new ReviewSession({ everything: env.sdk.alice, server: page.session.server, review: page.session.id });
     await owner.open();
     expect([...owner.comments.values()].map((c) => c.t)).toEqual([2_000_000, 5_000_000]);
     await owner.addComment({ version: 1, parent: [...owner.comments.values()][0].id, text: 'Fixed in the next cut' });
@@ -457,7 +457,7 @@ describe('review page (reviewer flow)', () => {
     const pub = await publish(env);
     const root = document.createElement('div');
     document.body.append(root);
-    const page = new ReviewPage(root, { puter: env.sdk.dave, link: { review: pub.review.id, server: env.server, token: 'B'.repeat(43) } });
+    const page = new ReviewPage(root, { everything: env.sdk.dave, link: { review: pub.review.id, server: env.server, token: 'B'.repeat(43) } });
     await until(() => root.querySelector('.splash-title'));
     expect(root.querySelector('.splash-title').textContent).toBe('This review is not available');
     expect(root.textContent).toMatch(/not valid/);
@@ -467,11 +467,11 @@ describe('review page (reviewer flow)', () => {
   it('asks people to sign in first', async () => {
     const env = await setup();
     const root = document.createElement('div');
-    const puter = env.world.sdk(USERS.carol, { signedIn: false });
+    const everything = env.world.sdk(USERS.carol, { signedIn: false });
     const onSignedIn = vi.fn();
-    const page = new ReviewPage(root, { puter, link: { review: 'r_abcdefgh', server: env.server, token: null }, onSignedIn });
-    expect(root.textContent).toMatch(/Sign in with Puter to watch it/);
-    btn(root, 'Sign in with Puter').click();
+    const page = new ReviewPage(root, { everything, link: { review: 'r_abcdefgh', server: env.server, token: null }, onSignedIn });
+    expect(root.textContent).toMatch(/Sign in with Everything to watch it/);
+    btn(root, 'Sign in with Everything').click();
     await until(() => onSignedIn.mock.calls.length);
     page.dispose();
   });
@@ -483,7 +483,7 @@ describe('editor review panel', () => {
     const p = projectWithClips();
     p.id = 'proj_000001';
     const store = new EditorStore(p);
-    const ctx = { store, library: { backend: { kind: 'puter' } }, puter: env.sdk.alice, account: {}, openShareReview: vi.fn() };
+    const ctx = { store, library: { backend: { kind: 'everything' } }, everything: env.sdk.alice, account: {}, openShareReview: vi.fn() };
     const panel = createReviewPanel(ctx, { deps: { interval: 60_000 } });
     document.body.append(panel.el);
     panel.toggle(true);
@@ -526,11 +526,11 @@ describe('editor review panel', () => {
       short = addTimeline(p, { name: 'Short' });
     });
     const main = store.project.timelineId;
-    const v1 = await shareForReview({ puter: env.sdk.alice, project: store.project, library: null, title: 'Main', deps });
+    const v1 = await shareForReview({ everything: env.sdk.alice, project: store.project, library: null, title: 'Main', deps });
     store.openTimeline(short);
     store.update('clip', (p) => onMain(p, clip('video', 0, 6)));
     store.update('range', (p) => (p.range = { in: s(2), out: s(5) }));
-    const v2 = await shareForReview({ puter: env.sdk.alice, project: store.project, library: null, scope: 'range', title: 'Short', deps });
+    const v2 = await shareForReview({ everything: env.sdk.alice, project: store.project, library: null, scope: 'range', title: 'Short', deps });
     expect(v2.review.id).toBe(v1.review.id);
     expect(v2.review.versions.map((v) => v.timelineId)).toEqual([main, short]);
     // Reviewers never see it.
@@ -539,7 +539,7 @@ describe('editor review panel', () => {
     await env.as('bob')('comment.add', { review: v1.review.id, version: 2, id: 'c_short001', text: 'Tighter', t: s(1) });
 
     store.openTimeline(main);
-    const panel = createReviewPanel({ store, library: { backend: { kind: 'puter' } }, puter: env.sdk.alice, account: {} }, { deps: { interval: 60_000 } });
+    const panel = createReviewPanel({ store, library: { backend: { kind: 'everything' } }, everything: env.sdk.alice, account: {} }, { deps: { interval: 60_000 } });
     document.body.append(panel.el);
     panel.toggle(true);
     await until(() => panel.el.querySelector('.rv-thread'));
@@ -572,7 +572,7 @@ describe('review accessibility', () => {
     await env.as('alice')('comment.add', { review: pub.review.id, version: 1, id: 'c_a11y0002', parent: 'c_a11y0001', text: 'Done' });
     const root = document.createElement('div');
     document.body.append(root);
-    const page = new ReviewPage(root, { puter: env.sdk.bob, link: { review: pub.review.id, server: env.server, token: null }, interval: 60_000 });
+    const page = new ReviewPage(root, { everything: env.sdk.bob, link: { review: pub.review.id, server: env.server, token: null }, interval: 60_000 });
     await until(() => root.querySelector('.rv-thread'));
     expect(await violations(root)).toEqual([]);
     page.dispose();
@@ -581,7 +581,7 @@ describe('review accessibility', () => {
     const p = projectWithClips();
     p.id = 'proj_000001';
     const store = new EditorStore(p);
-    const ctx = { store, library: { backend: { kind: 'puter' } }, puter: env.sdk.alice, account: {}, review: { refresh() {}, toggle() {} } };
+    const ctx = { store, library: { backend: { kind: 'everything' } }, everything: env.sdk.alice, account: {}, review: { refresh() {}, toggle() {} } };
     const dlg = openShareDialog(ctx);
     await until(() => dlg.el.querySelector('[aria-label=People] .rv-row:not(.empty)'));
     expect(await violations(dlg.el)).toEqual([]);

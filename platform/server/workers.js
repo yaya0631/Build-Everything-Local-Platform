@@ -1,5 +1,5 @@
 /**
- * Local serverless worker runtime (`puter.workers`).
+ * Local serverless worker runtime (`everything.workers`).
  *
  * Uses `node:worker_threads` with one pooled Worker thread per worker name.
  * Note: `worker_threads` provides resource isolation (separate V8 isolate,
@@ -37,7 +37,7 @@ const callHost = (actor, area, op, args) => new Promise((resolve, reject) => {
   parentPort.postMessage({ type: 'rpc', id, actor, area, op, args });
 });
 
-function makePuter(actor, info) {
+function makeEverything(actor, info) {
   const who = { uuid: info?.uuid || '', uid: info?.uuid || '', username: info?.username || '', email: info?.email || '' };
   return {
     username: who.username, uuid: who.uuid, uid: who.uid, email: who.email, authToken: info?.token || who.uuid,
@@ -101,7 +101,7 @@ function matchRoute(method, pathname) {
   return null;
 }
 
-const ownerMe = { puter: makePuter('owner', workerData.owner) };
+const ownerMe = { everything: makeEverything('owner', workerData.owner) };
 const sandbox = {
   router, me: ownerMe, Request, Response, Headers, URL, URLSearchParams,
   TextEncoder, TextDecoder, crypto: globalThis.crypto, console, setTimeout,
@@ -147,7 +147,7 @@ parentPort.on('message', async (msg) => {
         json: async () => (rawBody.trim() ? JSON.parse(rawBody) : null),
       };
       const callerObj = msg.caller
-        ? { uuid: msg.caller.uuid, uid: msg.caller.uuid, username: msg.caller.username, email: msg.caller.email, puter: makePuter('caller', msg.caller) }
+        ? { uuid: msg.caller.uuid, uid: msg.caller.uuid, username: msg.caller.username, email: msg.caller.email, everything: makeEverything('caller', msg.caller) }
         : null;
       const out = await hit.handler({ request, params: hit.params, me: ownerMe, user: callerObj, requestor: callerObj });
       if (out instanceof Response || (out && typeof out === 'object' && typeof out.status === 'number' && typeof out.text === 'function')) {
@@ -304,7 +304,7 @@ export function createWorkersService(ctx) {
     async exec({ target, path: reqPath, method = 'GET', headers = {}, body = '', caller = null, timeoutMs = 15000 }) {
       let workerName = String(target || '').trim();
       let routePath = String(reqPath || '/');
-      const urlMatch = /^(?:https?:\/\/)?([^/]+?)(?:\.(?:puter\.work|localhost(?::\d+)?))(\/.*)?$/i.exec(workerName);
+      const urlMatch = /^(?:https?:\/\/)?([^/]+?)(?:\.(?:everything\.work|localhost(?::\d+)?))(\/.*)?$/i.exec(workerName);
       if (urlMatch) {
         workerName = urlMatch[1];
         if (urlMatch[2]) routePath = urlMatch[2];
@@ -326,7 +326,7 @@ export function createWorkersService(ctx) {
       const reqId = ++reqCounter;
       const fullUrl = `http://${row.name}.localhost:${ctx.port || 8443}${routePath.startsWith('/') ? routePath : '/' + routePath}`;
       const mergedHeaders = { ...headers };
-      if (caller) mergedHeaders['puter-auth'] = `tok-${caller.username}`;
+      if (caller) mergedHeaders['everything-auth'] = `tok-${caller.username}`;
 
       return new Promise((resolve) => {
         const timer = setTimeout(async () => {

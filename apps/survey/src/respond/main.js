@@ -22,7 +22,7 @@ const ID_RE = /^[a-z0-9]{6,32}$/;
  * Survey content comes from whichever worker the link names, so the page
  * locks itself down before showing any: scripts only from this origin (no
  * inline script, no javascript: URLs, no eval), no plugins, no <base>
- * rewrites, network only to Puter workers. Local demo mode runs the worker
+ * rewrites, network only to Everything workers. Local demo mode runs the worker
  * in-page with eval and stays out of this.
  */
 function lockDown() {

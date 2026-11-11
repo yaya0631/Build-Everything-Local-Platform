@@ -84,7 +84,7 @@ it.each([false,true])('exports a single native applies-to union and reopens edit
  const {wb,id}=setup();wb.setInput(id,1,0,'5');wb.setInput(id,6,0,'2');
  const zip=X.CFB.read(new Uint8Array(await new Promise(async(resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsArrayBuffer(await workbookToXlsx(wb));})),{type:'array'}),part=X.CFB.find(zip,'/xl/worksheets/sheet1.xml');
  const xml=new TextDecoder().decode(part.content);expect(xml).toContain('sqref="A2:A4 A7:A9"');expect(xml.match(/<cfRule /g)).toHaveLength(1);
- if(!privateData){const book=X.CFB.find(zip,'/xl/workbook.xml');book.content=new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,''));book.size=book.content.length;}
+ if(!privateData){const book=X.CFB.find(zip,'/xl/workbook.xml');book.content=new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,''));book.size=book.content.length;}
  const reopened=await workbookFromFile(X.CFB.write(zip,{type:'array',fileType:'zip'}),'groups.xlsx');
  expect(conditionalRuleGroups(reopened.activeSheet.rules)).toHaveLength(1);expect(look(reopened,1)?.bg).toBe('#ff0000');expect(look(reopened,6)).toBeNull();
  reopened.setInput(reopened.activeSheetId,6,0,'9');expect(look(reopened,6)?.bg).toBe('#ff0000');
@@ -107,6 +107,6 @@ it.each([['C4>3','A2>3'],['A1>3','#REF!>3']])('rebases a native union at its bou
  const blob=await workbookToXlsx(wb),data=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=reject;reader.readAsArrayBuffer(blob);});
  const zip=X.CFB.read(new Uint8Array(data),{type:'array'}),part=X.CFB.find(zip,'/xl/worksheets/sheet1.xml'),xml=new TextDecoder().decode(part.content);
  expect(xml.match(/<cfRule /g)).toHaveLength(first==='A1>3'?2:1);
- const book=X.CFB.find(zip,'/xl/workbook.xml');book.content=new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,''));book.size=book.content.length;
+ const book=X.CFB.find(zip,'/xl/workbook.xml');book.content=new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,''));book.size=book.content.length;
  const back=await workbookFromFile(X.CFB.write(zip,{type:'array',fileType:'zip'}),'union.xlsx');expect(look(back,3,2)).toEqual({bold:true});expect(look(back,1)).toBeNull();
 });

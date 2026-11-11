@@ -870,7 +870,7 @@ describe('book.html: meeting links', () => {
     expect(ics).not.toMatch(/[^\n]\r[^\n]/);
   });
 
-  it('never renders a link that is not a Puter Meetings room URL', async () => {
+  it('never renders a link that is not an Everything Meetings room URL', async () => {
     const evil = 'https://evil.example/#/m/abcd-efgh-ijkl';
     await bookThrough(bookedWith(evil));
     expect(root.textContent).toContain("You're scheduled");

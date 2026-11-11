@@ -2,7 +2,7 @@
  * Runs the collector worker inside the page, for the local demo mode. The
  * builder and the respondent page (another tab, same origin) each run their
  * own copy over the same localStorage-backed KV, so a survey published in the
- * builder can be answered in a second tab with no Puter account at all.
+ * builder can be answered in a second tab with no Everything account at all.
  */
 import { createLocalKv } from './local-kv.js';
 
@@ -33,7 +33,7 @@ export function instantiateWorker(source, { kv }) {
   const routes = [];
   const add = (method) => (pattern, handler) => routes.push({ method, pattern, handler });
   const router = { get: add('GET'), post: add('POST'), put: add('PUT'), delete: add('DELETE') };
-  const me = { puter: { kv } };
+  const me = { everything: { kv } };
   new Function('router', 'me', `'use strict';\n${source}`)(router, me);
 
   async function handle(url, init = {}) {
@@ -54,7 +54,7 @@ export function instantiateWorker(source, { kv }) {
   return { handle, kv };
 }
 
-/** Which file the local "deployed" worker runs, like a Puter worker bound
+/** Which file the local "deployed" worker runs, like an Everything worker bound
  *  to its source file (see backend.js); the file itself is in local storage. */
 export const LOCAL_WORKER_FILE_KEY = 'sv-local-worker-file';
 const DEFAULT_FILE = 'collector-worker.js';

@@ -7,7 +7,7 @@ async function nativeRoundTrip(wb, inspect) {
   const zip=X.CFB.read(new Uint8Array(await(await workbookToXlsx(wb)).arrayBuffer()),{type:'array'});
   inspect(new TextDecoder().decode(X.CFB.find(zip,'/xl/charts/chart1_1.xml').content));
   const book=X.CFB.find(zip,'/xl/workbook.xml');
-  book.content=new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,''));book.size=book.content.length;
+  book.content=new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,''));book.size=book.content.length;
   return workbookFromFile(X.CFB.write(zip,{type:'array',fileType:'zip'}),'native.xlsx');
 }
 it.each(['column','bar','line','scatter','combo'])('preserves %s axis crossings through native-only round trips and duplication',async type=>{
@@ -43,7 +43,7 @@ it.each(['INF','-INF','NaN','','not-a-number'])('ignores malformed native crossi
   const zip=X.CFB.read(new Uint8Array(await(await workbookToXlsx(wb)).arrayBuffer()),{type:'array'});
   for(const [path,replace] of [
     ['/xl/charts/chart1_1.xml',text=>text.replace('<c:crossesAt val="25"/>',`<c:crossesAt val="${value}"/>`)],
-    ['/xl/workbook.xml',text=>text.replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,'')],
+    ['/xl/workbook.xml',text=>text.replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,'')],
   ]) {
     const part=X.CFB.find(zip,path);part.content=new TextEncoder().encode(replace(new TextDecoder().decode(part.content)));part.size=part.content.length;
   }

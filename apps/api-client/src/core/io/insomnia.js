@@ -193,7 +193,7 @@ function auth(a, t, ctx, where) {
       return { type: 'basic', basic: { username: t(a.username), password: t(a.password) } };
     case 'apikey':
       if (a.addTo === 'cookie') {
-        ctx.w.add('An API key sent as a cookie became a Cookie header; browsers only send it through the Puter relay.');
+        ctx.w.add('An API key sent as a cookie became a Cookie header; browsers only send it through the Everything relay.');
         return { type: 'apikey', apikey: { key: 'Cookie', value: `${t(a.key)}=${t(a.value)}`, in: 'header' } };
       }
       return { type: 'apikey', apikey: { key: t(a.key), value: t(a.value), in: a.addTo === 'queryParams' ? 'query' : 'header' } };

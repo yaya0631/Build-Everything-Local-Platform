@@ -22,9 +22,9 @@ function showError(title, message, onRetry) {
 
 /**
  * Open from the copy kept on this device, read-only, when the cloud cannot
- * be reached. Deliberately independent of the Puter SDK: the whole point is
+ * be reached. Deliberately independent of the Everything SDK: the whole point is
  * that a train, a plane, or a basement office no longer ends at "Could not
- * reach Puter".
+ * reach Everything".
  */
 function bootOffline() {
   const snapshot = offlineEnabled() ? readSnapshot() : null;
@@ -48,11 +48,11 @@ function watchForNetwork() {
   window.addEventListener('online', async () => {
     if (!store.readOnly) return;
     // An offline launch whose cached copy of the SDK had been evicted mounted
-    // the shell with no `puter` at all. Every reconnect attempt then threw
+    // the shell with no `everything` at all. Every reconnect attempt then threw
     // inside init() and was swallowed below, so the banner kept saying
     // "changes need a connection" on a device that had one, for good. Only a
     // reload can load the SDK; say so, once per event, and offer it.
-    if (typeof puter === 'undefined') {
+    if (typeof everything === 'undefined') {
       toast('Back online. Reload to reconnect to your cloud', {
         icon: 'wifi',
         action: { label: 'Reload', onClick: () => location.reload() },
@@ -117,16 +117,16 @@ function withTimeout(promise, ms) {
 }
 
 async function start() {
-  if (typeof puter === 'undefined') {
+  if (typeof everything === 'undefined') {
     if (bootOffline()) return;
-    showError('Could not reach Puter', 'The Puter SDK failed to load. Check your connection and try again.', () => location.reload());
+    showError('Could not reach Everything', 'The Everything SDK failed to load. Check your connection and try again.', () => location.reload());
     return;
   }
 
   let signedIn = false;
   let unreachable = false;
   try {
-    signedIn = await withTimeout(puter.auth.isSignedIn(), 8000);
+    signedIn = await withTimeout(everything.auth.isSignedIn(), 8000);
   } catch {
     // Failing is not the same as answering "no": a signed-out account must
     // see the sign-in screen, while an unreachable one gets its device copy.
@@ -147,7 +147,7 @@ async function boot() {
   } catch (err) {
     console.error(err);
     if (bootOffline()) return;
-    showError('Could not load your data', 'Something went wrong talking to your Puter cloud.', () => location.reload());
+    showError('Could not load your data', 'Something went wrong talking to your Everything cloud.', () => location.reload());
     return;
   }
 
@@ -177,7 +177,7 @@ async function boot() {
  * and the store have answered over the network, and by then `load` has
  * almost always already fired. A listener added after the event never runs,
  * which left every signed-in visit without a worker: nothing was precached,
- * and the offline launch this exists for opened to "Could not reach Puter".
+ * and the offline launch this exists for opened to "Could not reach Everything".
  */
 function registerServiceWorker() {
   if (!import.meta.env?.PROD || !('serviceWorker' in navigator)) return;

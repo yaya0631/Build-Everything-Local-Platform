@@ -86,7 +86,7 @@ it('preserves collapsed and preformatted values through paste, external HTML and
   const data = await new Promise(resolve => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.readAsArrayBuffer(blob); });
   const zip = X.CFB.read(new Uint8Array(data), { type: 'array' });
   const part = X.CFB.find(zip, '/xl/workbook.xml');
-  part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')); part.size = part.content.length;
+  part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')); part.size = part.content.length;
   const back = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'native.xlsx');
   expect(back.rangeValues(back.activeSheetId, { r1: 0, c1: 0, r2: 0, c2: 1 })).toEqual(values);
   expect(back.styleAt(back.activeSheetId, 0, 0).wrap).toBe(true);

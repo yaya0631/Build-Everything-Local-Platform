@@ -1,12 +1,12 @@
 /**
- * Development only: answers the fake Puter's read links
- * (https://api.puter.mock/token-read?...) from the harness's IndexedDB,
- * with the token checks and Range handling of Puter's /token-read, so the
- * review player streams and seeks the way it would against Puter.
+ * Development only: answers the fake Everything's read links
+ * (https://api.everything.mock/token-read?...) from the harness's IndexedDB,
+ * with the token checks and Range handling of Everything's /token-read, so the
+ * review player streams and seeks the way it would against Everything.
  */
 import { idbStorage, parseTokenRead, answerTokenRead } from './fake-store.js';
 
-const API_ORIGIN = 'https://api.puter.mock';
+const API_ORIGIN = 'https://api.everything.mock';
 const storage = idbStorage();
 // The harness page shows what was asked for (window.__mock.reads).
 const log = new BroadcastChannel('review-mock-reads');

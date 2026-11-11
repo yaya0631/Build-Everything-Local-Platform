@@ -9,8 +9,8 @@ import {
 const doc = { id: 'doc-1', number: 'INV-0042', kind: 'invoice' };
 const settings = { business: { name: 'Aurora Studio', email: 'hi@aurora.example' } };
 
-/** A puter whose workers.exec records the request and answers with `reply`. */
-function fakePuter(reply = { ok: true, sent: 1, results: [] }, { status = 200 } = {}) {
+/** An everything whose workers.exec records the request and answers with `reply`. */
+function fakeEverything(reply = { ok: true, sent: 1, results: [] }, { status = 200 } = {}) {
   const calls = [];
   return {
     calls,
@@ -25,7 +25,7 @@ function fakePuter(reply = { ok: true, sent: 1, results: [] }, { status = 200 } 
 
 const send = (p, over = {}) => sendDocument(
   { doc, settings, recipients: [{ email: 'maya@northwind.example' }], subject: 'S', body: 'B', ...over },
-  { getPuter: () => p },
+  { getEverything: () => p },
 );
 
 describe('caps', () => {
@@ -114,13 +114,13 @@ describe('sendDocument', () => {
     const p = { workers: { exec: vi.fn(() => new Promise(() => {})) } };
     await expect(sendDocument(
       { doc, settings, recipients: [{ email: 'maya@northwind.example' }], subject: 'S', body: 'B' },
-      { getPuter: () => p, timeoutMs: 20 },
+      { getEverything: () => p, timeoutMs: 20 },
     )).rejects.toThrow(/did not answer in time/);
     // A reply inside the bound is not a timeout, and the timer is cleared.
     const quick = { workers: { exec: vi.fn(async () => ({ ok: true, status: 200, json: async () => ({ ok: true, sent: 1, results: [] }) })) } };
     await expect(sendDocument(
       { doc, settings, recipients: [{ email: 'maya@northwind.example' }], subject: 'S', body: 'B' },
-      { getPuter: () => quick, timeoutMs: 20 },
+      { getEverything: () => quick, timeoutMs: 20 },
     )).resolves.toMatchObject({ sent: 1 });
   });
 
@@ -132,7 +132,7 @@ describe('sendDocument', () => {
   });
 
   it('posts to the worker with the document, the message, and a version', async () => {
-    const p = fakePuter();
+    const p = fakeEverything();
     await send(p);
     const { url, body } = p.calls[0];
     expect(url).toBe(`${EMAIL_WORKER_URL}/send`);
@@ -142,7 +142,7 @@ describe('sendDocument', () => {
   });
 
   it('carries the business as the name on the mail and the address replies go to', async () => {
-    const p = fakePuter();
+    const p = fakeEverything();
     await send(p);
     expect(p.calls[0].body.document).toMatchObject({
       businessName: 'Aurora Studio', businessEmail: 'hi@aurora.example',
@@ -150,7 +150,7 @@ describe('sendDocument', () => {
   });
 
   it('normalizes and de-duplicates addresses before they cost anything', async () => {
-    const p = fakePuter();
+    const p = fakeEverything();
     await send(p, {
       recipients: [{ email: ' Maya@Northwind.example ' }, { email: 'maya@northwind.example' }],
     });
@@ -159,7 +159,7 @@ describe('sendDocument', () => {
   });
 
   it('holds itself to what the worker will take in one request', async () => {
-    const p = fakePuter();
+    const p = fakeEverything();
     await send(p, {
       recipients: Array.from({ length: 9 }, (_, i) => ({ email: `a${i}@x.example` })),
     });
@@ -167,7 +167,7 @@ describe('sendDocument', () => {
   });
 
   it('refuses to send with nobody to send to, rather than asking the worker', async () => {
-    const p = fakePuter();
+    const p = fakeEverything();
     await expect(send(p, { recipients: [{ email: '' }] })).rejects.toThrow(/nobody/i);
     expect(p.calls).toHaveLength(0);
   });
@@ -177,17 +177,17 @@ describe('sendDocument', () => {
   });
 
   it('turns a refusal into words the user can act on', async () => {
-    const p = fakePuter({ error: 'daily_limit' }, { status: 429 });
+    const p = fakeEverything({ error: 'daily_limit' }, { status: 429 });
     await expect(send(p)).rejects.toThrow(/limit/i);
   });
 
   it('treats a 200 that is not ok as a failure — the worker owns that flag', async () => {
-    const p = fakePuter({ ok: false, error: 'boom' });
+    const p = fakeEverything({ ok: false, error: 'boom' });
     await expect(send(p)).rejects.toThrow(/Could not send/i);
   });
 
   it('passes `force` through for a deliberate resend', async () => {
-    const p = fakePuter();
+    const p = fakeEverything();
     await send(p, { force: true });
     expect(p.calls[0].body.force).toBe(true);
   });

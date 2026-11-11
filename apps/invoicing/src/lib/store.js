@@ -1,5 +1,5 @@
 /**
- * Data layer on top of Puter. Deliberately simpler than the accountant app:
+ * Data layer on top of Everything. Deliberately simpler than the accountant app:
  * no offline mirror, no learning engine, one event ('change').
  *
  * Storage design:
@@ -309,11 +309,11 @@ class Store extends EventTarget {
   }
 
   async #kvGet(key, fallback) {
-    return Store.#decode(await puter.kv.get(key), fallback);
+    return Store.#decode(await everything.kv.get(key), fallback);
   }
 
   async #kvSet(key, value) {
-    await puter.kv.set(key, JSON.stringify(value));
+    await everything.kv.set(key, JSON.stringify(value));
   }
 
   /* ---------- Init ---------- */
@@ -339,7 +339,7 @@ class Store extends EventTarget {
   async init() {
     const gen = ++this.#loadGen;
     const current = () => gen === this.#loadGen;
-    const user = await puter.auth.getUser().catch(() => null);
+    const user = await everything.auth.getUser().catch(() => null);
     const [settings, clients, items, recurring, years] = await Promise.all([
       this.#kvGet(KV.settings, null),
       this.#kvGet(KV.clients, []),
@@ -494,7 +494,7 @@ class Store extends EventTarget {
    *  empty year). */
   async #readYear(year) {
     try {
-      const blob = await puter.fs.read(yearPath(year));
+      const blob = await everything.fs.read(yearPath(year));
       const parsed = JSON.parse(await blob.text());
       // Element checks belong with the container check, exactly as the KV
       // lists above and the offline snapshot both do it: a year file is a
@@ -577,7 +577,7 @@ class Store extends EventTarget {
     // run time can persist changes that were rolled back in between.
     const body = JSON.stringify(this.#docs.get(year) || []);
     await this.#queueWrite(year, () =>
-      puter.fs.write(yearPath(year), body, { createMissingParents: true }));
+      everything.fs.write(yearPath(year), body, { createMissingParents: true }));
   }
 
   /* ---------- Settings ---------- */
@@ -1200,7 +1200,7 @@ class Store extends EventTarget {
     const id = uid();
     const name = safeFileName(file?.name);
     const path = attachmentPath(docId, id, name);
-    await puter.fs.write(path, file, { createMissingParents: true });
+    await everything.fs.write(path, file, { createMissingParents: true });
     const entry = { id, name, size, type: String(file?.type || ''), path, addedAt: Date.now() };
     try {
       const fresh = this.doc(docId);
@@ -1212,7 +1212,7 @@ class Store extends EventTarget {
       // too, its rollback restores this version, entry included — and a
       // file deleted here would leave that record pointing at nothing.
       if (!(this.doc(docId)?.attachments || []).some((a) => a.id === id)) {
-        await puter.fs.delete(path).catch(() => {});
+        await everything.fs.delete(path).catch(() => {});
       }
       throw err;
     }
@@ -1234,12 +1234,12 @@ class Store extends EventTarget {
       ...doc,
       attachments: (doc.attachments || []).filter((a) => a.id !== attachmentId),
     });
-    if (ownsAttachmentPath(docId, entry.path)) await puter.fs.delete(entry.path).catch(() => {});
+    if (ownsAttachmentPath(docId, entry.path)) await everything.fs.delete(entry.path).catch(() => {});
   }
 
   /** The file itself, as a Blob, for downloading or attaching. */
   async readAttachment(entry) {
-    return puter.fs.read(entry.path);
+    return everything.fs.read(entry.path);
   }
 
   /** Whether attachments ride along on this document's public page. */
@@ -1253,10 +1253,10 @@ class Store extends EventTarget {
   async #deleteAttachments(doc) {
     for (const entry of doc?.attachments || []) {
       if (!ownsAttachmentPath(doc.id, entry.path)) continue;
-      await puter.fs.delete(entry.path).catch(() => {});
+      await everything.fs.delete(entry.path).catch(() => {});
     }
     if (doc?.attachments?.length) {
-      await puter.fs.delete(`${ATTACH_DIR}/${idSegment(doc.id)}`, { recursive: true }).catch(() => {});
+      await everything.fs.delete(`${ATTACH_DIR}/${idSegment(doc.id)}`, { recursive: true }).catch(() => {});
     }
   }
 
@@ -1745,7 +1745,7 @@ class Store extends EventTarget {
     const preserve = new Map();   // year -> previous file content, null = absent
     for (const y of new Set([...years, ...this.years])) {
       try {
-        preserve.set(y, await (await puter.fs.read(yearPath(y))).text());
+        preserve.set(y, await (await everything.fs.read(yearPath(y))).text());
       } catch (err) {
         if (!isMissingFileError(err)) throw err;
         preserve.set(y, null);
@@ -1755,11 +1755,11 @@ class Store extends EventTarget {
       // Write files first, then the indexes that make them visible.
       for (const y of years) {
         await this.#queueWrite(y, () =>
-          puter.fs.write(yearPath(y), JSON.stringify(data.docs[y] || []), { createMissingParents: true }));
+          everything.fs.write(yearPath(y), JSON.stringify(data.docs[y] || []), { createMissingParents: true }));
       }
       // Remove stale year files that the new dataset doesn't cover.
       for (const y of this.years.filter((y) => !years.includes(y))) {
-        await puter.fs.delete(yearPath(y)).catch(() => {});
+        await everything.fs.delete(yearPath(y)).catch(() => {});
       }
       const results = await Promise.allSettled([
         this.#kvSet(KV.years, years),
@@ -1777,8 +1777,8 @@ class Store extends EventTarget {
       // every KV key to the in-memory (pre-import) state, since some keys
       // may have committed even though another failed.
       await Promise.allSettled([...preserve].map(([y, body]) => (body == null
-        ? puter.fs.delete(yearPath(y))
-        : this.#queueWrite(y, () => puter.fs.write(yearPath(y), body, { createMissingParents: true })))));
+        ? everything.fs.delete(yearPath(y))
+        : this.#queueWrite(y, () => everything.fs.write(yearPath(y), body, { createMissingParents: true })))));
       await Promise.allSettled([
         this.#kvSet(KV.years, this.years),
         this.#kvSet(KV.clients, this.#allClients),

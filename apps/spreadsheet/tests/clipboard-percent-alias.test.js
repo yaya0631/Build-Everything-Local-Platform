@@ -63,7 +63,7 @@ it('keeps the precision through repeated native-only XLSX saves', async () => {
     });
     const zip = X.CFB.read(new Uint8Array(data), { type: 'array' });
     const part = X.CFB.find(zip, '/xl/workbook.xml');
-    part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+    part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
     part.size = part.content.length;
     wb = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'percent.xlsx');
     expect(displays(wb)).toEqual(expected);

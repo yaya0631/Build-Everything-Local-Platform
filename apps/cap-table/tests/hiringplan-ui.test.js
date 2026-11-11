@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { JSDOM } from 'jsdom';
 import { openHireForm } from '../src/ui/hiringplan.js';
 import { store } from '../src/lib/store.js';
-import { puterBackend } from './helpers/puter-kv.js';
+import { everythingBackend } from './helpers/everything-kv.js';
 
 let dom;
 beforeEach(async () => {
@@ -10,7 +10,7 @@ beforeEach(async () => {
   for (const name of ['window', 'document', 'location', 'Node', 'Element', 'HTMLElement', 'HTMLInputElement', 'requestAnimationFrame']) {
     vi.stubGlobal(name, dom.window[name]);
   }
-  puterBackend().install();
+  everythingBackend().install();
   await store.init();
   const cls = await store.addClass({ name: 'Common', kind: 'common' });
   const holder = await store.addStakeholder({ name: 'Founder', kind: 'founder' });

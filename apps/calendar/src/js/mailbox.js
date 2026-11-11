@@ -5,7 +5,7 @@
  *   - subscribing (or adopting an existing subscription) to
  *     `fs:~/.mail/objects/**:add` as a `queue` subscription,
  *   - `cal:mail:cfg` (mode/subId/watermark/…),
- *   - the watermark rescan (via `puter.email.list`), which runs the SAME
+ *   - the watermark rescan (via `everything.email.list`), which runs the SAME
  *     handler source in-page (via `new Function`) so a foreground session or
  *     a missed-delivery gap is recovered without a second implementation.
  *
@@ -54,12 +54,12 @@ function errorMessage(err) {
   return err.message || (typeof err.error === 'string' ? err.error : '') || '';
 }
 
-/** Map a `puter.events.list()` row's `suspendedReason` to the dialog copy. */
+/** Map a `everything.events.list()` row's `suspendedReason` to the dialog copy. */
 function suspensionMessage(reason) {
   if (reason === 'handler_not_found' || reason === 'failures') {
     return 'This needs the developer to republish the mail handler.';
   }
-  if (reason === 'no_credit') return 'Add credit to your Puter account to resume.';
+  if (reason === 'no_credit') return 'Add credit to your Everything account to resume.';
   if (reason === 'permission_revoked') return 'Permission was revoked — reconnect to resume.';
   return reason || 'Paused.';
 }
@@ -68,7 +68,7 @@ export function createMailbox({
   kv,
   store,
   user,
-  getPuter = () => (typeof puter !== 'undefined' ? puter : null),
+  getEverything = () => (typeof everything !== 'undefined' ? everything : null),
   blocked = isBlocked,
   source = handlerSource,
   now = () => Date.now(),
@@ -100,7 +100,7 @@ export function createMailbox({
   }
 
   function available() {
-    const p = getPuter();
+    const p = getEverything();
     return Boolean(
       p && p.events && typeof p.events.onPersistent === 'function' && p.perms && !blocked(),
     );
@@ -154,7 +154,7 @@ export function createMailbox({
   /* ---- connect / subscribe --------------------------------------------- */
 
   async function requestMailAndBackgroundPerms() {
-    const p = getPuter();
+    const p = getEverything();
     return p.perms.request([
       { resource: 'permission', permission: `fs:/${username()}/.mail:read`, create: true },
       { resource: 'permission', permission: 'events:background' },
@@ -164,7 +164,7 @@ export function createMailbox({
   /** Adopt a live subscription on our subject+handlerName if one already
    *  exists (never duplicate), else create it. */
   async function adoptOrSubscribe() {
-    const p = getPuter();
+    const p = getEverything();
     let existing = null;
     try {
       const list = await p.events.list();
@@ -222,7 +222,7 @@ export function createMailbox({
       const granted = await requestMailAndBackgroundPerms();
       const [mailRead, background] = Array.isArray(granted) ? granted : [granted, granted];
       if (!mailRead) {
-        lastError = 'Calendar needs access to your Puter mailbox to detect invitations.';
+        lastError = 'Calendar needs access to your Everything mailbox to detect invitations.';
         state = 'off';
         await saveCfg({ mode: 'off' });
         return status();
@@ -232,20 +232,20 @@ export function createMailbox({
     } catch (err) {
       const code = errorCode(err);
       if (code === 'events_disabled') {
-        lastError = 'Not available on this Puter server.';
+        lastError = 'Not available on this Everything server.';
         state = 'off';
         await saveCfg({ mode: 'off' });
         return status();
       }
       if (code === 'events_durable_requires_account') {
-        lastError = 'Needs a full Puter account (not a temporary one).';
+        lastError = 'Needs a full Everything account (not a temporary one).';
         state = 'off';
         await saveCfg({ mode: 'off' });
         return status();
       }
       if (code === 'events_background_consent_required') {
         try {
-          await getPuter().perms.request({ resource: 'permission', permission: 'events:background' });
+          await getEverything().perms.request({ resource: 'permission', permission: 'events:background' });
         } catch {
           return enterForeground('Background permission was declined.');
         }
@@ -259,7 +259,7 @@ export function createMailbox({
 
     // Without an app there is no events worker to run the handler, and the
     // server accepts the subscription anyway, so check here.
-    if (!getPuter().appID) return enterForeground('No app identity is available here.');
+    if (!getEverything().appID) return enterForeground('No app identity is available here.');
 
     try {
       return await subscribeAndScan();
@@ -267,7 +267,7 @@ export function createMailbox({
       const code = errorCode(err);
       if (code === 'subject_does_not_exist') {
         try {
-          await getPuter().perms.request({
+          await getEverything().perms.request({
             resource: 'permission',
             permission: `fs:/${username()}/.mail:read`,
             create: true,
@@ -312,7 +312,7 @@ export function createMailbox({
   }
 
   async function disconnect() {
-    const p = getPuter();
+    const p = getEverything();
     const subId = cfg && cfg.subId;
     if (subId && p && p.events && typeof p.events.unsubscribe === 'function') {
       try {
@@ -323,7 +323,7 @@ export function createMailbox({
     }
     // The pending tray is left alone — the user may still want to add what
     // was found — and the permission itself is not revoked (the dialog links
-    // out to Puter's own settings for that).
+    // out to Everything's own settings for that).
     await saveCfg({ mode: 'off', subId: '' });
     state = 'off';
     suspendedReason = '';
@@ -350,7 +350,7 @@ export function createMailbox({
       return status();
     }
     try {
-      const p = getPuter();
+      const p = getEverything();
       const list = await p.events.list();
       const row = (Array.isArray(list) ? list : []).find((s) => (s.id || s.subId) === cfg.subId);
       if (row && row.suspendedAt) {
@@ -385,7 +385,7 @@ export function createMailbox({
   }
 
   /**
-   * `puter.email.list` newest first, stopping at the first item at or before
+   * `everything.email.list` newest first, stopping at the first item at or before
    * the watermark (lowercase uuidv7 ids sort chronologically as plain
    * strings) or older than MAX_SCAN_AGE_MS — the listing is newest-first, so
    * the first too-old item ends the pass. A `gap` ignores the stored watermark
@@ -393,7 +393,7 @@ export function createMailbox({
    * and is cleared once the pass finishes.
    */
   async function doRescan(handler) {
-    const p = getPuter();
+    const p = getEverything();
     const emailApi = p && p.email;
     if (!emailApi || typeof emailApi.list !== 'function') return;
     lastScanAt = now();

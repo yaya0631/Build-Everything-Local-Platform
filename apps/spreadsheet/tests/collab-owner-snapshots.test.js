@@ -8,7 +8,7 @@ import { memoryStorage } from './helpers/memory-storage.js';
 import { environment, owner, SERVER, until } from './collab-helpers.js';
 
 Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true });
-afterEach(() => { delete globalThis.puter; vi.restoreAllMocks(); });
+afterEach(() => { delete globalThis.everything; vi.restoreAllMocks(); });
 
 const path = 'Spreadsheets/Budget.xlsx';
 
@@ -19,9 +19,9 @@ it("keeps snapshots of a shared workbook's file in its history as its owner's br
   const env = environment();
   const wb = new Workbook({ sheets: [{ name: 'Budget' }] });
   env.files.set(path, new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()));
-  const room = await RoomClient.create({ puter: env.sdk(owner), server: SERVER, wb, name: 'Budget', file: { path, uid: 'u1' } });
-  globalThis.puter = env.sdk(owner);
-  const client = new RoomClient({ puter: env.sdk(owner), server: SERVER, room, store: memoryOutbox(), poll: 50, noPeers: true, toXlsx: (w) => workbookToXlsx(w) });
+  const room = await RoomClient.create({ everything: env.sdk(owner), server: SERVER, wb, name: 'Budget', file: { path, uid: 'u1' } });
+  globalThis.everything = env.sdk(owner);
+  const client = new RoomClient({ everything: env.sdk(owner), server: SERVER, room, store: memoryOutbox(), poll: 50, noPeers: true, toXlsx: (w) => workbookToXlsx(w) });
   await client.open();
   const doc = Doc.forRoom(client, { path, uid: 'u1' });
   client.wb.setInput(client.wb.sheets[0].id, 0, 0, 'worth keeping');

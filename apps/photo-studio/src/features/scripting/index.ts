@@ -52,7 +52,7 @@ export function installScripting(e: Editor) {
   const selected = () => !!findScript(scriptSelection.id);
   const cmd = (c: Omit<Command, 'recordable'> & { recordable?: boolean }) => registerCommand({ recordable: false, ...c });
   cmd({ id: 'file.scripts-browse', label: 'Browse…', description: 'Run a script file from this device', ...lazyRun(manage, (m, e) => m.browse(e, 'device')) });
-  cmd({ id: 'file.scripts-browse-cloud', label: 'Browse Puter…', description: 'Run a script file from Puter', ...lazyRun(manage, (m, e) => m.browse(e, 'puter')) });
+  cmd({ id: 'file.scripts-browse-cloud', label: 'Browse Everything…', description: 'Run a script file from Everything', ...lazyRun(manage, (m, e) => m.browse(e, 'everything')) });
   cmd({ id: 'file.script-events', label: 'Script Events Manager…', description: 'Run scripts or actions when documents open, save, export or close', ...lazyRun(events, (m, e) => m.scriptEventsManager(e)) });
   cmd({ id: 'file.statistics', label: 'Statistics…', description: 'Combine several images into one embedded object with a stack mode', ...lazyRun(statistics, (m, e) => m.statisticsDialog(e)) });
   cmd({ id: 'file.lens-correction-batch', label: 'Lens Correction…', description: 'Correct many photos at once with automatic or custom settings', ...lazyRun(lensBatch, (m, e) => m.lensCorrectionBatch(e)) });

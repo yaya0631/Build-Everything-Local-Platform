@@ -123,7 +123,7 @@ async function sample() {
   const project = await serialize(nested, new Assets());
   const projectId = await assets.add(new Blob([project], { type: projectMimeType }));
   const composite = await assets.addRaster({ width: 4, height: 3, data: new Uint16Array(4 * 3 * 4) });
-  const c: EmbeddedContents = { id: 'contents-1', name: 'Inner', width: 4, height: 3, project: projectId, composite, colorSpace: 'document', stack: 'median', link: { kind: 'puter', name: 'inner.photo', path: '/u/inner.photo', size: 10, modified: 1, hash: 'a'.repeat(64) } };
+  const c: EmbeddedContents = { id: 'contents-1', name: 'Inner', width: 4, height: 3, project: projectId, composite, colorSpace: 'document', stack: 'median', link: { kind: 'everything', name: 'inner.photo', path: '/u/inner.photo', size: 10, modified: 1, hash: 'a'.repeat(64) } };
   const doc = newDocument(20, 20, 'Parent');
   doc.embeds = { [c.id]: c };
   for (const name of ['One', 'Two']) {

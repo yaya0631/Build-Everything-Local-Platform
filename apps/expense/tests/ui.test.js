@@ -69,8 +69,8 @@ describe('icons', () => {
   });
 });
 
-describe('sign-out visibility follows puter.env', () => {
-  it('hides sign-out inside the Puter desktop and shows it on the web', () => {
+describe('sign-out visibility follows everything.env', () => {
+  it('hides sign-out inside the Everything desktop and shows it on the web', () => {
     expect(canSignOut({ env: 'app' })).toBe(false);
     expect(canSignOut({ env: 'web' })).toBe(true);
     expect(canSignOut({ env: 'gui' })).toBe(true);

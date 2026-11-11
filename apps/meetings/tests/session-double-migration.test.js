@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import { RoomSession } from '../src/net/session.js';
 
-/* Same in-memory Puter peer mock as session.test.js — trimmed to what the
+/* Same in-memory Everything peer mock as session.test.js — trimmed to what the
  * double-migration repro needs. */
 
 class MockEventTarget {
@@ -41,7 +41,7 @@ class MockConn extends MockEventTarget {
     this.#watchTransport(pc);
   }
 
-  /** Mirrors puter.peer: transport state becomes a link-health signal. */
+  /** Mirrors everything.peer: transport state becomes a link-health signal. */
   #watchTransport(pc) {
     pc?.addEventListener?.('connectionstatechange', () => {
       const state = { connected: 'connected', disconnected: 'unstable', failed: 'recovering' }[
@@ -132,7 +132,7 @@ class MockServer extends MockEventTarget {
   }
 }
 
-function installMockPuter() {
+function installMockEverything() {
   const registry = new Map();
   const pairs = [];
   return {
@@ -242,7 +242,7 @@ afterAll(() => {
 });
 
 beforeEach(() => {
-  globalThis.window = { puter: installMockPuter() };
+  globalThis.window = { everything: installMockEverything() };
 });
 
 const sessions = [];

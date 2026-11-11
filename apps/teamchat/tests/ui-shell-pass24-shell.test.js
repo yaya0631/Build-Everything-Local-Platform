@@ -50,15 +50,15 @@ let dom = null;
 afterEach(() => {
   dom?.uninstall();
   dom = null;
-  delete globalThis.puter;
+  delete globalThis.everything;
 });
 
-/** A fresh DOM and fresh modules with a faked Puter and a small workspace the store opens when asked (see tests/ui-shell-pass23.test.js). */
+/** A fresh DOM and fresh modules with a faked Everything and a small workspace the store opens when asked (see tests/ui-shell-pass23.test.js). */
 async function bootApp({ hash = '', width = 1280, routes = {}, ...env } = {}) {
   dom?.uninstall();
   dom = installDom({ hash, width, ...env });
   vi.resetModules();
-  globalThis.puter = {
+  globalThis.everything = {
     workers: {
       exec: async (url, init = {}) => {
         const u = new URL(url);

@@ -19,7 +19,7 @@ function edit(data, transform, nativeOnly = false) {
   const zip = X.CFB.read(data, { type: 'array' });
   for (const path of ['/xl/styles.xml', ...(nativeOnly ? ['/xl/workbook.xml'] : [])]) {
     const part = X.CFB.find(zip, path), xml = new TextDecoder().decode(part.content);
-    const changed = path.endsWith('styles.xml') ? transform(xml) : xml.replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '');
+    const changed = path.endsWith('styles.xml') ? transform(xml) : xml.replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '');
     X.CFB.utils.cfb_add(zip, path, new TextEncoder().encode(changed));
   }
   return X.CFB.write(zip, { type: 'array', fileType: 'zip' });

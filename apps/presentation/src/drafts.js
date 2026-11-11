@@ -113,7 +113,7 @@ export const detachCloudFile = (owner, path) =>
   updateCloudDrafts(owner, path, { path: null });
 export const renameCloudFile = (owner, path, renamed, name) =>
   updateCloudDrafts(owner, path, { path: renamed, name });
-// A draft written when its revision was the one saved in Puter has nothing
+// A draft written when its revision was the one saved in Everything has nothing
 // left to recover. Those are removed, all but `keep`, the open presentation's.
 export const pruneSavedDrafts = (owner, keep = null) =>
   transact("readwrite", (s, summaries) => {

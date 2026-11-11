@@ -78,7 +78,7 @@ test('leaving a preview of an imported file says it was not saved, without offer
   await openReadOnlyPreview(page, 'public/fixtures/best-effort.docx');
   await page.evaluate(() => { location.hash = '#/home'; });
   const dialog = page.getByRole('dialog', { name: 'Leave without saving?' });
-  await expect(dialog).toContainText('could not be opened for editing, so it has not been saved to Puter. Stay to download a copy');
+  await expect(dialog).toContainText('could not be opened for editing, so it has not been saved to Everything. Stay to download a copy');
   await expect(dialog.getByRole('button', { name: 'Keep editing' })).toHaveCount(0);
   await dialog.getByRole('button', { name: 'Stay' }).click();
   await expect(page.getByRole('textbox', { name: 'Document text' })).toHaveJSProperty('readOnly', true);

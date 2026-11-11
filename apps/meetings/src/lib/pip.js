@@ -5,7 +5,7 @@
  *  - **Document PiP** (Chromium) hands back a real `Window` we can render a
  *    miniature meeting into — several tiles plus working controls. Only a
  *    top-level page may open one.
- *  - **Hosted Document PiP**, inside the Puter desktop, where the app is an
+ *  - **Hosted Document PiP**, inside the Everything desktop, where the app is an
  *    iframe: the desktop opens the window for us and loads our `pip.html`
  *    in it, which hands its window back — the same miniature meeting.
  *  - **Element PiP** (older, wider support) can only float a single
@@ -36,14 +36,14 @@ export function documentPipSupported() {
 }
 
 /**
- * Document PiP the Puter desktop opens for us — we are a frame there, so
- * we can't. Off the desktop puter.js reports another environment, and in
+ * Document PiP the Everything desktop opens for us — we are a frame there, so
+ * we can't. Off the desktop everything.js reports another environment, and in
  * a frame on some other site nobody can open one for us.
  */
 export function hostedPipSupported() {
   if (typeof window === 'undefined' || isTopLevelPage()) return false;
-  const puter = window.puter;
-  return puter?.env === 'app' && typeof puter.ui?.requestPictureInPicture === 'function';
+  const everything = window.everything;
+  return everything?.env === 'app' && typeof everything.ui?.requestPictureInPicture === 'function';
 }
 
 export function videoPipSupported() {

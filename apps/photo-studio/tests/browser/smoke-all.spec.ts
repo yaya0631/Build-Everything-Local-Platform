@@ -7,8 +7,8 @@
 import { test, expect, type Page } from '@playwright/test';
 import { boot, canvasClick, canvasDrag, idle, openImage, selectRect } from './helpers';
 
-// Puter pickers never settle when the user cancels them; the stub does the same.
-const puterStub = `window.puter={env:"app",auth:{isSignedIn:()=>true,getUser:async()=>({username:"smoke"})},
+// Everything pickers never settle when the user cancels them; the stub does the same.
+const everythingStub = `window.everything={env:"app",auth:{isSignedIn:()=>true,getUser:async()=>({username:"smoke"})},
 ui:{showOpenFilePicker:()=>new Promise(()=>{}),showSaveFilePicker:()=>new Promise(()=>{}),showDirectoryPicker:()=>new Promise(()=>{})},
 fs:{write:()=>new Promise(()=>{}),read:()=>new Promise(()=>{})},ai:{}};`;
 
@@ -46,7 +46,7 @@ class Smoke {
       Object.assign(window, { showOpenFilePicker: abort, showSaveFilePicker: abort, showDirectoryPicker: abort });
       window.open = () => null;
     });
-    await boot(this.page, 'default', puterStub);
+    await boot(this.page, 'default', everythingStub);
   }
   /** Record errors raised since the last check against `what`. */
   check(what: string) {

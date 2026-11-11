@@ -12,7 +12,7 @@ import { resize } from '../../imaging/filters/resample';
 import { defaultCharStyle, defaultParagraphStyle, fromPlainText, type TextLayerData } from '../../imaging/text/model';
 import { prepareFonts } from '../../imaging/text/fonts';
 import { formDialog } from '../../ui/dialog';
-import { download } from '../../persistence/puter';
+import { download } from '../../persistence/everything';
 import { applyToLayer, compositeRGBA, hexRgb } from '../pixels';
 import { recordStep } from '../filters/record';
 import { runJob, withTask } from './client';

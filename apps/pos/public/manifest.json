@@ -1,7 +1,7 @@
 {
   "name": "Point of Sale",
   "short_name": "POS",
-  "description": "Catalog, checkout, receipts, discounts, taxes, and sales reports. Your data, your Puter cloud.",
+  "description": "Catalog, checkout, receipts, discounts, taxes, and sales reports. Your data, your Everything cloud.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

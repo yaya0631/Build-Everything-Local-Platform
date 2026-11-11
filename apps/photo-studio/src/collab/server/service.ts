@@ -1,4 +1,4 @@
-// The room worker: a Puter Worker the document owner deploys to their own
+// The room worker: an Everything Worker the document owner deploys to their own
 // account. It keeps each shared document's Yjs edit log, memberships,
 // invitations, presence tickets and content-addressed tiles in the owner's
 // key-value store and files, and checks every request: membership, role
@@ -18,8 +18,8 @@ type Member = { uuid: string; username: string; role: string; joined: number; ex
 type Invite = { role: string; review: boolean; created: number; expires: number; createdBy: string };
 type LogRecord = { user: string; id: string; at: number; update?: string; file?: string };
 
-/** The parts of Puter a worker uses (`me.puter` or a test fake). */
-export interface WorkerPuter {
+/** The parts of Everything a worker uses (`me.everything` or a test fake). */
+export interface WorkerEverything {
   APIOrigin?: string;
   authToken?: string;
   auth: { getUser(): Promise<{ uuid: string; username: string }> };
@@ -125,16 +125,16 @@ const ROOMS = new Map<string, Room>();
 const COMMITS = new WeakMap<Map<string, Room>, Map<string, Promise<unknown>>>();
 
 export class RoomService {
-  kv: WorkerPuter['kv'];
-  fs: WorkerPuter['fs'];
+  kv: WorkerEverything['kv'];
+  fs: WorkerEverything['fs'];
   now: () => number;
   fetcher: typeof fetch;
   constructor(
-    public puter: WorkerPuter,
+    public everything: WorkerEverything,
     options: { now?: () => number; fetcher?: typeof fetch; rooms?: Map<string, Room> } = {},
   ) {
-    this.kv = puter.kv;
-    this.fs = puter.fs;
+    this.kv = everything.kv;
+    this.fs = everything.fs;
     this.now = options.now ?? Date.now;
     this.fetcher = options.fetcher ?? ((...a) => fetch(...a));
     this.rooms = options.rooms ?? ROOMS;
@@ -142,7 +142,7 @@ export class RoomService {
   rooms: Map<string, Room>;
   private accountOwner?: Promise<{ uuid: string; username: string }>;
   owner() {
-    this.accountOwner ??= this.puter.auth.getUser();
+    this.accountOwner ??= this.everything.auth.getUser();
     return this.accountOwner;
   }
   private path(room: string, name: string) {
@@ -308,7 +308,7 @@ export class RoomService {
    * handle on it minted for them. `consented` comes from the owner's browser once they allow sharing it.
    */
   async events(room: string, user: Identity, { consented = false } = {}) {
-    const uid = appUid(this.puter.authToken);
+    const uid = appUid(this.everything.authToken);
     if (!uid) return null;
     if (user.uuid === (await this.owner()).uuid) {
       if (consented) await this.kv.del(EVENTS_OFF).catch(() => {});
@@ -316,7 +316,7 @@ export class RoomService {
       return { app: uid, key: `ps:${room}:ev:signal` };
     }
     let handle = (await this.kv.get(`ps:${room}:handle:${user.uuid}`)) as string | null;
-    if (!handle && this.puter.APIOrigin) handle = await this.mint(room, user);
+    if (!handle && this.everything.APIOrigin) handle = await this.mint(room, user);
     return handle ? { handle, key: 'signal' } : null;
   }
 
@@ -327,9 +327,9 @@ export class RoomService {
     if (off || held) return null;
     let code: string | undefined = 'network';
     try {
-      const res = await this.fetcher(`${this.puter.APIOrigin}/events/kv-handles`, {
+      const res = await this.fetcher(`${this.everything.APIOrigin}/events/kv-handles`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${this.puter.authToken}` },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${this.everything.authToken}` },
         body: JSON.stringify({ granteeUid: user.uuid, prefix: `ps:${room}:ev:` }),
         signal: AbortSignal.timeout(3000),
       });
@@ -356,12 +356,12 @@ export class RoomService {
     if (handle && (await this.revokeHandle(handle))) await this.kv.del(key);
   }
 
-  /** Revoke a handle at Puter; true once it is gone, as one Puter no longer knows already is. */
+  /** Revoke a handle at Everything; true once it is gone, as one Everything no longer knows already is. */
   private async revokeHandle(handle: string) {
-    if (!this.puter.APIOrigin) return false;
-    const res = await this.fetcher(`${this.puter.APIOrigin}/events/kv-handles/${encodeURIComponent(handle)}`, {
+    if (!this.everything.APIOrigin) return false;
+    const res = await this.fetcher(`${this.everything.APIOrigin}/events/kv-handles/${encodeURIComponent(handle)}`, {
       method: 'DELETE',
-      headers: { Authorization: `Bearer ${this.puter.authToken}` },
+      headers: { Authorization: `Bearer ${this.everything.authToken}` },
       signal: AbortSignal.timeout(5000),
     }).catch(() => null);
     return !!res && (res.ok || res.status === 404);
@@ -370,18 +370,18 @@ export class RoomService {
   /**
    * Take back handles nothing uses any more: ones on a closed or deleted room, ones whose member left or whose
    * access expired, and ones no member's record names, such as those removals forgot before removals revoked them.
-   * Puter lists them oldest first; a look reads a few pages and carries on from there next time.
+   * Everything lists them oldest first; a look reads a few pages and carries on from there next time.
    */
   private async sweepHandles() {
-    if (!this.puter.APIOrigin || (await this.kv.get(SWEEP_DUE))) return;
+    if (!this.everything.APIOrigin || (await this.kv.get(SWEEP_DUE))) return;
     await this.kv.set(SWEEP_DUE, true, Math.ceil((this.now() + SWEEP_EVERY) / 1000));
     let cursor = ((await this.kv.get(SWEEP_CURSOR)) as string | null) || undefined;
     const rooms = new Map<string, Map<string, { uuid: string; live: boolean }>>();
     let revoked = 0;
     for (let page = 0; page < SWEEP_PAGES && revoked < REVOKE_MAX; page++) {
       const query = new URLSearchParams({ limit: '200', ...(cursor ? { cursor } : {}) });
-      const res = await this.fetcher(`${this.puter.APIOrigin}/events/kv-handles?${query}`, {
-        headers: { Authorization: `Bearer ${this.puter.authToken}` },
+      const res = await this.fetcher(`${this.everything.APIOrigin}/events/kv-handles?${query}`, {
+        headers: { Authorization: `Bearer ${this.everything.authToken}` },
         signal: AbortSignal.timeout(5000),
       });
       if (!res.ok) return;
@@ -419,7 +419,7 @@ export class RoomService {
   // ----- Requests -----
 
   async call(user: Identity, input: Record<string, unknown>) {
-    if (!user?.uuid) fail(401, 'Sign in with Puter to continue.');
+    if (!user?.uuid) fail(401, 'Sign in with Everything to continue.');
     if (!input || typeof input !== 'object') fail(400, 'Invalid request.');
     const room = id(input.room),
       prefix = `ps:${room}:`;
@@ -706,7 +706,7 @@ export class RoomService {
     }
     if (input.op === 'invite-user') {
       const name = typeof input.username === 'string' ? input.username.trim().replace(/^@/, '') : '';
-      if (!/^[A-Za-z0-9._-]{1,64}$/.test(name)) fail(400, 'Enter a Puter username.');
+      if (!/^[A-Za-z0-9._-]{1,64}$/.test(name)) fail(400, 'Enter an Everything username.');
       const role = (input.role ?? 'editor') as string;
       if (!INVITE_ROLES.includes(role as never)) fail(400, 'Choose a role an invitation can give.');
       const expires = this.now() + days * DAY;

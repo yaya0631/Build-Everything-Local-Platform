@@ -5,10 +5,10 @@ import { inspectPaths } from '../../src/core/path-edit.js';
 import { inspectImages, imageCorners } from '../../src/core/image-edit.js';
 import { createCanvas } from '@napi-rs/canvas';
 
-const PUTER_MOCK = `window.puter = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async () => ({}) }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
-async function mockPuter(page) {
-  await page.route('**/sdk/puter.js', (route) =>
-    route.fulfill({ contentType: 'application/javascript', body: PUTER_MOCK }),
+const EVERYTHING_MOCK = `window.everything = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async () => ({}) }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
+async function mockEverything(page) {
+  await page.route('**/sdk/everything.js', (route) =>
+    route.fulfill({ contentType: 'application/javascript', body: EVERYTHING_MOCK }),
   );
 }
 async function openPdf(page, doc, name = 'test.pdf') {
@@ -118,7 +118,7 @@ test('malformed saved drawings are ignored while valid signatures remain usable'
     (items) => localStorage.setItem('pdf-editor:signatures', JSON.stringify({ items })),
     [...invalid, ...valid],
   );
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await squarePdf());
   await page.getByRole('button', { name: 'Sign', exact: true }).click();
@@ -143,7 +143,7 @@ test('malformed saved drawings are ignored while valid signatures remain usable'
 test('drawing ink follows the pointer and earlier strokes stay where they were drawn', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/');
   await expect(page.locator('.page-caption')).toHaveText('Page 1 of 1');
   await page.getByRole('button', { name: 'Sign', exact: true }).click();
@@ -208,7 +208,7 @@ for (const pointer of ['mouse', 'touch']) {
       browserName !== 'chromium',
       'Native release coordinates use Chromium’s input protocol.',
     );
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/');
     await expect(page.locator('.page-caption')).toHaveText('Page 1 of 1');
     await page.getByRole('button', { name: 'Sign', exact: true }).click();
@@ -278,7 +278,7 @@ for (const secondaryAction of ['moves', 'lifts']) {
     browserName,
   }) => {
     test.skip(browserName !== 'chromium', 'Native multi-touch uses Chromium’s input protocol.');
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/');
     await expect(page.locator('.page-caption')).toHaveText('Page 1 of 1');
     await page.getByRole('button', { name: 'Sign', exact: true }).click();
@@ -329,7 +329,7 @@ test('resizing the signature pad preserves ink proportions and keeps new strokes
 }) => {
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
-  await mockPuter(page);
+  await mockEverything(page);
   await page.setViewportSize({ width: 800, height: 800 });
   await page.goto('/#library');
   await openPdf(page, await squarePdf());
@@ -408,7 +408,7 @@ test('resizing the signature pad preserves ink proportions and keeps new strokes
 test('clearing a resized signature pad restores a fresh drawing at the pointer', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.setViewportSize({ width: 800, height: 800 });
   await page.goto('/');
   await expect(page.locator('.page-caption')).toHaveText('Page 1 of 1');
@@ -454,7 +454,7 @@ test('resizing preserves saved signature preview proportions', async ({ page }) 
       }),
     ),
   );
-  await mockPuter(page);
+  await mockEverything(page);
   await page.setViewportSize({ width: 320, height: 800 });
   await page.goto('/');
   await expect(page.locator('.page-caption')).toHaveText('Page 1 of 1');
@@ -477,7 +477,7 @@ for (const source of ['Type', 'Upload'])
   test(`resizing preserves the ${source.toLowerCase()} signature preview proportions`, async ({
     page,
   }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.setViewportSize({ width: 800, height: 800 });
     await page.goto('/');
     await expect(page.locator('.page-caption')).toHaveText('Page 1 of 1');
@@ -520,7 +520,7 @@ for (const source of ['Type', 'Upload'])
 test('smoothed signature turns fit inside the PDF placement and saved preview', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await squarePdf());
   await page.getByRole('button', { name: 'Sign', exact: true }).click();
@@ -565,7 +565,7 @@ test('a signature dot is visible while drawing, in saved previews, and in the PD
   page,
   isMobile,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await squarePdf());
   await page.getByRole('button', { name: 'Sign', exact: true }).click();
@@ -608,7 +608,7 @@ test('a signature dot is visible while drawing, in saved previews, and in the PD
 test('a drawn signature lands in the middle as one smooth stroke, selected and ready to move', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await squarePdf());
   await page.getByRole('button', { name: 'Sign', exact: true }).click();
@@ -682,7 +682,7 @@ for (const name of ['John J', 'josephine johnson', 'Jacqueline Johnson J'])
         return fillText.call(this, text, x, y, ...rest);
       };
     });
-    await mockPuter(page);
+    await mockEverything(page);
     await page.setViewportSize({ width: 320, height: 800 });
     await page.goto('/');
     await expect(page.locator('.page-caption')).toHaveText('Page 1 of 1');
@@ -737,7 +737,7 @@ test('remembered typed signatures retain their script preview after reopening th
       }),
     ),
   );
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/');
   await expect(page.locator('.page-caption')).toHaveText('Page 1 of 1');
   await page.getByRole('button', { name: 'Sign', exact: true }).click();
@@ -813,7 +813,7 @@ test('a delayed saved signature font repaints the current list after deletion an
     }
     await route.continue();
   });
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/');
   await expect(page.locator('.page-caption')).toHaveText('Page 1 of 1');
   const requested = page.waitForRequest(isFont);
@@ -854,7 +854,7 @@ test('deleting saved signatures keeps keyboard focus and removes the empty secti
       }),
     );
   });
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await squarePdf());
   await page.getByRole('button', { name: 'Sign', exact: true }).click();
@@ -884,7 +884,7 @@ test('deleting saved signatures keeps keyboard focus and removes the empty secti
 test('a typed signature uses the script font, can be remembered, and comes back after a reload', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await squarePdf());
   await page.getByRole('button', { name: 'Sign', exact: true }).click();
@@ -922,7 +922,7 @@ for (const failure of ['unsupported character', 'font download'])
     await page.route('**/fonts/GreatVibes-Regular.ttf', (route) =>
       failFont ? route.fulfill({ status: 503, body: 'Unavailable' }) : route.continue(),
     );
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     await openPdf(page, await squarePdf());
     await page.getByRole('button', { name: 'Sign', exact: true }).click();
@@ -961,7 +961,7 @@ test('an older unusable saved signature opens its text for correction', async ({
       }),
     ),
   );
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await squarePdf());
   await page.getByRole('button', { name: 'Sign', exact: true }).click();
@@ -988,7 +988,7 @@ for (const initiallyRemembered of [false, true])
   test(`reusing a saved signature applies changing remember from ${initiallyRemembered}`, async ({
     page,
   }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/');
     await expect(page.locator('.page-caption')).toHaveText('Page 1 of 1');
     await page.getByRole('button', { name: 'Sign', exact: true }).click();
@@ -1021,7 +1021,7 @@ for (const initiallyRemembered of [false, true])
   });
 
 test('an uploaded picture is placed as an image fitted to the signature box', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await squarePdf());
   await page.getByRole('button', { name: 'Sign', exact: true }).click();
@@ -1041,7 +1041,7 @@ test('an uploaded picture is placed as an image fitted to the signature box', as
 });
 
 test('on a rotated page the signature reads upright on screen', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await squarePdf(90));
   await page.getByRole('button', { name: 'Sign', exact: true }).click();
@@ -1070,7 +1070,7 @@ test('on a rotated page the signature reads upright on screen', async ({ page })
 });
 
 test('empty signatures are refused inside the dialog', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await squarePdf());
   await page.getByRole('button', { name: 'Sign', exact: true }).click();
@@ -1085,7 +1085,7 @@ test('empty signatures are refused inside the dialog', async ({ page }) => {
 });
 
 test('the signature sources are a tab strip that answers Home and End', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await squarePdf());
   await page.getByRole('button', { name: 'Sign', exact: true }).click();
@@ -1113,7 +1113,7 @@ test('the signature sources are a tab strip that answers Home and End', async ({
 });
 
 async function uploadDialog(page) {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/');
   await expect(page.locator('.page-caption')).toHaveText('Page 1 of 1');
   await page.getByRole('button', { name: 'Sign', exact: true }).click();
@@ -1219,7 +1219,7 @@ for (const next of ['another upload', 'a reopened dialog'])
   });
 
 test('the drawing pad shows a focus ring when reached with the keyboard', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/');
   await expect(page.locator('.page-caption')).toHaveText('Page 1 of 1');
   await page.getByRole('button', { name: 'Sign', exact: true }).click();
@@ -1244,7 +1244,7 @@ test('the delete button on a saved signature stays legible on its white card in 
       JSON.stringify({ items: [{ type: 'type', text: 'Ada Lovelace' }] }),
     ),
   );
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/');
   await expect(page.locator('.page-caption')).toHaveText('Page 1 of 1');
   await page.getByRole('button', { name: 'Sign', exact: true }).click();

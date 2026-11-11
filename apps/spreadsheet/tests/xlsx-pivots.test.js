@@ -47,7 +47,7 @@ async function nativeRoundTrip(wb) {
   const zip = X.CFB.read(new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()), { type: 'array' });
   const get = path => new TextDecoder().decode(X.CFB.find(zip, path)?.content || new Uint8Array());
   const part = X.CFB.find(zip, '/xl/workbook.xml');
-  part.content = new TextEncoder().encode(get('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')); part.size = part.content.length;
+  part.content = new TextEncoder().encode(get('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')); part.size = part.content.length;
   return { get, wb: await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' })) };
 }
 it('keeps worksheet and non-worksheet pivots, cache records and chart bindings through native-only round trips', async () => {
@@ -910,7 +910,7 @@ async function externalWorksheetFixture(target, change = xml => xml) {
   set(path, get(path).replace('<worksheetSource ', '<worksheetSource r:id="externalWorkbook" '));
   const escaped = target.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
   set(rels, change(get(rels).replace('</Relationships>', `<Relationship Id="externalWorkbook" Type="${REL}/externalLinkPath" Target="${escaped}" TargetMode="External"/></Relationships>`)));
-  set('/xl/workbook.xml', get('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  set('/xl/workbook.xml', get('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   return X.CFB.write(zip, { type: 'array', fileType: 'zip' });
 }
 it.each(['file:///Users/example/Source%20Data.xlsx', '../Data/日次.xlsx', 'https://example.invalid/data.xlsx?a=1&b=2#book'])('preserves external worksheet targets and independent records relationships: %s', async target => {

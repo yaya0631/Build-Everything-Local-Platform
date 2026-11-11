@@ -1,14 +1,14 @@
-/** Access to the puter.js global, with a friendly failure mode. */
+/** Access to the everything.js global, with a friendly failure mode. */
 
-export function hasPuter() {
-  return typeof window !== 'undefined' && !!window.puter;
+export function hasEverything() {
+  return typeof window !== 'undefined' && !!window.everything;
 }
 
-export function getPuter() {
-  if (!hasPuter()) {
+export function getEverything() {
+  if (!hasEverything()) {
     throw new Error(
-      'Puter.js is not loaded. Check your connection to /sdk/puter.js and reload the page.'
+      'Everything.js is not loaded. Check your connection to /sdk/everything.js and reload the page.'
     );
   }
-  return window.puter;
+  return window.everything;
 }

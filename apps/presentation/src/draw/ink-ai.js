@@ -1,5 +1,5 @@
 // Reading handwriting: the selected ink is drawn into a picture, black on
-// white, and Puter's AI is asked what it says, as text or as math (LaTeX).
+// white, and Everything's AI is asked what it says, as text or as math (LaTeX).
 // The call goes through `chat`, so tests can answer in place of the model.
 import { strokeSamples, strokeStyle } from "./ink-model.js";
 
@@ -110,7 +110,7 @@ export function cleanRecognized(text, mode = "text") {
 }
 
 /**
- * Asks the AI what the picture of ink says. `chat` is puter.ai.chat (or a
+ * Asks the AI what the picture of ink says. `chat` is everything.ai.chat (or a
  * stand-in taking the same arguments: prompt, image, test mode, options).
  * Resolves to the cleaned answer, empty when it read nothing.
  */

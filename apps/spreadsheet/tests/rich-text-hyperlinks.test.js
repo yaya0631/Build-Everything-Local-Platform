@@ -11,7 +11,7 @@ async function nativeBytes(wb) {
   });
   const zip = X.CFB.read(new Uint8Array(bytes), { type: 'array' });
   const entry = X.CFB.find(zip, '/xl/workbook.xml');
-  entry.content = new TextEncoder().encode(new TextDecoder().decode(entry.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  entry.content = new TextEncoder().encode(new TextDecoder().decode(entry.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   entry.size = entry.content.length;
   return X.CFB.write(zip, { type: 'array', fileType: 'zip' });
 }

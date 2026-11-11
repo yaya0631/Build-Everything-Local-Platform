@@ -22,7 +22,7 @@ function book(grouping='standard') {
 async function native(wb,change) {
   const zip=X.CFB.read(new Uint8Array(await(await workbookToXlsx(wb)).arrayBuffer()),{type:'array'});
   let xml=read(zip,'/xl/charts/chart1_1.xml');if(change) xml=change(xml);set(zip,'/xl/charts/chart1_1.xml',xml);
-  set(zip,'/xl/workbook.xml',read(zip,'/xl/workbook.xml').replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,''));
+  set(zip,'/xl/workbook.xml',read(zip,'/xl/workbook.xml').replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,''));
   return {wb:await workbookFromFile(X.CFB.write(zip,{type:'array',fileType:'zip'}),'native.xlsx'),xml};
 }
 function draw(wb) {

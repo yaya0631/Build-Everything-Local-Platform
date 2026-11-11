@@ -1,5 +1,5 @@
 // The Translate pane: the selected text, or every text on the slide,
-// translated by Puter's AI into the language chosen. Insert puts the
+// translated by Everything's AI into the language chosen. Insert puts the
 // translation in place of the selection, or of each object's text for the
 // whole slide (marking it with the new language for proofing).
 import { el, icon, toast } from "../ui.js";
@@ -80,7 +80,7 @@ export function createTranslate(env, host) {
     }
     if (!aiAvailable()) {
       state.error =
-        "Translation needs Puter's AI, which is not available here.";
+        "Translation needs Everything's AI, which is not available here.";
       host.refresh("translate");
       return;
     }

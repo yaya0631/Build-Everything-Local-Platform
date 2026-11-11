@@ -1,7 +1,7 @@
 /**
- * AI assist, on Puter's built-in models.
+ * AI assist, on Everything's built-in models.
  *
- * The app runs on Puter, where `puter.ai.chat` is available to the
+ * The app runs on Everything, where `everything.ai.chat` is available to the
  * signed-in user at no cost to this app - the one platform capability the
  * CRM never touched. Meanwhile the reason founders abandon a CRM is typing
  * into it. So: three narrow chores handed off, each one a button the user
@@ -13,8 +13,8 @@
  *   3. Catch me up - what a long timeline adds up to.
  *
  * Prompt building and response reading are pure functions (testable
- * without Puter); `askAI` is the only part that talks to the platform. No
- * model id is passed: Puter picks for the signed-in user, and naming a
+ * without Everything); `askAI` is the only part that talks to the platform. No
+ * model id is passed: Everything picks for the signed-in user, and naming a
  * model here would pin the app to one catalogue and break as it changes.
  */
 
@@ -22,7 +22,7 @@ import { formatDate, formatMoney } from './util.js';
 
 /** Is the platform capability there at all? */
 export function aiAvailable() {
-  return typeof puter !== 'undefined' && typeof puter?.ai?.chat === 'function';
+  return typeof everything !== 'undefined' && typeof everything?.ai?.chat === 'function';
 }
 
 /**
@@ -64,7 +64,7 @@ export function readAIText(response) {
 export async function askAI(prompt, { system = null } = {}) {
   if (!aiAvailable()) throw new Error('ai-unavailable');
   const options = system ? { system } : undefined;
-  const answer = await puter.ai.chat(prompt, options);
+  const answer = await everything.ai.chat(prompt, options);
   const text = readAIText(answer);
   if (!text) throw new Error('ai-empty');
   return text;

@@ -240,12 +240,12 @@ export function buildManifest() {
     name: MCP_SERVER_NAME,
     title: 'Contacts',
     version: MCP_SERVER_VERSION,
-    description: "The signed-in Puter user's private address book.",
+    description: "The signed-in Everything user's private address book.",
     protocolVersion: MCP_PROTOCOL_VERSION,
     // Contacts is not a network service: it is reached by launching the app
-    // inside the Puter desktop and talking to the AppConnection you get back.
+    // inside the Everything desktop and talking to the AppConnection you get back.
     transport: {
-      type: 'puter-app-connection',
+      type: 'everything-app-connection',
       launch: { name: MCP_SERVER_NAME, args: { service: 'mcp' }, background: true },
     },
     capabilities: {

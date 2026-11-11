@@ -1,8 +1,8 @@
 /**
- * Storage for the fake Puter (dev/fake-puter.js): tables of key -> value.
+ * Storage for the fake Everything (dev/fake-everything.js): tables of key -> value.
  * memoryStorage() backs the unit tests; idbStorage() backs the browser
  * harness, where several tabs (an owner and reviewers) share one IndexedDB
- * database the way they would share Puter's servers. update() is atomic in
+ * database the way they would share Everything's servers. update() is atomic in
  * both, which is what KV incr needs.
  */
 
@@ -34,7 +34,7 @@ export function memoryStorage() {
   };
 }
 
-const DB_NAME = 'video-studio-fake-puter';
+const DB_NAME = 'video-studio-fake-everything';
 
 export function openDb(name = DB_NAME) {
   return new Promise((resolve, reject) => {
@@ -102,7 +102,7 @@ export function parseTokenRead(url, apiOrigin) {
 }
 
 /**
- * Answer a token-read request the way Puter's /token-read does: the token
+ * Answer a token-read request the way Everything's /token-read does: the token
  * must be live and allow reading that file; a Range header gets a 206 with
  * Content-Range, otherwise the whole file with 200.
  */

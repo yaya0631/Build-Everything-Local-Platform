@@ -8,7 +8,7 @@ vi.mock('../src/views/editor.js', () => ({ editorView: vi.fn(({ doc }) => ({
 
 it('does not let a delayed version reload overwrite a newer editor, even if reloading fails', async () => {
   vi.stubGlobal('matchMedia', () => ({ matches: false, addEventListener() {} }));
-  vi.stubGlobal('puter', {
+  vi.stubGlobal('everything', {
     auth: { isSignedIn: () => true, getUser: async () => ({ username: 'test' }) },
     fs: { read: async () => new Blob(['document']) },
   });

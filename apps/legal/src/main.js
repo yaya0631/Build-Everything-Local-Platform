@@ -12,7 +12,7 @@ import { toast } from './ui/toast.js';
 import { confirmDialog } from './ui/dialog.js';
 import { app } from './app.js';
 import { createStore } from './core/store.js';
-import { createMemoryBackend, createPuterBackend } from './core/backend.js';
+import { createMemoryBackend, createEverythingBackend } from './core/backend.js';
 import { createIdbCache } from './core/cache.js';
 import { setMoneyDefaults } from './core/money.js';
 import { today } from './core/dates.js';
@@ -38,7 +38,7 @@ function loading(label = 'Loading') {
 
 async function boot() {
   loading();
-  app.env = platform.puterEnv();
+  app.env = platform.everythingEnv();
   if (await platform.isSignedIn()) {
     await startSignedIn();
   } else if (new URLSearchParams(location.search).has('demo')) {
@@ -70,14 +70,14 @@ async function startSignedIn() {
     user = await platform.getUser();
   } catch (err) {
     console.error(err);
-    showWelcome('We could not reach your Puter account. Check your connection and try again.');
+    showWelcome('We could not reach your Everything account. Check your connection and try again.');
     return;
   }
   app.user = { username: user.username, uuid: user.uuid };
   app.avatarUrl = platform.cachedProfilePicture(user.username);
 
   // Which firm: the person's own, or one they joined as a member.
-  const kv = globalThis.puter.kv;
+  const kv = globalThis.everything.kv;
   let ws = { current: 'own', own: {}, joined: [] };
   try {
     ws = await team.loadWorkspaces(kv);
@@ -89,7 +89,7 @@ async function startSignedIn() {
   const join = location.hash.startsWith('#/join') ? team.parseJoin(Object.fromEntries(new URLSearchParams(location.hash.split('?')[1] || ''))) : null;
   if (join && ws.unverified) {
     history.replaceState(null, '', location.pathname + location.search + '#/');
-    setTimeout(() => toast('The invitation could not be opened because Puter did not answer. Open the link again in a moment.', { type: 'error', duration: 8000 }), 600);
+    setTimeout(() => toast('The invitation could not be opened because Everything did not answer. Open the link again in a moment.', { type: 'error', duration: 8000 }), 600);
   } else if (join) ws = await acceptInvite(kv, ws, join);
   app.workspaces = ws;
 
@@ -97,7 +97,7 @@ async function startSignedIn() {
   const joined = ws.joined.find((j) => j.url === workerUrl);
   app.team = workerUrl ? { url: workerUrl, role: joined ? joined.role : 'owner', business: joined?.business || '' } : null;
   const store = createStore({
-    backend: workerUrl ? team.createWorkerBackend(workerUrl) : createPuterBackend(globalThis.puter),
+    backend: workerUrl ? team.createWorkerBackend(workerUrl) : createEverythingBackend(globalThis.everything),
     cache: createIdbCache(`user:${user.uuid}${workerUrl ? `:team:${workerUrl}` : ''}`),
   });
   app.store = store;
@@ -147,14 +147,14 @@ async function startSignedIn() {
 async function acceptInvite(kv, ws, { url, token }) {
   history.replaceState(null, '', location.pathname + location.search + '#/');
   if (ws.own?.url === url) return { ...ws, current: 'own' };
-  // Joining sends your Puter session to that firm's server, so ask first.
+  // Joining sends your Everything session to that firm's server, so ask first.
   // A firm already on the list is joined again without asking: the person
   // may have been removed and invited back since they last opened it.
   if (!ws.joined.some((j) => j.url === url)) {
     const host = new URL(url).hostname;
     const ok = await confirmDialog({
       title: 'Join a firm?',
-      message: `You opened an invitation to a firm whose server is ${host}. While you work in that firm, its server acts with your Puter sign-in, so its owner could reach what this app keeps in your Puter account, including your own firm. What you add there is stored in their account. Only accept invitations from people you trust.`,
+      message: `You opened an invitation to a firm whose server is ${host}. While you work in that firm, its server acts with your Everything sign-in, so its owner could reach what this app keeps in your Everything account, including your own firm. What you add there is stored in their account. Only accept invitations from people you trust.`,
       confirmLabel: 'Join firm',
     });
     if (!ok) return ws;
@@ -193,7 +193,7 @@ function startApp() {
 }
 
 function showWelcome(error) {
-  const available = platform.puterAvailable();
+  const available = platform.everythingAvailable();
   mount(
     root,
     h(
@@ -204,9 +204,9 @@ function showWelcome(error) {
         h('h1', 'Run your law practice from one place.'),
         h('p.lead', 'Matters, contacts, time tracking, billing, trust accounting, calendar, tasks, and documents in a fast, focused workspace. Free and open source.'),
         error ? h('div.notice.danger', { role: 'alert' }, icon('alert', 16), h('span', error)) : null,
-        location.hash.startsWith('#/join') ? h('div.notice.info', icon('users', 16), h('span', 'You have been invited to join a firm. Sign in with Puter to accept the invitation.')) : null,
+        location.hash.startsWith('#/join') ? h('div.notice.info', icon('users', 16), h('span', 'You have been invited to join a firm. Sign in with Everything to accept the invitation.')) : null,
         !available
-          ? h('div.notice.warning', { role: 'alert' }, icon('warning', 16), h('span', 'Puter could not be loaded, so signing in is unavailable right now. You can still explore the sample firm.'))
+          ? h('div.notice.warning', { role: 'alert' }, icon('warning', 16), h('span', 'Everything could not be loaded, so signing in is unavailable right now. You can still explore the sample firm.'))
           : null,
         h(
           'div.cta',
@@ -235,7 +235,7 @@ function showWelcome(error) {
         h(
           'div.welcome-foot',
           h('a', { href: REPO_URL, target: '_blank', rel: 'noopener noreferrer' }, icon('github', 16), 'Source on GitHub'),
-          h('span', 'Your data is stored in your own Puter account.'),
+          h('span', 'Your data is stored in your own Everything account.'),
         ),
       ),
       h('div.welcome-art', { 'aria-hidden': 'true', html: WELCOME_ART }),

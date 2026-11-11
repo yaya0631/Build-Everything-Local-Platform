@@ -1,5 +1,5 @@
 /**
- * The few app options that low-level modules act on (lib/puter.js for AI, lib/doc.js for AutoSave and the
+ * The few app options that low-level modules act on (lib/everything.js for AI, lib/doc.js for AutoSave and the
  * recovery copy), as plain values with no imports, so those modules need not know where options come from.
  * lib/app-options.js keeps them up to date.
  */

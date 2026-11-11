@@ -1,7 +1,7 @@
 /**
  * File > Invite to Edit and File > Share for Review: sharing a document
  * (after confirming, since it stays shared until stopped), inviting people
- * by Puter username or with a link, roles, managing who has access,
+ * by Everything username or with a link, roles, managing who has access,
  * review links for people who should only view and comment, and Stop
  * Sharing. Explains what is needed when not signed in or offline.
  */
@@ -67,7 +67,7 @@ export async function shareDocument(app, editor, { review = false } = {}) {
       h('p.dialog-message', `Share "${editor.name}"?`),
       h(
         'ul.collab-points',
-        h('li', 'The document is kept in your Puter account, on a collaboration server that runs in your account.'),
+        h('li', 'The document is kept in your Everything account, on a collaboration server that runs in your account.'),
         h('li', review ? 'People with the review link can view it and comment, but not edit.' : 'People you invite open it from a link and see each other’s changes live.'),
         h('li', 'It stays shared until you choose Stop Sharing. You can change or remove anyone’s access at any time.'),
       ),
@@ -114,13 +114,13 @@ export async function inviteDialog(app, editor = app.editor) {
   const say = (t) => (status.textContent = t);
 
   // Invite by username.
-  const nameInput = h('input.collab-username', { type: 'text', placeholder: 'Puter username', 'aria-label': 'Puter username', autocomplete: 'off', spellcheck: 'false' });
+  const nameInput = h('input.collab-username', { type: 'text', placeholder: 'Everything username', 'aria-label': 'Everything username', autocomplete: 'off', spellcheck: 'false' });
   let nameRole = 'editor';
   const nameRoleSel = roleSelect(nameRole, (v) => (nameRole = v), { label: 'Role for this person' });
   const inviteName = async () => {
     const username = nameInput.value.trim().replace(/^@/, '');
     if (!username) {
-      say('Enter the Puter username of the person to invite.');
+      say('Enter the Everything username of the person to invite.');
       nameInput.focus();
       return;
     }
@@ -149,7 +149,7 @@ export async function inviteDialog(app, editor = app.editor) {
       const url = await app.collab.link(editor, { role: linkRole });
       linkField.value = url;
       const copied = await copyText(url, linkField);
-      say(copied ? `Link copied. Anyone who opens it signed in to Puter ${ROLE_HELP[linkRole].toLowerCase()}. It works for 30 days.` : 'Copy the link from the box.');
+      say(copied ? `Link copied. Anyone who opens it signed in to Everything ${ROLE_HELP[linkRole].toLowerCase()}. It works for 30 days.` : 'Copy the link from the box.');
     } catch (err) {
       say(err.message);
     }
@@ -306,7 +306,7 @@ export async function reviewDialog(app, editor = app.editor) {
     className: 'collab-dialog',
     body: h(
       'div.collab-share',
-      h('p.dialog-message', 'Anyone signed in to Puter who opens this link can view the document, move between artboards, zoom and pan, and add comments. They cannot change the artwork.'),
+      h('p.dialog-message', 'Anyone signed in to Everything who opens this link can view the document, move between artboards, zoom and pan, and add comments. They cannot change the artwork.'),
       h('div.collab-row', field, h('button.btn.small', { type: 'button', onclick: async () => (status.textContent = (await copyText(field.value, field)) ? 'Review link copied.' : 'Copy the link from the box.') }, icon('copy', 13), 'Copy')),
       h('p.muted', 'Reviewers see changes as you make them. The link works for 30 days; withdraw links or remove reviewers from File > Invite to Edit.'),
       status,

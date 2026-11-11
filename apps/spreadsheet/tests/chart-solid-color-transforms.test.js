@@ -25,7 +25,7 @@ it.each([
     expect(renderChartSvg(chartData(wb, sheet.id, chart), chart, chart.w, chart.h)).toContain(`stroke="${expected}"`);
     expect(wb.chartById(sheet.id, wb.duplicateChart(sheet.id, chart.id)).colors[1]).toBe(expected);
     const saved = X.CFB.read(new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()), { type: 'array' });
-    set(saved, '/xl/workbook.xml', get(saved, '/xl/workbook.xml').replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+    set(saved, '/xl/workbook.xml', get(saved, '/xl/workbook.xml').replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
     wb = await workbookFromFile(bytes(saved));
   }
 });

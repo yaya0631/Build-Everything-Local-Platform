@@ -1,7 +1,7 @@
 /**
  * Small helpers for the worker: error shape, JSON responses, caller identity,
  * and the atomic block append. `me` is the worker runtime's global for the
- * owner's Puter resources; everything shared lives in `me.puter.kv`.
+ * owner's Everything resources; everything shared lives in `me.everything.kv`.
  */
 import { KEYS, jsonBytes } from '../src/shared/blocks.js';
 
@@ -15,8 +15,8 @@ export class HttpError extends Error {
   }
 }
 
-export const kv = () => me.puter.kv;
-export const fs = () => me.puter.fs;
+export const kv = () => me.everything.kv;
+export const fs = () => me.everything.fs;
 
 /**
  * Build id of this bundle, compiled in by vite.worker.config.js from a hash
@@ -28,17 +28,17 @@ export const WORKER_BUILD = typeof __WORKER_BUILD__ === 'string' ? __WORKER_BUIL
 /** When the bundle was built, so two builds can be ordered (0 from source). */
 export const WORKER_BUILT_AT = typeof __WORKER_BUILT_AT__ === 'number' ? __WORKER_BUILT_AT__ : 0;
 
-/** The puter.js build the platform baked into this deploy (its preamble's first
+/** The everything.js build the platform baked into this deploy (its preamble's first
  *  line); read on each call because the preamble exists only once deployed.
  *  Null from source (tests, mock.html). */
 export const workerRuntime = () =>
-  typeof __PUTER_PREAMBLE_VERSION__ === 'string' ? __PUTER_PREAMBLE_VERSION__ : null;
+  typeof __EVERYTHING_PREAMBLE_VERSION__ === 'string' ? __EVERYTHING_PREAMBLE_VERSION__ : null;
 
 /**
  * Whose account this worker runs in. Each workspace owner deploys their own
  * copy, so only that account may create workspaces here: anyone else could
  * otherwise store data in the owner's KV at the owner's expense. The owner is
- * asked from the runtime (`me.puter.auth.getUser()`) and remembered in
+ * asked from the runtime (`me.everything.auth.getUser()`) and remembered in
  * `tc:config`; if the runtime cannot say, the first account to create a
  * workspace claims the worker (the deploy flow does so within seconds of
  * creating it). `tc:config.open` lets an owner run a shared worker anyone
@@ -52,7 +52,7 @@ export async function serverConfig() {
   const cfg = (await kv().get(CONFIG_KEY)) || {};
   if (!cfg.owner) {
     try {
-      const info = me.puter.auth && typeof me.puter.auth.getUser === 'function' ? await me.puter.auth.getUser() : null;
+      const info = me.everything.auth && typeof me.everything.auth.getUser === 'function' ? await me.everything.auth.getUser() : null;
       if (info && info.uuid) {
         cfg.owner = String(info.uuid);
         await kv().update(CONFIG_KEY, { owner: cfg.owner }).catch(() => {});
@@ -100,7 +100,7 @@ export function fail(status, code, message, headers = null) {
 }
 
 /**
- * Let the runtime finish `deferred` after the answer has gone out. A Puter
+ * Let the runtime finish `deferred` after the answer has gone out. An Everything
  * worker's event carries `waitUntil` (the service-worker method): the
  * promise keeps the isolate alive without holding the response, which is
  * what lets the search index, the pushes and the change signal ride behind
@@ -123,7 +123,7 @@ async function settleDeferred(ctx, deferred) {
 }
 
 /**
- * Say how long the answer took, and how much of that was spent asking Puter
+ * Say how long the answer took, and how much of that was spent asking Everything
  * who the caller is (`auth`, and 0 where a cached identity answered it —
  * see IDENTITY_TTL_MS). The rest is the store, which is round trips in a
  * row, so `total - auth` divided by the calls a route makes is what one
@@ -159,7 +159,7 @@ export let workerHost = null;
 
 /**
  * Wrap a route handler: thrown HttpErrors become JSON error responses with
- * the same { error, code, message } shape Puter itself uses; anything else
+ * the same { error, code, message } shape Everything itself uses; anything else
  * is a 500 that says so without leaking a stack. The handler is also given
  * `ctx.defer(work)` for anything the answer does not depend on (see
  * settleDeferred).
@@ -204,7 +204,7 @@ export function route(fn) {
 /**
  * How long an answered identity is reused for the token that earned it.
  *
- * Identifying a caller is an HTTP call to Puter (`getUser()` is a GET of
+ * Identifying a caller is an HTTP call to Everything (`getUser()` is a GET of
  * /whoami), made on every request this worker serves — a poll every few
  * seconds from every open tab, and once more for every message, read,
  * reaction and keystroke burst. It is also the one thing that cannot be
@@ -214,7 +214,7 @@ export function route(fn) {
  * So an answer is kept for this long, against a hash of the token that
  * earned it. The cost is that a session ended elsewhere — signed out,
  * revoked — goes on being accepted by an already-running isolate for up to
- * this long. Half a minute is short against how long a Puter session lives
+ * this long. Half a minute is short against how long an Everything session lives
  * and close to the poll interval the app already runs on, and it is the
  * whole of the exposure: nothing is cached across isolates, nothing is
  * written down, and a token that was never valid is never cached at all.
@@ -231,8 +231,8 @@ export function resetIdentityCache() {
 }
 
 /**
- * Who is calling. puter.workers.exec() forwards the caller's token, and the
- * runtime hands it to us as `user.puter`; asking Puter who that token belongs
+ * Who is calling. everything.workers.exec() forwards the caller's token, and the
+ * runtime hands it to us as `user.everything`; asking Everything who that token belongs
  * to is the only trustworthy identity, so nothing in a request body is ever
  * believed about who sent it. The answer is then reused for a short while
  * (see IDENTITY_TTL_MS), which is the only way this call comes off the front
@@ -246,12 +246,12 @@ export const authMs = new WeakMap();
 
 /** The cache key a caller's token falls under, or null where nothing may be cached for them. */
 async function identityKey(user) {
-  const token = typeof user?.puter?.authToken === 'string' ? user.puter.authToken : null;
+  const token = typeof user?.everything?.authToken === 'string' ? user.everything.authToken : null;
   return token && IDENTITY_TTL_MS > 0 ? sha256(token) : null;
 }
 
 /**
- * Who the caller is, if that is already known — without asking Puter, and
+ * Who the caller is, if that is already known — without asking Everything, and
  * without refusing anyone: null means "not known yet", never "not allowed".
  *
  * This is what lets a request make one read instead of two. Every key a
@@ -261,7 +261,7 @@ async function identityKey(user) {
  * identity call and the caller's document after it. Costs a hash, no I/O.
  */
 export async function peekIdentity(user) {
-  if (!user || !user.puter) return null;
+  if (!user || !user.everything) return null;
   const key = await identityKey(user);
   if (!key) return null;
   const hit = identityCache.get(key);
@@ -276,7 +276,7 @@ export async function peekIdentity(user) {
 }
 
 export async function identify(user) {
-  if (!user || !user.puter) fail(401, 'unauthorized', 'Sign in with Puter to continue');
+  if (!user || !user.everything) fail(401, 'unauthorized', 'Sign in with Everything to continue');
   const key = await identityKey(user);
   if (key) {
     const hit = identityCache.get(key);
@@ -289,13 +289,13 @@ export async function identify(user) {
   const started = Date.now();
   let info = null;
   try {
-    const p = user.puter;
+    const p = user.everything;
     info = p.auth && typeof p.auth.getUser === 'function' ? await p.auth.getUser() : await p.getUser();
   } catch {
     info = null;
   }
   authMs.set(user, Date.now() - started);
-  if (!info || !info.uuid) fail(401, 'unauthorized', 'Your Puter session is not valid');
+  if (!info || !info.uuid) fail(401, 'unauthorized', 'Your Everything session is not valid');
   const id = { uuid: String(info.uuid), username: String(info.username || '').toLowerCase() };
   if (key) {
     // Dropped whole rather than swept: the map is small, every entry lapses

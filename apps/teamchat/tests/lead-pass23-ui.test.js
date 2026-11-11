@@ -1,8 +1,8 @@
 /**
  * Conversation UI (lead, review pass 23), driven in node through
  * tests/helpers/dom.js as the pass-15 conversation file is: a fresh DOM and
- * a fresh module registry for every test, Puter faked at
- * `puter.workers.exec`, the toast, the theme, the modal layer and navigation
+ * a fresh module registry for every test, Everything faked at
+ * `everything.workers.exec`, the toast, the theme, the modal layer and navigation
  * mocked.
  */
 import { describe, it, expect, afterEach, vi } from 'vitest';
@@ -33,7 +33,7 @@ async function boot({ width = 1280, ...env } = {}) {
   dom?.uninstall();
   dom = installDom({ width, ...env });
   vi.resetModules();
-  globalThis.puter = { workers: { exec: async () => json({ code: 'not_found', message: 'nope' }, 404) } };
+  globalThis.everything = { workers: { exec: async () => json({ code: 'not_found', message: 'nope' }, 404) } };
   ({ store } = await import('../src/lib/store.js'));
   const { api } = await import('../src/lib/api.js');
   store.wsId = REF;
@@ -63,7 +63,7 @@ afterEach(async () => {
   store = null;
   dom?.uninstall();
   dom = null;
-  delete globalThis.puter;
+  delete globalThis.everything;
   vi.restoreAllMocks();
 });
 
@@ -173,7 +173,7 @@ describe('an edit standing open on a Threads view card while the card is drawn a
   async function openThreads() {
     const { dom: d } = await boot({ hash: `#/ws/${encodeURIComponent(REF)}/threads` });
     const root = { seq: 1, user: 'u-me', ts: 1_700_000_000_001, text: 'root 1', kind: 'msg', replyCount: 1, attachments: [], mentions: [], reactions: {} };
-    globalThis.puter.workers.exec = async (url) => {
+    globalThis.everything.workers.exec = async (url) => {
       const u = new URL(url);
       if (u.pathname.endsWith('/threads')) return json({ threads: [{ id: 'c1_t1', conv: 'c1', seq: 1, at: 5000, unread: 0, root }] });
       if (u.pathname.endsWith('/messages')) return json({ messages: [], seq: 0 });
@@ -285,7 +285,7 @@ describe('a code block unfolded on a Threads view card while the card is drawn a
     const fence = `\`\`\`\n${Array.from({ length: 30 }, (_, i) => `line ${i + 1}`).join('\n')}\n\`\`\``;
     const root = { seq: 1, user: 'u2', ts: 1_700_000_000_001, text: `a trace:\n${fence}`, kind: 'msg', replyCount: 1, attachments: [], mentions: [], reactions: {} };
     const reply = { seq: 1, user: 'u3', ts: 1_700_000_000_002, text: `mine:\n${fence}`, kind: 'msg', attachments: [], mentions: [], reactions: {} };
-    globalThis.puter.workers.exec = async (url) => {
+    globalThis.everything.workers.exec = async (url) => {
       const u = new URL(url);
       if (u.pathname.endsWith('/threads')) return json({ threads: [{ id: 'c1_t1', conv: 'c1', seq: 1, at: 5000, unread: 0, root }] });
       if (u.pathname.endsWith('/messages')) return json({ messages: [reply], seq: 1 });
@@ -328,7 +328,7 @@ describe('the keyboard on a control inside a Threads view card\'s row while the 
     const { dom: d } = await boot({ hash: `#/ws/${encodeURIComponent(REF)}/threads` });
     const root = { seq: 1, user: 'u2', ts: 1_700_000_000_001, text: 'root 1', kind: 'msg', replyCount: 1, attachments: [], mentions: [], reactions: { '+1': { u3: 1_700_000_000_005 }, eyes: { u2: 1_700_000_000_006 } } };
     const reply = { seq: 1, user: 'u3', ts: 1_700_000_000_002, text: 'r1', kind: 'msg', attachments: [], mentions: [], reactions: {} };
-    globalThis.puter.workers.exec = async (url) => {
+    globalThis.everything.workers.exec = async (url) => {
       const u = new URL(url);
       if (u.pathname.endsWith('/threads')) return json({ threads: [{ id: 'c1_t1', conv: 'c1', seq: 1, at: 5000, unread: 0, root }] });
       if (u.pathname.endsWith('/messages')) return json({ messages: [reply], seq: 1 });
@@ -376,7 +376,7 @@ describe('a reaction on the root of a Threads view card whose channel is not loa
     const { dom: d } = await boot({ hash: `#/ws/${encodeURIComponent(REF)}/threads` });
     const root = { seq: 1, user: 'u2', ts: 1_700_000_000_001, text: 'root 1', kind: 'msg', replyCount: 1, attachments: [], mentions: [], reactions: {} };
     const calls = [];
-    globalThis.puter.workers.exec = async (url, init = {}) => {
+    globalThis.everything.workers.exec = async (url, init = {}) => {
       const u = new URL(url);
       if (u.pathname.endsWith('/threads')) return json({ threads: [{ id: 'c1_t1', conv: 'c1', seq: 1, at: 5000, unread: 0, root }] });
       if (u.pathname.endsWith('/messages')) return json({ messages: [], seq: 0 });
@@ -415,7 +415,7 @@ describe('a reaction on the root of a Threads view card whose channel is not loa
   it('takes the reaction back off the card when the worker refuses it', async () => {
     const { dom: d } = await boot({ hash: `#/ws/${encodeURIComponent(REF)}/threads` });
     const root = { seq: 1, user: 'u2', ts: 1_700_000_000_001, text: 'root 1', kind: 'msg', replyCount: 1, attachments: [], mentions: [], reactions: {} };
-    globalThis.puter.workers.exec = async (url) => {
+    globalThis.everything.workers.exec = async (url) => {
       const u = new URL(url);
       if (u.pathname.endsWith('/threads')) return json({ threads: [{ id: 'c1_t1', conv: 'c1', seq: 1, at: 5000, unread: 0, root }] });
       if (u.pathname.endsWith('/messages')) return json({ messages: [], seq: 0 });
@@ -449,7 +449,7 @@ describe('a reaction on the root of a thread opened from a link, while the chann
     await (await import('../src/lib/emoji.js')).loadEmoji();
     const root = { ...message(5), replyCount: 1 };
     const calls = [];
-    globalThis.puter.workers.exec = async (url, init = {}) => {
+    globalThis.everything.workers.exec = async (url, init = {}) => {
       const u = new URL(url);
       if (u.pathname.endsWith('/reactions')) { calls.push(JSON.parse(init.body)); return json({ ok: true }); }
       // The root alone, asked for by number (the window holds the newest messages, 40 and up).

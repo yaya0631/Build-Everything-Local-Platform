@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const WORKER_SOURCE = fs.readFileSync(path.join(__dirname, '../public/worker/legal-team-worker.js'), 'utf8');
-const person = (uuid, username) => ({ puter: { auth: { getUser: async () => ({ uuid, username }) } } });
+const person = (uuid, username) => ({ everything: { auth: { getUser: async () => ({ uuid, username }) } } });
 const OWNER = person('owner-1', 'eleanor');
 const URL_ = 'http://legalfirm-abc.localhost:8443';
 const tick = (ms = 0) => new Promise((r) => setTimeout(r, ms));
@@ -43,7 +43,7 @@ function loadWorker() {
   const router = { get: (p, fn) => routes.set(`GET ${p}`, fn), post: (p, fn) => routes.set(`POST ${p}`, fn) };
   new Function('router', WORKER_SOURCE)(router);
   const kv = memoryKV();
-  const me = { puter: { kv, fs: {}, auth: { getUser: async () => ({ uuid: 'owner-1', username: 'eleanor' }) } } };
+  const me = { everything: { kv, fs: {}, auth: { getUser: async () => ({ uuid: 'owner-1', username: 'eleanor' }) } } };
   const api = async (user, body) => {
     const res = await routes.get('POST /api')({ me, user, request: { json: async () => structuredClone(body) } });
     return { status: res.status, body: await res.json() };
@@ -52,12 +52,12 @@ function loadWorker() {
   return { kv, api, exec };
 }
 
-/** Boot the app as one signed-in Puter account. */
-async function boot({ hash = '', puter }) {
+/** Boot the app as one signed-in Everything account. */
+async function boot({ hash = '', everything }) {
   vi.resetModules();
   document.body.innerHTML = '<div id="app"></div>';
   history.replaceState(null, '', `/${hash}`);
-  globalThis.puter = puter;
+  globalThis.everything = everything;
   await import('../src/main.js');
   for (let i = 0; i < 20; i++) await tick(5);
 }
@@ -76,7 +76,7 @@ beforeEach(() => {
   localStorage.clear();
 });
 afterEach(() => {
-  delete globalThis.puter;
+  delete globalThis.everything;
 });
 
 describe('being removed from a firm', () => {
@@ -94,7 +94,7 @@ describe('being removed from a firm', () => {
     process.on('unhandledRejection', onRejection);
     try {
       await boot({
-        puter: { auth: { isSignedIn: () => true, getUser: async () => ({ uuid: 'u-7', username: 'nadia' }) }, kv, workers: { exec: w.exec(person('u-7', 'nadia')) } },
+        everything: { auth: { isSignedIn: () => true, getUser: async () => ({ uuid: 'u-7', username: 'nadia' }) }, kv, workers: { exec: w.exec(person('u-7', 'nadia')) } },
       });
       await tick(2700);
       const toasts = [...document.querySelectorAll('.toast')].map((t) => t.textContent);
@@ -120,7 +120,7 @@ describe('opening an invitation link', () => {
     kv.data.set('lg1:workspaces', { current: 'own', own: {}, joined: [{ url: URL_, business: 'Rivera Law', role: 'member' }] });
     await boot({
       hash: `#/join?w=legalfirm-abc&t=${again.token}`,
-      puter: { auth: { isSignedIn: () => true, getUser: async () => ({ uuid: 'u-2', username: 'daniel' }) }, kv, workers: { exec: w.exec(daniel) } },
+      everything: { auth: { isSignedIn: () => true, getUser: async () => ({ uuid: 'u-2', username: 'daniel' }) }, kv, workers: { exec: w.exec(daniel) } },
     });
     const confirm = dialogWith('Join a firm?');
     if (confirm) [...confirm.querySelectorAll('button')].find((b) => b.textContent === 'Join firm').click();
@@ -135,7 +135,7 @@ describe('opening an invitation link again', () => {
     kv.data.set('lg1:workspaces', { current: 'own', own: {}, joined: [{ url: URL_, business: 'Rivera Law', role: 'member' }] });
     await boot({
       hash: '#/join?w=legalfirm-abc&t=UsedToken0123456',
-      puter: {
+      everything: {
         auth: { isSignedIn: () => true, getUser: async () => ({ uuid: 'u-2', username: 'daniel' }) },
         kv,
         workers: {
@@ -152,16 +152,16 @@ describe('opening an invitation link again', () => {
 });
 
 describe('the join prompt', () => {
-  it('says that the firm server acts with the person\'s Puter sign-in, not only that it sees their username', async () => {
+  it('says that the firm server acts with the person\'s Everything sign-in, not only that it sees their username', async () => {
     const w = loadWorker();
     const inv = (await w.api(OWNER, { op: 'invite' })).body;
     await boot({
       hash: `#/join?w=legalfirm-abc&t=${inv.token}`,
-      puter: { auth: { isSignedIn: () => true, getUser: async () => ({ uuid: 'u-7', username: 'nadia' }) }, kv: memoryKV(), workers: { exec: w.exec(person('u-7', 'nadia')) } },
+      everything: { auth: { isSignedIn: () => true, getUser: async () => ({ uuid: 'u-7', username: 'nadia' }) }, kv: memoryKV(), workers: { exec: w.exec(person('u-7', 'nadia')) } },
     });
     const text = dialogWith('Join a firm?')?.textContent || '';
     expect(text).toContain('legalfirm-abc.localhost:8443');
-    expect(text).toContain('your Puter sign-in');
+    expect(text).toContain('your Everything sign-in');
     expect(text).toContain('your own firm');
   });
 });
@@ -171,13 +171,13 @@ describe('starting without a connection', () => {
     Object.defineProperty(navigator, 'onLine', { configurable: true, get: () => true });
   });
 
-  it('opens the firm from this device when Puter cannot be reached', async () => {
+  it('opens the firm from this device when Everything cannot be reached', async () => {
     const kv = memoryKV();
     kv.data.set('lg1:settings', { firm: { name: 'Rivera Law' }, onboarded: true });
-    kv.data.set('lg1:r:users:u1', { id: 'u1', name: 'Eleanor Rivera', puterUsername: 'eleanor', active: true });
+    kv.data.set('lg1:r:users:u1', { id: 'u1', name: 'Eleanor Rivera', everythingUsername: 'eleanor', active: true });
     kv.data.set('lg1:meta', { settings: 1, users: 1 });
     const online = { auth: { isSignedIn: () => true, getUser: async () => ({ uuid: 'owner-1', username: 'eleanor' }) }, kv };
-    await boot({ puter: online });
+    await boot({ everything: online });
     expect(document.querySelector('.brand-name')?.textContent).toBe('Rivera Law');
     await tick(800); // the local snapshot is written shortly after a load
 
@@ -186,7 +186,7 @@ describe('starting without a connection', () => {
       throw new TypeError('Failed to fetch');
     };
     const offline = { auth: { isSignedIn: () => true, getUser: down }, kv: { get: down, set: down, list: down, incr: down, del: down } };
-    await boot({ puter: offline });
+    await boot({ everything: offline });
     expect(document.querySelector('.welcome')).toBeNull();
     expect(document.querySelector('.brand-name')?.textContent).toBe('Rivera Law');
   });

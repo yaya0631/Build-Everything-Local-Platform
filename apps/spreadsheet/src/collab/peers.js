@@ -1,6 +1,6 @@
 /**
- * Live peer links between the people in a shared workbook, over Puter's WebRTC peer service
- * (puter.peer.serve / connect). Every link proves its identity with a ticket the room's worker signed and a
+ * Live peer links between the people in a shared workbook, over Everything's WebRTC peer service
+ * (everything.peer.serve / connect). Every link proves its identity with a ticket the room's worker signed and a
  * challenge signed with the session's own key, bound to the connection's transport certificates; every packet
  * is signed by its sender. Rooms of up to eight sessions form a full mesh, larger ones relay through two
  * sessions per group (see topology). Adapted from the Whiteboard app's peer network in this repository.

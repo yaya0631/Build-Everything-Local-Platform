@@ -16,7 +16,7 @@ export class AudioFile extends Emitter {
    * @param {number} o.sampleRate
    * @param {Channel[]} o.channels
    * @param {object} [o.info] { bitDepth, format, size } from the source file
-   * @param {object} [o.source] where it was opened from: { type: 'puter'|'local'|'new', path, handle }
+   * @param {object} [o.source] where it was opened from: { type: 'everything'|'local'|'new', path, handle }
    */
   constructor({ name, sampleRate, channels, markers = [], info = {}, source = { type: 'new' }, meta = {}, origin = null }) {
     super();

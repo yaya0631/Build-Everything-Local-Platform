@@ -2,7 +2,7 @@
  * Composing the email that carries a document to its client.
  *
  * Three ways out, in the order they are offered: send it from here — the app's
- * shared email worker does the delivery, billed to the user's own Puter account
+ * shared email worker does the delivery, billed to the user's own Everything account
  * (src/lib/mailer.js) — or hand the finished text to the user's own mail client,
  * or copy it for people who live in webmail. Only the first can carry the
  * invoice as a PDF, and only the first can honestly say it went.
@@ -145,7 +145,7 @@ export async function openCompose(doc, {
 
   /* ---- Sending from here ------------------------------------------------ */
 
-  // Delivery needs the worker bridge (it carries the user's Puter session) and
+  // Delivery needs the worker bridge (it carries the user's Everything session) and
   // a network to reach it. Read-only means this device is offline: the mail
   // app and the clipboard still work, so the sheet keeps them and simply does
   // not offer what it cannot do.
@@ -621,7 +621,7 @@ export async function openCompose(doc, {
         ? el('p.compose-note', {},
           el('span.compose-note-ic', { html: icon('mail', 13, 1.6) }),
           el('span.grow', {},
-            'Sending from here delivers it through your own Puter account. '
+            'Sending from here delivers it through your own Everything account. '
             + 'Your mail app can take the wording, but not the files.'))
         : null,
       // The two fallbacks travel as one group: at this width the row wraps,

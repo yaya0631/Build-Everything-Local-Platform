@@ -28,7 +28,7 @@ test("the shipped worker bundle deploys and exposes authenticated JSON routes", 
   ).code;
   const routes = new Map(),
     env = environment(),
-    puter = env.sdk(owner);
+    everything = env.sdk(owner);
   vm.runInNewContext(code, {
     router: {
       get: (path, handler) => routes.set("GET " + path, handler),
@@ -36,7 +36,7 @@ test("the shipped worker bundle deploys and exposes authenticated JSON routes", 
       custom: (method, path, handler) =>
         routes.set(method + " " + path, handler),
     },
-    me: { puter },
+    me: { everything },
     Response,
     Blob,
     URL,
@@ -63,48 +63,48 @@ test("the shipped worker bundle deploys and exposes authenticated JSON routes", 
     return new Response(code);
   });
   let deployments = 0;
-  puter.workers.create = async (name, path) => {
+  everything.workers.create = async (name, path) => {
     deployments++;
     assert.equal(env.files.get(path), code);
     return { url: `http://${name}.localhost:8443` };
   };
-  puter.workers.exec = async (url, options) => {
+  everything.workers.exec = async (url, options) => {
     assert.ok(url.endsWith("/health"));
-    assert.equal(options.headers["x-puter-no-auth"], "1");
-    assert.equal(options.headers["puter-auth"], undefined);
+    assert.equal(options.headers["x-everything-no-auth"], "1");
+    assert.equal(options.headers["everything-auth"], undefined);
     return routes.get("GET /health")();
   };
-  const server = await deploy(puter);
-  const config = await puter.kv.get("whiteboard-collaboration-worker-v1");
+  const server = await deploy(everything);
+  const config = await everything.kv.get("whiteboard-collaboration-worker-v1");
   assert.equal(config.server, server);
   assert.equal(config.build, metadata.build);
   assert.equal(config.builtAt, metadata.builtAt);
-  assert.equal(await deploy(puter), server);
+  assert.equal(await deploy(everything), server);
   assert.equal(deployments, 1, "Reuse the same deployed build");
   const post = (body, user, headers = {}) =>
     routes.get("POST /api")({
       request: new Request("http://worker.localhost:8443/api", {
         method: "POST",
         headers: {
-          ...(user ? { "puter-auth": env.sdk(user).authToken } : {}),
+          ...(user ? { "everything-auth": env.sdk(user).authToken } : {}),
           ...headers,
         },
         body,
       }),
-      user: user ? { puter: env.sdk(user) } : null,
+      user: user ? { everything: env.sdk(user) } : null,
     });
   assert.equal((await post("{}", null)).status, 401);
   assert.equal((await post("not JSON", owner)).status, 400);
-  puter.workers.exec = async (url, options) =>
+  everything.workers.exec = async (url, options) =>
     routes.get("POST /api")({
       request: new Request(url, options),
-      user: { puter: env.requestor(options.headers["puter-auth"]) },
+      user: { everything: env.requestor(options.headers["everything-auth"]) },
     });
   const initial = board("Bundled worker");
   initial.items = [item("note", 10, 10, { text: "Actual bundled code" })];
   const doc = new SharedDocument();
   doc.commit(initial);
-  const created = await call(puter, "http://worker.localhost:8443", {
+  const created = await call(everything, "http://worker.localhost:8443", {
     op: "create",
     room: initial.id,
     update: encode(doc.update()),
@@ -114,7 +114,7 @@ test("the shipped worker bundle deploys and exposes authenticated JSON routes", 
   assert.equal(
     (
       await post(JSON.stringify({ op: "sync", room: initial.id }), owner, {
-        "puter-auth": token,
+        "everything-auth": token,
       })
     ).status,
     401,
@@ -141,7 +141,7 @@ test("the shipped worker bundle deploys and exposes authenticated JSON routes", 
     200,
   );
   let aiCalls = 0;
-  puter.ai = {
+  everything.ai = {
     chat: async () => {
       aiCalls++;
       return { message: { content: "Controlled description." } };
@@ -526,8 +526,8 @@ test("an edit whose file is written slowly still reaches other instances and che
   // Other worker instances keep their own cached states.
   const { BoardService: B2 } = await import("../worker/service.js?instance=b");
   const { BoardService: C2 } = await import("../worker/service.js?instance=c");
-  const B = new B2(A.puter, { now: () => env.now, org: A.org });
-  const C = new C2(A.puter, { now: () => env.now, org: A.org });
+  const B = new B2(A.everything, { now: () => env.now, org: A.org });
+  const C = new C2(A.everything, { now: () => env.now, org: A.org });
   const b = board("T");
   b.items = [item("note", 0, 0, { text: "Hi" })];
   const seed = new SharedDocument();
@@ -601,7 +601,7 @@ test("an edit building on one saved through another instance is accepted at once
   const A = env.service;
   const { BoardService: Other } =
     await import("../worker/service.js?instance=behind");
-  const B = new Other(A.puter, { now: () => env.now, org: A.org });
+  const B = new Other(A.everything, { now: () => env.now, org: A.org });
   const b = board("Behind");
   b.items = [item("note", 0, 0, { text: "Hi" })];
   const doc = new SharedDocument();
@@ -671,7 +671,7 @@ test("a synchronization after a change saved through another instance reads it, 
   const A = env.service;
   const { BoardService: Other } =
     await import("../worker/service.js?instance=told");
-  const B = new Other(A.puter, { now: () => env.now, org: A.org });
+  const B = new Other(A.everything, { now: () => env.now, org: A.org });
   const b = board("Told");
   b.items = [item("note", 0, 0, { text: "Hi" })];
   const doc = new SharedDocument();
@@ -711,9 +711,9 @@ test("a synchronization after a change saved through another instance reads it, 
   // Told of the save, by a board event or a peer, it is read at once.
   assert.deepEqual(await types({ after: saved.serverTime }), ["note", "pen"]);
   // Others told of the same save share that read.
-  const list = A.puter.kv.list;
+  const list = A.everything.kv.list;
   let lists = 0;
-  A.puter.kv.list = (...args) => (lists++, list.apply(A.puter.kv, args));
+  A.everything.kv.list = (...args) => (lists++, list.apply(A.everything.kv, args));
   try {
     await A.call(owner, {
       op: "sync",
@@ -722,7 +722,7 @@ test("a synchronization after a change saved through another instance reads it, 
       after: saved.serverTime,
     });
   } finally {
-    A.puter.kv.list = list;
+    A.everything.kv.list = list;
   }
   assert.equal(lists, 0);
   seen.destroy();
@@ -735,7 +735,7 @@ test("a synchronization naming a save made through another instance reads it wha
   const { BoardService: Other } =
     await import("../worker/service.js?instance=named");
   // B's clock runs two seconds behind A's.
-  const B = new Other(A.puter, { now: () => env.now - 2000, org: A.org });
+  const B = new Other(A.everything, { now: () => env.now - 2000, org: A.org });
   const b = board("Named");
   b.items = [item("note", 0, 0, { text: "Hi" })];
   const doc = new SharedDocument();
@@ -764,12 +764,12 @@ test("a synchronization naming a save made through another instance reads it wha
     });
     return { id, at: saved.serverTime };
   };
-  const list = A.puter.kv.list;
+  const list = A.everything.kv.list;
   let lists = 0,
     hidden = null;
-  A.puter.kv.list = async (...args) => {
+  A.everything.kv.list = async (...args) => {
     lists++;
-    const page = await list.apply(A.puter.kv, args);
+    const page = await list.apply(A.everything.kv, args);
     page.items = page.items.filter(
       (i) => !hidden || !(typeof i === "string" ? i : i.key).endsWith(hidden),
     );
@@ -837,7 +837,7 @@ test("a synchronization naming a save made through another instance reads it wha
     }
     assert.ok(listings >= 1 && listings <= 2, `${listings} listings`);
   } finally {
-    A.puter.kv.list = list;
+    A.everything.kv.list = list;
     seen.destroy();
     doc.destroy();
   }
@@ -849,9 +849,9 @@ test("an instance answers from its copy while the board's signal is unchanged, o
   const { BoardService: Other } =
     await import("../worker/service.js?instance=settled");
   // B's clock runs two seconds behind A's.
-  const B = new Other(A.puter, { now: () => env.now - 2000, org: A.org });
+  const B = new Other(A.everything, { now: () => env.now - 2000, org: A.org });
   // Listings show a write only 600 ms after it.
-  const kv = A.puter.kv,
+  const kv = A.everything.kv,
     shown = new Map(),
     set = kv.set,
     list = kv.list;
@@ -964,11 +964,11 @@ test("an instance answers from its copy while the board's signal is unchanged, o
 test("an instance runs two listings at once and queues the rest", async () => {
   const env = environment();
   const { BoardService } = await import("../worker/service.js?instance=turns");
-  const service = new BoardService(env.service.puter, {
+  const service = new BoardService(env.service.everything, {
     now: () => env.now,
     org: env.service.org,
   });
-  const kv = env.service.puter.kv,
+  const kv = env.service.everything.kv,
     list = kv.list,
     waiting = [];
   let running = 0,
@@ -1004,7 +1004,7 @@ async function unlisted(name) {
   const instance = async (label) =>
     new (
       await import(`../worker/service.js?instance=${name}-${label}`)
-    ).BoardService(env.service.puter, {
+    ).BoardService(env.service.everything, {
       now: () => env.now,
       org: env.service.org,
     });
@@ -1040,13 +1040,13 @@ async function unlisted(name) {
   await B.call(owner, saved);
   const sync = (input = {}) =>
     A.call(owner, { op: "sync", room: b.id, ...input });
-  const kv = env.service.puter.kv,
+  const kv = env.service.everything.kv,
     list = kv.list;
   const lists = { count: 0 };
   return { env, A, b, doc, edit, saved, sync, kv, list, lists };
 }
 
-test("when Puter refuses listings, synchronizations answer from the cached copy, naming what it lacks, and commits building on it are retried", async () => {
+test("when Everything refuses listings, synchronizations answer from the cached copy, naming what it lacks, and commits building on it are retried", async () => {
   const { env, A, doc, edit, saved, sync, kv, list, lists } =
     await unlisted("refused");
   let refuse = true;
@@ -1064,7 +1064,7 @@ test("when Puter refuses listings, synchronizations answer from the cached copy,
     const ids = [saved.id];
     assert.deepEqual((await sync({ ids })).missing, ids);
     assert.equal(lists.count, 1);
-    // Others are answered from the copy without asking Puter again.
+    // Others are answered from the copy without asking Everything again.
     env.now += 1000;
     assert.deepEqual((await sync({ ids })).missing, ids);
     assert.equal((await sync({ noticed: true })).role, "owner");
@@ -1073,7 +1073,7 @@ test("when Puter refuses listings, synchronizations answer from the cached copy,
     const next = await edit((board) => (board.items[1].color = "#ff0000"));
     await assert.rejects(A.call(owner, next), { status: 409 });
     assert.equal(lists.count, 1);
-    // Ten seconds later Puter is asked again.
+    // Ten seconds later Everything is asked again.
     env.now += 10_000;
     refuse = false;
     assert.deepEqual((await sync({ ids })).missing, []);
@@ -1084,7 +1084,7 @@ test("when Puter refuses listings, synchronizations answer from the cached copy,
   }
 });
 
-test("a listing Puter is slow to answer holds a synchronization three seconds at most, and others not at all", async () => {
+test("a listing Everything is slow to answer holds a synchronization three seconds at most, and others not at all", async () => {
   const { env, sync, saved, doc, kv, list, lists } = await unlisted("stalled");
   let release;
   const stalled = new Promise((resolve) => (release = resolve));
@@ -1125,8 +1125,8 @@ test("an edit building on a record another instance's refresh missed is still ac
     await import("../worker/service.js?instance=slow-clock");
   const { BoardService: Other } =
     await import("../worker/service.js?instance=missed");
-  const slow = new Slow(A.puter, { now: () => env.now - 60_000, org: A.org });
-  const B = new Other(A.puter, { now: () => env.now, org: A.org });
+  const slow = new Slow(A.everything, { now: () => env.now - 60_000, org: A.org });
+  const B = new Other(A.everything, { now: () => env.now, org: A.org });
   const b = board("Missed");
   b.items = [item("note", 0, 0, { text: "Hi" })];
   const doc = new SharedDocument();
@@ -1176,7 +1176,7 @@ test("the worker's file cache counts checkpoints and stays within its limit", as
   const { SharedDocument } = await import("../src/collaboration/document.js");
   const { board, item } = await import("../src/model.js");
   const env = environment();
-  const service = new BoardService(env.service.puter, { now: () => env.now });
+  const service = new BoardService(env.service.everything, { now: () => env.now });
   const b = board("Big");
   b.items = Array.from({ length: 50 }, (_, n) =>
     item("note", n * 10, 0, { text: "x".repeat(19000) }),
@@ -1207,8 +1207,8 @@ test("a quiet board's checkpoint is renewed so loads stop reading its whole log"
   const { encode, hash } = await import("../src/collaboration/protocol.js");
   const { board, item } = await import("../src/model.js");
   const env = environment();
-  const puter = env.service.puter;
-  const service = new BoardService(puter, { now: () => env.now });
+  const everything = env.service.everything;
+  const service = new BoardService(everything, { now: () => env.now });
   const b = board("Quiet");
   b.items = [item("note", 0, 0, { text: "start" })];
   const doc = new SharedDocument();
@@ -1237,9 +1237,9 @@ test("a quiet board's checkpoint is renewed so loads stop reading its whole log"
   DOCS.clear();
   await service.call(owner, { op: "sync", room: b.id });
   env.now += 8 * 86_400_000;
-  const list = puter.kv.list;
+  const list = everything.kv.list;
   let rows = 0;
-  puter.kv.list = async (options) => {
+  everything.kv.list = async (options) => {
     const page = await list(options);
     if (String(options?.pattern || "").includes(":log:"))
       rows += page.items.length;
@@ -1270,8 +1270,8 @@ test("a quiet board's checkpoint is renewed so loads stop reading its whole log"
 test("an old version reads the edit log only up to its moment", async () => {
   const { BoardService } = await import("../worker/service.js");
   const env = environment();
-  const puter = env.service.puter;
-  const service = new BoardService(puter, { now: () => env.now });
+  const everything = env.service.everything;
+  const service = new BoardService(everything, { now: () => env.now });
   const b = board("Old");
   b.items = [item("note", 0, 0, { text: "start" })];
   const doc = new SharedDocument();
@@ -1298,9 +1298,9 @@ test("an old version reads the edit log only up to its moment", async () => {
     times.push(env.now);
   }
   await service.checkpoint(b.id, doc, env.now);
-  const list = puter.kv.list;
+  const list = everything.kv.list;
   let rows = 0;
-  puter.kv.list = async (options) => {
+  everything.kv.list = async (options) => {
     const page = await list(options);
     if (String(options?.pattern || "").includes(":log:"))
       rows += page.items.length;
@@ -1316,15 +1316,15 @@ test("an old version reads the edit log only up to its moment", async () => {
     assert.ok(rows <= n + 4, `${rows} log records read`);
     past.destroy();
   }
-  puter.kv.list = list;
+  everything.kv.list = list;
   doc.destroy();
 });
 
 test("an old version starts from the checkpoint before it", async () => {
   const { BoardService } = await import("../worker/service.js");
   const env = environment();
-  const puter = env.service.puter;
-  const service = new BoardService(puter, { now: () => env.now });
+  const everything = env.service.everything;
+  const service = new BoardService(everything, { now: () => env.now });
   const b = board("Old");
   b.items = [item("note", 0, 0, { text: "start" })];
   const doc = new SharedDocument();
@@ -1357,9 +1357,9 @@ test("an old version starts from the checkpoint before it", async () => {
     assert.equal(past.snapshot().items[0].text, `edit ${n}`);
     past.destroy();
   }
-  const list = puter.kv.list;
+  const list = everything.kv.list;
   let rows = 0;
-  puter.kv.list = async (options) => {
+  everything.kv.list = async (options) => {
     const page = await list(options);
     if (String(options?.pattern || "").includes(":log:"))
       rows += page.items.length;
@@ -1379,15 +1379,15 @@ test("an old version starts from the checkpoint before it", async () => {
     assert.ok(rows <= n - from + 10, `${rows} log records read`);
     past.destroy();
   }
-  puter.kv.list = list;
+  everything.kv.list = list;
   doc.destroy();
 });
 
 test("an edit saved while another request reads the board stays in the instance's cached state", async () => {
   const { BoardService } = await import("../worker/service.js");
   const env = environment();
-  const puter = env.service.puter;
-  const service = new BoardService(puter, { now: () => env.now });
+  const everything = env.service.everything;
+  const service = new BoardService(everything, { now: () => env.now });
   const b = board("Busy");
   b.items = [item("note", 0, 0, { text: "start" })];
   const doc = new SharedDocument();
@@ -1400,10 +1400,10 @@ test("an edit saved while another request reads the board stays in the instance'
   (await service.load(b.id)).doc.destroy();
   env.now += 2000;
   // A synchronization starts reading the edit log and is slow to finish.
-  const list = puter.kv.list;
+  const list = everything.kv.list;
   let paused, resume;
   const reached = new Promise((resolve) => (paused = resolve));
-  puter.kv.list = async (options) => {
+  everything.kv.list = async (options) => {
     const page = await list(options);
     if (String(options?.pattern || "").includes(":log:") && !resume) {
       const gate = new Promise((resolve) => (resume = resolve));
@@ -1420,7 +1420,7 @@ test("an edit saved while another request reads the board stays in the instance'
   next.items[0].text = "saved";
   doc.commit(next);
   const update = doc.update(vector);
-  await new BoardService(puter, { now: () => env.now }).call(owner, {
+  await new BoardService(everything, { now: () => env.now }).call(owner, {
     op: "commit",
     room: b.id,
     id: await hash(update),
@@ -1428,7 +1428,7 @@ test("an edit saved while another request reads the board stays in the instance'
   });
   resume();
   (await slow).doc.destroy();
-  puter.kv.list = list;
+  everything.kv.list = list;
   const { doc: cached } = await service.load(b.id);
   assert.equal(cached.snapshot().items[0].text, "saved");
   cached.destroy();
@@ -1566,10 +1566,10 @@ async function instances(name) {
   const { BoardService } = await import(
     `../worker/service.js?instance=access-${name}`
   );
-  const puter = { ...A.puter };
-  const B = new BoardService(puter, {
+  const everything = { ...A.everything };
+  const B = new BoardService(everything, {
     now: () => env.now,
-    org: new OrgService(puter, { now: () => env.now }),
+    org: new OrgService(everything, { now: () => env.now }),
   });
   const b = board("Access");
   b.items = [item("note", 0, 0, { text: "Hi" })];

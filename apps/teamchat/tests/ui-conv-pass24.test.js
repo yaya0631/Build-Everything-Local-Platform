@@ -1,8 +1,8 @@
 /**
  * Conversation UI (review pass 24), driven in node through
  * tests/helpers/dom.js as the pass-19 to pass-23 files are: a fresh DOM and
- * a fresh module registry for every test, Puter faked at
- * `puter.workers.exec`, the toast, the theme, the modal layer and navigation
+ * a fresh module registry for every test, Everything faked at
+ * `everything.workers.exec`, the toast, the theme, the modal layer and navigation
  * mocked.
  */
 import { describe, it, expect, afterEach, vi } from 'vitest';
@@ -33,7 +33,7 @@ async function boot({ width = 1280, ...env } = {}) {
   dom?.uninstall();
   dom = installDom({ width, ...env });
   vi.resetModules();
-  globalThis.puter = { workers: { exec: async () => json({ code: 'not_found', message: 'nope' }, 404) } };
+  globalThis.everything = { workers: { exec: async () => json({ code: 'not_found', message: 'nope' }, 404) } };
   ({ store } = await import('../src/lib/store.js'));
   const { api } = await import('../src/lib/api.js');
   store.wsId = REF;
@@ -65,7 +65,7 @@ afterEach(async () => {
   store = null;
   dom?.uninstall();
   dom = null;
-  delete globalThis.puter;
+  delete globalThis.everything;
   vi.restoreAllMocks();
 });
 
@@ -279,7 +279,7 @@ describe('the Guests dialog while another admin changes the guests', () => {
     store.ws.members['u-me'].role = 'admin';
     store.ws.members.u4 = { role: 'guest', name: 'Gia Guest', username: 'gia', color: 4 };
     let guests = [{ uuid: 'u4', channels: ['c1'], hidden: 0 }];
-    globalThis.puter.workers.exec = async (url) => {
+    globalThis.everything.workers.exec = async (url) => {
       const u = new URL(url);
       if (u.pathname.endsWith('/guests')) return json({ guests });
       return json({ code: 'not_found', message: 'nope' }, 404);
@@ -296,9 +296,9 @@ describe('the Guests dialog while another admin changes the guests', () => {
     expect(names()).toEqual([]);
     expect(document.querySelector('.pick-list .empty')).toBeTruthy();
     // An unrelated change (a topic) does not read the list again.
-    const before = globalThis.puter.workers.exec;
+    const before = globalThis.everything.workers.exec;
     const calls = [];
-    globalThis.puter.workers.exec = async (...a) => { calls.push(a[0]); return before(...a); };
+    globalThis.everything.workers.exec = async (...a) => { calls.push(a[0]); return before(...a); };
     store.ws.channels.c1.topic = 'new';
     store.emit('workspace');
     await d.tick(3);
@@ -395,7 +395,7 @@ describe('acting on the root of a thread opened from a link, while the channel\'
     store.pokeSync = () => {};
     const root = { ...message(5, 'u-me'), text: 'root 5', replyCount: 1, ...rootExtra };
     const calls = [];
-    globalThis.puter.workers.exec = async (url, init = {}) => {
+    globalThis.everything.workers.exec = async (url, init = {}) => {
       const u = new URL(url);
       const path = u.pathname;
       if (path.endsWith('/messages') && u.searchParams.get('from') === '5') return json({ messages: [root], seq: 45 });

@@ -23,10 +23,10 @@ function bridgeTo(user) {
 }
 
 describe('a conversation whose every message was deleted, carried across by a move', () => {
-  const hadPuter = Object.hasOwn(globalThis, 'puter') ? globalThis.puter : undefined;
+  const hadEverything = Object.hasOwn(globalThis, 'everything') ? globalThis.everything : undefined;
   afterEach(() => {
-    if (hadPuter === undefined) delete globalThis.puter;
-    else globalThis.puter = hadPuter;
+    if (hadEverything === undefined) delete globalThis.everything;
+    else globalThis.everything = hadEverything;
   });
 
   it('keeps its message counter on the copy, so members’ cursors still mean what they did and the next message is counted unread', async () => {
@@ -43,7 +43,7 @@ describe('a conversation whose every message was deleted, carried across by a mo
     expect(page).toMatchObject({ seq: 3, messages: [] });
     expect(exported.data.header.memberDocs[bob.uuid].reads[dm]).toBe(3);
 
-    globalThis.puter = bridgeTo(alice);
+    globalThis.everything = bridgeTo(alice);
     const ref = await importArchive('http://teamchat-new.localhost:8443', { header: exported.data.header, pages: exported.data.pages, files: exported.data.files }, { profile: { name: 'Alice' } });
     const copy = ref.split('@')[0];
     expect((await rt.kv.get(KEYS.ws(copy))).importing).toBeUndefined();
@@ -68,10 +68,10 @@ describe('a conversation whose every message was deleted, carried across by a mo
 });
 
 describe('files of a direct message that does not travel with a move', () => {
-  const hadPuter = Object.hasOwn(globalThis, 'puter') ? globalThis.puter : undefined;
+  const hadEverything = Object.hasOwn(globalThis, 'everything') ? globalThis.everything : undefined;
   afterEach(() => {
-    if (hadPuter === undefined) delete globalThis.puter;
-    else globalThis.puter = hadPuter;
+    if (hadEverything === undefined) delete globalThis.everything;
+    else globalThis.everything = hadEverything;
   });
   const json = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
   const CH = 'general001';
@@ -100,7 +100,7 @@ describe('files of a direct message that does not travel with a move', () => {
 
   it('stay behind, rather than landing in the new owner’s drive held by nothing; a file shared in a channel too comes across', async () => {
     const asked = [];
-    globalThis.puter = { workers: { exec: async (url, init = {}) => {
+    globalThis.everything = { workers: { exec: async (url, init = {}) => {
       const u = new URL(url);
       if (u.hostname === 'teamchat-old.localhost:8443') {
         asked.push(u.pathname);
@@ -218,10 +218,10 @@ describe('a file whose long name is cut through an emoji', () => {
 });
 
 describe('an export to the drive holding a file whose name is cut through an emoji', () => {
-  const hadPuter = Object.hasOwn(globalThis, 'puter') ? globalThis.puter : undefined;
+  const hadEverything = Object.hasOwn(globalThis, 'everything') ? globalThis.everything : undefined;
   afterEach(() => {
-    if (hadPuter === undefined) delete globalThis.puter;
-    else globalThis.puter = hadPuter;
+    if (hadEverything === undefined) delete globalThis.everything;
+    else globalThis.everything = hadEverything;
   });
 
   it('writes its pages and files rather than stopping on a name no address can carry', async () => {
@@ -235,7 +235,7 @@ describe('an export to the drive holding a file whose name is cut through an emo
     const html = renderArchiveHtml(archive);
     expect(html.pages.c1).toContain(`href="../files/${encodeURIComponent(`fileaaaa0001-${'b'.repeat(59)}`)}"`);
     const written = [];
-    globalThis.puter = {
+    globalThis.everything = {
       fs: { write: async (path) => { written.push(path); } },
       workers: { exec: async () => new Response(new Blob([new Uint8Array([1, 2, 3, 4])], { type: 'image/png' }), { status: 200, headers: { 'Content-Type': 'image/png' } }) },
     };
@@ -400,16 +400,16 @@ describe('an archive whose waiting messages do not all fit the copy’s queue', 
 });
 
 describe('what the new server said of the archive’s waiting messages', () => {
-  const hadPuter = Object.hasOwn(globalThis, 'puter') ? globalThis.puter : undefined;
+  const hadEverything = Object.hasOwn(globalThis, 'everything') ? globalThis.everything : undefined;
   afterEach(() => {
-    if (hadPuter === undefined) delete globalThis.puter;
-    else globalThis.puter = hadPuter;
+    if (hadEverything === undefined) delete globalThis.everything;
+    else globalThis.everything = hadEverything;
   });
   const json = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
   const HEADER = { format: 'teamchat-export', version: 1, workspace: { id: 'abcdef1234', name: 'Acme' }, channels: { c1: { name: 'general', def: true } }, members: {}, memberDocs: {} };
   const PAGE = { conv: 'c1', seq: 1, messages: [{ seq: 1, user: 'u', text: 'hi', ts: 1 }] };
   function servers(scheduled) {
-    globalThis.puter = { workers: { exec: async (url, init = {}) => {
+    globalThis.everything = { workers: { exec: async (url, init = {}) => {
       const path = new URL(url).pathname;
       if (path === '/api/ws/abcdef1234') return json({ workspace: { id: 'abcdef1234', name: 'Acme', movedTo: null } });
       if (path.endsWith('/transfer/begin')) return json({ ok: true, transferring: { by: 'me', at: 1 } });
@@ -465,10 +465,10 @@ describe('a rich text run naming a person, a channel or everyone', () => {
 });
 
 describe('a move whose original refused to close, and whose whole copy could not then be taken down', () => {
-  const hadPuter = Object.hasOwn(globalThis, 'puter') ? globalThis.puter : undefined;
+  const hadEverything = Object.hasOwn(globalThis, 'everything') ? globalThis.everything : undefined;
   afterEach(() => {
-    if (hadPuter === undefined) delete globalThis.puter;
-    else globalThis.puter = hadPuter;
+    if (hadEverything === undefined) delete globalThis.everything;
+    else globalThis.everything = hadEverything;
   });
   const json = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
   const OLD = 'abcdef1234@teamchat-old';
@@ -479,7 +479,7 @@ describe('a move whose original refused to close, and whose whole copy could not
   function servers(mode) {
     const made = [];
     let copies = 0;
-    globalThis.puter = { workers: { exec: async (url, init = {}) => {
+    globalThis.everything = { workers: { exec: async (url, init = {}) => {
       const path = new URL(url).pathname;
       const method = init.method || 'GET';
       made.push(`${method} ${path}`);

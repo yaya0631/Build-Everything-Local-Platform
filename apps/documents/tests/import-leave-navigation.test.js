@@ -9,7 +9,7 @@ vi.mock('../src/lib/engine.js', () => ({ loadEngine: async () => { throw new Err
 let errors;
 beforeEach(() => {
   stubEditorBrowser();
-  vi.stubGlobal('puter', {
+  vi.stubGlobal('everything', {
     auth: { isSignedIn: () => true, getUser: async () => ({ username: 'test' }) },
     fs: { readdir: async () => [] },
   });

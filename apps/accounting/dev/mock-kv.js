@@ -1,5 +1,5 @@
 /**
- * An in-memory stand-in for puter.kv with the semantics the app relies on:
+ * An in-memory stand-in for everything.kv with the semantics the app relies on:
  * prefix list() with cursor pages, batch set() with per-item expireAt,
  * atomic incr(), and values that come back as copies. Used by the tests and
  * by the dev mock page; it also counts calls so tests can assert on cost.

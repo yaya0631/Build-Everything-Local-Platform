@@ -10,7 +10,7 @@ import '../../src/styles/app.css';
 import { openCompose } from '../../src/ui/compose.js';
 import { createDraftStore } from '../../src/lib/drafts.js';
 // Isolated test account: no SDK, auth session, network delivery or real mailbox.
-window.puter = { ui: {}, APIOrigin: location.origin + '/test-api', authToken: 'fixture', fs: { write: async () => {} } };
+window.everything = { ui: {}, APIOrigin: location.origin + '/test-api', authToken: 'fixture', fs: { write: async () => {} } };
 const drafts = createDraftStore('browser-test');
 const open = (draft) => openCompose({ username: 'browser-test', mailPath: '/browser-test/.mail', drafts, draft });
 document.querySelector('#compose').onclick = () => open();

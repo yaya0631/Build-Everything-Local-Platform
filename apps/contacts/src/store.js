@@ -1,4 +1,4 @@
-// Reactive contact store backed by puter.kv. Contacts are the only cloud data;
+// Reactive contact store backed by everything.kv. Contacts are the only cloud data;
 // each is stored under its own key ("contact:<id>") so reads/writes scale and
 // never collide. UI preferences are kept device-local via env.getPref.
 import { normalizeContact, normalizeTags, contactKey, displayName } from './model.js'
@@ -143,7 +143,7 @@ class Store {
     // a book that has aged. The client-side prefix check below still stands, so
     // a backend that ignores the pattern behaves exactly as it always did.
     const raw = await withTimeout(
-      window.puter.kv.list('contact:*', true),
+      window.everything.kv.list('contact:*', true),
       20000,
       'Loading contacts',
     )
@@ -237,7 +237,7 @@ class Store {
     this.contacts.set(c.id, c)
     this.emit()
     try {
-      await withTimeout(window.puter.kv.set(contactKey(c.id), c), 15000, 'Saving contact')
+      await withTimeout(window.everything.kv.set(contactKey(c.id), c), 15000, 'Saving contact')
     } catch (err) {
       // Roll back optimistic state to whatever the cloud actually holds.
       if (existing) this.contacts.set(c.id, existing)
@@ -256,7 +256,7 @@ class Store {
     if (this.ui.selectedId === id) this.ui.selectedId = null
     this.emit()
     try {
-      await withTimeout(window.puter.kv.del(contactKey(id)), 15000, 'Deleting contact')
+      await withTimeout(window.everything.kv.del(contactKey(id)), 15000, 'Deleting contact')
     } catch (err) {
       this.contacts.set(id, existing)
       this.emit()
@@ -288,7 +288,7 @@ class Store {
       while (queue.length) {
         const id = queue.shift()
         try {
-          await withTimeout(window.puter.kv.del(contactKey(id)), 15000, 'Deleting contacts')
+          await withTimeout(window.everything.kv.del(contactKey(id)), 15000, 'Deleting contacts')
           this.contacts.delete(id)
           this.ui.checked.delete(id)
           if (this.ui.selectedId === id) this.ui.selectedId = null
@@ -345,7 +345,7 @@ class Store {
       while (queue.length) {
         const c = queue.shift()
         try {
-          await withTimeout(window.puter.kv.set(contactKey(c.id), c), 15000, 'Importing contacts')
+          await withTimeout(window.everything.kv.set(contactKey(c.id), c), 15000, 'Importing contacts')
           this.contacts.set(c.id, c)
           written++
         } catch (_e) {
@@ -381,7 +381,7 @@ class Store {
       while (queue.length) {
         const c = queue.shift()
         try {
-          await withTimeout(window.puter.kv.set(contactKey(c.id), c), 15000, 'Saving contacts')
+          await withTimeout(window.everything.kv.set(contactKey(c.id), c), 15000, 'Saving contacts')
           this.contacts.set(c.id, c)
           saved++
         } catch (_e) {

@@ -21,8 +21,8 @@ describe('review protocol', () => {
   it('builds and parses review links', () => {
     const token = inviteToken();
     expect(TOKEN.test(token)).toBe(true);
-    const link = reviewLink('https://video-studio.puter.app/?x=1#project=p1', 'http://w-1.localhost:8443', 'r_abcdefgh', token);
-    expect(link).toBe(`https://video-studio.puter.app/?x=1#review=r_abcdefgh&server=w-1.localhost:8443&invite=${token}`);
+    const link = reviewLink('http://video-studio.localhost:8443/?x=1#project=p1', 'http://w-1.localhost:8443', 'r_abcdefgh', token);
+    expect(link).toBe(`http://video-studio.localhost:8443/?x=1#review=r_abcdefgh&server=w-1.localhost:8443&invite=${token}`);
     expect(parseReviewHash(new URL(link).hash)).toEqual({ review: 'r_abcdefgh', server: 'http://w-1.localhost:8443', token });
     expect(parseReviewHash('#review=r_abcdefgh&server=w-1.localhost:8443')).toEqual({ review: 'r_abcdefgh', server: 'http://w-1.localhost:8443', token: null });
     expect(parseReviewHash('#project=p1')).toBe(null);

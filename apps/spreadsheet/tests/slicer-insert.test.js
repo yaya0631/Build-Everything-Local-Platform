@@ -24,7 +24,7 @@ async function roundTrip(wb) {
   const get = path => { const f = X.CFB.find(zip, path); return f ? new TextDecoder().decode(f.content) : null; };
   // Native-only reopening: drop the app's own sidecar so only the Excel parts speak.
   const part = X.CFB.find(zip, '/xl/workbook.xml');
-  part.content = new TextEncoder().encode(get('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')); part.size = part.content.length;
+  part.content = new TextEncoder().encode(get('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')); part.size = part.content.length;
   return { get, back: await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'slicers.xlsx') };
 }
 

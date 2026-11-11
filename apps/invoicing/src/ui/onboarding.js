@@ -38,7 +38,7 @@ export function openOnboarding() {
       el('div.onboard-hero', {},
         el('img.onboard-icon', { src: './icon-192.png', alt: '', 'aria-hidden': 'true' }),
         el('h3', {}, 'Get paid without the busywork'),
-        el('p', {}, 'Estimates, invoices, recurring billing, receipts, and payment links. Everything lives in your own Puter cloud.')
+        el('p', {}, 'Estimates, invoices, recurring billing, receipts, and payment links. Everything lives in your own Everything cloud.')
       ),
       el('button.btn.btn-primary.btn-block', {
         type: 'button', style: { minHeight: '44px' },

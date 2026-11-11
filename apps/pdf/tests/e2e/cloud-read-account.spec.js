@@ -21,7 +21,7 @@ for (const stage of ['read', 'buffer'])
         doc.addPage([310, 400]);
         doc.addPage([320, 400]);
         const encoded = Buffer.from(await doc.save()).toString('base64');
-        await page.route('**/sdk/puter.js', (route) =>
+        await page.route('**/sdk/everything.js', (route) =>
           route.fulfill({
             contentType: 'application/javascript',
             body: `window.account={username:'Alice'};window.cloudBuffers=0;
@@ -29,7 +29,7 @@ for (const stage of ['read', 'buffer'])
               ${outcome === 'success' ? 'resolve();' : "reject(new Error('Old cloud read failed'));"}
               setTimeout(()=>{window.cloudFinished=true;},0);
             };});
-            window.puter={env:'web',auth:{isSignedIn:()=>!!window.account,getUser:async()=>window.account,
+            window.everything={env:'web',auth:{isSignedIn:()=>!!window.account,getUser:async()=>window.account,
               signIn:async()=>{window.account={username:'Bob'};},
               signOut:()=>new Promise(resolve=>{window.releaseSignOut=()=>{
                 window.account=null;resolve();setTimeout(()=>{window.signedOut=true;},0);
@@ -46,9 +46,9 @@ for (const stage of ['read', 'buffer'])
         await page.goto('/');
         await expect(page.locator('.editor')).toHaveAttribute('aria-busy', 'false');
         await expect(
-          page.getByRole('button', { name: 'Save to Puter', exact: true }),
+          page.getByRole('button', { name: 'Save to Everything', exact: true }),
         ).toBeVisible();
-        await fileMenu(page, 'Open from Puter…');
+        await fileMenu(page, 'Open from Everything…');
         await expect.poll(() => page.evaluate(() => typeof window.releaseCloud)).toBe('function');
         await page.getByRole('button', { name: 'Settings', exact: true }).click();
         const settings = page.getByRole('dialog', { name: 'Settings', exact: true });
@@ -63,7 +63,7 @@ for (const stage of ['read', 'buffer'])
         ).toBeVisible();
         if (retry) {
           await page.getByRole('button', { name: 'Settings', exact: true }).click();
-          await settings.getByRole('button', { name: 'Sign in with Puter', exact: true }).click();
+          await settings.getByRole('button', { name: 'Sign in with Everything', exact: true }).click();
           await expect(settings).toHaveCount(0);
         }
         await page.evaluate(() => window.releaseCloud());
@@ -85,10 +85,10 @@ test('sign-out dismisses an account-bound password prompt and preserves a newer 
   const encoded = (
     await readFile(new URL('../fixtures/security/aes-256-r5.pdf', import.meta.url))
   ).toString('base64');
-  await page.route('**/sdk/puter.js', (route) =>
+  await page.route('**/sdk/everything.js', (route) =>
     route.fulfill({
       contentType: 'application/javascript',
-      body: `window.account={username:'Alice'};window.puter={env:'web',auth:{
+      body: `window.account={username:'Alice'};window.everything={env:'web',auth:{
       isSignedIn:()=>!!window.account,getUser:async()=>window.account,
       signOut:()=>new Promise(resolve=>{window.releaseSignOut=()=>{
         window.account=null;resolve();setTimeout(()=>{window.signedOut=true;},0);
@@ -100,8 +100,8 @@ test('sign-out dismisses an account-bound password prompt and preserves a newer 
   );
   await page.goto('/');
   await expect(page.locator('.editor')).toHaveAttribute('aria-busy', 'false');
-  await expect(page.getByRole('button', { name: 'Save to Puter', exact: true })).toBeVisible();
-  await fileMenu(page, 'Open from Puter…');
+  await expect(page.getByRole('button', { name: 'Save to Everything', exact: true })).toBeVisible();
+  await fileMenu(page, 'Open from Everything…');
   await expect.poll(() => page.evaluate(() => typeof window.releaseCloud)).toBe('function');
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
   const settings = page.getByRole('dialog', { name: 'Settings', exact: true });

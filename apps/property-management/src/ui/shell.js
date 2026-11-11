@@ -18,7 +18,7 @@ import { canSignOut, signOut, clearProfilePicture } from '../platform.js';
 import { clearAllCaches } from '../core/cache.js';
 import { navCounts } from '../core/counts.js';
 
-const REPO_URL = 'https://github.com/heyputer/everything';
+const REPO_URL = 'https://github.com/yaya0631/Build-Everything-Local-Platform';
 const RAIL_KEY = 'propertymgmt.rail';
 const GROUPS_KEY = 'propertymgmt.navGroups';
 
@@ -240,7 +240,7 @@ export function buildShell({ onSignIn } = {}) {
           { href: REPO_URL, target: '_blank', rel: 'noopener noreferrer', 'aria-label': 'Source code on GitHub (opens in a new tab)', title: 'Source code on GitHub' },
           icon('github', 18),
         ),
-        h('span.powered.grow', 'Powered by ', h('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener noreferrer' }, 'Puter')),
+        h('span.powered.grow', 'Powered by ', h('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener noreferrer' }, 'Everything')),
         railToggle,
       ),
     ),
@@ -452,7 +452,7 @@ function openAccountMenu(anchor, onSignIn) {
         link('Source code on GitHub', 'github', { href: REPO_URL, target: '_blank', rel: 'noopener noreferrer', onClick: () => close() }),
       ];
       let footer = null;
-      if (app.demo) footer = link('Sign in with Puter', 'log-in', { onClick: () => (close(), onSignIn?.()) });
+      if (app.demo) footer = link('Sign in with Everything', 'log-in', { onClick: () => (close(), onSignIn?.()) });
       else if (canSignOut())
         footer = link('Sign out', 'log-out', {
           onClick: async () => {
@@ -486,7 +486,7 @@ function openAccountMenu(anchor, onSignIn) {
           h(
             'div.grow',
             h('div', { style: { fontWeight: '700' } }, app.demo ? 'Demo mode' : app.user?.username || ''),
-            h('div.subtle', { style: { fontSize: '12px' } }, app.demo ? 'Nothing is saved' : 'Signed in with Puter'),
+            h('div.subtle', { style: { fontSize: '12px' } }, app.demo ? 'Nothing is saved' : 'Signed in with Everything'),
           ),
         ),
         h('div.menu-sep'),

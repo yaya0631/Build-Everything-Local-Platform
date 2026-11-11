@@ -54,7 +54,7 @@ const press = (modal, key, field = 'to') => {
 let modal;
 
 beforeEach(() => {
-  globalThis.puter = { ui: {}, fs: {}, APIOrigin: 'https://api.example', authToken: 't' };
+  globalThis.everything = { ui: {}, fs: {}, APIOrigin: 'https://api.example', authToken: 't' };
 });
 
 afterEach(() => {
@@ -62,7 +62,7 @@ afterEach(() => {
   modal = null;
   document.querySelectorAll('.modal-root').forEach((node) => node.remove());
   document.getElementById('app')?.remove();
-  delete globalThis.puter;
+  delete globalThis.everything;
 });
 
 describe('completing a recipient', () => {

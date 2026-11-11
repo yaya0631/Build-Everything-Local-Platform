@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { parseCSV } from '../src/lib/csv.js';
 import { detectMapping, parseImportDate, parseImportDuration, rowsToItems } from '../src/lib/importer.js';
 import { createStore } from '../src/lib/store.js';
-import { createPuterMock } from './puter-mock.js';
+import { createEverythingMock } from './everything-mock.js';
 
 describe('parseCSV', () => {
   it('parses quoted fields with commas, quotes, and newlines', () => {
@@ -184,7 +184,7 @@ describe('store.importEntries', () => {
   let store;
 
   beforeEach(async () => {
-    globalThis.puter = createPuterMock();
+    globalThis.everything = createEverythingMock();
     store = createStore();
     await store.init();
   });

@@ -34,7 +34,7 @@ import { confirmSignOut } from '../views/settings.js';
  * events that affect what it shows.
  */
 export function createNav({ className = 'sidebar', brand = true, onActivate } = {}) {
-  const username = store.user?.username || 'Puter user';
+  const username = store.user?.username || 'Everything user';
   const headingId = `nav-projects-${Math.random().toString(36).slice(2, 8)}`;
 
   /* The agenda count is the app's passive reminder, so it is computed from
@@ -129,7 +129,7 @@ export function createNav({ className = 'sidebar', brand = true, onActivate } = 
     el('div.sidebar-user', {},
       accentAvatar(username, 26, { decorative: true }),
       el('span.name', { title: username }, username),
-      puter.env !== 'app' && el('button.icon-btn', {
+      everything.env !== 'app' && el('button.icon-btn', {
         html: icon('logout', 17, 2),
         'aria-label': 'Sign out',
         title: 'Sign out',

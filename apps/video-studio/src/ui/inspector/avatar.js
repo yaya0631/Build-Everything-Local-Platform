@@ -96,10 +96,10 @@ function voiceSection(view) {
   const voiceState = h('p.field-hint');
 
   const tts = aiAvailable(ctx);
-  const signIn = ctx.account?.onSignIn ? h('button.btn.small', { type: 'button', onclick: () => ctx.account.onSignIn() }, icon('cloud', 14), 'Sign in to Puter') : null;
+  const signIn = ctx.account?.onSignIn ? h('button.btn.small', { type: 'button', onclick: () => ctx.account.onSignIn() }, icon('cloud', 14), 'Sign in to Everything') : null;
   const ttsBlock = tts
     ? [script, h('div.field', h('span.field-label', 'Voice'), voices.el), h('div.avatar-voice-actions', speakBtn)]
-    : [note('Speaking a new script uses text to speech on Puter AI. Sign in to use it.', 'user'), signIn];
+    : [note('Speaking a new script uses text to speech on Everything AI. Sign in to use it.', 'user'), signIn];
 
   let clipsSig = '';
   function sync() {

@@ -82,7 +82,7 @@ describe('a queued message delivered with unread messages before it, whose autho
 
 /**
  * Removals of several paths at once, on a store that takes its paths as
- * separate arguments (puter.js's kv.remove refuses one array in their place
+ * separate arguments (everything.js's kv.remove refuses one array in their place
  * before any request goes out, and refuses an empty path map for update, incr
  * and add; the runtime models both under `strictPaths`). Every fan-out below
  * used to hand the store one array, under a catch that swallowed the refusal.
@@ -90,7 +90,7 @@ describe('a queued message delivered with unread messages before it, whose autho
 describe('on a store that takes paths as separate arguments', () => {
   const act = async (wsId) => rt.kv.get(KEYS.activity(wsId));
 
-  it('the runtime option refuses what puter.js refuses, and the lenient default is unchanged', async () => {
+  it('the runtime option refuses what everything.js refuses, and the lenient default is unchanged', async () => {
     rt = await boot({ strictPaths: true });
     await rt.kv.set('k', { a: 1, b: 2, c: 3 });
     await expect(rt.kv.remove('k', ['a'])).rejects.toMatchObject({ code: 'paths_invalid' });

@@ -415,7 +415,7 @@ export function openGenerateDialog({ generate, onInsert, onClose }) {
   const preview = el('div.insert-generate-preview', { 'aria-live': 'polite' });
   let file = null, busy = false;
   const dialog = formDialog({ title: 'Generate a Picture', submit: 'Generate', onClose, content: [field('Describe the picture', prompt), preview,
-    el('p.field-hint', {}, 'The description is sent to Puter AI to make the picture. Review it before inserting.')],
+    el('p.field-hint', {}, 'The description is sent to Everything AI to make the picture. Review it before inserting.')],
   onSubmit: async () => {
     // The description the picture was made from is its alternative text, which screen readers announce.
     if (file) { await onInsert(file, { alt: prompt.value.trim() }); return true; }

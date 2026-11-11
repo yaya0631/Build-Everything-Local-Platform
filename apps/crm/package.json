@@ -1,7 +1,7 @@
 {
   "name": "crm",
   "version": "1.0.0",
-  "description": "CRM & Sales Pipeline — leads, companies, deals, follow-ups, and forecasts on Puter",
+  "description": "CRM & Sales Pipeline — leads, companies, deals, follow-ups, and forecasts on Everything",
   "type": "module",
   "private": true,
   "scripts": {

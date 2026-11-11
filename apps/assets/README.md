@@ -2,7 +2,7 @@
 
 Track laptops, tools, warranties, assignments, maintenance, and return dates in one place.
 
-Built with vanilla JavaScript (no UI framework), [Vite](https://vitejs.dev), [Lucide](https://lucide.dev) icons, and [Puter.js](http://localhost:8443) as the only backend. Asset records live in the signed-in user's Puter key-value store and attachment files in their Puter cloud storage, so there is no server to run.
+Built with vanilla JavaScript (no UI framework), [Vite](https://vitejs.dev), [Lucide](https://lucide.dev) icons, and [Everything.js](http://localhost:8443) as the only backend. Asset records live in the signed-in user's Everything key-value store and attachment files in their Everything cloud storage, so there is no server to run.
 
 ## Features
 
@@ -11,12 +11,12 @@ Built with vanilla JavaScript (no UI framework), [Vite](https://vitejs.dev), [Lu
 - **Bulk actions**: select multiple assets (or everything in the current filter) and assign, tag, re-categorize, retire, export, print labels, or delete them in one pass — partial failures and skipped assets are reported honestly.
 - **Custom categories, tags & fields**: manage your own category list, label assets with free-form tags via a chip input, and define custom fields (text, number, or date; optionally scoped to categories) that join the form, detail view, search, and CSV round-trips.
 - **Managed locations**: location autocomplete, a Locations view showing what is in each place, and one-step renames that fix typo fragmentation across every asset.
-- **Backups that are actually restores**: a complete backup — records, supplies, settings, and the attachment bytes — written into your own Puter storage automatically on the first open of each day, keeping the last few. Restore from the picker in Settings or from a file you kept elsewhere; nothing already there is overwritten, and the export menu says plainly which download carries the files and which does not.
+- **Backups that are actually restores**: a complete backup — records, supplies, settings, and the attachment bytes — written into your own Everything storage automatically on the first open of each day, keeping the last few. Restore from the picker in Settings or from a file you kept elsewhere; nothing already there is overwritten, and the export menu says plainly which download carries the files and which does not.
 - **Import & export**: bring an existing spreadsheet in via a CSV wizard (auto-mapped columns, per-row validation, categories and custom fields created on the fly, assignments and retired status honored) and get data out as CSV (all or the filtered view) or a restorable JSON backup.
 - **Bulk editing through the spreadsheet**: an import can update the assets it matches — on the AssetDesk id the export writes, or on the serial — so exporting, fixing 200 locations in a spreadsheet, and re-importing is a round trip instead of a duplicate inventory. One choice for the whole file (update, leave alone, or add a second record), a preview of every field change before it runs, blank cells left as they are, and lifecycle state never touched.
 - **Duplicate detection**: the add/edit form warns when a serial number already belongs to another asset (and names it), a batch add refuses to give two units the same serial, the import wizard counts the rows that match assets you already have and skips them by default, and a "Possible duplicates" report groups whatever has already drifted in.
 - **Reminders that reach you**: add any return date, warranty expiry, service date, or reservation to your calendar (.ics, per asset or all upcoming at once), opt into browser notifications for deadlines that newly become urgent, and see the needs-attention count on the installed app's icon badge.
-- **Attachments**: keep photos, receipts, and warranty documents with each asset (stored in your Puter cloud storage) — image thumbnails, in-app preview, download, and per-file delete.
+- **Attachments**: keep photos, receipts, and warranty documents with each asset (stored in your Everything cloud storage) — image thumbnails, in-app preview, download, and per-file delete.
 - **QR labels & stocktake**: every asset has a scannable label (print one, print a sheet, or download the SVG); scanning opens the asset via a shareable deep link, and stocktake mode verifies physical inventory against the app — scan codes with the in-app camera or tick assets off, then export whatever is unaccounted for.
 - **Scan from anywhere**: a scan button in the top bar opens the camera and jumps straight to the matching asset — the fastest lookup there is, and the natural start of a check-out or return. It reads the barcodes already on the equipment (Code 128, Code 39, EAN, UPC) as well as AssetDesk's own QR labels, looks an unknown code up as a serial or asset tag, offers to add an asset with it when nothing matches, and scans straight into the serial field on the add form.
 - **Assignments**: check assets out to people with optional return dates; overdue and due-soon returns are flagged; one-click return (with optional printed return receipt), in-place editing, one-step transfers, and duplicate/batch-add for identical units.
@@ -30,7 +30,7 @@ Built with vanilla JavaScript (no UI framework), [Vite](https://vitejs.dev), [Lu
 - **Depreciation**: straight-line book value from purchase price, purchase date, and useful life (per-category defaults, per-asset overrides), with replacement-candidate hints for fully depreciated assets.
 - **Full lifecycle**: available, assigned, maintenance, retired, reactivated, with an audit history per asset — and a 30-day trash with undo instead of permanent deletion.
 - **Settings**: one screen for the display currency (defaulting to the browser's region, not to dollars), the lead times that decide how far ahead a warranty, return, service date, or reservation counts as needing attention, notifications, appearance, and the category and custom-field dialogs.
-- **Works offline**: a service worker caches the app shell (and the Puter client), so the installed app opens with no signal — which is where a stocktake in a stockroom, a van, or a basement actually happens. Records are mirrored locally: reads fall back to the mirror with an "offline, showing data from …" banner, writes land locally and queue, and the queue is sent as soon as there is a connection again (last write wins, per record). Attachments stay online-only and say so, and a new version of the app is offered rather than forced.
+- **Works offline**: a service worker caches the app shell (and the Everything client), so the installed app opens with no signal — which is where a stocktake in a stockroom, a van, or a basement actually happens. Records are mirrored locally: reads fall back to the mirror with an "offline, showing data from …" banner, writes land locally and queue, and the queue is sent as soon as there is a connection again (last write wins, per record). Attachments stay online-only and say so, and a new version of the app is offered rather than forced.
 - **Theming**: system, light, and dark modes, defaulting to system, persisted per device.
 - **Guided first run**: an intro page before sign-in, then a one-decision onboarding modal on an empty inventory (add an asset, explore with sample data, or skip).
 - **Sample data**: one click installs a realistic inventory; a persistent banner marks sample mode and "Start fresh" wipes it and reopens onboarding.
@@ -48,9 +48,9 @@ npm run preview    # preview the production build
 
 ## Deployment
 
-The `dist/` output is fully static (built with relative paths), so it can be hosted anywhere, including Puter hosting. Puter.js handles authentication: visitors sign in with their Puter account and each user sees only their own inventory.
+The `dist/` output is fully static (built with relative paths), so it can be hosted anywhere, including Everything hosting. Everything.js handles authentication: visitors sign in with their Everything account and each user sees only their own inventory.
 
-Offline copies and queued edits are isolated by Puter account ID. After upgrading from a version with a shared offline cache, connect once to confirm the account. If older unsynced edits exist, the app asks which signed-in account should recover them; choosing “Keep for later” preserves them on the device. Subsequent offline opens recognize the same authentication session without another network lookup succeeding.
+Offline copies and queued edits are isolated by Everything account ID. After upgrading from a version with a shared offline cache, connect once to confirm the account. If older unsynced edits exist, the app asks which signed-in account should recover them; choosing “Keep for later” preserves them on the device. Subsequent offline opens recognize the same authentication session without another network lookup succeeding.
 
 ## Architecture
 
@@ -74,7 +74,7 @@ src/
     zip.js           minimal zip writer/reader, no dependency (pure)
     reports.js       cost aggregation: spend, valuation, cost of ownership (pure)
     format.js        display formatting (pure)
-    store.js         persistence over Puter KV; in-memory backend for demo/tests
+    store.js         persistence over Everything KV; in-memory backend for demo/tests
     theme.js         system/light/dark controller with injectable deps
     router.js        hash router
     sample.js        sample inventory built through real lifecycle functions

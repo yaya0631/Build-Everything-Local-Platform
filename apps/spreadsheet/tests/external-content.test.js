@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { Workbook } from '../src/core/workbook.js';
 import { Doc } from '../src/lib/doc.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 
 function memoryStorage() {
   const m = new Map();
@@ -39,8 +39,8 @@ describe('workbook gate', () => {
 
 describe('document trust', () => {
   let mock;
-  beforeEach(() => { mock = installMockPuter(); localStorage.clear(); });
-  afterEach(() => { delete globalThis.puter; });
+  beforeEach(() => { mock = installMockEverything(); localStorage.clear(); });
+  afterEach(() => { delete globalThis.everything; });
 
   it('trusts documents made here and distrusts files opened from elsewhere until allowed', async () => {
     expect(Doc.blank().wb.externalAllowed).toBe(true);

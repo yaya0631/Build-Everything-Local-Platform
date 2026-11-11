@@ -13,7 +13,7 @@ function replace(zip, path, fn) {
 async function native(wb, edit = () => {}) {
   const zip = X.CFB.read(new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()), { type: 'array' });
   edit(zip);
-  replace(zip, '/xl/workbook.xml', text => text.replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  replace(zip, '/xl/workbook.xml', text => text.replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   return workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'native.xlsx');
 }
 function workbook(type, appearance = {}) {

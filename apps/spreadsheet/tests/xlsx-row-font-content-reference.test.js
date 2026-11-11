@@ -50,7 +50,7 @@ it('preserves native font/content caches through two XLSX cycles without private
     const zip = X.CFB.read(new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()), { type: 'array' });
     const part = X.CFB.find(zip, '/xl/workbook.xml');
     X.CFB.utils.cfb_add(zip, '/xl/workbook.xml', new TextEncoder().encode(new TextDecoder().decode(part.content)
-      .replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')));
+      .replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')));
     wb = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }));
     verify(wb);
     for (const c of cases) {

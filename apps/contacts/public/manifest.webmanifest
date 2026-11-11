@@ -25,7 +25,7 @@
     { "src": "/screenshots/mobile-2-detail.png", "sizes": "780x1688", "type": "image/png", "form_factor": "narrow", "label": "Every detail, one tap away" },
     { "src": "/screenshots/mobile-3-search.png", "sizes": "780x1688", "type": "image/png", "form_factor": "narrow", "label": "Instant search on the go" },
     { "src": "/screenshots/mobile-4-editor.png", "sizes": "780x1688", "type": "image/png", "form_factor": "narrow", "label": "Add and edit contacts anywhere" },
-    { "src": "/screenshots/mobile-5-smartadd.png", "sizes": "780x1688", "type": "image/png", "form_factor": "narrow", "label": "Smart Add, powered by Puter AI" },
+    { "src": "/screenshots/mobile-5-smartadd.png", "sizes": "780x1688", "type": "image/png", "form_factor": "narrow", "label": "Smart Add, powered by Everything AI" },
     { "src": "/screenshots/tablet-1-browse.png", "sizes": "1536x2048", "type": "image/png", "form_factor": "narrow", "label": "A roomy view of your contacts on tablet" },
     { "src": "/screenshots/tablet-2-detail.png", "sizes": "1536x2048", "type": "image/png", "form_factor": "narrow", "label": "Rich contact details with tags and notes" },
     { "src": "/screenshots/tablet-3-search.png", "sizes": "1536x2048", "type": "image/png", "form_factor": "narrow", "label": "Search across names, companies and emails" },

@@ -35,7 +35,7 @@ export class Library extends Emitter {
   constructor(backend, { cache } = {}) {
     super();
     this.backend = backend;
-    this.cache = cache !== undefined ? cache : backend.kind === 'puter' && opfsAvailable() ? opfsBackend('video-studio-cache') : null;
+    this.cache = cache !== undefined ? cache : backend.kind === 'everything' && opfsAvailable() ? opfsBackend('video-studio-cache') : null;
     this.urls = new Map(); // hash -> object URL
     this.blobs = new Map(); // hash -> Blob (recent imports and reads)
     this.reads = new Map(); // hash -> Promise<Blob>: files being read, shared by everyone asking

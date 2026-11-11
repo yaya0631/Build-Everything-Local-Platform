@@ -1,5 +1,5 @@
 /**
- * IMPORTRANGE(file, range): values from another spreadsheet on the Puter
+ * IMPORTRANGE(file, range): values from another spreadsheet on the Everything
  * drive. The pure parts live here (which file, which cells, reading them out
  * of a loaded Workbook); the editor supplies the file reading.
  */

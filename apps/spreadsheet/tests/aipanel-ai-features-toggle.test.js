@@ -28,7 +28,7 @@ beforeEach(() => {
   Object.defineProperty(HTMLElement.prototype, 'clientWidth', { configurable: true, get: () => 800 });
   Object.defineProperty(HTMLElement.prototype, 'clientHeight', { configurable: true, get: () => 400 });
   vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({ font: '', measureText: (t) => ({ width: t.length * 7 }) });
-  window.puter = { ai: { chat: vi.fn() } };
+  window.everything = { ai: { chat: vi.fn() } };
   toast.mockClear();
   document.body.innerHTML = '<div id="app"></div>';
 });
@@ -36,7 +36,7 @@ afterEach(() => {
   view?.destroy();
   view = null;
   resetAppOptions();
-  delete window.puter;
+  delete window.everything;
   vi.clearAllTimers();
   vi.useRealTimers();
   vi.restoreAllMocks();

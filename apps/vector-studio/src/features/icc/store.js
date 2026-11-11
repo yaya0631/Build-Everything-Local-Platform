@@ -1,6 +1,6 @@
 /**
  * The user's own ICC profiles (.icc / .icm files they loaded), kept as
- * files named by the profile's id in the user's Puter cloud (app data
+ * files named by the profile's id in the user's Everything cloud (app data
  * folder "profiles") when signed in, else in this browser's private
  * storage. They register with the color engine as they load, so they can
  * be working spaces, document profiles, proof devices and output profiles.
@@ -9,7 +9,7 @@
  * ({ mime: ICC_MIME, data: data URL, name }), so they open with it on any
  * device; those register as 'embedded' profiles.
  */
-import { puterBackend, opfsBackend, opfsAvailable, memoryBackend } from '../files/backends.js';
+import { everythingBackend, opfsBackend, opfsAvailable, memoryBackend } from '../files/backends.js';
 import { registerIccProfile, unregisterProfile, profileEntry, profileBytes, listProfiles, registryEvents } from './profiles.js';
 
 export const ICC_MIME = 'application/vnd.iccprofile';
@@ -24,12 +24,12 @@ export class ProfileStore {
 
   get backend() {
     if (this.fixed) return this.fixed;
-    const puter = this.app.puter;
-    const cloud = Boolean(puter?.fs && (this.app.env === 'app' || this.app.user));
+    const everything = this.app.everything;
+    const cloud = Boolean(everything?.fs && (this.app.env === 'app' || this.app.user));
     const key = cloud ? 'cloud' : opfsAvailable() ? 'local' : 'memory';
     if (key !== this.backendKey) {
       this.backendKey = key;
-      this.cachedBackend = key === 'cloud' ? puterBackend(puter, 'profiles') : key === 'local' ? opfsBackend('vector-studio-profiles') : memoryBackend();
+      this.cachedBackend = key === 'cloud' ? everythingBackend(everything, 'profiles') : key === 'local' ? opfsBackend('vector-studio-profiles') : memoryBackend();
       this.loaded = false;
     }
     return this.cachedBackend;

@@ -115,7 +115,7 @@ export function buildCalendar(events, now = new Date()) {
   const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//Sales CRM//Puter//EN',
+    'PRODID:-//Sales CRM//Everything//EN',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
     ...events.flatMap((e) => buildEvent(e, now)),
@@ -128,7 +128,7 @@ export function buildCalendar(events, now = new Date()) {
 export function taskEvent(task, { contactName = '', dealName = '' } = {}) {
   const context = [contactName, dealName].filter(Boolean).join(' · ');
   return {
-    uid: `crm-task-${task.id}@sales-crm.puter`,
+    uid: `crm-task-${task.id}@sales-crm.everything`,
     summary: `Follow up: ${task.title}`,
     description: context ? `${context}\nFrom your Sales CRM.` : 'From your Sales CRM.',
     date: task.due,
@@ -142,7 +142,7 @@ export function taskEvent(task, { contactName = '', dealName = '' } = {}) {
 export function dealEvent(deal, { companyName = '', value = '' } = {}) {
   const parts = [value, companyName].filter(Boolean).join(' · ');
   return {
-    uid: `crm-deal-${deal.id}@sales-crm.puter`,
+    uid: `crm-deal-${deal.id}@sales-crm.everything`,
     summary: `Expected close: ${deal.name}`,
     description: parts ? `${parts}\nFrom your Sales CRM.` : 'From your Sales CRM.',
     date: deal.expectedClose,

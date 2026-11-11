@@ -1,10 +1,10 @@
 import { test, expect } from '@playwright/test';
 import { PDFDocument, PDFName, PDFString, StandardFonts } from 'pdf-lib';
 
-const PUTER_MOCK = `window.puter = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async () => ({}) }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
-async function mockPuter(page) {
-  await page.route('**/sdk/puter.js', (route) =>
-    route.fulfill({ contentType: 'application/javascript', body: PUTER_MOCK }),
+const EVERYTHING_MOCK = `window.everything = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async () => ({}) }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
+async function mockEverything(page) {
+  await page.route('**/sdk/everything.js', (route) =>
+    route.fulfill({ contentType: 'application/javascript', body: EVERYTHING_MOCK }),
   );
 }
 async function openPdf(page, doc, name = 'test.pdf') {
@@ -55,7 +55,7 @@ async function stubPrint(page) {
 test('Print sends every page to the browser at printer resolution, one per sheet', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await stubPrint(page);
   await page.goto('/#library');
   await openPdf(page, await mixedPdf());
@@ -111,7 +111,7 @@ test('Print sends every page to the browser at printer resolution, one per sheet
 test('a print image that cannot decode stops printing, releases resources, and allows retry', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await stubPrint(page);
   await page.addInitScript(() => {
     const decode = HTMLImageElement.prototype.decode;
@@ -173,7 +173,7 @@ test('a print image that cannot decode stops printing, releases resources, and a
 test('Print offers the current page and a typed range, and explains a bad range', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await stubPrint(page);
   await page.goto('/#library');
   await openPdf(page, await mixedPdf());
@@ -203,7 +203,7 @@ test('Print offers the current page and a typed range, and explains a bad range'
 });
 
 test('a print in preparation can be cancelled and leaves nothing behind', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await stubPrint(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
@@ -229,7 +229,7 @@ test('a print in preparation can be cancelled and leaves nothing behind', async 
 
 for (const kind of ['annotation flags', 'layer usage']) {
   test(`printing respects ${kind} independently of screen visibility`, async ({ page }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.addInitScript(() => {
       window.printedColors = null;
       window.print = () => {

@@ -207,7 +207,7 @@ describe('video frame rate from headers', () => {
 });
 
 describe('video in session files', () => {
-  it('references a video on Puter by path and round-trips the clip', () => {
+  it('references a video on Everything by path and round-trips the clip', () => {
     const { doc, sourceId } = sessionWithVideo({ path: '/me/Videos/Scene 1.webm' });
     const { text, video } = serializeSession(doc);
     expect(video).toBeNull();

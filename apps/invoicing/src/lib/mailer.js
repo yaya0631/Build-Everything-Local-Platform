@@ -8,7 +8,7 @@
  * invoice PDF, or tell the user whether anything actually left.
  *
  * This module posts the finished message to the app's one shared email worker
- * through `puter.workers.exec()`, which forwards the signed-in user's Puter
+ * through `everything.workers.exec()`, which forwards the signed-in user's Everything
  * token. That is what lets the worker send at all, and what makes each send
  * billed to and rate-limited as the person who pressed the button rather than
  * the app owner. Nothing here composes wording: the message is exactly what the
@@ -32,7 +32,7 @@ export const MAX_ATTACHMENT_BYTES = 6 * 1024 * 1024;
 export const MAX_SUBJECT_CHARS = 200;
 export const MAX_BODY_CHARS = 20_000;
 
-const puterOf = () => (typeof puter !== 'undefined' ? puter : null);
+const everythingOf = () => (typeof everything !== 'undefined' ? everything : null);
 
 /**
  * Whether this device can send at all. Sending needs the worker bridge — it is
@@ -40,8 +40,8 @@ const puterOf = () => (typeof puter !== 'undefined' ? puter : null);
  * caller and the worker would refuse anyway. False on an old SDK, and false
  * offline, where `mailto:` and Copy are still perfectly good answers.
  */
-export function mailerAvailable(getPuter = puterOf) {
-  const p = getPuter();
+export function mailerAvailable(getEverything = everythingOf) {
+  const p = getEverything();
   return Boolean(p && p.workers && typeof p.workers.exec === 'function');
 }
 
@@ -124,8 +124,8 @@ export async function sendDocument({
   payLink = '',
   attachments = [],
   force = false,
-} = {}, { getPuter = puterOf, workerUrl = EMAIL_WORKER_URL, timeoutMs = SEND_TIMEOUT_MS } = {}) {
-  if (!mailerAvailable(getPuter)) throw new Error('Sending needs the Puter SDK. Use your mail app instead.');
+} = {}, { getEverything = everythingOf, workerUrl = EMAIL_WORKER_URL, timeoutMs = SEND_TIMEOUT_MS } = {}) {
+  if (!mailerAvailable(getEverything)) throw new Error('Sending needs the Everything SDK. Use your mail app instead.');
 
   const list = [];
   const seen = new Set();
@@ -176,7 +176,7 @@ export async function sendDocument({
   let timer = null;
   try {
     res = await Promise.race([
-      getPuter().workers.exec(`${workerUrl}/send`, request),
+      getEverything().workers.exec(`${workerUrl}/send`, request),
       new Promise((_, reject) => {
         timer = setTimeout(() => reject(new SendTimeout()), timeoutMs);
       }),
@@ -225,7 +225,7 @@ export function describeUnreached(email, outcome, { copySent = false } = {}) {
 /** Why a send did not happen, in words the user can act on. */
 export function failureMessage(status, data) {
   const code = (data && data.error) || '';
-  if (status === 401 || code === 'sign_in_required') return 'Sign in to Puter again to send email.';
+  if (status === 401 || code === 'sign_in_required') return 'Sign in to Everything again to send email.';
   if (status === 429 || code === 'daily_limit') return "You've reached today's email limit. Try again tomorrow.";
   // The worker could not read its own books (the daily counter), so it sent
   // nothing rather than guess. Transient, and nothing to change on this end.

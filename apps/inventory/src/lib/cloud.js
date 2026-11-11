@@ -1,5 +1,5 @@
 /**
- * The store's gate to Puter KV, made offline-tolerant:
+ * The store's gate to Everything KV, made offline-tolerant:
  *
  *   reads   — served from the cloud and mirrored locally; when the
  *             cloud is unreachable, the mirror answers instead, so the
@@ -77,7 +77,7 @@ export async function kvSetConfirmed(key, value) {
   if (isOffline()) throw new Error('Connect to save a safety snapshot');
   const before = await queueGet(key);
   await chainWrite(key, async () => {
-    await puter.kv.set(key, copyValue(value));
+    await everything.kv.set(key, copyValue(value));
     await cachePut(key, copyValue(value));
     const current = await queueGet(key);
     if (current && current.id === before?.id) await queueClear([key]);
@@ -91,7 +91,7 @@ export async function kvList(prefix, knownRows = []) {
   let rows;
   try {
     if (isOffline()) throw new TypeError('Offline');
-    const keys = await puter.kv.list(`${prefix}*`);
+    const keys = await everything.kv.list(`${prefix}*`);
     if (!Array.isArray(keys) || keys.some((key) => typeof key !== 'string')) throw new Error('Invalid operation listing');
     const known = new Map(knownRows.map((row) => [row.key, row.value]));
     rows = await Promise.all(keys.map(async (key) => ({ key,
@@ -118,7 +118,7 @@ export async function kvList(prefix, knownRows = []) {
 export async function kvGet(key) {
   let value;
   try {
-    value = await puter.kv.get(key);
+    value = await everything.kv.get(key);
   } catch (err) {
     // The mirror answers when the cloud can't; a queued local write is
     // newer than anything mirrored.
@@ -190,7 +190,7 @@ export async function kvSet(key, value) {
 
 async function sendSet(key, value, before, chain) {
   try {
-    await puter.kv.set(key, value);
+    await everything.kv.set(key, value);
   } catch (err) {
     if (!isNetworkError(err)) throw err;
     // A request that hung before dying may be older than a value queued
@@ -229,7 +229,7 @@ export async function kvDel(key) {
 
 async function sendDel(key, before, chain) {
   try {
-    await puter.kv.del?.(key);
+    await everything.kv.del?.(key);
   } catch (err) {
     if (!isNetworkError(err)) throw err;
     // Same guard as kvSet: never bury a value queued mid-flight.
@@ -271,8 +271,8 @@ export async function flushQueue() {
           const queued = await queueGet(row.key);
           if (!queued || queued.id !== row.id) return true;
           try {
-            if (row.del) await puter.kv.del?.(row.key);
-            else await puter.kv.set(row.key, row.value);
+            if (row.del) await everything.kv.del?.(row.key);
+            else await everything.kv.set(row.key, row.value);
           } catch (err) {
             if (isNetworkError(err)) return false;
             syncError = err;

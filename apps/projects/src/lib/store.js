@@ -1,5 +1,5 @@
 /**
- * Data layer on top of Puter.
+ * Data layer on top of Everything.
  *
  * Storage design:
  *
@@ -222,14 +222,14 @@ export class Store extends EventTarget {
   /** True once a call failed for want of a connection; cleared by the next
    *  one that succeeds. Views read it; nothing else should. */
   offline = false;
-  /** Projects whose local copy has not reached Puter yet. */
+  /** Projects whose local copy has not reached Everything yet. */
   #outbox = new Set();
   #writes = new Map();       // projectId → the save that is in flight
 
   async init() {
     try {
       const [user, settings, projects, trash, templates, views] = await Promise.all([
-        Promise.resolve(puter.auth.getUser()).catch(() => null),
+        Promise.resolve(everything.auth.getUser()).catch(() => null),
         this.#kvGet(KV_SETTINGS),
         this.#kvGet(KV_PROJECTS),
         this.#kvGet(KV_TRASH),
@@ -247,7 +247,7 @@ export class Store extends EventTarget {
       this.#mirrorMeta();
     } catch (err) {
       // No connection: boot from what this device already knows rather than
-      // showing the "could not reach Puter" wall.
+      // showing the "could not reach Everything" wall.
       const cached = await mirror.get(MIRROR_META);
       if (!cached) throw err;
       console.error(err);
@@ -305,7 +305,7 @@ export class Store extends EventTarget {
     }
   }
 
-  /** Documents this device holds that Puter has not accepted yet. */
+  /** Documents this device holds that Everything has not accepted yet. */
   async #loadOutbox() {
     if (!mirror.available()) return;
     for (const key of await mirror.keys()) {
@@ -325,7 +325,7 @@ export class Store extends EventTarget {
   }
 
   /**
-   * Replay whatever never reached Puter. Each replay is a normal write, so
+   * Replay whatever never reached Everything. Each replay is a normal write, so
    * it goes through the same stale-file check — a document that moved on
    * elsewhere while this one was offline raises a conflict instead of
    * overwriting it.
@@ -417,7 +417,7 @@ export class Store extends EventTarget {
   // ---- kv helpers ------------------------------------------------------
 
   async #kvGet(key) {
-    const raw = await puter.kv.get(key);
+    const raw = await everything.kv.get(key);
     if (raw === null || raw === undefined) return null;
     if (typeof raw === 'string') {
       try { return JSON.parse(raw); } catch { return null; }
@@ -426,7 +426,7 @@ export class Store extends EventTarget {
   }
 
   async #kvSet(key, value) {
-    await puter.kv.set(key, JSON.stringify(value));
+    await everything.kv.set(key, JSON.stringify(value));
   }
 
   /**
@@ -492,7 +492,7 @@ export class Store extends EventTarget {
     } catch (err) {
       this.#docs.delete(finalDoc.id);
       this.projects = this.projects.filter((p) => p.id !== finalDoc.id);
-      puter.fs.delete(projectPath(finalDoc.id)).catch(() => {});
+      everything.fs.delete(projectPath(finalDoc.id)).catch(() => {});
       throw err;
     }
     this.#emit('change', { scope: 'projects' });
@@ -527,7 +527,7 @@ export class Store extends EventTarget {
     try {
       // The stamp is read alongside the document, so the very first save
       // already knows what it is allowed to overwrite.
-      const [blob, current] = await Promise.all([puter.fs.read(path), this.#stat(path)]);
+      const [blob, current] = await Promise.all([everything.fs.read(path), this.#stat(path)]);
       doc = JSON.parse(await blob.text());
       stamp = current;
       this.#setOffline(false);
@@ -729,9 +729,9 @@ export class Store extends EventTarget {
     await this.#saveTrashIndex();
     this.#emit('change', { scope: 'projects' });
     // Best-effort cleanup; a dangling file is invisible without its index entry.
-    puter.fs.delete(projectPath(id)).catch(() => {});
-    puter.fs.delete(`${DATA_DIR}/attachments/${id}`, { recursive: true }).catch(() => {});
-    puter.fs.delete(snapshotDir(id), { recursive: true }).catch(() => {});
+    everything.fs.delete(projectPath(id)).catch(() => {});
+    everything.fs.delete(`${DATA_DIR}/attachments/${id}`, { recursive: true }).catch(() => {});
+    everything.fs.delete(snapshotDir(id), { recursive: true }).catch(() => {});
   }
 
   /** Called on boot: trash is a grace period, not a second archive. */
@@ -745,9 +745,9 @@ export class Store extends EventTarget {
 
   /** What the file on disk looks like right now, or null when unknowable. */
   async #stat(path) {
-    if (typeof puter.fs?.stat !== 'function') return null;
+    if (typeof everything.fs?.stat !== 'function') return null;
     try {
-      return stampOf(await puter.fs.stat(path));
+      return stampOf(await everything.fs.stat(path));
     } catch (err) {
       // A missing file is not a conflict — it is a first write.
       if (isMissingFileError(err)) return null;
@@ -770,7 +770,7 @@ export class Store extends EventTarget {
       const current = await this.#stat(path);
       if (current && current !== known) throw new ConflictError(doc.id);
     }
-    const result = await puter.fs.write(path, JSON.stringify(doc), { createMissingParents: true });
+    const result = await everything.fs.write(path, JSON.stringify(doc), { createMissingParents: true });
     // Prefer what the write itself reported; stat only when it said nothing.
     this.#stamps.set(doc.id, stampOf(result) ?? await this.#stat(path));
   }
@@ -866,7 +866,7 @@ export class Store extends EventTarget {
       this.#conflicts.delete(projectId);
       this.#setOffline(false);
       // A mutation that raced the write is not in what just landed, so this
-      // device is still ahead of Puter — and the mirror has to say so, or a
+      // device is still ahead of Everything — and the mirror has to say so, or a
       // tab that dies inside the next debounce window would leave a copy
       // marked "sent" that nothing ever replays. Its own timer is already
       // armed; this only stops the record from lying in the meantime.
@@ -913,7 +913,7 @@ export class Store extends EventTarget {
    * logged and the save goes ahead.
    */
   async #snapshotDaily(projectId) {
-    if (typeof puter.fs?.readdir !== 'function') return;
+    if (typeof everything.fs?.readdir !== 'function') return;
     const today = todayISO();
     if (this.#snapshotDays.get(projectId) === today) return;
     this.#snapshotDays.set(projectId, today);
@@ -925,7 +925,7 @@ export class Store extends EventTarget {
     // already moved on, which is exactly the version we do not want.
     let previous = null;
     try {
-      previous = JSON.parse(await (await puter.fs.read(projectPath(projectId))).text());
+      previous = JSON.parse(await (await everything.fs.read(projectPath(projectId))).text());
     } catch (err) {
       if (!isMissingFileError(err)) console.error(err);
       return; // nothing on disk yet: the project is brand new
@@ -945,7 +945,7 @@ export class Store extends EventTarget {
       entry: { ...entry, id: projectId },
       doc,
     };
-    await puter.fs.write(
+    await everything.fs.write(
       `${snapshotDir(projectId)}/${name}`,
       JSON.stringify(payload),
       { createMissingParents: true },
@@ -953,9 +953,9 @@ export class Store extends EventTarget {
   }
 
   async #snapshotNames(projectId) {
-    if (typeof puter.fs?.readdir !== 'function') return [];
+    if (typeof everything.fs?.readdir !== 'function') return [];
     try {
-      const items = await puter.fs.readdir(snapshotDir(projectId));
+      const items = await everything.fs.readdir(snapshotDir(projectId));
       return (items ?? [])
         .map((item) => ({
           name: item?.name ?? String(item?.path ?? '').split('/').pop(),
@@ -982,10 +982,10 @@ export class Store extends EventTarget {
    * index — that is the hole a task-level trash cannot close.
    */
   async listSnapshotProjects() {
-    if (typeof puter.fs?.readdir !== 'function') return [];
+    if (typeof everything.fs?.readdir !== 'function') return [];
     let items = [];
     try {
-      items = await puter.fs.readdir(`${DATA_DIR}/snapshots`) ?? [];
+      items = await everything.fs.readdir(`${DATA_DIR}/snapshots`) ?? [];
     } catch (err) {
       if (!isMissingFileError(err)) console.error(err);
       return [];
@@ -1017,7 +1017,7 @@ export class Store extends EventTarget {
     if (!files.length) return 0;
     const { drop } = planSnapshotRetention(files.map((f) => f.name));
     for (const name of drop) {
-      await puter.fs.delete(`${snapshotDir(projectId)}/${name}`).catch(() => {});
+      await everything.fs.delete(`${snapshotDir(projectId)}/${name}`).catch(() => {});
     }
     return drop.length;
   }
@@ -1028,7 +1028,7 @@ export class Store extends EventTarget {
    * comes back with it.
    */
   async restoreSnapshot(projectId, name) {
-    const blob = await puter.fs.read(`${snapshotDir(projectId)}/${name}`);
+    const blob = await everything.fs.read(`${snapshotDir(projectId)}/${name}`);
     const payload = JSON.parse(await blob.text());
     const restored = payload?.doc;
     if (!restored || !Array.isArray(restored.tasks)) {
@@ -1525,7 +1525,7 @@ export class Store extends EventTarget {
     // per task, and a delete that fails leaves a file nothing points at.
     for (const task of purged) {
       if (task.attachments?.length) {
-        puter.fs.delete(attachmentDir(projectId, task.id), { recursive: true }).catch(() => {});
+        everything.fs.delete(attachmentDir(projectId, task.id), { recursive: true }).catch(() => {});
       }
     }
     return purged.map((t) => t.id);
@@ -1983,7 +1983,7 @@ export class Store extends EventTarget {
       type: file.type || '',
       createdAt: Date.now(),
     };
-    await puter.fs.write(
+    await everything.fs.write(
       `${attachmentDir(projectId, taskId)}/${att.id}-${att.name}`,
       file,
       { createMissingParents: true },
@@ -2028,7 +2028,7 @@ export class Store extends EventTarget {
   }
 
   async readAttachment(projectId, taskId, att) {
-    return puter.fs.read(this.attachmentPath(projectId, taskId, att));
+    return everything.fs.read(this.attachmentPath(projectId, taskId, att));
   }
 
   /** Whether a linked file is still where the link says it is. */
@@ -2037,9 +2037,9 @@ export class Store extends EventTarget {
     // server: asking it whether it is there would be a cross-origin request
     // this app has no business making, so it is taken at its word.
     if (att.kind === 'url') return true;
-    if (typeof puter.fs?.stat !== 'function') return true;
+    if (typeof everything.fs?.stat !== 'function') return true;
     try {
-      await puter.fs.stat(this.attachmentPath(projectId, taskId, att));
+      await everything.fs.stat(this.attachmentPath(projectId, taskId, att));
       return true;
     } catch (err) {
       if (isMissingFileError(err)) return false;
@@ -2055,7 +2055,7 @@ export class Store extends EventTarget {
     // Removing a link removes the reference; the file in Drive (or on the web)
     // is not this app's to delete.
     if (att.kind === 'link' || att.kind === 'url') return;
-    puter.fs.delete(`${attachmentDir(projectId, taskId)}/${att.id}-${att.name}`).catch(() => {});
+    everything.fs.delete(`${attachmentDir(projectId, taskId)}/${att.id}-${att.name}`).catch(() => {});
   }
 
   // ---- export / sample data --------------------------------------------
@@ -2174,7 +2174,7 @@ export class Store extends EventTarget {
             // lookup above still uses what the backup said, since that is
             // what the entry inside the zip is called.)
             const stored = { ...att, id: uid(), name: safeFileName(att.name) };
-            await puter.fs.write(
+            await everything.fs.write(
               `${attachmentDir(doc.id, task.id)}/${stored.id}-${stored.name}`,
               blob,
               { createMissingParents: true },

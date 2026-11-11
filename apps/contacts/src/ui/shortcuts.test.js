@@ -5,8 +5,8 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { store } from '../store.js'
 import { mountApp } from './app.js'
 
-function stubPuter() {
-  window.puter = {
+function stubEverything() {
+  window.everything = {
     env: 'web',
     auth: { isSignedIn: () => true },
     kv: { list: async () => [] },
@@ -30,7 +30,7 @@ describe('global keyboard shortcuts', () => {
   })
 
   it('opens the editor on a bare "n" but ignores Cmd/Ctrl+N', () => {
-    stubPuter()
+    stubEverything()
     const root = document.createElement('div')
     document.body.appendChild(root)
     mountApp(root, {})

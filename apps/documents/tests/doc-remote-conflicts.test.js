@@ -10,7 +10,7 @@ beforeEach(() => {
   files = new Map([[path, { blob: new Blob(['original']), modified }]]);
   versioning.enabled = false; publishing.enabled = false;
   vi.spyOn(console, 'error').mockImplementation(() => {});
-  vi.stubGlobal('puter', { fs: {
+  vi.stubGlobal('everything', { fs: {
     stat: vi.fn(async (name) => {
       const file = files.get(name);
       if (!file) throw Object.assign(new Error('Not found'), { code: 'ENOENT' });
@@ -50,12 +50,12 @@ it.each(['changed', 'deleted'])('refuses to restore a version over a file anothe
   const doc = await open();
   const versionPath = 'Documents/.versions/Report/1.docx';
   files.set(versionPath, { blob: new Blob(['old version']), modified: 50 });
-  if (action === 'changed') await puter.fs.write(path, new Blob(['other window']));
+  if (action === 'changed') await everything.fs.write(path, new Blob(['other window']));
   else files.delete(path);
-  puter.fs.write.mockClear();
+  everything.fs.write.mockClear();
 
   await expect(doc.restoreVersion(versionPath)).rejects.toThrow(/another window/);
-  expect(puter.fs.write).not.toHaveBeenCalled();
+  expect(everything.fs.write).not.toHaveBeenCalled();
   if (action === 'changed') expect(await files.get(path).blob.text()).toBe('other window');
   else expect(files.has(path)).toBe(false);
   // Nothing was written, so a clean document is still saved.
@@ -64,13 +64,13 @@ it.each(['changed', 'deleted'])('refuses to restore a version over a file anothe
 
 it.each(['changed', 'deleted'])('protects the first edit when another window has %s the opened file', async (action) => {
   const doc = await open();
-  if (action === 'changed') await puter.fs.write(path, new Blob(['other window']));
+  if (action === 'changed') await everything.fs.write(path, new Blob(['other window']));
   else files.delete(path);
-  puter.fs.write.mockClear();
+  everything.fs.write.mockClear();
   doc.changed();
 
   await expect(doc.save()).rejects.toThrow(/another window/);
-  expect(puter.fs.write).not.toHaveBeenCalled();
+  expect(everything.fs.write).not.toHaveBeenCalled();
   expect(doc.dirty).toBe(true);
   if (action === 'changed') expect(await files.get(path).blob.text()).toBe('other window');
   else expect(files.has(path)).toBe(false);
@@ -84,7 +84,7 @@ it('saves the first edit when the opened file is unchanged', async () => {
 });
 
 it('still opens and saves when file metadata is unavailable', async () => {
-  puter.fs.stat.mockRejectedValue(new Error('Metadata unavailable'));
+  everything.fs.stat.mockRejectedValue(new Error('Metadata unavailable'));
   const doc = await open();
   doc.changed();
   expect(await doc.save()).toBe(true);
@@ -100,13 +100,13 @@ it.each(['changed', 'deleted'])('protects a newly created document when another 
   const createdPath = doc.path;
   expect(await files.get(createdPath).blob.text()).toBe('first save');
 
-  if (action === 'changed') await puter.fs.write(createdPath, new Blob(['other window']));
+  if (action === 'changed') await everything.fs.write(createdPath, new Blob(['other window']));
   else files.delete(createdPath);
-  puter.fs.write.mockClear();
+  everything.fs.write.mockClear();
   doc.attach(async () => new Blob(['my next edit']));
   doc.changed();
   await expect(doc.save()).rejects.toThrow(/another window/);
-  expect(puter.fs.write).not.toHaveBeenCalled();
+  expect(everything.fs.write).not.toHaveBeenCalled();
   expect(doc.dirty).toBe(true);
   if (action === 'changed') expect(await files.get(createdPath).blob.text()).toBe('other window');
   else expect(files.has(createdPath)).toBe(false);
@@ -127,12 +127,12 @@ it.each(['changed', 'deleted'])('protects a renamed document when another window
   const doc = await open();
   expect(await doc.rename('Renamed')).toBeNull();
   const renamedPath = doc.path;
-  if (action === 'changed') await puter.fs.write(renamedPath, new Blob(['other window']));
+  if (action === 'changed') await everything.fs.write(renamedPath, new Blob(['other window']));
   else files.delete(renamedPath);
-  puter.fs.write.mockClear();
+  everything.fs.write.mockClear();
   doc.changed();
   await expect(doc.save()).rejects.toThrow(/another window/);
-  expect(puter.fs.write).not.toHaveBeenCalled();
+  expect(everything.fs.write).not.toHaveBeenCalled();
   expect(doc.dirty).toBe(true);
   if (action === 'changed') expect(await files.get(renamedPath).blob.text()).toBe('other window');
   else expect(files.has(renamedPath)).toBe(false);
@@ -148,9 +148,9 @@ it('does not treat its own rename as another window’s edit', async () => {
 
 it('does not adopt another window’s changes as its own while renaming', async () => {
   const doc = await open();
-  await puter.fs.write(path, new Blob(['other window']));
+  await everything.fs.write(path, new Blob(['other window']));
   expect(await doc.rename('Renamed')).toMatch(/changed in another window/);
-  expect(puter.fs.rename).not.toHaveBeenCalled();
+  expect(everything.fs.rename).not.toHaveBeenCalled();
   expect(doc.path).toBe(path);
   expect(await files.get(path).blob.text()).toBe('other window');
 });
@@ -159,8 +159,8 @@ it('reports an autosave refused for another window\'s change, which nothing retr
   const doc = await open();
   const conflicts = [];
   doc.addEventListener('conflict', (e) => conflicts.push(e.detail.message));
-  await puter.fs.write(path, new Blob(['other window']));
-  puter.fs.write.mockClear();
+  await everything.fs.write(path, new Blob(['other window']));
+  everything.fs.write.mockClear();
   doc.changed();
   await vi.advanceTimersByTimeAsync(2000);
   expect(conflicts).toEqual([expect.stringMatching(/changed in another window/)]);
@@ -171,16 +171,16 @@ it('reports an autosave refused for another window\'s change, which nothing retr
   // An explicit save reports through its rejection instead.
   await expect(doc.save()).rejects.toThrow(/another window/);
   expect(conflicts).toHaveLength(1);
-  expect(puter.fs.write).not.toHaveBeenCalled();
+  expect(everything.fs.write).not.toHaveBeenCalled();
 });
 
 it('keeps the file as the drive has it as a version, and a save waiting for that writes only afterwards', async () => {
   versioning.enabled = true;
   const doc = await open();
   const order = [];
-  puter.fs.readdir = vi.fn(async () => []);
-  const write = puter.fs.write;
-  puter.fs.write = vi.fn(async (name, blob, options) => { order.push(name.includes('.versions/') ? 'version' : 'file'); return write(name, blob, options); });
+  everything.fs.readdir = vi.fn(async () => []);
+  const write = everything.fs.write;
+  everything.fs.write = vi.fn(async (name, blob, options) => { order.push(name.includes('.versions/') ? 'version' : 'file'); return write(name, blob, options); });
   doc.changed();
   const keeping = doc.keepFileVersion({ label: 'Before the shared changes' });
   const saving = doc.save();

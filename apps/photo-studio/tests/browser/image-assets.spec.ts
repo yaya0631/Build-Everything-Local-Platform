@@ -1,5 +1,5 @@
 // File → Generate → Image Assets: layers named like files become image files,
-// downloaded as a ZIP or written beside a Puter document.
+// downloaded as a ZIP or written beside an Everything document.
 import { test, expect, type Page } from '@playwright/test';
 import { layer, newDocument } from '../../src/model/document';
 import { boot, downloadFrom, historyLabels, idle, menu, openProject, run } from './helpers';
@@ -119,8 +119,8 @@ test('layer names generate image files, downloaded as a ZIP, with problems liste
   await idle(page);
 });
 
-test('with a document saved on Puter, assets are written to a folder beside it', async ({ page }) => {
-  const stub = `window.__writes=[];window.puter={env:"app",auth:{isSignedIn:()=>true},fs:{
+test('with a document saved on Everything, assets are written to a folder beside it', async ({ page }) => {
+  const stub = `window.__writes=[];window.everything={env:"app",auth:{isSignedIn:()=>true},fs:{
     write:async(path,blob,opts)=>{window.__writes.push({path,size:blob.size,type:blob.type,opts});return{path,name:path.split('/').pop()}},
     read:async()=>{throw new Error('no read')}},ui:{}};`;
   await boot(page, 'default', stub);

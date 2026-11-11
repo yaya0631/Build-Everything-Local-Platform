@@ -1,5 +1,5 @@
 /**
- * The client side of a huddle: the Huddle class over a fake Puter Peer API,
+ * The client side of a huddle: the Huddle class over a fake Everything Peer API,
  * with the links it dials and accepts driven by hand. What is covered here
  * is who keeps a link when the same account shows up on a second connection
  * (a seat that moved to another tab, or two sides dialling at once), and

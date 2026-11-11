@@ -8,7 +8,7 @@ import { attachTooltip } from '../ui/overlay';
 import { dropdown, type MenuItem, closeMenus } from '../ui/menu';
 import type { CommandRegistry } from './commands';
 
-export const REPO_URL = 'https://github.com/heyputer/everything';
+export const REPO_URL = 'https://github.com/yaya0631/Build-Everything-Local-Platform';
 
 export type RibbonItem =
   | { cmd: string; size?: 'big' | 'row'; menu?: string[] }

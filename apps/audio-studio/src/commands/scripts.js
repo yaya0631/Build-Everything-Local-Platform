@@ -41,7 +41,7 @@ async function runScriptFromFile(app) {
   const source = await file.text();
   const ok = await confirmDialog({
     title: 'Run Script',
-    message: `Run "${file.name}"? Scripts can change and close your files and use your Puter account, so only run scripts you trust.`,
+    message: `Run "${file.name}"? Scripts can change and close your files and use your Everything account, so only run scripts you trust.`,
     confirm: 'Run',
   });
   if (!ok) return;

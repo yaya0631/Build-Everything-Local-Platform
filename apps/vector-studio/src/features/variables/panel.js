@@ -32,15 +32,15 @@ import { updateGraph } from '../graphs/graph-ops.js';
 
 export const LIBRARY_FORMAT = 'vector-studio-variables';
 
-/** Load an image source (http(s) or data URL, or a Puter path) as a Blob. */
+/** Load an image source (http(s) or data URL, or an Everything path) as a Blob. */
 async function fetchSource(app, src) {
   if (/^(https?:|data:|blob:)/i.test(src)) {
     const res = await fetch(src);
     if (!res.ok && res.status) throw new Error(`Could not load ${src}`);
     return res.blob();
   }
-  if (app.puter?.fs?.read) return app.puter.fs.read(src);
-  throw new Error(`Linked files from paths like ${src} can be loaded when Vector Studio runs with Puter.`);
+  if (app.everything?.fs?.read) return app.everything.fs.read(src);
+  throw new Error(`Linked files from paths like ${src} can be loaded when Vector Studio runs with Everything.`);
 }
 
 const setText = (doc, node, text) => replaceIn(doc, node, 0, node.text.length, text, 'Apply Data Set');
@@ -229,7 +229,7 @@ export class VariablesPanel extends Panel {
       const data = loaded.get(src);
       if (!data) return;
       d.assets.set(data.assetId, data.asset);
-      const link = /^(https?:|data:|blob:)/i.test(src) ? { source: 'url', url: src, name: src.split('/').pop() } : { source: 'puter', path: src, name: src.split('/').pop(), modified: Date.now() };
+      const link = /^(https?:|data:|blob:)/i.test(src) ? { source: 'url', url: src, name: src.split('/').pop() } : { source: 'everything', path: src, name: src.split('/').pop(), modified: Date.now() };
       d.update(node.id, { asset: data.assetId, width: data.width, height: data.height, transform: fitTransform(node, data.width, data.height, this.app.prefs.get('linkPlacement') || 'fit'), link });
     };
     doc.transact('Apply Data Set', () => applyDataSet(doc, id, setText, { setImage, setGraph: (d, gid, cells) => updateGraph(d, gid, { data: cells }) }));

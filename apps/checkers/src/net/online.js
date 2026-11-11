@@ -1,8 +1,8 @@
 /**
- * Online play over the Puter Peer API (WebRTC data channels with built-in
+ * Online play over the Everything Peer API (WebRTC data channels with built-in
  * signaling — http://localhost:8443/Peer/).
  *
- * The Puter SDK is loaded lazily, only when the user enters online mode, so
+ * The Everything SDK is loaded lazily, only when the user enters online mode, so
  * offline play never pays for it. An OnlineSession wraps one private
  * host/guest game: the host serves an invite code, exactly one guest may
  * connect, and both sides exchange JSON messages:
@@ -27,34 +27,34 @@
  * remote/spontaneous closure surfaces through onClose exactly once.
  */
 
-const PUTER_SRC = '/sdk/puter.js';
+const EVERYTHING_SRC = '/sdk/everything.js';
 // This is a new app with no deployed peers, so there is no earlier version to
 // stay compatible with — start the count at 1.
 const PROTOCOL_VERSION = 1;
 const OPEN_TIMEOUT_MS = 30000;
 
-let puterPromise = null;
+let everythingPromise = null;
 
-/** Load the Puter SDK on demand; resolves with the `puter` global. */
-export function loadPuter() {
-  if (window.puter) return Promise.resolve(window.puter);
-  if (!puterPromise) {
-    puterPromise = new Promise((resolve, reject) => {
+/** Load the Everything SDK on demand; resolves with the `everything` global. */
+export function loadEverything() {
+  if (window.everything) return Promise.resolve(window.everything);
+  if (!everythingPromise) {
+    everythingPromise = new Promise((resolve, reject) => {
       const script = document.createElement('script');
-      script.src = PUTER_SRC;
+      script.src = EVERYTHING_SRC;
       script.onload = () => {
-        if (window.puter) resolve(window.puter);
-        else reject(new Error('Puter SDK loaded but is unavailable.'));
+        if (window.everything) resolve(window.everything);
+        else reject(new Error('Everything SDK loaded but is unavailable.'));
       };
       script.onerror = () => {
-        puterPromise = null; // allow a retry after transient network failures
+        everythingPromise = null; // allow a retry after transient network failures
         script.remove();
-        reject(new Error('Could not load the Puter SDK. Check your connection.'));
+        reject(new Error('Could not load the Everything SDK. Check your connection.'));
       };
       document.head.appendChild(script);
     });
   }
-  return puterPromise;
+  return everythingPromise;
 }
 
 /**
@@ -63,13 +63,13 @@ export function loadPuter() {
  * the popup inside the user's click gesture and turns a dismissed or blocked
  * popup into a clean rejection instead of a hang.
  */
-async function ensureSignedIn(puter) {
-  if (puter.auth?.isSignedIn?.()) return;
-  await puter.auth.signIn();
+async function ensureSignedIn(everything) {
+  if (everything.auth?.isSignedIn?.()) return;
+  await everything.auth.signIn();
 }
 
 /**
- * Display names cross the wire (and the Puter metadata is typed loosely), so
+ * Display names cross the wire (and the Everything metadata is typed loosely), so
  * accept only reasonable strings — anything else renders as the generic
  * "Opponent"/"Your friend" fallback.
  */
@@ -146,13 +146,13 @@ export class OnlineSession {
 
   /** Create a private game. Resolves with the invite code once serving. */
   async host(myColor, timeId) {
-    const puter = await loadPuter();
+    const everything = await loadEverything();
     this.role = 'host';
     this.myColor = myColor;
     this.timeId = cleanTimeId(timeId);
-    await ensureSignedIn(puter);
+    await ensureSignedIn(everything);
     if (this._ended) return null;
-    const server = await puter.peer.serve();
+    const server = await everything.peer.serve();
     if (this._ended) {
       // leave() ran while serve() was awaiting (e.g. auth prompt dismissed
       // after the user already cancelled) — don't keep a stray server.
@@ -161,7 +161,7 @@ export class OnlineSession {
     }
     this._server = server;
     this.inviteCode = server.inviteCode;
-    this._fetchMyName(puter);
+    this._fetchMyName(everything);
 
     server.addEventListener('connection', (event) => {
       if (this._ended) {
@@ -187,23 +187,23 @@ export class OnlineSession {
 
   /** Join a game created by a friend. */
   async join(inviteCode) {
-    const puter = await loadPuter();
+    const everything = await loadEverything();
     this.role = 'guest';
-    await ensureSignedIn(puter);
+    await ensureSignedIn(everything);
     if (this._ended) return;
-    const conn = await puter.peer.connect(inviteCode);
+    const conn = await everything.peer.connect(inviteCode);
     if (this._ended) {
       conn.close('Cancelled.');
       return;
     }
-    this._fetchMyName(puter);
+    this._fetchMyName(everything);
     this.opponentName = cleanName(conn.owner?.username);
     this._adopt(conn);
   }
 
-  _fetchMyName(puter) {
+  _fetchMyName(everything) {
     // serve()/connect() already authenticated us, so this cannot prompt.
-    puter.auth
+    everything.auth
       .getUser()
       .then((user) => {
         this._myName = user?.username || null;

@@ -18,7 +18,7 @@ const TIMEOUT_MS = 90_000;
 function errorMessage(err) {
   if (err && err.name === 'AbortError') return '';
   const msg = String((err && (err.message || err.error || err.code)) || '');
-  if (/insufficient|funds|credit|quota|limit/i.test(msg)) return 'Your Puter account has run out of AI credits for now. Try again later.';
+  if (/insufficient|funds|credit|quota|limit/i.test(msg)) return 'Your Everything account has run out of AI credits for now. Try again later.';
   if (/network|fetch|connection|offline/i.test(msg)) return 'Could not reach the AI service. Check your connection and try again.';
   if (/JSON|survey|usable|empty/i.test(msg)) return 'The AI reply could not be turned into a survey. Try again, or describe your goal in more detail.';
   return 'Something went wrong while drafting. Please try again.';
@@ -38,7 +38,7 @@ export function openAiDialog(app, prompt = '') {
             'div',
             { class: 'ai-unavailable' },
             h('div', { class: 'empty-icon' }, icon('sparkles', { size: 22 })),
-            h('p', null, 'AI drafting needs a Puter account. Sign in with Puter to describe a survey and have AI write the first draft.'),
+            h('p', null, 'AI drafting needs an Everything account. Sign in with Everything to describe a survey and have AI write the first draft.'),
             h('p', { class: 'muted' }, 'You can still start from a template or import questions you already have.'),
           ),
           foot: h('button', { type: 'button', class: 'btn btn-primary', autofocus: true, onclick: () => close(null) }, 'Close'),

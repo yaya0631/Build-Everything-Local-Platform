@@ -194,12 +194,12 @@ describe('signed out', () => {
   it('explains instead of calling the service', async () => {
     const app = await bootAppWithFeatures();
     const ed = app.newDocument();
-    app.puter = { ai: { chat: vi.fn(), txt2img: vi.fn() } };
+    app.everything = { ai: { chat: vi.fn(), txt2img: vi.fn() } };
     const id = addText(ed.doc, 'Hello');
     ed.select([id]);
     const notify = vi.spyOn(app, 'notify');
     await app.commands.run('generative.text.proofread');
-    expect(notify).toHaveBeenCalledWith(expect.stringMatching(/Sign in to Puter/), expect.anything());
-    expect(app.puter.ai.chat).not.toHaveBeenCalled();
+    expect(notify).toHaveBeenCalledWith(expect.stringMatching(/Sign in to Everything/), expect.anything());
+    expect(app.everything.ai.chat).not.toHaveBeenCalled();
   });
 });

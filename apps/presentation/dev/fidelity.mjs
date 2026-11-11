@@ -22,10 +22,10 @@ execFileSync("pdftoppm", [
 
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1512, height: 900 } });
-await page.route("**/sdk/puter.js", (r) =>
+await page.route("**/sdk/everything.js", (r) =>
   r.fulfill({
     contentType: "application/javascript",
-    body: 'window.puter={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',
+    body: 'window.everything={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',
   }),
 );
 await page.goto(`http://127.0.0.1:${port}/#/home`);

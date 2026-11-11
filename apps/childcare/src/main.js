@@ -13,7 +13,7 @@ import { toast } from './ui/toast.js';
 import { confirmDialog } from './ui/dialog.js';
 import { app, restoreKioskLock } from './app.js';
 import { createStore } from './core/store.js';
-import { createMemoryBackend, createPuterBackend } from './core/backend.js';
+import { createMemoryBackend, createEverythingBackend } from './core/backend.js';
 import { createIdbCache } from './core/cache.js';
 import { setMoneyDefaults } from './core/money.js';
 import { today } from './core/dates.js';
@@ -23,7 +23,7 @@ import { buildShell } from './ui/shell.js';
 import { startViews } from './ui/viewhost.js';
 import { showAlphaNotice } from './ui/alpha.js';
 
-const REPO_URL = 'https://github.com/heyputer/everything';
+const REPO_URL = 'https://github.com/yaya0631/Build-Everything-Local-Platform';
 const root = document.getElementById('app');
 
 initTheme();
@@ -40,7 +40,7 @@ function loading(label = 'Loading') {
 
 async function boot() {
   loading();
-  app.env = platform.puterEnv();
+  app.env = platform.everythingEnv();
   const q = new URLSearchParams(location.search);
   if (await platform.isSignedIn()) {
     await startSignedIn();
@@ -74,11 +74,11 @@ async function startSignedIn() {
   } catch (err) {
     console.error(err);
     // Offline: carry on from this device's copy, if this is the same session.
-    // Puter answering that the session is not valid (401, 403) is not offline.
+    // Everything answering that the session is not valid (401, 403) is not offline.
     const refused = [401, 403].includes(Number(err?.status));
     user = refused ? null : await platform.lastUser();
     if (!user) {
-      showWelcome('We could not reach your Puter account. Check your connection and try again.');
+      showWelcome('We could not reach your Everything account. Check your connection and try again.');
       return;
     }
   }
@@ -86,7 +86,7 @@ async function startSignedIn() {
   app.avatarUrl = platform.cachedProfilePicture(user.username);
 
   // Which school: the person's own, or one they joined as staff or family.
-  const kv = globalThis.puter.kv;
+  const kv = globalThis.everything.kv;
   let ws = { current: 'own', own: {}, joined: [] };
   try {
     ws = await team.loadWorkspaces(kv);
@@ -123,7 +123,7 @@ async function startSignedIn() {
     }
   }
   const store = createStore({
-    backend: workerUrl ? team.createWorkerBackend(workerUrl) : createPuterBackend(globalThis.puter),
+    backend: workerUrl ? team.createWorkerBackend(workerUrl) : createEverythingBackend(globalThis.everything),
     cache: createIdbCache(`user:${user.uuid}${workerUrl ? `:team:${workerUrl}` : ''}`),
   });
   app.store = store;
@@ -197,11 +197,11 @@ async function acceptInvite(kv, ws, { url, token }) {
   // member who was removed comes back.
   const listed = ws.joined.some((j) => j.url === url);
   if (!listed) {
-    // Joining sends your Puter session to that school's server, so ask first.
+    // Joining sends your Everything session to that school's server, so ask first.
     const host = new URL(url).hostname;
     const ok = await confirmDialog({
       title: 'Join a school?',
-      message: `You opened an invitation from a school whose server is ${host}. Joining lets the school see your Puter username, and what you add there is stored in the school's account. Only accept invitations you were expecting.`,
+      message: `You opened an invitation from a school whose server is ${host}. Joining lets the school see your Everything username, and what you add there is stored in the school's account. Only accept invitations you were expecting.`,
       confirmLabel: 'Join school',
     });
     if (!ok) return ws;
@@ -245,7 +245,7 @@ function startApp() {
 }
 
 function showWelcome(error) {
-  const available = platform.puterAvailable();
+  const available = platform.everythingAvailable();
   const demo = (as) => async () => {
     loading('Loading demo');
     history.replaceState(null, '', `?demo=${as === 'family' ? 'family' : '1'}${location.hash}`);
@@ -261,8 +261,8 @@ function showWelcome(error) {
         h('h1', 'Everything your center does in a day, in one calm place.'),
         h('p.lead', 'Check children in and out, log meals, naps, and photos, keep families in the loop, and get tuition paid. Free and open source.'),
         error ? h('div.notice.danger', { role: 'alert' }, icon('alert'), h('span', error)) : null,
-        location.hash.startsWith('#/join') ? h('div.notice.accent', icon('users'), h('span', 'You have been invited to a school. Sign in with Puter to accept the invitation.')) : null,
-        !available ? h('div.notice.warning', { role: 'alert' }, icon('warning'), h('span', 'Puter could not be loaded, so signing in is unavailable right now. You can still explore the demo.')) : null,
+        location.hash.startsWith('#/join') ? h('div.notice.accent', icon('users'), h('span', 'You have been invited to a school. Sign in with Everything to accept the invitation.')) : null,
+        !available ? h('div.notice.warning', { role: 'alert' }, icon('warning'), h('span', 'Everything could not be loaded, so signing in is unavailable right now. You can still explore the demo.')) : null,
         h(
           'div.cta',
           h('button.btn.primary.lg', { type: 'button', disabled: !available || null, onClick: handleSignIn }, icon('log-in', 18), 'Sign in'),
@@ -281,7 +281,7 @@ function showWelcome(error) {
         h(
           'div.welcome-foot',
           h('a', { href: REPO_URL, target: '_blank', rel: 'noopener noreferrer' }, icon('github', 16), 'Source on GitHub'),
-          h('span', 'Your data is stored in your own Puter account.'),
+          h('span', 'Your data is stored in your own Everything account.'),
         ),
       ),
       h('div.welcome-art', { 'aria-hidden': 'true', html: WELCOME_ART }),

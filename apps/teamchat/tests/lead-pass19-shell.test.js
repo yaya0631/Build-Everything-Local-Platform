@@ -1,7 +1,7 @@
 /**
  * The shell (review pass 19, lead), driven in node through tests/helpers/dom.js
  * as the pass-14 file is: a fresh DOM and a fresh module registry for every
- * test, Puter faked at `puter.workers.exec`, the conversation column and the
+ * test, Everything faked at `everything.workers.exec`, the conversation column and the
  * huddle window stubbed, browser notifications collected rather than shown.
  */
 import { describe, it, expect, afterEach, vi } from 'vitest';
@@ -35,7 +35,7 @@ async function boot({ hash = '', width = 1280, routes = {}, ...env } = {}) {
   dom?.uninstall();
   dom = installDom({ hash, width, ...env });
   vi.resetModules();
-  globalThis.puter = {
+  globalThis.everything = {
     workers: {
       exec: async (url, init = {}) => {
         const u = new URL(url);
@@ -74,7 +74,7 @@ async function boot({ hash = '', width = 1280, routes = {}, ...env } = {}) {
 afterEach(() => {
   dom?.uninstall();
   dom = null;
-  delete globalThis.puter;
+  delete globalThis.everything;
 });
 
 describe('a browser notification for a direct message', () => {

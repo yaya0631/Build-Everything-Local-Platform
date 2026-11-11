@@ -18,7 +18,7 @@ const tick = (ms = 2) => new Promise((r) => setTimeout(r, ms));
 /** Route each call by the end of its path (first match wins); a handler gets the query and the request init. */
 function worker(routes) {
   const calls = [];
-  globalThis.puter = {
+  globalThis.everything = {
     workers: {
       exec: async (url, init = {}) => {
         const u = new URL(url);
@@ -49,7 +49,7 @@ function closeAcme() {
   store.profile = null;
   store.links = new Map();
   store.act = { c: {}, p: {}, w: 0, u: 0 };
-  delete globalThis.puter;
+  delete globalThis.everything;
 }
 
 describe('the Later counts when a message is scheduled while the lists are being read', () => {

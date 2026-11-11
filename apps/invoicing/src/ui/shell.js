@@ -227,7 +227,7 @@ export function mountShell(appRoot) {
   }
 
   /* Sidebar (desktop) */
-  const isPuterApp = typeof puter !== 'undefined' && puter.env === 'app';
+  const isEverythingApp = typeof everything !== 'undefined' && everything.env === 'app';
   const sidebarNav = el('div.side-nav');
   const sidebarFoot = el('div.side-foot');
   const avatar = el('span.user-avatar', { 'aria-hidden': 'true' });
@@ -242,12 +242,12 @@ export function mountShell(appRoot) {
    * actually signed in — so it follows the store instead.
    *
    * The business name leads, because that is what the paper is printed for,
-   * with the Puter account it is stored in beneath. Until Settings has a
+   * with the Everything account it is stored in beneath. Until Settings has a
    * business name the account carries both lines' worth on its own.
    */
   let drawnUser = null;
   function renderUser() {
-    const user = store.user?.username || 'Puter user';
+    const user = store.user?.username || 'Everything user';
     const business = (store.settings.business?.name || '').trim();
     const key = `${business}|${user}`;
     if (key === drawnUser) return;
@@ -255,7 +255,7 @@ export function mountShell(appRoot) {
     avatar.textContent = (business || user).charAt(0).toUpperCase();
     acctName.textContent = business || user;
     acctName.title = business || user;
-    acctSub.textContent = business ? user : 'Puter account';
+    acctSub.textContent = business ? user : 'Everything account';
     acctSub.title = acctSub.textContent;
   }
   renderUser();
@@ -376,8 +376,8 @@ export function mountShell(appRoot) {
 
     // Below the rule: the shell's own settings, and the way out of it.
     for (const r of ROUTES.filter((x) => x.foot)) sidebarFoot.append(navItem(r));
-    // Inside the Puter desktop, sessions belong to the OS shell, not the app.
-    if (!isPuterApp) {
+    // Inside the Everything desktop, sessions belong to the OS shell, not the app.
+    if (!isEverythingApp) {
       sidebarFoot.append(el('button.nav-item', {
         type: 'button',
         html: icon('logout', 17, 1.7),

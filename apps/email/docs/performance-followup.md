@@ -64,10 +64,10 @@ Changes were committed and pushed to `main` in tested increments.
 
 Reviewed the official [directory listing](http://localhost:8443/FS/readdir/),
 [file reading](http://localhost:8443/FS/read/) and
-[KV documentation](http://localhost:8443/KV/), plus local Puter source at
+[KV documentation](http://localhost:8443/KV/), plus local Everything source at
 `abcd58f3d0eab0369b1dedcdd0b48863c3a9b1b0`:
 
-- `puter-js/src/modules/FileSystem/operations/readdir.js`: explicit cursors return
+- `everything-js/src/modules/FileSystem/operations/readdir.js`: explicit cursors return
   one page; unbounded array calls drain pages; individual entries enter SDK cache.
 - `backend/stores/fs/FSEntryStore.ts`: direct pages seek by name/id; recursive
   pages seek by path ascending and apply depth filtering. Each returned entry
@@ -86,7 +86,7 @@ Reviewed the official [directory listing](http://localhost:8443/FS/readdir/),
 The existing Chromium fixture runs actual app code with synthetic 1k, 10k and
 100k folders, 5 ms request latency (40 ms separately), dense days, two-message
 sparse days, 8 MiB attachments, and injected failures. These are **simulations,
-not signed-in Puter measurements**. Returned bytes exclude HTTP framing and real
+not signed-in Everything measurements**. Returned bytes exclude HTTP framing and real
 FS metadata overhead. Backend SQL, SDK cache costs and throughput are not simulated.
 Heap is a point-in-time Chromium JS estimate including fixtures, not peak memory.
 Long tasks are tasks >=50 ms; history settling includes a 150 ms observation window.

@@ -23,7 +23,7 @@ async function boot() {
           'div',
           { class: 'signin-card' },
           h('h1', null, 'Could not start'),
-          h('p', { class: 'muted' }, 'The Puter SDK did not load. Check your connection or content blockers, then reload.'),
+          h('p', { class: 'muted' }, 'The Everything SDK did not load. Check your connection or content blockers, then reload.'),
           h('button', { type: 'button', class: 'btn btn-primary', onclick: () => location.reload() }, 'Reload'),
         ),
       ),

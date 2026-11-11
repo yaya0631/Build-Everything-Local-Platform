@@ -1,10 +1,10 @@
 // legal-team-worker build=3
 /**
  * Shared firm server: one worker per firm, running in the firm owner's own
- * Puter account (the app deploys it there with puter.workers.create). Its KV
+ * Everything account (the app deploys it there with everything.workers.create). Its KV
  * is the firm's shared database, so the owner owns and pays for the data;
- * firm members reach it through puter.workers.exec(), which forwards their
- * own Puter session.
+ * firm members reach it through everything.workers.exec(), which forwards their
+ * own Everything session.
  *
  * The key layout is the one the app uses in a single account
  * (lg1:r:<collection>:<id>, lg1:meta, lg1:seq, lg1:settings), so the app's
@@ -15,7 +15,7 @@
  *   POST /api           { op, ... }  see OPS below
  *
  * Every request is checked here, never in the browser: the caller is
- * identified from their own session (user.puter), never from the body, and
+ * identified from their own session (user.everything), never from the body, and
  * must be the owner or a member. Managing the team needs the owner or an
  * admin.
  */
@@ -64,7 +64,7 @@ function ownerOf(ctx) {
 }
 
 function kvOf(ctx) {
-  return ownerOf(ctx).puter.kv;
+  return ownerOf(ctx).everything.kv;
 }
 
 async function identify(p) {
@@ -80,7 +80,7 @@ async function identify(p) {
 
 async function ownerIdentity(ctx) {
   if (ownerCache) return ownerCache;
-  ownerCache = await identify(ownerOf(ctx).puter);
+  ownerCache = await identify(ownerOf(ctx).everything);
   return ownerCache;
 }
 
@@ -118,7 +118,7 @@ async function listAll(kv, pattern) {
 /** Who is calling and what they may do: { uuid, username, role } or null. */
 async function caller(ctx) {
   const user = (ctx && (ctx.user || ctx.requestor)) || null;
-  const who = await identify(user && user.puter);
+  const who = await identify(user && user.everything);
   if (!who) return null;
   const owner = await ownerIdentity(ctx);
   if (owner && owner.uuid === who.uuid) return { ...who, role: 'owner' };
@@ -217,14 +217,14 @@ const OPS = {
     const bytes = new Uint8Array(bin.length);
     for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
     const type = /^[\w.+-]+\/[\w.+-]+$/.test(String(body.type || '')) ? body.type : 'application/octet-stream';
-    await ownerOf(ctx).puter.fs.write(path, new Blob([bytes], { type }), { overwrite: true, createMissingParents: true });
+    await ownerOf(ctx).everything.fs.write(path, new Blob([bytes], { type }), { overwrite: true, createMissingParents: true });
     return {};
   },
 
   async fileRead(ctx, c, body) {
     let blob;
     try {
-      blob = await ownerOf(ctx).puter.fs.read(checkPath(body));
+      blob = await ownerOf(ctx).everything.fs.read(checkPath(body));
     } catch (err) {
       if (err && err.code === 'bad_path') throw err;
       if (/not.?found|subject_does_not_exist/i.test(String((err && (err.code || err.message)) || err)))
@@ -240,7 +240,7 @@ const OPS = {
   async fileDelete(ctx, c, body) {
     const path = checkPath(body);
     try {
-      await ownerOf(ctx).puter.fs.delete(path);
+      await ownerOf(ctx).everything.fs.delete(path);
     } catch {
       /* already gone */
     }
@@ -373,7 +373,7 @@ router.post('/api', async (ctx) => {
   }
   const op = body && typeof body.op === 'string' ? body.op : '';
   const c = await caller(ctx);
-  if (!c) return fail(401, 'sign_in_required', 'Sign in to Puter to continue.');
+  if (!c) return fail(401, 'sign_in_required', 'Sign in to Everything to continue.');
   if (op === 'join') return join(ctx, c, body);
   if (!c.role && c.ownerUnknown) return fail(503, 'unavailable', 'The firm server is starting. Try again in a moment.');
   if (!c.role) return fail(403, 'not_a_member', 'You are not a member of this firm.');

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 import { Store, receiptPayments } from '../src/lib/store.js';
 import {
   isRefund, refundState, canRefund, refundPlan, refundedQty, refundableQty, fullRefundPicks,
@@ -15,7 +15,7 @@ let store;
 const cents = (n) => Math.round(n * 100);
 
 beforeEach(async () => {
-  mock = installMockPuter();
+  mock = installMockEverything();
   store = new Store();
   await store.init();
 });
@@ -434,9 +434,9 @@ describe('a cross-month refund dying between its two writes', () => {
     // The network dies exactly when the refund receipt's write starts and
     // stays dead - so the compensating rewrite of the original fails too.
     const todayPath = `pos-data/sales-${monthKeyOf(todayISO())}.json`;
-    const realWrite = puter.fs.write;
+    const realWrite = everything.fs.write;
     let died = false;
-    puter.fs.write = async (path, data) => {
+    everything.fs.write = async (path, data) => {
       if (path === todayPath) died = true;
       if (died) throw new TypeError('Failed to fetch');
       return realWrite(path, data);
@@ -444,7 +444,7 @@ describe('a cross-month refund dying between its two writes', () => {
     await expect(fresh.refundSale({
       receiptId: 'old-sale', date: past, picks: [{ index: 0, qty: 1 }],
     })).rejects.toThrow();
-    puter.fs.write = realWrite;
+    everything.fs.write = realWrite;
 
     // What the cloud holds refuses a second refund - the failure direction
     // that can't pay the same money out twice.

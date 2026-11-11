@@ -5,7 +5,7 @@
  * fixup rule, a hash location that fires hashchange on the next tick,
  * matchMedia by viewport; no CSS). Every test boots a fresh DOM and a fresh
  * module registry, so the listeners the modules hang on window and document
- * never outlive their test. Puter is faked at `puter.workers.exec`, as in
+ * never outlive their test. Everything is faked at `everything.workers.exec`, as in
  * tests/store.test.js and tests/ui-shell-pass14.test.js.
  */
 import { describe, it, expect, afterEach, vi } from 'vitest';
@@ -40,7 +40,7 @@ async function boot({ hash = '', width = 1280, routes = {}, ...env } = {}) {
   dom = installDom({ hash, width, ...env });
   vi.resetModules();
   const calls = [];
-  globalThis.puter = {
+  globalThis.everything = {
     workers: {
       exec: async (url, init = {}) => {
         const u = new URL(url);
@@ -84,7 +84,7 @@ async function boot({ hash = '', width = 1280, routes = {}, ...env } = {}) {
 afterEach(() => {
   dom?.uninstall();
   dom = null;
-  delete globalThis.puter;
+  delete globalThis.everything;
 });
 
 /** The shell at a route, opened and settled. */
@@ -221,7 +221,7 @@ describe('the app opened without a network, the network back within the first se
   /** Wait for a condition rather than a fixed pause, up to a generous bound. */
   const until = async (fn, ms = 12_000) => { const t0 = Date.now(); while (!fn()) { if (Date.now() - t0 > ms) throw new Error('timed out'); await dom.tick(25); } };
 
-  it('asks for the SDK once more on its own, rather than landing on "Could not reach Puter" for a network that is there', async () => {
+  it('asks for the SDK once more on its own, rather than landing on "Could not reach Everything" for a network that is there', async () => {
     dom?.uninstall();
     dom = installDom({ hash: '' });
     vi.resetModules();
@@ -231,10 +231,10 @@ describe('the app opened without a network, the network back within the first se
     document.body.append(app);
     // The page's own SDK tag, which failed to load offline.
     const tag = document.createElement('script');
-    tag.setAttribute('src', '/sdk/puter.js');
+    tag.setAttribute('src', '/sdk/everything.js');
     document.head.append(tag);
     dom.navigator.onLine = false;
-    delete globalThis.puter;
+    delete globalThis.everything;
     const quiet = vi.spyOn(console, 'error').mockImplementation(() => {});
     await import('../src/main.js');
     // The short wait for the SDK is under way. The network comes back inside
@@ -242,13 +242,13 @@ describe('the app opened without a network, the network back within the first se
     // event follows the failure to bring the retry.
     dom.navigator.onLine = true;
     await until(() => document.querySelectorAll('script[src*="js.localhost:8443"]').length === 2, 6000);
-    expect(app.querySelector('.auth-title')?.textContent).not.toBe('Could not reach Puter');
+    expect(app.querySelector('.auth-title')?.textContent).not.toBe('Could not reach Everything');
     // It loads: the app comes up, no reload asked of anyone.
-    globalThis.puter = { auth: { isSignedIn: async () => true, getUser: async () => ({ uuid: 'u-me', username: 'me' }) }, kv: { get: async () => null } };
+    globalThis.everything = { auth: { isSignedIn: async () => true, getUser: async () => ({ uuid: 'u-me', username: 'me' }) }, kv: { get: async () => null } };
     await until(() => !!app.querySelector('.app-frame'));
     expect(dom.location.reloads).toBe(0);
     quiet.mockRestore();
-    delete globalThis.puter;
+    delete globalThis.everything;
   }, 20_000);
 });
 

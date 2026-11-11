@@ -11,7 +11,7 @@ import { createOutbox, memoryStorage } from '../src/lib/outbox.js';
 const netError = () => Object.assign(new Error('Could not reach the workspace server'), { status: 0, code: 'network' });
 const refused = () => Object.assign(new Error('That file is too large'), { status: 413, code: 'too_large' });
 
-/* ---- the store, driven in node with a fake Puter (as tests/client-lib-pass21.test.js) ---- */
+/* ---- the store, driven in node with a fake Everything (as tests/client-lib-pass21.test.js) ---- */
 
 const REF = 'abc123def0@teamchat-test';
 const json = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
@@ -29,7 +29,7 @@ const until = async (fn, ms = 5000) => {
 /** Route each call by the end of its path (first match wins); a handler gets the query and the request init. */
 function worker(routes) {
   const calls = [];
-  globalThis.puter = {
+  globalThis.everything = {
     workers: {
       exec: async (url, init = {}) => {
         const u = new URL(url);
@@ -70,7 +70,7 @@ function resetStore() {
   store.act = { c: {}, p: {}, w: 0, u: 0 };
   for (const t of store._readTimers.values()) clearTimeout(t);
   store._readTimers.clear();
-  delete globalThis.puter;
+  delete globalThis.everything;
 }
 
 const msg = (seq, text, extra = {}) => ({ seq, user: 'u-me', text, ts: seq * 1000, kind: 'msg', attachments: [], mentions: [], reactions: {}, replyCount: 0, ...extra });
@@ -98,12 +98,12 @@ describe('the quote card under a permalink whose message could not be read for a
     return 'value' in got ? got.value : got.promise;
   };
 
-  it('is asked for again on the next redraw after a 401 (Puter not confirming the sign-in for a moment), rather than shown as nothing for the rest of the session', async () => {
-    let answer = () => json({ code: 'unauthorized', message: 'Your Puter session is not valid' }, 401);
+  it('is asked for again on the next redraw after a 401 (Everything not confirming the sign-in for a moment), rather than shown as nothing for the rest of the session', async () => {
+    let answer = () => json({ code: 'unauthorized', message: 'Your Everything session is not valid' }, 401);
     const calls = worker({ '/conv/c1/messages': () => answer() });
     openChannel([msg(1, 'a')]);
     expect(await ask()).toBeNull();
-    // Puter answers again: the next render reads the message and draws the card.
+    // Everything answers again: the next render reads the message and draws the card.
     answer = () => json({ messages: [msg(5, 'the quoted one')], seq: 6, hasMore: false });
     expect(await ask()).toMatchObject({ seq: 5, text: 'the quoted one' });
     expect(calls.filter((c) => c.includes('/conv/c1/messages')).length).toBe(2);
@@ -191,7 +191,7 @@ describe('a queued message discarded while its file is going up', () => {
   });
 });
 
-describe('a read the worker did not take because Puter could not confirm the sign-in for a moment (401)', () => {
+describe('a read the worker did not take because Everything could not confirm the sign-in for a moment (401)', () => {
   afterEach(resetStore);
 
   it('waits to be sent again with the next request that gets through, as one the server did not answer does, rather than being given up', async () => {
@@ -199,7 +199,7 @@ describe('a read the worker did not take because Puter could not confirm the sig
     const bodies = [];
     const calls = worker({
       '/sync': () => json({ now: Date.now(), ts: Date.now(), c: {}, p: {}, w: 1, u: 0 }),
-      '/read': (_, init) => { bodies.push(JSON.parse(init.body)); return down ? json({ code: 'unauthorized', message: 'Your Puter session is not valid' }, 401) : json({ ok: true }); },
+      '/read': (_, init) => { bodies.push(JSON.parse(init.body)); return down ? json({ code: 'unauthorized', message: 'Your Everything session is not valid' }, 401) : json({ ok: true }); },
     });
     openChannel([msg(1, 'a'), msg(2, 'b'), msg(3, 'c'), msg(4, 'd'), msg(5, 'e')]);
     store.since = 1;
@@ -210,7 +210,7 @@ describe('a read the worker did not take because Puter could not confirm the sig
     // Kept, to be sent again: not given up as a refusal, and not sent again on its own before a request gets through.
     expect(store._readRetry.size).toBe(1);
     expect(store.me.reads.c1).toBeUndefined();
-    // Puter answers the worker again: the next sync that gets through sends the read, and the cursor follows.
+    // Everything answers the worker again: the next sync that gets through sends the read, and the cursor follows.
     down = false;
     for (const r of store._readRetry.values()) r.nextAt = 0;
     await store.poll();
@@ -221,8 +221,8 @@ describe('a read the worker did not take because Puter could not confirm the sig
   });
 });
 
-describe('a huddle heartbeat Puter could not confirm for a moment (401), or the worker held back (429)', () => {
-  // Puter faked at `puter.peer` and `puter.workers.exec`, the media devices absent (listen-only), as in tests/huddle-store.test.js.
+describe('a huddle heartbeat Everything could not confirm for a moment (401), or the worker held back (429)', () => {
+  // Everything faked at `everything.peer` and `everything.workers.exec`, the media devices absent (listen-only), as in tests/huddle-store.test.js.
   const T0 = 1_700_000_000_000;
   class FakeStream {
     constructor() { this.id = 'st1'; }
@@ -254,7 +254,7 @@ describe('a huddle heartbeat Puter could not confirm for a moment (401), or the 
   it('keeps the seat and the call, the next beat trying again, rather than leaving the huddle with an error; a refusal proper still ends it with its word', async () => {
     let posts = 0;
     let answer = { status: 200 };
-    globalThis.puter = {
+    globalThis.everything = {
       peer: { async serve() { return new FakeServer('ME-1'); }, async connect() { return new FakeConn(); } },
       workers: {
         exec: async (url, init = {}) => {
@@ -280,8 +280,8 @@ describe('a huddle heartbeat Puter could not confirm for a moment (401), or the 
     const errors = [];
     const off = store.on('huddle-error', (e) => errors.push(e));
     const beat = () => store._postHuddle(store.huddle, store._huddleInfo, store.huddle.inviteCode).catch(() => {});
-    // Puter cannot confirm the sign-in as a beat goes out: the seat stands on the worker for another minute; the call goes on.
-    answer = { status: 401, code: 'unauthorized', message: 'Your Puter session is not valid' };
+    // Everything cannot confirm the sign-in as a beat goes out: the seat stands on the worker for another minute; the call goes on.
+    answer = { status: 401, code: 'unauthorized', message: 'Your Everything session is not valid' };
     await beat();
     expect(store.huddle).not.toBeNull();
     expect(store.inHuddle('d1')).toBe(true);
@@ -304,7 +304,7 @@ describe('a huddle heartbeat Puter could not confirm for a moment (401), or the 
   });
 });
 
-describe('the host of a shared channel answering 401 (Puter not confirming the sign-in to it for a moment)', () => {
+describe('the host of a shared channel answering 401 (Everything not confirming the sign-in to it for a moment)', () => {
   const HOST = 'host00host@teamchat-test';
   afterEach(resetStore);
 
@@ -316,7 +316,7 @@ describe('the host of a shared channel answering 401 (Puter not confirming the s
     store.me = { role: 'admin', channels: ['e1'], dms: {}, reads: {}, mentions: {}, notify: {}, threads: {} };
     store.act = { c: {}, p: {}, w: 0, u: 0 };
   }
-  const unauthorized = () => json({ code: 'unauthorized', message: 'Your Puter session is not valid' }, 401);
+  const unauthorized = () => json({ code: 'unauthorized', message: 'Your Everything session is not valid' }, 401);
   const joinRoutes = (connectJoin) => ({
     '/channels/e1/join': () => json({ ok: true, shared: { ref: HOST, ch: 'hch', conn: 'conn000001', token: 'x.y' } }),
     '/api/connect/join': connectJoin,
@@ -661,10 +661,10 @@ describe('a search remembered for the search box\'s dropdown', () => {
 
 describe('a star or a section changed in this tab after another tab changed the same workspace\'s', () => {
   let doc;
-  /** The user's document as Puter holds it; another tab's write is a change to `doc` itself. */
+  /** The user's document as Everything holds it; another tab's write is a change to `doc` itself. */
   const kvUser = (sections, starred = []) => {
     doc = { v: 1, profile: { name: 'Me' }, prefs: { sections: { [REF]: sections }, starred: { [REF]: starred } }, workspaces: [], worker: null };
-    globalThis.puter = { kv: { get: async () => structuredClone(doc), set: async (k, v) => { doc = structuredClone(v); } } };
+    globalThis.everything = { kv: { get: async () => structuredClone(doc), set: async (k, v) => { doc = structuredClone(v); } } };
     store.identity = { uuid: 'u-me', username: 'me' };
     store.user = structuredClone(doc);
     store.wsId = REF;

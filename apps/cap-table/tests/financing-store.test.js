@@ -2,11 +2,11 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { Store, ListFullError, MAX_SECURITIES, SCENARIOS_MAX } from '../src/lib/store.js';
 import { modelRound, exitWaterfall, fullyDiluted, topUpReserve } from '../src/lib/captable.js';
 import { capTableDigest, dividendAccrual, electMFN } from '../src/lib/financing.js';
-import { puterBackend } from './helpers/puter-kv.js';
+import { everythingBackend } from './helpers/everything-kv.js';
 
 let store, common, founder, investor, cert, right, inputs;
 beforeEach(async () => {
-  puterBackend().install(); store = new Store(); await store.init();
+  everythingBackend().install(); store = new Store(); await store.init();
   common = await store.addClass({ name: 'Common', kind: 'common' });
   founder = await store.addStakeholder({ name: 'Founder' }); investor = await store.addStakeholder({ name: 'Investor' });
   await store.addSecurity({ kind: 'shares', classId: common.id, stakeholderId: founder.id, quantity: 900000, pricePerShare: 0.01, date: '2024-01-01' });
@@ -127,7 +127,7 @@ describe('scenario and close integrity', () => {
        was gone. Refused up front, nothing touches the list at all. */
     const close = closing(modelRound(store.db, inputs));
     close.modeling.basisDigest = 'stale';
-    const kv = globalThis.puter.kv;
+    const kv = globalThis.everything.kv;
     const touched = [];
     for (const method of ['set', 'add']) {
       const original = kv[method];

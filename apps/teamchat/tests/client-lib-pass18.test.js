@@ -43,7 +43,7 @@ const until = async (fn, ms = 5000) => {
 /** Route each call by the end of its path (first match wins); a handler gets the query and the request init. */
 function worker(routes) {
   const calls = [];
-  globalThis.puter = {
+  globalThis.everything = {
     workers: {
       exec: async (url, init = {}) => {
         const u = new URL(url);
@@ -83,7 +83,7 @@ function resetStore() {
   store.act = { c: {}, p: {}, w: 0, u: 0 };
   for (const t of store._readTimers.values()) clearTimeout(t);
   store._readTimers.clear();
-  delete globalThis.puter;
+  delete globalThis.everything;
 }
 
 const msg = (seq, text, extra = {}) => ({ seq, user: 'u-me', text, ts: seq * 1000, kind: 'msg', attachments: [], mentions: [], reactions: {}, replyCount: 0, ...extra });
@@ -373,7 +373,7 @@ describe('saving the profile card, or a status, while one workspace\'s server do
   function twoServers() {
     const told = [];
     const doc = () => ({ v: 1, profile: { name: 'Me' }, prefs: {}, workspaces: [{ ref: REF, name: 'A' }, { ref: TWO, name: 'B' }], worker: null });
-    globalThis.puter = {
+    globalThis.everything = {
       kv: { get: async () => doc(), set: async () => true },
       workers: {
         exec: async (url, init = {}) => {
@@ -625,8 +625,8 @@ describe('a star, a section or a preference the account\'s storage would not sav
   /** The signed-in account with one workspace; its storage refuses every save when `saveFails`. */
   function account({ saveFails }) {
     const doc = () => ({ v: 1, profile: { name: 'Me' }, prefs: { enterSends: false }, workspaces: [{ ref: REF, name: 'A' }], worker: null });
-    globalThis.puter = {
-      kv: { get: async () => doc(), set: async () => { if (saveFails) throw new Error('Puter storage is not reachable'); return true; } },
+    globalThis.everything = {
+      kv: { get: async () => doc(), set: async () => { if (saveFails) throw new Error('Everything storage is not reachable'); return true; } },
       workers: { exec: async () => json({ ok: true }) },
     };
     store.identity = { uuid: 'u-me', username: 'me' };
@@ -640,7 +640,7 @@ describe('a star, a section or a preference the account\'s storage would not sav
     account({ saveFails: true });
     const events = [];
     const off = store.on('profile', () => events.push(store.isStarred('c1')));
-    await expect(store.toggleStar('c1')).rejects.toThrow('Puter storage');
+    await expect(store.toggleStar('c1')).rejects.toThrow('Everything storage');
     expect(store.isStarred('c1')).toBe(false);
     expect(store.profile.prefs.starred).toBeUndefined();
     expect(store.user.prefs.starred).toBeUndefined();
@@ -657,7 +657,7 @@ describe('a star, a section or a preference the account\'s storage would not sav
 
   it('stands when the save goes through, applied to the copy here when the account cannot be read (offline)', async () => {
     account({ saveFails: false });
-    globalThis.puter.kv.get = async () => { throw new Error('offline'); };
+    globalThis.everything.kv.get = async () => { throw new Error('offline'); };
     await store.toggleStar('c1');
     expect(store.isStarred('c1')).toBe(true);
     await store.updatePrefs({ enterSends: true });

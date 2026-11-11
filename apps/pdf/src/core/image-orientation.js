@@ -1,6 +1,6 @@
 import { crc32 } from '../lib/crc32.js';
 
-export const IMAGE_ORIENTATION_KEY = 'PuterImageOrientation';
+export const IMAGE_ORIENTATION_KEY = 'EverythingImageOrientation';
 
 /** Locate a standard, inline EXIF orientation tag without reading outside its APP1 segment. */
 function jpegOrientationTag(bytes) {

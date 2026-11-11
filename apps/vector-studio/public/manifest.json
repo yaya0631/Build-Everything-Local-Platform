@@ -1,7 +1,7 @@
 {
   "name": "Vector Studio",
   "short_name": "Vector Studio",
-  "description": "A vector illustration editor stored in your own Puter cloud.",
+  "description": "A vector illustration editor stored in your own Everything cloud.",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#2b2b2b",

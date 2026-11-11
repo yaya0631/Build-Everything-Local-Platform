@@ -3,14 +3,14 @@ import { escape } from "./model.js";
 
 addTranslations({
   "Sign in": "Se connecter",
-  "Sign in to Puter": "Se connecter à Puter",
+  "Sign in to Everything": "Se connecter à Everything",
   Account: "Compte",
   "Account menu": "Menu du compte",
-  "Signed in with Puter": "Connecté avec Puter",
+  "Signed in with Everything": "Connecté avec Everything",
   "Loading your account…": "Chargement de votre compte…",
   "Sign out": "Se déconnecter",
   "Signed in as {name}.": "Connecté en tant que {name}.",
-  "Signed in with Puter.": "Connecté avec Puter.",
+  "Signed in with Everything.": "Connecté avec Everything.",
   "Signed out. Your local boards are still available.":
     "Déconnexion effectuée. Vos tableaux locaux restent disponibles.",
   "Could not sign in. Try again.": "Connexion impossible. Réessayez.",
@@ -19,10 +19,10 @@ addTranslations({
 // Whether this person is signed in is answered at a glance, in the same
 // place on every screen: a Sign in button while signed out and, once signed
 // in, an avatar that opens the account menu with their name, their cloud
-// boards, and a way to sign out. Puter's desktop signs its apps in itself,
+// boards, and a way to sign out. Everything's desktop signs its apps in itself,
 // so there the menu offers no sign-out.
 export function createAccountUI({
-  puter = () => window.puter,
+  everything = () => window.everything,
   icon,
   action,
   refresh = () => {},
@@ -31,8 +31,8 @@ export function createAccountUI({
     picture = null,
     loading = null,
     openMenu = null;
-  const signedIn = () => !!puter()?.auth?.isSignedIn?.();
-  const canSignOut = () => puter()?.env !== "app";
+  const signedIn = () => !!everything()?.auth?.isSignedIn?.();
+  const canSignOut = () => everything()?.env !== "app";
   const name = () => user?.username || "";
   // A stable color per account, so the same person's avatar looks the same
   // on every visit and in every header.
@@ -42,7 +42,7 @@ export function createAccountUI({
     return h;
   };
   const initial = (text) => [...text.trim()][0]?.toLocaleUpperCase() || "";
-  // Puter answers with the picture's own data, which is drawn only when it
+  // Everything answers with the picture's own data, which is drawn only when it
   // is an image, so a profile could not slip a script in.
   const validPicture = (value) =>
     typeof value === "string" &&
@@ -68,18 +68,18 @@ export function createAccountUI({
     const detail = user?.email && user.email !== label ? user.email : "";
     const heading = label
       ? `<strong data-user-content>${escape(label)}</strong>`
-      : `<strong>${loading ? "Loading your account…" : "Signed in with Puter"}</strong>`;
+      : `<strong>${loading ? "Loading your account…" : "Signed in with Everything"}</strong>`;
     const line = detail
       ? `<small data-user-content>${escape(detail)}</small>`
       : label
-        ? `<small>Signed in with Puter</small>`
+        ? `<small>Signed in with Everything</small>`
         : "";
     // Only menu items are read inside a menu, so the account's name and
     // email describe the menu instead.
     const items = canSignOut()
       ? `<button type="button" role="menuitem" tabindex="-1" data-account-action="sign-out">${icon("log-out")}Sign out</button>`
       : "";
-    // In Puter's own app there is nothing to choose, so the popover is the
+    // In Everything's own app there is nothing to choose, so the popover is the
     // account's card rather than an empty menu.
     return `<div class="account-menu" role="${items ? "menu" : "group"}" aria-label="Account" aria-describedby="account-identity"><div class="account-identity" id="account-identity" role="none">${avatar(" avatar-large")}<div role="none">${heading}${line}</div></div>${items ? `<div class="account-menu-items" role="none">${items}</div>` : ""}</div>`;
   }
@@ -188,12 +188,12 @@ export function createAccountUI({
     close,
     // Reads who is signed in, as on arrival and after signing in or out,
     // and redraws the headers: at once with what is known, then with the
-    // account's name when Puter answers.
+    // account's name when Everything answers.
     async refresh() {
       user = null;
       picture = null;
       loading = null;
-      const p = puter();
+      const p = everything();
       if (!signedIn() || !p.auth.getUser) return bind();
       const attempt = (loading = Promise.all([
         p.auth.getUser(),

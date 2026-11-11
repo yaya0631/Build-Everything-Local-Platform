@@ -1,4 +1,4 @@
-// In-memory stand-ins for the Puter services the collaboration worker and
+// In-memory stand-ins for the Everything services the collaboration worker and
 // sessions use, so tests run the real server code against several clients.
 import { DocService } from '../worker/service.js';
 import { CollabSession } from '../src/features/collab/session.js';
@@ -10,7 +10,7 @@ export const bob = { uuid: '22222222-2222-4222-8222-222222222222', username: 'bo
 export const cam = { uuid: '33333333-3333-4333-8333-333333333333', username: 'cam' };
 export const SERVER = 'http://vs-test.localhost:8443';
 
-export function memoryPuter(owner = alice) {
+export function memoryEverything(owner = alice) {
   const data = new Map();
   const files = new Map();
   const kv = {
@@ -57,9 +57,9 @@ export function memoryPuter(owner = alice) {
 
 /** A network between clients and one server, which tests can take down. */
 export function network(owner = alice) {
-  const puter = memoryPuter(owner);
-  const service = new DocService(puter);
-  const net = { puter, service, offline: new Set(), calls: [], lostAck: false };
+  const everything = memoryEverything(owner);
+  const service = new DocService(everything);
+  const net = { everything, service, offline: new Set(), calls: [], lostAck: false };
   net.transport = (user) => ({
     async call(input) {
       net.calls.push({ user: user.username, op: input.op });

@@ -273,10 +273,10 @@ export function parseJsonArray(reply, expected) {
 }
 
 /**
- * Translate lines with Puter AI chat, in batches, keeping order and count.
+ * Translate lines with Everything AI chat, in batches, keeping order and count.
  * chat is injectable for tests.
  */
-export async function translateLines(lines, language, { chat = (p) => puter.ai.chat(p), batch = 40, signal, onProgress } = {}) {
+export async function translateLines(lines, language, { chat = (p) => everything.ai.chat(p), batch = 40, signal, onProgress } = {}) {
   const out = [];
   for (let i = 0; i < lines.length; i += batch) {
     if (signal?.aborted) throw new DOMException('Cancelled', 'AbortError');
@@ -296,9 +296,9 @@ export async function translateLines(lines, language, { chat = (p) => puter.ai.c
 
 /**
  * Key words per caption line (word indexes, see model/text-marks.js), via
- * Puter AI chat: the words a viewer should notice, at most a few per line.
+ * Everything AI chat: the words a viewer should notice, at most a few per line.
  */
-export async function keywordsForLines(lines, { chat = (p) => puter.ai.chat(p), batch = 60 } = {}) {
+export async function keywordsForLines(lines, { chat = (p) => everything.ai.chat(p), batch = 60 } = {}) {
   const out = [];
   for (let i = 0; i < lines.length; i += batch) {
     const part = lines.slice(i, i + batch);
@@ -323,8 +323,8 @@ export async function keywordsForLines(lines, { chat = (p) => puter.ai.chat(p), 
   return out;
 }
 
-/** One emoji (or '') per caption line that fits its mood, via Puter AI chat. */
-export async function emojiForLines(lines, { chat = (p) => puter.ai.chat(p), batch = 60 } = {}) {
+/** One emoji (or '') per caption line that fits its mood, via Everything AI chat. */
+export async function emojiForLines(lines, { chat = (p) => everything.ai.chat(p), batch = 60 } = {}) {
   const out = [];
   for (let i = 0; i < lines.length; i += batch) {
     const part = lines.slice(i, i + batch);

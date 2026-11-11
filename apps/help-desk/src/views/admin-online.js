@@ -1,11 +1,11 @@
 /**
  * Turning on team access: a help desk that so far ran only in the owner's
- * browser moves behind a server (a Puter worker in the owner's own account).
+ * browser moves behind a server (an Everything worker in the owner's own account).
  * The worker normally reads the same key-value store the browser wrote, so
  * the desk is simply there; when it is not, its records are copied over.
  *
  * Everything the flow touches is injected, so it can be tested without
- * Puter: { kv, request, deployServer, findOwnServer, saveServer,
+ * Everything: { kv, request, deployServer, findOwnServer, saveServer,
  * rememberDesk, forgetDesk }.
  */
 
@@ -117,8 +117,8 @@ export async function goOnline(deps, { desk, deskName, known, appUrl, onStep = (
 /** Turn platform errors into something the owner can act on. */
 export function friendlyError(e) {
   const msg = String(e?.message || e || 'Something went wrong');
-  if (/verif/i.test(msg)) return 'Puter needs a confirmed email address before it can run a server for you. Confirm your email in your Puter account settings, then try again.';
-  if (/insufficient_funds|credit/i.test(msg)) return 'Your Puter account is out of usage credit. Add credit or upgrade your plan, then try again.';
-  if (/Failed to fetch|NetworkError|offline|reach/i.test(msg)) return 'Could not reach Puter. Check your connection and try again.';
+  if (/verif/i.test(msg)) return 'Everything needs a confirmed email address before it can run a server for you. Confirm your email in your Everything account settings, then try again.';
+  if (/insufficient_funds|credit/i.test(msg)) return 'Your Everything account is out of usage credit. Add credit or upgrade your plan, then try again.';
+  if (/Failed to fetch|NetworkError|offline|reach/i.test(msg)) return 'Could not reach Everything. Check your connection and try again.';
   return msg;
 }

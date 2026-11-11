@@ -9,7 +9,7 @@ import { relativeWorkbookTarget } from '../core/workbook-location.js';
 import { el, fieldId } from './dom.js';
 import { openModal, fieldAlert } from './modal.js';
 import { toast } from './toast.js';
-import * as P from '../lib/puter.js';
+import * as P from '../lib/everything.js';
 import { workbookFromFile, workbookToXlsx, stripExtension } from '../core/io.js';
 
 /** The sheet as a one-sheet workbook, imported into `target`; returns the sheet added there. */

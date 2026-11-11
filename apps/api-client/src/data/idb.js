@@ -1,6 +1,6 @@
 /**
  * Minimal promise wrapper over IndexedDB. One database per owner (the
- * signed-out guest, or a Puter user) so accounts never mix on one device.
+ * signed-out guest, or an Everything user) so accounts never mix on one device.
  */
 const VERSION = 1;
 export const STORES = ['collections', 'environments', 'history', 'files', 'responses', 'meta', 'sync'];

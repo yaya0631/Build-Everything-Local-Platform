@@ -6,7 +6,7 @@
  * KV shares (current). The owner keeps the list under its own KV prefix
  * (`tasks:collab:<id>:`): `meta`, one `t:<taskId>` key per task and one
  * `d:<taskId>` per deletion. That prefix is shared at `write` with each
- * invited Puter username. Invitees find it with kv.listShared() and read and
+ * invited Everything username. Invitees find it with kv.listShared() and read and
  * write the same keys through the share's handle. Revoking or leaving is
  * kv.unshare(); a member whose handle stops working keeps a private copy.
  *
@@ -231,11 +231,11 @@ export function shareLabel(name) {
 /** What to tell the owner when an invite fails. */
 export function shareErrorMessage(err, username = 'that user') {
   switch (err?.code) {
-    case 'subject_does_not_exist': return `No Puter user is named "${username}"`;
-    case 'invalid_recipient': return 'Enter a Puter username, not an email address';
+    case 'subject_does_not_exist': return `No Everything user is named "${username}"`;
+    case 'invalid_recipient': return 'Enter an Everything username, not an email address';
     case 'recipient_not_accepting_shares': return `${username} is not accepting shared lists`;
-    case 'account_is_not_verified': return 'Confirm your email address on Puter to share lists';
-    case 'events_kv_handle_requires_account': return 'Save your Puter account to share lists';
+    case 'account_is_not_verified': return 'Confirm your email address on Everything to share lists';
+    case 'events_kv_handle_requires_account': return 'Save your Everything account to share lists';
     case 'events_kv_handle_limit_reached': return 'You have reached the limit of people you can share with';
     case 'events_kv_handle_not_delegated': return 'Tasks needs your permission to share lists';
     case 'too_many_requests': return 'Too many invites at once. Try again in a moment';

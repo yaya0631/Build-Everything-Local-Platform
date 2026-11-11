@@ -138,7 +138,7 @@ export function openModal({ title, content, onClose, beforeClose }) {
  * the confirming button is pressed -- Escape, the scrim, and Cancel all answer
  * no.
  *
- * Not `window.confirm`: a Puter app runs in a cross-origin iframe, and Chrome
+ * Not `window.confirm`: an Everything app runs in a cross-origin iframe, and Chrome
  * suppresses the native dialogs there outright, answering `false` without ever
  * showing anything. A guard on a destructive action cannot be built on a
  * dialog that may never appear.

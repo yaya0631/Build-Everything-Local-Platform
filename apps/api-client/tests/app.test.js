@@ -14,7 +14,7 @@ async function makeApp() {
   await ws.load();
   const root = document.createElement('div');
   document.body.append(root);
-  const app = new App(root, { ws, sync: null, shared: null, session: { signedIn: false, puter: null }, onSignIn: async () => {}, onSignOut: async () => {} });
+  const app = new App(root, { ws, sync: null, shared: null, session: { signedIn: false, everything: null }, onSignIn: async () => {}, onSignOut: async () => {} });
   await app.start();
   return app;
 }

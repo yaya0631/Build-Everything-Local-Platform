@@ -1,7 +1,7 @@
 // Image Assets generation: render each asset-named layer alone, trim it to its
 // visible pixels, resample and encode it in the export worker (palette PNG
 // and SVG on the main thread), then write the files beside the document on
-// Puter or keep them for Download Image Assets (.zip). Unchanged layers reuse
+// Everything or keep them for Download Image Assets (.zip). Unchanged layers reuse
 // their encoded files; a newer edit cancels a generation in progress.
 import { deflate } from 'pako';
 import type { Editor } from '../../editor';
@@ -9,7 +9,7 @@ import type { DocumentSession } from '../../app/session';
 import { allLayers, findLayer, type Layer, type PhotoDocument } from '../../model/document';
 import { escapeXML } from '../../model/assets';
 import { svg } from '../../app/icons';
-import { download } from '../../persistence/puter';
+import { download } from '../../persistence/everything';
 import { buildPng } from '../../imaging/codecs/png-chunks';
 import { buildPalette, mapToPalette } from '../../imaging/codecs/quantize';
 import { defaultSettings, prepareExport, type ExportSettings, type SourceImage } from '../files/encode';
@@ -23,8 +23,8 @@ import { assetsFolder, planAssets, type AssetIssue, type PlannedAsset } from './
 import { assetListeners, assetState, notifyAssets, type AssetFile, type AssetState } from './state';
 
 const MIME: Record<PlannedAsset['format'], string> = { png: 'image/png', png8: 'image/png', jpeg: 'image/jpeg', webp: 'image/webp', gif: 'image/gif', svg: 'image/svg+xml' };
-// Puter writes that take longer than this are reported, not waited on forever.
-export const PUTER_TIMEOUT_MS = 30_000;
+// Everything writes that take longer than this are reported, not waited on forever.
+export const EVERYTHING_TIMEOUT_MS = 30_000;
 
 /** Crop to pixels with any alpha, keeping the offset of the crop. */
 export function trimWithOffset(src: SourceImage): { x: number; y: number; image: SourceImage } | undefined {
@@ -196,7 +196,7 @@ export async function generateAssets(e: Editor, s: DocumentSession, opts: Genera
     st.issues = issues;
     st.doc = doc;
     st.error = undefined;
-    if (doc.imageAssets && s.storage.path && files.length) await writeToPuter(st, s, files, token);
+    if (doc.imageAssets && s.storage.path && files.length) await writeToEverything(st, s, files, token);
     if (token !== st.token) return;
     st.status = 'ready';
     notifyAssets();
@@ -215,13 +215,13 @@ function cancel(st: AssetState, token: number, opts: GenerateOptions): undefined
   return undefined;
 }
 
-async function writeToPuter(st: AssetState, s: DocumentSession, files: AssetFile[], token: number) {
+async function writeToEverything(st: AssetState, s: DocumentSession, files: AssetFile[], token: number) {
   const folder = assetsFolder(s.storage.path!);
   try {
     for (const f of files) {
       const target = joinPath(folder, f.path);
       if (st.written.get(target) === f.key) continue;
-      await withTimeout(cloudWrite(target, bytesBlob(f.bytes, f.mime)), PUTER_TIMEOUT_MS, `Writing ${f.path} to Puter`);
+      await withTimeout(cloudWrite(target, bytesBlob(f.bytes, f.mime)), EVERYTHING_TIMEOUT_MS, `Writing ${f.path} to Everything`);
       if (token !== st.token) return;
       st.written.set(target, f.key);
     }
@@ -253,7 +253,7 @@ let popover: { el: HTMLElement; button: HTMLElement; close: () => void } | undef
 
 function popoverHtml(e: Editor): string {
   const st = assetState(e.session);
-  const where = st.folder && e.session.storage.path ? `Written to ${escapeXML(st.folder)}` : e.session.storage.path ? 'Written beside the document on Puter' : 'Kept for download (save the document to Puter to write a folder beside it)';
+  const where = st.folder && e.session.storage.path ? `Written to ${escapeXML(st.folder)}` : e.session.storage.path ? 'Written beside the document on Everything' : 'Kept for download (save the document to Everything to write a folder beside it)';
   const issues = st.issues
     .map(
       (i) =>

@@ -35,11 +35,11 @@ export async function discardCopy(remove, room, error) {
 // Connects the Miro migration dialog to this app: organization
 // administrators migrate into shared boards on the organization's worker
 // (keeping each board's owner and member roles by email), everyone else into
-// boards on this device. The migration log is a file in the person's Puter
+// boards on this device. The migration log is a file in the person's Everything
 // drive.
 export function createMigrationHost({
   org,
-  puter,
+  everything,
   modal,
   toast,
   download,
@@ -49,7 +49,7 @@ export function createMigrationHost({
 }) {
   async function sharedBoard(value, server, user, room) {
     const staging = new CollaborationSession({
-      puter: puter(),
+      everything: everything(),
       server,
       room,
       user,
@@ -83,7 +83,7 @@ export function createMigrationHost({
     toast,
     download: (name, text, type) => download(text, name, type),
     fetch: (url, init) =>
-      puter().net?.fetch ? puter().net.fetch(url, init) : fetch(url, init),
+      everything().net?.fetch ? everything().net.fetch(url, init) : fetch(url, init),
     async createBoard(
       value,
       { ownerEmail, members = [], source, asTemplate } = {},
@@ -110,7 +110,7 @@ export function createMigrationHost({
         }));
         if (ownerEmail && !people.some((m) => m.role === "owner"))
           people.push({ email: ownerEmail, role: "owner", guest: false });
-        const user = await puter().auth.getUser();
+        const user = await everything().auth.getUser();
         const room = uid();
         let applied;
         try {
@@ -122,7 +122,7 @@ export function createMigrationHost({
           });
         } catch (error) {
           throw await discardCopy(
-            () => call(puter(), org.server, { op: "delete", room }),
+            () => call(everything(), org.server, { op: "delete", room }),
             room,
             error,
           );
@@ -162,7 +162,7 @@ export function createMigrationHost({
       if (kind === "library")
         return org.request("library.remove", { id: value }).catch(gone);
       if (kind === "room")
-        return call(puter(), org.server, { op: "delete", room: value }).catch(
+        return call(everything(), org.server, { op: "delete", room: value }).catch(
           gone,
         );
       const [owner, board] = value.includes(":")
@@ -175,7 +175,7 @@ export function createMigrationHost({
       return removeLocalBoard(board);
     },
     async saveLog(json) {
-      await puter().fs.write(LOG, json, {
+      await everything().fs.write(LOG, json, {
         overwrite: true,
         createMissingParents: true,
         dedupeName: false,
@@ -185,7 +185,7 @@ export function createMigrationHost({
     // for one, or saving would replace the earlier log.
     async loadLog() {
       try {
-        return await (await puter().fs.read(LOG)).text();
+        return await (await everything().fs.read(LOG)).text();
       } catch (error) {
         if (
           ["subject_does_not_exist", "ENOENT", "not_found"].includes(

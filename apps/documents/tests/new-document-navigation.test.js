@@ -12,7 +12,7 @@ it('saves an unsaved document before creating another document on the same route
   versioning.enabled = false;
   vi.stubGlobal('matchMedia', () => ({ matches: false, addEventListener() {} }));
   const write = vi.fn(async () => ({}));
-  vi.stubGlobal('puter', {
+  vi.stubGlobal('everything', {
     auth: { isSignedIn: () => true, getUser: async () => ({ username: 'test' }) },
     fs: { readdir: async () => [], mkdir: async () => {}, stat: async () => null, write },
   });

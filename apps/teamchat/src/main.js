@@ -23,16 +23,16 @@ function showError(title, message, onRetry) {
     el('button.btn.btn-primary.auth-cta', { type: 'button', onclick: onRetry }, 'Try again')));
 }
 
-const SDK_URL = '/sdk/puter.js';
+const SDK_URL = '/sdk/everything.js';
 
 /**
- * Wait for the deferred Puter SDK script (it loads ahead of this module).
+ * Wait for the deferred Everything SDK script (it loads ahead of this module).
  * Offline, the wait is short: a script the service worker had cached has
  * run by now, and one it had not cannot load until the network is back.
  */
-async function waitForPuter(ms = navigator.onLine === false ? 1000 : 6000) {
+async function waitForEverything(ms = navigator.onLine === false ? 1000 : 6000) {
   const start = Date.now();
-  while (typeof puter === 'undefined') {
+  while (typeof everything === 'undefined') {
     if (Date.now() - start > ms) return false;
     await new Promise((r) => setTimeout(r, 50));
   }
@@ -62,7 +62,7 @@ async function start() {
   // workspace is open (pokeSync does nothing before one is).
   mountOfflineBanner({ onReconnect: () => store.pokeSync(), note: () => !!appRoot.querySelector('.app-frame') });
   // The network coming back while "Could not load your account" or "Could
-  // not reach Puter" is showing asks again on its own for what could not be
+  // not reach Everything" is showing asks again on its own for what could not be
   // had without it, the account or the SDK itself: those pages are where an
   // app opened offline lands, and their Try again reloads the whole page,
   // which is a lot to ask of someone who only had to wait for the
@@ -103,7 +103,7 @@ async function start() {
   await enter();
 }
 
-// Whether "Could not reach Puter" is the page showing, for the retry the
+// Whether "Could not reach Everything" is the page showing, for the retry the
 // network's return brings (see start); and whether an entry is in flight, so
 // that retry cannot run two at once.
 let sdkFailed = false;
@@ -119,17 +119,17 @@ async function enter() {
   const again = sdkFailed;
   sdkFailed = false;
   try {
-    if (again && typeof puter === 'undefined') loadSdk();
-    // Offline, the wait is the short one (see waitForPuter). A network that
+    if (again && typeof everything === 'undefined') loadSdk();
+    // Offline, the wait is the short one (see waitForEverything). A network that
     // comes back inside it says so before the wait has failed, so no
     // `online` event follows the failure to bring the retry (see start):
     // when the browser says the network is back by then, the SDK is asked
     // for once more before anything is shown.
     const offline = navigator.onLine === false;
-    let ok = await waitForPuter();
-    if (!ok && offline && navigator.onLine !== false && typeof puter === 'undefined') {
+    let ok = await waitForEverything();
+    if (!ok && offline && navigator.onLine !== false && typeof everything === 'undefined') {
       loadSdk();
-      ok = await waitForPuter(6000);
+      ok = await waitForEverything(6000);
     }
     if (!ok) {
       sdkFailed = true;
@@ -137,12 +137,12 @@ async function enter() {
       // content blocker stops it as surely as a lost connection does, so
       // "check your connection" alone sent a reader who was online looking
       // in the wrong place.
-      showError('Could not reach Puter', 'The Puter script (js.localhost:8443) did not load. Check your connection or a content blocker, then try again.', () => location.reload());
+      showError('Could not reach Everything', 'The Everything script (js.localhost:8443) did not load. Check your connection or a content blocker, then try again.', () => location.reload());
       return;
     }
     let signedIn = false;
     try {
-      signedIn = await Promise.resolve(puter.auth.isSignedIn());
+      signedIn = await Promise.resolve(everything.auth.isSignedIn());
     } catch {
       signedIn = false;
     }
@@ -178,14 +178,14 @@ async function boot() {
       // lapsed meanwhile).
       accountFailed = false;
       try {
-        await puter.auth.signOut();
+        await everything.auth.signOut();
       } catch {
         /* ignore */
       }
       appRoot.replaceChildren(authView({ onSignedIn: boot }));
     } else {
       accountFailed = true;
-      showError('Could not load your account', e?.message || 'Something went wrong talking to Puter.', () => location.reload());
+      showError('Could not load your account', e?.message || 'Something went wrong talking to Everything.', () => location.reload());
     }
     return;
   }

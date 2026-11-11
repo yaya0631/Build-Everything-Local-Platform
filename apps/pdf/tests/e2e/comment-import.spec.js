@@ -12,7 +12,7 @@ test.skip(({ isMobile }) => isMobile, 'desktop workspace');
 
 // Comments an import leaves out are missing from the PDF, so the message says how many.
 test('importing comments says how many could not be added', async ({ page }) => {
-  await page.route('**/sdk/puter.js', (route) => route.abort());
+  await page.route('**/sdk/everything.js', (route) => route.abort());
   const doc = await PDFDocument.create();
   doc.addPage([400, 500]);
   await page.goto('/#library');

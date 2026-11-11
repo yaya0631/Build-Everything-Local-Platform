@@ -1,7 +1,7 @@
 {
   "name": "records",
   "version": "1.0.0",
-  "description": "Records: connected tables, views and forms for your data, stored in your own Puter cloud.",
+  "description": "Records: connected tables, views and forms for your data, stored in your own Everything cloud.",
   "type": "module",
   "private": true,
   "license": "MIT",

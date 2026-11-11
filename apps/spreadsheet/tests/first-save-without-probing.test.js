@@ -1,16 +1,16 @@
 import { afterEach, beforeEach, expect, it } from 'vitest';
 import { Doc, UNTITLED } from '../src/lib/doc.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 
 let mock;
-beforeEach(() => { mock = installMockPuter(); });
-afterEach(() => { delete globalThis.puter; });
+beforeEach(() => { mock = installMockEverything(); });
+afterEach(() => { delete globalThis.everything; });
 
 // The first save used to stat every existing "Untitled spreadsheet…" file in
 // turn to find a free name, and every write (each snapshot included)
 // re-created the folder, although the write creates it itself.
 it('finds a free name for a new document from one listing, not a look-up per candidate', async () => {
-  for (const name of [`${UNTITLED}.xlsx`, `${UNTITLED} 2.xlsx`, `${UNTITLED} 3.xlsx`]) await puter.fs.write(`Spreadsheets/${name}`, new Blob(['taken']));
+  for (const name of [`${UNTITLED}.xlsx`, `${UNTITLED} 2.xlsx`, `${UNTITLED} 3.xlsx`]) await everything.fs.write(`Spreadsheets/${name}`, new Blob(['taken']));
   const doc = Doc.blank();
   doc.wb.setInput(doc.wb.activeSheetId, 0, 0, 'x');
   const before = mock.calls.length;

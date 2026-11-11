@@ -11,7 +11,7 @@ import { toast } from '../ui/toast.js';
 import { promptDialog, confirmDialog } from '../ui/modal.js';
 import { drawShapeThumbnail } from '../ui/shape-controls.js';
 import { small } from '../ui/ribbon.js';
-import * as P from '../lib/puter.js';
+import * as P from '../lib/everything.js';
 import { imageFileFromSource, generationError } from '../lib/imagegen.js';
 import { galleryItems, pagePreview, textPreview } from './insert-gallery.js';
 import { openDateTime, openFieldDialog, openFormatPageNumbers, openSymbolDialog, openEquationDialog, openIconsDialog, openDiagramDialog, openSignatureDialog, openDropCapDialog, openGenerateDialog, recentSymbols, rememberSymbol, diagramSketch } from './insert-dialogs.js';
@@ -185,7 +185,7 @@ export function createInsert({ editor, pkg, error, base = {}, docName = () => ''
     const engine = ready();
     return [
       { label: 'This Device…', icon: 'folderOpen', disabled: !engine, onSelect: () => pictureInput.click() },
-      ...(P.canPickFiles() ? [{ label: 'From Puter…', icon: 'pictures', disabled: !engine, onSelect: async () => { try { const file = await P.pickImage(); if (file) await insertPictureFile(file); } catch (e) { fail(e); } } }] : []),
+      ...(P.canPickFiles() ? [{ label: 'From Everything…', icon: 'pictures', disabled: !engine, onSelect: async () => { try { const file = await P.pickImage(); if (file) await insertPictureFile(file); } catch (e) { fail(e); } } }] : []),
       ...(P.canMakeImages() ? [{ label: 'Generate with AI…', icon: 'pictures', disabled: !engine, onSelect: () => openGenerateDialog({ onClose: () => queueMicrotask(() => editor()?.focus()),
         generate: async prompt => {
           let image;

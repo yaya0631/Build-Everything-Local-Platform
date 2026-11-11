@@ -5,8 +5,8 @@
  * the workbook: the people the file is shared with, and the members of a shared workbook. Anyone who cannot is
  * offered a share (Can view or Can edit, as the Share dialog gives it) before being told; the user may also tell
  * them without sharing, or tell nobody. Then each is sent an email through the app's email worker (lib/mail.js)
- * with the comment, its cell and a link that opens the workbook at that cell. A Puter user known only by
- * username is written to at their Puter mailbox.
+ * with the comment, its cell and a link that opens the workbook at that cell. An Everything user known only by
+ * username is written to at their Everything mailbox.
  *
  * Whoever has the workbook open sees a mention of them as it arrives (a comment from a co-author, through the
  * shared workbook) and, on opening it, the mentions they have not seen yet: the comments themselves say who
@@ -16,7 +16,7 @@ import { el } from './dom.js';
 import { openModal } from './modal.js';
 import { toast } from './toast.js';
 import { SHARE_MODES } from './share.js';
-import * as P from '../lib/puter.js';
+import * as P from '../lib/everything.js';
 import { fileLink, roomLink } from '../lib/links.js';
 import { cellName } from '../core/cell.js';
 import { quoteSheet } from '../core/refs.js';
@@ -89,7 +89,7 @@ function askToShare(people, { unsaved, file = null }) {
       el('p.modal-text', {}, file
         ? `${file} keeps no comments, so ${list} cannot open this one until the spreadsheet is saved as an .xlsx file. Save it and share it with ${people.length === 1 ? 'them' : 'them all'}?`
         : unsaved
-        ? `This spreadsheet is not saved to Puter yet, so ${list} cannot open the comment. Save it and share it with ${people.length === 1 ? 'them' : 'them all'}?`
+        ? `This spreadsheet is not saved to Everything yet, so ${list} cannot open the comment. Save it and share it with ${people.length === 1 ? 'them' : 'them all'}?`
         : `${list} cannot open this spreadsheet yet. Share it with ${people.length === 1 ? 'them' : 'them all'} so they can see the comment?`),
       el('div.row.mention-share-mode', {}, el('span.field-label', {}, 'Give them'), mode),
       el('div.row.row-end', {},

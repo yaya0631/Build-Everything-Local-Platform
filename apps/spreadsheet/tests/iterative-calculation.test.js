@@ -139,10 +139,10 @@ describe('explicit workbook iterative calculation', () => {
     expect(native.Sheets.Data.A1.f).toBe('(A1+B1)/2');
     expect(native.Sheets.Data.A1.v).toBeCloseTo(20, 4);
     const zip = X.CFB.read(new Uint8Array(saved), { type: 'array' });
-    const metaIndex = native.SheetNames.indexOf('_puter_meta') + 1;
+    const metaIndex = native.SheetNames.indexOf('_everything_meta') + 1;
     X.CFB.utils.cfb_del(zip, `/xl/worksheets/sheet${metaIndex}.xml`);
     const part = X.CFB.find(zip, '/xl/workbook.xml');
-    part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta"[^>]*\/>/, ''));
+    part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta"[^>]*\/>/, ''));
     part.size = part.content.length;
     const reopened = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'native-roundtrip.xlsx');
     expect(reopened.iteration).toEqual(wb.iteration);

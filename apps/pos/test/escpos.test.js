@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { installMockStorage } from './helpers/mock-puter.js';
+import { installMockStorage } from './helpers/mock-everything.js';
 import {
   encodeCp437, wrap, printWidth, EscposBuilder, escposReceipt, escposReport, drawerKickBytes,
 } from '../src/lib/escpos.js';

@@ -9,7 +9,7 @@ function makeKv() {
   const map = new Map();
   const re = (g) => new RegExp('^' + g.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*') + '$');
   return {
-    // Mirrors puter.kv.set's two forms: (key, value) or a batch array of
+    // Mirrors everything.kv.set's two forms: (key, value) or a batch array of
     // { key, value } items (importEvents batches its writes).
     set: async (k, v) => {
       const items = Array.isArray(k) ? k : [{ key: k, value: v }];

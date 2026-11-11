@@ -59,9 +59,9 @@ export async function loadLayersInto(e: Editor, blob: Blob, name: string, into: 
   return { document: (await deserialize(blob, into)).document };
 }
 
-export async function importLayers(e: Editor, from: 'local' | 'puter' = 'local') {
-  if (from === 'puter') {
-    // The Puter picker never settles when dismissed: do not hold the editor
+export async function importLayers(e: Editor, from: 'local' | 'everything' = 'local') {
+  if (from === 'everything') {
+    // The Everything picker never settles when dismissed: do not hold the editor
     // busy while it is open; the import runs as its own task.
     e.release();
     const [item] = await pickCloudFiles(false, importAccept);

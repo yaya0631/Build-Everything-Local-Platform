@@ -1,7 +1,7 @@
-// Puter.js calls the file features need beyond src/persistence/puter.ts
+// Everything.js calls the file features need beyond src/persistence/everything.ts
 // (multiple selection, directory picker, folder writes).
 // http://localhost:8443/UI/showOpenFilePicker/ · /UI/showDirectoryPicker/ · /FS/write/
-import { puter } from '../../persistence/puter';
+import { everything } from '../../persistence/everything';
 
 export interface CloudItem {
   path: string;
@@ -9,7 +9,7 @@ export interface CloudItem {
   isDir?: boolean;
   read(): Promise<Blob>;
 }
-type ExtendedPuter = {
+type ExtendedEverything = {
   fs: {
     write(path: string, data: Blob, options?: { overwrite?: boolean; dedupeName?: boolean; createMissingParents?: boolean }): Promise<CloudItem>;
     read(path: string): Promise<Blob>;
@@ -20,7 +20,7 @@ type ExtendedPuter = {
     showDirectoryPicker(options?: { multiple?: boolean }): Promise<CloudItem | CloudItem[]>;
   };
 };
-const api = () => puter() as unknown as ExtendedPuter;
+const api = () => everything() as unknown as ExtendedEverything;
 
 export const openAccept = '.photo,.psd,.psb,.tif,.tiff,.bmp,.dib,.gif,.ico,.cur,.tga,.pbm,.pgm,.ppm,.pnm,.pam,.svg,image/*';
 
@@ -32,7 +32,7 @@ export async function pickCloudFolder(): Promise<CloudItem> {
   const r = await api().ui.showDirectoryPicker({ multiple: false });
   return Array.isArray(r) ? r[0] : r;
 }
-/** Save picker; the promise never settles when the user cancels (Puter behavior). */
+/** Save picker; the promise never settles when the user cancels (Everything behavior). */
 export function cloudSaveAs(blob: Blob, name: string) {
   return api().ui.showSaveFilePicker(blob, name);
 }

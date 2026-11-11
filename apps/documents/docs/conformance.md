@@ -809,7 +809,7 @@ All XML and PNG pixels are original and their source is in that generator. It
 covers nested nonidentity group coordinates, custom paths, text and images,
 three drawing placements, alternate representations, Unicode, a table and
 sections with different top margins. `playground.html` links the fixture and
-continues to work locally without a Puter account. The supplied template and its
+continues to work locally without an Everything account. The supplied template and its
 embedded assets/fonts are not redistributed.
 
 Unit regressions cover parsing, floating geometry/hits, exclusion bands, editing,
@@ -3332,7 +3332,7 @@ minimum row height and an empty cell. Browser export `tables.docx` changes cell
 text, paragraph formatting and row splitting. `new-tables.docx` covers insertion,
 Tab-created rows, adding/removing columns and rows, deleting/restoring a table,
 and save/reopen. Independent validation checks cell boundaries, text, references,
-preferred/grid widths, row flags, shading and unflattened text inheritance. Puter
+preferred/grid widths, row flags, shading and unflattened text inheritance. Everything
 mock save/reload includes table text and navigation to its next cell.
 
 **Remaining gaps at this iteration:** merged/omitted cells, nested/floating tables, repeated
@@ -3393,7 +3393,7 @@ combining text/emoji and an unused double-underline style. Browser exports
 and typing in the empty paragraph. `new-character-styles.docx` covers a custom
 definition, multi-event composition, clearing future typing and saving a styled
 empty paragraph. Independent checks inspect the reference XML, declarations,
-text, direct overrides and retained list. Puter mock save/reload verifies a
+text, direct overrides and retained list. Everything mock save/reload verifies a
 character reference alongside paragraph and list state.
 
 **Remaining gaps:** Linked paragraph/character style automation, style deletion,
@@ -3445,7 +3445,7 @@ Browser acceptance exports `styles.docx` after changing a reference and a shared
 base definition. `new-styles.docx` covers creating a custom style, editing it and
 following its next-style setting. Independent validation checks the declarations,
 references, text and retained overrides; official XSD validation covers both
-exports. Puter mock save/reload also verifies the selected style.
+exports. Everything mock save/reload also verifies the selected style.
 
 **Remaining gaps at this checkpoint:** Character-style controls are now covered
 above. Linked-style automatic application,
@@ -3540,7 +3540,7 @@ and an empty item. Browser acceptance exports `numbering.docx` after a text edit
 restart and level change; `new-lists.docx` exercises creating definitions from a
 blank document. Independent checks inspect text, references, levels, starts,
 styles and geometry. Conformance validation now includes `word/numbering.xml`
-in every fixture and export. Puter mock save/reload also preserves list state.
+in every fixture and export. Everything mock save/reload also preserves list state.
 
 This is a body-paragraph subset, not complete numbering or reference equivalence.
 Picture bullets, linked numbering styles, custom numbering formats and the other formats not listed under "Imported list number formats" below,
@@ -3574,7 +3574,7 @@ styles are now covered above. Character styles, tables and images remain next.
 | Inheritance and boolean values | Part 1 §17.7 style hierarchy, §17.17.4 common boolean properties | Resolve each property through document defaults, paragraph based-on styles, then direct formatting. These paragraph booleans are absolute, including in styles. Omitted `keepNext`/`keepLines` default off; omitted `widowControl` defaults on. Empty elements and `1`/`true`/`on` enable; `0`/`false`/`off` disable. Invalid values reject import. |
 | Explicit breaks | Part 1 §17.3.1.23 `pageBreakBefore`, §17.3.3.1 `br` | Paragraph page-break-before overrides keep-with-next. Authored page breaks split constraint groups, including leading and terminal breaks. Apply keep-lines/widow rules to the portions between authored page breaks. Manual line breaks remain lines of their paragraph. Terminal paragraph-mark and leading-break spacing compatibility behavior is retained. |
 | Editing and geometry | Application behavior | Three icon buttons expose names, titles, keyboard activation and `aria-pressed` true/false/mixed states. Selected paragraphs change in one transaction; a selection ending at the next paragraph's start excludes it. Splits inherit flags; merges retain the first paragraph's flags. Undo/redo restores selection and page geometry. Moved lines retain source offsets for caret affinity, hit testing and cross-page selection. |
-| Save and reopen | Part 1 paragraph-property order; OPC preservation contract | Write only edited properties as direct boolean overrides in schema order. Retain style references, style bytes, untouched paragraphs and unrelated ZIP parts. Full undo restores every original package part. Browser downloads and Puter mock save/reload reopen with the same flags and page geometry. |
+| Save and reopen | Part 1 paragraph-property order; OPC preservation contract | Write only edited properties as direct boolean overrides in schema order. Retain style references, style bytes, untouched paragraphs and unrelated ZIP parts. Full undo restores every original package part. Browser downloads and Everything mock save/reload reopen with the same flags and page geometry. |
 
 Specification review used the official [ECMA-376 Part 1](https://ecma-international.org/publications-and-standards/standards/ecma-376/)
 and the Open XML SDK's published element semantics for [keepLines](https://learn.microsoft.com/en-us/dotnet/api/documentformat.openxml.wordprocessing.keeplines),
@@ -3682,7 +3682,7 @@ button. No new runtime dependency or license file was introduced.
   right-edge tab fix, all seven canvas test files passed again (156 tests,
   including the new consecutive-tab regression).
 - `npm run test:browser`: ten Chrome scenarios pass, including existing font,
-  paragraph, page and Puter save/reload regressions. Toolbar, dialog and page
+  paragraph, page and Everything save/reload regressions. Toolbar, dialog and page
   screenshots were inspected; the desktop dialog keeps Apply visible.
 - `npm run check:conformance`: five independent export checks, 36 XML parts
   across seven fixtures and five exports, and four negative schema self-checks.
@@ -3761,7 +3761,7 @@ allocation, rolling back the edit without losing the existing document/history.
   pool avoids CPU contention with other local work; test assertions and timeouts
   are unchanged.
 - `npm run test:browser`: nine Chrome scenarios, including page editing and
-  Puter save/reload; page and dialog screenshots inspected.
+  Everything save/reload; page and dialog screenshots inspected.
 - `npm run check:conformance`: four independent export checks, 30 XML parts
   across six fixtures and four exports, and two negative schema self-checks.
 - `npm run build`: passed, including the license policy check for 199 locked
@@ -8682,7 +8682,7 @@ unchanged canvas compared with its preceding restored render. Remaining visual
 differences against the native reference are tracked in the corpus ledger.
 
 Full CI is not yet green. The preceding main run
-https://github.com/HeyPuter/documents/actions/runs/35538921352 failed one
+https://github.com/yaya0631/Build-Everything-Local-Platform failed one
 annual-report margin-position assertion (180 versus 192) and sixteen tests at
 the default five-second timeout. These failures predate picture-control runtime
 support and remain unresolved; the focused local passes above are not a full-CI
@@ -21735,7 +21735,7 @@ the home screen, autosave, editing, export and reopen; the export passes
 The documents screen's Templates menu and its "My templates" dialog tell users to
 save a document as a template from its File menu, but the canvas editor had no
 such command. File → Save as template… now writes the current export to
-Documents/Templates/<name>.docx in Puter (asking before replacing a template of
+Documents/Templates/<name>.docx in Everything (asking before replacing a template of
 the same name, and signing in first when needed). The open document is unchanged.
 New documents started from it open as copies, as before. The command is absent in
 the local playground and disabled for read-only previews, whose export would not
@@ -23780,7 +23780,7 @@ processors read, and keeps its recipient list inside the document.
 - **Embedded recipient list**: a custom XML data storage part (Part 1 §15.2,
   relationship `…/customXml` from the main document, with a `customXmlProps`
   properties part and `ds:datastoreItem`) in namespace
-  `urn:puter-documents:mail-merge:1` holds columns, records (with
+  `urn:everything-documents:mail-merge:1` holds columns, records (with
   included/excluded flags), sort keys, filters, field matching and email
   options. It is an application-defined part: other consumers keep it but do
   not use it, and they will report the merge's data source as unavailable.
@@ -23880,7 +23880,7 @@ referenced). Source types are all of ST_SourceType; the dialog edits the name
 roles and text fields listed in `bibliography.js`. Sources not edited are written
 back byte-for-byte; an edited source keeps elements this editor does not edit.
 DOI is entered as a URL (the schema has no DOI element). The master list is the
-account's own (device storage and Puter KV), not part of the document.
+account's own (device storage and Everything KV), not part of the document.
 
 Citation styles are original formatters of the public APA 7, MLA 9, Chicago
 author-date, IEEE and Harvard rules for the common source types; style manuals'

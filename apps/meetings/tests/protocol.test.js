@@ -109,7 +109,7 @@ describe('hello / welcome / peer-joined / peer-left', () => {
 });
 
 describe('routing envelopes (to / from)', () => {
-  it('to routes Puter link invites, and nothing else', () => {
+  it('to routes Everything link invites, and nothing else', () => {
     const invite = P.parse(P.encode(P.makeTo('p2', P.makeLinkInvite('invite-123'))));
     expect(invite).toMatchObject({ t: P.MSG.TO, to: 'p2' });
     expect(invite.msg).toMatchObject({ t: P.MSG.LINK_INVITE, inviteCode: 'invite-123' });
@@ -178,7 +178,7 @@ describe('frame ceiling', () => {
   });
 });
 
-describe('direct Puter link messages', () => {
+describe('direct Everything link messages', () => {
   it('validates guest-guest link invites', () => {
     expect(P.parse(P.encode(P.makeLinkInvite('invite-1'))).inviteCode).toBe('invite-1');
     expect(P.parse(P.encode({ v: P.PROTOCOL_VERSION, t: 'link-invite', inviteCode: '' }))).toBeNull();

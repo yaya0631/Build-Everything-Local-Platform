@@ -1,5 +1,5 @@
 /**
- * Find highlights: show Puter AI the transcript of a long video as numbered
+ * Find highlights: show Everything AI the transcript of a long video as numbered
  * lines, let it pick the most engaging self-contained moments, check every
  * number it sends back, and turn the chosen moments into short clips with
  * captions (a new project each, or compound clips in the open project).
@@ -162,7 +162,7 @@ export function parseHighlights(reply, words, { count = 5, length = 'short' } = 
 }
 
 /** Ask the chat model for highlights (chat is injectable for tests). */
-export async function findHighlights(words, { count = 5, length = 'short', chat = (p) => puter.ai.chat(p) } = {}) {
+export async function findHighlights(words, { count = 5, length = 'short', chat = (p) => everything.ai.chat(p) } = {}) {
   if (words.length < 8) throw new Error('There is not enough speech in this clip to find highlights.');
   const reply = await chat(highlightsPrompt(words, { count, length }));
   const list = parseHighlights(reply, words, { count, length });

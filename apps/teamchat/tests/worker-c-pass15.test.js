@@ -19,10 +19,10 @@ beforeEach(async () => {
 });
 
 describe('a file waiting with a scheduled message, carried across by a move', () => {
-  const hadPuter = Object.hasOwn(globalThis, 'puter') ? globalThis.puter : undefined;
+  const hadEverything = Object.hasOwn(globalThis, 'everything') ? globalThis.everything : undefined;
   afterEach(() => {
-    if (hadPuter === undefined) delete globalThis.puter;
-    else globalThis.puter = hadPuter;
+    if (hadEverything === undefined) delete globalThis.everything;
+    else globalThis.everything = hadEverything;
   });
   const json = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
   const FILE = 'fileabcd1234';
@@ -39,7 +39,7 @@ describe('a file waiting with a scheduled message, carried across by a move', ()
 
   it('is told who scheduled it, as a file a message carries is told its author', async () => {
     const forms = [];
-    globalThis.puter = { workers: { exec: async (url, init = {}) => {
+    globalThis.everything = { workers: { exec: async (url, init = {}) => {
       const path = new URL(url).pathname;
       if (path === '/api/workspaces/import') return json({ workspace: { id: 'copy0000001', name: 'Acme' } });
       if (path === '/api/ws/copy0000001/import') return json({ ok: true, conv: CH, count: 0 });
@@ -58,7 +58,7 @@ describe('a file waiting with a scheduled message, carried across by a move', ()
 
   it('is let go of on the copy when its author deletes the message before its time, rather than staying in the owner\'s drive for good', async () => {
     // The old server is faked (its export is the archive below); the copy is made on the real worker.
-    globalThis.puter = { workers: { exec: async (url, init = {}) => {
+    globalThis.everything = { workers: { exec: async (url, init = {}) => {
       const u = new URL(url);
       if (u.hostname === 'teamchat-old.localhost:8443') {
         if (u.pathname === `/api/ws/abcdef1234/files/${FILE}`) return new Response(new Blob(['hello'], { type: 'text/plain' }), { status: 200, headers: { 'Content-Type': 'text/plain' } });
@@ -83,10 +83,10 @@ describe('a file waiting with a scheduled message, carried across by a move', ()
 });
 
 describe('a move whose failed copy could not be taken down', () => {
-  const hadPuter = Object.hasOwn(globalThis, 'puter') ? globalThis.puter : undefined;
+  const hadEverything = Object.hasOwn(globalThis, 'everything') ? globalThis.everything : undefined;
   afterEach(() => {
-    if (hadPuter === undefined) delete globalThis.puter;
-    else globalThis.puter = hadPuter;
+    if (hadEverything === undefined) delete globalThis.everything;
+    else globalThis.everything = hadEverything;
   });
   const json = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
   const OLD = 'abcdef1234@teamchat-old';
@@ -97,7 +97,7 @@ describe('a move whose failed copy could not be taken down', () => {
   function servers(mode) {
     const made = [];
     let copies = 0;
-    globalThis.puter = { workers: { exec: async (url, init = {}) => {
+    globalThis.everything = { workers: { exec: async (url, init = {}) => {
       const path = new URL(url).pathname;
       const method = init.method || 'GET';
       made.push(`${method} ${path}`);
@@ -312,11 +312,11 @@ describe('a scheduled message sent by the old copy as the move began', () => {
 });
 
 describe('downloading a file over a slow link', () => {
-  const hadPuter = Object.hasOwn(globalThis, 'puter') ? globalThis.puter : undefined;
+  const hadEverything = Object.hasOwn(globalThis, 'everything') ? globalThis.everything : undefined;
   afterEach(() => {
     vi.useRealTimers();
-    if (hadPuter === undefined) delete globalThis.puter;
-    else globalThis.puter = hadPuter;
+    if (hadEverything === undefined) delete globalThis.everything;
+    else globalThis.everything = hadEverything;
   });
   /** A Response whose body arrives in the given chunks, each after `gapMs`; aborting `signal` errors the body as fetch does. */
   function streamed(chunks, { gapMs = 0, headers = {} } = {}, signal = null) {
@@ -334,7 +334,7 @@ describe('downloading a file over a slow link', () => {
     });
     return new Response(body, { status: 200, headers });
   }
-  const serve = (fn) => { globalThis.puter = { workers: { exec: async (url, init) => fn(url, init) } }; };
+  const serve = (fn) => { globalThis.everything = { workers: { exec: async (url, init) => fn(url, init) } }; };
   const settle = (p) => p.then((v) => ({ ok: true, v }), (e) => ({ ok: false, e }));
   const REF = 'abcdef1234@teamchat-x';
 
@@ -374,10 +374,10 @@ describe('downloading a file over a slow link', () => {
 });
 
 describe('the files an export names for the queue', () => {
-  const hadPuter = Object.hasOwn(globalThis, 'puter') ? globalThis.puter : undefined;
+  const hadEverything = Object.hasOwn(globalThis, 'everything') ? globalThis.everything : undefined;
   afterEach(() => {
-    if (hadPuter === undefined) delete globalThis.puter;
-    else globalThis.puter = hadPuter;
+    if (hadEverything === undefined) delete globalThis.everything;
+    else globalThis.everything = hadEverything;
   });
   const ext = { uuid: 'u-ext-0000', username: 'ext' };
   async function upload(u, wsId, name) {
@@ -417,7 +417,7 @@ describe('the files an export names for the queue', () => {
     expect((await as(alice).del(`/api/ws/${wsId}`)).ok).toBe(true);
     // The old copy is faked (it would serve the bytes of any file asked for); the copy is made on the real worker.
     const asked = [];
-    globalThis.puter = { workers: { exec: async (url, init = {}) => {
+    globalThis.everything = { workers: { exec: async (url, init = {}) => {
       const u = new URL(url);
       if (u.hostname === 'teamchat-old.localhost:8443') {
         const m = /\/files\/([a-z0-9]+)$/.exec(u.pathname);

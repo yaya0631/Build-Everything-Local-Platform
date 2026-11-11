@@ -1,4 +1,4 @@
-// Opening and saving audio: local files, drag and drop, Puter files, downloads.
+// Opening and saving audio: local files, drag and drop, Everything files, downloads.
 
 import { decodeAudio, extensionOf, AUDIO_ACCEPT } from '../audio/decode.js';
 import { Channel } from '../audio/channel.js';
@@ -6,7 +6,7 @@ import { AudioFile } from '../model/audio-file.js';
 import { createMarker, sortMarkers } from '../model/markers.js';
 import { FORMATS, conformOptions, docBitDepth } from '../export/formats.js';
 import { exportAudio } from '../export/export.js';
-import * as puter from './puter.js';
+import * as everything from './everything.js';
 
 /**
  * Encoders by format id: wav, aiff, flac, mp3, opus, m4a. Each encode(o)
@@ -96,7 +96,7 @@ export async function audioFileFromBlob(blob, name, source = { type: 'local' }) 
   return doc;
 }
 
-/** Opens files (File objects or Puter FSItems) as documents. Returns the docs opened. */
+/** Opens files (File objects or Everything FSItems) as documents. Returns the docs opened. */
 export async function openFiles(app, items, { activate = true } = {}) {
   const docs = [];
   const context = { items, consumed: new Set() };
@@ -108,16 +108,16 @@ export async function openFiles(app, items, { activate = true } = {}) {
     const name = item.name || 'Untitled';
     try {
       app.setStatus(`Opening ${name}...`);
-      if (puter.isDir(item)) {
+      if (everything.isDir(item)) {
         app.notify(`"${name}" is a folder. Open audio files from it in the Media Browser.`);
         continue;
       }
       let blob = item;
       let source = { type: 'local' };
       if (!(item instanceof Blob) && (typeof item.read === 'function' || item.path)) {
-        // Puter FSItems (file pickers, "Open with", Media Browser) read through the SDK.
-        blob = typeof item.read === 'function' ? await item.read() : await puter.readFile(item.path);
-        source = { type: 'puter', path: item.path, uid: item.uid };
+        // Everything FSItems (file pickers, "Open with", Media Browser) read through the SDK.
+        blob = typeof item.read === 'function' ? await item.read() : await everything.readFile(item.path);
+        source = { type: 'everything', path: item.path, uid: item.uid };
       }
       const opener = OPENERS.get(extensionOf(name));
       const doc = opener ? await opener(app, blob, name, source, context) : await audioFileFromBlob(blob, name, source);
@@ -125,7 +125,7 @@ export async function openFiles(app, items, { activate = true } = {}) {
       app.addDocument(doc, { activate: activate && !docs.length });
       docs.push(doc);
       app.setStatus(`Opened in ${((performance.now() - t0) / 1000).toFixed(2)} seconds`);
-      if (source.type === 'puter') rememberRecent(app, { name, path: item.path });
+      if (source.type === 'everything') rememberRecent(app, { name, path: item.path });
     } catch (err) {
       console.error(err);
       app.notify(err.message || `Could not open ${name}.`, { error: true });
@@ -161,13 +161,13 @@ export async function encodeDocument(doc, { format = 'wav', bitDepth, start = 0,
 
 export { saveDocument } from '../export/save.js';
 
-export async function openFromPuter(app) {
-  if (!puter.sdk()) return openFiles(app, await pickLocalFiles());
-  if (!puter.isSignedIn()) {
-    const ok = await puter.signIn().catch(() => false);
+export async function openFromEverything(app) {
+  if (!everything.sdk()) return openFiles(app, await pickLocalFiles());
+  if (!everything.isSignedIn()) {
+    const ok = await everything.signIn().catch(() => false);
     if (!ok) return [];
   }
-  const items = await puter.pickFiles({ multiple: true, accept: openAccept() });
+  const items = await everything.pickFiles({ multiple: true, accept: openAccept() });
   return openFiles(app, items);
 }
 

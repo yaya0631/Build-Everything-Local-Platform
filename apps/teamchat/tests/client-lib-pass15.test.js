@@ -24,7 +24,7 @@ const until = async (fn, ms = 5000) => {
 /** Route each call by the end of its path (first match wins); a handler gets the query and the request init. */
 function worker(routes) {
   const calls = [];
-  globalThis.puter = {
+  globalThis.everything = {
     workers: {
       exec: async (url, init = {}) => {
         const u = new URL(url);
@@ -63,7 +63,7 @@ function resetStore() {
   store.act = { c: {}, p: {}, w: 0, u: 0 };
   for (const t of store._readTimers.values()) clearTimeout(t);
   store._readTimers.clear();
-  delete globalThis.puter;
+  delete globalThis.everything;
 }
 
 describe('a read the worker did not take, for a direct message whose id another workspace shares', () => {
@@ -191,7 +191,7 @@ describe('a read of a workspace forgotten in the moment after it', () => {
   const channels = { c1: { id: 'c1', name: 'general' } };
   const readsOf = (calls) => calls.filter((c) => c === 'POST /api/ws/abc123def0/conv/c1/read');
   const arm = (calls) => {
-    globalThis.puter.kv = { get: async () => ({ v: 1, profile: {}, prefs: {}, workspaces: [{ ref: REF, name: 'A' }], worker: null }), set: async () => {} };
+    globalThis.everything.kv = { get: async () => ({ v: 1, profile: {}, prefs: {}, workspaces: [{ ref: REF, name: 'A' }], worker: null }), set: async () => {} };
     store.identity = { uuid: 'u-me', username: 'me' };
     store.user = { v: 1, profile: {}, prefs: {}, workspaces: [{ ref: REF, name: 'A' }], worker: null };
     store.wsId = REF;

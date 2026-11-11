@@ -8,7 +8,7 @@ const settled = (page) => expect(page.locator('.editor')).toHaveAttribute('aria-
 // Comments from other editors that this one can move or delete but not restyle: a stamp keeps
 // its own art and an insertion mark its own shape, and a read-only comment takes no change.
 test('the properties panel offers only the changes a comment can take', async ({ page }) => {
-  await page.route('**/sdk/puter.js', (route) => route.abort());
+  await page.route('**/sdk/everything.js', (route) => route.abort());
   const doc = await PDFDocument.create();
   const sheet = doc.addPage([400, 500]);
   const annots = [];
@@ -73,7 +73,7 @@ test('the properties panel offers only the changes a comment can take', async ({
 
 // A line width the list does not offer, as other editors write, is shown as it is.
 test('the Line width field shows a comment’s own width', async ({ page }) => {
-  await page.route('**/sdk/puter.js', (route) => route.abort());
+  await page.route('**/sdk/everything.js', (route) => route.abort());
   const doc = await PDFDocument.create();
   doc.addPage([400, 500]);
   addShapeAnnotation(doc, 0, {

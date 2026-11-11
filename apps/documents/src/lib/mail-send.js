@@ -1,11 +1,11 @@
 /**
- * Mail from the user's own Puter address (`<username>@puter.email`), as the
- * Calendar app in this repository sends replies: `puter.email.send` resolves
+ * Mail from the user's own Everything address (`<username>@everything.email`), as the
+ * Calendar app in this repository sends replies: `everything.email.send` resolves
  * the service's answer instead of throwing on a refusal, so every outcome is
  * read from that answer. A first 'forbidden' asks for the mail permission once
  * and tries again. Nothing is sent without the person pressing Send.
  */
-const sdk = () => (typeof puter !== 'undefined' ? puter : null);
+const sdk = () => (typeof everything !== 'undefined' ? everything : null);
 
 export const canEmail = () => typeof sdk()?.email?.send === 'function';
 

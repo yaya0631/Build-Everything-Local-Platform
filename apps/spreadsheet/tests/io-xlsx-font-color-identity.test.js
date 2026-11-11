@@ -14,7 +14,7 @@ async function saved(wb) {
   const zip = X.CFB.read(new Uint8Array(data), { type: 'array' });
   const text = path => new TextDecoder().decode(X.CFB.find(zip, path).content);
   return { data, text, native: () => {
-    X.CFB.utils.cfb_add(zip, '/xl/workbook.xml', new TextEncoder().encode(text('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')));
+    X.CFB.utils.cfb_add(zip, '/xl/workbook.xml', new TextEncoder().encode(text('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')));
     return X.CFB.write(zip, { type: 'array', fileType: 'zip' });
   } };
 }

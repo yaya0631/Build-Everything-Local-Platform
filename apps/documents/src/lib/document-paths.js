@@ -1,7 +1,7 @@
 /** Local settings use one key for the app-relative and verified absolute path. */
 export const DOCUMENT_FOLDER = 'Documents';
 const roots = new WeakMap();
-const provider = () => globalThis.puter;
+const provider = () => globalThis.everything;
 const validOwner = (owner) => owner && (typeof owner === 'object' || typeof owner === 'function');
 const ordinary = (tail) => tail && tail.split('/').every((part) => part && part !== '.' && part !== '..');
 

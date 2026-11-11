@@ -298,7 +298,7 @@ function userResource(u, base) {
     [EXT]: {
       role: u.role,
       license: u.license || (u.role === "guest" ? "guest" : "full"),
-      puterUsername: u.status === "pending" ? null : u.username || null,
+      everythingUsername: u.status === "pending" ? null : u.username || null,
       linked: u.status !== "pending",
     },
     meta: {
@@ -1261,7 +1261,7 @@ const SCHEMA_DEFINITIONS = [
     attributes: [
       attribute("role", "string", { canonicalValues: ["member", "guest"] }),
       attribute("license", "string", readOnly),
-      attribute("puterUsername", "string", readOnly),
+      attribute("everythingUsername", "string", readOnly),
       attribute("linked", "boolean", readOnly),
     ],
   },

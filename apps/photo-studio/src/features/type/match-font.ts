@@ -2,7 +2,7 @@
 // browser can draw (bundled, detected system fonts and, when permitted, local
 // fonts) and apply a match to the selected text layer. Measuring and ranking
 // live in imaging/text/match-font.ts; this module draws candidates with canvas
-// text and hosts the dialog. "Ask AI" sends the boxed pixels to Puter only
+// text and hosts the dialog. "Ask AI" sends the boxed pixels to Everything only
 // when pressed.
 import type { Editor } from '../../editor';
 import { escapeXML } from '../../model/assets';
@@ -12,7 +12,7 @@ import type { IRect, RGBA8 } from '../../imaging/types';
 import { applyCharStyle, plainText, textLength } from '../../imaging/text/model';
 import { ensureFont, fontFamilies, localFontAccessSupported, type FontFamilyInfo } from '../../imaging/text/fonts';
 import { analyzeText, rankFonts, rerank, variantsOf, type FontCandidate, type FontMatch, type FontRenderer, type TextSample } from '../../imaging/text/match-font';
-import { matchFontWithAI, toAIError } from '../../imaging/ai/puter-ai';
+import { matchFontWithAI, toAIError } from '../../imaging/ai/everything-ai';
 import { compositeRGBA } from '../pixels';
 import { ensureSignedIn } from '../retouch/ai';
 import { DocView, drawImage, openWorkspace } from '../retouch/workspace';
@@ -108,7 +108,7 @@ export async function matchFontDialog(e: Editor) {
     <button id="mf-find" type="button" ${box ? '' : 'disabled'}>Find Matches</button>
     <p class="mf-status" id="mf-status" role="status" aria-live="polite"></p>
     <div class="mf-results" role="radiogroup" aria-label="Matching fonts"></div>
-    <div class="ai-notice mf-ai" role="note"><strong>Ask AI</strong><p>Sends the boxed area (at most 1024 px on its longer side) and the names of the listed fonts to Puter’s AI service, which picks the closest. This needs a Puter account and may use credits. Nothing is sent until you press Ask AI.</p></div>
+    <div class="ai-notice mf-ai" role="note"><strong>Ask AI</strong><p>Sends the boxed area (at most 1024 px on its longer side) and the names of the listed fonts to Everything’s AI service, which picks the closest. This needs an Everything account and may use credits. Nothing is sent until you press Ask AI.</p></div>
     <button id="mf-ai" type="button" disabled>Ask AI</button>
   </aside>
 </div>
@@ -289,7 +289,7 @@ export async function matchFontDialog(e: Editor) {
     if (!sampleCrop || !matches.length) return;
     const names = [...new Set(matches.map((m) => m.family))].slice(0, 12);
     askAI.disabled = true;
-    say('Asking Puter AI…');
+    say('Asking Everything AI…');
     try {
       await ensureSignedIn();
       const order = await matchFontWithAI(sampleCrop, names);

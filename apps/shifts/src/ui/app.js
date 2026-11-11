@@ -352,7 +352,7 @@ export function startApp({ store, user, snapshots, onSignOut }) {
             icon('log-out', 16)
           )
         ),
-        el('div', { class: 'powered' }, 'Powered by ', el('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noreferrer' }, 'Puter'))
+        el('div', { class: 'powered' }, 'Powered by ', el('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noreferrer' }, 'Everything'))
       )
     );
   }

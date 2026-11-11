@@ -140,15 +140,15 @@ export function buildCommands() {
       id: 'insertFile', label: 'Attach File', short: 'File', icon: 'file', desc: 'Attach a file to the page.', enabled: editable, run: (app) => app.pickFiles({ attach: true }),
       menu: (app) => [
         { label: 'From This Device...', icon: 'upload', run: () => app.pickFiles({ attach: true }) },
-        { label: 'From Puter...', icon: 'cloud', disabled: !app.cloudPicker(), run: () => app.pickFromCloud({ attach: true }) },
+        { label: 'From Everything...', icon: 'cloud', disabled: !app.cloudPicker(), run: () => app.pickFromCloud({ attach: true }) },
       ],
     },
     { id: 'insertPrintout', label: 'File Printout', short: 'Printout', icon: 'printout', desc: 'Insert the pages of a PDF as pictures, with the file attached.', enabled: editable, run: (app) => app.insertPrintout() },
     {
-      id: 'insertPicture', label: 'Pictures', short: 'Picture', icon: 'picture', desc: 'Insert pictures from your device or your Puter files.', enabled: editable, run: (app) => app.pickFiles({ accept: 'image/*' }),
+      id: 'insertPicture', label: 'Pictures', short: 'Picture', icon: 'picture', desc: 'Insert pictures from your device or your Everything files.', enabled: editable, run: (app) => app.pickFiles({ accept: 'image/*' }),
       menu: (app) => [
         { label: 'From This Device...', icon: 'upload', run: () => app.pickFiles({ accept: 'image/*' }) },
-        { label: 'From Puter...', icon: 'cloud', disabled: !app.cloudPicker(), run: () => app.pickFromCloud({ accept: 'image/*' }) },
+        { label: 'From Everything...', icon: 'cloud', disabled: !app.cloudPicker(), run: () => app.pickFromCloud({ accept: 'image/*' }) },
       ],
     },
     { id: 'insertScreenshot', label: 'Screenshot', icon: 'screenshot', desc: 'Capture a window or screen and insert it.', enabled: (app) => editable(app) && Boolean(navigator.mediaDevices?.getDisplayMedia), run: (app) => app.insertScreenshot() },

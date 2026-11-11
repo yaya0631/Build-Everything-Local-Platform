@@ -208,7 +208,7 @@ export function validateMeta(input, current) {
     out.email = {
       enabled: !!e.enabled,
       replyTo: normEmail(e.replyTo) || null,
-      // Read the owner's Puter mailbox for new requests (see client/mailbox.js).
+      // Read the owner's Everything mailbox for new requests (see client/mailbox.js).
       inbox: !!e.inbox,
       address: normEmail(e.address) || null,
     };

@@ -57,7 +57,7 @@ afterEach(() => {
 });
 
 describe('Empty Trash', () => {
-  const ONE = 'Welcome to your Puter mailbox';
+  const ONE = 'Welcome to your Everything mailbox';
   const TWO = 'Your receipt from Nimbus Coffee';
 
   it('is offered above the rows in Trash, and nowhere else', async () => {

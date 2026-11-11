@@ -40,23 +40,23 @@ export function health(build, builtAt) {
 }
 
 const services = new WeakMap();
-function serviceFor(mePuter) {
-  let s = services.get(mePuter);
+function serviceFor(meEverything) {
+  let s = services.get(meEverything);
   if (!s) {
-    s = new ReviewService(mePuter);
-    services.set(mePuter, s);
+    s = new ReviewService(meEverything);
+    services.set(meEverything, s);
   }
   return s;
 }
 
 /** POST /api: authenticate the caller, then run one operation. */
-export async function handleApi({ request, user }, mePuter, { service } = {}) {
+export async function handleApi({ request, user }, meEverything, { service } = {}) {
   try {
     const text = await readBody(request);
     if (text === null) return json({ message: 'A JSON request body is required.' }, 400);
-    const identity = await authenticate(request, user?.puter, text);
+    const identity = await authenticate(request, user?.everything, text);
     const input = JSON.parse(text);
-    return json(await (service || serviceFor(mePuter)).call(identity, input));
+    return json(await (service || serviceFor(meEverything)).call(identity, input));
   } catch (error) {
     const status = error instanceof SyntaxError ? 400 : error.status || 500;
     const message = error instanceof SyntaxError ? 'Invalid request.' : error.status ? error.message : 'The review server had a problem. Try again.';

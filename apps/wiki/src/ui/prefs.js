@@ -1,6 +1,6 @@
 /**
  * Per-device preferences in localStorage: theme, sidebar width and state.
- * Nothing here is content; pages live in the user's Puter cloud.
+ * Nothing here is content; pages live in the user's Everything cloud.
  */
 const KEY = 'wiki:prefs';
 const THEME_KEY = 'wiki:theme';

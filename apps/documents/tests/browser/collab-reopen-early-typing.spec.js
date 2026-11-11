@@ -12,7 +12,7 @@ test('a shared document reads only until its room has been joined, so nothing ty
   await page.getByRole('button', { name: 'Share', exact: true }).first().click();
   await page.getByRole('menuitem', { name: 'Copy Link' }).click();
   await expect(page.locator('.cl-avatar')).toHaveCount(1, { timeout: 15000 });
-  await expect(page.locator('.canvas-save-status')).toHaveAttribute('aria-label', 'Saved to Puter', { timeout: 15000 });
+  await expect(page.locator('.canvas-save-status')).toHaveAttribute('aria-label', 'Saved to Everything', { timeout: 15000 });
   const path = await page.evaluate(() => window.__docs.current.view.doc.path);
   await page.evaluate(() => { location.hash = '#/home'; });
   await expect(page.getByRole('heading', { name: 'Your documents' })).toBeVisible();
@@ -42,7 +42,7 @@ test('a document that was never shared opens for editing at once', async ({ page
   await page.goto('/mock.html#/new');
   await expect(page.getByRole('button', { name: 'Bold', exact: true })).toBeEnabled();
   await text(page).fill('Notes.');
-  await expect(page.locator('.canvas-save-status')).toHaveAttribute('aria-label', 'Saved to Puter', { timeout: 15000 });
+  await expect(page.locator('.canvas-save-status')).toHaveAttribute('aria-label', 'Saved to Everything', { timeout: 15000 });
   const path = await page.evaluate(() => window.__docs.current.view.doc.path);
   await page.evaluate(() => { location.hash = '#/home'; });
   await expect(page.getByRole('heading', { name: 'Your documents' })).toBeVisible();

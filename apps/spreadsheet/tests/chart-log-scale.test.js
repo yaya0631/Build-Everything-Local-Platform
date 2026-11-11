@@ -75,7 +75,7 @@ describe('a logarithmic value axis', () => {
     expect(chartXml).toContain('<c:logBase val="2"/>');
     // Read back as another program's file: the app's own copy of its model left out.
     const part = X.CFB.find(zip, '/xl/workbook.xml');
-    X.CFB.utils.cfb_add(zip, '/xl/workbook.xml', new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')));
+    X.CFB.utils.cfb_add(zip, '/xl/workbook.xml', new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')));
     const back = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }));
     expect(back.sheets[0].charts[0].appearance).toMatchObject({ yLogBase: 10, xLogBase: 2 });
   });

@@ -18,11 +18,11 @@ function memoryStorage() {
 }
 Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true });
 
-function installMockPuter() {
+function installMockEverything() {
   const fs = new Map();
   const notFound = (p) => Object.assign(new Error(`${p} does not exist`), { code: 'subject_does_not_exist' });
   const item = (path, f) => ({ path, name: path.split('/').pop(), is_dir: !f, size: f?.size ?? null, modified: f?.modified ?? 1 });
-  globalThis.puter = {
+  globalThis.everything = {
     env: 'web',
     auth: { isSignedIn: () => true, getUser: async () => ({ username: 'demo' }) },
     kv: { get: async () => null, set: async () => true },
@@ -78,8 +78,8 @@ describe('local drafts', () => {
 describe('the document keeps a draft until the file holds the edits', () => {
   let fs;
   beforeAll(async () => { await workbookToXlsx(new Workbook()); });
-  beforeEach(() => { localStorage.clear(); fs = installMockPuter(); vi.useFakeTimers(); });
-  afterEach(() => { vi.useRealTimers(); delete globalThis.puter; });
+  beforeEach(() => { localStorage.clear(); fs = installMockEverything(); vi.useFakeTimers(); });
+  afterEach(() => { vi.useRealTimers(); delete globalThis.everything; });
 
   it('recovers each unsaved workbook independently when several have the same name', async () => {
     const first = Doc.blank();
@@ -234,7 +234,7 @@ describe('the document keeps a draft until the file holds the edits', () => {
     original.wb.setInput(original.wb.activeSheetId, 0, 0, 'Unsaved');
     original.writeDraft();
     original.destroy();
-    globalThis.puter.fs.stat = async () => { throw new Error('Temporary stat failure'); };
+    globalThis.everything.fs.stat = async () => { throw new Error('Temporary stat failure'); };
     const reopened = await Doc.fromPath(original.path);
     try { expect(reopened.recoverable).toBeTruthy(); }
     finally { reopened.destroy(); }

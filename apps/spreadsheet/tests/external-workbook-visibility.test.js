@@ -5,7 +5,7 @@ import { workbookFromFile, workbookToXlsx } from '../src/core/io.js';
 import { normalizeExternalWorkbooks } from '../src/core/external-workbooks.js';
 import { normalizeExternalVisibility } from '../src/core/external-visibility.js';
 import * as X from '../src/vendor/xlsx.mjs';
-const NS = 'urn:puter:spreadsheet:external-visibility:1';
+const NS = 'urn:everything:spreadsheet:external-visibility:1';
 function fixture(kind = 'row', includeHidden = false) {
   const wb = new Workbook({ sheets: [{ name: 'Report', cells: {
     '10,0': { f: 'SUBTOTAL(9,Data!B2:B4)' }, '11,0': { f: 'SUBTOTAL(109,Data!B2:B4)' },
@@ -26,7 +26,7 @@ const decode = part => new TextDecoder().decode(part.content);
 async function native(wb, mutate) {
   const zip = X.CFB.read(new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()), { type: 'array' });
   const put = (path, xml) => X.CFB.utils.cfb_add(zip, path, new TextEncoder().encode(xml));
-  put('/xl/workbook.xml', decode(X.CFB.find(zip, '/xl/workbook.xml')).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  put('/xl/workbook.xml', decode(X.CFB.find(zip, '/xl/workbook.xml')).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   if (mutate) mutate(zip, put);
   return { wb: await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' })), zip };
 }

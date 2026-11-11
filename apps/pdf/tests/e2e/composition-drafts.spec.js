@@ -17,7 +17,7 @@ async function openPdf(page, bytes) {
 }
 
 async function start(page, doc) {
-  await page.route('**/sdk/puter.js', (route) => route.abort());
+  await page.route('**/sdk/everything.js', (route) => route.abort());
   await page.goto('/#library');
   await openPdf(page, await doc.save());
 }

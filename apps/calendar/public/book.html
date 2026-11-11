@@ -11,7 +11,7 @@
 <link rel="icon" href="/favicon-32x32.png" type="image/png" sizes="32x32">
 <link rel="icon" href="/favicon-16x16.png" type="image/png" sizes="16x16">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">
-<title>Book a meeting — Puter Calendar</title>
+<title>Book a meeting — Everything Calendar</title>
 <style>
   :root { color-scheme: light dark;
     --bg: #f6f7f9; --card: #ffffff; --text: #1a1d21; --muted: #6b7280;
@@ -275,7 +275,7 @@
  * https://cal-<host>.localhost:8443, rebuilt below — or from the worker's own
  * redirects (…localhost:8443/book/<page> → /book.html#w=<worker>&p=<page>; a
  * manage link redirects with t=<token>). Everything below talks to that
- * worker's JSON API; the worker itself serves no HTML. Needs no Puter sign-in
+ * worker's JSON API; the worker itself serves no HTML. Needs no Everything sign-in
  * and no SDK.
  *
  * All data is rendered with textContent (never markup), POSTs are urlencoded
@@ -415,7 +415,7 @@
     return min + ' minutes';
   }
 
-  /** The value if it is exactly a Puter Meetings room link, else '' — the only
+  /** The value if it is exactly an Everything Meetings room link, else '' — the only
    *  URL this page will render clickable or write into the .ics (same shape
    *  test the worker applies before serving it). */
   function meetingUrlOf(booking) {
@@ -447,7 +447,7 @@
     // The worker mints hex booking ids; held to that shape (like meetingUrlOf
     // for URLs) so a rogue worker's id can't smuggle CRLF-joined ICS lines.
     var uid = /^[0-9a-f]{8,64}$/.test(String(booking.id)) ? booking.id : 'booking';
-    var lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Puter Calendar//Booking//EN',
+    var lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Everything Calendar//Booking//EN',
       'BEGIN:VEVENT', 'UID:' + uid + '@calendar.localhost', 'DTSTAMP:' + dt(Date.now()),
       'DTSTART:' + dt(booking.start), 'DTEND:' + dt(booking.end),
       'SUMMARY:' + esc(booking.title || 'Meeting')];
@@ -520,7 +520,7 @@
     function renderManage(data, notice) {
       var booking = data.booking || {};
       var page = data.page || null;
-      document.title = (booking.title || 'Booking') + ' — Puter Calendar';
+      document.title = (booking.title || 'Booking') + ' — Everything Calendar';
       root.replaceChildren();
       root.className = 'card';
       var pane = el('div', 'pane');
@@ -688,7 +688,7 @@
             page = data.page || {};
             serverSkew = isFinite(data.now) ? data.now - Date.now() : 0;
             minNoticeMs = Math.max(0, Number(page.minNoticeMin) || 0) * 60000;
-            document.title = (page.title || 'Book a meeting') + ' — Puter Calendar';
+            document.title = (page.title || 'Book a meeting') + ' — Everything Calendar';
             var today = monthOfKey(dayKey(nowMs(), tz));
             minMonthKey = monthKeyOf(today.y, today.m);
             var horizon = monthOfKey(dayKey(nowMs() + (page.maxAdvanceDays || 60) * DAY, tz));
@@ -1259,7 +1259,7 @@
       // showFail writes into nodes the replaceChildren below just detached.
       var hasTimes = isFinite(booking.start) && isFinite(booking.end);
       var manageUrl = data.token ? worker + '/booking/' + data.token : '';
-      document.title = 'Confirmed — Puter Calendar';
+      document.title = 'Confirmed — Everything Calendar';
       root.replaceChildren();
       root.className = 'card';
       var pane = el('div', 'pane');
@@ -1406,7 +1406,7 @@
       markImg.width = 18;
       markImg.height = 18;
       link.append(markImg);
-      link.append(document.createTextNode('Puter Calendar'));
+      link.append(document.createTextNode('Everything Calendar'));
       link.href = 'http://localhost:8443/app/calendar';
       link.rel = 'noopener';
       bar.append(link);

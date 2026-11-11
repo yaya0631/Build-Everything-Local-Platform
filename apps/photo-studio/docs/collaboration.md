@@ -21,7 +21,7 @@ The design follows the Whiteboard app in this repository (`src/whiteboard/docs/c
 | `src/collab/order.ts` | Fractional order keys for layers |
 | `src/collab/comments.ts`, `comment-store.ts`, `ycomments.ts`, `shared-comments.ts` | Comment model, validation and authorship rules; local and shared stores |
 | `src/collab/client.ts` | Joining, synchronizing, the outbox, tile transfer, presence, peer edits |
-| `src/collab/peers.ts` | WebRTC peer links (`puter.peer`) with signed tickets and packets |
+| `src/collab/peers.ts` | WebRTC peer links (`everything.peer`) with signed tickets and packets |
 | `src/collab/shared-history.ts` | The editor history of a shared document (per-person Undo) |
 | `src/collab/server/` | The room worker (`service.ts`, `auth.ts`, entry `index.ts`), bundled by `npm run build:worker` into `public/worker/photo-studio-worker.js` |
 | `src/features/collab/` | Commands, Comment tool, Comments panel, pins overlay, dialogs, top-bar status, presence overlay, review view |
@@ -59,21 +59,21 @@ A shared tab's history is a `SharedHistory`. Each step is written into the Yjs d
 
 ## The room worker
 
-Sharing deploys a Puter Worker to the owner's account (`puter.workers.create`, once; later shares reuse it and update it when the bundled build changes; its address is kept in the owner's app KV). An invitation link never deploys or updates a worker. The worker stores, in the owner's KV and files:
+Sharing deploys an Everything Worker to the owner's account (`everything.workers.create`, once; later shares reuse it and update it when the bundled build changes; its address is kept in the owner's app KV). An invitation link never deploys or updates a worker. The worker stores, in the owner's KV and files:
 
 | Key / file | Contents |
 | --- | --- |
 | `ps:<room>:meta` | Owner, name, room signing keys, initial state chunks, closed flag |
 | `ps:<room>:member:<user>` | Role (`owner`, `editor`, `commenter`, `viewer`, `removed`), join time, optional access expiry |
 | `ps:<room>:invite:<sha256(token)>` | Invitation role, review flag, creator, expiry (7 days by default; 1 to 30) |
-| `ps:<room>:named:<username>` | Invitation by Puter username |
+| `ps:<room>:named:<username>` | Invitation by Everything username |
 | `ps:<room>:seq`, `ps:<room>:log:<n>` | Numbered edit log (Yjs updates; large ones as files) |
 | `ps:<room>:cp` | Checkpoint (full state file) every 100 edits |
 | `ps:<room>:presence:<session>` | Peer ticket (90 s) |
 | `ps:<room>:ev:signal` | Change notice (carries no data) |
 | `photo-studio/shared/<room>/assets/<hash>.txt` | Deflated tiles and asset chunks (2 GB per document) |
 
-Requests (`join`, `sync`, `commit`, `asset.put`, `asset.get`, `presence`, `leave`, `members`, `invite`, `invite-user`, `revoke-invites`, `role`, `stop`, `events`) are signed as in the Whiteboard app: the browser never sends its app session to a worker; it mints a restricted Puter token that can only read a small identity file with its public key, and signs the worker origin, the file path and the body digest. The worker validates the token with Puter (`fs.stat` with strong consistency, an unshared file owned by the caller) and checks the signature.
+Requests (`join`, `sync`, `commit`, `asset.put`, `asset.get`, `presence`, `leave`, `members`, `invite`, `invite-user`, `revoke-invites`, `role`, `stop`, `events`) are signed as in the Whiteboard app: the browser never sends its app session to a worker; it mints a restricted Everything token that can only read a small identity file with its public key, and signs the worker origin, the file path and the body digest. The worker validates the token with Everything (`fs.stat` with strong consistency, an unshared file owned by the caller) and checks the signature.
 
 The worker enforces roles on every request, independently of the interface:
 
@@ -81,7 +81,7 @@ The worker enforces roles on every request, independently of the interface:
 - Commenters can commit only changes to the `comments` map: the worker tries each commit on a scratch copy of the document and refuses it when any other shared type changed.
 - Commits to one room are checked one at a time. A refused commit only ever touches the scratch copy (which is then rebuilt); the worker's loaded document, which synchronization sends and checkpoints are written from, receives a commit only after it is accepted and logged.
 - Editors and owners can change `doc`, `layers`, `assets` and `comments`, nothing else.
-- Comment changes are checked for authorship (`checkCommentChange`): new threads and messages must be the committer's own, under their account ID and their authenticated Puter username; only authors edit or remove their messages (owners may remove any); nothing is removed outright (removal is a marker); resolving is recorded in the resolver's own name; limits of 500 threads, 100 messages per thread and 4,000 characters per message.
+- Comment changes are checked for authorship (`checkCommentChange`): new threads and messages must be the committer's own, under their account ID and their authenticated Everything username; only authors edit or remove their messages (owners may remove any); nothing is removed outright (removal is a marker); resolving is recorded in the resolver's own name; limits of 500 threads, 100 messages per thread and 4,000 characters per message.
 - A commit that builds on edits the worker does not have is refused (409) and retried after a synchronization; one refused for good (role changed, invalid data) is dropped together with later queued edits, and the tab opens the shared state again.
 - An invitation (link or username) admits only people who are not members yet. For a member it changes nothing: it never raises a role the owner lowered or lifts an access expiry the owner set, and an expired or revoked link does not stop a current member.
 - New layers must have identifiers of the editor's shape (`src/model/ids.ts`): they reach markup in other people's panels. Projection also leaves out layers under any other key, and `validateDocument` (used for projections and `.photo` files alike) refuses identifiers of other shapes for channels, embedded objects, audio tracks and clips, comps, slices, paths, frames and annotations; panels escape identifiers as well.
@@ -91,9 +91,9 @@ Accepted commits return a receipt signed with the room key, binding the update h
 
 ## Live transport and presence
 
-Change notices: the worker writes `ps:<room>:ev:signal` after each commit; the owner subscribes with `puter.events.onLocal()` and others through KV event handles the worker requests for them. A notice prompts a synchronization and a check-in. Browsers also synchronize every 4 seconds without live links (every 20 with them), when the tab becomes visible and when the browser comes back online.
+Change notices: the worker writes `ps:<room>:ev:signal` after each commit; the owner subscribes with `everything.events.onLocal()` and others through KV event handles the worker requests for them. A notice prompts a synchronization and a check-in. Browsers also synchronize every 4 seconds without live links (every 20 with them), when the tab becomes visible and when the browser comes back online.
 
-Peer links use `puter.peer.serve()` / `connect()` (WebRTC, Puter-managed TURN). Each session checks in with the worker for a 90-second ticket signed with the room key; peers exchange tickets and answer a challenge signed with their session key and bound to the connection's transport certificates. Up to eight sessions link to each other; larger rooms link through two relays per group of up to 32. Every packet is signed. Over these links travel:
+Peer links use `everything.peer.serve()` / `connect()` (WebRTC, Everything-managed TURN). Each session checks in with the worker for a 90-second ticket signed with the room key; peers exchange tickets and answer a challenge signed with their session key and bound to the connection's transport certificates. Up to eight sessions link to each other; larger rooms link through two relays per group of up to 32. Every packet is signed. Over these links travel:
 
 - **Edits**: small updates (up to 48 kB) right after the worker accepted them, with the worker's receipt; receivers verify the receipt and the hash before applying, so a refused edit never spreads. Larger ones send a notice instead.
 - **Presence** (at most 20 a second, on an unordered channel without retransmits): the pointer, tool, active layer bounds, selection bounds and view (center and zoom). Other people's cursors with their names and tools, their active layers (long dashes) and selections (short dashes) are drawn in their colors over the canvas.
@@ -108,7 +108,7 @@ When access ends (removed, expired, sharing stopped), the tab keeps the document
 
 ## Review view
 
-A review link (Share for Review…) gives comment or view access and opens the review view: the tools panel and options bar give way to a header with the document name, an artboard list (zoom to an artboard), a layer comp list (shows a comp in this browser only), Fit and 100% buttons and, for commenters, a Comment button; the dock shows only the Comments panel. Reviewers need a Puter account and sign in: the worker can only check access for authenticated people, and an anonymous link would let anyone holding it read the document and post comments under no name. We did not ship unsigned review links for that reason.
+A review link (Share for Review…) gives comment or view access and opens the review view: the tools panel and options bar give way to a header with the document name, an artboard list (zoom to an artboard), a layer comp list (shows a comp in this browser only), Fit and 100% buttons and, for commenters, a Comment button; the dock shows only the Comments panel. Reviewers need an Everything account and sign in: the worker can only check access for authenticated people, and an anonymous link would let anyone holding it read the document and post comments under no name. We did not ship unsigned review links for that reason.
 
 ## Comments in local documents
 
@@ -121,12 +121,12 @@ Local documents keep comments outside the history (so Undo never removes a comme
 - History states before sharing are not kept; a joiner's History starts empty.
 - The edit log is never compacted beyond checkpoints; documents are limited to 2 GB of stored tiles and assets.
 - Notifications for @mentions are not sent outside the document.
-- The 8-session mesh and relay groups are a topology, not a measured capacity; large rooms and real-network behavior still need testing against the hosted Puter service.
+- The 8-session mesh and relay groups are a topology, not a measured capacity; large rooms and real-network behavior still need testing against the hosted Everything service.
 
 ## Tests
 
 - `tests/collab-project.test.ts`: the Yjs model (round trip, merges, per-tile conflicts, order, cycles, private selections, kind changes merged with content edits).
 - `tests/collab-fixes.test.ts`: refused commits and checkpoints, invitations versus memberships, comment names, the outbox of several tabs, refused tile uploads, one-step Undo, merged kind changes, identifiers, private settings and comment registers.
-- `tests/collab-sessions.test.ts`: two and three simulated people against the real worker service with an in-memory Puter (`tests/collab-helpers.ts`, ported from the Whiteboard tests): joining, merging, three-way order, the offline outbox across a reload, server-side roles, comment threads, per-person Undo, peer edits and presence, access management, tile integrity and a second worker instance.
+- `tests/collab-sessions.test.ts`: two and three simulated people against the real worker service with an in-memory Everything (`tests/collab-helpers.ts`, ported from the Whiteboard tests): joining, merging, three-way order, the offline outbox across a reload, server-side roles, comment threads, per-person Undo, peer edits and presence, access management, tile integrity and a second worker instance.
 - `tests/collab-protocol.test.ts`, `tests/collab-comments-file.test.ts`: links, signatures, topology, colors, the tile codec, the comment model and authorship rules, comments in projects.
-- `tests/browser/collab.spec.ts`: two browser contexts with a stand-in Puter.js forwarding to the worker service in the test process (`tests/browser/collab-harness.ts`, used only by tests): invite, join, paint in one and see it in the other, presence, a comment pin in one and a reply and resolution in the other.
+- `tests/browser/collab.spec.ts`: two browser contexts with a stand-in Everything.js forwarding to the worker service in the test process (`tests/browser/collab-harness.ts`, used only by tests): invite, join, paint in one and see it in the other, presence, a comment pin in one and a reply and resolution in the other.

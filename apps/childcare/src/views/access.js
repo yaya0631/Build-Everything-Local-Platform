@@ -17,7 +17,7 @@ export function accessCard() {
   if (app.demo)
     return card({
       title: 'Staff and family access',
-      body: h('p.subtle', 'In your own account, staff and families sign in with their own Puter accounts: teachers log activities from any device, and families see their own children\'s day, message the school, and view statements. This is not available in the demo.'),
+      body: h('p.subtle', 'In your own account, staff and families sign in with their own Everything accounts: teachers log activities from any device, and families see their own children\'s day, message the school, and view statements. This is not available in the demo.'),
     });
 
   const t = app.team;
@@ -25,7 +25,7 @@ export function accessCard() {
 
   const manage = t.role === 'owner' || t.role === 'admin';
   const body = h('div.stack');
-  body.append(h('p.subtle', t.role === 'owner' ? 'Staff and families sign in with their own Puter accounts and see this school through your school server.' : `You are signed in to ${t.school || 'this school'} as ${ROLE_LABEL[t.role] === 'Admin' ? 'an admin' : ROLE_LABEL[t.role] === 'Family' ? 'a family member' : 'staff'}.`));
+  body.append(h('p.subtle', t.role === 'owner' ? 'Staff and families sign in with their own Everything accounts and see this school through your school server.' : `You are signed in to ${t.school || 'this school'} as ${ROLE_LABEL[t.role] === 'Admin' ? 'an admin' : ROLE_LABEL[t.role] === 'Family' ? 'a family member' : 'staff'}.`));
 
   if (!manage) {
     body.append(
@@ -171,7 +171,7 @@ function enableCard() {
   btn.addEventListener('click', async () => {
     const ok = await confirmDialog({
       title: 'Turn on staff and family access?',
-      message: 'A small server (a Puter worker) is created in your own Puter account to share this school with people you invite. Your records and photos are copied to it and stay in your account. This can take a minute.',
+      message: 'A small server (an Everything worker) is created in your own Everything account to share this school with people you invite. Your records and photos are copied to it and stay in your account. This can take a minute.',
       confirmLabel: 'Turn on',
     });
     if (!ok) return;
@@ -186,7 +186,7 @@ function enableCard() {
       await app.store.flush();
       const { own, skipped } = await team.enableTeam({ store: app.store, onProgress: (text) => (progress.textContent = text) });
       const ws = { ...app.workspaces, own, current: 'own' };
-      await team.saveWorkspaces(globalThis.puter.kv, ws);
+      await team.saveWorkspaces(globalThis.everything.kv, ws);
       progress.textContent = skipped.length ? `Done. ${skipped.length} file${skipped.length === 1 ? ' was' : 's were'} too large to copy. Reloading...` : 'Done. Reloading...';
       setTimeout(() => {
         location.hash = '#/settings/access';
@@ -203,13 +203,13 @@ function enableCard() {
     title: 'Staff and family access',
     body: h(
       'div.stack',
-      h('p', 'Let your teachers and families sign in with their own free Puter accounts.'),
+      h('p', 'Let your teachers and families sign in with their own free Everything accounts.'),
       h(
         'ul.welcome-points',
         [
           ['id-card', 'Staff check children in, log activities, and message families from any phone or tablet.'],
           ['users', 'Families see only their own children: the day\'s updates and photos you share, messages, the calendar, and statements.'],
-          ['shield', 'Everything stays in your Puter account. You can remove anyone at any time.'],
+          ['shield', 'Everything stays in your Everything account. You can remove anyone at any time.'],
         ].map(([ic, text]) => h('li', icon(ic), h('span', text))),
       ),
       h('div.row', btn),

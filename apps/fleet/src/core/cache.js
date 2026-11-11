@@ -1,6 +1,6 @@
 /**
  * IndexedDB snapshot cache, one entry per signed-in user. Holds the last
- * known data plus writes that have not reached Puter yet.
+ * known data plus writes that have not reached Everything yet.
  */
 const DB = 'fleet';
 const STORE = 'snapshots';

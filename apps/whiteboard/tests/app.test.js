@@ -26,7 +26,7 @@ import {
 
 const code = await appBundle();
 async function setup(
-  puter,
+  everything,
   {
     asyncDialogClose = false,
     imageClass = NativeImage,
@@ -69,7 +69,7 @@ async function setup(
   w.indexedDB = indexedDB || new IDBFactory();
   w.IDBKeyRange = IDBKeyRange;
   w.matchMedia = () => ({ matches: false, addEventListener() {} });
-  w.puter = puter;
+  w.everything = everything;
   w.Image = imageClass;
   const downloads = [];
   w.URL.createObjectURL = (blob) => {
@@ -709,7 +709,7 @@ test("built editors join the same board, show participants, synchronize text and
   const exec = ownerSDK.workers.exec;
   ownerSDK.workers.exec = async (url, options) => {
     if (url.endsWith("/health")) {
-      assert.equal(options.headers["x-puter-no-auth"], "1");
+      assert.equal(options.headers["x-everything-no-auth"], "1");
       return Response.json({ build: env.data.get(workerKey).build });
     }
     return exec(url, options);
@@ -2630,9 +2630,9 @@ test("joining from an invitation link the page opened with puts the keyboard on 
 
 test("failed sharing clears its progress status and leaves the personal board editable and retryable", async () => {
   const env = environment(),
-    puter = env.sdk(owner);
+    everything = env.sdk(owner);
   const build = "faceb00cfaceb00c";
-  await puter.kv.set("whiteboard-collaboration-worker-v1", {
+  await everything.kv.set("whiteboard-collaboration-worker-v1", {
     name: "whiteboard-test",
     server: "http://whiteboard-test.localhost:8443",
     path: "whiteboard/whiteboard-worker.js",
@@ -2640,12 +2640,12 @@ test("failed sharing clears its progress status and leaves the personal board ed
     builtAt: 200,
   });
   let requests = 0;
-  puter.workers.exec = async (url) => {
+  everything.workers.exec = async (url) => {
     if (url.endsWith("/health")) return Response.json({ build });
     requests++;
     return Response.json({ message: "Worker unavailable" }, { status: 500 });
   };
-  const app = await setup(puter);
+  const app = await setup(everything);
   app.w.fetch = async () =>
     new Response(`/* whiteboard-worker build=${build} at=200 */`);
   try {
@@ -2688,25 +2688,25 @@ test("failed sharing clears its progress status and leaves the personal board ed
 
 test("an owner can update an existing worker even when joining it fails", async () => {
   const env = environment(),
-    puter = env.sdk(owner);
+    everything = env.sdk(owner);
   const key = "whiteboard-collaboration-worker-v1";
   const path = "whiteboard/whiteboard-worker.js";
   const source = "/* whiteboard-worker build=faceb00cfaceb00c at=200 */";
-  await puter.kv.set(key, {
+  await everything.kv.set(key, {
     name: "whiteboard-test",
     server: "http://whiteboard-test.localhost:8443",
     path,
     build: "0000000000000000",
     builtAt: 100,
   });
-  puter.workers.exec = async (url) =>
+  everything.workers.exec = async (url) =>
     url.endsWith("/health")
       ? Response.json({ build: env.data.get(key).build })
       : Response.json(
           { message: "Old worker could not join." },
           { status: 500 },
         );
-  const app = await setup(puter);
+  const app = await setup(everything);
   app.w.fetch = async () => new Response(source);
   try {
     await app.click('[data-action="join-shared"]');
@@ -7466,7 +7466,7 @@ test("the headers show Sign in while signed out and the account once signed in",
 });
 const PROFILE_PICTURE =
   "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==";
-test("the avatar shows the Puter profile picture when the account has one", async () => {
+test("the avatar shows the Everything profile picture when the account has one", async () => {
   const app = await setup({
     env: "web",
     auth: {
@@ -7511,7 +7511,7 @@ test("a profile picture that is not image data falls back to the initial", async
     await app.close();
   }
 });
-test("closing Puter's sign-in window from the header says to sign in", async () => {
+test("closing Everything's sign-in window from the header says to sign in", async () => {
   const app = await setup({
     env: "web",
     auth: {
@@ -7527,13 +7527,13 @@ test("closing Puter's sign-in window from the header says to sign in", async () 
     assert.ok(app.doc.querySelector(".account-signin"));
     assert.equal(
       app.doc.querySelector("#toast").textContent,
-      "Sign in with Puter to continue.",
+      "Sign in with Everything to continue.",
     );
   } finally {
     await app.close();
   }
 });
-test("there is no separate Cloud boards list: Puter boards appear among your boards", async () => {
+test("there is no separate Cloud boards list: Everything boards appear among your boards", async () => {
   let signedIn = false;
   const app = await setup({
     env: "web",
@@ -7573,7 +7573,7 @@ test("there is no separate Cloud boards list: Puter boards appear among your boa
     await app.close();
   }
 });
-test("Puter app environment never renders a sign-out option", async () => {
+test("Everything app environment never renders a sign-out option", async () => {
   const app = await setup({
     env: "app",
     auth: {
@@ -7853,7 +7853,7 @@ test("website environment offers sign out in the account menu", async () => {
     button.click();
     await app.tick();
     const menu = app.doc.querySelector(".account-menu");
-    assert.match(menu.textContent, /Signed in with Puter/);
+    assert.match(menu.textContent, /Signed in with Everything/);
     assert.match(menu.textContent, /Sign out/);
   } finally {
     await app.close();
@@ -8662,7 +8662,7 @@ test("a frame placed with the frame tool presents after the board's frames", asy
   }
 });
 
-function pendingSignInPuter() {
+function pendingSignInEverything() {
   let signedIn = false,
     release = null;
   const writes = [];
@@ -8672,7 +8672,7 @@ function pendingSignInPuter() {
     get pending() {
       return !!release;
     },
-    puter: {
+    everything: {
       env: "web",
       auth: {
         isSignedIn: () => signedIn,
@@ -8697,11 +8697,11 @@ function pendingSignInPuter() {
   };
 }
 
-test("Save to Puter saves the board it was asked on, however the sign-in that it waited for ended", async () => {
+test("Save to Everything saves the board it was asked on, however the sign-in that it waited for ended", async () => {
   // Two sign-ins left open: one ended from the library, one from another board.
   for (const openAnother of [false, true]) {
-    const stub = pendingSignInPuter();
-    const app = await setup(stub.puter);
+    const stub = pendingSignInEverything();
+    const app = await setup(stub.everything);
     const { w, doc, click, tick } = app;
     const save = () =>
       doc.querySelector("#canvas").dispatchEvent(
@@ -16039,22 +16039,22 @@ test("comments retain drafts, attach to objects, reply, edit, resolve, restore a
 
 test("sharing adopts this device's comment identity and board JSON preserves discussions while selection JSON omits them", async () => {
   const env = environment(),
-    puter = env.sdk(owner),
+    everything = env.sdk(owner),
     build = "faceb00cfaceb00c";
-  await puter.fs.write("whiteboard/catalog.json", "[]");
-  await puter.kv.set("whiteboard-collaboration-worker-v1", {
+  await everything.fs.write("whiteboard/catalog.json", "[]");
+  await everything.kv.set("whiteboard-collaboration-worker-v1", {
     name: "whiteboard-test",
     server: "http://whiteboard-test.localhost:8443",
     path: "whiteboard/whiteboard-worker.js",
     build,
     builtAt: 200,
   });
-  const exec = puter.workers.exec;
-  puter.workers.exec = (url, options) =>
+  const exec = everything.workers.exec;
+  everything.workers.exec = (url, options) =>
     url.endsWith("/health")
       ? Promise.resolve(Response.json({ build }))
       : exec(url, options);
-  const app = await setup(puter),
+  const app = await setup(everything),
     { doc, w, click, tick } = app;
   w.fetch = async () =>
     new Response(`/* whiteboard-worker build=${build} at=200 */`);
@@ -16134,9 +16134,9 @@ test("sharing adopts this device's comment identity and board JSON preserves dis
     const opened = env.calls.filter((call) => call.op === "invite").length;
     // The optional check that follows an invitation may fail; the working
     // invitation keeps its message.
-    const shareExec = puter.workers.exec;
+    const shareExec = everything.workers.exec;
     let joins = 0;
-    puter.workers.exec = (url, options) =>
+    everything.workers.exec = (url, options) =>
       options?.body && JSON.parse(options.body).op === "join" && !joins++
         ? Promise.resolve(
             Response.json({ message: "Worker unavailable" }, { status: 500 }),
@@ -16155,7 +16155,7 @@ test("sharing adopts this device's comment identity and board JSON preserves dis
       await tick();
     assert.equal(joins, 1, "Handing out the link asks for the event grant");
     await tick();
-    puter.workers.exec = shareExec;
+    everything.workers.exec = shareExec;
     assert.equal(
       env.calls.filter((call) => call.op === "invite").length,
       opened,
@@ -23752,19 +23752,19 @@ test("a board opened in a second tab leaves alone the text still being typed in 
 
 test("local undo cannot change a shared board that is not connected", async () => {
   const env = environment(),
-    puter = env.sdk(owner);
+    everything = env.sdk(owner);
   const build = "faceb00cfaceb00c";
-  await puter.kv.set("whiteboard-collaboration-worker-v1", {
+  await everything.kv.set("whiteboard-collaboration-worker-v1", {
     name: "whiteboard-test",
     server: "http://whiteboard-test.localhost:8443",
     path: "whiteboard/whiteboard-worker.js",
     build,
     builtAt: 200,
   });
-  const exec = puter.workers.exec;
-  puter.workers.exec = async (url, options) =>
+  const exec = everything.workers.exec;
+  everything.workers.exec = async (url, options) =>
     url.endsWith("/health") ? Response.json({ build }) : exec(url, options);
-  const app = await setup(puter);
+  const app = await setup(everything);
   app.w.fetch = async () =>
     new Response(`/* whiteboard-worker build=${build} at=200 */`);
   try {
@@ -25137,7 +25137,7 @@ test("Enter, Edit, and Object properties act on the selected frame, not a note i
 
 test("opening another cloud board from the library sends the pending upload of the board left", async () => {
   const files = new Map();
-  const puter = {
+  const everything = {
     env: "web",
     auth: {
       isSignedIn: () => true,
@@ -25158,7 +25158,7 @@ test("opening another cloud board from the library sends the pending upload of t
       },
     },
   };
-  const app = await setup(puter);
+  const app = await setup(everything);
   const { doc, w, click, tick } = app;
   const key = (target, name) =>
     target.dispatchEvent(
@@ -25203,28 +25203,28 @@ test("opening another cloud board from the library sends the pending upload of t
         (path) => path.endsWith(".json") && path !== "whiteboard/catalog.json",
       );
     await click('[data-action="cloud-save"]');
-    await waitFor(() => boardFiles().length === 1, "Alpha saved to Puter");
+    await waitFor(() => boardFiles().length === 1, "Alpha saved to Everything");
     const alpha = boardFiles()[0];
     await click('[data-action="home"]');
     await click('[data-action="new"]');
     await click('[data-action="cloud-save"]');
-    await waitFor(() => boardFiles().length === 2, "Beta saved to Puter");
+    await waitFor(() => boardFiles().length === 2, "Beta saved to Everything");
     const beta = boardFiles().find((path) => path !== alpha);
-    await waitFor(() => status() === "Saved to Puter", "Beta status settled");
+    await waitFor(() => status() === "Saved to Everything", "Beta status settled");
     const id = (path) => path.slice("whiteboard/".length, -".json".length);
     assert.equal(cloudItems(id(beta)), 0);
     await addNote();
-    // A board kept in Puter says its edit is on its way there.
-    for (let n = 0; n < 50 && status() !== "Saving to Puter…"; n++)
+    // A board kept in Everything says its edit is on its way there.
+    for (let n = 0; n < 50 && status() !== "Saving to Everything…"; n++)
       await new Promise((r) => setTimeout(r, 20));
-    assert.equal(status(), "Saving to Puter…");
+    assert.equal(status(), "Saving to Everything…");
     // Alpha is opened from the library within Beta's upload delay.
     await openAlpha();
     assert.equal(doc.querySelector("#board-title").value, "Alpha");
     await addNote();
     await new Promise((r) => setTimeout(r, 2500));
     assert.equal(cloudItems(id(alpha)), 1);
-    assert.equal(cloudItems(id(beta)), 1, "Beta's edit reached Puter");
+    assert.equal(cloudItems(id(beta)), 1, "Beta's edit reached Everything");
     const unload = new w.Event("beforeunload", { cancelable: true });
     w.dispatchEvent(unload);
     assert.equal(unload.defaultPrevented, false);
@@ -25233,9 +25233,9 @@ test("opening another cloud board from the library sends the pending upload of t
   }
 });
 
-test("a board kept in Puter goes on uploading after a reload, unless Puter holds a newer copy", async () => {
+test("a board kept in Everything goes on uploading after a reload, unless Everything holds a newer copy", async () => {
   const files = new Map();
-  const puter = {
+  const everything = {
     env: "web",
     auth: {
       isSignedIn: () => true,
@@ -25258,7 +25258,7 @@ test("a board kept in Puter goes on uploading after a reload, unless Puter holds
   };
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
   const session = async (indexedDB) => {
-    const app = await setup(puter, { indexedDB });
+    const app = await setup(everything, { indexedDB });
     const { doc, w, tick } = app;
     const status = () => doc.querySelector("#save-state")?.textContent;
     const waitFor = async (fn, what) => {
@@ -25293,35 +25293,35 @@ test("a board kept in Puter goes on uploading after a reload, unless Puter holds
     title.value = "Alpha";
     title.dispatchEvent(new first.app.w.Event("change", { bubbles: true }));
     await first.app.click('[data-action="cloud-save"]');
-    await first.waitFor(() => boardFile(), "Alpha saved to Puter");
-    await first.waitFor(() => first.status() === "Saved to Puter", "Saved");
+    await first.waitFor(() => boardFile(), "Alpha saved to Everything");
+    await first.waitFor(() => first.status() === "Saved to Everything", "Saved");
     assert.equal(cloudBoard().items.length, 0);
   } finally {
     await first.app.close();
   }
   const indexedDB = first.app.w.indexedDB;
-  // Reloaded: the library says the board is in Puter, and its edits go there.
+  // Reloaded: the library says the board is in Everything, and its edits go there.
   let second = await session(indexedDB);
   try {
     const { app, doc, status, waitFor, addNote } = second;
     await waitFor(
       () => doc.querySelector('.card-storage[data-storage="cloud"]'),
-      "The card says the board is in Puter",
+      "The card says the board is in Everything",
     );
     assert.equal(
       doc.querySelector(".card-storage").textContent.trim(),
-      "Saved to Puter",
+      "Saved to Everything",
     );
     await app.click("[data-open]");
-    assert.equal(status(), "Saved to Puter");
+    assert.equal(status(), "Saved to Everything");
     assert.equal(
       doc.querySelector(".board-tag").textContent,
-      "Personal board · Saved to Puter",
+      "Personal board · Saved to Everything",
     );
     await addNote();
     await wait(2500);
-    assert.equal(cloudBoard().items.length, 1, "The edit reached Puter");
-    assert.equal(status(), "Saved to Puter");
+    assert.equal(cloudBoard().items.length, 1, "The edit reached Everything");
+    assert.equal(status(), "Saved to Everything");
   } finally {
     await second.app.close();
   }
@@ -25335,33 +25335,33 @@ test("a board kept in Puter goes on uploading after a reload, unless Puter holds
     const { app, doc, status, addNote } = third;
     await third.waitFor(
       () => doc.querySelector('.card-storage[data-storage="cloud"]'),
-      "The card still says the board is in Puter",
+      "The card still says the board is in Everything",
     );
     await app.click("[data-open]");
     await addNote();
     await wait(2500);
-    assert.equal(cloudBoard().items.length, 2, "Puter's newer copy is kept");
-    assert.equal(status(), "Newer copy in Puter");
+    assert.equal(cloudBoard().items.length, 2, "Everything's newer copy is kept");
+    assert.equal(status(), "Newer copy in Everything");
     assert.equal(
       doc.querySelector(".board-tag").textContent,
       "Personal board · On this device",
     );
     assert.match(doc.querySelector("#toast").textContent, /newer copy/);
-    // The notice opens Puter's copy itself. This device's copy, edited just
+    // The notice opens Everything's copy itself. This device's copy, edited just
     // now and so the more recent, stays as a board of its own.
     const open = doc.querySelector("#toast .toast-action");
     assert.equal(open.textContent, "Open newer copy");
     open.click();
     await third.waitFor(
       () => doc.querySelector('#board-outline [data-id="other-device"]'),
-      "Puter's copy, with the other device's object, is open",
+      "Everything's copy, with the other device's object, is open",
     );
     assert.equal(doc.querySelectorAll("#board-outline [data-id]").length, 2);
     assert.equal(doc.querySelector("#board-title").value, "Alpha");
-    assert.equal(status(), "Saved to Puter");
+    assert.equal(status(), "Saved to Everything");
     assert.equal(
       doc.querySelector(".board-tag").textContent,
-      "Personal board · Saved to Puter",
+      "Personal board · Saved to Everything",
     );
     await app.click('[data-action="home"]');
     const titles = [...doc.querySelectorAll(".board-card h3")].map(
@@ -25373,10 +25373,10 @@ test("a board kept in Puter goes on uploading after a reload, unless Puter holds
   }
 });
 
-test("a board kept in Puter checks for a newer copy before every upload, and leaving it unedited uploads nothing", async () => {
+test("a board kept in Everything checks for a newer copy before every upload, and leaving it unedited uploads nothing", async () => {
   const files = new Map();
   let writes = 0;
-  const puter = {
+  const everything = {
     env: "web",
     auth: {
       isSignedIn: () => true,
@@ -25399,7 +25399,7 @@ test("a board kept in Puter checks for a newer copy before every upload, and lea
     },
   };
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
-  const app = await setup(puter);
+  const app = await setup(everything);
   const { doc, w, tick } = app;
   const status = () => doc.querySelector("#save-state")?.textContent;
   const addNote = async () => {
@@ -25424,10 +25424,10 @@ test("a board kept in Puter checks for a newer copy before every upload, and lea
   try {
     await app.click('[data-action="new"]');
     await app.click('[data-action="cloud-save"]');
-    for (let n = 0; n < 200 && status() !== "Saved to Puter"; n++) await tick();
+    for (let n = 0; n < 200 && status() !== "Saved to Everything"; n++) await tick();
     await addNote();
     await wait(2500);
-    assert.equal(cloudBoard().items.length, 1, "The edit reached Puter");
+    assert.equal(cloudBoard().items.length, 1, "The edit reached Everything");
     // Opening the board again and leaving it without an edit writes nothing.
     const uploaded = writes;
     for (let n = 0; n < 2; n++) {
@@ -25446,16 +25446,16 @@ test("a board kept in Puter checks for a newer copy before every upload, and lea
     await wait(2500);
     assert.ok(
       cloudBoard().items.some((item) => item.id === "other-device"),
-      "Puter's newer copy is kept",
+      "Everything's newer copy is kept",
     );
-    assert.equal(status(), "Newer copy in Puter");
+    assert.equal(status(), "Newer copy in Everything");
     assert.match(doc.querySelector("#toast").textContent, /newer copy/);
   } finally {
     await app.close();
   }
 });
 
-test("the check for a newer copy in Puter downloads the board only when its file changed", async () => {
+test("the check for a newer copy in Everything downloads the board only when its file changed", async () => {
   const files = new Map(),
     versions = new Map();
   let clock = 0,
@@ -25465,7 +25465,7 @@ test("the check for a newer copy in Puter downloads the board only when its file
     modified: versions.get(path),
     size: files.get(path).length,
   });
-  const puter = {
+  const everything = {
     env: "web",
     auth: {
       isSignedIn: () => true,
@@ -25493,7 +25493,7 @@ test("the check for a newer copy in Puter downloads the board only when its file
     },
   };
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
-  const app = await setup(puter);
+  const app = await setup(everything);
   const { doc, w, tick } = app;
   const status = () => doc.querySelector("#save-state")?.textContent;
   const addNote = async () => {
@@ -25519,12 +25519,12 @@ test("the check for a newer copy in Puter downloads the board only when its file
   try {
     await app.click('[data-action="new"]');
     await app.click('[data-action="cloud-save"]');
-    for (let n = 0; n < 200 && status() !== "Saved to Puter"; n++) await tick();
+    for (let n = 0; n < 200 && status() !== "Saved to Everything"; n++) await tick();
     await addNote();
     const before = reads;
     await addNote();
     await addNote();
-    assert.equal(cloudBoard().items.length, 3, "The edits reached Puter");
+    assert.equal(cloudBoard().items.length, 3, "The edits reached Everything");
     assert.equal(reads, before, "Unchanged since this page wrote it");
     // Another device saves a newer copy: the next edit reads it and keeps it.
     const newer = { ...cloudBoard(), updated: Date.now() + 1000 };
@@ -25534,7 +25534,7 @@ test("the check for a newer copy in Puter downloads the board only when its file
     await addNote();
     assert.equal(reads, before + 1);
     assert.ok(cloudBoard().items.some((item) => item.id === "other-device"));
-    assert.equal(status(), "Newer copy in Puter");
+    assert.equal(status(), "Newer copy in Everything");
   } finally {
     await app.close();
   }
@@ -25543,7 +25543,7 @@ test("the check for a newer copy in Puter downloads the board only when its file
 test("an upload whose answer was lost is not taken for another device's newer copy", async () => {
   const files = new Map();
   let failNext = false;
-  const puter = {
+  const everything = {
     env: "web",
     auth: {
       isSignedIn: () => true,
@@ -25570,7 +25570,7 @@ test("an upload whose answer was lost is not taken for another device's newer co
     },
   };
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
-  const app = await setup(puter);
+  const app = await setup(everything);
   const { doc, w, tick } = app;
   const status = () => doc.querySelector("#save-state")?.textContent;
   const addNote = async () => {
@@ -25600,26 +25600,26 @@ test("an upload whose answer was lost is not taken for another device's newer co
   try {
     await app.click('[data-action="new"]');
     await app.click('[data-action="cloud-save"]');
-    for (let n = 0; n < 200 && status() !== "Saved to Puter"; n++) await tick();
+    for (let n = 0; n < 200 && status() !== "Saved to Everything"; n++) await tick();
     await addNote();
     failNext = true;
     await addNote();
     assert.equal(status(), "Cloud save failed");
     await addNote();
-    assert.equal(status(), "Saved to Puter");
+    assert.equal(status(), "Saved to Everything");
     assert.equal(cloudBoard().items.length, 3, "The next edit is uploaded");
   } finally {
     await app.close();
   }
 });
 
-test("an edit made offline does not write over another device's newer copy in Puter", async () => {
+test("an edit made offline does not write over another device's newer copy in Everything", async () => {
   const files = new Map();
   let offline = false;
   const down = () => {
     if (offline) throw Error("Network down");
   };
-  const puter = {
+  const everything = {
     env: "web",
     auth: {
       isSignedIn: () => true,
@@ -25648,7 +25648,7 @@ test("an edit made offline does not write over another device's newer copy in Pu
     },
   };
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
-  const app = await setup(puter);
+  const app = await setup(everything);
   const { doc, w, tick } = app;
   const status = () => doc.querySelector("#save-state")?.textContent;
   const addNote = async () => {
@@ -25673,7 +25673,7 @@ test("an edit made offline does not write over another device's newer copy in Pu
   try {
     await app.click('[data-action="new"]');
     await app.click('[data-action="cloud-save"]');
-    for (let n = 0; n < 200 && status() !== "Saved to Puter"; n++) await tick();
+    for (let n = 0; n < 200 && status() !== "Saved to Everything"; n++) await tick();
     await addNote();
     // Another device saves its edit, then this one edits offline.
     const other = JSON.parse(files.get(path()));
@@ -25686,7 +25686,7 @@ test("an edit made offline does not write over another device's newer copy in Pu
     assert.equal(status(), "Cloud save failed");
     offline = false;
     await addNote();
-    assert.equal(status(), "Newer copy in Puter");
+    assert.equal(status(), "Newer copy in Everything");
     assert.equal(JSON.parse(files.get(path())).title, "Edited on the phone");
   } finally {
     await app.close();
@@ -25701,7 +25701,7 @@ test("library board counts group their digits", async () => {
   const catalog = JSON.stringify(
     ids.map((id, n) => ({ id, title: `Cloud ${n}` })),
   );
-  const puter = {
+  const everything = {
     env: "web",
     auth: {
       isSignedIn: () => true,
@@ -25722,7 +25722,7 @@ test("library board counts group their digits", async () => {
       },
     },
   };
-  const app = await setup(puter);
+  const app = await setup(everything);
   try {
     const { doc, tick } = app;
     for (let n = 0; n < 200 && !doc.querySelector("[data-open-cloud]"); n++)
@@ -25744,7 +25744,7 @@ test("library board counts group their digits", async () => {
   }
 });
 
-test("boards kept only in Puter are paged and counted with the local ones", async () => {
+test("boards kept only in Everything are paged and counted with the local ones", async () => {
   const ids = Array.from(
     { length: 450 },
     (_, n) => `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`,
@@ -25755,7 +25755,7 @@ test("boards kept only in Puter are paged and counted with the local ones", asyn
       JSON.stringify(ids.map((id, n) => ({ id, title: `Cloud ${n}` }))),
     ],
   ]);
-  const puter = {
+  const everything = {
     env: "web",
     auth: {
       isSignedIn: () => true,
@@ -25776,7 +25776,7 @@ test("boards kept only in Puter are paged and counted with the local ones", asyn
       },
     },
   };
-  const app = await setup(puter);
+  const app = await setup(everything);
   try {
     const { doc, tick } = app;
     for (let n = 0; n < 200 && !doc.querySelector("[data-open-cloud]"); n++)
@@ -25805,7 +25805,7 @@ test("boards kept only in Puter are paged and counted with the local ones", asyn
   }
 });
 
-test("sorted by name, boards kept only in Puter take their place among the local ones", async () => {
+test("sorted by name, boards kept only in Everything take their place among the local ones", async () => {
   const ids = [crypto.randomUUID(), crypto.randomUUID()];
   const files = new Map([
     [
@@ -25816,7 +25816,7 @@ test("sorted by name, boards kept only in Puter take their place among the local
       ]),
     ],
   ]);
-  const puter = {
+  const everything = {
     env: "web",
     auth: {
       isSignedIn: () => true,
@@ -25837,7 +25837,7 @@ test("sorted by name, boards kept only in Puter take their place among the local
       },
     },
   };
-  const app = await setup(puter);
+  const app = await setup(everything);
   try {
     const { doc, tick, click, w } = app;
     for (let n = 0; n < 200 && !doc.querySelector("[data-open-cloud]"); n++)
@@ -25897,9 +25897,9 @@ test("sorted by name, boards kept only in Puter take their place among the local
   }
 });
 
-test("boards kept only in Puter are listed with the local ones and open from their card", async () => {
+test("boards kept only in Everything are listed with the local ones and open from their card", async () => {
   const remote = board("Remote plan");
-  remote.items = [item("note", 0, 0, { text: "From Puter" })];
+  remote.items = [item("note", 0, 0, { text: "From Everything" })];
   const files = new Map([
     [
       "whiteboard/catalog.json",
@@ -25907,7 +25907,7 @@ test("boards kept only in Puter are listed with the local ones and open from the
     ],
     [`whiteboard/${remote.id}.json`, JSON.stringify(remote)],
   ]);
-  const puter = {
+  const everything = {
     env: "web",
     auth: {
       isSignedIn: () => true,
@@ -25928,7 +25928,7 @@ test("boards kept only in Puter are listed with the local ones and open from the
       },
     },
   };
-  const app = await setup(puter);
+  const app = await setup(everything);
   try {
     const { doc, tick } = app;
     const waitFor = async (fn, what) => {
@@ -25937,7 +25937,7 @@ test("boards kept only in Puter are listed with the local ones and open from the
     };
     await waitFor(
       () => doc.querySelector("[data-open-cloud]"),
-      "The board in Puter has a card",
+      "The board in Everything has a card",
     );
     const card = doc.querySelector(".cloud-card");
     assert.equal(card.querySelector("h3").textContent, "Remote plan");
@@ -25954,7 +25954,7 @@ test("boards kept only in Puter are listed with the local ones and open from the
     );
     assert.equal(
       card.querySelector(".card-storage").textContent.trim(),
-      "Saved to Puter",
+      "Saved to Everything",
     );
     // There is no separate Cloud boards list anywhere: the card is the way in.
     assert.equal(doc.querySelector('[data-action="cloud"]'), null);
@@ -25976,7 +25976,7 @@ test("boards kept only in Puter are listed with the local ones and open from the
     );
     assert.equal(
       doc.querySelector(".board-tag").textContent,
-      "Personal board · Saved to Puter",
+      "Personal board · Saved to Everything",
     );
     assert.equal(doc.querySelectorAll("#board-outline [data-id]").length, 1);
     await app.click('[data-action="home"]');
@@ -25984,9 +25984,9 @@ test("boards kept only in Puter are listed with the local ones and open from the
     assert.equal(doc.querySelector("[data-open-cloud]"), null);
     assert.equal(
       doc.querySelector(".card-storage").textContent.trim(),
-      "Saved to Puter",
+      "Saved to Everything",
     );
-    // A rename from the card's options reaches the copy in Puter and its
+    // A rename from the card's options reaches the copy in Everything and its
     // catalog, so other devices list the new name.
     await app.click("[data-more]");
     doc.querySelector("#rename").value = "Remote plan v2";
@@ -25995,23 +25995,23 @@ test("boards kept only in Puter are listed with the local ones and open from the
       () =>
         JSON.parse(files.get(`whiteboard/${remote.id}.json`)).title ===
         "Remote plan v2",
-      "The board file in Puter carries the new name",
+      "The board file in Everything carries the new name",
     );
     await waitFor(
       () =>
         JSON.parse(files.get("whiteboard/catalog.json")).some(
           (entry) => entry.id === remote.id && entry.title === "Remote plan v2",
         ),
-      "The catalog in Puter carries the new name",
+      "The catalog in Everything carries the new name",
     );
   } finally {
     await app.close();
   }
 });
 
-test("signing out uploads an edit still waiting for its Puter save", async () => {
+test("signing out uploads an edit still waiting for its Everything save", async () => {
   const remote = board("Remote plan");
-  remote.items = [item("note", 0, 0, { text: "From Puter" })];
+  remote.items = [item("note", 0, 0, { text: "From Everything" })];
   const files = new Map([
     [
       "whiteboard/catalog.json",
@@ -26020,7 +26020,7 @@ test("signing out uploads an edit still waiting for its Puter save", async () =>
     [`whiteboard/${remote.id}.json`, JSON.stringify(remote)],
   ]);
   let signedIn = true;
-  const puter = {
+  const everything = {
     env: "web",
     auth: {
       isSignedIn: () => signedIn,
@@ -26042,7 +26042,7 @@ test("signing out uploads an edit still waiting for its Puter save", async () =>
       },
     },
   };
-  const app = await setup(puter);
+  const app = await setup(everything);
   try {
     const { doc, w, tick } = app;
     const waitFor = async (fn, what) => {
@@ -26051,7 +26051,7 @@ test("signing out uploads an edit still waiting for its Puter save", async () =>
     };
     await waitFor(
       () => doc.querySelector("[data-open-cloud]"),
-      "The board in Puter has a card",
+      "The board in Everything has a card",
     );
     await app.click("[data-open-cloud]");
     await waitFor(
@@ -26069,12 +26069,12 @@ test("signing out uploads an edit still waiting for its Puter save", async () =>
       () =>
         JSON.parse(files.get(`whiteboard/${remote.id}.json`)).title ===
         "Renamed before leaving",
-      "The waiting edit reached Puter before the account left",
+      "The waiting edit reached Everything before the account left",
     );
     await waitFor(
       () =>
         doc.querySelector("#save-state").textContent === "Saved on this device",
-      "The header no longer says it is saving to Puter",
+      "The header no longer says it is saving to Everything",
     );
   } finally {
     await app.close();
@@ -26180,9 +26180,9 @@ test("Enter and Space on the Preferences gear are left to the browser", async ()
   }
 });
 
-test("deleting a board kept in Puter from the trash says its copy there stays", async () => {
+test("deleting a board kept in Everything from the trash says its copy there stays", async () => {
   const remote = board("Remote plan");
-  remote.items = [item("note", 0, 0, { text: "From Puter" })];
+  remote.items = [item("note", 0, 0, { text: "From Everything" })];
   const files = new Map([
     [
       "whiteboard/catalog.json",
@@ -26190,7 +26190,7 @@ test("deleting a board kept in Puter from the trash says its copy there stays", 
     ],
     [`whiteboard/${remote.id}.json`, JSON.stringify(remote)],
   ]);
-  const puter = {
+  const everything = {
     env: "web",
     auth: {
       isSignedIn: () => true,
@@ -26211,7 +26211,7 @@ test("deleting a board kept in Puter from the trash says its copy there stays", 
       },
     },
   };
-  const app = await setup(puter);
+  const app = await setup(everything);
   try {
     const { doc, tick, click } = app;
     const waitFor = async (fn, what) => {
@@ -26230,7 +26230,7 @@ test("deleting a board kept in Puter from the trash says its copy there stays", 
     await click("#remove-board");
     assert.match(
       doc.querySelector("dialog[open]").textContent,
-      /The copy saved in Puter is kept\./,
+      /The copy saved in Everything is kept\./,
     );
     await click("#confirm-delete");
     await click('[data-filter="trash"]');
@@ -26238,7 +26238,7 @@ test("deleting a board kept in Puter from the trash says its copy there stays", 
     await click("#purge-board");
     assert.match(
       doc.querySelector("dialog[open]").textContent,
-      /The copy saved in Puter is kept\./,
+      /The copy saved in Everything is kept\./,
       "Deleting permanently says the same",
     );
   } finally {
@@ -26246,30 +26246,30 @@ test("deleting a board kept in Puter from the trash says its copy there stays", 
   }
 });
 
-test("a Puter drive write that fails after the shared room exists leaves the board shared", async () => {
+test("an Everything drive write that fails after the shared room exists leaves the board shared", async () => {
   const env = environment(),
-    puter = env.sdk(owner),
+    everything = env.sdk(owner),
     build = "faceb00cfaceb00c";
-  await puter.fs.write("whiteboard/catalog.json", "[]");
-  await puter.kv.set("whiteboard-collaboration-worker-v1", {
+  await everything.fs.write("whiteboard/catalog.json", "[]");
+  await everything.kv.set("whiteboard-collaboration-worker-v1", {
     name: "whiteboard-test",
     server: "http://whiteboard-test.localhost:8443",
     path: "whiteboard/whiteboard-worker.js",
     build,
     builtAt: 200,
   });
-  const exec = puter.workers.exec;
-  puter.workers.exec = (url, options) =>
+  const exec = everything.workers.exec;
+  everything.workers.exec = (url, options) =>
     url.endsWith("/health")
       ? Promise.resolve(Response.json({ build }))
       : exec(url, options);
-  const write = puter.fs.write.bind(puter.fs);
-  puter.fs.write = (path, ...rest) => {
+  const write = everything.fs.write.bind(everything.fs);
+  everything.fs.write = (path, ...rest) => {
     if (/^whiteboard\/[0-9a-f-]{36}\.json$/.test(path))
       return Promise.reject(Error("Drive is full"));
     return write(path, ...rest);
   };
-  const app = await setup(puter),
+  const app = await setup(everything),
     { doc, w, click, tick } = app;
   w.fetch = async () =>
     new Response(`/* whiteboard-worker build=${build} at=200 */`);
@@ -26288,7 +26288,7 @@ test("a Puter drive write that fails after the shared room exists leaves the boa
     );
     assert.match(
       doc.querySelector("#toast").textContent,
-      /copy in Puter could not be updated/,
+      /copy in Everything could not be updated/,
     );
   } finally {
     await app.close();
@@ -26584,7 +26584,7 @@ test("a board card shows the year when the board was last edited in another year
     ],
     [`whiteboard/${remote.id}.json`, JSON.stringify(remote)],
   ]);
-  const puter = {
+  const everything = {
     env: "web",
     auth: {
       isSignedIn: () => true,
@@ -26605,7 +26605,7 @@ test("a board card shows the year when the board was last edited in another year
       },
     },
   };
-  const app = await setup(puter);
+  const app = await setup(everything);
   try {
     const { doc, tick, click } = app;
     const waitFor = async (fn, what) => {
@@ -29026,9 +29026,9 @@ test("older shared versions can be shown after the most recent ones", async () =
     1,
   );
   const [a] = shared.apps;
-  const exec = a.w.puter.workers.exec;
+  const exec = a.w.everything.workers.exec;
   const version = (at) => ({ at, edits: 1, authors: ["Alice"] });
-  a.w.puter.workers.exec = (url, options) => {
+  a.w.everything.workers.exec = (url, options) => {
     const body = JSON.parse(options.body);
     if (body.op !== "history.list") return exec(url, options);
     const page =
@@ -29057,7 +29057,7 @@ test("older shared versions can be shown after the most recent ones", async () =
     // Let the dialog's other lists finish before the window closes.
     for (let n = 0; n < 10; n++) await a.tick();
   } finally {
-    a.w.puter.workers.exec = exec;
+    a.w.everything.workers.exec = exec;
     await shared.close();
   }
 });
@@ -29071,8 +29071,8 @@ test("restoring a version saved on this device records no shared version's time"
   );
   const [a] = shared.apps;
   const sent = [];
-  const exec = a.w.puter.workers.exec;
-  a.w.puter.workers.exec = (url, options) => {
+  const exec = a.w.everything.workers.exec;
+  a.w.everything.workers.exec = (url, options) => {
     const body = JSON.parse(options.body);
     if (body.op === "history.restored") sent.push(body);
     return exec(url, options);
@@ -29092,7 +29092,7 @@ test("restoring a version saved on this device records no shared version's time"
     assert.equal(sent[0].scope, "board");
     for (let n = 0; n < 10; n++) await a.tick();
   } finally {
-    a.w.puter.workers.exec = exec;
+    a.w.everything.workers.exec = exec;
     await shared.close();
   }
 });
@@ -30477,9 +30477,9 @@ test("the tour offered while a shared board reconnects follows the person's role
     b.w.localStorage.removeItem("whiteboard-tour-v1");
     // The board opens from this device while the server has not yet
     // answered, so the role is the one it last gave.
-    const exec = b.w.puter.workers.exec;
+    const exec = b.w.everything.workers.exec;
     const held = [];
-    b.w.puter.workers.exec = (url, options) =>
+    b.w.everything.workers.exec = (url, options) =>
       new Promise((resolve) => held.push(() => resolve(exec(url, options))));
     await b.click("[data-open]");
     await shared.until(() => b.doc.querySelector("#canvas"), "Board opened");
@@ -30495,7 +30495,7 @@ test("the tour offered while a shared board reconnects follows the person's role
       b.doc.querySelector("#tour-next").click();
     }
     assert.equal(titles.length, 8, titles.join(" / "));
-    b.w.puter.workers.exec = exec;
+    b.w.everything.workers.exec = exec;
     for (const release of held) release();
     await new Promise((r) => setTimeout(r, 300));
   } finally {
@@ -30526,9 +30526,9 @@ test("the comments panel follows a change between viewer and commenter access", 
     assert.equal(b.doc.querySelector("#comment-new").disabled, true);
     // Only a presence check-in reports the change; no synchronization
     // redraws the board meanwhile.
-    const exec = b.w.puter.workers.exec;
+    const exec = b.w.everything.workers.exec;
     let held = [];
-    b.w.puter.workers.exec = (url, options) =>
+    b.w.everything.workers.exec = (url, options) =>
       JSON.parse(options.body).op === "sync"
         ? new Promise((resolve) => held.push(() => resolve(exec(url, options))))
         : exec(url, options);
@@ -30537,7 +30537,7 @@ test("the comments panel follows a change between viewer and commenter access", 
       () => !b.doc.querySelector("#comment-new").disabled,
       "Commenters can start a discussion without redrawing the board",
     );
-    b.w.puter.workers.exec = exec;
+    b.w.everything.workers.exec = exec;
     for (const release of held) release();
     held = [];
     await role("viewer");
@@ -30565,8 +30565,8 @@ test("removing someone from the Participants dialog takes a second press, and sa
       );
     await shared.until(() => select(), "A member who can be changed");
     const roles = [];
-    const exec = a.w.puter.workers.exec;
-    a.w.puter.workers.exec = (url, options) => {
+    const exec = a.w.everything.workers.exec;
+    a.w.everything.workers.exec = (url, options) => {
       const body = JSON.parse(options.body);
       if (body.op === "role") roles.push(body.role);
       return exec(url, options);
@@ -30607,7 +30607,7 @@ test("removing someone from the Participants dialog takes a second press, and sa
         /Access changed/.test(b.doc.querySelector("#save-state").textContent),
       "Bob loses access",
     );
-    a.w.puter.workers.exec = exec;
+    a.w.everything.workers.exec = exec;
   } finally {
     await shared.close();
   }
@@ -30619,10 +30619,10 @@ test("the Participants dialog shows when a guest's access ends, and renews it", 
   ]);
   const [a] = shared.apps;
   try {
-    const exec = a.w.puter.workers.exec;
+    const exec = a.w.everything.workers.exec;
     const renewed = [];
     const until = new Date(2030, 0, 15, 12).getTime();
-    a.w.puter.workers.exec = async (url, options) => {
+    a.w.everything.workers.exec = async (url, options) => {
       const body = JSON.parse(options.body);
       if (body.op === "renew") {
         renewed.push(body.uuid);
@@ -30689,7 +30689,7 @@ test("the Participants dialog shows when a guest's access ends, and renews it", 
     );
     assert.equal(renewed.length, 1);
     assert.equal(note(bob), "Access until Jan 15, 2030");
-    a.w.puter.workers.exec = exec;
+    a.w.everything.workers.exec = exec;
     a.doc.querySelector("dialog").close();
     for (let n = 0; n < 10; n++) await a.tick();
   } finally {
@@ -30710,8 +30710,8 @@ test("the Participants dialog lists board access without reading it all out, and
     const list = a.doc.querySelector("#participant-list");
     assert.equal(list.closest("[aria-live]"), null);
     a.doc.querySelector("dialog").close();
-    const exec = a.w.puter.workers.exec;
-    a.w.puter.workers.exec = (url, options) =>
+    const exec = a.w.everything.workers.exec;
+    a.w.everything.workers.exec = (url, options) =>
       JSON.parse(options.body).op === "members"
         ? Promise.resolve(
             new Response(JSON.stringify({ message: "Board not found." }), {
@@ -30728,7 +30728,7 @@ test("the Participants dialog lists board access without reading it all out, and
       a.doc.querySelector('#participant-list [role="alert"]').textContent,
       /Board not found/,
     );
-    a.w.puter.workers.exec = exec;
+    a.w.everything.workers.exec = exec;
     a.doc.querySelector("dialog").close();
     for (let n = 0; n < 10; n++) await a.tick();
   } finally {
@@ -30903,15 +30903,15 @@ test("sharing while a shared board is still connecting says so", async () => {
     update: encode(seed.update()),
   });
   seed.destroy();
-  const puter = env.sdk(owner);
-  const exec = puter.workers.exec;
+  const everything = env.sdk(owner);
+  const exec = everything.workers.exec;
   let release;
   const held = new Promise((resolve) => (release = resolve));
-  puter.workers.exec = async (url, options) => {
+  everything.workers.exec = async (url, options) => {
     if (options?.body && JSON.parse(options.body).op === "join") await held;
     return exec(url, options);
   };
-  const app = await setup(puter);
+  const app = await setup(everything);
   try {
     await app.click('[data-action="join-shared"]');
     app.doc.querySelector("#join-link").value =
@@ -31191,17 +31191,17 @@ test("a shared board with a file that cannot be downloaded still opens and saves
 
 test("a share whose files fail to upload leaves no shared copy behind", async () => {
   const env = environment(),
-    puter = env.sdk(owner),
+    everything = env.sdk(owner),
     build = "faceb00cfaceb00c";
-  await puter.kv.set("whiteboard-collaboration-worker-v1", {
+  await everything.kv.set("whiteboard-collaboration-worker-v1", {
     name: "whiteboard-test",
     server: "http://whiteboard-test.localhost:8443",
     path: "whiteboard/whiteboard-worker.js",
     build,
     builtAt: 200,
   });
-  const exec = puter.workers.exec;
-  puter.workers.exec = (url, options) =>
+  const exec = everything.workers.exec;
+  everything.workers.exec = (url, options) =>
     url.endsWith("/health")
       ? Promise.resolve(Response.json({ build }))
       : options?.body && JSON.parse(options.body).op === "asset.put"
@@ -31209,7 +31209,7 @@ test("a share whose files fail to upload leaves no shared copy behind", async ()
             Response.json({ message: "Storage unavailable" }, { status: 500 }),
           )
         : exec(url, options);
-  const app = await setup(puter);
+  const app = await setup(everything);
   app.w.fetch = async () =>
     new Response(`/* whiteboard-worker build=${build} at=200 */`);
   try {
@@ -31717,9 +31717,9 @@ test("reopening a shared board while it connects leaves one live session", async
     await app.click('[data-action="home"]');
     for (let n = 0; n < 10; n++) await app.tick();
     assert.equal(presences().length, 0);
-    const puter = app.w.puter,
-      getUser = puter.auth.getUser;
-    puter.auth.getUser = async () => {
+    const everything = app.w.everything,
+      getUser = everything.auth.getUser;
+    everything.auth.getUser = async () => {
       await new Promise((r) => setTimeout(r, 300));
       return getUser();
     };
@@ -31728,7 +31728,7 @@ test("reopening a shared board while it connects leaves one live session", async
     await app.click('[data-action="home"]');
     app.doc.querySelector("[data-open]").click();
     for (let n = 0; n < 80; n++) await app.tick();
-    puter.auth.getUser = getUser;
+    everything.auth.getUser = getUser;
     assert.equal(presences().length, 1, "one session checks in");
     await app.click('[data-action="home"]');
     for (let n = 0; n < 40; n++) await app.tick();
@@ -32022,7 +32022,7 @@ test("the participants button says when no one's live activity can be shown, unt
     assert.match(button().title, /saved edits still appear/);
     // Peer links connect once both serve them and check in to share how.
     const hub = createPeerHub();
-    for (const app of shared.apps) app.w.puter.peer = hub.peer;
+    for (const app of shared.apps) app.w.everything.peer = hub.peer;
     const end = Date.now() + 10000;
     while (button().querySelector(".live-note") && Date.now() < end) {
       for (const app of [a, b]) app.w.dispatchEvent(new app.w.Event("online"));
@@ -32038,21 +32038,21 @@ test("the participants button says when no one's live activity can be shown, unt
 
 test("a board reopened while it is being shared stays read-only until the shared copy takes over", async () => {
   const env = environment(),
-    puter = env.sdk(owner),
+    everything = env.sdk(owner),
     build = "faceb00cfaceb00c";
-  await puter.fs.write("whiteboard/catalog.json", "[]");
-  await puter.kv.set("whiteboard-collaboration-worker-v1", {
+  await everything.fs.write("whiteboard/catalog.json", "[]");
+  await everything.kv.set("whiteboard-collaboration-worker-v1", {
     name: "whiteboard-test",
     server: "http://whiteboard-test.localhost:8443",
     path: "whiteboard/whiteboard-worker.js",
     build,
     builtAt: 200,
   });
-  const exec = puter.workers.exec;
+  const exec = everything.workers.exec;
   let release, entered;
   const held = new Promise((r) => (release = r));
   const creating = new Promise((r) => (entered = r));
-  puter.workers.exec = async (url, options) => {
+  everything.workers.exec = async (url, options) => {
     if (url.endsWith("/health")) return Response.json({ build });
     if (options?.body && JSON.parse(options.body).op === "create") {
       entered();
@@ -32060,7 +32060,7 @@ test("a board reopened while it is being shared stays read-only until the shared
     }
     return exec(url, options);
   };
-  const app = await setup(puter),
+  const app = await setup(everything),
     { doc, w, click, tick } = app;
   w.fetch = async () =>
     new Response(`/* whiteboard-worker build=${build} at=200 */`);
@@ -32139,7 +32139,7 @@ test("an invitation link opened in a running tab joins with its invitation, even
     await app.click('[data-action="home"]');
     for (let n = 0; n < 20; n++) await app.tick();
     // Now another account, who received an invitation, opens its link.
-    app.w.puter = env.sdk(collaborator);
+    app.w.everything = env.sdk(collaborator);
     app.w.location.hash = `server=https%3A%2F%2Fwhiteboard-test.localhost:8443&board=${room}&invite=${invite.token}`;
     for (let n = 0; n < 40 && !app.doc.querySelector("#join-link"); n++)
       await app.tick();
@@ -32826,18 +32826,18 @@ test("a participant sees the timer of a running agenda step read-only on an open
   }
 });
 
-test("closing Puter's sign-in window while joining says to sign in", async () => {
+test("closing Everything's sign-in window while joining says to sign in", async () => {
   const env = environment(),
-    puter = env.sdk(owner);
-  puter.auth.isSignedIn = () => false;
-  puter.auth.signIn = async () => {
-    // As Puter reports a closed sign-in window: not an Error.
+    everything = env.sdk(owner);
+  everything.auth.isSignedIn = () => false;
+  everything.auth.signIn = async () => {
+    // As Everything reports a closed sign-in window: not an Error.
     throw {
       error: "auth_window_closed",
       msg: "Authentication window was closed by the user without completing the process.",
     };
   };
-  const app = await setup(puter);
+  const app = await setup(everything);
   try {
     await app.click('[data-action="join-shared"]');
     app.doc.querySelector("#join-link").value =
@@ -32849,7 +32849,7 @@ test("closing Puter's sign-in window while joining says to sign in", async () =>
     for (let n = 0; n < 20; n++) await app.tick();
     assert.equal(
       app.doc.querySelector("#join-error").textContent,
-      "Sign in with Puter to continue.",
+      "Sign in with Everything to continue.",
     );
   } finally {
     await app.close();
@@ -32858,21 +32858,21 @@ test("closing Puter's sign-in window while joining says to sign in", async () =>
 
 test("pressing Share on another board while one is being shared says to wait", async () => {
   const env = environment(),
-    puter = env.sdk(owner),
+    everything = env.sdk(owner),
     build = "faceb00cfaceb00c";
-  await puter.fs.write("whiteboard/catalog.json", "[]");
-  await puter.kv.set("whiteboard-collaboration-worker-v1", {
+  await everything.fs.write("whiteboard/catalog.json", "[]");
+  await everything.kv.set("whiteboard-collaboration-worker-v1", {
     name: "whiteboard-test",
     server: "http://whiteboard-test.localhost:8443",
     path: "whiteboard/whiteboard-worker.js",
     build,
     builtAt: 200,
   });
-  const exec = puter.workers.exec;
+  const exec = everything.workers.exec;
   let release, entered;
   const held = new Promise((r) => (release = r));
   const creating = new Promise((r) => (entered = r));
-  puter.workers.exec = async (url, options) => {
+  everything.workers.exec = async (url, options) => {
     if (url.endsWith("/health")) return Response.json({ build });
     if (options?.body && JSON.parse(options.body).op === "create") {
       entered();
@@ -32880,7 +32880,7 @@ test("pressing Share on another board while one is being shared says to wait", a
     }
     return exec(url, options);
   };
-  const app = await setup(puter),
+  const app = await setup(everything),
     { doc, w, click, tick } = app;
   w.fetch = async () =>
     new Response(`/* whiteboard-worker build=${build} at=200 */`);
@@ -43231,7 +43231,7 @@ async function splitInstances(shared, name) {
   const { BoardService: Other } = await import(
     `../worker/service.js?instance=${name}`
   );
-  const other = new Other(shared.env.service.puter, {
+  const other = new Other(shared.env.service.everything, {
     now: () => Date.now(),
     org: shared.env.service.org,
     fetcher: shared.env.service.fetcher,
@@ -43243,7 +43243,7 @@ const drawnObjects = (app) =>
   app.doc.querySelectorAll("#board-outline [data-id]").length;
 // A store whose listings show a write only some time later.
 function lagListings(shared, delay) {
-  const kv = shared.env.service.puter.kv,
+  const kv = shared.env.service.everything.kv,
     visible = new Map(),
     set = kv.set,
     list = kv.list;
@@ -43887,7 +43887,7 @@ for (const locale of ["en", "fr"])
     try {
       const [a, b] = shared.apps,
         requests = [];
-      b.w.puter.ai = {
+      b.w.everything.ai = {
         chat: async (...args) => {
           requests.push(args);
           return "Controlled summary.";
@@ -44398,7 +44398,7 @@ for (const locale of ["en", "fr"])
         [a, ownerRequests],
         [b, requests],
       ]) {
-        app.w.puter.ai = {
+        app.w.everything.ai = {
           chat: async (...args) => {
             sent.push(args);
             return "Controlled description.";
@@ -48198,7 +48198,7 @@ test("the shortcuts dialog lists the bindings the board answers to", async () =>
     );
     for (const expected of [
       "Bold, italic, or underline while typing · Ctrl/Cmd + B / I / U",
-      "Save to Puter · Ctrl or Cmd + S",
+      "Save to Everything · Ctrl or Cmd + S",
       "Move selected objects by 10 · Shift + Arrow keys",
       "Move around the canvas · Arrow keys with nothing selected",
       "Redo · Ctrl or Cmd + Shift + Z or Ctrl or Cmd + Y",
@@ -48910,7 +48910,7 @@ test("board access in the Participants dialog is searched and shown fifty people
   const shared = await sharedEditors(room, [item("note", 0, 0, { text: "A" })]);
   const [a] = shared.apps;
   try {
-    const exec = a.w.puter.workers.exec;
+    const exec = a.w.everything.workers.exec;
     const members = [
       { uuid: "owner-id", username: "Owner", role: "owner" },
       ...Array.from({ length: 120 }, (_, n) => ({
@@ -48919,7 +48919,7 @@ test("board access in the Participants dialog is searched and shown fifty people
         role: n % 10 ? "editor" : "removed",
       })),
     ];
-    a.w.puter.workers.exec = (url, options) =>
+    a.w.everything.workers.exec = (url, options) =>
       JSON.parse(options.body).op === "members"
         ? Promise.resolve(new Response(JSON.stringify({ members })))
         : exec(url, options);
@@ -48949,7 +48949,7 @@ test("board access in the Participants dialog is searched and shown fifty people
     assert.match(count.textContent, /No one matches/);
     await a.click("#access-removed");
     assert.equal(rows().length, 1);
-    a.w.puter.workers.exec = exec;
+    a.w.everything.workers.exec = exec;
     a.doc.querySelector("dialog").close();
     for (let n = 0; n < 10; n++) await a.tick();
   } finally {
@@ -48963,7 +48963,7 @@ test("a role change still saving stays shown, and unavailable, after the list is
   ]);
   const [a] = shared.apps;
   try {
-    const exec = a.w.puter.workers.exec;
+    const exec = a.w.everything.workers.exec;
     const members = [
       { uuid: "owner-id", username: "Owner", role: "owner" },
       ...Array.from({ length: 60 }, (_, n) => ({
@@ -48974,7 +48974,7 @@ test("a role change still saving stays shown, and unavailable, after the list is
     ];
     const roles = [];
     let finish;
-    a.w.puter.workers.exec = (url, options) => {
+    a.w.everything.workers.exec = (url, options) => {
       const body = JSON.parse(options.body);
       if (body.op === "members")
         return Promise.resolve(new Response(JSON.stringify({ members })));
@@ -49007,7 +49007,7 @@ test("a role change still saving stays shown, and unavailable, after the list is
     finish();
     await shared.until(() => !select().disabled, "The change is saved");
     assert.equal(select().value, "viewer");
-    a.w.puter.workers.exec = exec;
+    a.w.everything.workers.exec = exec;
     a.doc.querySelector("dialog").close();
     for (let n = 0; n < 10; n++) await a.tick();
   } finally {
@@ -49055,8 +49055,8 @@ test("the participants button says how many more people there are, shortened pas
   let extra = 498;
   try {
     // Check-ins answer with a roster of many more people.
-    const exec = a.w.puter.workers.exec;
-    a.w.puter.workers.exec = async (url, options) => {
+    const exec = a.w.everything.workers.exec;
+    a.w.everything.workers.exec = async (url, options) => {
       const response = await exec(url, options);
       if (JSON.parse(options.body).op !== "presence" || !response.ok)
         return response;
@@ -49559,10 +49559,10 @@ test("sharing a personal board asks first, and cancelling leaves it personal", a
 
 test("sharing a board with more images than a person may add a minute waits for the rest, and a failed share leaves nothing staged", async () => {
   const env = environment(),
-    puter = env.sdk(owner),
+    everything = env.sdk(owner),
     build = "faceb00cfaceb00c";
-  await puter.fs.write("whiteboard/catalog.json", "[]");
-  await puter.kv.set("whiteboard-collaboration-worker-v1", {
+  await everything.fs.write("whiteboard/catalog.json", "[]");
+  await everything.kv.set("whiteboard-collaboration-worker-v1", {
     name: "whiteboard-test",
     server: "http://whiteboard-test.localhost:8443",
     path: "whiteboard/whiteboard-worker.js",
@@ -49570,8 +49570,8 @@ test("sharing a board with more images than a person may add a minute waits for 
     builtAt: 200,
   });
   let failUploads = true;
-  const exec = puter.workers.exec;
-  puter.workers.exec = (url, options) =>
+  const exec = everything.workers.exec;
+  everything.workers.exec = (url, options) =>
     url.endsWith("/health")
       ? Promise.resolve(Response.json({ build }))
       : failUploads &&
@@ -49584,7 +49584,7 @@ test("sharing a board with more images than a person may add a minute waits for 
   // The minute the worker asks to wait passes at once.
   let waits = 0,
     shown = "";
-  const app = await setup(puter, {
+  const app = await setup(everything, {
     prepare(w) {
       const setTimeout = w.setTimeout;
       w.setTimeout = (fn, ms, ...rest) => {
@@ -51431,7 +51431,7 @@ test("closing the export dialog cancels an export in progress, whose progress sh
   }
 });
 
-test("opening a Puter card for a board another tab keeps newer here opens that copy instead of writing over it", async () => {
+test("opening an Everything card for a board another tab keeps newer here opens that copy instead of writing over it", async () => {
   const remote = board("Remote plan");
   remote.updated = 1000;
   const files = new Map([
@@ -51441,7 +51441,7 @@ test("opening a Puter card for a board another tab keeps newer here opens that c
     ],
     [`whiteboard/${remote.id}.json`, JSON.stringify(remote)],
   ]);
-  const puter = {
+  const everything = {
     env: "web",
     auth: {
       isSignedIn: () => true,
@@ -51463,7 +51463,7 @@ test("opening a Puter card for a board another tab keeps newer here opens that c
     },
   };
   const indexedDB = new IDBFactory();
-  const app = await setup(puter, { indexedDB });
+  const app = await setup(everything, { indexedDB });
   try {
     const { doc, tick } = app;
     const waitFor = async (fn, what) => {
@@ -51472,7 +51472,7 @@ test("opening a Puter card for a board another tab keeps newer here opens that c
     };
     await waitFor(
       () => doc.querySelector("[data-open-cloud]"),
-      "The board in Puter has a card",
+      "The board in Everything has a card",
     );
     // Another tab opens the board and edits it before its upload.
     const edited = structuredClone(remote);
@@ -51886,7 +51886,7 @@ test("a shape's border is set thicker, dashed or dotted from a toolbar popover i
   }
 });
 
-test("people can send feedback through Puter from the library, help, and command palette", async () => {
+test("people can send feedback through Everything from the library, help, and command palette", async () => {
   let sent = 0;
   const a = await setup({
     ui: {
@@ -51912,7 +51912,7 @@ test("people can send feedback through Puter from the library, help, and command
   } finally {
     await a.close();
   }
-  // Without Puter's dialog there is nowhere to send it, so nothing offers it.
+  // Without Everything's dialog there is nowhere to send it, so nothing offers it.
   const b = await setup();
   try {
     assert.equal(b.doc.querySelector('[data-action="feedback"]'), null);

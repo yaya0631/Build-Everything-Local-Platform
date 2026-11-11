@@ -2,13 +2,13 @@ import { test, expect } from '@playwright/test';
 
 for (const outcome of ['success', 'failure'])
   test(`a late library refresh ${outcome} cannot replace a newer listing`, async ({ page }) => {
-    await page.route('**/sdk/puter.js', (route) =>
+    await page.route('**/sdk/everything.js', (route) =>
       route.fulfill({
         contentType: 'application/javascript',
         body: `
           window.libraryReads = [];
           window.libraryFiles = ['first.pdf', 'second.pdf'];
-          window.puter = {
+          window.everything = {
             env: 'web',
             auth: {isSignedIn: () => true, getUser: async () => ({username: 'test-user'})},
             fs: {

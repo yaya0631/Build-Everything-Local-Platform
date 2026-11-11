@@ -377,7 +377,7 @@ function untagCopiedContent(doc, page) {
   else page.node.set(CONTENTS, replaced[0]);
 }
 /** A key marking each source page with its index, copied into every copy the copier makes. */
-export const COPY_INDEX = PDFName.of('PuterCopyPageIndex');
+export const COPY_INDEX = PDFName.of('EverythingCopyPageIndex');
 /**
  * Make `copier` copy a small stand-in wherever a copied object names a page of `source` (a
  * link's target, an annotation's page). Following the reference would copy that page with all

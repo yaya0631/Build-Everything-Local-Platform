@@ -1,7 +1,7 @@
 // File → Generate → Image Assets: layers and groups named like files
 // ("icon.png", "200% hero.jpg80, thumbs/hero.webp") are written as image
 // files after edits while the per-document toggle is on — into a folder next
-// to the document on Puter, or kept for File → Generate → Download Image
+// to the document on Everything, or kept for File → Generate → Download Image
 // Assets (.zip). Registration and the status indicator live here; planning
 // is small and pure (plan.ts), rendering and encoding load on first use.
 import type { Editor } from '../../editor';
@@ -129,7 +129,7 @@ export function installImageAssets(e: Editor) {
     lastDoc.set(s, e.doc);
     scheduleAssets(e, s);
   });
-  // Saving gives a Puter location: write the files there right away.
+  // Saving gives an Everything location: write the files there right away.
   e.saveHooks.push((s) => {
     if (s.hasDocument && s.doc.imageAssets) scheduleAssets(e, s, 0);
   });

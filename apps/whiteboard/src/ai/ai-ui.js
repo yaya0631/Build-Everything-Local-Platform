@@ -11,7 +11,7 @@ import { imageLayout } from "../image-crop.js";
 // AI assistance: summaries, grouping sticky notes into themes, turning a photo
 // of handwritten notes into digital sticky notes, and generating ideas.
 // People in an organization send every request through its worker, which
-// enforces the administrator's AI settings. Everyone else uses Puter AI
+// enforces the administrator's AI settings. Everyone else uses Everything AI
 // directly under their own account and can turn AI off on this device.
 export const AI_KEY = "whiteboard-ai-enabled";
 const COLOR_NAMES = {
@@ -286,8 +286,8 @@ export function createAI({
   canEdit,
   fileInput,
   refresh = () => {},
-  puter = () => window.puter,
-  signIn = () => puter().auth.signIn(),
+  everything = () => window.everything,
+  signIn = () => everything().auth.signIn(),
   // Objects whose comment threads this person cannot see, and the results
   // of completed votes and polls as they see them in History.
   concealed = () => new Set(),
@@ -355,7 +355,7 @@ export function createAI({
       ? null
       : "AI features are turned off on this device.";
   }
-  // Puter's SDK can reject with a plain object or a string rather than an
+  // Everything's SDK can reject with a plain object or a string rather than an
   // Error; whatever came back, the dialog shows a reason.
   const reason = (error) =>
     error?.message ||
@@ -380,7 +380,7 @@ export function createAI({
     const blocked = availability(feature);
     if (blocked) throw Error(t(blocked));
     // Members use the organization's AI; guests, whose use it does not pay
-    // for, use their own Puter account, within the organization's policy.
+    // for, use their own Everything account, within the organization's policy.
     if (org.info?.role && org.info.role !== "guest")
       return (
         await org.request("org.ai", {
@@ -390,8 +390,8 @@ export function createAI({
           room: session()?.room,
         })
       ).text;
-    const p = puter();
-    if (!p?.ai?.chat) throw Error(t("Puter AI is not available."));
+    const p = everything();
+    if (!p?.ai?.chat) throw Error(t("Everything AI is not available."));
     if (!p.auth.isSignedIn()) {
       await signIn();
       // Signing in can reveal an organization, whose policy then applies.
@@ -458,7 +458,7 @@ export function createAI({
         selectedCount = selected.size;
       return modal(
         "AI assistant",
-        `<p class="dialog-copy">${t(org.info?.role && org.info.role !== "guest" ? "Requests go through your organization, which controls these features and records their use in the audit log." : "Requests use Puter AI with your Puter account. Board content you choose is sent to the AI model.")}</p>${blocked ? `<p class="dialog-copy" role="alert">${t(blocked)}</p>` : ""}<div class="ai-actions"><button class="secondary" data-ai="summarize" ${blocked ? "disabled" : ""}>${icon("text-quote")}<span><strong>${t("Summarize")}</strong><small>${t(selectedCount ? "The selected objects" : "The whole board")}</small></span></button><button class="secondary" data-ai="themes" ${blocked || selectedCount < 2 ? "disabled" : ""}>${icon("group")}<span><strong>${t("Group into themes")}</strong><small>${t("Select two or more sticky notes")}</small></span></button><button class="secondary" data-ai="handwriting" ${blocked ? "disabled" : ""}>${icon("scan-text")}<span><strong>${t("Photo to sticky notes")}</strong><small>${t("Turn handwritten notes into digital ones")}</small></span></button><button class="secondary" data-ai="generate" ${blocked ? "disabled" : ""}>${icon("sparkles")}<span><strong>${t("Generate ideas")}</strong><small>${t("Sticky notes from a prompt")}</small></span></button></div>${org.info?.role ? "" : `<label class="check-field"><input type="checkbox" id="ai-enabled" ${personalAIEnabled() ? "checked" : ""}><span>${t("Allow AI features on this device")}</span></label>`}<div id="ai-work"></div><p id="ai-status" role="status" aria-live="polite"></p>`,
+        `<p class="dialog-copy">${t(org.info?.role && org.info.role !== "guest" ? "Requests go through your organization, which controls these features and records their use in the audit log." : "Requests use Everything AI with your Everything account. Board content you choose is sent to the AI model.")}</p>${blocked ? `<p class="dialog-copy" role="alert">${t(blocked)}</p>` : ""}<div class="ai-actions"><button class="secondary" data-ai="summarize" ${blocked ? "disabled" : ""}>${icon("text-quote")}<span><strong>${t("Summarize")}</strong><small>${t(selectedCount ? "The selected objects" : "The whole board")}</small></span></button><button class="secondary" data-ai="themes" ${blocked || selectedCount < 2 ? "disabled" : ""}>${icon("group")}<span><strong>${t("Group into themes")}</strong><small>${t("Select two or more sticky notes")}</small></span></button><button class="secondary" data-ai="handwriting" ${blocked ? "disabled" : ""}>${icon("scan-text")}<span><strong>${t("Photo to sticky notes")}</strong><small>${t("Turn handwritten notes into digital ones")}</small></span></button><button class="secondary" data-ai="generate" ${blocked ? "disabled" : ""}>${icon("sparkles")}<span><strong>${t("Generate ideas")}</strong><small>${t("Sticky notes from a prompt")}</small></span></button></div>${org.info?.role ? "" : `<label class="check-field"><input type="checkbox" id="ai-enabled" ${personalAIEnabled() ? "checked" : ""}><span>${t("Allow AI features on this device")}</span></label>`}<div id="ai-work"></div><p id="ai-status" role="status" aria-live="polite"></p>`,
         (d) => {
           watchDialog(d);
           // Keep the scope promised by the action, even if remote changes
@@ -878,8 +878,8 @@ addTranslations({
   "AI assistant": "Assistant IA",
   "Requests go through your organization, which controls these features and records their use in the audit log.":
     "Les demandes passent par votre organisation, qui contrôle ces fonctions et en consigne l’utilisation dans le journal d’audit.",
-  "Requests use Puter AI with your Puter account. Board content you choose is sent to the AI model.":
-    "Les demandes utilisent l’IA de Puter avec votre compte Puter. Le contenu du tableau que vous choisissez est envoyé au modèle d’IA.",
+  "Requests use Everything AI with your Everything account. Board content you choose is sent to the AI model.":
+    "Les demandes utilisent l’IA de Everything avec votre compte Everything. Le contenu du tableau que vous choisissez est envoyé au modèle d’IA.",
   "Your organization has turned off AI features.":
     "Votre organisation a désactivé les fonctions d’IA.",
   "Your organization has turned off this AI feature.":
@@ -890,7 +890,7 @@ addTranslations({
     "L’organisation de ce tableau a désactivé cette fonction d’IA.",
   "AI features are turned off on this device.":
     "Les fonctions d’IA sont désactivées sur cet appareil.",
-  "Puter AI is not available.": "L’IA de Puter n’est pas disponible.",
+  "Everything AI is not available.": "L’IA de Everything n’est pas disponible.",
   Summarize: "Résumer",
   "The selected objects": "Les objets sélectionnés",
   "The whole board": "Le tableau entier",

@@ -1,8 +1,8 @@
 /**
- * Response collector: a Puter serverless worker deployed into the survey
+ * Response collector: an Everything serverless worker deployed into the survey
  * creator's own account (see src/data/collector-client.js for deployment).
  *
- * Respondents have no Puter account and cannot reach the creator's storage,
+ * Respondents have no Everything account and cannot reach the creator's storage,
  * so this worker stands between them: it serves published surveys and stores
  * responses in the creator's KV. It serves no HTML. The respondent page
  * (r/index.html on the app's own hosting) calls this JSON API.
@@ -65,10 +65,10 @@ const KEY_RE = /^[a-z0-9]{6,40}$/i;
 
 function kvOf(ctx) {
   const owner = (ctx && ctx.me) || (typeof me !== 'undefined' ? me : null);
-  return owner.puter.kv;
+  return owner.everything.kv;
 }
 
-/** puter.kv values may come back parsed or as JSON strings. */
+/** everything.kv values may come back parsed or as JSON strings. */
 function coerce(value) {
   if (value == null) return null;
   if (typeof value === 'string') {
@@ -419,7 +419,7 @@ router.post('/api/c/:cid/responses', guarded(async (ctx) => {
 /* ---- Admin API ----------------------------------------------------------- */
 
 router.get('/admin/ping', admin(async () => {
-  const runtime = typeof __PUTER_PREAMBLE_VERSION__ === 'string' ? __PUTER_PREAMBLE_VERSION__ : null;
+  const runtime = typeof __EVERYTHING_PREAMBLE_VERSION__ === 'string' ? __EVERYTHING_PREAMBLE_VERSION__ : null;
   return json({ ok: true, version: WORKER_VERSION, runtime });
 }));
 

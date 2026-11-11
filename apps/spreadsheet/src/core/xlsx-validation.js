@@ -178,7 +178,7 @@ export function prepareXlsxValidationLists(book, metaSheet, extra, X, reservedNa
   const cells = {}, names = [], shared = new Map(); let row = 0, col = 1, serial = 0;
   const nextName = () => {
     let name;
-    do { name = `_puter_validation_${++serial}`; } while (used.has(name.toLowerCase()));
+    do { name = `_everything_validation_${++serial}`; } while (used.has(name.toLowerCase()));
     used.add(name.toLowerCase()); return name;
   };
   for (const sheet of book.SheetNames) for (const rule of book.Sheets[sheet]['!validations'] || []) {

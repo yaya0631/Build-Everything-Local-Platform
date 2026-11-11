@@ -16,8 +16,8 @@ const cache = new Map(); // `${ws}/${id}` -> Promise<string>
  * the list was drawn. A refusal (the worker has no such file, or will not
  * hand it over) is unlikely to change within minutes; nobody answering (the
  * network, a worker being redeployed) is tried again soon. So is a 401: the
- * worker answers it whenever Puter's word on who is asking cannot be had
- * (see worker/lib.js identify), which is Puter not answering the worker for
+ * worker answers it whenever Everything's word on who is asking cannot be had
+ * (see worker/lib.js identify), which is Everything not answering the worker for
  * a moment as often as a sign-in that has lapsed, and the polls and sends
  * refused in that moment go through again on their next try. Remembered as
  * a refusal, every photo and picture drawn during it stayed broken (initials

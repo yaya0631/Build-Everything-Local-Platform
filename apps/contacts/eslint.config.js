@@ -10,7 +10,7 @@ export default [
       sourceType: 'module',
       globals: {
         ...globals.browser,
-        puter: 'readonly',
+        everything: 'readonly',
       },
     },
     rules: {

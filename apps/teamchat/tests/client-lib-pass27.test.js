@@ -19,7 +19,7 @@ const tick = (ms = 2) => new Promise((r) => setTimeout(r, ms));
 /** Route each call by the end of its path (first match wins); a handler gets the query and the request init. */
 function worker(routes) {
   const calls = [];
-  globalThis.puter = {
+  globalThis.everything = {
     workers: {
       exec: async (url, init = {}) => {
         const u = new URL(url);
@@ -58,7 +58,7 @@ function closeAcme() {
   store.links = new Map();
   store.convs.clear();
   store.act = { c: {}, p: {}, w: 0, u: 0 };
-  delete globalThis.puter;
+  delete globalThis.everything;
 }
 
 /* ---- lib/store.js: a page load that fails after the workspace was switched says nothing to the new workspace's window ---- */
@@ -288,7 +288,7 @@ describe('forgetting a workspace (left, removed from, deleted)', () => {
     }));
     const doc = { v: 1, profile: {}, prefs: { theme: 'dark', starred: { [REF]: ['c1'], [OTHER]: ['x1'] }, sections: { [REF]: [{ id: 's1', name: 'Team', items: ['c1'] }] } }, workspaces: [{ ref: REF, name: 'Acme' }, { ref: OTHER, name: 'Other' }], worker: null };
     const account = { saved: null };
-    globalThis.puter = { kv: { get: async () => structuredClone(doc), set: async (k, v) => { account.saved = v; } }, workers: { exec: async () => json({ ok: true }) } };
+    globalThis.everything = { kv: { get: async () => structuredClone(doc), set: async (k, v) => { account.saved = v; } }, workers: { exec: async () => json({ ok: true }) } };
     const { store: fresh } = await import('../src/lib/store.js');
     fresh.identity = { uuid: 'u-me', username: 'me' };
     fresh.user = structuredClone(doc);
@@ -298,7 +298,7 @@ describe('forgetting a workspace (left, removed from, deleted)', () => {
   afterEach(() => {
     vi.doUnmock('../src/lib/idb.js');
     vi.resetModules();
-    delete globalThis.puter;
+    delete globalThis.everything;
   });
 
   it('drops the pages and the bootstrap saved for it on the device, and its stars and sections in the account, and nothing of the others', async () => {
@@ -314,7 +314,7 @@ describe('forgetting a workspace (left, removed from, deleted)', () => {
   it('ends a huddle the member is in there, giving the seat up, and leaves one in another workspace alone', async () => {
     const { fresh } = await setUp();
     const calls = [];
-    globalThis.puter.workers.exec = async (url, init = {}) => { calls.push(`${init.method || 'GET'} ${new URL(url).pathname}${new URL(url).search}`); return json({ ok: true }); };
+    globalThis.everything.workers.exec = async (url, init = {}) => { calls.push(`${init.method || 'GET'} ${new URL(url).pathname}${new URL(url).search}`); return json({ ok: true }); };
     const inCall = (ws) => {
       fresh.huddle = { leave: vi.fn(), inviteCode: 'inv' };
       fresh._huddleInfo = { ws, conv: 'c1', ref: ws, hostConv: 'c1', title: '#general', kind: 'channel', posted: true, sid: 'sid-1' };
@@ -341,10 +341,10 @@ describe('forgetting a workspace (left, removed from, deleted)', () => {
 /* ---- lib/api.js: an empty 204 answer in the worker's place ---- */
 
 describe('an empty 204 answer in the worker\'s place (a captive portal, a gateway)', () => {
-  afterEach(() => { delete globalThis.puter; });
+  afterEach(() => { delete globalThis.everything; });
 
   it('is read as no server at the address, and a queued message sent into it stays in line rather than counted as landed', async () => {
-    globalThis.puter = { workers: { exec: async () => new Response(null, { status: 204 }) } };
+    globalThis.everything = { workers: { exec: async () => new Response(null, { status: 204 }) } };
     await expect(api.send(REF, 'c1', { text: 'x' })).rejects.toMatchObject({ code: 'no_backend' });
     const ob = createOutbox({ storage: memoryStorage(), sendEntry: (e) => api.send(REF, e.conv, { text: e.text }) });
     await ob.enqueue({ id: 'm1', ws: REF, conv: 'c1', text: 'x' });
@@ -401,7 +401,7 @@ describe('the poll while the workspace server cannot be reached', () => {
   const failingWorker = (fail) => {
     const at = [];
     const t0 = Date.now();
-    globalThis.puter = { workers: { exec: async () => { at.push((Date.now() - t0) / 1000); return fail(); } } };
+    globalThis.everything = { workers: { exec: async () => { at.push((Date.now() - t0) / 1000); return fail(); } } };
     return at;
   };
   const gaps = (at) => at.slice(1).map((t, i) => t - at[i]);
@@ -445,10 +445,10 @@ describe('the poll while the workspace server cannot be reached', () => {
     expect(at).toEqual([4, 8, 16, 32, 62, 66, 70, 74]);
   });
 
-  it('does not back off on a 401 (Puter not confirming the sign-in for a moment), which has its own notice and passes on its own', async () => {
+  it('does not back off on a 401 (Everything not confirming the sign-in for a moment), which has its own notice and passes on its own', async () => {
     vi.useFakeTimers();
     openAcme();
-    const at = failingWorker(() => json({ code: 'unauthorized', message: 'Your Puter session is not valid' }, 401));
+    const at = failingWorker(() => json({ code: 'unauthorized', message: 'Your Everything session is not valid' }, 401));
     store.startPolling();
     await vi.advanceTimersByTimeAsync(21_000);
     expect(at).toEqual([4, 8, 12, 16, 20]);
@@ -500,7 +500,7 @@ describe('the poll while the workspace server cannot be reached', () => {
       fresh?.stopPolling();
       vi.useRealTimers();
       dom.uninstall();
-      delete globalThis.puter;
+      delete globalThis.everything;
     }
   });
 

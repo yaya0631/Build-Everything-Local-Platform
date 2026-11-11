@@ -6,7 +6,7 @@
  * beat grid (audio-analysis.js), so a line tends to start on a downbeat.
  *
  * Every step is injectable (decode, separate, transcribe, beats) so tests
- * and the signed-out preview never touch Puter. Times out of this module
+ * and the signed-out preview never touch Everything. Times out of this module
  * are timeline seconds (the clip's speed and in point applied).
  */
 import { US } from '../lib/time.js';

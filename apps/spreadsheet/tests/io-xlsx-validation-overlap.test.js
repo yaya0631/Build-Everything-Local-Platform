@@ -54,7 +54,7 @@ it('preserves precedence through later app edits, sheet copies and native-only e
   expect(wb.validationAt(copy.id,2,2).prompt).toBe('First'); wb.undo();
   const zip=X.CFB.read(new Uint8Array(await(await workbookToXlsx(wb)).arrayBuffer()),{type:'array'});
   const part=X.CFB.find(zip,'/xl/workbook.xml');
-  part.content=new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,''));part.size=part.content.length;
+  part.content=new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,''));part.size=part.content.length;
   wb=await workbookFromFile(X.CFB.write(zip,{type:'array',fileType:'zip'}),'native.xlsx');id=wb.activeSheetId;
   expect(promptAt(wb,2,2)).toBe('First');
   expect(wb.validateValue(id,2,2,5).ok).toBe(true);

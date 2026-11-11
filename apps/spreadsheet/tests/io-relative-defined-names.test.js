@@ -48,7 +48,7 @@ it('keeps native relative name definitions and recalculated caches without priva
     expect(raw.Workbook.Names.find(n => n.Name === 'Previous').Ref).toBe('Plan!$C1048576');
     expect(raw.Sheets.Plan.C5.v).toBe(1900);
     const zip = X.CFB.read(bytes, { type: 'array' }), file = X.CFB.find(zip, '/xl/workbook.xml');
-    file.content = new TextEncoder().encode(new TextDecoder().decode(file.content).replace(/<sheet\b[^>]*name="_puter_meta"[^>]*\/>/, ''));
+    file.content = new TextEncoder().encode(new TextDecoder().decode(file.content).replace(/<sheet\b[^>]*name="_everything_meta"[^>]*\/>/, ''));
     file.size = file.content.length;
     wb = await workbookFromFile(new Uint8Array(X.CFB.write(zip, { type: 'array', fileType: 'zip' })), 'external.xlsx');
     expect(wb.getValue(wb.activeSheetId, 4, 2)).toBe(1900);

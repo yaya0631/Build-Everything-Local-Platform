@@ -4,12 +4,12 @@ import { join } from 'node:path';
 import { defineConfig } from 'vite';
 
 /**
- * Bundles the Puter Serverless Worker into one plain script. The worker
+ * Bundles the Everything Serverless Worker into one plain script. The worker
  * runtime provides `router` and `me` as globals, so the output is an IIFE
  * that references them without importing anything.
  *
  * The bundle lands in public/worker/ so the app ships it as a static asset:
- * each workspace owner's browser deploys it to their own Puter account (see
+ * each workspace owner's browser deploys it to their own Everything account (see
  * src/lib/deploy.js). A build id derived from the worker's source files is
  * compiled in and written in the first line, which is how the app tells a
  * deployed worker is out of date without a version to bump by hand.

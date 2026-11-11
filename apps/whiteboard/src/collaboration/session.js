@@ -91,7 +91,7 @@ function sessionDocument(update) {
 
 export class CollaborationSession {
   constructor({
-    puter,
+    everything,
     server,
     room,
     user,
@@ -107,7 +107,7 @@ export class CollaborationSession {
     store = local,
   }) {
     Object.assign(this, {
-      puter,
+      everything,
       server,
       room,
       user,
@@ -192,9 +192,9 @@ export class CollaborationSession {
         : "comment";
   }
   async connectPeers() {
-    if (!this.puter.peer?.serve || this.peers || this.closed) return;
+    if (!this.everything.peer?.serve || this.peers || this.closed) return;
     const peers = (this.peers = new PeerNetwork({
-      puter: this.puter,
+      everything: this.everything,
       room: this.room,
       session: this.session,
       keys: this.keys,
@@ -220,7 +220,7 @@ export class CollaborationSession {
   }
   async request(op, data = {}) {
     const started = performance.now();
-    const result = await call(this.puter, this.server, {
+    const result = await call(this.everything, this.server, {
       op,
       room: this.room,
       ...data,
@@ -459,7 +459,7 @@ export class CollaborationSession {
       this.closed ||
       this.subscription ||
       !this.eventDescriptor ||
-      !this.puter.events?.onLocal ||
+      !this.everything.events?.onLocal ||
       // Large rooms relay live changes over peers; clients without a peer
       // network, or whose links have not connected, still need events.
       this.relayed()
@@ -474,7 +474,7 @@ export class CollaborationSession {
       let sub,
         failed = false;
       try {
-        sub = await this.puter.events.onLocal(
+        sub = await this.everything.events.onLocal(
           subject,
           (payload) => {
             if (this.closed || failed || (sub && this.subscription !== sub))
@@ -1216,7 +1216,7 @@ export class CollaborationSession {
   // them all. Saves whose edits already arrived over a peer link need no
   // such read, including ones that arrive after the notice: an edit and its
   // notice come together, and the notice is often handled first. The save's
-  // time, by Puter's clock or the saving instance's, still goes along for
+  // time, by Everything's clock or the saving instance's, still goes along for
   // workers from before record ids were named; times far from this
   // session's clock, as a peer could send, are ignored.
   // A save whose edits this session already holds, as one of its own or

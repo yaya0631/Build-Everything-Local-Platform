@@ -20,7 +20,7 @@ const save = (wb, kind) => kind === 'xlsx' ? workbookToXlsx(wb) : workbookToOds(
 async function withoutSidecar(blob, kind) {
   if (kind === 'ods') {
     const back = X.read(await blob.arrayBuffer(), { type: 'array', cellNF: true, cellFormula: true });
-    delete back.PuterSettings;
+    delete back.EverythingSettings;
     return X.write(back, { type: 'array', bookType: 'ods' });
   }
   const back = X.read(await blob.arrayBuffer(), { type: 'array', cellNF: true, cellFormula: true });

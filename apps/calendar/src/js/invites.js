@@ -5,8 +5,8 @@
  * getting that link to the guest was manual: copy the block, paste it into a
  * mail client. This module hands the same links to the calendar's shared email
  * worker at EMAIL_WORKER_URL, which composes and sends one private invitation
- * per guest. The call goes through puter.workers.exec(), which forwards the
- * signed-in user's Puter token — that is what makes the worker able to send at
+ * per guest. The call goes through everything.workers.exec(), which forwards the
+ * signed-in user's Everything token — that is what makes the worker able to send at
  * all, and what makes the send bill the host rather than the app owner.
  *
  * Sending always takes a yes. Saving an event with guests asks whether to mail
@@ -22,11 +22,11 @@
  * Every message names its host. The .ics ORGANIZER is what the guest's
  * calendar shows as the organizer (Google Calendar files one without it under
  * "unknownorganizer@calendar.google.com"), Reply-To is where their mail
- * client's own RSVP buttons answer, and the body says who invited them. Puter
+ * client's own RSVP buttons answer, and the body says who invited them. Everything
  * withholds the account's email until the user grants it, so an event saved
  * while that was unknown carries no organizer (modal.js saves rather than lose
  * the edit); a send resolves the address then — silently when the grant has
- * landed since boot, with Puter's prompt on an explicit press — and an
+ * landed since boot, with Everything's prompt on an explicit press — and an
  * invitation that still cannot name its host is not sent.
  *
  * What each guest was last sent is remembered in the app's own KV
@@ -244,11 +244,11 @@ export function createInvites({
   rsvp,
   user,
   workerUrl = EMAIL_WORKER_URL,
-  getPuter = () => (typeof puter !== 'undefined' ? puter : null),
+  getEverything = () => (typeof everything !== 'undefined' ? everything : null),
   blocked = isBlocked,
   toast = defaultToast,
   // Who "I" am when boot's `user` did not say (see hostEmail): a fresh
-  // getUser() that costs no prompt, and the ask — Puter's permission prompt.
+  // getUser() that costs no prompt, and the ask — Everything's permission prompt.
   requestUser = getUser,
   requestEmail = requestUserEmail,
   // How long to wait for the RSVP worker to mint the links a fresh event's
@@ -259,7 +259,7 @@ export function createInvites({
   // eventId -> { [email]: { at, v } }
   const sent = new Map();
   // Who "I" am, for events that carry no organizer of their own: one saved
-  // before organizers were stamped, or while my address was unknown (Puter
+  // before organizers were stamped, or while my address was unknown (Everything
   // withholds it until the user grants `email:read`, and modal.js saves on a
   // refusal rather than lose the edit). Boot's user object has the first word;
   // hostEmail() the last.
@@ -268,7 +268,7 @@ export function createInvites({
   /**
    * My address, resolving it if boot did not know it. A grant that landed since
    * (another dialog asked, a second tab) shows up in a fresh getUser() with no
-   * prompt; `prompt` additionally lets Puter ASK — only ever on an explicit
+   * prompt; `prompt` additionally lets Everything ASK — only ever on an explicit
    * press, never on the automatic send after a save, which the editor just
    * asked for and may just have been refused. '' when there is still no
    * address to be had: an account without one, or a refusal.
@@ -292,7 +292,7 @@ export function createInvites({
   /** Sending needs the worker bridge (it carries the user's session); without
    *  it there is no authenticated caller and the worker would refuse anyway. */
   function available() {
-    const p = getPuter();
+    const p = getEverything();
     return Boolean(p && p.workers && typeof p.workers.exec === 'function');
   }
 
@@ -400,18 +400,18 @@ export function createInvites({
   /**
    * Email this event's invitation to `emails` (default: everyone pending).
    * Resolves to the worker's summary; rejects with a message fit for a toast.
-   * `prompt` lets an event without an organizer ask Puter for my address: an
+   * `prompt` lets an event without an organizer ask Everything for my address: an
    * explicit press may, the automatic send after a save must not (hostEmail).
    */
   async function send(item, { emails = null, note = '', force = false, prompt = true, canSend = () => true } = {}) {
     if (blocked()) throw new Error("You're offline — reconnect to send invitations.");
-    if (!available()) throw new Error('Sending invitations needs the Puter SDK.');
+    if (!available()) throw new Error('Sending invitations needs the Everything SDK.');
     const ev = ownerEvent(item);
     if (!ev || !planFor(item).eventId) throw new Error('Only the organizer can send invitations.');
 
     // One send per event on the wire at a time. Two saves that both said
     // yes, or a press while an earlier one is still in flight, would
-    // otherwise reach the worker together — and puter.kv has no transactions,
+    // otherwise reach the worker together — and everything.kv has no transactions,
     // so its already-sent check for the second can run before the first has
     // recorded anything, and the guest gets the mail twice. Queued behind the
     // earlier send, the later one re-reads the plan after that send has
@@ -492,7 +492,7 @@ export function createInvites({
     const log = { ...(sent.get(ev.id) || {}) };
     let failure = null;
     for (const batch of batches) {
-      const res = await getPuter().workers.exec(`${workerUrl}/invites`, {
+      const res = await getEverything().workers.exec(`${workerUrl}/invites`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
@@ -636,7 +636,7 @@ export function createInvites({
    */
   async function deliverCancellation(snapshot) {
     if (blocked()) throw new Error("You're offline — reconnect to send the cancellation.");
-    if (!available()) throw new Error('Sending the cancellation needs the Puter SDK.');
+    if (!available()) throw new Error('Sending the cancellation needs the Everything SDK.');
     if (!snapshot || !snapshot.eventId || !(snapshot.recipients || []).length) {
       throw new Error('There is nobody to notify about this event.');
     }
@@ -695,7 +695,7 @@ export function createInvites({
     const summary = { ok: true, sent: 0, skipped: 0, failed: 0, suppressed: 0, capped: 0, results: [] };
     const stranded = new Set(); // guests this run failed to tell
     for (let i = 0; i < snapshot.recipients.length; i += 50) {
-      const res = await getPuter().workers.exec(`${workerUrl}/cancellations`, {
+      const res = await getEverything().workers.exec(`${workerUrl}/cancellations`, {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
@@ -777,7 +777,7 @@ export function createInvites({
   function cancelFailureMessage(status, data) {
     const code = (data && data.error) || '';
     if (status === 401 || code === 'sign_in_required') {
-      return 'Sign in to Puter again to send the cancellation.';
+      return 'Sign in to Everything again to send the cancellation.';
     }
     if (status === 429 || code === 'daily_limit') {
       return "You've reached today's email limit. Try again tomorrow.";
@@ -860,7 +860,7 @@ export function createInvites({
   function failureMessage(status, data) {
     const code = (data && data.error) || '';
     if (status === 401 || code === 'sign_in_required') {
-      return 'Sign in to Puter again to send invitations.';
+      return 'Sign in to Everything again to send invitations.';
     }
     if (status === 429 || code === 'daily_limit') {
       return "You've reached today's invitation limit. Try again tomorrow.";
@@ -869,7 +869,7 @@ export function createInvites({
     // The worker binds the mail's organizer to the signed-in account; a
     // mismatch means the session and this window disagree about who that is.
     if (status === 403 || code === 'organizer_mismatch') {
-      return 'Sign in to Puter again — this invitation would not be sent from your account.';
+      return 'Sign in to Everything again — this invitation would not be sent from your account.';
     }
     // The worker read our own .ics and refused it: the deployed worker is
     // behind the app's ics.js (a new property it doesn't know yet). Retrying

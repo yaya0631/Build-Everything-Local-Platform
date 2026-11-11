@@ -206,7 +206,7 @@ const ID_CAP = 200;
  * add network reads/writes and is not a queryable mail index.
  */
 export function createSearchIndex(scope, storage = window.localStorage, { cap = 4000 } = {}) {
-  const key = `puter-mail:index:${scope}`;
+  const key = `everything-mail:index:${scope}`;
 
   const load = () => {
     try {

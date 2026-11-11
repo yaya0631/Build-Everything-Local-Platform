@@ -6,7 +6,7 @@ let writes;
 beforeEach(async () => {
   vi.resetModules();
   writes = [];
-  vi.stubGlobal('puter', {
+  vi.stubGlobal('everything', {
     auth: { isSignedIn: () => true, getUser: async () => ({ username: 'demo' }) },
     kv: {
       get: async () => null,

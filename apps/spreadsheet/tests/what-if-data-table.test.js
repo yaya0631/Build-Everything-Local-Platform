@@ -62,7 +62,7 @@ it('reads the data tables of a file Excel wrote, without the app\'s own notes', 
   const { wb } = book();
   const zip = X.CFB.read(new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()), { type: 'array' });
   const edit = (path, fn) => { const part = X.CFB.find(zip, path); part.content = new TextEncoder().encode(fn(new TextDecoder().decode(part.content))); part.size = part.content.length; };
-  edit('/xl/workbook.xml', s => s.replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  edit('/xl/workbook.xml', s => s.replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   // As Excel writes them: absolute input cells are allowed, and attributes in any order.
   edit('/xl/worksheets/sheet1.xml', s => s.replace('<f t="dataTable" ref="B3:C5" dt2D="0" dtr="0" r1="E1"/>', '<f t="dataTable" ref="B3:C5" dt2D="0" dtr="0" r1="$E$1" ca="1"/>'));
   const back = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'excel.xlsx');

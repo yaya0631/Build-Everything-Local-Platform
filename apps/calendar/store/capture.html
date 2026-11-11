@@ -6,7 +6,7 @@
     <title>Calendar — store screenshot harness</title>
     <script>
       // ---- Screenshot harness (LOCAL ONLY — delete before shipping).
-      // Mocks the Puter SDK, pins the clock, and seeds a realistic August 2026
+      // Mocks the Everything SDK, pins the clock, and seeds a realistic August 2026
       // calendar so every store screenshot is deterministic.
       (function () {
         const LS = window.localStorage;
@@ -34,7 +34,7 @@
           return true;
         }
 
-        window.puter = {
+        window.everything = {
           env: 'web',
           auth: {
             isSignedIn: () => true,

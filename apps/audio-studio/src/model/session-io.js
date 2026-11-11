@@ -9,7 +9,7 @@
 //   "name": "Song.asesx",
 //   "session": <state without sample data>,
 //   "sources": [{ "id", "name", "file": "Song_Media/Take 1.wav", "sampleRate", "channels", "frames" }],
-//   "video": { "id", "name", "file" (in the media folder) or "path" (on Puter), "mime", "width", "height", "duration", "fps" },
+//   "video": { "id", "name", "file" (in the media folder) or "path" (on Everything), "mime", "width", "height", "duration", "fps" },
 //   "view": { "start", "end" }
 // }
 //
@@ -45,7 +45,7 @@ export function mediaFolderName(sessionName) {
  * Serializes a session. Returns { text, media, video } where media lists
  * { id, file, channels, sampleRate } for every source used by the session and
  * video is the video file to write ({ id, file, blob }) or null. `embedVideo`
- * stores the video in the media folder even when it is referenced on Puter.
+ * stores the video in the media folder even when it is referenced on Everything.
  */
 export function serializeSession(session, { name = session.name, embedVideo = false } = {}) {
   const state = session.state;

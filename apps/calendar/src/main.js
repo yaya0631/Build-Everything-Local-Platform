@@ -32,7 +32,7 @@ const root = document.getElementById('app');
 
 // Who (if anyone) launched us, and how. Resolved once, before any sign-in flow,
 // so a boot after signing in still knows its caller.
-let launch = { callerApp: '', serviceMode: false, inPuterApp: false };
+let launch = { callerApp: '', serviceMode: false, inEverythingApp: false };
 
 function showLoading(message = 'Loading your calendar…') {
   clear(root);
@@ -90,7 +90,7 @@ function showSignIn() {
         el('h1', { class: 'auth-card__title', text: 'Calendar' }),
         el('p', {
           class: 'auth-card__sub',
-          text: 'Sign in with your free Puter account to keep your events synced across every device. Your data stays in your own storage.',
+          text: 'Sign in with your free Everything account to keep your events synced across every device. Your data stays in your own storage.',
         }),
         btn,
       ]),
@@ -105,12 +105,12 @@ function whenIdle(fn, timeout = 3000) {
   else setTimeout(fn, 1200);
 }
 
-function waitForPuter(timeout = 8000) {
+function waitForEverything(timeout = 8000) {
   return new Promise((resolve, reject) => {
-    if (typeof puter !== 'undefined' && puter.kv) return resolve();
+    if (typeof everything !== 'undefined' && everything.kv) return resolve();
     const started = Date.now();
     const iv = setInterval(() => {
-      if (typeof puter !== 'undefined' && puter.kv) {
+      if (typeof everything !== 'undefined' && everything.kv) {
         clearInterval(iv);
         resolve();
       } else if (Date.now() - started > timeout) {
@@ -123,14 +123,14 @@ function waitForPuter(timeout = 8000) {
 
 /**
  * Register the service worker (installability + offline shell). Standalone web
- * only — never inside the Puter GUI — and only in a production build. Deferred
+ * only — never inside the Everything GUI — and only in a production build. Deferred
  * to `load` and fire-and-forget so it never blocks or fails boot. In dev, any
  * previously-installed prod SW is unregistered so it can't serve stale assets.
  */
 function registerServiceWorker() {
   if (!('serviceWorker' in navigator)) return;
-  const inPuterGui = typeof puter !== 'undefined' && (puter.env === 'app' || puter.env === 'gui');
-  if (import.meta.env.PROD && !inPuterGui) {
+  const inEverythingGui = typeof everything !== 'undefined' && (everything.env === 'app' || everything.env === 'gui');
+  if (import.meta.env.PROD && !inEverythingGui) {
     // `updateViaCache: 'none'` forces the browser to revalidate sw.js from the
     // network on every update check — the kill-switch: a fixed/neutered sw.js
     // always reaches clients on their next load.
@@ -165,17 +165,17 @@ async function bootInner() {
   showLoading();
 
   try {
-    await waitForPuter();
+    await waitForEverything();
   } catch {
     // Offline with no SDK cached (e.g. first-ever visit offline): a friendly
     // offline screen beats a generic "check your connection" error.
     if (navigator.onLine === false) renderOfflineScreen(root, { onRetry: boot });
-    else showError('Could not load Puter.js. Please check your connection and reload.');
+    else showError('Could not load Everything.js. Please check your connection and reload.');
     return;
   }
 
   // Safe to read the launch parameters now: they come off the SDK, which the
-  // page loads synchronously before this module, but only `puter.env` tells us
+  // page loads synchronously before this module, but only `everything.env` tells us
   // whether we are an app window at all.
   launch = readLaunchContext(window);
   if (launch.serviceMode) {
@@ -184,7 +184,7 @@ async function bootInner() {
     return;
   }
 
-  // Safe to register now: the SDK is loaded so `puter.env` is defined.
+  // Safe to register now: the SDK is loaded so `everything.env` is defined.
   registerServiceWorker();
 
   if (!isSignedIn()) {
@@ -197,9 +197,9 @@ async function bootInner() {
 
   try {
     const user = await getUser();
-    // Wrap puter.kv so store.load() transparently falls back to a local
+    // Wrap everything.kv so store.load() transparently falls back to a local
     // snapshot when offline. The store is otherwise unchanged.
-    const kv = createOfflineKv(puter.kv);
+    const kv = createOfflineKv(everything.kv);
     kv.ensureUser(user && (user.uuid || user.id || user.username));
 
     const rawStore = createStore(kv);
@@ -237,7 +237,7 @@ async function bootInner() {
     // offline is refused exactly like one of the user's own.
     if (launch.callerApp) serveApi(launch.callerApp, { store });
     // Self-serve RSVP links for guests, served by a worker in the user's own
-    // Puter account (deployed on first use). Uses the gated store, so its
+    // Everything account (deployed on first use). Uses the gated store, so its
     // response merges are offline-guarded like every other write.
     const rsvp = createRsvpLinks({ kv, store, user });
     // Emailing those links out, through the calendar's shared email worker.
@@ -246,7 +246,7 @@ async function bootInner() {
     // where (loaded by start(), below).
     const invites = createInvites({ kv, store, rsvp, user });
     // Guest suggestions from the user's own address book, read from the Contacts
-    // app over an AppConnection. Inert outside the Puter desktop, where there is
+    // app over an AppConnection. Inert outside the Everything desktop, where there is
     // no other app to talk to. `userKey` scopes its cached snapshot to this
     // account, exactly as the offline calendar snapshot is scoped.
     const contacts = createContacts({
@@ -256,7 +256,7 @@ async function bootInner() {
     // as RSVP links (booking.js reuses rsvp's admin channel). The gated store
     // keeps its pulled-booking writes offline-guarded like everything else.
     const booking = createBooking({ kv, store, rsvp, user });
-    // Meeting links for the Puter Meetings app, minted locally from its
+    // Meeting links for the Everything Meetings app, minted locally from its
     // published stateless recipe (see meetings.js) — no API, no launch,
     // works on the open web too.
     const meetings = createMeetings();
@@ -343,7 +343,7 @@ let apiServer = null;
 function serveApi(callerApp, { store, onActivity } = {}) {
   let connection = null;
   try {
-    connection = puter.ui.parentApp();
+    connection = everything.ui.parentApp();
   } catch {
     return null;
   }
@@ -387,7 +387,7 @@ async function bootService() {
     // When the desktop can't close us, the window that gets shown must explain
     // itself: without a render it would still hold the boot spinner, stuck
     // "loading" (aria-busy and all) forever.
-    console.warn('[calendar] the calendar API needs a signed-in Puter session');
+    console.warn('[calendar] the calendar API needs a signed-in Everything session');
     renderServicePanel(launch.callerApp, 'signed-out');
     if (!exit()) showWindow();
     return;
@@ -397,7 +397,7 @@ async function bootService() {
   // a *window* usable and honest while disconnected, and a caller is better told
   // that a read failed than handed this device's last-synced copy of a calendar
   // it is about to write to.
-  const store = createStore(puter.kv);
+  const store = createStore(everything.kv);
 
   let idleTimer = null;
   const touch = () => {
@@ -405,7 +405,7 @@ async function bootService() {
     idleTimer = setTimeout(() => {
       if (apiServer) apiServer.stop();
       // Every other exit() here checks the return: on a desktop without
-      // puter.exit, exiting silently would leave a hidden zombie whose
+      // everything.exit, exiting silently would leave a hidden zombie whose
       // stopped server answers nothing. Show the window (its panel already
       // says it can be closed) so the instance is at least visible.
       if (!exit()) {
@@ -434,10 +434,10 @@ async function bootService() {
 
 const SERVICE_PANEL_COPY = {
   serving: (app) =>
-    `${app} is using your calendar. Nothing leaves your Puter account, and you can close this window at any time.`,
+    `${app} is using your calendar. Nothing leaves your Everything account, and you can close this window at any time.`,
   denied: (app) => `${app} asked to use your calendar and was not allowed to. You can close this window.`,
   'signed-out': (app) =>
-    `${app} asked to use your calendar, but nobody is signed in to Puter. You can close this window.`,
+    `${app} asked to use your calendar, but nobody is signed in to Everything. You can close this window.`,
   idle: (app) => `${app} finished using your calendar. You can close this window.`,
 };
 
@@ -471,7 +471,7 @@ function renderServicePanel(callerApp, mode) {
 
 function hideWindow() {
   try {
-    puter.ui.hideWindow();
+    everything.ui.hideWindow();
   } catch {
     /* best-effort: an older desktop may not support it */
   }
@@ -479,7 +479,7 @@ function hideWindow() {
 
 function showWindow() {
   try {
-    puter.ui.showWindow();
+    everything.ui.showWindow();
   } catch {
     /* best-effort */
   }
@@ -488,8 +488,8 @@ function showWindow() {
 /** Close this instance. Returns false when the SDK can't (nothing happened). */
 function exit() {
   try {
-    if (typeof puter.exit !== 'function') return false;
-    puter.exit(0);
+    if (typeof everything.exit !== 'function') return false;
+    everything.exit(0);
     return true;
   } catch {
     return false;

@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import {
   csvField, toCsv, taxColumns, receiptsCsv, lineItemsCsv, csvFilename, CSV_BOM, csvBlob,
 } from '../src/lib/csv.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 import { Store } from '../src/lib/store.js';
 import { todayISO } from '../src/lib/dates.js';
 import { round2 } from '../src/lib/util.js';
@@ -92,7 +92,7 @@ describe('receipts and line-items CSV', () => {
   let sales;
 
   beforeEach(async () => {
-    mock = installMockPuter();
+    mock = installMockEverything();
     store = new Store();
     await store.init();
     const food = await store.addTax({ name: 'Prepared food', rate: 9.5 });

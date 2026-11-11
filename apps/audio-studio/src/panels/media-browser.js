@@ -1,14 +1,14 @@
-// Media Browser panel: browse Puter files and folders on this device with a
+// Media Browser panel: browse Everything files and folders on this device with a
 // folder tree and a list (Name, Duration, Format, Size), filter to audio,
 // search, preview with a small transport, open (double-click / Enter), insert
 // into a multitrack session, and drag into the editor. Durations come from
-// header reads, not whole-file downloads; Puter previews stream through a
+// header reads, not whole-file downloads; Everything previews stream through a
 // temporary read URL. Device folders use the File System Access API (see
 // storage/local-folders.js) and are listed under "This Device".
 
 import { h } from '../lib/dom.js';
 import { icon } from '../ui/icons.js';
-import * as puter from '../storage/puter.js';
+import * as everything from '../storage/everything.js';
 import * as local from '../storage/local-folders.js';
 import { AUDIO_EXTENSIONS, extensionOf, decodeAudio } from '../audio/decode.js';
 import { encodeWav } from '../audio/wav.js';
@@ -17,7 +17,7 @@ import { probeAudio, describeProbe, HEAD_BYTES, TAIL_BYTES } from '../storage/pr
 import { formatBytesShort } from '../export/formats.js';
 import { formatTime } from '../lib/time.js';
 
-export const PUTER_DRAG_TYPE = 'application/x-audio-studio-puter';
+export const EVERYTHING_DRAG_TYPE = 'application/x-audio-studio-everything';
 const AUDIO = new Set(AUDIO_EXTENSIONS);
 const probes = new Map(); // `${path}:${modified}` -> probe result (or a pending promise)
 
@@ -25,16 +25,16 @@ export const isAudioName = (name) => AUDIO.has(extensionOf(name));
 
 /** Sorts folders first, then by name (natural order). Pure. */
 export function sortItems(items) {
-  return items.slice().sort((a, b) => Number(puter.isDir(b)) - Number(puter.isDir(a)) || a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
+  return items.slice().sort((a, b) => Number(everything.isDir(b)) - Number(everything.isDir(a)) || a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
 }
 
 /** Items shown for a query and the audio-only filter. Pure. */
 export function filterItems(items, { query = '', audioOnly = true } = {}) {
   const q = query.trim().toLowerCase();
-  return items.filter((it) => (puter.isDir(it) || !audioOnly || isAudioName(it.name)) && (!q || it.name.toLowerCase().includes(q)));
+  return items.filter((it) => (everything.isDir(it) || !audioOnly || isAudioName(it.name)) && (!q || it.name.toLowerCase().includes(q)));
 }
 
-/** Breadcrumb segments for a Puter path, or a device folder path: [{ name, path }]. Pure. */
+/** Breadcrumb segments for an Everything path, or a device folder path: [{ name, path }]. Pure. */
 export function crumbs(path, rootName = null) {
   if (local.isLocalPath(path)) {
     const { rootId, parts } = local.parseLocalPath(path);
@@ -50,7 +50,7 @@ export function crumbs(path, rootName = null) {
 let deviceRoots = [];
 
 /**
- * Items dragged from the Media Browser, ready for openFiles: Puter entries as
+ * Items dragged from the Media Browser, ready for openFiles: Everything entries as
  * they are, device files as File objects. Missing device files are dropped.
  */
 export async function resolveMediaItems(items) {
@@ -82,15 +82,15 @@ export function mediaBrowserPanel(app) {
   const access = new Map(); // device root id -> 'granted' | 'prompt' | 'denied'
 
   // ------------------------------------------------------- file systems
-  // Puter paths start with '/', device folder paths with 'local:'.
-  const isDir = (it) => puter.isDir(it);
+  // Everything paths start with '/', device folder paths with 'local:'.
+  const isDir = (it) => everything.isDir(it);
   const rootOf = (path) => (local.isLocalPath(path) ? deviceRoots.find((r) => r.id === local.parseLocalPath(path).rootId) : null);
-  const readdir = (path) => (local.isLocalPath(path) ? local.readLocalDir(deviceRoots, path) : puter.readdir(path));
-  const dirname = (path) => (local.isLocalPath(path) ? local.localDirname(path) : puter.dirname(path));
+  const readdir = (path) => (local.isLocalPath(path) ? local.readLocalDir(deviceRoots, path) : everything.readdir(path));
+  const dirname = (path) => (local.isLocalPath(path) ? local.localDirname(path) : everything.dirname(path));
   const isTop = (path) => !path || path === home || path === '/' || (local.isLocalPath(path) && !local.parseLocalPath(path).parts.length);
-  const readRange = async (it, offset, count) => (it.local ? (await local.localFile(deviceRoots, it.path)).slice(offset, offset + count) : puter.readRange(it.path, offset, count));
-  const readBlob = (it) => (it.local ? local.localFile(deviceRoots, it.path) : puter.readFile(it.path));
-  /** What openFiles takes for an item: a Puter entry, or the device File. */
+  const readRange = async (it, offset, count) => (it.local ? (await local.localFile(deviceRoots, it.path)).slice(offset, offset + count) : everything.readRange(it.path, offset, count));
+  const readBlob = (it) => (it.local ? local.localFile(deviceRoots, it.path) : everything.readFile(it.path));
+  /** What openFiles takes for an item: an Everything entry, or the device File. */
   const openable = async (it) => (it.local ? local.localFile(deviceRoots, it.path) : fsItem(it));
 
   // ------------------------------------------------------------- elements
@@ -138,11 +138,11 @@ export function mediaBrowserPanel(app) {
   const el = h('div.media-panel', content, gate);
 
   // ------------------------------------------------------------- browsing
-  const signedIn = () => Boolean(puter.sdk()) && puter.isSignedIn();
+  const signedIn = () => Boolean(everything.sdk()) && everything.isSignedIn();
 
   const signIn = async () => {
     try {
-      if (await puter.signIn()) {
+      if (await everything.signIn()) {
         await app.refreshAccount?.();
         home = null;
         start();
@@ -160,8 +160,8 @@ export function mediaBrowserPanel(app) {
     if (ok) return;
     gate.replaceChildren(
       icon('cloud', 28),
-      h('p', puter.sdk() ? 'Sign in to Puter to browse your audio files.' : 'Puter is not available. Check your connection to browse your files.'),
-      puter.sdk() ? h('button.btn.primary', { type: 'button', onclick: signIn }, icon('log-in', 14), 'Sign In') : null,
+      h('p', everything.sdk() ? 'Sign in to Everything to browse your audio files.' : 'Everything is not available. Check your connection to browse your files.'),
+      everything.sdk() ? h('button.btn.primary', { type: 'button', onclick: signIn }, icon('log-in', 14), 'Sign In') : null,
       local.supported() ? h('p.faint', 'Or browse a folder on this device.') : null,
       local.supported() ? h('button.btn', { type: 'button', onclick: () => addFolder() }, icon('folder-plus', 14), 'Add Folder...') : null,
     );
@@ -217,12 +217,12 @@ export function mediaBrowserPanel(app) {
     await loadDeviceRoots();
     renderGate();
     if (signedIn()) {
-      if (!home) home = await puter.homeDir();
+      if (!home) home = await everything.homeDir();
       tree.set(home, tree.get(home) || { children: null, expanded: true });
     }
     const usable = (p) => p && ((local.isLocalPath(p) && rootOf(p) && access.get(rootOf(p).id) === 'granted') || (!local.isLocalPath(p) && home && p.startsWith(home)));
     if (!usable(dir)) {
-      if (home) dir = await puter.appDir().then(async (d) => ((await puter.exists(d)) ? d : home));
+      if (home) dir = await everything.appDir().then(async (d) => ((await everything.exists(d)) ? d : home));
       else {
         const r = deviceRoots.find((x) => access.get(x.id) === 'granted');
         dir = r ? local.rootPath(r.id) : null;
@@ -359,8 +359,8 @@ export function mediaBrowserPanel(app) {
     };
     const focused = treeEl.contains(document.activeElement) ? document.activeElement?.dataset?.path : null;
     const groups = [];
-    if (home) groups.push(h('li.media-tree-group', { role: 'presentation' }, 'Puter'), build(home, 1, 'Home', 'cloud'));
-    else if (puter.sdk()) groups.push(h('li.media-tree-group', { role: 'presentation' }, 'Puter'), h('li', { role: 'treeitem', 'aria-level': '1', tabindex: '-1', dataset: { action: 'signin' } }, h('div.media-tree-row', h('span.media-tree-twisty'), icon('log-in', 14), h('span.media-tree-name', 'Sign in to browse'))));
+    if (home) groups.push(h('li.media-tree-group', { role: 'presentation' }, 'Everything'), build(home, 1, 'Home', 'cloud'));
+    else if (everything.sdk()) groups.push(h('li.media-tree-group', { role: 'presentation' }, 'Everything'), h('li', { role: 'treeitem', 'aria-level': '1', tabindex: '-1', dataset: { action: 'signin' } }, h('div.media-tree-row', h('span.media-tree-twisty'), icon('log-in', 14), h('span.media-tree-name', 'Sign in to browse'))));
     if (deviceRoots.length || local.supported()) groups.push(h('li.media-tree-group', { role: 'presentation' }, 'This Device'));
     for (const r of deviceRoots) groups.push(build(local.rootPath(r.id), 1, r.name, 'hard-drive'));
     if (local.supported()) groups.push(h('li', { role: 'treeitem', 'aria-level': '1', tabindex: '-1', dataset: { action: 'add' } }, h('div.media-tree-row.faint', h('span.media-tree-twisty'), icon('folder-plus', 14), h('span.media-tree-name', 'Add Folder...'))));
@@ -558,7 +558,7 @@ export function mediaBrowserPanel(app) {
   body.addEventListener('dragstart', (e) => {
     const row = e.target.closest('tr[data-path]');
     if (!row || isDir(row.item)) return;
-    e.dataTransfer.setData(PUTER_DRAG_TYPE, JSON.stringify([dragItem(row.item)]));
+    e.dataTransfer.setData(EVERYTHING_DRAG_TYPE, JSON.stringify([dragItem(row.item)]));
     e.dataTransfer.setData('text/plain', row.item.name);
     e.dataTransfer.effectAllowed = 'copy';
   });
@@ -595,7 +595,7 @@ export function mediaBrowserPanel(app) {
     try {
       if (objectUrl) URL.revokeObjectURL(objectUrl);
       objectUrl = it.local ? URL.createObjectURL(await local.localFile(deviceRoots, it.path)) : null;
-      audio.src = objectUrl || (await puter.readURL(it.path));
+      audio.src = objectUrl || (await everything.readURL(it.path));
       audio.currentTime = 0;
       await audio.play();
     } catch (err) {

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
-vi.mock('../src/lib/puter.js', async (importOriginal) => {
+vi.mock('../src/lib/everything.js', async (importOriginal) => {
   const real = await importOriginal();
   const fs = new Map();
   const writeFile = vi.fn(async (path, blob, { overwrite = true } = {}) => {
@@ -32,7 +32,7 @@ vi.mock('../src/lib/puter.js', async (importOriginal) => {
 });
 
 import { publishing, Doc, AUTOSAVE_MS, MAX_AUTOSAVE_MS, RETRY_MS, UNTITLED, needsUnloadWarning, versioning } from '../src/lib/doc.js';
-import * as P from '../src/lib/puter.js';
+import * as P from '../src/lib/everything.js';
 import { hwp, paragraph } from './helpers/hwp-fixtures.js';
 import { isStarred, toggleStar } from '../src/lib/starred.js';
 
@@ -89,7 +89,7 @@ describe('Doc', () => {
     doc.destroy();
   });
 
-  it('opens a Puter HWP as a fresh copy without overwriting or renaming the source', async () => {
+  it('opens an Everything HWP as a fresh copy without overwriting or renaming the source', async () => {
     const original = new Blob([hwp()]);
     P.__fs.set('Elsewhere/원본.hwp', original);
     P.__fs.set('Documents/원본.docx', blob('existing'));
@@ -880,7 +880,7 @@ describe('Doc versioning', () => {
     // The mocked writeFile lands in P.__fs; the real folder helpers reach the SDK, so point it at the same map.
     const files = P.__fs;
     const notFound = () => Object.assign(new Error('does not exist'), { code: 'subject_does_not_exist' });
-    globalThis.puter = {
+    globalThis.everything = {
       fs: {
         async mkdir() {},
         async readdir(p) { const rows = [...files.entries()].filter(([k]) => k.startsWith(`${p}/`)); if (!rows.length) throw notFound(); return rows.map(([k, v]) => ({ name: k.split('/').pop(), path: k, size: v.size })); },
@@ -918,7 +918,7 @@ describe('Doc versioning', () => {
       expect(versionKeys()).toHaveLength(2);
       expect(versionKeys().every((k) => k.startsWith('Documents/.versions/Journal/'))).toBe(true);
     } finally {
-      delete globalThis.puter;
+      delete globalThis.everything;
       versioning.enabled = false;
       vi.useFakeTimers();
     }
@@ -932,7 +932,7 @@ describe('published pages follow the file', () => {
     const down = vi.spyOn(publish, 'unpublishAt').mockResolvedValue(true);
     publishing.enabled = true;
     try {
-      const P = await import('../src/lib/puter.js');
+      const P = await import('../src/lib/everything.js');
       P.__fs.set('Documents/Draft.docx', new Blob(['x']));
       const doc = new Doc({ name: 'Draft', path: 'Documents/Draft.docx', blob: new Blob(['x']) });
       expect(await doc.rename('Final')).toBeNull();
@@ -998,7 +998,7 @@ describe('files that vanished under the document', () => {
     expect(P.writeFile).not.toHaveBeenCalled();
   });
 
-  it('says that a file being renamed no longer exists when Puter cannot find it', async () => {
+  it('says that a file being renamed no longer exists when Everything cannot find it', async () => {
     const doc = new Doc({ name: 'Old', path: 'Documents/Old.docx', blob: blob('x') });
     P.renameFile.mockRejectedValueOnce(gone());
     expect(await doc.rename('New')).toBe('That file no longer exists');

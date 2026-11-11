@@ -7,7 +7,7 @@ describe('concurrent file creation', () => {
   beforeEach(() => {
     files = new Map(); docs = [];
     versioning.enabled = false;
-    vi.stubGlobal('puter', { fs: {
+    vi.stubGlobal('everything', { fs: {
       mkdir: async () => {},
       stat: async (path) => {
         if (!files.has(path)) throw Object.assign(new Error('Not found'), { code: 'ENOENT' });

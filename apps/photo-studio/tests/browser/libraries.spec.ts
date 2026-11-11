@@ -2,8 +2,8 @@ import { test, expect, type Page } from '@playwright/test';
 import { layer, newDocument } from '../../src/model/document';
 import { boot, client, compositePixel, downloadFrom, historyLabels, idle, openImage, openProject, run, start } from './helpers';
 
-// A Puter stand-in with an in-memory file system shared through `window.__fs`.
-const cloudStub = `window.__fs=new Map();window.puter={env:"app",auth:{isSignedIn:()=>true,getUser:async()=>({username:"lib"})},
+// An Everything stand-in with an in-memory file system shared through `window.__fs`.
+const cloudStub = `window.__fs=new Map();window.everything={env:"app",auth:{isSignedIn:()=>true,getUser:async()=>({username:"lib"})},
 fs:{read:async(p)=>{const b=window.__fs.get(p);if(!b)throw Object.assign(new Error(p+" does not exist"),{code:"subject_does_not_exist"});return b;},
 write:async(p,d)=>{window.__fs.set(p,typeof d==="string"?new Blob([d]):d);return {path:p,name:p.split("/").pop()};}}};`;
 
@@ -178,7 +178,7 @@ test.describe('Libraries', () => {
     expect(await compositePixel(page, 125, 90)).toEqual([255, 0, 0, 255]);
   });
 
-  test('syncs through the Puter folder and merges a change made elsewhere', async ({ page }) => {
+  test('syncs through the Everything folder and merges a change made elsewhere', async ({ page }) => {
     await boot(page, 'default', cloudStub);
     await freshLibraries(page);
     await openImage(page, 80, 60, '#808080', 'cloud.png');
@@ -186,7 +186,7 @@ test.describe('Libraries', () => {
     await page.evaluate(() => window.photoStudio.setForeground('#123456'));
     await run(page, 'libraries.add-foreground');
     await run(page, 'libraries.sync');
-    await expect(body.locator('.lib-sync')).toContainText('Synced with Puter');
+    await expect(body.locator('.lib-sync')).toContainText('Synced with Everything');
     const stored = await page.evaluate(async () => JSON.parse(await (window as unknown as { __fs: Map<string, Blob> }).__fs.get('libraries/index.json')!.text()));
     expect(stored.libraries[0].items[0].data.hex).toBe('#123456');
 

@@ -8,7 +8,7 @@ import { addHighlight, rectQuad } from '../../src/core/highlight.js';
 const settled = (page) => expect(page.locator('.editor')).toHaveAttribute('aria-busy', 'false');
 
 async function open(page, doc) {
-  await page.route('**/sdk/puter.js', (route) => route.abort());
+  await page.route('**/sdk/everything.js', (route) => route.abort());
   await page.goto('/#library');
   const chooser = page.waitForEvent('filechooser');
   await page.getByRole('button', { name: /^Open a PDF/ }).click();

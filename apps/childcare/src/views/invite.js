@@ -22,7 +22,7 @@ function ready() {
     openDialog({
       title: 'Turn on staff and family access',
       size: 'narrow',
-      body: h('p', 'Families and staff sign in with their own Puter accounts and see your school through a small server in your Puter account. Turn it on once in Settings, then invite people from here.'),
+      body: h('p', 'Families and staff sign in with their own Everything accounts and see your school through a small server in your Everything account. Turn it on once in Settings, then invite people from here.'),
       footer: ({ close }) => [h('button.btn', { type: 'button', onClick: () => close() }, 'Not now'), h('button.btn.primary', { type: 'button', onClick: () => (close(), navigate('/settings/access')) }, 'Go to settings')],
     });
     return false;
@@ -43,7 +43,7 @@ export async function invite({ role, guardianId, staffId, name, email }) {
   const link = inviteLink(app.team.url, res.token);
   const school = app.settings().school.name || 'our school';
   const subject = role === 'parent' ? `Join ${school} on Childcare` : `Join the ${school} team`;
-  const bodyText = role === 'parent' ? `Hi ${name.split(' ')[0]},\n\nYou can now see your child's day at ${school}: photos, meals, naps, messages, and statements. Open this link and sign in with a free Puter account:\n\n${link}\n\nThe link works once and expires in 14 days.` : `Hi ${name.split(' ')[0]},\n\nHere is your link to join ${school} on Childcare. Open it and sign in with a free Puter account:\n\n${link}\n\nThe link works once and expires in 14 days.`;
+  const bodyText = role === 'parent' ? `Hi ${name.split(' ')[0]},\n\nYou can now see your child's day at ${school}: photos, meals, naps, messages, and statements. Open this link and sign in with a free Everything account:\n\n${link}\n\nThe link works once and expires in 14 days.` : `Hi ${name.split(' ')[0]},\n\nHere is your link to join ${school} on Childcare. Open it and sign in with a free Everything account:\n\n${link}\n\nThe link works once and expires in 14 days.`;
   const field = h('input.input', { value: link, readonly: true, 'aria-label': 'Invitation link', onFocus: (e) => e.target.select() });
   // Without clipboard access (blocked, or an insecure page), select the link to copy by hand.
   const copy = () =>

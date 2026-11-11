@@ -6,17 +6,17 @@ export function authView({ onSignedIn }) {
   const cta = el('button.btn.btn-primary.auth-cta', {
     onclick: async () => {
       cta.disabled = true;
-      cta.textContent = 'Waiting for Puter…';
+      cta.textContent = 'Waiting for Everything…';
       try {
-        await puter.auth.signIn();
+        await everything.auth.signIn();
         onSignedIn();
       } catch {
         cta.disabled = false;
-        cta.textContent = 'Continue with Puter';
+        cta.textContent = 'Continue with Everything';
         refocus(cta);
       }
     },
-  }, 'Continue with Puter');
+  }, 'Continue with Everything');
 
   return el('div.auth-view', {},
     el('img.auth-logo', { src: './icon-192.png', alt: '', 'aria-hidden': 'true' }),
@@ -29,7 +29,7 @@ export function authView({ onSignedIn }) {
     ),
     cta,
     el('p.auth-note', {}, 'Free · No ads · Your data stays in your own ',
-      el('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Puter'), ' cloud')
+      el('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Everything'), ' cloud')
   );
 
   function feature(ic, text) {

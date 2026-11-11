@@ -21,11 +21,11 @@ export async function pasteText(input, text, html) {
 }
 
 /**
- * Open this device's file picker on the Puter desktop, where Ctrl/⌘ O browses Puter instead:
+ * Open this device's file picker on the Everything desktop, where Ctrl/⌘ O browses Everything instead:
  * the library's Open card, or File → Open from this device… in the editor.
  */
 export async function openDevicePicker(page) {
-  if (!(await page.evaluate(() => globalThis.puter?.env === 'app')))
+  if (!(await page.evaluate(() => globalThis.everything?.env === 'app')))
     return page.keyboard.press('ControlOrMeta+o');
   const card = page.locator('.open-card');
   if (await card.isVisible()) return card.click();

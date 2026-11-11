@@ -16,7 +16,7 @@ Each story has a composition for 1920 × 1080, 1024 × 768, and 1080 × 2280. Th
 
 All UI comes from the running app in light mode, with its existing fonts, colors, spacing, and Lucide icons. The only capture styling suppresses scrollbars. The artwork uses the existing app icon and code-rendered shapes and typography. It contains no generated or reconstructed UI, third-party photography, URLs, or account data.
 
-The café fixtures are isolated in the development mock. The capture date is fixed to September 5, 2026. The catalog includes realistic product names, costs, margins, stock levels, and SKUs. Customer profiles include contact details and an actual sample reward redemption recorded through the app. Sample transactions use the app's existing sample generator and calculations. No live Puter account is accessed. The promotional compositions are separate from the product interface.
+The café fixtures are isolated in the development mock. The capture date is fixed to September 5, 2026. The catalog includes realistic product names, costs, margins, stock levels, and SKUs. Customer profiles include contact details and an actual sample reward redemption recorded through the app. Sample transactions use the app's existing sample generator and calculations. No live Everything account is accessed. The promotional compositions are separate from the product interface.
 
 ## Regenerate
 

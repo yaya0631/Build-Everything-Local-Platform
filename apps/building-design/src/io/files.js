@@ -1,5 +1,5 @@
 /**
- * Opening, saving and recovering projects: Puter cloud files, device files
+ * Opening, saving and recovering projects: Everything cloud files, device files
  * and IndexedDB recovery copies (so work survives reloads without an
  * account). Projects are always stored as files.
  */
@@ -20,12 +20,12 @@ import {
   recentFiles as recent,
   addRecent,
   removeRecent,
-  usePuterPickers,
-  puterOpenPicker,
-  puterSavePicker,
+  useEverythingPickers,
+  everythingOpenPicker,
+  everythingSavePicker,
   CLOUD_DIR,
 } from './storage.js';
-import { isSignedIn, puterAvailable, whenPuter } from '../platform.js';
+import { isSignedIn, everythingAvailable, whenEverything } from '../platform.js';
 import { scheduleRows, scheduleColumns, toCSV } from '../core/schedule.js';
 import { PLAN_VIEW_KINDS } from '../core/doc.js';
 
@@ -125,11 +125,11 @@ export async function openDevice(app) {
   await loadBuffer(app, f.buffer, { name: baseName(f.name), handle: f.handle || null, source: 'device' });
 }
 
-/** Files passed by the Puter desktop ("Open with"). */
+/** Files passed by the Everything desktop ("Open with"). */
 export async function handleLaunchItems(app) {
   try {
-    if (typeof puter?.ui?.onLaunchedWithItems !== 'function') return;
-    puter.ui.onLaunchedWithItems(async (items) => {
+    if (typeof everything?.ui?.onLaunchedWithItems !== 'function') return;
+    everything.ui.onLaunchedWithItems(async (items) => {
       const f = items?.[0];
       if (!f) return;
       if (!(await confirmDiscard(app))) return;
@@ -142,10 +142,10 @@ export async function handleLaunchItems(app) {
 }
 
 export async function openDialog(app, tab = null) {
-  if (usePuterPickers() && !tab) {
+  if (useEverythingPickers() && !tab) {
     if (!(await confirmDiscard(app))) return;
     try {
-      const f = await puterOpenPicker();
+      const f = await everythingOpenPicker();
       if (f) await loadBuffer(app, f.buffer, { name: baseName(f.name), path: f.path, source: 'cloud' });
     } catch (err) {
       if (err) toast(`Could not open: ${err.message || err}`, { kind: 'error' });
@@ -171,25 +171,25 @@ export async function openDialog(app, tab = null) {
     }
     if (which === 'recent') {
       const rec = recent();
-      if (!rec.length) panel.append(h('p.dialog-text', 'Projects you open from Puter appear here.'));
+      if (!rec.length) panel.append(h('p.dialog-text', 'Projects you open from Everything appear here.'));
       for (const r of rec) list.append(fileItem(r.name, new Date(r.at).toLocaleString(), r.source === 'cloud' ? 'cloud' : 'device', () => (close?.(), openRecent(app, r))));
       panel.append(list);
       return;
     }
     panel.append(status, list);
-    if (!puterAvailable() || !(await whenPuter(4000))) {
-      status.append(h('p', 'Puter could not be reached. Check your connection.'));
+    if (!everythingAvailable() || !(await whenEverything(4000))) {
+      status.append(h('p', 'Everything could not be reached. Check your connection.'));
       return;
     }
     if (!(await isSignedIn())) {
-      status.append(h('p', which === 'shared' ? 'Sign in to see projects other people shared with you.' : 'Sign in with Puter to keep projects in your cloud storage.'), h('button.btn.primary', { type: 'button', onClick: async () => (await app.signIn()) && show(which) }, icon('log-in', 16), 'Sign in'));
+      status.append(h('p', which === 'shared' ? 'Sign in to see projects other people shared with you.' : 'Sign in with Everything to keep projects in your cloud storage.'), h('button.btn.primary', { type: 'button', onClick: async () => (await app.signIn()) && show(which) }, icon('log-in', 16), 'Sign in'));
       return;
     }
     status.append(h('p', 'Loading...'));
     try {
       let items;
       if (which === 'shared') {
-        const r = await puter.fs.listShared();
+        const r = await everything.fs.listShared();
         items = (r?.items || []).filter((f) => !f.is_dir && /\.bdp$/i.test(f.name));
       } else items = (await cloudList()).items;
       clear(status);
@@ -204,7 +204,7 @@ export async function openDialog(app, tab = null) {
     }
   };
   for (const [id, label, ic] of [
-    ['cloud', 'Puter', 'cloud'],
+    ['cloud', 'Everything', 'cloud'],
     ['shared', 'Shared with me', 'users'],
     ['device', 'This device', 'device'],
     ['recent', 'Recent', 'history'],
@@ -213,7 +213,7 @@ export async function openDialog(app, tab = null) {
   const body = h('div', tabs, panel);
   const p = modal({ title: 'Open Project', body, size: 'md', actions: [{ label: 'Cancel', value: null }], onClose: () => (close = null) });
   close = () => document.querySelector('dialog[open]')?._close?.(null);
-  const signed = puterAvailable() && (await isSignedIn().catch(() => false));
+  const signed = everythingAvailable() && (await isSignedIn().catch(() => false));
   show(tab || (signed ? 'cloud' : 'device'));
   return p;
 }
@@ -239,7 +239,7 @@ async function writeCloud(app, path, name) {
     if (ok) {
       app.updateTitle();
       scheduleRecovery(app);
-      toast(`Saved ${name} to Puter.`, { kind: 'success' });
+      toast(`Saved ${name} to Everything.`, { kind: 'success' });
     }
     return ok;
   }
@@ -256,7 +256,7 @@ async function writeCloud(app, path, name) {
     addRecent({ name, path, source: 'cloud' });
     app.updateTitle();
     scheduleRecovery(app);
-    toast(`Saved ${name} to Puter.`, { kind: 'success' });
+    toast(`Saved ${name} to Everything.`, { kind: 'success' });
     return true;
   } catch (err) {
     toast(`Could not save: ${err.message || err}`, { kind: 'error' });
@@ -282,13 +282,13 @@ async function writeDevice(app, name, handle) {
 export async function saveAs(app) {
   if (!app.doc) return false;
   const name0 = app.file?.name || app.doc.project.name || 'Untitled';
-  if (usePuterPickers()) {
+  if (useEverythingPickers()) {
     try {
       const doc = app.doc;
       const rev = doc.revision;
       const snapshot = new Map(doc.items);
       const blob = await encodeProject(doc);
-      const r = await puterSavePicker(blob, `${safeFileName(name0)}${NATIVE_EXT}`);
+      const r = await everythingSavePicker(blob, `${safeFileName(name0)}${NATIVE_EXT}`);
       if (!r) return false;
       doc.markSaved(rev);
       if (doc !== app.doc) return true;
@@ -304,13 +304,13 @@ export async function saveAs(app) {
       return false;
     }
   }
-  const signed = puterAvailable() && (await isSignedIn().catch(() => false));
+  const signed = everythingAvailable() && (await isSignedIn().catch(() => false));
   const choice = await modal({
     title: 'Save Project',
     size: 'sm',
     body: h(
       'div.open-sources',
-      h('button.btn.big', { type: 'button', onClick: () => document.querySelector('dialog[open]')._close('cloud') }, icon('cloud', 22), h('span', h('strong', 'Puter cloud'), h('small', signed ? 'Keep it in your Puter storage, open it anywhere and share it.' : 'Sign in to keep it in your Puter storage and share it.'))),
+      h('button.btn.big', { type: 'button', onClick: () => document.querySelector('dialog[open]')._close('cloud') }, icon('cloud', 22), h('span', h('strong', 'Everything cloud'), h('small', signed ? 'Keep it in your Everything storage, open it anywhere and share it.' : 'Sign in to keep it in your Everything storage and share it.'))),
       h('button.btn.big', { type: 'button', onClick: () => document.querySelector('dialog[open]')._close('device') }, icon('device', 22), h('span', h('strong', 'This device'), h('small', 'Save a .bdp file on this computer or phone.'))),
     ),
     actions: [{ label: 'Cancel', value: null }],
@@ -318,7 +318,7 @@ export async function saveAs(app) {
   if (choice === 'device') return writeDevice(app, name0, null);
   if (choice !== 'cloud') return false;
   if (!signed && !(await app.signIn())) return false;
-  const name = await promptDialog('Save to Puter', 'Project name', name0, { okLabel: 'Save', validate: (v) => (!v ? 'Enter a name.' : null) });
+  const name = await promptDialog('Save to Everything', 'Project name', name0, { okLabel: 'Save', validate: (v) => (!v ? 'Enter a name.' : null) });
   if (!name) return false;
   const path = `${CLOUD_DIR}/${safeFileName(name)}${NATIVE_EXT}`;
   try {
@@ -326,7 +326,7 @@ export async function saveAs(app) {
     await cloudWrite(path, blob, false);
   } catch (err) {
     if (isExistsError(err)) {
-      if (!(await confirmDialog('Replace project?', `"${name}" already exists in Puter. Replace it?`, { confirm: 'Replace', danger: true }))) return false;
+      if (!(await confirmDialog('Replace project?', `"${name}" already exists in Everything. Replace it?`, { confirm: 'Replace', danger: true }))) return false;
     } else {
       toast(`Could not save: ${err.message || err}`, { kind: 'error' });
       return false;

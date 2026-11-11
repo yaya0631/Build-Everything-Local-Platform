@@ -3,7 +3,7 @@
  * (see worker/service.js). Edits are Yjs updates. They are kept locally
  * (memory and IndexedDB) until the worker confirms them, sent in small
  * batches, and merged with everyone else's. Live updates arrive through
- * Puter events on the space's signal key, which names the documents that
+ * Everything events on the space's signal key, which names the documents that
  * changed, so only those are fetched; a signal without that detail, or a
  * gap in the signal numbers, fetches every open document, and periodic
  * synchronization covers the rest. The flow follows the Whiteboard app's
@@ -34,7 +34,7 @@ export class AccessError extends Error {
 export class SharedSpace extends Space {
   /**
    * @param request (op, data) => Promise<response>   talks to the worker
-   * @param events  puter.events (optional) for live updates
+   * @param events  everything.events (optional) for live updates
    */
   constructor({ server, room, request, events = null, cache = memoryCache(), user = null, title = '', icon = null, role = 'viewer' }) {
     super({ id: room, kind: 'shared', role });

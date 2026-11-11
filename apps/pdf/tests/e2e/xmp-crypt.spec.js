@@ -17,7 +17,7 @@ for (const [label, options] of [
 ])
   test(`document details reads and saves ${label}`, async ({ page }) => {
     const { bytes, password } = await cryptMetadata(options);
-    await page.route('**/sdk/puter.js', (route) => route.abort());
+    await page.route('**/sdk/everything.js', (route) => route.abort());
     await page.goto('/#library');
     const chooser = page.waitForEvent('filechooser');
     await page.getByRole('button', { name: /Open a PDF/ }).click();

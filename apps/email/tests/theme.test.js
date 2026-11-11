@@ -44,11 +44,11 @@ describe('theme', () => {
     const { applyTheme } = await load();
     applyTheme('dark');
     expect(document.documentElement.dataset.theme).toBe('dark');
-    expect(localStorage.getItem('puter-mail:theme')).toBe('dark');
+    expect(localStorage.getItem('everything-mail:theme')).toBe('dark');
 
     applyTheme('system');
     expect(document.documentElement.dataset.theme).toBeUndefined();
-    expect(localStorage.getItem('puter-mail:theme')).toBeNull();
+    expect(localStorage.getItem('everything-mail:theme')).toBeNull();
   });
 
   it('tells the browser about a theme chosen before it loaded', async () => {

@@ -36,11 +36,11 @@ function splash(text) {
   );
 }
 
-/** Waits briefly for the Puter script (loaded with defer); the app works without it. */
-async function waitForPuter(ms = 4000) {
+/** Waits briefly for the Everything script (loaded with defer); the app works without it. */
+async function waitForEverything(ms = 4000) {
   const start = Date.now();
-  while (typeof window.puter === 'undefined' && Date.now() - start < ms) await new Promise((r) => setTimeout(r, 50));
-  return typeof window.puter === 'undefined' ? null : window.puter;
+  while (typeof window.everything === 'undefined' && Date.now() - start < ms) await new Promise((r) => setTimeout(r, 50));
+  return typeof window.everything === 'undefined' ? null : window.everything;
 }
 
 function readLastUser() {
@@ -51,30 +51,30 @@ function readLastUser() {
   }
 }
 
-async function session(puter) {
-  if (!puter) return { puter: null, env: 'web', signedIn: false, user: null };
-  const env = puter.env || 'web';
-  const signedIn = env === 'app' || !!puter.auth?.isSignedIn?.();
-  if (!signedIn) return { puter, env, signedIn: false, user: null };
+async function session(everything) {
+  if (!everything) return { everything: null, env: 'web', signedIn: false, user: null };
+  const env = everything.env || 'web';
+  const signedIn = env === 'app' || !!everything.auth?.isSignedIn?.();
+  if (!signedIn) return { everything, env, signedIn: false, user: null };
   try {
-    const user = await puter.auth.getUser();
+    const user = await everything.auth.getUser();
     const slim = { uuid: user.uuid, username: user.username, isTemp: !!user.is_temp };
     try {
       localStorage.setItem(LAST_USER, JSON.stringify(slim));
     } catch {}
-    return { puter, env, signedIn: true, user: slim };
+    return { everything, env, signedIn: true, user: slim };
   } catch {
     // Offline or the token expired: open the last account's local copy if we know it.
     const last = readLastUser();
-    return last ? { puter, env, signedIn: true, user: last, offline: true } : { puter, env, signedIn: false, user: null };
+    return last ? { everything, env, signedIn: true, user: last, offline: true } : { everything, env, signedIn: false, user: null };
   }
 }
 
 async function boot() {
   splash('Opening API Client...');
   loadEditor().catch(() => {}); // warm the editor chunk while we load data
-  const puter = await waitForPuter();
-  const s = await session(puter);
+  const everything = await waitForEverything();
+  const s = await session(everything);
   const dbName = s.signedIn ? `api-client-u-${s.user.uuid}` : GUEST_DB;
   let db;
   try {
@@ -102,18 +102,18 @@ async function boot() {
     });
   }
 
-  const sync = s.signedIn && puter ? new CloudSync({ ws, db, fs: puter.fs }) : null;
+  const sync = s.signedIn && everything ? new CloudSync({ ws, db, fs: everything.fs }) : null;
   // Sync was not listening while guest work moved in; merge these on the first pull.
   if (sync && moved.globals) await sync.forget('globals', 'globals');
   if (sync && moved.history) await sync.forget('history', null);
-  const shared = s.signedIn && puter ? new SharedCollections({ ws, fs: puter.fs, sync, self: s.user.username }) : null;
+  const shared = s.signedIn && everything ? new SharedCollections({ ws, fs: everything.fs, sync, self: s.user.username }) : null;
   const app = new App(root, {
     ws,
     sync,
     shared,
     session: s,
     onSignIn: async () => {
-      await puter.auth.signIn();
+      await everything.auth.signIn();
       try {
         localStorage.setItem(MIGRATE_FLAG, '1');
       } catch {}
@@ -122,7 +122,7 @@ async function boot() {
     onSignOut: async () => {
       await sync?.flush();
       await shared?.flush();
-      puter.auth.signOut();
+      everything.auth.signOut();
       try {
         localStorage.removeItem(LAST_USER);
       } catch {}
@@ -132,7 +132,7 @@ async function boot() {
   window.apiClient = app;
   root.removeAttribute('aria-busy');
   await app.start();
-  if (moved.count) toast({ kind: 'success', title: 'Your work moved to your account', text: `${moved.count} item${moved.count > 1 ? 's' : ''} from this browser now sync with Puter.` });
+  if (moved.count) toast({ kind: 'success', title: 'Your work moved to your account', text: `${moved.count} item${moved.count > 1 ? 's' : ''} from this browser now sync with Everything.` });
   if (moveFailed) toast({ kind: 'error', title: 'Some work could not be moved to your account', text: 'Work done while signed out is still in this browser. Sign out to see it.' });
   if (s.offline) toast({ kind: 'warning', title: 'Working offline', text: 'Changes are saved on this device and will sync when you are back online.' });
   sync

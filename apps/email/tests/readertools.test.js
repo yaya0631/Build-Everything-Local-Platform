@@ -83,7 +83,7 @@ describe('the reader toolbar\'s More menu', () => {
 
   it('leaves folding out of a conversation of one', async () => {
     mount();
-    await open('Welcome to your Puter mailbox');
+    await open('Welcome to your Everything mailbox');
     more().click();
     expect(menuItems().map((node) => node.textContent.trim())).toEqual(['Print', 'View source']);
   });

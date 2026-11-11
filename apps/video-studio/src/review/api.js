@@ -1,5 +1,5 @@
 /**
- * The owner's review worker: deploying it to their own Puter account,
+ * The owner's review worker: deploying it to their own Everything account,
  * keeping it up to date, and calling it (from any account).
  *
  * The worker's address and build are kept in the owner's private app KV.
@@ -20,23 +20,23 @@ const unreachable = () => new Error('Could not reach the review server. Check yo
  * Call an operation on a review worker. Errors carry .status from the
  * worker (401, 403, 404, 409, 429...).
  */
-export async function call(puter, server, input, { timeout = 30_000 } = {}) {
+export async function call(everything, server, input, { timeout = 30_000 } = {}) {
   server = workerURL(server);
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeout);
   try {
     const body = JSON.stringify(input);
-    let headers = await authorize(puter, server, body);
+    let headers = await authorize(everything, server, body);
     const send = async () => {
       try {
-        return await puter.workers.exec(`${server}/api`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...headers }, body, signal: controller.signal, redirect: 'error' });
+        return await everything.workers.exec(`${server}/api`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...headers }, body, signal: controller.signal, redirect: 'error' });
       } catch {
         throw unreachable();
       }
     };
     let res = await send();
-    if (res.status === 401 && refuseCredential(puter, headers)) {
-      headers = await authorize(puter, server, body);
+    if (res.status === 401 && refuseCredential(everything, headers)) {
+      headers = await authorize(everything, server, body);
       res = await send();
     }
     const data = await res.json().catch(() => null);
@@ -49,8 +49,8 @@ export async function call(puter, server, input, { timeout = 30_000 } = {}) {
 }
 
 /** The recorded worker address for this account, or null. */
-export async function ownWorker(puter) {
-  const config = await puter.kv.get(WORKER_KEY);
+export async function ownWorker(everything) {
+  const config = await everything.kv.get(WORKER_KEY);
   try {
     return config?.server ? workerURL(config.server) : null;
   } catch {
@@ -73,35 +73,35 @@ async function bundle(fetcher) {
  * build; returns its origin. Deploys it on first use. progress(text) gets
  * short status lines for the dialog.
  */
-export async function deploy(puter, { progress = () => {}, fetcher = (...a) => fetch(...a), wait = (ms) => new Promise((r) => setTimeout(r, ms)), attempts = 20 } = {}) {
-  const account = puter.authToken;
+export async function deploy(everything, { progress = () => {}, fetcher = (...a) => fetch(...a), wait = (ms) => new Promise((r) => setTimeout(r, ms)), attempts = 20 } = {}) {
+  const account = everything.authToken;
   const sameAccount = () => {
-    if (puter.authToken !== account) throw new Error('Your Puter account changed. Reload the page.');
+    if (everything.authToken !== account) throw new Error('Your Everything account changed. Reload the page.');
   };
-  let config = await puter.kv.get(WORKER_KEY);
+  let config = await everything.kv.get(WORKER_KEY);
   progress('Preparing the review server...');
   const { source, build, builtAt } = await bundle(fetcher);
   sameAccount();
   if (!config) {
     const name = `video-review-${crypto.randomUUID().replace(/-/g, '').slice(0, 16)}`;
-    const file = await puter.fs.write('video-studio/worker/review-worker.js', source, { overwrite: true, dedupeName: false, createMissingParents: true });
+    const file = await everything.fs.write('video-studio/worker/review-worker.js', source, { overwrite: true, dedupeName: false, createMissingParents: true });
     sameAccount();
-    const created = await puter.workers.create(name, file.path);
+    const created = await everything.workers.create(name, file.path);
     sameAccount();
     config = { name, server: workerURL(created?.url || `http://${name}.localhost:8443`), path: file.path, build, builtAt };
-    await puter.kv.set(WORKER_KEY, config);
+    await everything.kv.set(WORKER_KEY, config);
   } else if (config.build !== build && !(config.builtAt > builtAt)) {
     // Updates only move forward, so an old cached copy of the app never rolls a worker back.
-    await puter.fs.write(config.path, source, { overwrite: true, dedupeName: false });
+    await everything.fs.write(config.path, source, { overwrite: true, dedupeName: false });
     sameAccount();
     config = { ...config, build, builtAt };
-    await puter.kv.set(WORKER_KEY, config);
+    await everything.kv.set(WORKER_KEY, config);
   }
   progress('Starting the review server...');
   const server = workerURL(config.server);
   for (let i = 0; i < attempts; i++) {
     try {
-      const res = await puter.workers.exec(`${server}/health`, { headers: { 'x-puter-no-auth': '1' }, redirect: 'error' });
+      const res = await everything.workers.exec(`${server}/health`, { headers: { 'x-everything-no-auth': '1' }, redirect: 'error' });
       if (res.ok) {
         const h = await res.json();
         if (h.build === config.build || (config.builtAt && h.builtAt > config.builtAt)) return server;
@@ -116,13 +116,13 @@ export async function deploy(puter, { progress = () => {}, fetcher = (...a) => f
 }
 
 /** deploy() once per page and account; later calls reuse the result. */
-export function ensureWorker(puter, opts) {
-  let entry = deployments.get(puter);
-  if (!entry || entry.account !== puter.authToken) {
-    entry = { account: puter.authToken, pending: deploy(puter, opts) };
-    deployments.set(puter, entry);
+export function ensureWorker(everything, opts) {
+  let entry = deployments.get(everything);
+  if (!entry || entry.account !== everything.authToken) {
+    entry = { account: everything.authToken, pending: deploy(everything, opts) };
+    deployments.set(everything, entry);
     entry.pending.catch(() => {
-      if (deployments.get(puter) === entry) deployments.delete(puter);
+      if (deployments.get(everything) === entry) deployments.delete(everything);
     });
   }
   return entry.pending;

@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
 import { it, expect } from 'vitest';
 import { importNotice } from '../src/ui/importnotice.js';
-import { IMPORTABLE, IMPORT_ACCEPT, OPENABLE, DOCUMENT_EXTENSIONS, mimeFor } from '../src/lib/puter.js';
+import { IMPORTABLE, IMPORT_ACCEPT, OPENABLE, DOCUMENT_EXTENSIONS, mimeFor } from '../src/lib/everything.js';
 
-it('accepts HWP and HWPX through device and Puter pickers, with their own MIME types', () => {
+it('accepts HWP and HWPX through device and Everything pickers, with their own MIME types', () => {
   for (const ext of ['hwp', 'hwpx']) {
     expect(IMPORTABLE.test(`한글.${ext.toUpperCase()}`)).toBe(true);
     expect(OPENABLE.test(`한글.${ext}`)).toBe(true);

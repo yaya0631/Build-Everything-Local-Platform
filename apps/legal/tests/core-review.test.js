@@ -13,7 +13,7 @@ afterEach(() => vi.useRealTimers());
 
 describe('sync engine', () => {
   it('sends a large import in batches small enough to finish before the request timeout', async () => {
-    // Like Puter KV: writes go out 100 records to a request (20 ms each) and
+    // Like Everything KV: writes go out 100 records to a request (20 ms each) and
     // deletions one by one (1 ms each). Anything over 150 ms times out.
     const backend = createMemoryBackend();
     const slow = (fn, ms) => async (name, list) => {
@@ -76,8 +76,8 @@ describe('sync engine', () => {
     expect(b.all('tasks').map((t) => t.name)).toEqual([]);
   });
 
-  it.each(['value_too_large', 'key_too_large', 'bad_request'])('drops a change Puter refuses with %s instead of retrying it forever', async (code) => {
-    // Puter's KV rejects oversized values with a plain { message, code } and no HTTP status.
+  it.each(['value_too_large', 'key_too_large', 'bad_request'])('drops a change Everything refuses with %s instead of retrying it forever', async (code) => {
+    // Everything's KV rejects oversized values with a plain { message, code } and no HTTP status.
     const backend = createMemoryBackend();
     const put = backend.putRecords.bind(backend);
     backend.putRecords = async (name, list) => {

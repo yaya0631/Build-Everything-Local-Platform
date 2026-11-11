@@ -50,7 +50,7 @@ it('retains all variants through edits, Undo, sheet copies and metadata-free XLS
   expect(wb.duplicateSheet(id).printSettings).toMatchObject(variants); wb.undo();
   const bytes=new Uint8Array(await(await workbookToXlsx(wb)).arrayBuffer());
   const zip=X.CFB.read(bytes,{type:'array'}), part=X.CFB.find(zip,'/xl/workbook.xml');
-  part.content=new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,''));part.size=part.content.length;
+  part.content=new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,''));part.size=part.content.length;
   wb=await workbookFromFile(X.CFB.write(zip,{type:'array',fileType:'zip'}),'Headers.xlsx');
   expect(wb.activeSheet.printSettings).toMatchObject(variants);
   expect(wb.getValue(wb.activeSheetId,0,0)).toBe('Values');

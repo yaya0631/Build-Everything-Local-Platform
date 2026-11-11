@@ -6,9 +6,9 @@ export function authView({ onSignedIn }) {
     type: 'button',
     onclick: async () => {
       cta.disabled = true;
-      cta.textContent = 'Waiting for Puter…';
+      cta.textContent = 'Waiting for Everything…';
       try {
-        await puter.auth.signIn();
+        await everything.auth.signIn();
         onSignedIn();
       } catch {
         cta.disabled = false;
@@ -23,12 +23,12 @@ export function authView({ onSignedIn }) {
     el('p.auth-sub', {}, 'Send documents for signature, track who signed, and download the completed copy.'),
     el('div.auth-features', {},
       feature('send', 'Signers get a private link by email. No account needed to sign'),
-      feature('shield', 'Your documents live in your own Puter cloud, not on our servers'),
+      feature('shield', 'Your documents live in your own Everything cloud, not on our servers'),
       feature('fileCheck', 'Completed copies come with a full signature certificate')
     ),
     cta,
     el('p.auth-note', {}, 'Free • No ads • Powered by ',
-      el('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Puter'))
+      el('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Everything'))
   );
 
   function feature(ic, text) {

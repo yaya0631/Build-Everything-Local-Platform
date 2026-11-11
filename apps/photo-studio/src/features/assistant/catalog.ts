@@ -29,7 +29,7 @@ export type CatalogEntry = {
   descWords: string[];
 };
 
-// Generative commands: they spend the user's Puter credits, so a plan only
+// Generative commands: they spend the user's Everything credits, so a plan only
 // opens their dialog prefilled and the user presses Generate.
 export const AI_COMMANDS = new Set(['edit.generate-image', 'edit.edit-with-prompt', 'edit.ai-fill', 'edit.ai-expand']);
 // Commands the Assistant never runs: script and Assistant management,
@@ -280,7 +280,7 @@ export class Catalog {
         else if (e.input === 'dialog') lines.push('Opens a dialog where the user picks settings during the run (prefer an operation or a command with settings when one fits).');
         else {
           const params = await commandParams(e.id);
-          if (e.input === 'ai') lines.push('Generative AI: uses the user’s Puter credits. In a plan its dialog opens prefilled with these args and the user presses Generate:');
+          if (e.input === 'ai') lines.push('Generative AI: uses the user’s Everything credits. In a plan its dialog opens prefilled with these args and the user presses Generate:');
           else lines.push('Settings (pass as args; missing ones use defaults):');
           if (params?.length) lines.push(describeParams(params));
         }

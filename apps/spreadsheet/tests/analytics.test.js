@@ -2,21 +2,21 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { trackEvent, trackExport } from '../src/lib/analytics.js';
 import { Doc } from '../src/lib/doc.js';
-import * as P from '../src/lib/puter.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import * as P from '../src/lib/everything.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 import { memoryStorage } from './helpers/memory-storage.js';
 
 let doc;
 beforeEach(() => {
   vi.stubGlobal('__everythingAnalytics', vi.fn());
   vi.stubGlobal('localStorage', memoryStorage());
-  installMockPuter();
-  window.puter = globalThis.puter;
+  installMockEverything();
+  window.everything = globalThis.everything;
 });
 afterEach(() => {
   doc?.destroy(); doc = null;
   vi.restoreAllMocks(); vi.unstubAllGlobals();
-  delete globalThis.puter; delete window.puter;
+  delete globalThis.everything; delete window.everything;
   document.body.replaceChildren();
 });
 
@@ -37,21 +37,21 @@ it('queues custom events before the async script loads', () => {
 
 it('sends only a known format and export method, never a filename or arbitrary extension', () => {
   trackExport('Private payroll for jane@example.com.XLSX', 'browser');
-  trackExport('Payroll.private-financial-information', 'puter');
+  trackExport('Payroll.private-financial-information', 'everything');
   expect(__everythingAnalytics.mock.calls).toEqual([
     ['Spreadsheet Exported', { props: { format: 'xlsx', method: 'browser' } }],
-    ['Spreadsheet Exported', { props: { format: 'other', method: 'puter' } }],
+    ['Spreadsheet Exported', { props: { format: 'other', method: 'everything' } }],
   ]);
 });
 
 it('tracks actual cloud saves and copies, skipping failed and unchanged saves', async () => {
   doc = Doc.blank();
   doc.wb.setInput(doc.wb.activeSheetId, 0, 0, 'Private data');
-  const write = puter.fs.write;
-  puter.fs.write = async () => { throw new Error('quota'); };
+  const write = everything.fs.write;
+  everything.fs.write = async () => { throw new Error('quota'); };
   await expect(doc.save()).rejects.toThrow('quota');
   expect(__everythingAnalytics).not.toHaveBeenCalled();
-  puter.fs.write = write;
+  everything.fs.write = write;
   expect(await doc.save()).toBe(true);
   expect(await doc.save()).toBe(true);
   doc.wb.setInput(doc.wb.activeSheetId, 0, 0, 'Changed data');
@@ -65,10 +65,10 @@ it('tracks actual cloud saves and copies, skipping failed and unchanged saves', 
   ]);
 });
 
-it('counts no export for Puter\'s save dialog, which saves files rather than exporting them', async () => {
+it('counts no export for Everything\'s save dialog, which saves files rather than exporting them', async () => {
   const saved = { name: 'Renamed private file.xlsx', path: '~/Desktop/Renamed private file.xlsx', uid: 'u-9' };
   const answered = Promise.resolve(saved);
-  puter.ui.showSaveFilePicker = vi.fn().mockReturnValueOnce(Object.assign(new Promise(() => {}), { undefinedOnCancel: Promise.resolve(undefined) }))
+  everything.ui.showSaveFilePicker = vi.fn().mockReturnValueOnce(Object.assign(new Promise(() => {}), { undefinedOnCancel: Promise.resolve(undefined) }))
     .mockReturnValueOnce(Object.assign(answered, { undefinedOnCancel: answered }));
   const blob = new Blob(['secret']);
   expect(await P.saveFileAs(blob, 'Private.xlsx')).toBeNull();
@@ -88,7 +88,7 @@ it('tracks a browser export after starting the download', () => {
 });
 
 it('tracks an AI answer without sending its prompt or reply, skipping failures and empty replies', async () => {
-  window.puter.ai = { chat: vi.fn().mockRejectedValueOnce(new Error('offline'))
+  window.everything.ai = { chat: vi.fn().mockRejectedValueOnce(new Error('offline'))
     .mockResolvedValueOnce({ success: false, error: { message: 'quota' } }).mockResolvedValueOnce('')
     .mockResolvedValueOnce({ message: { content: [{ text: 'Private answer' }] } }) };
   await expect(P.aiChat('Private prompt')).rejects.toThrow();

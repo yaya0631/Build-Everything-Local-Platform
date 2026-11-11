@@ -8,14 +8,14 @@ import { go } from '../ui/router.js';
 import { ROLE_LABEL } from '../shared/model.js';
 import { randomId } from '../shared/ids.js';
 import { app } from '../app.js';
-import { sdk } from '../client/puter.js';
+import { sdk } from '../client/everything.js';
 import { LOCAL, request } from '../client/api.js';
 import { deployServer, findOwnServer, fetchBundle, updateServer } from '../client/deploy.js';
 import { saveServer, rememberDesk, forgetDesk } from '../client/userdoc.js';
 import { goOnline, STEPS, friendlyError } from './admin-online.js';
 import { h, clear, uid, icon, sectionHead, panel, copyField, copyText, callout } from './admin-common.js';
 
-/** The app's address without query or fragment (Puter may add session parameters to the query). */
+/** The app's address without query or fragment (Everything may add session parameters to the query). */
 export const appBase = () => `${location.origin}${location.pathname}`;
 const inviteLink = (code) => `${appBase()}#/join/${app.server}/${app.api.desk}/${code}`;
 
@@ -189,7 +189,7 @@ export function renderTeam(container) {
     let created = null;
     const dlg = openDialog({
       title: 'Invite an agent',
-      description: 'Create a single-use link and send it to your teammate. They sign in with Puter and join right away.',
+      description: 'Create a single-use link and send it to your teammate. They sign in with Everything and join right away.',
       body: h('div.stack', h('div.field', h('label.field-label', { for: noteId }, 'Who is it for?', h('span.subtle', ' (optional)')), note), h('div.field', h('span.field-label', 'Role'), roles), result),
       actions: [
         { label: 'Close' },
@@ -221,7 +221,7 @@ export function renderTeam(container) {
     });
   }
 
-  /* Puter team suggestions */
+  /* Everything team suggestions */
   async function loadSuggestions() {
     clear(suggestEl);
     if (local) return;
@@ -243,7 +243,7 @@ export function renderTeam(container) {
     const known = new Set(Object.keys(app.replica.members));
     const candidates = (people || []).filter((x) => x && !known.has(x.uuid)).slice(0, 50);
     if (!candidates.length) return;
-    suggestEl.append(panel(`From your Puter team${team.name ? `: ${team.name}` : ''}`, 'Teammates who are not on this help desk yet. Create a link for one of them and send it.',
+    suggestEl.append(panel(`From your Everything team${team.name ? `: ${team.name}` : ''}`, 'Teammates who are not on this help desk yet. Create a link for one of them and send it.',
       h('ul.suggest-list', candidates.map((x) => h('li.suggest',
         avatar(x.username, { username: x.username }),
         h('span.grow', h('strong', `@${x.username}`)),
@@ -259,7 +259,7 @@ export function renderTeam(container) {
       h('div.online-icon', icon('server', { size: 22 })),
       h('div.grow',
         h('h2', 'This help desk runs only in your account'),
-        h('p', 'To invite agents, publish your help center and email customers, turn on team access. This starts a small server (a Puter worker) in your own Puter account. Your data stays in your account and you pay only for what it uses.'),
+        h('p', 'To invite agents, publish your help center and email customers, turn on team access. This starts a small server (an Everything worker) in your own Everything account. Your data stays in your account and you pay only for what it uses.'),
         isOwner ? null : h('p.muted', 'Only the owner can turn on team access.')),
       start);
     const box = h('section.online-panel', { 'aria-label': 'Team access' }, intro, stepsEl, errEl);

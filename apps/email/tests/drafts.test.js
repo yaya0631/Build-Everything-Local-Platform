@@ -21,7 +21,7 @@ describe('isEmptyDraft', () => {
     expect(isEmptyDraft({})).toBe(true);
     expect(isEmptyDraft({ to: '  ', cc: '', subject: '\n', body: ' ' })).toBe(true);
     // The sending domain is a preference, not content.
-    expect(isEmptyDraft({ domain: 'puter.email' })).toBe(true);
+    expect(isEmptyDraft({ domain: 'everything.email' })).toBe(true);
   });
 
   it('is not empty as soon as anything has been typed', () => {
@@ -34,9 +34,9 @@ describe('isEmptyDraft', () => {
 describe('createDraftStore', () => {
   it('saves and reads back every field', () => {
     const { drafts } = store();
-    expect(drafts.save(draft({ domain: 'puterstaging.email' }))).toBe(true);
+    expect(drafts.save(draft({ domain: 'everythingstaging.email' }))).toBe(true);
     expect(drafts.get('a')).toMatchObject({
-      id: 'a', domain: 'puterstaging.email', to: 'a@b.co', cc: '', subject: 'Hi', body: 'text',
+      id: 'a', domain: 'everythingstaging.email', to: 'a@b.co', cc: '', subject: 'Hi', body: 'text',
     });
     expect(drafts.count).toBe(1);
   });
@@ -105,15 +105,15 @@ describe('createDraftStore', () => {
 
   it('ignores stored junk instead of throwing', () => {
     const storage = memoryStorage();
-    storage.setItem('puter-mail:drafts:me', 'not json');
+    storage.setItem('everything-mail:drafts:me', 'not json');
     expect(createDraftStore('me', storage).list()).toEqual([]);
-    storage.setItem('puter-mail:drafts:me', '[{"no":"id"},null,42]');
+    storage.setItem('everything-mail:drafts:me', '[{"no":"id"},null,42]');
     expect(createDraftStore('me', storage).list()).toEqual([]);
   });
 
   it('coerces every stored field to a string, whatever was in storage', () => {
     const storage = memoryStorage();
-    storage.setItem('puter-mail:drafts:me', JSON.stringify([{ id: 'a', body: { x: 1 }, to: 7 }]));
+    storage.setItem('everything-mail:drafts:me', JSON.stringify([{ id: 'a', body: { x: 1 }, to: 7 }]));
     const stored = createDraftStore('me', storage).get('a');
     expect(stored.body).toBe('');
     expect(stored.to).toBe('');

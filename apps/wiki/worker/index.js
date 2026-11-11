@@ -30,12 +30,12 @@ router.get('/health', () => Response.json({ ok: true, protocol: 1, build: __WORK
 
 router.post('/api', async ({ request, user }) => {
   try {
-    if (!user?.puter) return Response.json({ message: 'Sign in with Puter to continue.' }, { status: 401 });
+    if (!user?.everything) return Response.json({ message: 'Sign in with Everything to continue.' }, { status: 401 });
     const text = await readBody(request);
     if (text === null) return Response.json({ message: 'A JSON request body is required.' }, { status: 400 });
     const input = JSON.parse(text);
-    const identity = await authenticate(request, user.puter, input);
-    return Response.json(await new WikiService(me.puter).call(identity, input));
+    const identity = await authenticate(request, user.everything, input);
+    return Response.json(await new WikiService(me.everything).call(identity, input));
   } catch (error) {
     return Response.json(
       { message: error instanceof SyntaxError ? 'Invalid JSON request.' : error.status ? error.message : 'The space could not synchronize. Please retry.' },

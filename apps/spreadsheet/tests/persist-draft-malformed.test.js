@@ -3,15 +3,15 @@ import { Doc } from '../src/lib/doc.js';
 import { draftKey, liveDraftKey, loadDraft, saveDraft } from '../src/lib/drafts.js';
 import { Workbook } from '../src/core/workbook.js';
 import { memoryStorage } from './helpers/memory-storage.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 
 // A draft this browser kept for a file is compared with the file when it is opened. A draft
 // whose book was damaged in storage, or written in a shape this code cannot read, made the
 // comparison throw out of the opening, so the file could not be opened at all, on every attempt,
 // until the record was removed by hand. Such a draft is dropped now, and the file opens.
 beforeAll(async () => { await Doc.blank().toXlsxBlob(); });
-beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); installMockPuter(); vi.useFakeTimers(); });
-afterEach(() => { vi.useRealTimers(); delete globalThis.puter; });
+beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); installMockEverything(); vi.useFakeTimers(); });
+afterEach(() => { vi.useRealTimers(); delete globalThis.everything; });
 
 async function savedFile() {
   const doc = Doc.blank();

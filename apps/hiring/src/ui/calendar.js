@@ -2,7 +2,7 @@
  * Sharing the interview calendar: a link a calendar app can subscribe to,
  * so interviews reach the day's real schedule without a file per event.
  *
- * The honest version of this feature is public-but-unlisted — Puter offers
+ * The honest version of this feature is public-but-unlisted — Everything offers
  * no way to authenticate a calendar client — so the dialog says so, keeps
  * the payload minimal, and makes revocation a single button.
  */
@@ -31,7 +31,7 @@ export function openCalendarShare(ctx) {
     el(
       'p',
       { class: 'muted small' },
-      'The link is public but unlisted: anyone who has it can read the calendar, because a calendar app cannot sign in to your Puter account. It carries only the date, time, format, and — unless you turn on full names below — each candidate’s first name and role. No notes, no panel, no meeting links. Stop sharing at any time; the link stops working immediately, and sharing again creates a different one.'
+      'The link is public but unlisted: anyone who has it can read the calendar, because a calendar app cannot sign in to your Everything account. It carries only the date, time, format, and — unless you turn on full names below — each candidate’s first name and role. No notes, no panel, no meeting links. Stop sharing at any time; the link stops working immediately, and sharing again creates a different one.'
     );
 
   function renderOff() {

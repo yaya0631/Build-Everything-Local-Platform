@@ -1429,7 +1429,7 @@
 .io__status[data-variant='danger'] {
   color: var(--danger-ink);
 }
-/* Import progress: writes are paced to respect puter.kv's rate limit, so a
+/* Import progress: writes are paced to respect everything.kv's rate limit, so a
    large file takes a while — the bar shows it's working, not hung. */
 .io-progress {
   display: flex;
@@ -1455,7 +1455,7 @@
   color: var(--text-2);
 }
 
-/* ---- Context menu (fallback, mirrors puter.ui.contextMenu) ----------- */
+/* ---- Context menu (fallback, mirrors everything.ui.contextMenu) ----------- */
 .ctx-menu {
   position: fixed;
   z-index: 120;
@@ -1796,7 +1796,7 @@
 .modal--booking {
   max-width: 600px;
   /* Wide enough for "Accepting bookings" (117px at 12px/600), the longest label
-     here: at 104px it and "Puter Meetings link" were the only two rows in the
+     here: at 104px it and "Everything Meetings link" were the only two rows in the
      form whose label wrapped, which pushed those switches out of the rhythm the
      other twelve rows keep. Costs the interval row 9px per time input, which
      still leaves a 12-hour "09:00 AM" and its picker indicator room. */

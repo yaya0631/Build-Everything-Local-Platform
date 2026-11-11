@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { Store, ListFullError, MAX_STAKEHOLDERS } from '../src/lib/store.js';
 import { certifiedByGrant, certifiedByRsu, fullyDiluted, grantExercised, modelRound, rsuSettled } from '../src/lib/captable.js';
-import { puterBackend } from './helpers/puter-kv.js';
+import { everythingBackend } from './helpers/everything-kv.js';
 
 /**
  * Writes the forms never make but a backup or the API can: the store is the
@@ -11,7 +11,7 @@ import { puterBackend } from './helpers/puter-kv.js';
 
 let store, holder, common;
 beforeEach(async () => {
-  puterBackend().install(); store = new Store(); await store.init();
+  everythingBackend().install(); store = new Store(); await store.init();
   common = await store.addClass({ name: 'Common', kind: 'common' });
   holder = await store.addStakeholder({ name: 'Employee' });
 });

@@ -4,9 +4,9 @@ import { createLocalKv } from '../src/data/local-kv.js';
 import { instantiateWorker } from '../src/data/local-worker.js';
 import { buildWorkerSource, stripExports, WORKER_VERSION } from '../src/data/worker-source.js';
 
-/** A fake Puter: fs.write keeps files, workers.create deploys the written
+/** A fake Everything: fs.write keeps files, workers.create deploys the written
  *  source, and the returned fetch reaches deployed workers by URL. */
-function fakePuter({ taken = [] } = {}) {
+function fakeEverything({ taken = [] } = {}) {
   const files = new Map();
   const deployed = new Map();
   const workerKv = createLocalKv();
@@ -64,7 +64,7 @@ describe('worker names', () => {
 
 describe('collector client', () => {
   function setup(opts) {
-    const p = fakePuter(opts);
+    const p = fakeEverything(opts);
     const kv = createLocalKv();
     const client = createCollectorClient({
       kv,

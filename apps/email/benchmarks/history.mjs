@@ -1,4 +1,4 @@
-// CPU-only synthetic history benchmark; not a browser or live Puter measure.
+// CPU-only synthetic history benchmark; not a browser or live Everything measure.
 import { Worker, isMainThread, parentPort, workerData } from 'node:worker_threads';
 import { writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';

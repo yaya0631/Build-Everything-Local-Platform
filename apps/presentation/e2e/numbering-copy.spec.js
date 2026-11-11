@@ -8,10 +8,10 @@ for (const table of [false, true]) {
   test(`native outline numbering survives clipboard both ways, download and reopen; table=${table}`, async ({
     page,
   }) => {
-    await page.route("**/sdk/puter.js", (route) =>
+    await page.route("**/sdk/everything.js", (route) =>
       route.fulfill({
         contentType: "application/javascript",
-        body: 'window.puter={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',
+        body: 'window.everything={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',
       }),
     );
     const errors = [];

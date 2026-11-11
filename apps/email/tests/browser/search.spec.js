@@ -20,7 +20,7 @@ const interruptedSearch = async (page) => {
   await page.goto('/tests/browser/conversation.html?pageSize=3');
   await expect(page.locator('.btn-more')).toBeVisible();
   await page.evaluate(() => {
-    const fs = window.puter.fs;
+    const fs = window.everything.fs;
     const read = fs.read.bind(fs);
     fs.read = async () => { throw new Error('offline'); };
     window.restoreHeaderReads = () => { fs.read = read; };
@@ -61,7 +61,7 @@ test('pending search keeps its placeholder stable and never flashes an empty res
   await page.goto('/tests/browser/conversation.html?pageSize=3');
   await expect(page.locator('.row')).toHaveCount(3);
   const opacity = await page.evaluate(() => {
-    const fs = window.puter.fs;
+    const fs = window.everything.fs;
     const read = fs.read.bind(fs);
     const held = new Promise(resolve => { window.releaseSearch = resolve; });
     fs.read = async (...args) => { await held; return read(...args); };

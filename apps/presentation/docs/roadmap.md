@@ -245,5 +245,5 @@ what is being added, and its status. Items are checked off as they land.
 - [x] Ink to Math makes a real equation object (src/insert's
       `equations.prepare/place`), re-editable by double-click; a LaTeX text
       box only where that API is missing.
-- [ ] A Shared section in the rail, once Puter exposes files shared with
+- [ ] A Shared section in the rail, once Everything exposes files shared with
       the user.

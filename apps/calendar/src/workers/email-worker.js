@@ -1,13 +1,13 @@
 /**
- * Email invitations — the calendar's one shared, app-owned Puter worker
- * (deployed to http://calendar-email.localhost:8443; see src/js/invites.js for
+ * Email invitations — the calendar's one shared, app-owned Everything worker
+ * (served at http://calendar-email.localhost:8443; see src/js/invites.js for
  * the calling side).
  *
  * Unlike the RSVP worker — one per calendar user, deployed into their own
- * account — this one is deployed ONCE, by the app owner: outbound mail has to
+ * account — this one is shared by the app: outbound mail has to
  * be authorized by a worker's own token, so the sending capability lives
  * somewhere the app controls. The cost does not: the app calls this worker
- * with puter.workers.exec(), which forwards the signed-in user's Puter token,
+ * with everything.workers.exec(), which forwards the signed-in user's Everything token,
  * and each message is sent with that token in hand — so every send is billed
  * to, and rate-limited as, the host who asked for it, never the app owner.
  *
@@ -25,8 +25,8 @@
  *
  * An app-owned relay that forwarded whatever it was handed would be a spam
  * cannon wearing the calendar's sending reputation, so it never does:
- *   - no Puter session, no send. `user` is only populated for callers that
- *     come through puter.workers.exec(); everyone else gets 401.
+ *   - no Everything session, no send. `user` is only populated for callers that
+ *     come through everything.workers.exec(); everyone else gets 401.
  *   - the caller supplies an EVENT, not an email. Subject and body are
  *     composed here, so every message this worker can be made to send is an
  *     invitation to something, addressed to that event's guests.
@@ -39,7 +39,7 @@
  *     description stays plain text a mail client may auto-detect and make
  *     clickable (in the text/plain part especially). The guard against a rogue
  *     host is therefore not that its text can't be linkified, but that every
- *     send needs the host's own Puter session and is billed to and
+ *     send needs the host's own Everything session and is billed to and
  *     rate-limited as that host (below).
  *   - recipients are capped per request (MAX_RECIPIENTS) and per user per day
  *     (DAILY_LIMIT), and an invitation a guest already received is skipped
@@ -53,14 +53,14 @@
  *   mail:sent:<sha256(callerId|eventId|email)>  -> { v, at }  (expires: SENT_TTL)
  *   mail:rate:<sha256(callerId)>:<YYYY-MM-DD>   -> count      (expires: RATE_TTL)
  *
- * Deploy with:  puter worker deploy src/workers/email-worker.js calendar-email
+ * Registered automatically by the local server as calendar-email.
  */
 
 // '2': .ics attachments carry their METHOD in the MIME type (method=REQUEST),
 //      which is what lets mail clients' native RSVP buttons work.
 // '3': invitations carry the event's meeting link as a "Join" line/row
 //      (meetingUrl below). The constant exists so /health can prove which
-//      snapshot is live — a deploy that changes behavior must bump it.
+//      snapshot is live — a change in behavior must bump it.
 // '4': POST /cancellations — a deleted event's invited guests get a
 //      cancellation notice (METHOD:CANCEL .ics; no RSVP or meeting links).
 // '5': the caller's .ics is read before it is attached (icsProblem below):
@@ -70,10 +70,10 @@
 //      relayed. A request that would send nothing is no longer answered 429.
 // '8': attendee-removal cancellation copy distinguishes an invitation from the event.
 // '9': event cancellations include a deduplicated, quota-counted host receipt.
-// '10': redeployed to pick up the current worker runtime (puter.js with
+// '10': redeployed to pick up the current worker runtime (everything.js with
 //      email.sendTransactional); /health and /whoami now report it as runtime.
 // '11': POST /replies — an iTIP REPLY to an invitation the calendar received
-//      by mail, for when the user's own puter.email.send cannot carry it.
+//      by mail, for when the user's own everything.email.send cannot carry it.
 const WORKER_VERSION = '11';
 
 const SENT_PREFIX = 'mail:sent:';
@@ -92,10 +92,10 @@ function ownerOf(ctx) {
   return (ctx && ctx.me) || (typeof me !== 'undefined' ? me : null);
 }
 
-/** The puter.js build the platform baked into this deploy (its preamble's
+/** The everything.js build the platform baked into this deploy (its preamble's
  *  first line). Null under the test harness, which has no preamble. */
 function workerRuntime() {
-  return typeof __PUTER_PREAMBLE_VERSION__ === 'string' ? __PUTER_PREAMBLE_VERSION__ : null;
+  return typeof __EVERYTHING_PREAMBLE_VERSION__ === 'string' ? __EVERYTHING_PREAMBLE_VERSION__ : null;
 }
 
 /** The signed-in caller. The runtime has called this both `user` and
@@ -109,10 +109,10 @@ function callerOf(ctx) {
  * A stable id for the caller — it keys the already-sent and daily-cap records,
  * so it has to be the same tomorrow as it is today, and different for every
  * user. Do NOT assume it is sitting on the caller object: the live platform
- * (2026-08) hands over a caller whose only own property is `puter`, so the
- * documented `user.uuid` is absent and asking their own Puter is the path that
+ * (2026-08) hands over a caller whose only own property is `everything`, so the
+ * documented `user.uuid` is absent and asking their own Everything is the path that
  * actually answers. Try the known names first anyway, then the ones nested
- * under their Puter handle, then getUser(). '' means "could not tell", which
+ * under their Everything handle, then getUser(). '' means "could not tell", which
  * is refused rather than guessed at: a shared id would let one user's dedupe
  * record suppress another's invitation.
  */
@@ -120,7 +120,7 @@ async function callerIdOf(caller) {
   if (!caller) return '';
   const own = caller.uuid || caller.uid || caller.user_uuid || caller.username;
   if (typeof own === 'string' && own) return own;
-  const p = caller.puter;
+  const p = caller.everything;
   const nested = p && (p.uuid || p.uid || p.username);
   if (typeof nested === 'string' && nested) return nested;
   try {
@@ -136,7 +136,7 @@ async function callerIdOf(caller) {
 async function callerEmailOf(caller) {
   if (!caller) return '';
   if (typeof caller.email === 'string' && caller.email) return lowerEmail(caller.email);
-  const p = caller.puter;
+  const p = caller.everything;
   try {
     const who = p && p.auth && typeof p.auth.getUser === 'function' ? await p.auth.getUser() : null;
     return who && typeof who.email === 'string' ? lowerEmail(who.email) : '';
@@ -146,10 +146,10 @@ async function callerEmailOf(caller) {
 }
 
 function kvOf(ctx) {
-  return ownerOf(ctx).puter.kv;
+  return ownerOf(ctx).everything.kv;
 }
 
-/** puter.kv values may come back as parsed objects or JSON strings. */
+/** everything.kv values may come back as parsed objects or JSON strings. */
 function coerce(value) {
   if (value == null) return null;
   if (typeof value === 'string') {
@@ -235,7 +235,7 @@ function base64Utf8(value) {
 
 /**
  * A guest's RSVP link, or '' — the ONLY link this worker will put in a mail.
- * It must be an RSVP capability URL on the Puter workers domain: https, a
+ * It must be an RSVP capability URL on the Everything workers domain: https, a
  * *.localhost:8443 host, and the exact /rsvp/<40 hex> path the RSVP worker mints.
  * Query and fragment are dropped rather than trusted.
  */
@@ -255,7 +255,7 @@ function rsvpUrl(value) {
 
 /**
  * The event's meeting link, or '' — the only other link this worker will put
- * in a mail. Held to the exact shape of a Puter Meetings room link
+ * in a mail. Held to the exact shape of an Everything Meetings room link
  * (http://meetings.localhost:8443/#/m/<room code>), because meeting URLs reach
  * the calendar from outside too (ICS import), and this worker must not
  * become a way to mail guests an arbitrary URL under the calendar's name.
@@ -547,8 +547,8 @@ function attachmentsFor(req) {
  * A send has two halves — who pays (the calendar user) and what authorizes it
  * (this worker) — and the platform accepts them in either arrangement:
  *
- *   me.puter.email.sendTransactional({ …, requesterToken: user.puter.authToken })
- *   user.puter.email.sendTransactional({ …, emailAccessToken: me.puter.authToken })
+ *   me.everything.email.sendTransactional({ …, requesterToken: user.everything.authToken })
+ *   user.everything.email.sendTransactional({ …, emailAccessToken: me.everything.authToken })
  *
  * Both bill the calendar user; which name a given runtime knows has moved, and
  * a worker that only spoke one of them would silently stop sending. So try the
@@ -564,8 +564,8 @@ function attachmentsFor(req) {
  */
 let preferredForm = 0;
 
-function mailerOf(puter) {
-  const email = puter && puter.email;
+function mailerOf(everything) {
+  const email = everything && everything.email;
   if (email && typeof email.sendTransactional === 'function') {
     return (message) => email.sendTransactional(message);
   }
@@ -574,8 +574,8 @@ function mailerOf(puter) {
   return (message) => email.send(message);
 }
 
-function hasMailer(puter) {
-  const email = puter && puter.email;
+function hasMailer(everything) {
+  const email = everything && everything.email;
   return Boolean(
     email && (typeof email.sendTransactional === 'function' || typeof email.send === 'function'),
   );
@@ -589,9 +589,9 @@ function sendForms(ctx) {
   const caller = callerOf(ctx);
   return [
     (message) =>
-      mailerOf(owner.puter)({ ...message, requesterToken: caller.puter.authToken }),
+      mailerOf(owner.everything)({ ...message, requesterToken: caller.everything.authToken }),
     (message) =>
-      mailerOf(caller.puter)({ ...message, emailAccessToken: owner.puter.authToken }),
+      mailerOf(caller.everything)({ ...message, emailAccessToken: owner.everything.authToken }),
   ];
 }
 
@@ -698,26 +698,26 @@ router.get('/health', async () => json({ ok: true, version: WORKER_VERSION, runt
  */
 router.get('/whoami', async (ctx) => {
   const caller = callerOf(ctx);
-  const p = caller && caller.puter;
+  const p = caller && caller.everything;
   return json({
     ok: true,
     version: WORKER_VERSION,
     runtime: workerRuntime(),
-    // Did the session even reach us? puter.workers.exec() sends this header.
-    sawAuthHeader: Boolean(ctx.request.headers.get('puter-auth')),
+    // Did the session even reach us? everything.workers.exec() sends this header.
+    sawAuthHeader: Boolean(ctx.request.headers.get('everything-auth')),
     boundAs: ctx.user ? 'user' : ctx.requestor ? 'requestor' : null,
     callerKeys: caller ? Object.keys(caller).sort() : [],
-    puterKeys: p ? Object.keys(p).sort() : [],
+    everythingKeys: p ? Object.keys(p).sort() : [],
     has: {
-      puter: Boolean(p),
+      everything: Boolean(p),
       authToken: Boolean(p && p.authToken),
       email: hasMailer(p),
       auth: Boolean(p && p.auth && typeof p.auth.getUser === 'function'),
     },
     identified: Boolean(await callerIdOf(caller)),
     owner: {
-      email: Boolean(ownerOf(ctx) && ownerOf(ctx).puter && ownerOf(ctx).puter.email),
-      authToken: Boolean(ownerOf(ctx) && ownerOf(ctx).puter && ownerOf(ctx).puter.authToken),
+      email: Boolean(ownerOf(ctx) && ownerOf(ctx).everything && ownerOf(ctx).everything.email),
+      authToken: Boolean(ownerOf(ctx) && ownerOf(ctx).everything && ownerOf(ctx).everything.authToken),
     },
   });
 });
@@ -734,12 +734,12 @@ router.get('/whoami', async (ctx) => {
  */
 async function deliver(ctx, forcedKind = '') {
   // A caller context exists only for requests that came through
-  // puter.workers.exec(), which forwards their Puter session. No session, no
+  // everything.workers.exec(), which forwards their Everything session. No session, no
   // send — and no way to bill anyone for one either. `detail` separates "no
   // session arrived" from "a session arrived that we could not pin to a
   // person"; GET /whoami reports the same picture in full.
   const caller = callerOf(ctx);
-  if (!caller || !caller.puter) {
+  if (!caller || !caller.everything) {
     return json({ error: 'sign_in_required', detail: 'no_caller' }, 401);
   }
   const callerId = await callerIdOf(caller);
@@ -756,7 +756,7 @@ async function deliver(ctx, forcedKind = '') {
 
   // The organizer a mail speaks for — its Reply-To, its .ics ORGANIZER, the
   // "<name> invited you" line — must be the caller, whenever the platform can
-  // say who that is. This worker answers any signed-in Puter user; without
+  // say who that is. This worker answers any signed-in Everything user; without
   // the check anyone could put the calendar's sender behind a mail whose
   // replies and RSVP answers went to an address of their choosing.
   const callerEmail = await callerEmailOf(caller);
@@ -886,7 +886,7 @@ async function deliver(ctx, forcedKind = '') {
 router.post('/invites', (ctx) => deliver(ctx));
 router.post('/cancellations', (ctx) => deliver(ctx, 'cancel'));
 
-/* ---- Replies (fallback for src/js/mail-reply.js's puter.email.send) ------- */
+/* ---- Replies (fallback for src/js/mail-reply.js's everything.email.send) ------- */
 
 const PARTSTAT_LABEL = { accepted: 'Accepted', declined: 'Declined', tentative: 'Tentative' };
 const PARTSTAT_VERB = {
@@ -990,7 +990,7 @@ function attachmentsForReply(req) {
  *
  * `attendee.email` must be the caller answering for THEMSELVES — checked
  * against `callerEmailOf`, the account email, when the platform can name it.
- * That can legitimately differ from the caller's `<username>@puter.email`
+ * That can legitimately differ from the caller's `<username>@everything.email`
  * mailbox address (the address a mail-received invitation was actually made out
  * to), so a mismatch is only refused when attendee.email is neither the account
  * email nor that mailbox address — otherwise nobody could ever reply as the
@@ -998,7 +998,7 @@ function attachmentsForReply(req) {
  */
 async function deliverReply(ctx) {
   const caller = callerOf(ctx);
-  if (!caller || !caller.puter) {
+  if (!caller || !caller.everything) {
     return json({ error: 'sign_in_required', detail: 'no_caller' }, 401);
   }
   const callerId = await callerIdOf(caller);
@@ -1017,7 +1017,7 @@ async function deliverReply(ctx) {
 
   const callerEmail = await callerEmailOf(caller);
   const callerUsername = (caller && caller.username) || '';
-  const selfMailbox = callerUsername ? `${callerUsername.toLowerCase()}@puter.email` : '';
+  const selfMailbox = callerUsername ? `${callerUsername.toLowerCase()}@everything.email` : '';
   if (callerEmail && req.attendee.email !== callerEmail && req.attendee.email !== selfMailbox) {
     return json({ error: 'attendee_mismatch' }, 403);
   }

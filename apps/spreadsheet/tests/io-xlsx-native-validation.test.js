@@ -62,7 +62,7 @@ it.each(['stop','warning','information'])('preserves enabled and disabled %s ale
     const expected={errorStyle,showErrorMessage:enabled==='1',errorTitle:'Pick & choose',strict:enabled==='1'&&errorStyle==='stop'};
     expect(wb.activeSheet.validations[0]).toMatchObject(expected);
     const zip=X.CFB.read(new Uint8Array(await(await workbookToXlsx(wb)).arrayBuffer()),{type:'array'}),part=X.CFB.find(zip,'/xl/workbook.xml');
-    part.content=new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,''));part.size=part.content.length;
+    part.content=new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,''));part.size=part.content.length;
     const back=await workbookFromFile(X.CFB.write(zip,{type:'array',fileType:'zip'}),'native.xlsx');
     expect(back.activeSheet.validations[0]).toMatchObject(expected);
     expect(back.validateValue(back.activeSheetId,0,0,'Other').ok).toBe(false);
@@ -107,7 +107,7 @@ it.each(['0', '1'])('round-trips input titles and stored message bodies in publi
   expect(wb.activeSheet.validations[0].showInputMessage !== false).toBe(flag === '1');
   const zip = X.CFB.read(new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()), { type: 'array' });
   const part = X.CFB.find(zip, '/xl/workbook.xml');
-  part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')); part.size = part.content.length;
+  part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')); part.size = part.content.length;
   const back = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'public.xlsx');
   expect(back.activeSheet.validations[0]).toMatchObject(expected);
   expect(back.activeSheet.validations[0].showInputMessage !== false).toBe(flag === '1');

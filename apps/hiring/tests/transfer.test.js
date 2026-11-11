@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { createStore } from '../src/core/store.js';
-import { createMemoryBackend, createPuterBackend } from '../src/core/backend.js';
+import { createMemoryBackend, createEverythingBackend } from '../src/core/backend.js';
 import {
   buildBackup,
   candidateExport,
@@ -437,17 +437,17 @@ describe('backup round trip', () => {
 
   it('refuses a restore that cannot be fully saved before touching storage or memory', async () => {
     const kv = new Map();
-    const puter = {
+    const everything = {
       kv: {
         get: async (key) => kv.get(key) ?? null,
         set: vi.fn(async (key, value) => kv.set(key, value)),
         del: async (key) => kv.delete(key),
       },
     };
-    const cloud = createStore(createPuterBackend(puter));
+    const cloud = createStore(createEverythingBackend(everything));
     await cloud.init();
     await cloud.addJob({ title: 'Existing' });
-    puter.kv.set.mockClear();
+    everything.kv.set.mockClear();
 
     const payload = {
       app: 'hiring',
@@ -465,7 +465,7 @@ describe('backup round trip', () => {
     await expect(cloud.restoreBackup(payload)).rejects.toThrow(/too large/i);
     // Nothing was written and nothing replaced: the old dataset survives
     // in full instead of being half-swapped for the backup.
-    expect(puter.kv.set).not.toHaveBeenCalled();
+    expect(everything.kv.set).not.toHaveBeenCalled();
     expect(cloud.state.jobs.map((j) => j.title)).toEqual(['Existing']);
     expect(cloud.state.candidates).toEqual([]);
   });

@@ -23,22 +23,22 @@ export const shared = new Map<DocumentSession, SharedHandle>();
 export const sharedOf = (s: DocumentSession) => shared.get(s);
 
 const local = new WeakMap<DocumentSession, LocalComments>();
-let puterName = '';
-/** The name local comments are signed with: the Puter account when signed in. */
+let everythingName = '';
+/** The name local comments are signed with: the Everything account when signed in. */
 export function localAuthor(): CommentAuthor {
-  if (!puterName) {
-    const p = (globalThis as { puter?: { auth?: { isSignedIn?: () => boolean; getUser?: () => Promise<{ username?: string }> } } }).puter;
+  if (!everythingName) {
+    const p = (globalThis as { everything?: { auth?: { isSignedIn?: () => boolean; getUser?: () => Promise<{ username?: string }> } } }).everything;
     try {
       if (p?.auth?.isSignedIn?.())
         void p.auth.getUser?.().then(
-          (u) => (puterName = u?.username ?? ''),
+          (u) => (everythingName = u?.username ?? ''),
           () => {},
         );
     } catch {
       /* Optional. */
     }
   }
-  let name = puterName;
+  let name = everythingName;
   if (!name)
     try {
       name = localStorage.getItem('photo-studio-note-author') || '';

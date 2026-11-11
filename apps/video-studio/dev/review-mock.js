@@ -1,17 +1,17 @@
 /**
  * Development harness for Share for review: runs the whole app against an
- * in-page fake Puter (dev/fake-puter.js) whose state lives in IndexedDB, so
+ * in-page fake Everything (dev/fake-everything.js) whose state lives in IndexedDB, so
  * an owner and reviewers in separate tabs share it the way they would share
- * Puter. The review worker's real code runs in whichever tab calls it.
+ * Everything. The review worker's real code runs in whichever tab calls it.
  *
  *   /dev/review-mock.html?as=alice     signed in as alice (or bob, carol, dave)
- *   /dev/review-mock.html?reset=1      wipe the fake Puter
+ *   /dev/review-mock.html?reset=1      wipe the fake Everything
  *   /dev/review-mock.html?as=bob&signedout=1   start signed out
  *
  * Read links are answered by dev/review-mock-sw.js with Range support.
- * Nothing here talks to Puter.
+ * Nothing here talks to Everything.
  */
-import { createWorld, USERS } from './fake-puter.js';
+import { createWorld, USERS } from './fake-everything.js';
 import { idbStorage } from './fake-store.js';
 
 const params = new URLSearchParams(location.search);
@@ -49,7 +49,7 @@ sdk.auth.signIn = async () => {
   history.replaceState(null, '', `${location.pathname}${params.size ? `?${params}` : ''}${location.hash}`);
   return sdk.auth.getUser();
 };
-window.puter = sdk;
+window.everything = sdk;
 
 // The bundle the app deploys is stood in for by the worker source running in this page.
 const realFetch = window.fetch.bind(window);

@@ -75,7 +75,7 @@ function setup() {
     center: () => ({ x: 0, y: 0 }),
     toast: (message) => toasts.push(message),
     refresh() {},
-    puter: () => null,
+    everything: () => null,
   });
   return {
     dom,

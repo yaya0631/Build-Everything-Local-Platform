@@ -28,7 +28,7 @@ it.each([false, true])('keeps absent series names automatic across edits, duplic
       if (named) expect(series[1]).toContain('<c:v>Series 2</c:v>');
       else expect(series[1]).not.toContain('<c:tx>');
       const book = X.CFB.find(saved, '/xl/workbook.xml');
-      replace(book, text(book).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+      replace(book, text(book).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
       wb = await workbookFromFile(bytes(saved), 'native.xlsx');
     }
   }

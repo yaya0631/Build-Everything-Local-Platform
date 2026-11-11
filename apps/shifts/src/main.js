@@ -2,11 +2,11 @@
 import './styles/main.css';
 import { el, mount } from './lib/dom.js';
 import { icon } from './lib/icons.js';
-import { createOfflineBackend, createPuterBackend } from './core/backend.js';
+import { createOfflineBackend, createEverythingBackend } from './core/backend.js';
 import { offline, isNetworkError } from './core/offline.js';
 import { createStore } from './core/store.js';
 import {
-  createPuterSnapshotFS,
+  createEverythingSnapshotFS,
   createSnapshotStore,
   watchForDailySnapshot,
 } from './core/snapshots.js';
@@ -15,18 +15,18 @@ import { confirmDialog } from './ui/modal.js';
 import { shouldOnboard, openOnboarding } from './ui/onboarding.js';
 import { toast } from './ui/toast.js';
 
-function authScreen({ puterAvailable }) {
+function authScreen({ everythingAvailable }) {
   const signInButton = el(
     'button',
     {
       class: 'btn btn-primary',
-      disabled: !puterAvailable,
+      disabled: !everythingAvailable,
       onClick: async (e) => {
         const button = e.currentTarget;
         button.disabled = true;
-        button.textContent = 'Waiting for Puter…';
+        button.textContent = 'Waiting for Everything…';
         try {
-          await puter.auth.signIn();
+          await everything.auth.signIn();
         } catch {
           // Only a rejected sign-in lands here; boot failures below get
           // the real error screen instead of a misleading "cancelled".
@@ -62,17 +62,17 @@ function authScreen({ puterAvailable }) {
         el(
           'div',
           { class: 'feature-list' },
-          feature('cloud', 'Your data lives in your own Puter cloud, not on our servers'),
+          feature('cloud', 'Your data lives in your own Everything cloud, not on our servers'),
           feature('calendar-check', 'Availability-aware scheduling that catches conflicts as you assign'),
           feature('arrow-left-right', 'Shift swaps and attendance reviewed and resolved in one place')
         ),
         signInButton,
-        !puterAvailable
+        !everythingAvailable
           ? el(
               'div',
               { class: 'form-error', style: { marginTop: '10px' } },
               icon('circle-alert', 15),
-              'Puter.js could not be loaded. Check your connection and reload the page.'
+              'Everything.js could not be loaded. Check your connection and reload the page.'
             )
           : null
       ),
@@ -80,7 +80,7 @@ function authScreen({ puterAvailable }) {
         'p',
         { class: 'auth-footer' },
         'Free • No ads • Powered by ',
-        el('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noreferrer' }, 'Puter')
+        el('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noreferrer' }, 'Everything')
       )
     )
   );
@@ -90,10 +90,10 @@ async function bootSignedIn() {
   // Show the splash only when loading is actually slow; rendering it
   // unconditionally makes fast loads flash it for a frame or two.
   const splashTimer = setTimeout(() => splashScreen('Loading your schedule…'), 250);
-  const backend = createOfflineBackend(createPuterBackend(), offline, isNetworkError);
+  const backend = createOfflineBackend(createEverythingBackend(), offline, isNetworkError);
   // Restore points live as files in the user's own storage, and are
   // skipped rather than queued while offline (see core/snapshots.js).
-  const snapshots = createSnapshotStore(createPuterSnapshotFS(), {
+  const snapshots = createSnapshotStore(createEverythingSnapshotFS(), {
     online: () => navigator.onLine,
   });
   const store = createStore(backend, {
@@ -105,7 +105,7 @@ async function bootSignedIn() {
     // stale cache from another account must be cleared before any load
     // populates it. A failed profile fetch falls back to the cached
     // identity (offline) and is otherwise non-fatal.
-    user = await puter.auth.getUser().catch(() => null);
+    user = await everything.auth.getUser().catch(() => null);
     if (user?.uuid) {
       if (!offline.matches(user)) offline.clearAll();
       offline.setUser(user);
@@ -137,7 +137,7 @@ async function bootSignedIn() {
         if (!ok) return;
       }
       offline.clearAll();
-      puter.auth.signOut();
+      everything.auth.signOut();
       location.hash = '';
       location.reload();
     },
@@ -227,7 +227,7 @@ function splashScreen(message) {
 
 /**
  * Dev-only preview harness (stripped from production builds): boots against
- * an in-memory store so screens can be exercised without a Puter account.
+ * an in-memory store so screens can be exercised without an Everything account.
  * `?dev-preview` starts empty (onboarding), `?dev-preview=sample` seeds data.
  */
 async function devPreview(mode) {
@@ -251,12 +251,12 @@ async function boot() {
       return;
     }
   }
-  const puterAvailable = typeof globalThis.puter !== 'undefined';
+  const everythingAvailable = typeof globalThis.everything !== 'undefined';
 
   // The SDK couldn't load but this device holds a signed-in user's local
   // mirror: boot from it (reads from cache, writes queue) and pick up the
   // real SDK with a reload once the network returns.
-  if (!puterAvailable && offline.hasCache() && !navigator.onLine) {
+  if (!everythingAvailable && offline.hasCache() && !navigator.onLine) {
     offline.installStub();
     window.addEventListener('online', () => location.reload(), { once: true });
     await bootSignedIn();
@@ -264,11 +264,11 @@ async function boot() {
   }
 
   let signedIn = false;
-  if (puterAvailable) {
+  if (everythingAvailable) {
     try {
       // Defensive await: depending on SDK state this can be a promise,
       // and a bare truthy check would treat signed-out users as signed in.
-      signedIn = (await Promise.resolve(puter.auth.isSignedIn())) === true;
+      signedIn = (await Promise.resolve(everything.auth.isSignedIn())) === true;
     } catch {
       signedIn = false;
     }
@@ -280,7 +280,7 @@ async function boot() {
   if (signedIn) {
     await bootSignedIn();
   } else {
-    authScreen({ puterAvailable });
+    authScreen({ everythingAvailable });
   }
 }
 

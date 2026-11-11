@@ -8,7 +8,7 @@ import { openNewCompanyForm } from './companyform.js';
 import { openSearch } from './search.js';
 import { store, isRefusal } from '../lib/store.js';
 import { setCurrency, timeAgo } from '../lib/format.js';
-import { isPuterApp } from '../lib/env.js';
+import { isEverythingApp } from '../lib/env.js';
 import { wipeSampleData } from '../lib/sample.js';
 import { attentionItems, dbAsOf } from '../lib/captable.js';
 import { todayISO } from '../lib/util.js';
@@ -232,7 +232,7 @@ export function mountShell(appRoot) {
   }
 
   /* Sidebar (desktop) */
-  const username = store.user?.username || 'Puter user';
+  const username = store.user?.username || 'Everything user';
   /* The shortcut is on the button, so it is discoverable rather than folklore.
      Cmd on Apple keyboards, Ctrl everywhere else. */
   const searchButton = el('button.sidebar-search', {
@@ -266,8 +266,8 @@ export function mountShell(appRoot) {
     el('div.sidebar-user', {},
       el('span.avatar', {}, username.charAt(0).toUpperCase()),
       el('span.name', { title: username }, username),
-      // Inside Puter (env 'app') the platform owns the session - no sign-out.
-      isPuterApp() ? null : el('button.icon-btn', {
+      // Inside Everything (env 'app') the platform owns the session - no sign-out.
+      isEverythingApp() ? null : el('button.icon-btn', {
         html: icon('logout', 18, 2),
         'aria-label': 'Sign out',
         title: 'Sign out',

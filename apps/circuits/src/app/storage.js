@@ -1,11 +1,11 @@
 // Project files. Every open project has a location:
-//   { type: 'cloud', path }  a .circuits file in the user's Puter storage
+//   { type: 'cloud', path }  a .circuits file in the user's Everything storage
 //   { type: 'local', id }    a file in this browser's private storage (OPFS)
 // Signed-in users get cloud locations by default; anyone can use the app
 // signed out with local storage, and import or download files at any time.
 // Files never go into the key-value store.
 
-import { puter, cloudAvailable, isMissing, toMs } from './puter.js';
+import { everything, cloudAvailable, isMissing, toMs } from './everything.js';
 
 export const EXT = '.circuits';
 export const CLOUD_DIR = 'Projects';
@@ -36,7 +36,7 @@ export const localAvailable = async () => !!(await opfsDir());
 
 async function localWrite(id, name, text) {
   const dir = await opfsDir();
-  if (!dir) throw new Error('This browser cannot store projects locally. Download the project or sign in to save it to your Puter cloud.');
+  if (!dir) throw new Error('This browser cannot store projects locally. Download the project or sign in to save it to your Everything cloud.');
   const fh = await dir.getFileHandle(`${id}${EXT}`, { create: true });
   const w = await fh.createWritable();
   await w.write(text);
@@ -59,22 +59,22 @@ async function localDelete(id) {
   writeIndex(readIndex().filter((p) => p.id !== id));
 }
 
-// ---- Cloud (Puter FS) ----
+// ---- Cloud (Everything FS) ----
 
 async function cloudWrite(path, text) {
-  const fs = puter()?.fs;
-  if (!fs) throw new Error('Puter storage is not available.');
+  const fs = everything()?.fs;
+  if (!fs) throw new Error('Everything storage is not available.');
   return fs.write(path, new Blob([text], { type: 'application/json' }), { overwrite: true, createMissingParents: true });
 }
 
 async function cloudRead(path) {
-  const blob = await puter().fs.read(path);
+  const blob = await everything().fs.read(path);
   return blob.text();
 }
 
 /** A free file path for a new cloud project named name. */
 export async function uniqueCloudPath(name) {
-  const fs = puter()?.fs;
+  const fs = everything()?.fs;
   const base = safeName(name);
   let existing = new Set();
   try {
@@ -110,13 +110,13 @@ export async function loadText(location) {
 }
 
 export async function deleteProject(location) {
-  if (location.type === 'cloud') await puter().fs.delete(location.path);
+  if (location.type === 'cloud') await everything().fs.delete(location.path);
   else await localDelete(location.id);
   forgetRecent(location);
 }
 
 export async function renameCloud(location, newName) {
-  const item = await puter().fs.rename(location.path, `${safeName(newName)}${EXT}`);
+  const item = await everything().fs.rename(location.path, `${safeName(newName)}${EXT}`);
   return { type: 'cloud', path: item?.path || location.path.replace(/[^/]+$/, `${safeName(newName)}${EXT}`) };
 }
 
@@ -125,7 +125,7 @@ export async function listProjects() {
   const out = [];
   if (cloudAvailable()) {
     try {
-      const items = await puter().fs.readdir(CLOUD_DIR);
+      const items = await everything().fs.readdir(CLOUD_DIR);
       for (const it of items) {
         if (it.is_dir || it.isDir || !it.name.endsWith(EXT)) continue;
         out.push({ name: it.name.slice(0, -EXT.length), location: { type: 'cloud', path: it.path }, modified: toMs(it.modified), size: it.size });
@@ -156,9 +156,9 @@ export function forgetRecent(location) {
 
 export const locationLabel = (loc) => (loc?.type === 'cloud' ? loc.path.replace(/^.*\/AppData\/[^/]+\//, '') : 'This browser');
 
-/** Opens a .circuits file chosen from Puter storage. Returns { text, location, name } or null. */
+/** Opens a .circuits file chosen from Everything storage. Returns { text, location, name } or null. */
 export async function pickCloudFile() {
-  const p = puter();
+  const p = everything();
   if (!p?.ui?.showOpenFilePicker) return null;
   const pick = p.ui.showOpenFilePicker({ accept: [EXT, '.json'], path: `%appdata%/${CLOUD_DIR}` });
   const item = await (pick?.undefinedOnCancel ?? pick);
@@ -168,9 +168,9 @@ export async function pickCloudFile() {
   return { text, location: { type: 'cloud', path: file.path }, name: file.name.replace(/\.(circuits|json)$/i, '') };
 }
 
-/** Save As into a user-chosen Puter folder. Returns the new location or null. */
+/** Save As into a user-chosen Everything folder. Returns the new location or null. */
 export async function pickCloudSave(text, name) {
-  const p = puter();
+  const p = everything();
   if (!p?.ui?.showSaveFilePicker) return null;
   const pick = p.ui.showSaveFilePicker(new Blob([text], { type: 'application/json' }), `${safeName(name)}${EXT}`);
   const item = await (pick?.undefinedOnCancel ?? pick);

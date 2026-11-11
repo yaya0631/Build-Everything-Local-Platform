@@ -2,7 +2,7 @@
  * The optional invoice logo: reading a stored one for display, and turning
  * a file the user picked into something worth storing.
  *
- * Logo files live in the user's own Puter files and are read as blobs, so
+ * Logo files live in the user's own Everything files and are read as blobs, so
  * every render needs an object URL. They are cached per path for the life
  * of the session: one invoice can be opened, printed, and reopened without
  * re-reading, and a print never waits on the network. Misses are not

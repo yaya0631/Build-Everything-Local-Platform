@@ -17,7 +17,7 @@ const tick = (ms = 2) => new Promise((r) => setTimeout(r, ms));
 /** Route each call by the end of its path (first match wins); a handler gets the query and the request init. */
 function worker(routes) {
   const calls = [];
-  globalThis.puter = {
+  globalThis.everything = {
     workers: {
       exec: async (url, init = {}) => {
         const u = new URL(url);
@@ -56,7 +56,7 @@ function resetStore() {
   store.act = { c: {}, p: {}, w: 0, u: 0 };
   for (const t of store._readTimers.values()) clearTimeout(t);
   store._readTimers.clear();
-  delete globalThis.puter;
+  delete globalThis.everything;
 }
 
 describe('a preview cut to length', () => {
@@ -375,7 +375,7 @@ describe('the workspace list asked of the servers while a workspace is left', ()
     let kvDoc = { v: 1, profile: {}, prefs: {}, workspaces: [{ ref: REF, name: 'A' }, { ref: OTHER, name: 'B' }], worker: null };
     const answers = [];
     worker({ '/api/me': () => new Promise((r) => answers.push(r)) });
-    globalThis.puter.kv = {
+    globalThis.everything.kv = {
       get: async () => JSON.parse(JSON.stringify(kvDoc)),
       set: async (k, v) => { kvDoc = JSON.parse(JSON.stringify(v)); },
     };

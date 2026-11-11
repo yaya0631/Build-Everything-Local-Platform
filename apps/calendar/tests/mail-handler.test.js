@@ -131,11 +131,11 @@ describe('mail-handler: is a single bare expression, free of forbidden globals',
     expect(withoutLeadingComment.trim().endsWith('}')).toBe(true);
   });
 
-  // Vendored from heyputer/packages/puter/src/puter-js/src/modules/events/lib/
+  // Vendored from everything/packages/everything/src/everything-js/src/modules/events/lib/
   // freeVariables.js's HANDLER_GLOBALS — the allowlist the real publish-time
   // scanner checks free variables against. This is a best-effort local
   // stand-in (regex, not an AST); the proof-checker runs the real scanner.
-  const FORBIDDEN = ['puter', 'me', 'my', 'myself', 'window', 'document', 'process', 'require', 'module', 'exports', 'Buffer', 'global'];
+  const FORBIDDEN = ['everything', 'me', 'my', 'myself', 'window', 'document', 'process', 'require', 'module', 'exports', 'Buffer', 'global'];
 
   function withoutLiterals(src) {
     return src
@@ -146,7 +146,7 @@ describe('mail-handler: is a single bare expression, free of forbidden globals',
       .replace(/'(?:\\.|[^'\\])*'/g, "''");
   }
 
-  it('never references puter/me/my/myself or a non-sandboxed host global', () => {
+  it('never references everything/me/my/myself or a non-sandboxed host global', () => {
     const code = withoutLiterals(RAW);
     for (const name of FORBIDDEN) {
       const re = new RegExp(`\\b${name}\\b`);
@@ -529,7 +529,7 @@ describe('authentication cannot be forged by appending headers', () => {
       headers: headers([
         ['received', 'from mx.localhost:8443'],
         ['authentication-results', 'mx.localhost:8443; dkim=pass header.d=evil.example'],
-        ['authentication-results', 'forged; header.d=puter.email'],
+        ['authentication-results', 'forged; header.d=everything.email'],
       ]),
       attachments: [icalAttachment(simpleIcal({ uid: 'forge-2', method: 'REQUEST' }))],
     });

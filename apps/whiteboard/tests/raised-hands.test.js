@@ -103,7 +103,7 @@ test("raised hands travel with views, validated, and are ordered by when they we
 function session(options = {}) {
   const env = environment();
   return new CollaborationSession({
-    puter: env.sdk(owner),
+    everything: env.sdk(owner),
     server: "http://whiteboard-test.localhost:8443",
     room: "room",
     user: owner,

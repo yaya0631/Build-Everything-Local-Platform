@@ -8,7 +8,7 @@ import { rememberGoal, recallGoal } from '../src/lib/goal.js';
 import { rememberPosition, recallPosition } from '../src/lib/position.js';
 import { toggleStar, isStarred } from '../src/lib/starred.js';
 import { toast } from '../src/ui/toast.js';
-import * as P from '../src/lib/puter.js';
+import * as P from '../src/lib/everything.js';
 
 vi.mock('../src/ui/toast.js', () => ({ toast: vi.fn() }));
 
@@ -22,7 +22,7 @@ describe('home document actions', () => {
     localStorage.clear();
     files = new Map([[original, new Blob(['current'])], [`Documents/.versions/Report/${snapshot}`, new Blob(['earlier'])]]);
     vi.stubGlobal('matchMedia', () => ({ matches: true }));
-    vi.stubGlobal('puter', { fs: {
+    vi.stubGlobal('everything', { fs: {
       mkdir: async () => {},
       read: async (path) => files.get(path),
       write: vi.fn(async (path, blob, { overwrite, dedupeName }) => {
@@ -66,7 +66,7 @@ describe('home document actions', () => {
   it.each(['success', 'failure', 'cancel'])('clears only a successfully deleted document\'s local state (%s)', async (result) => {
     rememberGoal(original, 1200); rememberPosition(original, { blockId: 'old-paragraph', offset: 12 }); toggleStar(original);
     rememberGoal(renamed, 700); rememberPosition(renamed, { blockId: 'other-paragraph', offset: 3 });
-    puter.fs.delete = vi.fn(async (path) => {
+    everything.fs.delete = vi.fn(async (path) => {
       if (result === 'failure') throw new Error('Deletion failed');
       files.delete(path);
     });
@@ -117,7 +117,7 @@ describe('home document actions', () => {
     expect(input.value).toBe('Report');
     input.closest('form').requestSubmit();
     await vi.waitFor(() => expect(document.querySelector('.modal-root:not(.closing)')).toBeNull());
-    expect(puter.fs.rename).not.toHaveBeenCalled();
+    expect(everything.fs.rename).not.toHaveBeenCalled();
     expect(toast).not.toHaveBeenCalledWith('Renamed');
     expect(files.has(original)).toBe(true);
   });
@@ -126,10 +126,10 @@ describe('home document actions', () => {
     rememberGoal(original, 1200);
     rememberPosition(original, { blockId: 'paragraph-2', offset: 12 });
     toggleStar(original);
-    puter.fs.rename.mockRejectedValueOnce(new Error('Rename failed'));
+    everything.fs.rename.mockRejectedValueOnce(new Error('Rename failed'));
     await setup();
     const form = submitRename();
-    await vi.waitFor(() => expect(puter.fs.rename).toHaveBeenCalledOnce());
+    await vi.waitFor(() => expect(everything.fs.rename).toHaveBeenCalledOnce());
     expect(document.querySelector('.modal-root:not(.closing)')).not.toBeNull();
     await vi.waitFor(() => expect(form.querySelector('[role="alert"]').textContent).toBe('Rename failed'));
     expect(form.querySelector('input').value).toBe('Final');
@@ -151,7 +151,7 @@ describe('home document actions', () => {
     const other = new Blob(['Other document']);
     files.set(renamed, other);
     const form = submitRename();
-    await vi.waitFor(() => expect(puter.fs.rename).toHaveBeenCalledOnce());
+    await vi.waitFor(() => expect(everything.fs.rename).toHaveBeenCalledOnce());
     expect(document.querySelector('.modal-root:not(.closing)')).not.toBeNull();
     expect(form.querySelector('input').value).toBe('Final');
     await vi.waitFor(() => expect(form.querySelector('[role="alert"]').textContent).toContain('already exists'));
@@ -164,11 +164,11 @@ describe('home document actions', () => {
   it('prevents duplicate rename submissions while the server is working', async () => {
     let finish;
     const pending = new Promise((resolve) => { finish = resolve; });
-    const rename = puter.fs.rename.getMockImplementation();
-    puter.fs.rename.mockImplementationOnce(async (...args) => { await pending; return rename(...args); });
+    const rename = everything.fs.rename.getMockImplementation();
+    everything.fs.rename.mockImplementationOnce(async (...args) => { await pending; return rename(...args); });
     await setup();
     const form = submitRename(); form.requestSubmit();
-    await vi.waitFor(() => expect(puter.fs.rename).toHaveBeenCalledOnce());
+    await vi.waitFor(() => expect(everything.fs.rename).toHaveBeenCalledOnce());
     expect(form.getAttribute('aria-busy')).toBe('true');
     expect(form.querySelector('input').disabled).toBe(true);
     expect(form.querySelector('[type="submit"]').disabled).toBe(true);
@@ -176,7 +176,7 @@ describe('home document actions', () => {
     finish();
     await vi.waitFor(() => expect(view.el.querySelector('.file-name').textContent).toBe('Final'));
     expect(document.querySelector('.modal-root:not(.closing)')).toBeNull();
-    expect(puter.fs.rename.mock.calls.filter(([path]) => path === original)).toHaveLength(1);
+    expect(everything.fs.rename.mock.calls.filter(([path]) => path === original)).toHaveLength(1);
   });
 
   it.each(['cancel', 'leave'])('does not start renaming after an immediate %s', async (action) => {
@@ -185,7 +185,7 @@ describe('home document actions', () => {
     if (action === 'cancel') closeAllModals();
     else { view.destroy(); view = null; }
     await Promise.resolve(); await Promise.resolve();
-    expect(puter.fs.rename).not.toHaveBeenCalled();
+    expect(everything.fs.rename).not.toHaveBeenCalled();
     expect(files.has(original)).toBe(true);
   });
 
@@ -193,10 +193,10 @@ describe('home document actions', () => {
     rememberGoal(original, 1200); toggleStar(original);
     let finish;
     const pending = new Promise((resolve) => { finish = resolve; });
-    const rename = puter.fs.rename.getMockImplementation();
-    puter.fs.rename.mockImplementationOnce(async (...args) => { await pending; return rename(...args); });
+    const rename = everything.fs.rename.getMockImplementation();
+    everything.fs.rename.mockImplementationOnce(async (...args) => { await pending; return rename(...args); });
     await setup(); submitRename();
-    await vi.waitFor(() => expect(puter.fs.rename).toHaveBeenCalledOnce());
+    await vi.waitFor(() => expect(everything.fs.rename).toHaveBeenCalledOnce());
     closeAllModals(); toast.mockClear(); finish();
     await vi.waitFor(() => expect(view.el.querySelector('.file-name').textContent).toBe('Final'));
     expect(recallGoal(renamed)).toBe(1200);
@@ -210,13 +210,13 @@ describe('home document actions', () => {
     rememberGoal(original, 1200); rememberPosition(original, { blockId: 'paragraph-2', offset: 12 }); toggleStar(original);
     let finish;
     const pending = new Promise((resolve) => { finish = resolve; });
-    const rename = puter.fs.rename.getMockImplementation();
-    puter.fs.rename.mockImplementation(async (path, name) => {
+    const rename = everything.fs.rename.getMockImplementation();
+    everything.fs.rename.mockImplementation(async (path, name) => {
       if (path === 'Documents/.versions/Report') await pending;
       return rename(path, name);
     });
     await setup(); submitRename();
-    await vi.waitFor(() => expect(puter.fs.rename).toHaveBeenCalledWith('Documents/.versions/Report', 'Final'));
+    await vi.waitFor(() => expect(everything.fs.rename).toHaveBeenCalledWith('Documents/.versions/Report', 'Final'));
     expect(files.has(renamed)).toBe(true);
     closeAllModals();
     if (action === 'duplicate another file') {
@@ -241,21 +241,21 @@ describe('home document actions', () => {
     const filePending = new Promise((resolve) => { renameFile = resolve; });
     const historyPending = new Promise((resolve) => { moveHistory = resolve; });
     const listing = new Promise((resolve) => { finishListing = resolve; });
-    const rename = puter.fs.rename.getMockImplementation();
-    puter.fs.rename.mockImplementation(async (path, name) => {
+    const rename = everything.fs.rename.getMockImplementation();
+    everything.fs.rename.mockImplementation(async (path, name) => {
       if (path === original) await filePending;
       if (path === 'Documents/.versions/Report') await historyPending;
       return rename(path, name);
     });
     await setup(); submitRename();
-    await vi.waitFor(() => expect(puter.fs.rename).toHaveBeenCalledWith(original, 'Final.docx'));
+    await vi.waitFor(() => expect(everything.fs.rename).toHaveBeenCalledWith(original, 'Final.docx'));
     closeAllModals();
     const list = vi.spyOn(P, 'listFiles').mockReturnValueOnce(listing);
     view.el.querySelector('[data-path="Documents/Other.docx"] .file-menu-btn').click();
     [...document.querySelectorAll('[role="menuitem"]')].find((item) => item.textContent === 'Duplicate').click();
     await vi.waitFor(() => expect(list).toHaveBeenCalledOnce());
     renameFile();
-    await vi.waitFor(() => expect(puter.fs.rename).toHaveBeenCalledWith('Documents/.versions/Report', 'Final'));
+    await vi.waitFor(() => expect(everything.fs.rename).toHaveBeenCalledWith('Documents/.versions/Report', 'Final'));
     finishListing(['Report.docx', 'Other.docx', 'Other copy.docx'].map((name) => ({ name, path: `Documents/${name}` })));
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect(isStarred(renamed)).toBe(true);
@@ -266,21 +266,21 @@ describe('home document actions', () => {
     expect(isStarred(renamed)).toBe(true);
   });
 
-  it('downloads to this device inside the Puter desktop too, without Puter\'s Save dialog', async () => {
-    puter.env = 'app';
-    puter.ui = { showSaveFilePicker: vi.fn() };
+  it('downloads to this device inside the Everything desktop too, without Everything\'s Save dialog', async () => {
+    everything.env = 'app';
+    everything.ui = { showSaveFilePicker: vi.fn() };
     const download = vi.spyOn(P, 'downloadBlob').mockImplementation(() => {});
     await setup();
     view.el.querySelector('.file-menu-btn').click();
     [...document.querySelectorAll('[role="menuitem"]')].find((item) => item.textContent === 'Download').click();
     await vi.waitFor(() => expect(download).toHaveBeenCalledWith(files.get(original), 'Report.docx'));
-    expect(puter.ui.showSaveFilePicker).not.toHaveBeenCalled();
+    expect(everything.ui.showSaveFilePicker).not.toHaveBeenCalled();
   });
 
   it('reports a download that could not be read instead of silently discarding the error', async () => {
     const download = vi.spyOn(P, 'downloadBlob').mockImplementation(() => {});
     await setup();
-    puter.fs.read = async () => { throw new Error('Storage quota exceeded'); };
+    everything.fs.read = async () => { throw new Error('Storage quota exceeded'); };
     toast.mockClear();
     view.el.querySelector('.file-menu-btn').click();
     [...document.querySelectorAll('[role="menuitem"]')].find((item) => item.textContent === 'Download').click();
@@ -295,7 +295,7 @@ describe('home document actions', () => {
     files.set('Documents/Report copy.docx', other);
     view.el.querySelector('.file-menu-btn').click();
     [...document.querySelectorAll('[role="menuitem"]')].find((item) => item.textContent.includes('Duplicate')).click();
-    await vi.waitFor(() => expect(puter.fs.write).toHaveBeenCalled());
+    await vi.waitFor(() => expect(everything.fs.write).toHaveBeenCalled());
     expect(files.get('Documents/Report copy.docx')).toBe(other);
     expect(files.get('Documents/Report copy (1).docx')).toBe(files.get(original));
   });
@@ -308,7 +308,7 @@ describe('home document actions', () => {
     const duplicate = [...document.querySelectorAll('[role="menuitem"]')].find((item) => item.textContent.includes('Duplicate'));
     const folded = vi.spyOn(String.prototype, 'toLowerCase');
     duplicate.click();
-    await vi.waitFor(() => expect(puter.fs.write).toHaveBeenCalled());
+    await vi.waitFor(() => expect(everything.fs.write).toHaveBeenCalled());
     expect(files.get('Documents/Report copy 201.docx')).toBe(files.get(original));
     // Count work, not wall-clock time: naming must stay linear as copies grow.
     const nameFolds = folded.mock.contexts.filter((value) => /^report(?: copy(?: \d+)?)?\.docx$/i.test(value));
@@ -355,7 +355,7 @@ describe('home document actions', () => {
     const input = document.querySelector('.modal-panel input');
     input.value = 'Final.DOCX';
     input.closest('form').dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
-    await vi.waitFor(() => expect(puter.fs.rename).toHaveBeenCalledWith(original, 'Final.docx'));
+    await vi.waitFor(() => expect(everything.fs.rename).toHaveBeenCalledWith(original, 'Final.docx'));
     await vi.waitFor(() => expect(view.el.querySelector('.file-name').textContent).toBe('Final'));
   });
 
@@ -368,7 +368,7 @@ describe('home document actions', () => {
     await vi.waitFor(() => expect(view.el.querySelector(`[data-path="${renamed}"]`)).not.toBeNull());
     // The list was rebuilt while the dialog closed; focus lands on the renamed row's options, not on <body>.
     await vi.waitFor(() => expect(document.activeElement).toBe(view.el.querySelector(`[data-path="${renamed}"] .file-menu-btn`)));
-    puter.fs.delete = vi.fn(async (path) => { files.delete(path); });
+    everything.fs.delete = vi.fn(async (path) => { files.delete(path); });
     document.activeElement.click();
     [...document.querySelectorAll('[role="menuitem"]')].find((item) => item.textContent === 'Delete').click();
     document.querySelector('.modal-panel .btn-danger').click();
@@ -379,7 +379,7 @@ describe('home document actions', () => {
 
   it('leaves the search box alone after deleting the last document that matched', async () => {
     files.set('Documents/Another.docx', new Blob(['text']));
-    puter.fs.delete = vi.fn(async (path) => { files.delete(path); });
+    everything.fs.delete = vi.fn(async (path) => { files.delete(path); });
     await setup();
     const search = view.el.querySelector('.home-search');
     search.value = 'rep'; search.dispatchEvent(new Event('input'));
@@ -395,11 +395,11 @@ describe('home document actions', () => {
   });
 
   it('keeps keyboard focus on the copy after duplicating when the listing spells paths from the root', async () => {
-    // Puter lists files by their absolute path while the app writes the copy by its folder path.
+    // Everything lists files by their absolute path while the app writes the copy by its folder path.
     const root = '/nj';
-    puter.fs.readdir = async (dir) => [...files].filter(([path]) => path.startsWith(`${dir}/`) && !path.slice(dir.length + 1).includes('/'))
+    everything.fs.readdir = async (dir) => [...files].filter(([path]) => path.startsWith(`${dir}/`) && !path.slice(dir.length + 1).includes('/'))
       .map(([path, blob]) => ({ path: `${root}/${path}`, name: path.split('/').pop(), size: blob.size }));
-    puter.fs.read = async (path) => files.get(path.startsWith(`${root}/`) ? path.slice(root.length + 1) : path);
+    everything.fs.read = async (path) => files.get(path.startsWith(`${root}/`) ? path.slice(root.length + 1) : path);
     await setup();
     const button = view.el.querySelector('.file-menu-btn');
     button.focus();
@@ -430,13 +430,13 @@ describe('home document actions', () => {
       await Promise.resolve();
       expect(document.querySelector('.modal-panel .field-error').textContent).toBe('Enter a name');
     }
-    expect(puter.fs.rename).not.toHaveBeenCalled();
+    expect(everything.fs.rename).not.toHaveBeenCalled();
   });
 
   it('treats a delete of a file that is already gone as done', async () => {
     await setup();
     const missing = Object.assign(new Error('Subject does not exist'), { code: 'subject_does_not_exist' });
-    puter.fs.delete = vi.fn(async () => { throw missing; });
+    everything.fs.delete = vi.fn(async () => { throw missing; });
     view.el.querySelector(`[data-path="${original}"] .file-menu-btn`).click();
     [...document.querySelectorAll('[role="menuitem"]')].find((item) => item.textContent.includes('Delete')).click();
     [...document.querySelectorAll('.modal-panel button')].find((b) => b.textContent === 'Delete').click();
@@ -447,8 +447,8 @@ describe('home document actions', () => {
   it('refreshes the list instead of leaving a ghost row when a duplicated file is already gone', async () => {
     await setup();
     const missing = Object.assign(new Error('Subject does not exist'), { code: 'subject_does_not_exist' });
-    puter.fs.read = vi.fn(async () => { throw missing; });
-    const readdir = vi.spyOn(puter.fs, 'readdir');
+    everything.fs.read = vi.fn(async () => { throw missing; });
+    const readdir = vi.spyOn(everything.fs, 'readdir');
     view.el.querySelector(`[data-path="${original}"] .file-menu-btn`).click();
     [...document.querySelectorAll('[role="menuitem"]')].find((item) => item.textContent.includes('Duplicate')).click();
     await vi.waitFor(() => expect(toast).toHaveBeenCalledWith('That file no longer exists', { icon: 'alert' }));

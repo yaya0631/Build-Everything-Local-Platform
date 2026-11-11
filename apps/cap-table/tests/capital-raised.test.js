@@ -2,11 +2,11 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { Store } from '../src/lib/store.js';
 import { capitalRaised, dbAsOf, issuanceHistory, modelRound } from '../src/lib/captable.js';
 import { capTableDigest } from '../src/lib/financing.js';
-import { puterBackend } from './helpers/puter-kv.js';
+import { everythingBackend } from './helpers/everything-kv.js';
 
 let store, common, founder, investor;
 beforeEach(async () => {
-  puterBackend().install();
+  everythingBackend().install();
   store = new Store();
   await store.init();
   common = await store.addClass({ name: 'Common', kind: 'common' });

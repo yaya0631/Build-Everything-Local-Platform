@@ -1,5 +1,5 @@
 /**
- * Pure kanban/timeline logic, kept free of Puter and the DOM so it can be
+ * Pure kanban/timeline logic, kept free of Everything and the DOM so it can be
  * unit-tested directly.
  *
  * Ordering model: every task carries { columnId, order }. Order values are

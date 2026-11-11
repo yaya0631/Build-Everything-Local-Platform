@@ -1,7 +1,7 @@
 /**
  * Leaving with work not saved yet: the one question asked before edits or
  * media files that couldn't be stored are dropped (leaving the editor,
- * closing the page or the Puter window, signing out).
+ * closing the page or the Everything window, signing out).
  */
 import { confirmDialog, toast } from './dialog.js';
 
@@ -10,7 +10,7 @@ import { confirmDialog, toast } from './dialog.js';
  * media: how many media files aren't stored. Resolves true to leave.
  */
 export function confirmLeave(library, { edits = false, media = 0 }) {
-  const where = library.backend.kind === 'local' ? 'in this browser' : 'to your Puter cloud';
+  const where = library.backend.kind === 'local' ? 'in this browser' : 'to your Everything cloud';
   const what = [edits ? 'your latest changes' : null, media ? `${media} media file${media === 1 ? '' : 's'}` : null].filter(Boolean).join(' and ');
   const answer = confirmDialog({
     title: "Couldn't save your changes",

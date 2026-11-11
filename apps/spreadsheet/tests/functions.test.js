@@ -520,7 +520,7 @@ describe('more lookup, text, and information', () => {
   });
 
   it('HYPERLINK / SHEET / SHEETS / ISFORMULA / FORMULATEXT / ERROR.TYPE', () => {
-    expect(calc('HYPERLINK("http://localhost:8443","Puter")')).toBe('Puter');
+    expect(calc('HYPERLINK("http://localhost:8443","Everything")')).toBe('Everything');
     expect(calc('HYPERLINK("http://localhost:8443")')).toBe('http://localhost:8443');
     expect(calc('SHEET()')).toBe(1);
     expect(calc('SHEET("Sheet1")')).toBe(1);

@@ -1,5 +1,5 @@
 /**
- * Store tests run against a mock `puter` global backed by a Map, which is
+ * Store tests run against a mock `everything` global backed by a Map, which is
  * also how a fresh account behaves: every key starts empty.
  */
 
@@ -11,9 +11,9 @@ import { todayISO, addDays } from '../src/lib/util.js';
 
 let kvData;
 
-function installPuterMock() {
+function installEverythingMock() {
   kvData = new Map();
-  globalThis.puter = {
+  globalThis.everything = {
     env: 'web',
     kv: {
       get: vi.fn(async (k) => (kvData.has(k) ? kvData.get(k) : null)),
@@ -37,7 +37,7 @@ async function freshStore() {
   return store;
 }
 
-beforeEach(installPuterMock);
+beforeEach(installEverythingMock);
 
 describe('init', () => {
   it('seeds defaults on an empty account', async () => {
@@ -73,7 +73,7 @@ describe('init', () => {
   });
 
   it('survives a signed-out getUser', async () => {
-    puter.auth.getUser = vi.fn(async () => { throw new Error('no session'); });
+    everything.auth.getUser = vi.fn(async () => { throw new Error('no session'); });
     const store = await freshStore();
     expect(store.user).toBeNull();
   });
@@ -817,7 +817,7 @@ describe('refresh', () => {
     // the time refresh is called - which is the case under test.
     let release;
     const gate = new Promise((res) => { release = res; });
-    puter.kv.set = vi.fn(() => gate);
+    everything.kv.set = vi.fn(() => gate);
     const write = store.addContact({ name: 'Mei' });
 
     expect(await store.refresh()).toBe(false);
@@ -840,7 +840,7 @@ describe('refresh', () => {
     expect(store.trash).toEqual([]);
     // Without this the next mutation writes the shortened trash to KV and
     // the only record of the path goes with it, stranding the bytes.
-    expect(puter.fs.delete).toHaveBeenCalledWith('attachments/x-a.pdf');
+    expect(everything.fs.delete).toHaveBeenCalledWith('attachments/x-a.pdf');
   });
 
   it('spares an aged-out entry’s file when the live manifest names it again', async () => {
@@ -857,7 +857,7 @@ describe('refresh', () => {
     ]));
 
     await store.refresh();
-    expect(puter.fs.delete).not.toHaveBeenCalled();
+    expect(everything.fs.delete).not.toHaveBeenCalled();
   });
 
   it('discards reads that raced a local mutation', async () => {
@@ -866,7 +866,7 @@ describe('refresh', () => {
     // Reads stall until after a local mutation lands mid-refresh.
     let release;
     const gate = new Promise((res) => { release = res; });
-    puter.kv.get = vi.fn(async (k) => {
+    everything.kv.get = vi.fn(async (k) => {
       await gate;
       return kvData.has(k) ? kvData.get(k) : null;
     });
@@ -1158,20 +1158,20 @@ describe('working offline', () => {
     const store = new Store();
     store.useOutbox(createOutbox({
       storage,
-      kv: { get: (k) => puter.kv.get(k), set: (k, v) => puter.kv.set(k, v) },
+      kv: { get: (k) => everything.kv.get(k), set: (k, v) => everything.kv.set(k, v) },
     }));
     await store.init();
     return { store, storage };
   }
 
   const goOffline = () => {
-    puter.kv.set = vi.fn(async () => { throw new Error('offline'); });
-    puter.kv.get = vi.fn(async () => { throw new Error('offline'); });
+    everything.kv.set = vi.fn(async () => { throw new Error('offline'); });
+    everything.kv.get = vi.fn(async () => { throw new Error('offline'); });
   };
 
   it('queues a write KV refuses instead of losing it', async () => {
     const { store } = await offlineStore();
-    puter.kv.set = vi.fn(async () => { throw new Error('offline'); });
+    everything.kv.set = vi.fn(async () => { throw new Error('offline'); });
 
     // The save resolves: the record is safe locally, which is the truth.
     const contact = await store.addContact({ name: 'Mei' });
@@ -1185,11 +1185,11 @@ describe('working offline', () => {
 
   it('replays the queue when the connection returns', async () => {
     const { store } = await offlineStore();
-    puter.kv.set = vi.fn(async () => { throw new Error('offline'); });
+    everything.kv.set = vi.fn(async () => { throw new Error('offline'); });
     await store.addContact({ name: 'Mei' });
     await store.addDeal({ name: 'Rollout' });
 
-    puter.kv.set = vi.fn(async (k, v) => { kvData.set(k, v); return true; });
+    everything.kv.set = vi.fn(async (k, v) => { kvData.set(k, v); return true; });
     const result = await store.syncNow();
     expect(result.synced.sort()).toEqual(['crm:contacts:v1', 'crm:deals:v1']);
     expect(store.offline).toMatchObject({ offline: false, queued: 0 });
@@ -1199,7 +1199,7 @@ describe('working offline', () => {
   it('reads back what was written offline, on a cold start', async () => {
     const storage = memoryStorage();
     const { store } = await offlineStore(storage);
-    puter.kv.set = vi.fn(async () => { throw new Error('offline'); });
+    everything.kv.set = vi.fn(async () => { throw new Error('offline'); });
     await store.addActivity({ summary: 'Logged the call' });
 
     // A reload with the network still down: KV has nothing, the device does.
@@ -1212,22 +1212,22 @@ describe('working offline', () => {
 
   it('never swaps remote data in over a queued write', async () => {
     const { store } = await offlineStore();
-    puter.kv.set = vi.fn(async () => { throw new Error('offline'); });
+    everything.kv.set = vi.fn(async () => { throw new Error('offline'); });
     await store.addContact({ name: 'Mei' });
 
     // KV is answering reads again, and knows nothing about Mei.
-    puter.kv.set = vi.fn(async (k, v) => { kvData.set(k, v); return true; });
+    everything.kv.set = vi.fn(async (k, v) => { kvData.set(k, v); return true; });
     expect(await store.refresh()).toBe(false);
     expect(store.contacts.map((c) => c.name)).toEqual(['Mei']);
   });
 
   it('holds a write back rather than overwriting another device, and asks', async () => {
     const { store } = await offlineStore();
-    puter.kv.set = vi.fn(async () => { throw new Error('offline'); });
+    everything.kv.set = vi.fn(async () => { throw new Error('offline'); });
     await store.addContact({ name: 'Mei' });
 
     // Another device wrote the same collection while this one was away.
-    puter.kv.set = vi.fn(async (k, v) => { kvData.set(k, v); return true; });
+    everything.kv.set = vi.fn(async (k, v) => { kvData.set(k, v); return true; });
     kvData.set('crm:contacts:v1', JSON.stringify([{ id: 'x', name: 'Sam' }]));
 
     const result = await store.syncNow();
@@ -1247,9 +1247,9 @@ describe('working offline', () => {
 
   it('can take the other version instead', async () => {
     const { store } = await offlineStore();
-    puter.kv.set = vi.fn(async () => { throw new Error('offline'); });
+    everything.kv.set = vi.fn(async () => { throw new Error('offline'); });
     await store.addContact({ name: 'Mei' });
-    puter.kv.set = vi.fn(async (k, v) => { kvData.set(k, v); return true; });
+    everything.kv.set = vi.fn(async (k, v) => { kvData.set(k, v); return true; });
     kvData.set('crm:contacts:v1', JSON.stringify([{ id: 'x', name: 'Sam' }]));
     await store.syncNow();
 
@@ -1636,7 +1636,7 @@ describe('attachments', () => {
     const entry = await store.deleteAttachment(a.id);
     expect(store.attachments).toHaveLength(0);
     expect(entry.kind).toBe('attachment');
-    expect(puter.fs.delete).not.toHaveBeenCalled();   // restorable = file stays
+    expect(everything.fs.delete).not.toHaveBeenCalled();   // restorable = file stays
 
     await store.restoreTrash(entry.id);
     expect(store.attachments).toHaveLength(1);
@@ -1649,7 +1649,7 @@ describe('attachments', () => {
     await store.deleteAttachment(a.id);
 
     await store.emptyTrash();
-    expect(puter.fs.delete).toHaveBeenCalledWith('attachments/x-a.pdf');
+    expect(everything.fs.delete).toHaveBeenCalledWith('attachments/x-a.pdf');
   });
 
   it('spares a stored file the live manifest points at again', async () => {
@@ -1664,13 +1664,13 @@ describe('attachments', () => {
     // Same file named twice: once live, once by the delete's trash entry.
     // Emptying the trash must not take the bytes out from under the live one.
     await store.emptyTrash();
-    expect(puter.fs.delete).not.toHaveBeenCalled();
+    expect(everything.fs.delete).not.toHaveBeenCalled();
 
     // Once nothing else answers for it, it goes.
     const again = await store.deleteAttachment(store.attachments[0].id);
     expect(again).not.toBeNull();
     await store.emptyTrash();
-    expect(puter.fs.delete).toHaveBeenCalledWith('attachments/x-a.pdf');
+    expect(everything.fs.delete).toHaveBeenCalledWith('attachments/x-a.pdf');
   });
 
   it('an expired attachment trash entry takes its file with it at boot', async () => {
@@ -1685,7 +1685,7 @@ describe('attachments', () => {
 
     const second = await freshStore();
     expect(second.trash).toHaveLength(0);
-    expect(puter.fs.delete).toHaveBeenCalledWith('attachments/x-old.pdf');
+    expect(everything.fs.delete).toHaveBeenCalledWith('attachments/x-old.pdf');
   });
 
   it('purges attachments whose owner is gone from both live data and trash', async () => {
@@ -1696,7 +1696,7 @@ describe('attachments', () => {
 
     const second = await freshStore();
     expect(second.attachments.map((a) => a.name)).toEqual(['kept.pdf']);
-    expect(puter.fs.delete).toHaveBeenCalledWith('attachments/orphan.pdf');
+    expect(everything.fs.delete).toHaveBeenCalledWith('attachments/orphan.pdf');
   });
 
   it('the orphan purge spares a file the safety snapshot can still restore', async () => {
@@ -1712,11 +1712,11 @@ describe('attachments', () => {
     // so the bytes have to still be there when it does.
     const second = await freshStore();
     expect(second.attachments).toHaveLength(0);
-    expect(puter.fs.delete).not.toHaveBeenCalledWith('attachments/x-a.pdf');
+    expect(everything.fs.delete).not.toHaveBeenCalledWith('attachments/x-a.pdf');
 
     await second.restoreBackup();
     expect(second.attachments.map((a) => a.path)).toEqual(['attachments/x-a.pdf']);
-    expect(puter.fs.delete).not.toHaveBeenCalledWith('attachments/x-a.pdf');
+    expect(everything.fs.delete).not.toHaveBeenCalledWith('attachments/x-a.pdf');
   });
 
   it('an imported manifest cannot point the purge at a file outside attachments/', async () => {
@@ -1734,7 +1734,7 @@ describe('attachments', () => {
 
     const second = await freshStore();
     expect(second.attachments).toHaveLength(0);
-    expect(puter.fs.delete).not.toHaveBeenCalled();
+    expect(everything.fs.delete).not.toHaveBeenCalled();
   });
 
   it('holds a deleted record’s attachments while it sits in the trash', async () => {
@@ -1746,7 +1746,7 @@ describe('attachments', () => {
     const second = await freshStore();
     // Owner is in the trash, so the attachment (and its file) wait.
     expect(second.attachments).toHaveLength(1);
-    expect(puter.fs.delete).not.toHaveBeenCalledWith('attachments/a.pdf');
+    expect(everything.fs.delete).not.toHaveBeenCalledWith('attachments/a.pdf');
   });
 
   it('an import keeps the replaced manifest’s files while the snapshot holds them', async () => {
@@ -1760,7 +1760,7 @@ describe('attachments', () => {
       app: 'crm', version: 1, companies: [], contacts: [], deals: [],
       activities: [], tasks: [], templates: [],
     });
-    expect(puter.fs.delete).not.toHaveBeenCalledWith('attachments/erased.pdf');
+    expect(everything.fs.delete).not.toHaveBeenCalledWith('attachments/erased.pdf');
   });
 
   it('reclaims a snapshot’s files once the slot rotates away from them', async () => {
@@ -1779,12 +1779,12 @@ describe('attachments', () => {
       deals: [], activities: [], tasks: [], templates: [],
     };
     await store.importAll(JSON.parse(JSON.stringify(payload)));
-    expect(puter.fs.delete).not.toHaveBeenCalledWith('attachments/erased.pdf');
+    expect(everything.fs.delete).not.toHaveBeenCalledWith('attachments/erased.pdf');
 
     // The next import snapshots the non-empty data, rotating the erase's
     // snapshot out - now nothing references the file.
     await store.importAll(JSON.parse(JSON.stringify(payload)));
-    expect(puter.fs.delete).toHaveBeenCalledWith('attachments/erased.pdf');
+    expect(everything.fs.delete).toHaveBeenCalledWith('attachments/erased.pdf');
   });
 
   it('restoring the snapshot keeps the files it brings back to life', async () => {
@@ -1798,12 +1798,12 @@ describe('attachments', () => {
 
     await store.restoreBackup();
     expect(store.attachments.map((a) => a.path)).toEqual(['attachments/kept.pdf']);
-    expect(puter.fs.delete).not.toHaveBeenCalledWith('attachments/kept.pdf');
+    expect(everything.fs.delete).not.toHaveBeenCalledWith('attachments/kept.pdf');
 
     // And undoing the restore still holds the file - it lives in the
     // re-rotated snapshot now.
     await store.restoreBackup();
-    expect(puter.fs.delete).not.toHaveBeenCalledWith('attachments/kept.pdf');
+    expect(everything.fs.delete).not.toHaveBeenCalledWith('attachments/kept.pdf');
   });
 
   it('a CSV-guard snapshot rotation reclaims what the old snapshot alone held', async () => {
@@ -1817,7 +1817,7 @@ describe('attachments', () => {
 
     await store.addContact({ name: 'Someone' });   // so hasData() guards apply
     await store.saveSnapshot('csv-import');
-    expect(puter.fs.delete).toHaveBeenCalledWith('attachments/erased.pdf');
+    expect(everything.fs.delete).toHaveBeenCalledWith('attachments/erased.pdf');
   });
 });
 
@@ -1864,13 +1864,13 @@ describe('bulk operations', () => {
     const a = await store.addContact({ name: 'A', status: 'lead' });
     const b = await store.addContact({ name: 'B', status: 'lead' });
     const c = await store.addContact({ name: 'C', status: 'customer' });
-    const sets = puter.kv.set.mock.calls.length;
+    const sets = everything.kv.set.mock.calls.length;
 
     const n = await store.bulkUpdateContacts([a.id, b.id], { status: 'lost' });
     expect(n).toBe(2);
     expect(store.contactById(a.id).status).toBe('lost');
     expect(store.contactById(c.id).status).toBe('customer');
-    expect(puter.kv.set.mock.calls.length - sets).toBe(1);
+    expect(everything.kv.set.mock.calls.length - sets).toBe(1);
   });
 
   it('bulkMoveDeals stamps close dates and history like updateDeal', async () => {
@@ -1973,7 +1973,7 @@ describe('merge', () => {
     kvData.set('crm:trash:v1', JSON.stringify([]));
     const later = await freshStore();
     expect(later.attachments).toHaveLength(2);
-    expect(puter.fs.delete).not.toHaveBeenCalled();
+    expect(everything.fs.delete).not.toHaveBeenCalled();
   });
 
   it('restoring a merged-away contact brings it back without stealing links', async () => {

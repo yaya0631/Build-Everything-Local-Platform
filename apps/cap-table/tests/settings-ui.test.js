@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { JSDOM } from 'jsdom';
 import { store } from '../src/lib/store.js';
-import { puterBackend } from './helpers/puter-kv.js';
+import { everythingBackend } from './helpers/everything-kv.js';
 
 let dom;
 let settingsView;
@@ -13,7 +13,7 @@ beforeEach(async () => {
   vi.stubGlobal('matchMedia', () => ({ matches: true, addEventListener() {}, removeEventListener() {} }));
   // After the globals: theme.js subscribes to matchMedia as it loads.
   ({ settingsView } = await import('../src/views/settings.js'));
-  puterBackend().install();
+  everythingBackend().install();
   await store.init();
   await store.updateCompany({ name: 'Acme' });
   await store.addStakeholder({ name: 'Ada', kind: 'founder' });

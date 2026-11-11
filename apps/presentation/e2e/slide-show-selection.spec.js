@@ -7,10 +7,10 @@ import { showSelectionDeck } from "../tests/slide-show-fixture.js";
 
 async function open(page, pres) {
   await page.clock.install({ time: new Date("2030-01-01T00:00:00Z") });
-  await page.route("**/sdk/puter.js", (route) =>
+  await page.route("**/sdk/everything.js", (route) =>
     route.fulfill({
       contentType: "application/javascript",
-      body: 'window.puter={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',
+      body: 'window.everything={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',
     }),
   );
   await page.goto("/#/home");

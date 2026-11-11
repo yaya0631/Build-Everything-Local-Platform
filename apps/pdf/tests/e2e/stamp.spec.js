@@ -4,10 +4,10 @@ import { PDFDocument } from 'pdf-lib';
 import { readFile } from 'node:fs/promises';
 import { inspectPaths } from '../../src/core/path-edit.js';
 
-const PUTER_MOCK = `window.puter = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async () => ({}) }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
-async function mockPuter(page) {
-  await page.route('**/sdk/puter.js', (route) =>
-    route.fulfill({ contentType: 'application/javascript', body: PUTER_MOCK }),
+const EVERYTHING_MOCK = `window.everything = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async () => ({}) }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
+async function mockEverything(page) {
+  await page.route('**/sdk/everything.js', (route) =>
+    route.fulfill({ contentType: 'application/javascript', body: EVERYTHING_MOCK }),
   );
 }
 async function openPdf(page, doc) {
@@ -92,7 +92,7 @@ for (const label of ['APPROVED', 'Paid in full', 'AbCd '.repeat(6).trim(), 'B\u0
   test(`the stamp preview matches its PDF lettering and frame for ${label}`, async ({
     page,
   }, testInfo) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     const doc = await PDFDocument.create();
     doc.addPage([400, 400]);
@@ -134,7 +134,7 @@ test('a delayed stamp preview uses the latest text and redraws when resized', as
     await ready;
     await route.continue();
   });
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/');
   await expect(page.locator('.page-caption')).toHaveText('Page 1 of 1');
   await menu(page, 'Stamp…');
@@ -171,7 +171,7 @@ test('a delayed stamp preview uses the latest text and redraws when resized', as
 });
 
 test('a preset stamp lands centered as one selected vector shape', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([400, 400]);
@@ -213,7 +213,7 @@ for (const failure of ['unsupported character', 'font download'])
     await page.route('**/fonts/NotoSans-Regular.ttf', (route) =>
       failFont ? route.fulfill({ status: 503, body: 'Unavailable' }) : route.continue(),
     );
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     const doc = await PDFDocument.create();
     doc.addPage([400, 400]);
@@ -240,7 +240,7 @@ for (const failure of ['unsupported character', 'font download'])
   });
 
 test('custom stamp text and color are validated and used', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([400, 400]);

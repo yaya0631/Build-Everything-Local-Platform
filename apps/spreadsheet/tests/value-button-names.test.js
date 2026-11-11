@@ -3,7 +3,7 @@ import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { createToolbar } from '../src/ui/toolbar.js';
 import { createStatusBar } from '../src/ui/statusbar.js';
 import { homeView } from '../src/views/home.js';
-import * as P from '../src/lib/puter.js';
+import * as P from '../src/lib/everything.js';
 import { closeMenu } from '../src/ui/menu.js';
 import { Workbook } from '../src/core/workbook.js';
 import * as S from '../src/core/selection.js';

@@ -1,5 +1,5 @@
 /**
- * Text with Puter AI chat, on selected type (or the selected characters
+ * Text with Everything AI chat, on selected type (or the selected characters
  * while editing type): Generate Text, Rewrite (tone and length), Proofread,
  * Translate and Fit Text to the frame. Results are previewed where a choice
  * is involved and applied as one undo step, keeping character styles.

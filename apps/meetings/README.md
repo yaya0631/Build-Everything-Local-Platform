@@ -1,6 +1,6 @@
-# Puter Meetings
+# Everything Meetings
 
-A Google Meet-style video meeting app built **entirely on [Puter.js](http://localhost:8443)** — no backend servers, no frontend frameworks. Realtime communication runs over the **Puter Peer API** (WebRTC data channels with Puter-managed signaling and TURN relays), and audio/video flows peer-to-peer between participants.
+A Google Meet-style video meeting app built **entirely on [Everything.js](http://localhost:8443)** — no backend servers, no frontend frameworks. Realtime communication runs over the **Everything Peer API** (WebRTC data channels with Everything-managed signaling and TURN relays), and audio/video flows peer-to-peer between participants.
 
 ## Features
 
@@ -14,12 +14,12 @@ A Google Meet-style video meeting app built **entirely on [Puter.js](http://loca
 - **Persistent meeting links** — Meet-style `abc-defg-hij` codes that don't
   expire and cost nothing to mint: create a meeting for later, put the link
   in a calendar invite, and meet whenever. Behind every link is one record
-  in one place — the **room directory**, a Puter Worker with a central
+  in one place — the **room directory**, an Everything Worker with a central
   key-value store (see [How it works](#how-it-works)) — so the link always
   says exactly one thing about what is running. **First to arrive hosts**: a
-  signed-in Puter user who clicks Join while nothing is running is simply
+  signed-in Everything user who clicks Join while nothing is running is simply
   in the meeting, as its host — no "waiting for the host" for a host who
-  could be them. Guests without a Puter account wait in a green-room lobby
+  could be them. Guests without an Everything account wait in a green-room lobby
   and join automatically the moment the meeting starts (or sign in and
   start it themselves)
 - **The meeting outlives its host** — when whoever started it leaves, the
@@ -31,7 +31,7 @@ A Google Meet-style video meeting app built **entirely on [Puter.js](http://loca
   a working meeting link with zero API calls: generate 12 random letters,
   build the URL, done. The room springs into existence when the first
   signed-in visitor clicks Join (see [Minting links from other apps](#minting-links-from-other-apps-stateless))
-- **Your meetings, on the home screen** — inside the Puter desktop the home
+- **Your meetings, on the home screen** — inside the Everything desktop the home
   screen lists the day's meetings from the
   [Calendar](http://calendar.localhost:8443) app, Google Meet-style: a week strip
   to pick a day, what is still to come and what is over, a **Join** button on
@@ -58,9 +58,9 @@ A Google Meet-style video meeting app built **entirely on [Puter.js](http://loca
   never moves — the window is a second view of the same streams. It closes
   when you come back to the meeting tab, and in Chromium it opens again on
   its own the next time you switch away (automatic picture-in-picture).
-  Inside the Puter desktop, where the app runs in a frame that browsers
+  Inside the Everything desktop, where the app runs in a frame that browsers
   won't open such a window from, the desktop opens it for us
-  (`puter.ui.requestPictureInPicture()`) and loads our `pip.html`, which
+  (`everything.ui.requestPictureInPicture()`) and loads our `pip.html`, which
   reaches back into the meeting's frame for the same streams
 - **In-call chat** — with unread badges and toasts
 - **Reactions** — floating emoji, visible to everyone
@@ -85,12 +85,12 @@ npm test           # vitest suite
 npm run build      # production build in dist/
 ```
 
-> **Joining needs no Puter account — or session.** A guest opens the link and
+> **Joining needs no Everything account — or session.** A guest opens the link and
 > is in the call: no popup, no CAPTCHA, nothing created on their behalf. They
-> join with `puter.peer.connect(invite, { anonToken, turnGrant })` — an
+> join with `everything.peer.connect(invite, { anonToken, turnGrant })` — an
 > anonymous token that names them to the signaller for the session, and the
-> host's **guest grant** (`puter.peer.createGuestGrant()`), which lets someone
-> without a session use the Puter-managed TURN relays on the host's account.
+> host's **guest grant** (`everything.peer.createGuestGrant()`), which lets someone
+> without a session use the Everything-managed TURN relays on the host's account.
 > The host writes the grant next to the invite in the room directory, hands
 > it to guests again in `WELCOME`, and renews it every half hour (`GRANT`), so
 > a redial or a guest↔guest link hours into a meeting still gets a relay. A
@@ -104,17 +104,17 @@ npm run build      # production build in dist/
 > joins on their own account (`src/lib/account.js`).
 >
 > One-time links from older deploys have no room to carry a grant, so a guest
-> without a session on one of those still gets a session the old way — Puter
+> without a session on one of those still gets a session the old way — Everything
 > creates a full account for them via `signIn({ attempt_temp_user_creation:
 > true })`, with nothing typed and no form shown.
 
 ## How it works
 
 ```
-        room/control: host star              media: Puter peer mesh
+        room/control: host star              media: Everything peer mesh
         ┌──────────────────────┐          ┌──────────────────────┐
-        │       Host A         │          │  A ◀━ puter.peer ━▶ B│
-        │  puter.peer.serve()  │          │  ▲                ▲  │
+        │       Host A         │          │  A ◀━ everything.peer ━▶ B│
+        │  everything.peer.serve()  │          │  ▲                ▲  │
         │  code = inviteCode   │          │  ┗━━━┓        ┏━━━┛  │
         └──────▲───────▲───────┘          │      ▼        ▼      │
    connect()  │       │  connect()       │          C           │
@@ -126,8 +126,8 @@ npm run build      # production build in dist/
 1. **Persistent rooms** — peer invite codes can't be chosen or reused, so a
    meeting's shareable code is a stable room code (`abc-defg-hij`), and one
    level of indirection maps it to whatever invite is live *right now*: the
-   **room directory**, a Puter Worker (`worker/rooms.js`, deployed at
-   `puter-meetings-rooms.localhost:8443`) with the worker's own key-value store
+   **room directory**, an Everything Worker (`worker/rooms.js`, deployed at
+   `everything-meetings-rooms.localhost:8443`) with the worker's own key-value store
    behind it. A room is one record there — `GET /v1/rooms/:code` says what is
    running (a live entry, or nothing), `POST` claims or renews it, `POST
    …/end` releases it — written and read in one place, judged fresh by one
@@ -143,7 +143,7 @@ npm run build      # production build in dist/
    timers once a minute after a couple of minutes, and a host waiting alone
    is exactly the host most likely to switch tabs, `src/lib/timers.js`); an
    entry not renewed for 60 s is gone, so a host whose tab died holds nothing
-   for long. A host's invite lives only as long as puter.peer's signaller
+   for long. A host's invite lives only as long as everything.peer's signaller
    socket, and the signaller mints a code per socket: when the socket dies (a
    signaller restart, a network blip) the invite dies with it while the call
    in progress carries on over its own transport, none the wiser. So the host
@@ -175,14 +175,14 @@ npm run build      # production build in dist/
    panel: alone, it moves over to that meeting on the same media; with
    people in its call it stays, keeps heartbeating, and takes the link back
    the moment the other meeting ends.
-3. **Room topology** — the host creates the meeting with `puter.peer.serve()` and publishes its invite code under the room code. Guests join the room with `puter.peer.connect(invite)` and keep that connection to the host (`src/net/session.js`).
-4. **Relay** — the host fans out chat, reactions, state, and stream metadata to the other guests (`FROM{id}` envelopes), and routes targeted guest↔guest Puter link invites (`TO{to}` → `FROM{id}`), validated by a small wire protocol (`src/lib/protocol.js`).
-5. **Media** — audio/video/screen tracks are added to Puter-owned peer connections. Host↔guest media uses the existing room connection; guest↔guest media uses temporary `puter.peer.serve()` invite codes exchanged through the host, then renegotiates over that direct Puter data channel (`src/net/rtc.js`). A link whose network path dies mid-call (a Wi‑Fi switch, NAT rebinding, a lapsed TURN allocation) never *closes* — the data channel just stops delivering — so each link also watches its own transport and, once it is gone, is rebuilt on a fresh Puter connection: a guest dials the host again, the side that served a guest↔guest link serves it again, and the participant keeps their place in the roster while the tile shows *Reconnecting…*; chat that could not get through meanwhile is delivered once the link is back.
-6. **Preferences** — name, theme, and device choices persist locally and sync through `puter.kv` for signed-in users (`src/lib/prefs.js`).
+3. **Room topology** — the host creates the meeting with `everything.peer.serve()` and publishes its invite code under the room code. Guests join the room with `everything.peer.connect(invite)` and keep that connection to the host (`src/net/session.js`).
+4. **Relay** — the host fans out chat, reactions, state, and stream metadata to the other guests (`FROM{id}` envelopes), and routes targeted guest↔guest Everything link invites (`TO{to}` → `FROM{id}`), validated by a small wire protocol (`src/lib/protocol.js`).
+5. **Media** — audio/video/screen tracks are added to Everything-owned peer connections. Host↔guest media uses the existing room connection; guest↔guest media uses temporary `everything.peer.serve()` invite codes exchanged through the host, then renegotiates over that direct Everything data channel (`src/net/rtc.js`). A link whose network path dies mid-call (a Wi‑Fi switch, NAT rebinding, a lapsed TURN allocation) never *closes* — the data channel just stops delivering — so each link also watches its own transport and, once it is gone, is rebuilt on a fresh Everything connection: a guest dials the host again, the side that served a guest↔guest link serves it again, and the participant keeps their place in the roster while the tile shows *Reconnecting…*; chat that could not get through meanwhile is delivered once the link is back.
+6. **Preferences** — name, theme, and device choices persist locally and sync through `everything.kv` for signed-in users (`src/lib/prefs.js`).
 
-**The host role migrates.** All signaling goes through the host, but the meeting doesn't end when that host leaves: the survivors elect the one with the lowest participant id — among those with a Puter account while any is left, since only an account can mint guest grants; failing that, an anonymous guest takes over and the meeting carries on for everyone in it — it serves a fresh room for newcomers, and it floods a `HOST_CLAIM` across the mesh. Anyone who already has a direct link to the new host simply promotes that link to be their host link, so nothing is renegotiated and media never stops; anyone without one dials the invite the claim carries. The new host then writes the room's live invite to the directory under the meeting secret it was welcomed with — an anonymous host included — so the link keeps working for people still arriving. `term` counts migrations, and a claim is only honoured by a participant whose own host link has actually gone, so one guest losing touch with a healthy host can't tear the meeting apart.
+**The host role migrates.** All signaling goes through the host, but the meeting doesn't end when that host leaves: the survivors elect the one with the lowest participant id — among those with an Everything account while any is left, since only an account can mint guest grants; failing that, an anonymous guest takes over and the meeting carries on for everyone in it — it serves a fresh room for newcomers, and it floods a `HOST_CLAIM` across the mesh. Anyone who already has a direct link to the new host simply promotes that link to be their host link, so nothing is renegotiated and media never stops; anyone without one dials the invite the claim carries. The new host then writes the room's live invite to the directory under the meeting secret it was welcomed with — an anonymous host included — so the link keeps working for people still arriving. `term` counts migrations, and a claim is only honoured by a participant whose own host link has actually gone, so one guest losing touch with a healthy host can't tear the meeting apart.
 
-The meeting only truly ends when the last participant leaves. After that the link is still live: anyone holding it can start the next session from the lobby — and anyone with a Puter account does so just by clicking Join; there is no owner. A visitor with no account waits instead: hosting takes an account, and the sign-in is a popup that browsers only allow from a click, so for them it sits on a "Start this meeting" button. And the lobby says what is actually going on: a meeting whose entry is fresh but whose invite cannot be dialed is *running* — the guest is told so ("The meeting is running… connecting you"), a dial that dropped quickly is tried once more after 5 s before the invite is written off, an "Invalid invite code" is written off at once (the host is already replacing it), a dial that never reached Puter's signaller at all — the guest's own network, or an outage there that hits the host just the same — is no verdict on the invite and is dialed again with backoff while the guest is told it is the connection service that cannot be reached, a dial the signaller took and the host answered whose transport never came up (ICE found no path: no relay reachable, a symmetric NAT, a corporate network) is the guest's own network, and they are told so — try another network or a phone hotspot, or have the host check that guests can use relays — rather than left "connecting" for something waiting cannot fix, and after 45 s out of reach the guest is told to ask the host to re-share the link — instead of "Waiting for the host" while the host sits right there. While a running meeting is out of reach the lobby polls every couple of seconds (the host's republish is about to land) for two minutes before settling back to its usual 4.5–6 s, and it polls the moment a tab that was in the background comes back into view, since browsers throttle a hidden tab's timers. A **Try again** button sits next to *Stop waiting* for as long as a running meeting is out of reach: it wipes what the lobby holds against every invite and dials at once, so a wrong guess on the lobby's part never leaves the guest with nothing to do but reload. Two people who click Join within a few seconds of each other both find nothing running — and the directory lets exactly one of them claim the room; the other is told whose meeting it is and dials it (see *The lease* above). Links from older deploys (raw invite codes) still join directly, with the old one-time semantics — their shareable code follows the host when the role moves.
+The meeting only truly ends when the last participant leaves. After that the link is still live: anyone holding it can start the next session from the lobby — and anyone with an Everything account does so just by clicking Join; there is no owner. A visitor with no account waits instead: hosting takes an account, and the sign-in is a popup that browsers only allow from a click, so for them it sits on a "Start this meeting" button. And the lobby says what is actually going on: a meeting whose entry is fresh but whose invite cannot be dialed is *running* — the guest is told so ("The meeting is running… connecting you"), a dial that dropped quickly is tried once more after 5 s before the invite is written off, an "Invalid invite code" is written off at once (the host is already replacing it), a dial that never reached Everything's signaller at all — the guest's own network, or an outage there that hits the host just the same — is no verdict on the invite and is dialed again with backoff while the guest is told it is the connection service that cannot be reached, a dial the signaller took and the host answered whose transport never came up (ICE found no path: no relay reachable, a symmetric NAT, a corporate network) is the guest's own network, and they are told so — try another network or a phone hotspot, or have the host check that guests can use relays — rather than left "connecting" for something waiting cannot fix, and after 45 s out of reach the guest is told to ask the host to re-share the link — instead of "Waiting for the host" while the host sits right there. While a running meeting is out of reach the lobby polls every couple of seconds (the host's republish is about to land) for two minutes before settling back to its usual 4.5–6 s, and it polls the moment a tab that was in the background comes back into view, since browsers throttle a hidden tab's timers. A **Try again** button sits next to *Stop waiting* for as long as a running meeting is out of reach: it wipes what the lobby holds against every invite and dials at once, so a wrong guess on the lobby's part never leaves the guest with nothing to do but reload. Two people who click Join within a few seconds of each other both find nothing running — and the directory lets exactly one of them claim the room; the other is told whose meeting it is and dials it (see *The lease* above). Links from older deploys (raw invite codes) still join directly, with the old one-time semantics — their shareable code follows the host when the role moves.
 
 ## Minting links from other apps (stateless)
 
@@ -208,7 +208,7 @@ function mintMeetingLink() {
 Semantics, so you can set expectations in your UI:
 
 - The link is inert until first use: nothing is created anywhere at mint
-  time. A signed-in Puter user who opens it while nothing is running starts
+  time. A signed-in Everything user who opens it while nothing is running starts
   the meeting just by clicking Join; guests without an account wait in the
   lobby and join automatically once it starts.
 - **Nobody owns the link.** Whoever starts the meeting — from Join, or from
@@ -222,7 +222,7 @@ Semantics, so you can set expectations in your UI:
 
 ## Your meetings, from Calendar
 
-Inside the Puter desktop, the home screen's illustration gives way to
+Inside the Everything desktop, the home screen's illustration gives way to
 **Your meetings**: the calendar events that carry a meeting link, for the
 day picked on a week strip — today by default. Each row shows the time, the
 title, how many guests, and a **Join** button that opens the green room for
@@ -232,9 +232,9 @@ An empty day is never a dead end: it points at the next meeting anywhere
 ahead, and one click jumps there.
 
 The list comes from the Calendar app over its
-[app-to-app API](https://github.com/HeyPuter/calendar.localhost:8443#app-to-app-api)
+[app-to-app API](https://github.com/yaya0631/Build-Everything-Local-Platform)
 (`src/lib/calendar.js`): we launch the Calendar headless in service mode —
-`puter.ui.launchApp({ name: 'calendar', args: { service: 'calendar-api' },
+`everything.ui.launchApp({ name: 'calendar', args: { service: 'calendar-api' },
 background: true })` — and ask it, over the `AppConnection` that comes back,
 for `list` with `has: ['meeting']`. The Calendar identifies us from what the
 desktop stamps on the window it launched, and our grant there is read-only
@@ -275,20 +275,17 @@ src/
   ui/         views (home, prejoin, meeting) + tiles, panels, picture-in-picture,
               the "Your meetings" panel, …
   styles/     design tokens + per-view CSS (light/dark via CSS variables)
-worker/       the room directory — a Puter Worker (rooms.js), deployed with
-              `npm run deploy:worker` (`puter worker deploy`, @heyputer/cli)
+worker/       the room directory — an Everything worker (rooms.js), registered
+              automatically by the local server
 tests/        vitest suites for the pure-logic modules, the worker (+ jsdom UI tests)
 ```
 
-The directory worker is deployed once, under the name `puter-meetings-rooms`
-(its URL is what `src/lib/rooms.js` points at; `VITE_ROOMS_ORIGIN` overrides
-it for a local or staging deploy). Later deploys overwrite the file behind
-the same name and URL. Its key-value store is the `sandbox-puter-meetings-rooms`
-app's; `puter kv connect puter-meetings-rooms` opens a shell on it.
-
-A push to `main` that changes `worker/` redeploys it through
-`.github/workflows/deploy-meetings-worker.yml` (secrets `PUTER_API_TOKEN` and
-`MEETINGS_WORKER_PATH`, the Puter file the worker serves from).
+The local server registers the directory worker at startup as
+`everything-meetings-rooms`, using `worker/rooms.js`. Its URL is what
+`src/lib/rooms.js` points at; `VITE_ROOMS_ORIGIN` overrides it for another
+deployment. Its key-value store belongs to the `sandbox-everything-meetings-rooms`
+app in the local platform database. There is no separate deploy step: the source
+is reloaded whenever the server starts.
 
 ## Testing
 
@@ -303,7 +300,7 @@ visitor without an account waits, a claim refused sends the visitor to the
 meeting that got there first),
 speaking-detection hysteresis, background-effect specs,
 picture-in-picture (which tiles a postage-stamp window carries, the
-window's own lifecycle, and the desktop-hosted window inside Puter), the Calendar API client (launch, handshake, idle
+window's own lifecycle, and the desktop-hosted window inside Everything), the Calendar API client (launch, handshake, idle
 close, backoff) and the home screen's meeting list (day picking, read
 windows, the local snapshot, and the panel itself under jsdom),
 time formatting, the reactive store, DOM/theme helpers, local devices (a
@@ -316,13 +313,13 @@ migration (takeover, promoted links, dial-in, split elections, the meeting
 secret handed on so the successor carries the lease), a host healing its own
 invite when the signaller drops it, a successor giving up a survivor it
 never gets a link to, and leave handling run
-against an in-memory mock of the Puter Peer API:
+against an in-memory mock of the Everything Peer API:
 
 ```bash
 npm test
 ```
 
-Camera/permission flows and the live Puter Peer API are exercised manually —
+Camera/permission flows and the live Everything Peer API are exercised manually —
 open two browser profiles, start a meeting in one, and join with the link in
 the other.
 

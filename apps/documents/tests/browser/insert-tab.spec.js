@@ -430,22 +430,22 @@ test('Text from File leaves out what opening the file leaves out: hidden text, m
   expect(errors).toEqual([]);
 });
 
-test('a picture Puter AI could not make is explained in plain words', async ({ page }) => {
+test('a picture Everything AI could not make is explained in plain words', async ({ page }) => {
   await page.goto('/mock.html#/new');
   await expect(page.getByRole('button', { name: 'Bold', exact: true })).toBeEnabled();
   // The SDK rejects with its own error object rather than an Error.
-  await page.evaluate(() => { puter.ai.txt2img = async () => { throw { success: false, error: { code: 'insufficient_funds', message: 'Insufficient funds' } }; }; });
+  await page.evaluate(() => { everything.ai.txt2img = async () => { throw { success: false, error: { code: 'insufficient_funds', message: 'Insufficient funds' } }; }; });
   await (await onTab(page, 'insert')).locator('#ribbon-panel-insert').getByRole('button', { name: 'Pictures', exact: true }).click();
   await page.getByRole('menuitem', { name: 'Generate with AI…' }).click();
   const dialog = page.getByRole('dialog', { name: 'Generate a Picture' });
   await dialog.getByRole('textbox', { name: 'Describe the picture' }).fill('A lighthouse at dawn');
   await dialog.getByRole('button', { name: 'Generate', exact: true }).click();
-  await expect(dialog.getByRole('alert')).toHaveText('Your Puter AI allowance has run out for now.');
+  await expect(dialog.getByRole('alert')).toHaveText('Your Everything AI allowance has run out for now.');
   await expect(dialog).not.toContainText('Generating');
   await expect(dialog.getByRole('button', { name: 'Generate', exact: true })).toBeEnabled();
 });
 
-test('a picture made with Puter AI takes its description as its alternative text', async ({ page }) => {
+test('a picture made with Everything AI takes its description as its alternative text', async ({ page }) => {
   await page.goto('/mock.html#/new');
   await expect(page.getByRole('button', { name: 'Bold', exact: true })).toBeEnabled();
   await (await onTab(page, 'insert')).locator('#ribbon-panel-insert').getByRole('button', { name: 'Pictures', exact: true }).click();

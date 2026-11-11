@@ -9,12 +9,12 @@ const RAW = readFileSync(
   'utf8',
 );
 
-const CALLER = { uuid: 'user-uuid-1', username: 'aurora', puter: { authToken: 'caller-token' } };
+const CALLER = { uuid: 'user-uuid-1', username: 'aurora', everything: { authToken: 'caller-token' } };
 const VIEW = 'http://inv-abc123.localhost:8443/k7f2m9qz4x.html';
 const PAY = 'https://paypal.me/aurora/1200.00USD';
 
 /**
- * A worker with a fake `puter.email` on both the owner (`me`) and the caller
+ * A worker with a fake `everything.email` on both the owner (`me`) and the caller
  * (`user`) — the two forms the send can take. `outcome` lets a test decide what
  * a given send does; by default every message is accepted.
  */
@@ -28,8 +28,8 @@ function loadWorker({ outcome = null, ownerSend = null, callerSend = null } = {}
       const out = outcome ? outcome(message) : null;
       return { messageId: `m${sent.length}`, cost: 25, suppressed: [], failed: [], ...(out || {}) };
     });
-  const me = { puter: { kv, authToken: 'owner-token', email: { send: mailer('me', ownerSend) } } };
-  const caller = { ...CALLER, puter: { ...CALLER.puter, email: { send: mailer('user', callerSend) } } };
+  const me = { everything: { kv, authToken: 'owner-token', email: { send: mailer('me', ownerSend) } } };
+  const caller = { ...CALLER, everything: { ...CALLER.everything, email: { send: mailer('user', callerSend) } } };
   return { worker: instantiateWorker(RAW, { kv, me }), kv, sent, me, caller };
 }
 
@@ -62,7 +62,7 @@ describe('email worker: access', () => {
     expect((await res.json()).ok).toBe(true);
   });
 
-  it('refuses a caller with no Puter session — nothing to bill, nothing to send', async () => {
+  it('refuses a caller with no Everything session — nothing to bill, nothing to send', async () => {
     const world = loadWorker();
     const res = await world.worker.call('POST', '/send', { json: payload() });
     expect(res.status).toBe(401);
@@ -72,7 +72,7 @@ describe('email worker: access', () => {
 
   it('refuses a session it cannot pin to a person', async () => {
     const world = loadWorker();
-    const res = await post(world, payload(), { user: { puter: { authToken: 't' } } });
+    const res = await post(world, payload(), { user: { everything: { authToken: 't' } } });
     expect(res.status).toBe(401);
     expect((await res.json()).detail).toBe('no_identity');
   });
@@ -90,7 +90,7 @@ describe('email worker: access', () => {
     // A caller the worker can name, whose session did not carry the token that
     // charges them, and who has no mailer of their own to send through: the
     // only way left would spend the app owner's money.
-    const tokenless = { uuid: 'user-uuid-3', puter: {} };
+    const tokenless = { uuid: 'user-uuid-3', everything: {} };
     const res = await post(world, payload(), { user: tokenless });
     expect(res.status).toBe(401);
     expect((await res.json()).detail).toBe('no_billable_sender');
@@ -99,7 +99,7 @@ describe('email worker: access', () => {
 
   it('still sends through the caller’s own mailer when only their token is missing', async () => {
     const world = loadWorker();
-    const noToken = { uuid: 'user-uuid-4', puter: { email: world.caller.puter.email } };
+    const noToken = { uuid: 'user-uuid-4', everything: { email: world.caller.everything.email } };
     expect((await (await post(world, payload(), { user: noToken })).json()).sent).toBe(1);
     expect(world.sent[0].via).toBe('user');
     expect(world.sent[0].emailAccessToken).toBe('owner-token');
@@ -416,7 +416,7 @@ describe('email worker: not sending twice', () => {
   it('keeps one user’s record from suppressing another’s', async () => {
     const world = loadWorker();
     await post(world);
-    const other = { uuid: 'user-uuid-2', puter: { authToken: 't2', email: world.caller.puter.email } };
+    const other = { uuid: 'user-uuid-2', everything: { authToken: 't2', email: world.caller.everything.email } };
     expect((await (await post(world, payload(), { user: other })).json()).sent).toBe(1);
   });
 

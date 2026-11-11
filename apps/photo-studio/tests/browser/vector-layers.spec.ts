@@ -5,7 +5,7 @@ for (const backend of ["default", "WebGL"] as const) {
   test(`editable PSD color shapes ignore stale composites and survive transformed export (${backend})`, async ({
     page,
   }) => {
-    await boot(page, backend as Backend, "window.puter={};");
+    await boot(page, backend as Backend, "window.everything={};");
     const result = await page.evaluate(async () => {
       const { writePsd, readPsd } = await import("/tests/browser/psd-codec.ts");
       const { openPsd, savePsd } = await import("/src/model/psd.ts");
@@ -224,7 +224,7 @@ for (const backend of ["default", "WebGL"] as const) {
   test(`native HDR vectors keep constant fill precision, project masks and rerasterize transforms (${backend})`, async ({
     page,
   }) => {
-    await boot(page, backend as Backend, "window.puter={};");
+    await boot(page, backend as Backend, "window.everything={};");
     const result = await page.evaluate(async () => {
       const { layer, newDocument } = await import("/src/model/document.ts");
       const { Assets } = await import("/src/model/assets.ts");

@@ -1,11 +1,11 @@
 // childcare-team-worker build=3
 /**
  * Staff and family access for Childcare: one worker per school, running in
- * the director's own Puter account (the app deploys it there with
- * puter.workers.create). Its KV is the school's shared database and its
+ * the director's own Everything account (the app deploys it there with
+ * everything.workers.create). Its KV is the school's shared database and its
  * drive holds the photos, so the director owns the data and pays for it.
- * Staff and families reach it through puter.workers.exec(), which forwards
- * their own Puter session.
+ * Staff and families reach it through everything.workers.exec(), which forwards
+ * their own Everything session.
  *
  * The key layout is the one the app uses in a single account (see
  * src/core/keys.js, mirrored below and checked by tests/keys-parity.test.js),
@@ -18,7 +18,7 @@
  *   GET  /files?path=...  [&ref=<name>&id=<id>]        download one
  *
  * Every request is checked here, never in the browser. The caller is
- * identified from their own session (user.puter), never from the body.
+ * identified from their own session (user.everything), never from the body.
  * Roles:
  *   owner   the director whose account runs this worker
  *   admin   everything the owner can do
@@ -107,8 +107,8 @@ function ownerOf(ctx) {
   return (ctx && ctx.me) || (typeof me !== 'undefined' ? me : null);
 }
 
-const kvOf = (ctx) => ownerOf(ctx).puter.kv;
-const fsOf = (ctx) => ownerOf(ctx).puter.fs;
+const kvOf = (ctx) => ownerOf(ctx).everything.kv;
+const fsOf = (ctx) => ownerOf(ctx).everything.fs;
 
 async function identify(p) {
   if (!p) return null;
@@ -123,7 +123,7 @@ async function identify(p) {
 
 async function ownerIdentity(ctx) {
   if (ownerCache) return ownerCache;
-  ownerCache = await identify(ownerOf(ctx).puter);
+  ownerCache = await identify(ownerOf(ctx).everything);
   return ownerCache;
 }
 
@@ -179,7 +179,7 @@ const str = (v, max) => String(v == null ? '' : v).slice(0, max);
  */
 async function caller(ctx) {
   const user = (ctx && (ctx.user || ctx.requestor)) || null;
-  const who = await identify(user && user.puter);
+  const who = await identify(user && user.everything);
   if (!who) return null;
   const owner = await ownerIdentity(ctx);
   if (owner && owner.uuid === who.uuid) return { ...who, role: 'owner' };
@@ -823,7 +823,7 @@ async function handleDownload(ctx, c) {
 
 async function guarded(ctx, fn) {
   const c = await caller(ctx);
-  if (!c) return fail(401, 'sign_in_required', 'Sign in to Puter to continue.');
+  if (!c) return fail(401, 'sign_in_required', 'Sign in to Everything to continue.');
   if (!c.role) return fail(403, 'not_a_member', 'You are not a member of this school.');
   try {
     return await fn(c);
@@ -845,7 +845,7 @@ router.post('/api', async (ctx) => {
   const op = body && typeof body.op === 'string' ? body.op : '';
   if (op === 'join') {
     const c = await caller(ctx);
-    if (!c) return fail(401, 'sign_in_required', 'Sign in to Puter to continue.');
+    if (!c) return fail(401, 'sign_in_required', 'Sign in to Everything to continue.');
     try {
       return await join(ctx, c, body);
     } catch {

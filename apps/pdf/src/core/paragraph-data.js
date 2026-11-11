@@ -11,7 +11,7 @@ export const paragraphVector = (m, [x, y]) => [m[0] * x + m[2] * y, m[1] * x + m
  * Optional Style bits: underline (1), strikethrough (2), and an unwrapped text box (4).
  */
 export function readParagraphData(args) {
-  if (args[0]?.type !== 'name' || args[0]?.value !== 'PuterParagraph' || args[1]?.type !== 'dict')
+  if (args[0]?.type !== 'name' || args[0]?.value !== 'EverythingParagraph' || args[1]?.type !== 'dict')
     return null;
   const tokens = args[1].value,
     values = Object.create(null);
@@ -72,7 +72,7 @@ export function textStyleBits({ underline, strikethrough, line }) {
 export function writeParagraphData(frame, items, style) {
   const encode = (value) =>
     Array.isArray(value) ? `[${value.map(encode).join(' ')}]` : PDFNumber.of(value).toString();
-  return `/PuterParagraph << /V 1 /Frame ${encode(frame)} /Items ${encode(items)}${style ? ` /Style ${textStyleBits(style)}` : ''} >> BDC`;
+  return `/EverythingParagraph << /V 1 /Frame ${encode(frame)} /Items ${encode(items)}${style ? ` /Style ${textStyleBits(style)}` : ''} >> BDC`;
 }
 
 export function validateParagraphLayout(layout, text) {

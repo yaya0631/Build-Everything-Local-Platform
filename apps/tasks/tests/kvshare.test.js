@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, beforeAll, vi } from 'vitest';
-import { installMockPuter, createMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything, createMockEverything } from './helpers/mock-everything.js';
 
 let Store;
 let collab;
@@ -9,7 +9,7 @@ let A, B;       // their stores
 const sleep = (ms = 10) => new Promise((r) => setTimeout(r, ms));
 
 beforeAll(async () => {
-  installMockPuter();
+  installMockEverything();
   ({ Store } = await import('../src/lib/store.js'));
   collab = await import('../src/lib/collab.js');
 });
@@ -17,7 +17,7 @@ beforeAll(async () => {
 async function storeFor(account, deviceId) {
   localStorage.clear(); // the mirror is per-browser; don't leak one into the next
   const s = new Store();
-  s.cloud = account.puter;
+  s.cloud = account.everything;
   s.deviceId = deviceId;
   s.collabDelay = 0;
   await s.init();
@@ -26,8 +26,8 @@ async function storeFor(account, deviceId) {
 }
 
 beforeEach(async () => {
-  alice = createMockPuter({ username: 'alice', kvShares: true });
-  bob = createMockPuter({ username: 'bob', kvShares: true });
+  alice = createMockEverything({ username: 'alice', kvShares: true });
+  bob = createMockEverything({ username: 'bob', kvShares: true });
   A = await storeFor(alice, 'dev-A');
   B = await storeFor(bob, 'dev-B');
 });
@@ -51,7 +51,7 @@ describe('sharing', () => {
     const t = await A.addTask({ listId: list.id, title: 'Milk' });
     await A.enableCollab(list.id);
 
-    expect(alice.puter.perms.requests).toEqual([
+    expect(alice.everything.perms.requests).toEqual([
       { resource: 'kvShare', details: { prefix: 'tasks:collab:', access: 'write' } },
     ]);
     const { prefix } = A.listById(list.id).collab;
@@ -73,7 +73,7 @@ describe('sharing', () => {
     const list = await A.addList({ name: 'Groceries' });
     await A.enableCollab(list.id);
     await expect(A.inviteMember(list.id, 'nobody')).rejects.toMatchObject({
-      message: 'No Puter user is named "nobody"', code: 'subject_does_not_exist',
+      message: 'No Everything user is named "nobody"', code: 'subject_does_not_exist',
     });
     await expect(A.inviteMember(list.id, 'bob@example.com')).rejects.toMatchObject({ code: 'invalid_recipient' });
     await expect(A.inviteMember(list.id, 'alice')).rejects.toThrow(/your own account/);
@@ -192,8 +192,8 @@ describe('editing through the handle', () => {
     await A.syncCollab();
 
     const handle = B.lists.find((l) => l.collab?.mode === 'kv').collab.handle;
-    await bob.puter.kv.set(`d:${secret.id}`, { id: secret.id, at: Date.now() + 60000 }, { handle });
-    await bob.puter.kv.set(`t:${secret.id}`, { id: secret.id, title: 'hijacked', updatedAt: Date.now() + 60000 }, { handle });
+    await bob.everything.kv.set(`d:${secret.id}`, { id: secret.id, at: Date.now() + 60000 }, { handle });
+    await bob.everything.kv.set(`t:${secret.id}`, { id: secret.id, title: 'hijacked', updatedAt: Date.now() + 60000 }, { handle });
     await A.syncCollab();
 
     expect(A.taskById(secret.id)).toMatchObject({ title: 'secret', listId: priv.id });
@@ -245,7 +245,7 @@ describe('ending access', () => {
     await B.syncCollab();
     await A.syncCollab();
     expect(A.tasks.some((t) => t.title === 'private now')).toBe(false);
-    await expect(bob.puter.kv.get('meta', { handle: mine.collab?.handle || ownShare(alice).handle }))
+    await expect(bob.everything.kv.get('meta', { handle: mine.collab?.handle || ownShare(alice).handle }))
       .rejects.toMatchObject({ code: 'kv_handle_not_found' });
   });
 
@@ -255,7 +255,7 @@ describe('ending access', () => {
     await A.syncCollab();
     await B.syncCollab();
 
-    await alice.puter.kv.unshare(ownShare(alice).handle); // e.g. revoked from another app
+    await alice.everything.kv.unshare(ownShare(alice).handle); // e.g. revoked from another app
     await B.syncCollab();
     expect(B.listById(mine.id).collab).toBeNull();
     expect(B.tasks.some((t) => t.title === 'kept')).toBe(true);
@@ -311,13 +311,13 @@ describe('ending access', () => {
 
   it('a leave whose unshare failed is retried, and the share is not re-adopted meanwhile', async () => {
     const { mine } = await share();
-    const realUnshare = bob.puter.kv.unshare;
-    bob.puter.kv.unshare = async () => { throw { code: 'too_many_requests', message: 'slow down' }; };
+    const realUnshare = bob.everything.kv.unshare;
+    bob.everything.kv.unshare = async () => { throw { code: 'too_many_requests', message: 'slow down' }; };
     await B.leaveCollab(mine.id);
     expect(ownShare(alice).revokedAt).toBeNull();
     expect(await B.discoverShares({ force: true })).toBe(0);
 
-    bob.puter.kv.unshare = realUnshare;
+    bob.everything.kv.unshare = realUnshare;
     await B.syncCollab(); // carries the retry
     expect(ownShare(alice)).toMatchObject({ revokedBy: 'holder' });
   });
@@ -336,7 +336,7 @@ describe('ending access', () => {
 
 describe('consent and fallback', () => {
   it('a refused consent shares nothing', async () => {
-    alice.puter.perms.consent = false;
+    alice.everything.perms.consent = false;
     const list = await A.addList({ name: 'Private' });
     await expect(A.enableCollab(list.id)).rejects.toMatchObject({ code: 'consent_denied' });
     expect(A.listById(list.id).collab).toBeNull();
@@ -345,16 +345,16 @@ describe('consent and fallback', () => {
   });
 
   it('asks with the permission string on SDKs without the kvShare resource', async () => {
-    delete alice.puter.perms.Resource;
+    delete alice.everything.perms.Resource;
     await share();
-    expect(alice.puter.perms.requests[0]).toEqual({
+    expect(alice.everything.perms.requests[0]).toEqual({
       resource: 'permission',
       details: { permission: 'manage:kv-share-write:uuid-alice-' + alice.accountId + ':app-tasks-test:tasks:collab' },
     });
   });
 
   it('uses linked replicas on an SDK without KV shares', async () => {
-    const carol = createMockPuter({ username: 'carol' });
+    const carol = createMockEverything({ username: 'carol' });
     const C = await storeFor(carol, 'dev-C');
     expect(C.collabMode()).toBe('link');
     const list = await C.addList({ name: 'Old SDK' });
@@ -364,7 +364,7 @@ describe('consent and fallback', () => {
   });
 
   it('falls back to an invite link when the deployment turns shares off', async () => {
-    const dana = createMockPuter({ username: 'dana', kvShares: true, kvSharesDisabled: true });
+    const dana = createMockEverything({ username: 'dana', kvShares: true, kvSharesDisabled: true });
     const D = await storeFor(dana, 'dev-D');
     const list = await D.addList({ name: 'No shares here' });
     await D.addTask({ listId: list.id, title: 'via links' });
@@ -387,10 +387,10 @@ describe('consent and fallback', () => {
 
   it('a collaboration already on linked replicas keeps working on a KV-capable SDK', async () => {
     const list = await A.addList({ name: 'Started on links' });
-    const realShare = alice.puter.kv.share;
-    delete alice.puter.kv.share; // an older SDK started it
+    const realShare = alice.everything.kv.share;
+    delete alice.everything.kv.share; // an older SDK started it
     const { invite } = await A.enableCollab(list.id);
-    alice.puter.kv.share = realShare;
+    alice.everything.kv.share = realShare;
 
     const { confirm } = await B.joinCollab(collab.parseJoinHash('#' + invite.split('#')[1]));
     const payload = collab.parseConfirmHash('#' + confirm.split('#')[1]);

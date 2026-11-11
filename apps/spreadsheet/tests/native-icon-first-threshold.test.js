@@ -13,7 +13,7 @@ const look=(wb,r,c=2)=>wb.conditionalStyle(wb.activeSheetId,r,c,wb.getValue(wb.a
 const icons=(wb,c=2,rows=[2,3,4,5,6])=>rows.map(r=>look(wb,r,c)?.icon);
 async function native(wb) {
  const zip=X.CFB.read(new Uint8Array(await(await workbookToXlsx(wb)).arrayBuffer()),{type:'array'}),p=X.CFB.find(zip,'/xl/workbook.xml');
- p.content=new TextEncoder().encode(new TextDecoder().decode(p.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,''));p.size=p.content.length;
+ p.content=new TextEncoder().encode(new TextDecoder().decode(p.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,''));p.size=p.content.length;
  return workbookFromFile(X.CFB.write(zip,{type:'array',fileType:'zip'}),'first.xlsx');
 }
 it.each([false,true])('honors the first inclusive/exclusive threshold and value hiding (extended=%s)',async extended=>{

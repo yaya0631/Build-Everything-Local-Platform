@@ -20,7 +20,7 @@ async function cycle(wb, metadata = false) {
   const zip = X.CFB.read(new Uint8Array(await(await workbookToXlsx(wb)).arrayBuffer()), { type: 'array' });
   const get = path => new TextDecoder().decode(X.CFB.find(zip, path).content);
   const xml = get('/xl/drawings/drawing1.xml');
-  if (!metadata) X.CFB.utils.cfb_add(zip, '/xl/workbook.xml', new TextEncoder().encode(get('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')));
+  if (!metadata) X.CFB.utils.cfb_add(zip, '/xl/workbook.xml', new TextEncoder().encode(get('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')));
   return { xml, wb: await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' })) };
 }
 

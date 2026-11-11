@@ -6,9 +6,9 @@ import { h, uid, clear, composing } from './dom.js';
 import { icon } from './icons.js';
 import { openPicker } from './popover.js';
 import { initials, STATUS_LABEL, PRIORITY_LABEL, normTag } from '../shared/model.js';
-import { profilePicture } from '../client/puter.js';
+import { profilePicture } from '../client/everything.js';
 
-/** Initials avatar; for Puter users, the profile picture when available. */
+/** Initials avatar; for Everything users, the profile picture when available. */
 export function avatar(name, { size = '', username = null, agent = false, title = null } = {}) {
   const el = h(`span.avatar${size ? `.${size}` : ''}${agent ? '.agent' : ''}`, { 'aria-hidden': 'true', title: title || undefined }, initials(name));
   if (username !== null) {

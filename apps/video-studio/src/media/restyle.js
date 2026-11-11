@@ -1,7 +1,7 @@
 /**
  * AI restyle: a picture (an image clip, or one frame of a video clip) is
- * sent with a style instruction to Puter AI image generation
- * (puter.ai.txt2img with input_image), which draws it again in that style.
+ * sent with a style instruction to Everything AI image generation
+ * (everything.ai.txt2img with input_image), which draws it again in that style.
  * Only runs when the user presses Restyle; the call is injectable for tests.
  */
 import { imageBlobFrom, imageErrorMessage, imageModelOptions } from './imagegen.js';
@@ -47,8 +47,8 @@ export async function blobToDataUri(blob) {
 }
 
 const defaultTxt2img = (prompt, options) => {
-  if (typeof puter === 'undefined' || !puter.ai?.txt2img) throw new Error('Restyling needs Puter.');
-  return puter.ai.txt2img(prompt, options);
+  if (typeof everything === 'undefined' || !everything.ai?.txt2img) throw new Error('Restyling needs Everything.');
+  return everything.ai.txt2img(prompt, options);
 };
 
 /**

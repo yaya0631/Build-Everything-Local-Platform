@@ -32,7 +32,7 @@ const svgDoc = ({ wb, sheet, chart }) => doc(renderChartSvg(chartData(wb, sheet.
 async function nativeRoundTrip(wb) {
   const zip = X.CFB.read(new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()), { type: 'array' });
   const xml = doc(part(zip, '/xl/charts/chart1_1.xml'));
-  setPart(zip, '/xl/workbook.xml', part(zip, '/xl/workbook.xml').replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  setPart(zip, '/xl/workbook.xml', part(zip, '/xl/workbook.xml').replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   return { xml, back: await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'native.xlsx') };
 }
 

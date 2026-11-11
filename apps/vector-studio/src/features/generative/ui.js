@@ -55,7 +55,7 @@ export function progressBlock({ label, onCancel }) {
 
 /**
  * A notice for when generative features cannot run (signed out, offline,
- * no Puter): { el, refresh() -> ok }. Signed out it offers a Sign In button.
+ * no Everything): { el, refresh() -> ok }. Signed out it offers a Sign In button.
  */
 export function availabilityNotice(app) {
   const msg = h('p.gen-notice-text');

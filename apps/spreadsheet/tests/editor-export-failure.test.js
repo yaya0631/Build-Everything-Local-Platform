@@ -2,13 +2,13 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { editorView } from '../src/views/editor.js';
 import { Doc } from '../src/lib/doc.js';
-import * as P from '../src/lib/puter.js';
+import * as P from '../src/lib/everything.js';
 import * as notifications from '../src/ui/toast.js';
 
-// Inside the Puter app an export went through Puter's save dialog, into the user's Puter files, while
+// Inside the Everything app an export went through Everything's save dialog, into the user's Everything files, while
 // Import's "From this device" read from the computer: an export is the reverse of an import, a download
-// to this device, inside the app as on the web. Saving to Puter is Save and Save a copy.
-vi.mock('../src/lib/puter.js', async (importOriginal) => ({
+// to this device, inside the app as on the web. Saving to Everything is Save and Save a copy.
+vi.mock('../src/lib/everything.js', async (importOriginal) => ({
   ...(await importOriginal()),
   isApp: () => true,
   canSaveFiles: () => true,
@@ -41,7 +41,7 @@ afterEach(() => { view?.destroy(); view = null; vi.clearAllTimers(); vi.useRealT
 
 const menuItem = (test) => [...document.querySelectorAll('.menu-item')].find((n) => test(n.querySelector('.menu-label')?.textContent || ''));
 
-it('downloads an export to this device in the Puter app, without Puter\'s save dialog', async () => {
+it('downloads an export to this device in the Everything app, without Everything\'s save dialog', async () => {
   const doc = new Doc({ name: 'Report', path: 'Spreadsheets/Report.xlsx' });
   doc.wb.setInput(doc.wb.activeSheetId, 0, 0, 'hello');
   view = editorView({ doc, goHome: vi.fn(), openPath: vi.fn(), newDoc: vi.fn(), templateDoc: vi.fn(), importFile: vi.fn() });

@@ -104,7 +104,7 @@ async function guardedFetch(raw, accept, deadline = Date.now() + TOTAL_MS) {
         method: 'GET',
         redirect: 'manual',
         signal: AbortSignal.timeout(Math.min(TIMEOUT_MS, left)),
-        headers: { Accept: accept, 'User-Agent': 'Teamchat link preview (+https://github.com/HeyPuter/teamchat)' },
+        headers: { Accept: accept, 'User-Agent': 'Teamchat link preview (+https://github.com/yaya0631/Build-Everything-Local-Platform)' },
       });
     } catch {
       return null;

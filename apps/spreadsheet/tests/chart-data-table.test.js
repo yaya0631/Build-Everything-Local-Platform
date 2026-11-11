@@ -44,7 +44,7 @@ it('imports table text, borders and keys, renders live values, and exports nativ
     const native = xml(X.CFB.find(zip, '/xl/charts/chart1_1.xml').content);
     expect(native).toContain('<c:dTable><c:showHorzBorder val="1"/>');
     expect(native).toContain('<a:ln w="19050">');
-    patch(zip, '/xl/workbook.xml', text => text.replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+    patch(zip, '/xl/workbook.xml', text => text.replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
     wb = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'native.xlsx');
   }
   wb.setInput(wb.sheets[0].id, 0, 1, '23.75');

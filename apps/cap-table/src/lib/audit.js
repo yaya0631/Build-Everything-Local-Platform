@@ -150,31 +150,31 @@ export class AuditJournal {
       if (part.length >= 80_000) { parts.push(part); part = ''; }
     }
     if (part) parts.push(part);
-    const results = await Promise.allSettled(parts.map((p, i) => puter.kv.set(this.key(id, `${name}:part:${i}`), p)));
+    const results = await Promise.allSettled(parts.map((p, i) => everything.kv.set(this.key(id, `${name}:part:${i}`), p)));
     const failed = results.find((r) => r.status === 'rejected');
     try {
       if (failed) throw failed.reason;
-      await puter.kv.set(this.key(id, name), JSON.stringify({ parts: parts.length, digest: await digest(text) }));
+      await everything.kv.set(this.key(id, name), JSON.stringify({ parts: parts.length, digest: await digest(text) }));
     } catch (err) {
       // The caller has not published a pointer to these parts yet.
       await Promise.allSettled([name, ...parts.map((_, i) => `${name}:part:${i}`)]
-        .map((suffix) => Promise.resolve().then(() => puter.kv.del?.(this.key(id, suffix)))));
+        .map((suffix) => Promise.resolve().then(() => everything.kv.del?.(this.key(id, suffix)))));
       throw err;
     }
     return parts.length;
   }
   async blob(id, name = 'blob', { optional = false } = {}) {
-    const manifest = decode(await puter.kv.get(this.key(id, name)));
+    const manifest = decode(await everything.kv.get(this.key(id, name)));
     if (!manifest && optional) return null;
     if (!manifest || !Number.isSafeInteger(manifest.parts) || manifest.parts < 1) throw new AuditRecoveryError('An audit transaction is missing.');
-    const parts = await Promise.all(Array.from({ length: manifest.parts }, (_, i) => puter.kv.get(this.key(id, `${name}:part:${i}`))));
+    const parts = await Promise.all(Array.from({ length: manifest.parts }, (_, i) => everything.kv.get(this.key(id, `${name}:part:${i}`))));
     if (parts.some((p) => typeof p !== 'string')) throw new AuditRecoveryError('An audit transaction is incomplete.');
     const text = parts.join('');
     if (await digest(text) !== manifest.digest) throw new AuditRecoveryError('An audit transaction failed its integrity check.');
     return JSON.parse(text);
   }
   async node(id) {
-    const raw = decode(await puter.kv.get(this.key(id, 'node')));
+    const raw = decode(await everything.kv.get(this.key(id, 'node')));
     const node = raw?.parts ? await this.blob(id, 'node') : raw;
     if (!node || node.id !== id || node.companyId !== this.companyId
       || (node.previous && !idOK(node.previous))) throw new AuditRecoveryError('An audit index entry is missing or damaged.');
@@ -204,7 +204,7 @@ export class AuditJournal {
   async discardIntent(id) {
     let parts = this.#intents.get(id);
     if (parts === undefined) {
-      const manifest = decode(await puter.kv.get(this.key(id, 'intent')).catch(() => null));
+      const manifest = decode(await everything.kv.get(this.key(id, 'intent')).catch(() => null));
       if (!manifest) return;
       parts = manifest.parts || 0;
     }
@@ -215,8 +215,8 @@ export class AuditJournal {
        naming it, for good. With the manifest still standing the next
        discard finds the count and tries again. */
     const gone = await Promise.allSettled(Array.from({ length: parts }, (_, i) => `intent:part:${i}`)
-      .map((suffix) => Promise.resolve().then(() => puter.kv.del?.(this.key(id, suffix)))));
-    if (gone.every((r) => r.status === 'fulfilled')) await puter.kv.del?.(this.key(id, 'intent')).catch(() => {});
+      .map((suffix) => Promise.resolve().then(() => everything.kv.del?.(this.key(id, suffix)))));
+    if (gone.every((r) => r.status === 'fulfilled')) await everything.kv.del?.(this.key(id, 'intent')).catch(() => {});
   }
   async decision(id) {
     const expected = await readKV(this.key(id, 'decision'));
@@ -272,7 +272,7 @@ export class AuditJournal {
     const writeNode = async (previous) => {
       const node = { ...summary, previous };
       if (new TextEncoder().encode(JSON.stringify(node)).length > 350_000) await this.putBlob(event.id, node, 'node');
-      else await puter.kv.set(this.key(event.id, 'node'), JSON.stringify(node));
+      else await everything.kv.set(this.key(event.id, 'node'), JSON.stringify(node));
     };
     let head;
     try {
@@ -283,7 +283,7 @@ export class AuditJournal {
       await Promise.all([
         this.putBlob(event.id, record),
         intent ? this.putBlob(event.id, intent, 'intent').then((parts) => this.#intents.set(event.id, parts)) : null,
-        puter.kv.set(this.key(event.id, 'decision'), JSON.stringify(firstDecision(event, pending))),
+        everything.kv.set(this.key(event.id, 'decision'), JSON.stringify(firstDecision(event, pending))),
         writeNode(head.value.latest),
       ]);
     } catch (err) {
@@ -442,11 +442,11 @@ export class AuditJournal {
   }
   async removeEntry(id) {
     const manifests = Object.fromEntries(await Promise.all(['blob', 'intent', 'node']
-      .map(async (name) => [name, decode(await puter.kv.get(this.key(id, name)))])));
+      .map(async (name) => [name, decode(await everything.kv.get(this.key(id, name)))])));
     await deleteKV(this.key(id, 'decision'));
     const keys = ['blob', 'intent', 'node'].flatMap((name) => [name,
       ...Array.from({ length: manifests[name]?.parts || 0 }, (_, i) => `${name}:part:${i}`)]);
-    await Promise.all(keys.map((suffix) => puter.kv.del?.(this.key(id, suffix))));
+    await Promise.all(keys.map((suffix) => everything.kv.del?.(this.key(id, suffix))));
   }
   async purge() {
     let id;

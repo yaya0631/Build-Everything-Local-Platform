@@ -1,8 +1,8 @@
 # Tasks
 
-Personal and shared to-do lists on [Puter](https://localhost:8443): recurring
+Personal and shared to-do lists on [Everything](https://localhost:8443): recurring
 reminders, priorities, subtasks, and calendar integration. No framework,
-no backend of its own — just Puter.js and Vite.
+no backend of its own — just Everything.js and Vite.
 
 ## Features
 
@@ -39,12 +39,12 @@ no backend of its own — just Puter.js and Vite.
   optional daily notification of everything due and overdue when the app
   opens. Reminders also export as alarms in the calendar feed.
 - **Shared lists**: publish any list as a live, read-only link — the
-  snapshot lives in the owner's Puter drive (`puter.fs.getReadURL`), is
+  snapshot lives in the owner's Everything drive (`everything.fs.getReadURL`), is
   rewritten whenever the list changes, and can be revoked at any time;
   viewers need no account. Or **collaborate**: invite people by their
-  Puter username to add, edit, and complete tasks with you. The list
+  Everything username to add, edit, and complete tasks with you. The list
   lives under its own prefix in the owner's KV store, shared with each
-  member through a Puter KV share; their app finds it on its own (no link
+  member through an Everything KV share; their app finds it on its own (no link
   to pass around), changes arrive live, and the owner can remove anyone,
   which cuts their access right away. Where KV shares aren't available,
   collaboration falls back to linked replicas with a two-link handshake.
@@ -68,13 +68,13 @@ no backend of its own — just Puter.js and Vite.
 
 | Where | What | Why |
 | --- | --- | --- |
-| `puter.kv` `tasks:settings:v1` | preferences | small, hot |
-| `puter.kv` `tasks:lists:v1` | lists | small, hot |
-| `puter.kv` `tasks:items:v1` | open + recent tasks | one read per boot |
-| `puter.kv` `tasks:collab:<id>:*` | collaborative lists (meta, one key per task and per deletion) | shared with members via `puter.kv.share` |
-| `puter.fs` `tasks-data/log-YYYY-MM.json` | archived completions | grows unbounded |
-| `puter.fs` `tasks-data/shares/<id>.json` | shared-list snapshots | must be readable by others |
-| `puter.fs` `tasks-data/tasks.ics` | calendar feed | read by calendar apps |
+| `everything.kv` `tasks:settings:v1` | preferences | small, hot |
+| `everything.kv` `tasks:lists:v1` | lists | small, hot |
+| `everything.kv` `tasks:items:v1` | open + recent tasks | one read per boot |
+| `everything.kv` `tasks:collab:<id>:*` | collaborative lists (meta, one key per task and per deletion) | shared with members via `everything.kv.share` |
+| `everything.fs` `tasks-data/log-YYYY-MM.json` | archived completions | grows unbounded |
+| `everything.fs` `tasks-data/shares/<id>.json` | shared-list snapshots | must be readable by others |
+| `everything.fs` `tasks-data/tasks.ics` | calendar feed | read by calendar apps |
 
 Completions older than 30 days are archived to monthly files on boot, so
 the hot KV document stays small forever. A localStorage mirror provides
@@ -85,15 +85,15 @@ connection returns.
 
 ```sh
 npm install
-npm run dev      # http://localhost:5174 (real Puter SDK)
+npm run dev      # http://localhost:5174 (real Everything SDK)
 npm test         # vitest unit tests
 npm run build    # production build in dist/
 ```
 
-To work on the UI without a Puter account, open
+To work on the UI without an Everything account, open
 `http://localhost:5174/dev/mock.html` — an in-memory mock of the SDK.
 Variants: `?signedout` shows the intro page, `?env=app` simulates running
-inside the Puter desktop (hides the sign-out row), `?kvshare` adds
+inside the Everything desktop (hides the sign-out row), `?kvshare` adds
 owner-side KV shares so inviting by username can be tried (`?kvshare=deny`
 refuses the consent prompt).
 `dev/phone.html` previews mobile widths side by side.
@@ -110,12 +110,12 @@ fresh `tasks:collab:<id>:` prefix: `meta` (name, icon, color, owner),
 `t:<taskId>` per task and `d:<taskId>` per deletion, so concurrent edits
 to different tasks never overwrite each other. Each invited username gets
 a `write` share of that prefix. Members find shares with
-`puter.kv.listShared()` at startup (and from the `kv.share.received`
+`everything.kv.listShared()` at startup (and from the `kv.share.received`
 notification while open), and every app merges the prefix with its local
 copy using the commutative rules in `src/lib/merge.js`. Changes arrive
-through `puter.events` subscriptions, with focus and a 60-second poll as
+through `everything.events` subscriptions, with focus and a 60-second poll as
 fallback. Removing a member or stopping collaboration is
-`puter.kv.unshare()`; a member whose share stops working keeps the list
+`everything.kv.unshare()`; a member whose share stops working keeps the list
 as a private copy. Each user pays for their own reads and writes.
 
 Older SDKs, and deployments with KV shares turned off, fall back to linked

@@ -40,7 +40,7 @@ for (const [rotation, dx, dy] of [
   test(`positions existing text on rotated crop ${rotation} with physical point controls`, async ({
     page,
   }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     const doc = await PDFDocument.create(),
       p = doc.addPage([400, 400]);
@@ -82,7 +82,7 @@ for (const [rotation, dx, dy] of [
 test('drags existing text with a clean preview and edits numeric positions through reopen', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create(),
     p = doc.addPage([400, 400]);
@@ -135,7 +135,7 @@ test('drags existing text with a clean preview and edits numeric positions throu
 test('text touch dragging ignores another finger and can cancel without changing the document', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([400, 400]).drawText('Touch text', { x: 60, y: 220, size: 18 });
@@ -165,7 +165,7 @@ test('text touch dragging ignores another finger and can cancel without changing
 test('new text can be positioned before insertion with physical coordinates and keyboard movement', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([400, 400]);
@@ -192,7 +192,7 @@ test('new text can be positioned before insertion with physical coordinates and 
 test('edits existing shapes with live movement, numeric resizing, export, reopen and undo', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([400, 400]);
@@ -247,7 +247,7 @@ for (const [rotation, dx, dy] of [
   [270, -0.5, -5],
 ])
   test(`shape editing follows rotated crop ${rotation} and UserUnit`, async ({ page }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     const doc = await PDFDocument.create(),
       pdfPage = doc.addPage([400, 400]);
@@ -300,7 +300,7 @@ for (const [rotation, dx, dy] of [
 test('touch selects a shape outline, cancels its draft and commits a later drag', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([400, 400]);
@@ -340,7 +340,7 @@ test('touch selects a shape outline, cancels its draft and commits a later drag'
 });
 
 test('restyles native shapes and drawings, preserving focus, export and undo', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create(),
     p = doc.addPage([400, 400]);
@@ -409,7 +409,7 @@ for (const rotation of [0, 90])
   test(`shape fill and stroke toggles survive unpainted export and reopening at ${rotation} degrees`, async ({
     page,
   }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     const doc = await PDFDocument.create(),
       p = doc.addPage([400, 400]);
@@ -510,7 +510,7 @@ for (const rotation of [0, 90])
 test('outline shape selection leaves its empty interior available for images and text', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await imagePdf();
   drawMark(doc, 0, {
@@ -536,7 +536,7 @@ test('outline shape selection leaves its empty interior available for images and
 test('new freehand strokes reopen as one drawing with keyboard movement and deletion', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([400, 400]);
@@ -603,7 +603,7 @@ for (const [rotation, dx, dy] of [
   test(`keyboard image movement follows screen directions on rotated crop ${rotation} with UserUnit`, async ({
     page,
   }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     const doc = await imagePdf({ rotation, userUnit: 2 });
     doc.getPage(0).setCropBox(20, 20, 360, 360);
@@ -636,7 +636,7 @@ for (const releaseOutside of [false, true])
   test(`holding an image movement arrow produces one undoable action (release outside ${releaseOutside})`, async ({
     page,
   }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     await openPdf(page, await imagePdf());
     await page.getByRole('button', { name: 'Select image 1', exact: true }).click();
@@ -682,7 +682,7 @@ for (const releaseOutside of [false, true])
 test('image selection commits pending form values and leaves text over an image editable', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await imagePdf();
   const field = doc.getForm().createTextField('Name');
@@ -712,7 +712,7 @@ test('image selection commits pending form values and leaves text over an image 
 test('image touch gestures ignore a second finger and cancel without creating history', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await imagePdf());
   const box = await page.getByRole('button', { name: 'Select image 1', exact: true }).boundingBox();
@@ -756,7 +756,7 @@ test('image touch gestures ignore a second finger and cancel without creating hi
 test('resizing the window commits a pending image nudge and preserves selection', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await imagePdf());
   await page.getByRole('button', { name: 'Select image 1', exact: true }).click();
@@ -787,7 +787,7 @@ test('resizing the window commits a pending image nudge and preserves selection'
 test('image dimensions reflect a clipping limit without creating a false edit', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.load(await (await imagePdf()).save());
   const image = inspectImages(doc, 0)[0].object;
@@ -818,7 +818,7 @@ test('image dimensions reflect a clipping limit without creating a false edit', 
 test('shrinking an image past its opposite corner keeps its proportions and allows recovery', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await imagePdf());
   await page.getByRole('button', { name: 'Select image 1', exact: true }).click();
@@ -849,7 +849,7 @@ test('shrinking an image past its opposite corner keeps its proportions and allo
 test('moves an existing image with a live preview and preserves it through export, undo and reopen', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await imagePdf());
   const first = page.getByRole('button', { name: 'Select image 1', exact: true });
@@ -892,7 +892,7 @@ test('moves an existing image with a live preview and preserves it through expor
 test('resizes existing images with proportions and numeric dimensions, and cancels drafts with Escape', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await imagePdf());
   await page.getByRole('button', { name: 'Select image 1', exact: true }).click();
@@ -976,7 +976,7 @@ async function selectPdfText(page, from, start, to = from, end) {
 test('dragging text in either direction creates a highlight and Area remains available for scans', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   const pdfPage = doc.addPage([400, 400]);
@@ -1023,7 +1023,7 @@ test('dragging text in either direction creates a highlight and Area remains ava
 test('highlights selected words across lines and supports recolor, delete, undo and reopen', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   const pdfPage = doc.addPage([400, 400]);
@@ -1074,7 +1074,7 @@ test('highlights selected words across lines and supports recolor, delete, undo 
 test('text selection dragged past the page still highlights only the selected PDF words', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([400, 400]).drawText('Select these words', { x: 40, y: 60, size: 20 });
@@ -1110,7 +1110,7 @@ for (const rotation of [0, 90, 180, 270])
   test(`text highlights preserve partial-word geometry at page rotation ${rotation}`, async ({
     page,
   }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     const doc = await PDFDocument.create();
     const pdfPage = doc.addPage([400, 400]);
@@ -1145,15 +1145,15 @@ for (const rotation of [0, 90, 180, 270])
     expect(quad[1]).toBeLessThan(175);
   });
 
-async function mockPuter(
+async function mockEverything(
   page,
   { app = false, failSave = false, signedIn = true, deferList = false, launch = null } = {},
 ) {
-  await page.route('**/sdk/puter.js', (route) =>
+  await page.route('**/sdk/everything.js', (route) =>
     route.fulfill({
       contentType: 'application/javascript',
       body: `
-    window.puter = { env: ${JSON.stringify(app ? 'app' : 'web')}, auth: { isSignedIn: () => ${signedIn}, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { read: async () => new Blob([Uint8Array.from(atob(${JSON.stringify(launch || '')}), (c) => c.charCodeAt(0))], { type: 'application/pdf' }), readdir: async () => { window.readdirCalls = (window.readdirCalls || 0) + 1; ${deferList ? 'return new Promise((resolve, reject) => { window.finishLibrary = resolve; window.failLibrary = reject; });' : 'return [];'} }, write: async (path, blob, options) => { ${failSave ? "throw new Error('Storage unavailable')" : "window.lastSave = {path, size:blob.size, options}; return {path, name:path.split('/').pop()}"} } }, ui: { onLaunchedWithItems: (cb) => { ${launch ? "setTimeout(() => cb([{ path: 'PDF Editor/launch.pdf', name: 'launch.pdf', size: 1000 }]), 0);" : ''} }, onItemsOpened: (cb) => { ${launch ? "setTimeout(() => cb([{ path: 'PDF Editor/launch.pdf', name: 'launch.pdf', size: 1000 }]), 0);" : ''} } } };`,
+    window.everything = { env: ${JSON.stringify(app ? 'app' : 'web')}, auth: { isSignedIn: () => ${signedIn}, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { read: async () => new Blob([Uint8Array.from(atob(${JSON.stringify(launch || '')}), (c) => c.charCodeAt(0))], { type: 'application/pdf' }), readdir: async () => { window.readdirCalls = (window.readdirCalls || 0) + 1; ${deferList ? 'return new Promise((resolve, reject) => { window.finishLibrary = resolve; window.failLibrary = reject; });' : 'return [];'} }, write: async (path, blob, options) => { ${failSave ? "throw new Error('Storage unavailable')" : "window.lastSave = {path, size:blob.size, options}; return {path, name:path.split('/').pop()}"} } }, ui: { onLaunchedWithItems: (cb) => { ${launch ? "setTimeout(() => cb([{ path: 'PDF Editor/launch.pdf', name: 'launch.pdf', size: 1000 }]), 0);" : ''} }, onItemsOpened: (cb) => { ${launch ? "setTimeout(() => cb([{ path: 'PDF Editor/launch.pdf', name: 'launch.pdf', size: 1000 }]), 0);" : ''} } } };`,
     }),
   );
 }
@@ -1197,7 +1197,7 @@ async function openPdf(page, doc, name = 'test.pdf') {
 }
 
 test('clears default-only form values through save, undo and reopen', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   const pdfPage = doc.addPage([400, 400]);
@@ -1247,7 +1247,7 @@ test('clears default-only form values through save, undo and reopen', async ({ p
 test('library filters preserve loading and failure feedback until a retry succeeds', async ({
   page,
 }) => {
-  await mockPuter(page, { deferList: true });
+  await mockEverything(page, { deferList: true });
   await page.goto('/#library');
   const library = page.locator('.file-list');
   await expect(library).toHaveText('Loading your PDFs…');
@@ -1272,20 +1272,20 @@ test('library filters preserve loading and failure feedback until a retry succee
 });
 
 test('accepting an unchanged PDF name preserves its cloud save destination', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await sample(page);
-  await page.getByRole('button', { name: 'Save to Puter', exact: true }).click();
-  await expect(page.locator('.save-status')).toHaveText('Saved to Puter');
+  await page.getByRole('button', { name: 'Save to Everything', exact: true }).click();
+  await expect(page.locator('.save-status')).toHaveText('Saved to Everything');
   for (const name of ['Getting started', 'Getting started.PDF', '  Getting started  ']) {
     await page.getByRole('button', { name: 'Rename Getting started.pdf', exact: true }).click();
     await page.getByLabel('File name', { exact: true }).fill(name);
     await page.getByRole('button', { name: 'Continue', exact: true }).click();
-    await expect(page.locator('.save-status')).toHaveText('Saved to Puter');
+    await expect(page.locator('.save-status')).toHaveText('Saved to Everything');
     await expect(page.getByRole('button', { name: 'Save', exact: true })).toBeVisible();
   }
   await page.getByRole('button', { name: 'Save', exact: true }).click();
-  await expect(page.locator('.save-status')).toHaveText('Saved to Puter');
+  await expect(page.locator('.save-status')).toHaveText('Saved to Everything');
   expect(await page.evaluate(() => window.lastSave)).toMatchObject({
     path: 'PDF Editor/Getting started.pdf',
     options: { overwrite: true, dedupeName: false },
@@ -1294,7 +1294,7 @@ test('accepting an unchanged PDF name preserves its cloud save destination', asy
 
 for (const tool of ['Draw', 'Shape']) {
   test(`zooming during a pending ${tool} edit keeps its PDF coordinates`, async ({ page }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     const doc = await PDFDocument.create();
     doc.addPage([400, 400]);
@@ -1359,7 +1359,7 @@ for (const tool of ['Draw', 'Shape']) {
 
 for (const unit of [0.5, 2]) {
   test(`annotation point sizes are preserved on pages with UserUnit ${unit}`, async ({ page }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     const doc = await PDFDocument.create();
     doc.addPage([400, 500]).node.set(PDFName.of('UserUnit'), PDFNumber.of(unit));
@@ -1403,7 +1403,7 @@ for (const unit of [0.5, 2]) {
 }
 
 test('find matches and highlights words and phrases split across text styles', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage().drawText('Other page');
@@ -1444,7 +1444,7 @@ test('find matches and highlights words and phrases split across text styles', a
 test('leaving a loading PDF allows another document to open without stale editor state', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   let releaseWorker;
   const workerGate = new Promise((resolve) => {
     releaseWorker = resolve;
@@ -1470,7 +1470,7 @@ test('leaving a loading PDF allows another document to open without stale editor
     await expect(page.locator('.page-caption')).toHaveText('Page 1 of 1');
     await expect(page).toHaveTitle('Untitled.pdf · PDF Editor');
     await page.keyboard.press('ControlOrMeta+s');
-    await expect(page.locator('.save-status')).toHaveText('Saved to Puter');
+    await expect(page.locator('.save-status')).toHaveText('Saved to Everything');
     expect(await page.evaluate(() => window.lastSave.path)).toBe('PDF Editor/Untitled.pdf');
   } finally {
     releaseWorker();
@@ -1480,7 +1480,7 @@ test('leaving a loading PDF allows another document to open without stale editor
 test('renderer startup failures return to the library and remove editor shortcuts', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.route('**/pdf-worker*.js*', (route) => route.abort());
   await page.goto('/#library');
   await page.getByRole('button', { name: 'Try a sample PDF' }).click();
@@ -1498,7 +1498,7 @@ test('renderer startup failures return to the library and remove editor shortcut
 });
 
 test('rejecting a damaged PDF keeps the existing document and its edits', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await sample(page);
   await menu(page, 'Rotate clockwise');
@@ -1522,7 +1522,7 @@ test('rejecting a damaged PDF keeps the existing document and its edits', async 
 });
 
 test('a second touch cannot replace or finish an active drawing stroke', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([400, 400]);
@@ -1557,18 +1557,18 @@ test('a second touch cannot replace or finish an active drawing stroke', async (
 });
 
 test('home sign-in refreshes the account and library', async ({ page }) => {
-  await mockPuter(page, { signedIn: false });
+  await mockEverything(page, { signedIn: false });
   await page.goto('/#library');
-  await page.getByRole('button', { name: 'Sign in with Puter', exact: true }).click();
+  await page.getByRole('button', { name: 'Sign in with Everything', exact: true }).click();
   await expect(page.locator('.account-label')).toHaveText('test-user');
   await expect(page.getByRole('heading', { name: 'Your library starts here' })).toBeVisible();
 });
 
 test('a second click on a library action while it runs does not repeat it', async ({ page }) => {
-  await page.route('**/sdk/puter.js', (route) =>
+  await page.route('**/sdk/everything.js', (route) =>
     route.fulfill({
       contentType: 'application/javascript',
-      body: `window.puter = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [{ name: 'report.pdf', path: 'PDF Editor/report.pdf', size: 2048, modified: 1700000000 }], read: async () => { await new Promise((r) => setTimeout(r, 400)); return new Blob(['%PDF-1.4'], { type: 'application/pdf' }); }, write: async (path) => { window.writes = (window.writes || 0) + 1; return { path, name: path.split('/').pop() }; } }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`,
+      body: `window.everything = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [{ name: 'report.pdf', path: 'PDF Editor/report.pdf', size: 2048, modified: 1700000000 }], read: async () => { await new Promise((r) => setTimeout(r, 400)); return new Blob(['%PDF-1.4'], { type: 'application/pdf' }); }, write: async (path) => { window.writes = (window.writes || 0) + 1; return { path, name: path.split('/').pop() }; } }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`,
     }),
   );
   await page.goto('/#library');
@@ -1583,18 +1583,18 @@ test('a second click on a library action while it runs does not repeat it', asyn
   expect(await page.evaluate(() => window.writes)).toBe(1);
 });
 
-test('closing the Puter sign-in dialog is not reported as an error', async ({ page }) => {
-  await mockPuter(page, { signedIn: false });
+test('closing the Everything sign-in dialog is not reported as an error', async ({ page }) => {
+  await mockEverything(page, { signedIn: false });
   await page.goto('/#library');
   await page.evaluate(() => {
-    window.puter.auth.signIn = () =>
+    window.everything.auth.signIn = () =>
       Promise.reject({ error: 'auth_window_closed', msg: 'Authentication window was closed' });
-    window.puter.ui.showOpenFilePicker = async () => null;
+    window.everything.ui.showOpenFilePicker = async () => null;
   });
-  await page.getByRole('button', { name: 'Sign in with Puter', exact: true }).click();
+  await page.getByRole('button', { name: 'Sign in with Everything', exact: true }).click();
   await expect(page.locator('.account-label')).toHaveText('Local workspace');
   await expect(page.locator('#toast')).toBeHidden();
-  await page.getByRole('button', { name: 'Open from Puter', exact: true }).click();
+  await page.getByRole('button', { name: 'Open from Everything', exact: true }).click();
   await expect(page.locator('#toast')).toBeHidden();
   // The editor's Save button asks for the sign-in too; a closed dialog leaves things as they were.
   await sample(page);
@@ -1603,23 +1603,23 @@ test('closing the Puter sign-in dialog is not reported as an error', async ({ pa
   await expect(page.locator('#toast')).toBeHidden();
   // A real failure still explains itself.
   await page.evaluate(() => {
-    window.puter.auth.signIn = () =>
-      Promise.reject({ error: 'server_error', msg: 'Puter is down' });
+    window.everything.auth.signIn = () =>
+      Promise.reject({ error: 'server_error', msg: 'Everything is down' });
   });
   await page.getByRole('button', { name: 'Sign in to save', exact: true }).click();
-  await expect(page.locator('#toast')).toHaveText('Puter is down');
+  await expect(page.locator('#toast')).toHaveText('Everything is down');
 });
 
 test('finishing home sign-in preserves a PDF opened and edited while waiting', async ({ page }) => {
-  await mockPuter(page, { signedIn: false });
+  await mockEverything(page, { signedIn: false });
   await page.goto('/#library');
   await page.evaluate(() => {
-    window.puter.auth.signIn = () =>
+    window.everything.auth.signIn = () =>
       new Promise((resolve) => {
         window.finishSignIn = resolve;
       });
   });
-  await page.getByRole('button', { name: 'Sign in with Puter', exact: true }).click();
+  await page.getByRole('button', { name: 'Sign in with Everything', exact: true }).click();
   await sample(page);
   await menu(page, 'Rotate clockwise');
   await expect(page.locator('.save-status')).toHaveText('Unsaved changes');
@@ -1638,7 +1638,7 @@ test('finishing home sign-in preserves a PDF opened and edited while waiting', a
 });
 
 test('images are upright and centered within a rotated crop box', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   const pdfPage = doc.addPage([600, 800]);
@@ -1675,16 +1675,16 @@ test('images are upright and centered within a rotated crop box', async ({ page 
 test('a delayed folder save cannot rename or mark a renamed working copy saved', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await sample(page);
   await page.evaluate(() => {
-    window.puter.ui.showSaveFilePicker = () =>
+    window.everything.ui.showSaveFilePicker = () =>
       new Promise((resolve) => {
         window.finishFolderSave = resolve;
       });
   });
-  await menu(page, 'Save to another Puter folder…');
+  await menu(page, 'Save to another Everything folder…');
   await page.getByRole('button', { name: 'Rename Getting started.pdf', exact: true }).click();
   await page.getByLabel('File name', { exact: true }).fill('New working copy');
   await page.getByRole('button', { name: 'Continue', exact: true }).click();
@@ -1696,8 +1696,8 @@ test('a delayed folder save cannot rename or mark a renamed working copy saved',
     page.getByRole('button', { name: 'Rename New working copy.pdf', exact: true }),
   ).toBeVisible();
   await expect(page.locator('.save-status')).toHaveText('Unsaved changes');
-  await page.getByRole('button', { name: 'Save to Puter', exact: true }).click();
-  await expect(page.locator('.save-status')).toHaveText('Saved to Puter');
+  await page.getByRole('button', { name: 'Save to Everything', exact: true }).click();
+  await expect(page.locator('.save-status')).toHaveText('Saved to Everything');
   expect(await page.evaluate(() => window.lastSave)).toMatchObject({
     path: 'PDF Editor/New working copy.pdf',
     options: { overwrite: false, dedupeName: true },
@@ -1705,21 +1705,21 @@ test('a delayed folder save cannot rename or mark a renamed working copy saved',
 });
 
 test('a delayed folder save cannot replace a newer cloud save destination', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await sample(page);
   await page.evaluate(() => {
-    window.puter.ui.showSaveFilePicker = () =>
+    window.everything.ui.showSaveFilePicker = () =>
       new Promise((resolve) => {
         window.finishFolderSave = resolve;
       });
   });
-  await menu(page, 'Save to another Puter folder…');
-  await page.getByRole('button', { name: 'Save to Puter', exact: true }).click();
-  await expect(page.locator('.save-status')).toHaveText('Saved to Puter');
+  await menu(page, 'Save to another Everything folder…');
+  await page.getByRole('button', { name: 'Save to Everything', exact: true }).click();
+  await expect(page.locator('.save-status')).toHaveText('Saved to Everything');
   await page.evaluate(() => window.finishFolderSave({ path: '/older/copy.pdf', name: 'copy.pdf' }));
   await page.getByRole('button', { name: 'Save', exact: true }).click();
-  await expect(page.locator('.save-status')).toHaveText('Saved to Puter');
+  await expect(page.locator('.save-status')).toHaveText('Saved to Everything');
   expect(await page.evaluate(() => window.lastSave)).toMatchObject({
     path: 'PDF Editor/Getting started.pdf',
     options: { overwrite: true, dedupeName: false },
@@ -1727,7 +1727,7 @@ test('a delayed folder save cannot replace a newer cloud save destination', asyn
 });
 
 test('large pages keep every canvas within the rendering memory budget', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([5000, 5000]);
@@ -1762,7 +1762,7 @@ test('large pages keep every canvas within the rendering memory budget', async (
 });
 
 test('extremely tall page previews have bounded dimensions', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([10, 20000]);
@@ -1786,7 +1786,7 @@ test('extremely tall page previews have bounded dimensions', async ({ page }) =>
 });
 
 test('the page limit keeps the current page and undo history intact', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   for (let i = 0; i < 1000; i++) doc.addPage();
@@ -1800,7 +1800,7 @@ test('the page limit keeps the current page and undo history intact', async ({ p
 });
 
 test('saving a form preserves multiple and custom dropdown selections', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   const field = doc.getForm().createDropdown('Languages');
@@ -1827,7 +1827,7 @@ test('saving a form preserves multiple and custom dropdown selections', async ({
 });
 
 test('empty choice options stay distinct from clearing a form selection', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   const pdfPage = doc.addPage();
@@ -1874,7 +1874,7 @@ test('empty choice options stay distinct from clearing a form selection', async 
 });
 
 test('deleting a form page removes its fields and undo restores them', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await sample(page);
   await menu(page, 'Insert blank page after');
@@ -1894,7 +1894,7 @@ test('deleting a form page removes its fields and undo restores them', async ({ 
 });
 
 test('page navigation cancels an unfinished annotation', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([300, 400]);
@@ -1918,7 +1918,7 @@ test('page navigation cancels an unfinished annotation', async ({ page }) => {
 test('form errors are announced inside the dialog and can be corrected', async ({
   page,
 }, testInfo) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await sample(page);
   await page.getByRole('button', { name: 'Fill forms', exact: true }).click();
@@ -1943,7 +1943,7 @@ test('form errors are announced inside the dialog and can be corrected', async (
 });
 
 test('nested leave confirmations have the correct accessible name', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await sample(page);
   await menu(page, 'Rotate clockwise');
@@ -1957,8 +1957,8 @@ test('nested leave confirmations have the correct accessible name', async ({ pag
   await expect(page.getByRole('button', { name: 'Sign out', exact: true })).toBeFocused();
 });
 
-test('local workspace works without Puter and supports themes', async ({ page }) => {
-  await page.route('**/sdk/puter.js', (r) => r.abort());
+test('local workspace works without Everything and supports themes', async ({ page }) => {
+  await page.route('**/sdk/everything.js', (r) => r.abort());
   await page.goto('/#library');
   await expect(page.getByRole('button', { name: 'New blank PDF' })).toBeVisible();
   await expect(page.locator('.account-label')).toHaveText('Local workspace');
@@ -1973,7 +1973,7 @@ test('local workspace works without Puter and supports themes', async ({ page })
 });
 
 test('adds text, exports a readable PDF, and undoes page operations', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await sample(page);
   await page.getByRole('button', { name: 'Text', exact: true }).click();
@@ -1996,7 +1996,7 @@ test('adds text, exports a readable PDF, and undoes page operations', async ({ p
 test('repeated form references cannot multiply the fields dialog or exported fields', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await PDFDocument.load(await repeatedFieldTree(6)));
   await page.getByRole('button', { name: 'Fill forms', exact: true }).click();
@@ -2022,7 +2022,7 @@ test('repeated form references cannot multiply the fields dialog or exported fie
 
 for (const kind of ['root self', 'multiple cycles'])
   test(`cyclic form parents are reported and repaired by page edits: ${kind}`, async ({ page }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     await openPdf(page, await PDFDocument.load(await parentCyclePdf(kind)));
     await page.getByRole('button', { name: 'Fill forms', exact: true }).click();
@@ -2064,7 +2064,7 @@ for (const kind of ['root self', 'multiple cycles'])
   });
 
 test('fills real PDF form fields and keeps changes on download', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await sample(page);
   await page.getByRole('button', { name: 'Fill forms', exact: true }).click();
@@ -2084,13 +2084,13 @@ test('fills real PDF form fields and keeps changes on download', async ({ page }
   expect(pdf.getForm().getTextField('Your name').getText()).toBe('Alex Morgan');
 });
 
-test('save errors retain dirty state and Puter app has no logout', async ({ page }) => {
-  await mockPuter(page, { app: true, failSave: true });
+test('save errors retain dirty state and Everything app has no logout', async ({ page }) => {
+  await mockEverything(page, { app: true, failSave: true });
   await page.goto('/#library');
   await sample(page);
   await menu(page, 'Rotate clockwise');
   await expect(page.locator('.save-status')).toHaveText('Unsaved changes');
-  await page.getByRole('button', { name: 'Save to Puter', exact: true }).click();
+  await page.getByRole('button', { name: 'Save to Everything', exact: true }).click();
   await expect(page.locator('#toast')).toHaveText('Storage unavailable');
   await expect(page.locator('.save-status')).toHaveText('Unsaved changes');
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
@@ -2103,11 +2103,11 @@ test('save errors retain dirty state and Puter app has no logout', async ({ page
 });
 
 test('cloud save writes a PDF and search navigates to matching pages', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await sample(page);
-  await page.getByRole('button', { name: 'Save to Puter', exact: true }).click();
-  await expect(page.locator('.save-status')).toHaveText('Saved to Puter');
+  await page.getByRole('button', { name: 'Save to Everything', exact: true }).click();
+  await expect(page.locator('.save-status')).toHaveText('Saved to Everything');
   expect(await page.evaluate(() => window.lastSave)).toMatchObject({
     path: 'PDF Editor/Getting started.pdf',
     options: { dedupeName: true, overwrite: false },
@@ -2125,7 +2125,7 @@ test('cloud save writes a PDF and search navigates to matching pages', async ({ 
 test('home and editor meet automated accessibility checks without viewport overflow', async ({
   page,
 }, testInfo) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   expect(
     (await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze())
@@ -2145,7 +2145,7 @@ test('home and editor meet automated accessibility checks without viewport overf
 test('rotated pages keep text selection aligned and annotations persist through undo', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await sample(page);
   await menu(page, 'Rotate clockwise');
@@ -2174,11 +2174,11 @@ test('rotated pages keep text selection aligned and annotations persist through 
 test('downloading edited cloud content does not claim the cloud copy is saved', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await sample(page);
-  await page.getByRole('button', { name: 'Save to Puter', exact: true }).click();
-  await expect(page.locator('.save-status')).toHaveText('Saved to Puter');
+  await page.getByRole('button', { name: 'Save to Everything', exact: true }).click();
+  await expect(page.locator('.save-status')).toHaveText('Saved to Everything');
   await menu(page, 'Rotate clockwise');
   await expect(page.locator('.editor')).toHaveAttribute('aria-busy', 'false');
   const pending = page.waitForEvent('download');
@@ -2190,7 +2190,7 @@ test('downloading edited cloud content does not claim the cloud copy is saved', 
 test('tablet dark mode stays accessible and mobile tools remain discoverable', async ({
   page,
 }, testInfo) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.setViewportSize({ width: 820, height: 1180 });
   await page.emulateMedia({ colorScheme: 'dark' });
   await page.goto('/#library');
@@ -2208,7 +2208,7 @@ test('tablet dark mode stays accessible and mobile tools remain discoverable', a
 test('edits and deletes existing text in place, preserving graphics and undo after export', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await sample(page);
   await page.getByRole('button', { name: 'Text', exact: true }).click();
@@ -2250,7 +2250,7 @@ test('edits and deletes existing text in place, preserving graphics and undo aft
 test('inline text supports cancellation, formatting and switching targets without losing drafts', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await sample(page);
   await page.getByRole('button', { name: 'Text', exact: true }).click();
@@ -2288,7 +2288,7 @@ test('inline text supports cancellation, formatting and switching targets withou
 test('download commits an active text draft and font errors preserve it for correction', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await sample(page);
   await page.getByRole('button', { name: 'Text', exact: true }).click();
@@ -2317,7 +2317,7 @@ test('download commits an active text draft and font errors preserve it for corr
 test('rotated text remains editable at different zoom levels and newly added text can be revised', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   const pdfPage = doc.addPage([400, 500]);
@@ -2347,7 +2347,7 @@ test('rotated text remains editable at different zoom levels and newly added tex
 test('fills a form directly on the page and preserves it through download, undo and reopen', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await sample(page);
   const field = page.getByRole('textbox', { name: 'Your name (on page)', exact: true });
@@ -2375,7 +2375,7 @@ test('fills a form directly on the page and preserves it through download, undo 
 test('inline form fields synchronize shared widgets and commit when navigating or opening the form dialog', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   const first = doc.addPage([600, 700]),
@@ -2406,7 +2406,7 @@ test('inline form fields synchronize shared widgets and commit when navigating o
 test('inline checkbox, radio, choices, multiline and read-only fields retain their PDF values', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const { PDFHexString } = await import('pdf-lib');
   const doc = await PDFDocument.create(),
@@ -2470,7 +2470,7 @@ test('inline checkbox, radio, choices, multiline and read-only fields retain the
 test('inline form errors retain drafts, Escape restores values, and annotation tools do not intercept fields', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await sample(page);
   const field = page.getByRole('textbox', { name: 'Your name (on page)', exact: true });
@@ -2502,7 +2502,7 @@ for (const rotation of [0, 90, 180, 270]) {
   test(`inline form fields follow widget rotation ${rotation}, page rotation, crop and zoom`, async ({
     page,
   }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     const doc = await PDFDocument.create(),
       pdfPage = doc.addPage([500, 600]);
@@ -2556,7 +2556,7 @@ for (const rotation of [0, 90, 180, 270]) {
 test('inline choices distinguish an empty option from clearing and allow custom editable values', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const { PDFHexString } = await import('pdf-lib');
   const doc = await PDFDocument.create(),
@@ -2594,7 +2594,7 @@ test('inline choices distinguish an empty option from clearing and allow custom 
 });
 
 test('resizing the page preserves active form drafts and keyboard focus', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.setViewportSize({ width: 1000, height: 800 });
   await page.goto('/#library');
   await sample(page);
@@ -2618,7 +2618,7 @@ test('resizing the page preserves active form drafts and keyboard focus', async 
 test('inline fields respect hidden widgets and do not execute document actions', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const { PDFHexString } = await import('pdf-lib');
   const doc = await PDFDocument.create(),
@@ -2649,20 +2649,20 @@ test('inline fields respect hidden widgets and do not execute document actions',
 test('cloud saves commit inline fields and keep later drafts unsaved while the write is pending', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await sample(page);
   const field = page.getByRole('textbox', { name: 'Your name (on page)', exact: true });
   await field.fill('First value');
   await page.evaluate(() => {
-    window.puter.fs.write = async (path, blob) => {
+    window.everything.fs.write = async (path, blob) => {
       window.savedFormBytes = [...new Uint8Array(await blob.arrayBuffer())];
       return new Promise((resolve) => {
         window.finishFormSave = () => resolve({ path, name: path.split('/').pop() });
       });
     };
   });
-  await page.getByRole('button', { name: 'Save to Puter', exact: true }).click();
+  await page.getByRole('button', { name: 'Save to Everything', exact: true }).click();
   await expect(page.locator('.save-status')).toHaveText('Saving…');
   await expect.poll(() => page.evaluate(() => !!window.finishFormSave)).toBe(true);
   await field.fill('Later value');
@@ -2727,7 +2727,7 @@ async function exportedTextRuns(page) {
 test('grouped text preserves mixed fonts and colors through typing, export, reopen and undo', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await fragmentedTextPdf());
   await page.getByRole('button', { name: 'Text', exact: true }).click();
@@ -2782,7 +2782,7 @@ test('grouped text preserves mixed fonts and colors through typing, export, reop
 test('dragging mixed-font text preserves its source style in the exported PDF', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await fragmentedTextPdf());
   await page.getByRole('button', { name: 'Text', exact: true }).click();
@@ -2827,7 +2827,7 @@ test('dragging mixed-font text preserves its source style in the exported PDF', 
 test('grouped text supports multiline typing, plain paste, error recovery and draft cancellation', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await fragmentedTextPdf());
   await page.getByRole('button', { name: 'Text', exact: true }).click();
@@ -2861,7 +2861,7 @@ test('grouped text supports multiline typing, plain paste, error recovery and dr
 
 for (const rotation of [0, 90, 180, 270])
   test(`grouped text moves and formats on rotated page ${rotation}`, async ({ page }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     await openPdf(page, await fragmentedTextPdf(rotation));
     await page.getByRole('button', { name: 'Text', exact: true }).click();
@@ -2883,7 +2883,7 @@ for (const rotation of [0, 90, 180, 270])
 test('grouped text retains the edited bold fragment and handles selection across style boundaries', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await fragmentedTextPdf());
   await page.getByRole('button', { name: 'Text', exact: true }).click();
@@ -2934,7 +2934,7 @@ for (const rotation of [0, 90])
   test(`single-run text preview preserves character and word spacing at rotation ${rotation}`, async ({
     page,
   }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     const doc = await PDFDocument.create(),
       p = doc.addPage([400, 400]);
@@ -3022,7 +3022,7 @@ for (const rotation of [0, 90, 180, 270])
   test(`mixed-size text preview matches PDF glyphs on rotated crop ${rotation}`, async ({
     page,
   }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     const doc = await PDFDocument.create(),
       p = doc.addPage([400, 400]);
@@ -3112,7 +3112,7 @@ for (const rotation of [0, 90])
   test(`paragraph editing wraps naturally and preserves exported layout at ${rotation} degrees`, async ({
     page,
   }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     const doc = await PDFDocument.create(),
       p = doc.addPage([400, 400]);
@@ -3211,7 +3211,7 @@ for (const rotation of [0, 90, 180, 270])
   test(`paragraph width supports numeric, keyboard and drag edits on rotated crop ${rotation}`, async ({
     page,
   }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     const doc = await PDFDocument.create(),
       p = doc.addPage([400, 400]),
@@ -3336,7 +3336,7 @@ for (const rotation of [0, 90, 180, 270])
 test('paragraph width touch dragging ignores a second finger and restores a cancelled draft', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create(),
     p = doc.addPage([400, 400]);
@@ -3372,7 +3372,7 @@ test('paragraph width touch dragging ignores a second finger and restores a canc
 test('cancelling paragraph width restores source text beyond a crop edge without creating history', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create(),
     p = doc.addPage([400, 400]);
@@ -3423,7 +3423,7 @@ test('cancelling paragraph width restores source text beyond a crop edge without
 test('saved paragraphs preserve typed breaks, long words, width and draft alignment through reopening', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create(),
     p = doc.addPage([700, 700]);
@@ -3508,7 +3508,7 @@ test('saved paragraphs preserve typed breaks, long words, width and draft alignm
 test('Enter at the end of grouped text records one break and preserves native undo', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await fragmentedTextPdf());
   await page.getByRole('button', { name: 'Text', exact: true }).click();
@@ -3545,7 +3545,7 @@ test('Enter at the end of grouped text records one break and preserves native un
 });
 
 test('Enter at the end of a paragraph adds one break, not two', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create(),
     p = doc.addPage([700, 700]);
@@ -3585,7 +3585,7 @@ for (const content of ['kept', 'removed'])
   test(`saved paragraph blank lines keep their formatting when large text is ${content}`, async ({
     page,
   }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     const doc = await PDFDocument.create(),
       p = doc.addPage([700, 700]),
@@ -3664,7 +3664,7 @@ for (const content of ['kept', 'removed'])
 test('paragraph wrapping retains pasted blank lines and breaks long words within its column', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create(),
     p = doc.addPage([400, 400]),
@@ -3717,7 +3717,7 @@ for (const content of ['enter', 'paste', 'styles'])
     page,
     browserName,
   }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     const doc = await PDFDocument.create(),
       p = doc.addPage([400, 400]);
@@ -3829,7 +3829,7 @@ for (const rotation of [0, 90])
   test(`shape opacity survives transparent export, reopening, and history at ${rotation} degrees`, async ({
     page,
   }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     const doc = await PDFDocument.create(),
       p = doc.addPage([400, 400]);
@@ -3893,7 +3893,7 @@ for (const rotation of [0, 90, 180, 270])
   test(`object rotation follows screen angles on page rotation ${rotation} and preserves image center, export, and history`, async ({
     page,
   }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     const doc = await imagePdf({ rotation, userUnit: 2 });
     doc.getPage(0).setCropBox(20, 20, 360, 360);
@@ -3969,7 +3969,7 @@ for (const rotation of [0, 90, 180, 270])
 test('shape and drawing rotation preserve native paint, angle, and neighboring geometry', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create(),
     p = doc.addPage([400, 400]);
@@ -4028,7 +4028,7 @@ test('shape and drawing rotation preserve native paint, angle, and neighboring g
 test('rotation rejects invalid angles and clipped turns without history, then allows a fitting turn', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.load(await (await imagePdf()).save()),
     image = inspectImages(doc, 0)[0].object;
@@ -4089,7 +4089,7 @@ test('rotation rejects invalid angles and clipped turns without history, then al
 test('docked object controls leave every resize handle usable on a small rotated page', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create(),
     p = doc.addPage([400, 400]);
@@ -4155,7 +4155,7 @@ for (const rotation of [0, 90, 180, 270])
   test(`image replacement fits its rotated frame and survives export, reopening, and history on page rotation ${rotation}`, async ({
     page,
   }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     const doc = await imagePdf({ rotation, userUnit: 2 });
     doc.getPage(0).setCropBox(20, 20, 360, 360);
@@ -4221,7 +4221,7 @@ for (const rotation of [0, 90, 180, 270])
 test('cancelled and invalid image replacements keep the original and allow correction', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await imagePdf());
   await page.getByRole('button', { name: 'Select image 1', exact: true }).click();
@@ -4265,7 +4265,7 @@ async function releaseReplacementRead(page, name) {
 }
 for (const action of ['select another image', 'close the editor', 'switch tools'])
   test(`pending replacement cannot apply after ${action}`, async ({ page }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     await openPdf(page, await imagePdf());
     await page.getByRole('button', { name: 'Select image 1', exact: true }).click();
@@ -4292,7 +4292,7 @@ for (const action of ['select another image', 'close the editor', 'switch tools'
 test('a newer replacement request supersedes an older file that finishes reading first', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await imagePdf());
   const target = page.getByRole('button', { name: 'Select image 1', exact: true });
@@ -4340,7 +4340,7 @@ async function holdImageNudges(page) {
 test('replacement preserves a pending keyboard move while its file is being chosen', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await imagePdf());
   const target = page.getByRole('button', { name: 'Select image 1', exact: true });
@@ -4371,7 +4371,7 @@ test('replacement preserves a pending keyboard move while its file is being chos
 });
 
 test('cancelling the replacement picker resumes the pending keyboard move', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await imagePdf());
   await page.getByRole('button', { name: 'Select image 1', exact: true }).click();
@@ -4392,7 +4392,7 @@ test('cancelling the replacement picker resumes the pending keyboard move', asyn
 });
 
 test('an invalid replacement preserves a pending image move for correction', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await imagePdf());
   await page.getByRole('button', { name: 'Select image 1', exact: true }).click();
@@ -4414,7 +4414,7 @@ test('an invalid replacement preserves a pending image move for correction', asy
 test('opens into a blank PDF without an account and asks for the sign-in only to save', async ({
   page,
 }) => {
-  await mockPuter(page, { signedIn: false });
+  await mockEverything(page, { signedIn: false });
   await page.goto('/');
   await expect(page.getByRole('button', { name: 'Rename Untitled.pdf' })).toBeVisible();
   await expect(page.locator('.page-caption')).toHaveText('Page 1 of 1');
@@ -4434,7 +4434,7 @@ test('opens into a blank PDF without an account and asks for the sign-in only to
   // Saving to the cloud asks for the sign-in first, then writes.
   await menu(page, 'Rotate clockwise');
   await saveButton.click();
-  await expect(page.locator('.save-status')).toHaveText('Saved to Puter');
+  await expect(page.locator('.save-status')).toHaveText('Saved to Everything');
   expect(await page.evaluate(() => window.lastSave.path)).toBe('PDF Editor/Untitled.pdf');
   await expect(page.getByRole('button', { name: 'Save', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Settings', exact: true }).click();
@@ -4444,7 +4444,7 @@ test('opens into a blank PDF without an account and asks for the sign-in only to
 test('keeps the library at its own URL and behind the back arrow, without listing files while signed out', async ({
   page,
 }) => {
-  await mockPuter(page, { signedIn: false });
+  await mockEverything(page, { signedIn: false });
   await page.goto('/');
   await expect(page.locator('.page-caption')).toHaveText('Page 1 of 1');
   await page.getByRole('button', { name: 'Back to your PDFs', exact: true }).click();
@@ -4462,7 +4462,7 @@ test('keeps the library at its own URL and behind the back arrow, without listin
 });
 
 test('leaving unsaved edits without an account offers to sign in and save', async ({ page }) => {
-  await mockPuter(page, { signedIn: false });
+  await mockEverything(page, { signedIn: false });
   await page.goto('/');
   await expect(page.locator('.page-caption')).toHaveText('Page 1 of 1');
   await menu(page, 'Rotate clockwise');
@@ -4484,11 +4484,11 @@ test('leaving unsaved edits without an account offers to sign in and save', asyn
   expect(await page.evaluate(() => window.lastSave.path)).toBe('PDF Editor/Untitled.pdf');
 });
 
-test('a file launched from the Puter desktop replaces the landing document', async ({ page }) => {
+test('a file launched from the Everything desktop replaces the landing document', async ({ page }) => {
   const doc = await PDFDocument.create();
   doc.addPage([300, 300]);
   doc.addPage([300, 300]);
-  await mockPuter(page, { app: true, launch: Buffer.from(await doc.save()).toString('base64') });
+  await mockEverything(page, { app: true, launch: Buffer.from(await doc.save()).toString('base64') });
   await page.goto('/');
   await expect(page.locator('.page-caption')).toHaveText('Page 1 of 2');
   await expect(page.getByRole('button', { name: 'Rename launch.pdf' })).toBeVisible();

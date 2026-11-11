@@ -4,7 +4,7 @@
  * a prefix listing reads exactly one collection:
  *
  *   meta                  desk settings (name, portal, email, owner)
- *   members               agents by Puter uuid (one small document)
+ *   members               agents by Everything uuid (one small document)
  *   cfg:<kind>            groups, macros, views, fields, triggers, sla, kb
  *   seq                   counters: { t: tickets, u: users, o: orgs, a: articles }
  *   rev                   change counter, bumped on every write
@@ -13,9 +13,9 @@
  *   e:<id>:<n>            ticket event: comment, note or field change
  *   u:<id>                customer (end user)
  *   ue:<email>            customer id by email
- *   uu:<uuid>             customer id by Puter account
+ *   uu:<uuid>             customer id by Everything account
  *   rt:<user>:<ticket>    tickets by requester
- *   ps:<uuid>:<ticket>    tickets a signed-in Puter account sent from the help center
+ *   ps:<uuid>:<ticket>    tickets a signed-in Everything account sent from the help center
  *   o:<id>                organization
  *   od:<domain>           organization id by email domain
  *   k:<id>                knowledge base article (summary, listed)

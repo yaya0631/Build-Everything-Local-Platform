@@ -168,18 +168,18 @@ describe('recent files', () => {
 
   it('adds to the top, dedupes and caps the list', async () => {
     const { r } = make({ max: 3 });
-    await r.add({ kind: 'puter', path: '/u/a.vstudio', name: 'a.vstudio' });
-    await r.add({ kind: 'puter', path: '/u/b.vstudio', name: 'b.vstudio' });
-    await r.add({ kind: 'puter', path: '/u/a.vstudio', name: 'a.vstudio' });
+    await r.add({ kind: 'everything', path: '/u/a.vstudio', name: 'a.vstudio' });
+    await r.add({ kind: 'everything', path: '/u/b.vstudio', name: 'b.vstudio' });
+    await r.add({ kind: 'everything', path: '/u/a.vstudio', name: 'a.vstudio' });
     expect(r.list().map((e) => e.name)).toEqual(['a.vstudio', 'b.vstudio']);
-    await r.add({ kind: 'puter', path: '/u/c.vstudio', name: 'c.vstudio' });
-    await r.add({ kind: 'puter', path: '/u/d.vstudio', name: 'd.vstudio' });
+    await r.add({ kind: 'everything', path: '/u/c.vstudio', name: 'c.vstudio' });
+    await r.add({ kind: 'everything', path: '/u/d.vstudio', name: 'd.vstudio' });
     expect(r.list().map((e) => e.name)).toEqual(['d.vstudio', 'c.vstudio', 'a.vstudio']);
   });
 
   it('keeps thumbnails in the cache, not in prefs', async () => {
     const { prefs, r } = make();
-    const e = await r.add({ kind: 'puter', path: '/u/a.vstudio', name: 'a', thumb: 'data:image/png;base64,X' });
+    const e = await r.add({ kind: 'everything', path: '/u/a.vstudio', name: 'a', thumb: 'data:image/png;base64,X' });
     expect(JSON.stringify(prefs.get('recentFiles'))).not.toContain('base64');
     r.thumbs.clear();
     expect(await r.thumb(e)).toBe('data:image/png;base64,X');
@@ -190,9 +190,9 @@ describe('recent files', () => {
 
   it('drops missing cloud files when validated, keeps them when offline', async () => {
     const { r } = make();
-    await r.add({ kind: 'puter', path: '/u/gone.vstudio', name: 'gone' });
-    await r.add({ kind: 'puter', path: '/u/here.vstudio', name: 'here' });
-    await r.add({ kind: 'puter', path: '/u/offline.vstudio', name: 'offline' });
+    await r.add({ kind: 'everything', path: '/u/gone.vstudio', name: 'gone' });
+    await r.add({ kind: 'everything', path: '/u/here.vstudio', name: 'here' });
+    await r.add({ kind: 'everything', path: '/u/offline.vstudio', name: 'offline' });
     const stat = vi.fn(async (p) => {
       if (p.includes('gone')) throw { code: 'subject_does_not_exist', message: 'Item does not exist' };
       if (p.includes('offline')) throw new Error('Failed to fetch');
@@ -210,9 +210,9 @@ describe('recent files', () => {
 
   it('ignores corrupt stored entries', () => {
     const { prefs, r } = make();
-    prefs.set('recentFiles', [null, 5, { kind: 'puter' }, { kind: 'puter', path: '/x', name: 'x' }]);
+    prefs.set('recentFiles', [null, 5, { kind: 'everything' }, { kind: 'everything', path: '/x', name: 'x' }]);
     expect(r.list()).toHaveLength(1);
-    expect(entryKey(r.list()[0])).toBe('puter:/x');
+    expect(entryKey(r.list()[0])).toBe('everything:/x');
   });
 });
 
@@ -221,7 +221,7 @@ describe('recovery bookkeeping', () => {
     const b = memoryBackend();
     const store = new RecoveryStore([b]);
     await store.put('r1', { name: 'A', data: new Uint8Array([1, 2]), session: 's1', saved: 10 });
-    await store.put('r2', { name: 'B', data: new Uint8Array([3]), session: 's1', saved: 20, file: { kind: 'puter', path: '/u/b.vstudio', name: 'b.vstudio' } });
+    await store.put('r2', { name: 'B', data: new Uint8Array([3]), session: 's1', saved: 20, file: { kind: 'everything', path: '/u/b.vstudio', name: 'b.vstudio' } });
     await store.put('r1', { name: 'A2', data: new Uint8Array([4]), session: 's1', saved: 30 });
     const list = await store.list();
     expect(list.map((e) => e.name)).toEqual(['A2', 'B']);
@@ -353,10 +353,10 @@ describe('errors and preferences parsing', () => {
   });
 });
 
-/** A small fake app around FileService with an in-memory Puter file system. */
+/** A small fake app around FileService with an in-memory Everything file system. */
 function fakeApp({ cancelPicker = false } = {}) {
   const files = new Map();
-  const puter = {
+  const everything = {
     fs: {
       write: vi.fn(async (path, blob) => {
         files.set(path, new Uint8Array(await blob.arrayBuffer()));
@@ -385,12 +385,12 @@ function fakeApp({ cancelPicker = false } = {}) {
     },
   };
   const prefs = new Prefs(memStorage());
-  prefs.set('filesSaveDialog', 'puter');
+  prefs.set('filesSaveDialog', 'everything');
   const handlers = {};
   const app = {
     env: 'app',
     user: { username: 'u' },
-    puter,
+    everything,
     prefs,
     editors: [],
     editor: null,
@@ -410,27 +410,27 @@ function fakeApp({ cancelPicker = false } = {}) {
       this.editor = ed;
     },
   };
-  return { app, files, puter };
+  return { app, files, everything };
 }
 
 describe('FileService', () => {
-  it('saves a new document through the Puter picker, then saves in place', async () => {
-    const { app, files, puter } = fakeApp();
+  it('saves a new document through the Everything picker, then saves in place', async () => {
+    const { app, files, everything } = fakeApp();
     const recent = new RecentFiles(app.prefs, { cache: memoryBackend() });
     const discard = vi.fn();
     const svc = new FileService(app, { recent, recovery: { discard }, handles: { find: async () => null, put: async () => true } });
     const ed = app.addDocument(sampleDoc());
     expect(ed.doc.dirty).toBe(true);
     expect(await svc.save(ed)).toBe(true);
-    expect(puter.ui.showSaveFilePicker).toHaveBeenCalledWith(expect.any(Blob), 'Logo.vstudio');
-    expect(ed.file).toEqual({ kind: 'puter', path: '/u/Desktop/Logo.vstudio', name: 'Logo.vstudio' });
+    expect(everything.ui.showSaveFilePicker).toHaveBeenCalledWith(expect.any(Blob), 'Logo.vstudio');
+    expect(ed.file).toEqual({ kind: 'everything', path: '/u/Desktop/Logo.vstudio', name: 'Logo.vstudio' });
     expect(ed.doc.dirty).toBe(false);
     expect(discard).toHaveBeenCalledWith(ed);
     expect(recent.list()[0].path).toBe('/u/Desktop/Logo.vstudio');
 
     ed.doc.transact('Rename', () => ed.doc.updateRoot({ name: 'Changed' }));
     expect(await svc.save(ed)).toBe(true);
-    expect(puter.fs.write).toHaveBeenCalledWith('/u/Desktop/Logo.vstudio', expect.any(Blob), expect.objectContaining({ overwrite: true }));
+    expect(everything.fs.write).toHaveBeenCalledWith('/u/Desktop/Logo.vstudio', expect.any(Blob), expect.objectContaining({ overwrite: true }));
     const reopened = await parseDocument(files.get('/u/Desktop/Logo.vstudio'));
     expect(reopened.doc.root.name).toBe('Changed');
   });
@@ -449,10 +449,10 @@ describe('FileService', () => {
     const svc = new FileService(app, { recent });
     files.set('/u/a.vstudio', await serializeDocument(sampleDoc()));
     const ed = await svc.openPath('/u/a.vstudio');
-    expect(ed.file).toEqual({ kind: 'puter', path: '/u/a.vstudio', name: 'a.vstudio' });
+    expect(ed.file).toEqual({ kind: 'everything', path: '/u/a.vstudio', name: 'a.vstudio' });
     expect(await svc.openPath('/u/a.vstudio')).toBe(ed);
     expect(app.editors).toHaveLength(1);
-    await recent.add({ kind: 'puter', path: '/u/gone.vstudio', name: 'gone.vstudio' });
+    await recent.add({ kind: 'everything', path: '/u/gone.vstudio', name: 'gone.vstudio' });
     expect(await svc.openPath('/u/gone.vstudio')).toBe(null);
     expect(app.dialogs.alert).toHaveBeenCalled();
     expect(recent.list().some((e) => e.name === 'gone.vstudio')).toBe(false);
@@ -493,11 +493,11 @@ describe('FileService', () => {
   });
 });
 
-describe('Puter desktop hooks', () => {
+describe('Everything desktop hooks', () => {
   it('opens launch items, mirrors the title and asks before closing', async () => {
-    const { installPuterHooks } = await import('../src/features/files/index.js');
+    const { installEverythingHooks } = await import('../src/features/files/index.js');
     const handlers = {};
-    const puter = {
+    const everything = {
       exit: vi.fn(),
       ui: {
         onLaunchedWithItems: (f) => (handlers.launch = f),
@@ -508,21 +508,21 @@ describe('Puter desktop hooks', () => {
     };
     const clean = { doc: { dirty: false } };
     const dirty = { doc: { dirty: true } };
-    const app = { env: 'app', puter, editors: [clean, dirty], activate: vi.fn(), closeDocument: vi.fn(async () => false) };
+    const app = { env: 'app', everything, editors: [clean, dirty], activate: vi.fn(), closeDocument: vi.fn(async () => false) };
     const service = { openPath: vi.fn(async () => null) };
     document.title = 'Logo.vstudio - Vector Studio';
-    installPuterHooks(app, service);
-    expect(puter.ui.setWindowTitle).toHaveBeenCalledWith('Logo.vstudio - Vector Studio');
+    installEverythingHooks(app, service);
+    expect(everything.ui.setWindowTitle).toHaveBeenCalledWith('Logo.vstudio - Vector Studio');
     await handlers.launch([{ path: '/u/a.vstudio', name: 'a.vstudio' }, { path: '/u/dir', is_dir: true }]);
     expect(service.openPath).toHaveBeenCalledTimes(1);
     expect(service.openPath).toHaveBeenCalledWith('/u/a.vstudio', { name: 'a.vstudio' });
     // Cancel in the save prompt keeps the window open.
     await handlers.close();
     expect(app.closeDocument).toHaveBeenCalledWith(dirty);
-    expect(puter.exit).not.toHaveBeenCalled();
+    expect(everything.exit).not.toHaveBeenCalled();
     app.closeDocument.mockResolvedValue(true);
     await handlers.close();
-    expect(puter.exit).toHaveBeenCalled();
+    expect(everything.exit).toHaveBeenCalled();
   });
 });
 

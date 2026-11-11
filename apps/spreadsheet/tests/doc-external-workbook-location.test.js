@@ -2,10 +2,10 @@ import { afterEach, beforeEach, expect, it } from 'vitest';
 import { Doc } from '../src/lib/doc.js';
 import { Workbook } from '../src/core/workbook.js';
 import { workbookFromFile, workbookToXlsx } from '../src/core/io.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 let mock, doc;
-beforeEach(() => { mock = installMockPuter(); });
-afterEach(() => { doc?.destroy();doc=null;delete globalThis.puter; });
+beforeEach(() => { mock = installMockEverything(); });
+afterEach(() => { doc?.destroy();doc=null;delete globalThis.everything; });
 it('keeps external sources stable after opening, editing, Save As, undo and another save', async () => {
   const wb = new Workbook({externalWorkbooks:{version:1,books:[{target:'../Data/Source%20A.xlsx',sheets:[{name:'Data',cells:{'0,0':7}}]}]},sheets:[{name:'Report',cells:{'0,0':{f:'[1]Data!A1'}}}]});
   const path = '/drive/Reports/Report.xlsx', blob = await workbookToXlsx(wb);

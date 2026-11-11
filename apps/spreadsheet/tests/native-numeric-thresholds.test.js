@@ -16,7 +16,7 @@ const check=(w,type,c=2)=>{
 };
 const nativeSave=async w=>{
  const zip=X.CFB.read(new Uint8Array(await(await workbookToXlsx(w)).arrayBuffer()),{type:'array'}),p=X.CFB.find(zip,'/xl/workbook.xml');
- p.content=new TextEncoder().encode(new TextDecoder().decode(p.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,''));p.size=p.content.length;
+ p.content=new TextEncoder().encode(new TextDecoder().decode(p.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,''));p.size=p.content.length;
  return workbookFromFile(X.CFB.write(zip,{type:'array',fileType:'zip'}),'numeric-thresholds.xlsx');
 };
 it.each(types)('%s evaluates native doubles without formula literal conversion',type=>{

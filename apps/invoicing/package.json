@@ -1,7 +1,7 @@
 {
   "name": "invoicing",
   "version": "1.0.0",
-  "description": "Invoicing and estimates on Puter: quotes, invoices, recurring billing, receipts, and payment links",
+  "description": "Invoicing and estimates on Everything: quotes, invoices, recurring billing, receipts, and payment links",
   "type": "module",
   "private": true,
   "scripts": {

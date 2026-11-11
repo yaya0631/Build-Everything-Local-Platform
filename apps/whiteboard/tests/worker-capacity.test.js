@@ -19,12 +19,12 @@ const itemBytes = (key, value) =>
   new TextEncoder().encode(key + (value == null ? "" : JSON.stringify(value)))
     .length;
 
-// Counts KV requests and the capacity Puter bills them by. Lists page like
-// Puter: up to `limit` rows and 1 MB a request, reading every row of a page
+// Counts KV requests and the capacity Everything bills them by. Lists page like
+// Everything: up to `limit` rows and 1 MB a request, reading every row of a page
 // whatever it returns. Reads are eventually consistent, half a unit per
 // 4 KB (each item rounded alone for a get, a page's rows together for a
 // list); writes cost a unit per 1 KB of the larger of the old and new item,
-// and an update writes twice, as Puter creates its paths first.
+// and an update writes twice, as Everything creates its paths first.
 function instrument(env) {
   const counts = { get: 0, set: 0, list: 0, incr: 0, del: 0, update: 0 };
   const io = { readBytes: 0, writtenBytes: 0, rcu: 0, wcu: 0, rows: {} };
@@ -103,7 +103,7 @@ function instrument(env) {
   };
 }
 
-// A board's worker shares one Puter KV request quota (about 40 requests a
+// A board's worker shares one Everything KV request quota (about 40 requests a
 // second on paid plans) among everyone on its boards. Commits and syncs must
 // stay cheap however long a board's history grows.
 test("commits and syncs stay within a small, constant storage request budget", async () => {
@@ -114,8 +114,8 @@ test("commits and syncs stay within a small, constant storage request budget", a
   svc.org.now = () => clock;
   const { counts, total, reset: resetCounts } = instrument(env);
   let reads = 0;
-  const read = svc.puter.fs.read.bind(svc.puter.fs);
-  svc.puter.fs.read = (...args) => {
+  const read = svc.everything.fs.read.bind(svc.everything.fs);
+  svc.everything.fs.read = (...args) => {
     reads++;
     return read(...args);
   };
@@ -221,7 +221,7 @@ test("check-ins in a large room cost about one storage request each", async () =
       assert.equal(roster.length, 310);
     }
   assert.ok(total() / 100 <= 1.5, `check-in cost ${total() / 100}`);
-  // Puter allows a worker far fewer listings than other requests: one
+  // Everything allows a worker far fewer listings than other requests: one
   // request lists everyone present, and once more after the ten who joined
   // before, as listings may show them late.
   assert.ok(counts.list <= 2, `${counts.list} listings`);
@@ -231,7 +231,7 @@ test("check-ins on a quiet board list who is present when someone joins or leave
   const env = environment(),
     A = env.service;
   const { BoardService } = await import("../worker/service.js?instance=roster");
-  const B = new BoardService(A.puter, { now: () => env.now, org: A.org });
+  const B = new BoardService(A.everything, { now: () => env.now, org: A.org });
   const { counts, reset } = instrument(env);
   const b = board("Quiet"),
     seed = new SharedDocument();
@@ -362,7 +362,7 @@ test("someone joining a room of 300 through another instance shows within second
   const env = environment(),
     A = env.service;
   const { BoardService } = await import("../worker/service.js?instance=joins");
-  const B = new BoardService(A.puter, { now: () => env.now, org: A.org });
+  const B = new BoardService(A.everything, { now: () => env.now, org: A.org });
   const { counts, reset } = instrument(env);
   const b = board("Crowded"),
     seed = new SharedDocument();
@@ -531,7 +531,7 @@ test("refreshing a busy board reads its newest edits, not the rest of the minute
   assert.ok(rows <= 210, `log rows read per refresh ${rows}`);
   // Another instance still finds every edit.
   const { BoardService } = await import("../worker/service.js?instance=busy");
-  const other = new BoardService(svc.puter, {
+  const other = new BoardService(svc.everything, {
     now: () => clock.at,
     org: svc.org,
   });
@@ -545,7 +545,7 @@ test("refreshing a board gone quiet after a burst reads few records, and a new b
   const { env, svc, room, commit } = await busyBoard(clock);
   // Another instance follows the board through synchronizations.
   const { BoardService } = await import("../worker/service.js?instance=quiet");
-  const other = new BoardService(svc.puter, {
+  const other = new BoardService(svc.everything, {
     now: () => clock.at,
     org: svc.org,
   });
@@ -608,7 +608,7 @@ test("reopening a board after a week reads the edits since its checkpoint, not i
   clock.at += 8 * DAY;
   const { io } = instrument(env);
   const { BoardService } = await import("../worker/service.js?instance=week");
-  const other = new BoardService(svc.puter, {
+  const other = new BoardService(svc.everything, {
     now: () => clock.at,
     org: svc.org,
   });
@@ -629,7 +629,7 @@ test("loading or refreshing a board reads its new edits in one listing however l
   assert.ok(env.data.get(`wb:${room}:cp`).at < clock.at - 12 * 3600_000);
   const { counts, reset } = instrument(env);
   const { BoardService } = await import("../worker/service.js?instance=span");
-  const other = new BoardService(svc.puter, {
+  const other = new BoardService(svc.everything, {
     now: () => clock.at,
     org: svc.org,
   });
@@ -656,7 +656,7 @@ test("an instance lists a board at most once a second for callers told of saves,
   // Saves reach another instance, whose clock waits only as long as it
   // is told to.
   const { BoardService } = await import("../worker/service.js?instance=pace");
-  const other = new BoardService(svc.puter, {
+  const other = new BoardService(svc.everything, {
     now: () => clock.at,
     org: svc.org,
   });
@@ -845,7 +845,7 @@ async function simulateMinute({
   const pick = (list) => list[Math.floor(rng() * list.length)];
   const env = environment();
   const { counts, reset } = instrument(env);
-  const kv = env.service.puter.kv;
+  const kv = env.service.everything.kv;
   const clock = { at: Date.UTC(2026, 9, 5, 12, 0, 0) };
   const line = timeline(clock);
   const shown = new Map(),
@@ -862,7 +862,7 @@ async function simulateMinute({
     );
     return page;
   };
-  // Puter's listing quota, as its SDK meets it: a refused request is sent
+  // Everything's listing quota, as its SDK meets it: a refused request is sent
   // again after 250 ms, 500 ms, a second and five times two seconds, then
   // fails.
   const granted = [];
@@ -919,9 +919,9 @@ async function simulateMinute({
           }
         }
       };
-    const puter = { ...env.service.puter, kv: slow };
-    const org = new OrgService(puter, { now: () => clock.at });
-    const svc = new BoardService(puter, { now: () => clock.at, org });
+    const everything = { ...env.service.everything, kv: slow };
+    const org = new OrgService(everything, { now: () => clock.at });
+    const svc = new BoardService(everything, { now: () => clock.at, org });
     svc.wait = (ms) => line.wait(ms);
     instances.push({ svc, org });
   }
@@ -1191,10 +1191,10 @@ async function simulateMinute({
   return measured;
 }
 
-test("a minute of a 300-person room on three instances loses no edit, keeps within Puter's listing quota, and slows gently past it", async (t) => {
+test("a minute of a 300-person room on three instances loses no edit, keeps within Everything's listing quota, and slows gently past it", async (t) => {
   const alone = await simulateMinute({ label: "alone" });
   const shared = await simulateMinute({ label: "shared", quiet: 5 });
-  // Puter allows a worker 240 listings a minute on paid plans and 120 on
+  // Everything allows a worker 240 listings a minute on paid plans and 120 on
   // free ones.
   const paid = await simulateMinute({ label: "paid", quiet: 5, quota: 240 });
   const free = await simulateMinute({ label: "free", quiet: 5, quota: 120 });
@@ -1224,7 +1224,7 @@ test("a minute of a 300-person room on three instances loses no edit, keeps with
       [minute.saved, minute.saved, minute.saved],
       report,
     );
-    // Puter allows five listings at once, per worker.
+    // Everything allows five listings at once, per worker.
     assert.ok(minute.peakPerInstance <= 2, report);
     // Nobody waits long for a listing.
     assert.ok(minute.slowest.sync <= 4500, report);
@@ -1320,7 +1320,7 @@ test("listing a large board's members on a new instance reads their records toge
     reads = [];
   const fresh = new BoardService(
     {
-      ...svc.puter,
+      ...svc.everything,
       kv: {
         ...kv,
         get: (key) => (reads.push(key), kv.get(key)),
@@ -1352,7 +1352,7 @@ test("two instances admitting people at once leave the board's member count righ
   // A second worker instance: its own memory, the same storage.
   const { BoardService } = await import("../worker/service.js?instance=count");
   const first = env.service;
-  const second = new BoardService(first.puter, {
+  const second = new BoardService(first.everything, {
     now: () => env.now,
     fetcher: first.fetcher,
   });

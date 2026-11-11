@@ -84,7 +84,7 @@ it('keeps raw serial precision through editing, portable clipboard and XLSX', as
   const blob = await workbookToXlsx(wb);
   const bytes = await new Promise(resolve => { const reader=new FileReader(); reader.onload=()=>resolve(new Uint8Array(reader.result)); reader.readAsArrayBuffer(blob); });
   const zip = X.CFB.read(bytes,{type:'array'}), part=X.CFB.find(zip,'/xl/workbook.xml');
-  part.content=new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,'')); part.size=part.content.length;
+  part.content=new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,'')); part.size=part.content.length;
   const restored=await workbookFromFile(X.CFB.write(zip,{type:'array',fileType:'zip'}),'clocks.xlsx');
   for(const [r,v] of values.entries()) {
     expect(restored.getValue(restored.activeSheetId,r,0)).toBe(v);

@@ -103,7 +103,7 @@ it('keeps the base font color and live format in external HTML and metadata-free
   const blob = await workbookToXlsx(wb);
   const data = await new Promise(resolve => { const r = new FileReader(); r.onload = () => resolve(new Uint8Array(r.result)); r.readAsArrayBuffer(blob); });
   const zip = X.CFB.read(data, { type: 'array' }), part = X.CFB.find(zip, '/xl/workbook.xml');
-  X.CFB.utils.cfb_add(zip, '/xl/workbook.xml', new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')));
+  X.CFB.utils.cfb_add(zip, '/xl/workbook.xml', new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')));
   const back = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'palette.xlsx');
   const style = back.styleAt(back.activeSheetId, 0, 0);
   expect(style.code).toBe('[Color56]0');

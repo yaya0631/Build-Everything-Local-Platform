@@ -183,7 +183,7 @@ describe('surveyFromFile', async () => {
 
   it('reads an exported file and gives it a fresh id', () => {
     const s = exported();
-    const r = surveyFromFile({ format: 'puter-survey', version: 1, survey: s });
+    const r = surveyFromFile({ format: 'everything-survey', version: 1, survey: s });
     expect(r.survey.title).toBe('Exported');
     expect(r.survey.id).not.toBe(s.id);
     expect(r.survey.pages[0].questions[0].title).toBe('Name?');

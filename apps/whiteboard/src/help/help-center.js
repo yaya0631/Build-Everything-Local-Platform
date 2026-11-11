@@ -40,8 +40,8 @@ export const GUIDES = [
       "Se joindre à un tableau et collaborer en direct",
     ],
     body: [
-      "Open the invitation link and sign in with Puter. You see other people's cursors, selections, and edits as they happen. Your role decides what you can do: editors change content, commenters add comments, reactions, and votes, and viewers follow along, send live reactions, and raise their hand.",
-      "Ouvrez le lien d’invitation et connectez-vous avec Puter. Vous voyez les curseurs, les sélections et les modifications des autres en direct. Votre rôle détermine ce que vous pouvez faire : les éditeurs modifient le contenu, les commentateurs ajoutent des commentaires, des réactions et des votes, et les lecteurs suivent, envoient des réactions en direct et lèvent la main.",
+      "Open the invitation link and sign in with Everything. You see other people's cursors, selections, and edits as they happen. Your role decides what you can do: editors change content, commenters add comments, reactions, and votes, and viewers follow along, send live reactions, and raise their hand.",
+      "Ouvrez le lien d’invitation et connectez-vous avec Everything. Vous voyez les curseurs, les sélections et les modifications des autres en direct. Votre rôle détermine ce que vous pouvez faire : les éditeurs modifient le contenu, les commentateurs ajoutent des commentaires, des réactions et des votes, et les lecteurs suivent, envoient des réactions en direct et lèvent la main.",
     ],
   },
   {
@@ -168,8 +168,8 @@ export const GUIDES = [
     role: "admin",
     title: ["Set up your organization", "Configurer votre organisation"],
     body: [
-      "Choose Set up an organization in the library. Your Puter account becomes the account owner. In Organization settings, add your email domains and turn on domain capture so colleagues who verify a work email join automatically, or send invitation links.",
-      "Choisissez Créer une organisation dans la bibliothèque. Votre compte Puter devient le compte titulaire. Dans les paramètres de l’organisation, ajoutez vos domaines de courriel et activez la capture de domaine pour que les collègues qui vérifient un courriel professionnel se joignent automatiquement, ou envoyez des liens d’invitation.",
+      "Choose Set up an organization in the library. Your Everything account becomes the account owner. In Organization settings, add your email domains and turn on domain capture so colleagues who verify a work email join automatically, or send invitation links.",
+      "Choisissez Créer une organisation dans la bibliothèque. Votre compte Everything devient le compte titulaire. Dans les paramètres de l’organisation, ajoutez vos domaines de courriel et activez la capture de domaine pour que les collègues qui vérifient un courriel professionnel se joignent automatiquement, ou envoyez des liens d’invitation.",
     ],
   },
   {

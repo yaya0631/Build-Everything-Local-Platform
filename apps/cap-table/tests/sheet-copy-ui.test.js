@@ -5,7 +5,7 @@ import { openCancelForm, openExerciseForm, openSettleForm } from '../src/ui/gran
 import { openSecurityForm } from '../src/ui/securityform.js';
 import { openTransferForm } from '../src/ui/transfer.js';
 import { store } from '../src/lib/store.js';
-import { puterBackend } from './helpers/puter-kv.js';
+import { everythingBackend } from './helpers/everything-kv.js';
 
 let dom;
 let holder;
@@ -15,7 +15,7 @@ beforeEach(async () => {
   for (const name of ['window', 'document', 'location', 'Node', 'Element', 'HTMLElement', 'HTMLInputElement', 'requestAnimationFrame']) {
     vi.stubGlobal(name, dom.window[name]);
   }
-  puterBackend().install();
+  everythingBackend().install();
   await store.init();
   cls = await store.addClass({ name: 'Common', kind: 'common' });
   holder = await store.addStakeholder({ name: 'Nova', kind: 'employee' });

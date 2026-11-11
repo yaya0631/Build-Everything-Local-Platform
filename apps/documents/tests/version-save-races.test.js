@@ -9,7 +9,7 @@ it.each(['rename', 'remove'])('serializes manual version creation with %s', asyn
   const files = new Map([['Documents/A.docx', new Blob(['original'])]]);
   const missing = () => Object.assign(new Error('Not found'), { code: 'ENOENT' });
   versioning.enabled = true;
-  vi.stubGlobal('puter', { fs: {
+  vi.stubGlobal('everything', { fs: {
     mkdir: async () => {},
     stat: async (path) => { if (!files.has(path)) throw missing(); return { path }; },
     readdir: async (dir) => [...files].filter(([path]) => path.startsWith(`${dir}/`))

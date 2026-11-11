@@ -4,7 +4,7 @@
  *
  * Templates and versions live in the app's private storage on this device
  * (the files module's cache backend: the origin private file system, or
- * memory where that is unavailable). Puter storage has no file versions, so
+ * memory where that is unavailable). Everything storage has no file versions, so
  * every save keeps a local version of the document instead (the most recent
  * VERSION_LIMIT per file), which Version History lists, previews and
  * restores.
@@ -102,7 +102,7 @@ async function saveAsTemplate(app) {
 /** The storage key for an editor's file: its path, file name or document name. */
 export function versionKey(editor) {
   const f = editor.file;
-  return hashKey(f?.path ? `puter:${f.path}` : f?.handleId ? `local:${f.handleId}` : `name:${f?.name || editor.doc.root.name}`);
+  return hashKey(f?.path ? `everything:${f.path}` : f?.handleId ? `local:${f.handleId}` : `name:${f?.name || editor.doc.root.name}`);
 }
 
 export class VersionStore {
@@ -401,7 +401,7 @@ async function packageDocument(app) {
   const { entries, base } = await packageEntries(app, ed, { includeFonts: v.fonts, copyLinks: v.links, linksFolder: v.linksFolder, report: v.report, folder: v.folder });
   const [{ createZip }, { deliverFiles }] = await Promise.all([import('../io/zip.js'), import('../io/deliver.js')]);
   const blob = await createZip(entries);
-  const msg = await deliverFiles(app, [{ name: `${base}.zip`, blob }], { dest: app.user && app.puter?.ui ? 'puter' : 'device' });
+  const msg = await deliverFiles(app, [{ name: `${base}.zip`, blob }], { dest: app.user && app.everything?.ui ? 'everything' : 'device' });
   if (msg) app.notify(msg, { polite: true });
   return blob;
 }

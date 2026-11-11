@@ -8,7 +8,7 @@ import { vestingSteps, awardFairValue, isoExercises } from '../src/lib/reports.j
 
 function fresh() {
   const values = new Map();
-  globalThis.puter = { kv: {
+  globalThis.everything = { kv: {
     get: async (key) => values.get(key) ?? null,
     set: async (key, value) => { values.set(key, value); return true; },
   }, auth: { getUser: async () => ({ uuid: 'test', username: 'test' }) } };

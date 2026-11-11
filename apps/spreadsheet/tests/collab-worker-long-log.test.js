@@ -8,7 +8,7 @@ it('serves a browser that is up to date from a worker instance just started, how
   const env = environment();
   const wb = new Workbook({ sheets: [{ name: 'Plan' }] });
   const s = wb.sheets[0].id;
-  const room = await RoomClient.create({ puter: env.sdk(owner), server: SERVER, wb, name: 'Plan' });
+  const room = await RoomClient.create({ everything: env.sdk(owner), server: SERVER, wb, name: 'Plan' });
   for (let rev = 1; rev <= 1200; rev++) {
     const res = await env.service.call(owner, { op: 'commit', room, base: rev - 1, changes: [{ id: `change${String(rev).padStart(8, '0')}`, label: 'Edit', ops: [{ t: 'cells', s, v: { '0,0': { v: rev, f: null } } }] }], session: 'here' });
     expect(res.accepted).toBe(true);

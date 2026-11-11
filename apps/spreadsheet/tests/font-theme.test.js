@@ -43,7 +43,7 @@ it('preserves theme fonts through JSON, single-sheet export and metadata-free XL
   const native = new TextDecoder().decode(X.CFB.find(zip, '/xl/theme/theme1.xml').content);
   expect(readFontTheme(native)).toEqual(theme);
   const part = X.CFB.find(zip, '/xl/workbook.xml');
-  X.CFB.utils.cfb_add(zip, '/xl/workbook.xml', new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')));
+  X.CFB.utils.cfb_add(zip, '/xl/workbook.xml', new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')));
   const back = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'native.xlsx');
   expect(back.fontTheme).toEqual(theme);
   expect(back.getValue(back.activeSheetId, 0, 0)).toBe('Theme fonts');

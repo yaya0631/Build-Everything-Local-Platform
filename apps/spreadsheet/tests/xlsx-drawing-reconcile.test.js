@@ -79,7 +79,7 @@ it('reconciles recursive native changes without erasing unprojected model proper
 it('reads legacy drawing movement from unambiguous names without relying on numeric IDs', async () => {
   const wb = await workbookFromFile(shapeXlsx(), 'source.xlsx'), file = await exported(wb);
   const raw = X.read(X.CFB.write(file.zip, { type: 'array', fileType: 'zip' }), { type: 'array' });
-  const meta = JSON.parse(Object.entries(raw.Sheets._puter_meta).filter(([k]) => /^A\d+$/.test(k)).map(([, c]) => c.v).join(''));
+  const meta = JSON.parse(Object.entries(raw.Sheets._everything_meta).filter(([k]) => /^A\d+$/.test(k)).map(([, c]) => c.v).join(''));
   delete meta.sheets[wb.activeSheet.name].nativeDrawings;
   const part = '/xl/worksheets/sheet2.xml';
   const escaped = JSON.stringify(meta).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -115,8 +115,8 @@ it('preserves long Unicode metadata and validation helper lists on the same hidd
   for (let r = 0; r < 20; r++) expect(back.getNote(back.activeSheetId, r, 0)).toBe(wb.getNote(id, r, 0));
   expect(back.activeSheet.validations).toEqual(wb.activeSheet.validations);
   const raw = X.read(X.CFB.write(file.zip, { type: 'array', fileType: 'zip' }), { type: 'array' });
-  expect(Object.keys(raw.Sheets._puter_meta).filter(k => /^A\d+$/.test(k)).length).toBeGreaterThan(1);
-  const helpers = Object.entries(raw.Sheets._puter_meta).filter(([k]) => /^[B-Z]+\d+$/.test(k)).map(([, c]) => c.v);
+  expect(Object.keys(raw.Sheets._everything_meta).filter(k => /^A\d+$/.test(k)).length).toBeGreaterThan(1);
+  const helpers = Object.entries(raw.Sheets._everything_meta).filter(([k]) => /^[B-Z]+\d+$/.test(k)).map(([, c]) => c.v);
   expect(helpers).toContain('One, two'); expect(helpers).toContain('Three, four');
 });
 

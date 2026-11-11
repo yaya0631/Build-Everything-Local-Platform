@@ -405,7 +405,7 @@ describe('reverse', () => {
     const [a] = onMain(p, clip('video', 0, 4));
     const store = new EditorStore(p);
     const err = vi.spyOn(console, 'error').mockImplementation(() => {});
-    const library = { mediaBlob: async () => new Blob(['v']), importFile: async () => { throw new Error('Your Puter storage is full.'); } };
+    const library = { mediaBlob: async () => new Blob(['v']), importFile: async () => { throw new Error('Your Everything storage is full.'); } };
     const ctx = { store, player: null, library };
     ctx.actions = createActions(ctx);
     await ctx.actions.reverseClip(a.id);

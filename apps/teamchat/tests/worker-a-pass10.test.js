@@ -40,7 +40,7 @@ async function shared() {
   return { acme, globex, design, local, conn: acc.data.conn };
 }
 
-describe('an account renamed on Puter', () => {
+describe('an account renamed on Everything', () => {
   it('carries its new handle on every card of theirs, and is mentioned by it', async () => {
     const { wsId, general } = await workspaceWith(alice, [bob]);
     const other = await workspaceWith(alice, [bob], 'Other');

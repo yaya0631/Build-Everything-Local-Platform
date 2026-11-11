@@ -50,11 +50,11 @@ const outline = {
 // `answers` are what the AI streams back, one list of parts per request:
 // { text } or { tool: name, input }.
 async function start(page, answers = [], hash = "#/home") {
-  await page.route("**/sdk/puter.js", (r) =>
+  await page.route("**/sdk/everything.js", (r) =>
     r.fulfill({
       contentType: "application/javascript",
       body: `window.__answers=${JSON.stringify(answers)};window.__requests=[];
-window.puter={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}},
+window.everything={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}},
 ai:{chat:async(messages,options)=>{window.__requests.push({messages,options});const parts=window.__answers.shift()||[{text:"Done."}];
 return (async function*(){for(const p of parts){await new Promise(r=>setTimeout(r,5));
 if(p.tool) yield {type:"tool_use",id:"call_"+Math.random().toString(36).slice(2),name:p.tool,input:p.input};

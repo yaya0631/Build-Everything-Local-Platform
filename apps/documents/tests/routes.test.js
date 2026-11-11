@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { beforeAll, describe, it, expect, vi } from 'vitest';
 
-vi.mock('../src/lib/puter.js', async (original) => ({ ...await original(), hasSDK: () => false }));
+vi.mock('../src/lib/everything.js', async (original) => ({ ...await original(), hasSDK: () => false }));
 let parseHash;
 beforeAll(async () => {
   document.body.innerHTML = '<div id="app"></div>';

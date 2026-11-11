@@ -3,7 +3,7 @@ import signSource from '../src/workers/sign-worker.js?raw';
 import emailSource from '../src/workers/email-worker.js?raw';
 import { SIGN_WORKER_VERSION } from '../src/lib/signlinks.js';
 import { instantiateWorker, makeKv, sha256Hex } from './helpers/worker-harness.js';
-import { makeFs } from './helpers/fake-puter.js';
+import { makeFs } from './helpers/fake-everything.js';
 import { createEmailer } from '../src/lib/emailer.js';
 
 const SECRET = 'test-admin-secret';
@@ -20,9 +20,9 @@ async function buildSignWorker({ email = null } = {}) {
   const fs = makeFs();
   await fs.write('signatures-data/d1/original.pdf', new Uint8Array([1, 2, 3]));
   const sent = [];
-  const puter = { kv: makeKv(), fs };
+  const everything = { kv: makeKv(), fs };
   if (email !== false) {
-    puter.email = {
+    everything.email = {
       send: vi.fn(async (message) => {
         if (email === 'refuse') throw new Error('unauthorized token for own account');
         sent.push(message);
@@ -30,7 +30,7 @@ async function buildSignWorker({ email = null } = {}) {
       }),
     };
   }
-  return { worker: instantiateWorker(source, { me: { puter } }), sent };
+  return { worker: instantiateWorker(source, { me: { everything } }), sent };
 }
 
 function snapshot(notify) {
@@ -167,7 +167,7 @@ describe('the app finishes what the worker could not', () => {
   function emailerWith({ kinds = ['request', 'reminder', 'completed', 'owner'], exec } = {}) {
     return createEmailer({
       store: { settings: {}, user: { username: 'alex', email: 'owner@example.com' }, patchDoc: async () => {}, getDoc: () => doc, addAudit: () => {}, persistDoc: async () => {} },
-      getPuter: () => ({ workers: { exec } }),
+      getEverything: () => ({ workers: { exec } }),
       fetchFn: async () => ({ ok: true, json: async () => ({ ok: true, version: '2', kinds }) }),
     });
   }
@@ -206,13 +206,13 @@ describe('email worker owner updates', () => {
     sent.length = 0;
     const email = { send: async (m) => (sent.push(m), {}) };
     worker = instantiateWorker(emailSource, {
-      me: { puter: { kv: makeKv(), email, authToken: 'owner-token' } },
+      me: { everything: { kv: makeKv(), email, authToken: 'owner-token' } },
     });
   });
 
   const caller = {
     uuid: 'u-1',
-    puter: { authToken: 'caller-token', auth: { getUser: async () => ({ uuid: 'u-1', email: 'owner@example.com' }) } },
+    everything: { authToken: 'caller-token', auth: { getUser: async () => ({ uuid: 'u-1', email: 'owner@example.com' }) } },
   };
 
   const body = (over = {}) => ({

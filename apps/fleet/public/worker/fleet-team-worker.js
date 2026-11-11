@@ -1,10 +1,10 @@
 // fleet-team-worker build=3
 /**
  * Team access for Fleet: one worker per fleet, running in the fleet owner's
- * own Puter account (the app deploys it there with puter.workers.create).
+ * own Everything account (the app deploys it there with everything.workers.create).
  * Its KV is the fleet's shared database, so the owner pays for and owns the
- * data; team members reach it through puter.workers.exec(), which forwards
- * their own Puter session.
+ * data; team members reach it through everything.workers.exec(), which forwards
+ * their own Everything session.
  *
  * The key layout is the same one the app uses in a single-user account
  * (fl1:r:<bucket>:<id>, fl1:meta, fl1:seq, fl1:settings), so the app's
@@ -21,7 +21,7 @@
  *   POST /api           { op, ... }  see OPS below
  *
  * Every request is checked here, never in the browser: the caller is
- * identified from their own session (user.puter), never from the body, and
+ * identified from their own session (user.everything), never from the body, and
  * must be the owner or a member. Managing the team and fleet settings
  * needs the owner or an admin.
  */
@@ -105,7 +105,7 @@ function ownerOf(ctx) {
 }
 
 function kvOf(ctx) {
-  return ownerOf(ctx).puter.kv;
+  return ownerOf(ctx).everything.kv;
 }
 
 async function identify(p) {
@@ -121,7 +121,7 @@ async function identify(p) {
 
 async function ownerIdentity(ctx) {
   if (ownerCache) return ownerCache;
-  ownerCache = await identify(ownerOf(ctx).puter);
+  ownerCache = await identify(ownerOf(ctx).everything);
   return ownerCache;
 }
 
@@ -159,7 +159,7 @@ async function listAll(kv, pattern) {
 /** Who is calling and what they may do: { uuid, username, role } or null. */
 async function caller(ctx) {
   const user = (ctx && (ctx.user || ctx.requestor)) || null;
-  const who = await identify(user && user.puter);
+  const who = await identify(user && user.everything);
   if (!who) return null;
   const owner = await ownerIdentity(ctx);
   if (owner && owner.uuid === who.uuid) return { ...who, role: 'owner' };
@@ -273,7 +273,7 @@ const OPS = {
     // Drivers can add files but never replace an existing one.
     const overwrite = c.role !== 'driver';
     try {
-      await ownerOf(ctx).puter.fs.write(`fleet-team/${path}`, new Blob([bytes], { type }), { overwrite, dedupeName: false, createMissingParents: true });
+      await ownerOf(ctx).everything.fs.write(`fleet-team/${path}`, new Blob([bytes], { type }), { overwrite, dedupeName: false, createMissingParents: true });
     } catch (err) {
       if (!overwrite) throw bad('forbidden', 403);
       throw err;
@@ -284,7 +284,7 @@ const OPS = {
   async fileRead(ctx, c, body) {
     const path = String(body.path || '');
     if (!safePath(path)) throw bad('bad_path');
-    const blob = await ownerOf(ctx).puter.fs.read(`fleet-team/${path}`);
+    const blob = await ownerOf(ctx).everything.fs.read(`fleet-team/${path}`);
     const bytes = new Uint8Array(await blob.arrayBuffer());
     let bin = '';
     for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
@@ -296,7 +296,7 @@ const OPS = {
     const path = String(body.path || '');
     if (!safePath(path)) throw bad('bad_path');
     try {
-      await ownerOf(ctx).puter.fs.delete(`fleet-team/${path}`);
+      await ownerOf(ctx).everything.fs.delete(`fleet-team/${path}`);
     } catch {
       /* already gone */
     }
@@ -426,7 +426,7 @@ router.post('/api', async (ctx) => {
   }
   const op = body && typeof body.op === 'string' ? body.op : '';
   const c = await caller(ctx);
-  if (!c) return fail(401, 'sign_in_required', 'Sign in to Puter to continue.');
+  if (!c) return fail(401, 'sign_in_required', 'Sign in to Everything to continue.');
   if (op === 'join') return join(ctx, c, body);
   if (!c.role) return fail(403, 'not_a_member', 'You are not a member of this fleet.');
   const fn = Object.prototype.hasOwnProperty.call(OPS, op) ? OPS[op] : null;

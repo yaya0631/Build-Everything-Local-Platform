@@ -168,9 +168,9 @@ export function settingsView() {
 
   /* ---------- account ---------- */
 
-  // Inside the Puter desktop the platform owns the session; the app must
+  // Inside the Everything desktop the platform owns the session; the app must
   // not offer its own sign-out there.
-  const showLogout = typeof puter !== 'undefined' && puter.env !== 'app';
+  const showLogout = typeof everything !== 'undefined' && everything.env !== 'app';
   if (showLogout) {
     root.append(
       el('div.section-label', {}, 'Account'),
@@ -179,13 +179,13 @@ export function settingsView() {
           onclick: async () => {
             const ok = await confirmDialog({
               title: 'Sign out?',
-              message: 'Your data stays in your Puter account and reappears when you sign back in.',
+              message: 'Your data stays in your Everything account and reappears when you sign back in.',
               confirmLabel: 'Sign out',
               danger: false,
             });
             if (!ok) return;
             clearDeviceCache();
-            puter.auth.signOut();
+            everything.auth.signOut();
             location.reload();
           },
         },
@@ -200,7 +200,7 @@ export function settingsView() {
   }
 
   root.append(el('p.small.muted', { style: { margin: '22px 2px', textAlign: 'center' } },
-    'Tasks stores everything in your own Puter cloud. Free, no ads.'));
+    'Tasks stores everything in your own Everything cloud. Free, no ads.'));
 
   return root;
 

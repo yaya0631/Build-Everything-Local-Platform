@@ -18,7 +18,7 @@ import { fixture, clip, onMain, s } from './helpers.js';
 let seq = 0;
 /** A library stand-in: imports describe the file as a generated video, picture or sound. */
 const fakeLibrary = () => ({
-  backend: { kind: 'puter' },
+  backend: { kind: 'everything' },
   imported: [],
   async importFile(file, { origin } = {}) {
     const kind = file.type.startsWith('video/') ? 'video' : file.type.startsWith('image/') ? 'image' : 'audio';
@@ -113,7 +113,7 @@ describe('AI video generation', () => {
     expect(modelSummary('flux3')).toMatch(/words only, clips from a picture are made with Seedance 2.5/);
   });
 
-  it('asks for the chosen picture model, or lets Puter choose', () => {
+  it('asks for the chosen picture model, or lets Everything choose', () => {
     expect(txt2imgOptions('16:9')).toEqual({ ratio: { w: 16, h: 9 } });
     expect(txt2imgOptions('1:1', { model: 'gpt-image-2.5' })).toEqual({ ratio: { w: 1, h: 1 }, model: 'gpt-image-2.5-sunburst', quality: 'medium' });
     expect(txt2imgOptions('1:1', { model: 'nano-banana-2.1' }).model).toBe('gemini-nano-banana-2.1');
@@ -127,10 +127,10 @@ describe('AI video generation', () => {
     const out = await generateVideo({ prompt: 'waves', firstFrame: new Blob(['x'], { type: 'image/png' }) }, { txt2vid, fs, fetchFn });
     expect(out.blob.size).toBe(3);
     const opts = txt2vid.mock.calls[0][0];
-    expect(opts.puter_output_path).toMatch(/^video-studio\/\.ai-temp\/.+\.mp4$/);
+    expect(opts.everything_output_path).toMatch(/^video-studio\/\.ai-temp\/.+\.mp4$/);
     expect(opts.input_reference).toMatch(/^data:image\/png;base64,/);
-    expect(fs.read).toHaveBeenCalledWith(opts.puter_output_path);
-    expect(fs.delete).toHaveBeenCalledWith(opts.puter_output_path);
+    expect(fs.read).toHaveBeenCalledWith(opts.everything_output_path);
+    expect(fs.delete).toHaveBeenCalledWith(opts.everything_output_path);
     expect(fetchFn).not.toHaveBeenCalled();
   });
 
@@ -141,7 +141,7 @@ describe('AI video generation', () => {
     const fetchFn = vi.fn(async () => ({ ok: true, blob: async () => new Blob(['mp4data'], { type: '' }) }));
     const out = await generateVideo({ prompt: 'waves' }, { txt2vid, fs: { read: vi.fn() }, fetchFn });
     expect(txt2vid).toHaveBeenCalledTimes(2);
-    expect(txt2vid.mock.calls[1][0].puter_output_path).toBeUndefined();
+    expect(txt2vid.mock.calls[1][0].everything_output_path).toBeUndefined();
     expect(out.blob.type).toBe('video/mp4');
   });
 
@@ -170,9 +170,9 @@ describe('AI sidebar tools', () => {
     expect(describeCall('set_speed', { clips: ['selected'], speed: 2 }).label).toBe('Set the selected clips to 2x speed');
     const v = describeCall('generate_video', { prompt: 'a fox in the snow', seconds: 6, first_frame: 'gen1' }, { videoModel: 'wan' });
     expect(v.label).toBe('Generate a video from a picture (6.0s)');
-    expect(v.detail).toBe('"a fox in the snow" Made with Wan 2.7, 6s long. About 12¢ in Puter credits.');
+    expect(v.detail).toBe('"a fox in the snow" Made with Wan 2.7, 6s long. About 12¢ in Everything credits.');
     const fallback = describeCall('animate_image', { clip: 'c1', prompt: 'sway' }, { videoModel: 'flux3' });
-    expect(fallback.detail).toBe('"sway" Made with Seedance 2.5 (the chosen model can\'t start from a picture), 5s long. About $1.16 in Puter credits.');
+    expect(fallback.detail).toBe('"sway" Made with Seedance 2.5 (the chosen model can\'t start from a picture), 5s long. About $1.16 in Everything credits.');
     expect(describeCall('generate_video', { prompt: 'x' }, { videoModel: 'minimaxh3' }).detail).toMatch(/at the length the model picks. About 70¢/);
     expect(v.costly).toBe(true);
   });
@@ -182,7 +182,7 @@ describe('AI sidebar tools', () => {
     const { runner, services } = runnerFor(ctx);
     const args = { clip: main().clips[0].id, prompt: 'sway' };
     const card = describeCall('animate_image', args, { videoModel: 'seedance25', seconds: runner.videoSeconds('animate_image', args) });
-    expect(card.detail).toBe('"sway" Made with Seedance 2.5, 12s long. About $2.78 in Puter credits.');
+    expect(card.detail).toBe('"sway" Made with Seedance 2.5, 12s long. About $2.78 in Everything credits.');
     await runner.run('animate_image', args);
     expect(services.generateVideo.mock.calls[0][0].seconds).toBe(12);
     expect(runner.videoSeconds('animate_image', { ...args, seconds: 6 })).toBe(6);
@@ -625,7 +625,7 @@ describe('AI sidebar panel', () => {
     panel.open();
     panel.send('add a fox shot');
     await vi.waitFor(() => expect(panel.el.querySelector('.ai-approve')).toBeTruthy());
-    expect(panel.el.querySelector('.ai-approve-detail').textContent).toBe('"A red fox in the snow" Made with Seedance 2.5, 5s long. About $1.16 in Puter credits.');
+    expect(panel.el.querySelector('.ai-approve-detail').textContent).toBe('"A red fox in the snow" Made with Seedance 2.5, 5s long. About $1.16 in Everything credits.');
     expect(services.generateVideo).not.toHaveBeenCalled();
     panel.el.querySelector('.ai-approve .btn.primary').click();
     await vi.waitFor(() => expect(panel.el.querySelector('.ai-undo')).toBeTruthy());
@@ -690,7 +690,7 @@ describe('AI sidebar panel', () => {
     expect(panel.el.querySelector('.ai-error')).toBe(null);
   });
 
-  it('shows the sign-in prompt where Puter AI is not available', () => {
+  it('shows the sign-in prompt where Everything AI is not available', () => {
     const { store, ctx } = setup();
     ctx.account = { onSignIn: vi.fn() };
     ctx.library.backend.kind = 'local';

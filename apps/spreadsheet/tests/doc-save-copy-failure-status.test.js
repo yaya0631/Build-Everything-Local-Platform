@@ -1,17 +1,17 @@
 import { afterEach, beforeEach, expect, it } from 'vitest';
 import { Doc } from '../src/lib/doc.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 
-beforeEach(() => { installMockPuter(); });
-afterEach(() => { delete globalThis.puter; });
+beforeEach(() => { installMockEverything(); });
+afterEach(() => { delete globalThis.everything; });
 
 // A failed "Save a copy" used to leave the original document in the error
 // state ("Not saved", a prompt before leaving) although nothing about it had
 // changed: the copy is another file.
 it('leaves a clean document saved when saving a copy fails', async () => {
   const doc = new Doc({ name: 'Budget', path: 'Spreadsheets/Budget.xlsx' });
-  puter.fs.write = async () => { throw new Error('Network request failed'); };
-  expect(await doc.saveAs('Copy')).toBe('Could not save a copy: Puter could not be reached. Check your connection, then try again');
+  everything.fs.write = async () => { throw new Error('Network request failed'); };
+  expect(await doc.saveAs('Copy')).toBe('Could not save a copy: Everything could not be reached. Check your connection, then try again');
   expect(doc.status).toBe('saved');
   expect(doc.error).toBeNull();
   expect(doc.path).toBe('Spreadsheets/Budget.xlsx');
@@ -21,8 +21,8 @@ it('leaves a clean document saved when saving a copy fails', async () => {
 it('keeps an edited document unsaved, not in error, when saving a copy fails', async () => {
   const doc = new Doc({ name: 'Budget', path: 'Spreadsheets/Budget.xlsx' });
   doc.wb.setInput(doc.wb.activeSheetId, 0, 0, 'edit');
-  puter.fs.write = async () => { throw new Error('Network request failed'); };
-  expect(await doc.saveAs('Copy')).toBe('Could not save a copy: Puter could not be reached. Check your connection, then try again');
+  everything.fs.write = async () => { throw new Error('Network request failed'); };
+  expect(await doc.saveAs('Copy')).toBe('Could not save a copy: Everything could not be reached. Check your connection, then try again');
   expect(doc.status).toBe('unsaved');
   expect(doc.wb.dirty).toBe(true);
   doc.destroy();

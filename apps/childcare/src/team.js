@@ -1,10 +1,10 @@
 /**
  * Staff and family access. A director turns it on once: the app copies the
- * school worker (public/worker/childcare-team-worker.js) into their Puter
- * drive and deploys it with puter.workers.create, so the worker runs in, and
+ * school worker (public/worker/childcare-team-worker.js) into their Everything
+ * drive and deploys it with everything.workers.create, so the worker runs in, and
  * stores data in, the director's own account. Their records and photos are
  * copied into it, and from then on everyone at the school (director
- * included) reads and writes through it with puter.workers.exec, which
+ * included) reads and writes through it with everything.workers.exec, which
  * forwards each person's own session for the worker to check.
  *
  * Which school a signed-in person is working in is stored in their own KV:
@@ -45,9 +45,9 @@ export function normalizeWorkerUrl(url) {
 }
 
 /** One API call to a team worker. Throws TeamError with a readable message. */
-export async function call(url, op, payload = {}, { timeoutMs = 30000, getPuter = () => globalThis.puter } = {}) {
-  const p = getPuter();
-  if (!p?.workers?.exec) throw new TeamError(0, 'no_sdk', 'Staff and family access needs Puter. Reload and try again.');
+export async function call(url, op, payload = {}, { timeoutMs = 30000, getEverything = () => globalThis.everything } = {}) {
+  const p = getEverything();
+  if (!p?.workers?.exec) throw new TeamError(0, 'no_sdk', 'Staff and family access needs Everything. Reload and try again.');
   const ctl = typeof AbortController === 'function' ? new AbortController() : null;
   const timer = setTimeout(() => ctl?.abort(), timeoutMs);
   let res;
@@ -116,26 +116,26 @@ export function createWorkerBackend(url, opts = {}) {
 }
 
 /** Upload one file to a school worker (multipart, no base64). */
-export async function uploadFile(url, path, blob, { getPuter = () => globalThis.puter, timeoutMs = 120000 } = {}) {
+export async function uploadFile(url, path, blob, { getEverything = () => globalThis.everything, timeoutMs = 120000 } = {}) {
   const form = new FormData();
   form.append('path', path);
   form.append('file', blob, path.split('/').pop());
-  return rawRequest(url, '/files', { method: 'POST', body: form }, { getPuter, timeoutMs });
+  return rawRequest(url, '/files', { method: 'POST', body: form }, { getEverything, timeoutMs });
 }
 
 /** Download one file from a school worker. `ref`/`id` name the record that shows it (needed for families). */
-export async function downloadFile(url, path, { ref, id, type, getPuter = () => globalThis.puter, timeoutMs = 120000 } = {}) {
+export async function downloadFile(url, path, { ref, id, type, getEverything = () => globalThis.everything, timeoutMs = 120000 } = {}) {
   const q = new URLSearchParams({ path });
   if (ref) q.set('ref', ref);
   if (id) q.set('id', id);
   if (type) q.set('type', type);
-  const res = await rawRequest(url, `/files?${q}`, { method: 'GET' }, { getPuter, timeoutMs, raw: true });
+  const res = await rawRequest(url, `/files?${q}`, { method: 'GET' }, { getEverything, timeoutMs, raw: true });
   return res.blob();
 }
 
-async function rawRequest(url, path, init, { getPuter, timeoutMs, raw = false }) {
-  const p = getPuter();
-  if (!p?.workers?.exec) throw new TeamError(0, 'no_sdk', 'Staff and family access needs Puter. Reload and try again.');
+async function rawRequest(url, path, init, { getEverything, timeoutMs, raw = false }) {
+  const p = getEverything();
+  if (!p?.workers?.exec) throw new TeamError(0, 'no_sdk', 'Staff and family access needs Everything. Reload and try again.');
   const ctl = typeof AbortController === 'function' ? new AbortController() : null;
   const timer = setTimeout(() => ctl?.abort(), timeoutMs);
   let res;
@@ -233,7 +233,7 @@ async function ownFiles() {
   for (const dir of ['media', 'students', 'messages', 'staff', 'school']) {
     let items = [];
     try {
-      items = await puter.fs.readdir({ path: dir, recursive: true, depth: 4 });
+      items = await everything.fs.readdir({ path: dir, recursive: true, depth: 4 });
     } catch {
       continue; // folder not created yet
     }
@@ -262,7 +262,7 @@ export async function enableTeam({ store, onProgress = () => {} }) {
   await flushAll(store);
   const { source, build } = await fetchBundle();
   const blob = new Blob([source], { type: 'application/javascript' });
-  const item = await puter.fs.write(WORKER_FILE, blob, { overwrite: true, dedupeName: false, createMissingParents: true });
+  const item = await everything.fs.write(WORKER_FILE, blob, { overwrite: true, dedupeName: false, createMissingParents: true });
   const path = item?.path || WORKER_FILE;
   let dep = null;
   let name = null;
@@ -271,7 +271,7 @@ export async function enableTeam({ store, onProgress = () => {} }) {
     name = randomName();
     onProgress(attempt ? 'Trying another server name' : 'Starting your school server');
     try {
-      dep = await puter.workers.create(name, path);
+      dep = await everything.workers.create(name, path);
       if (dep && dep.success === false) {
         lastErr = new Error((dep.errors || []).join(', ') || 'The worker could not be created.');
         dep = null;
@@ -280,7 +280,7 @@ export async function enableTeam({ store, onProgress = () => {} }) {
       lastErr = err;
     }
   }
-  if (!dep) throw new Error(`Could not create the school server in your Puter account. ${lastErr?.message || ''}`.trim());
+  if (!dep) throw new Error(`Could not create the school server in your Everything account. ${lastErr?.message || ''}`.trim());
   const url = normalizeWorkerUrl(dep.url || `http://${name}.localhost:8443`);
   onProgress('Waiting for the server to come online');
   await waitForHealth(url, build);
@@ -288,7 +288,7 @@ export async function enableTeam({ store, onProgress = () => {} }) {
   onProgress('Copying your school records');
   const backend = createWorkerBackend(url);
   await flushAll(store);
-  const byName = await ownRecords(puter.kv);
+  const byName = await ownRecords(everything.kv);
   let done = 0;
   for (const [n, recs] of byName) {
     await backend.putRecords(n, recs);
@@ -304,7 +304,7 @@ export async function enableTeam({ store, onProgress = () => {} }) {
   await pool(files, 3, async (f) => {
     onProgress(`Copying photos and files (${++copied} of ${files.length})`);
     try {
-      await uploadFile(url, f.path, await puter.fs.read(f.path));
+      await uploadFile(url, f.path, await everything.fs.read(f.path));
     } catch (err) {
       console.warn('[childcare] could not copy file', f.path, err);
       skipped.push(f.path.split('/').pop());
@@ -323,7 +323,7 @@ export async function updateWorkerIfNeeded(own) {
     // Only ever move forward: a device still running an older copy of the
     // app (or a cached bundle) must not roll back a newer worker.
     if (Number(health?.build) >= Number(build)) return false;
-    await puter.fs.write(own.path, new Blob([source], { type: 'application/javascript' }), { overwrite: true, dedupeName: false });
+    await everything.fs.write(own.path, new Blob([source], { type: 'application/javascript' }), { overwrite: true, dedupeName: false });
     return true;
   } catch {
     return false;
@@ -350,7 +350,7 @@ export function parseJoin(query) {
 /** Switch between the person's own school and ones they joined. */
 export async function switchWorkspace(current) {
   const next = { ...app.workspaces, current };
-  await saveWorkspaces(globalThis.puter.kv, next);
+  await saveWorkspaces(globalThis.everything.kv, next);
   location.hash = '#/';
   location.reload();
 }
@@ -361,7 +361,7 @@ export async function leaveWorkspace(url) {
   // Do not keep a copy of a school you no longer belong to.
   if (app.user) await createIdbCache(`user:${app.user.uuid}:team:${url}`).clear().catch(() => {});
   const next = { ...ws, joined: ws.joined.filter((j) => j.url !== url), current: ws.current === url ? 'own' : ws.current };
-  await saveWorkspaces(globalThis.puter.kv, next);
+  await saveWorkspaces(globalThis.everything.kv, next);
   location.hash = '#/';
   location.reload();
 }

@@ -10,7 +10,7 @@ import { runProcessor, type Input } from '../files/automate';
 import { formatInfo } from '../files/encode';
 import { bytesBlob, formatBytes } from '../files/pipeline';
 import { zipStore } from '../files/zip';
-import { download } from '../../persistence/puter';
+import { download } from '../../persistence/everything';
 import { decodeBatchLink, encodeBatchLink, linkableCommand, type BatchLink } from './batch-link-core';
 
 const label = (id: string) => commands.get(id)?.label.replace(/…$/, '') ?? id;

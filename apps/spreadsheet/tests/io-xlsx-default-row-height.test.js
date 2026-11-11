@@ -15,7 +15,7 @@ async function output(wb, { native = true, edit = s => s } = {}) {
   const get = p => new TextDecoder().decode(X.CFB.find(zip, p).content);
   const set = (p, s) => X.CFB.utils.cfb_add(zip, p, new TextEncoder().encode(s));
   const xml = edit(get('/xl/worksheets/sheet1.xml')); set('/xl/worksheets/sheet1.xml', xml);
-  if (native) set('/xl/workbook.xml', get('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  if (native) set('/xl/workbook.xml', get('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   return { xml, wb: await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' })) };
 }
 

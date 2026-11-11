@@ -1,8 +1,8 @@
-// Export Layers to Files (zip or Puter folder), animated GIF from layers and
+// Export Layers to Files (zip or Everything folder), animated GIF from layers and
 // layered SVG.
 import type { Editor } from '../../editor';
 import type { Layer } from '../../model/document';
-import { download } from '../../persistence/puter';
+import { download } from '../../persistence/everything';
 import { formatInfo, prepareExport, type ExportFormat, type SourceImage } from './encode';
 import { encodeGifOffThread, encodeOffThread, bytesBlob, documentSource, effectiveSettings, exportContext, formatBytes, layerSource, loadSettings } from './pipeline';
 import { exportSvg } from './svg-export';
@@ -48,7 +48,7 @@ export async function exportLayers(e: Editor) {
       <label class="dialog-field">File name prefix<input name="prefix" type="text" value="${doc.name.replace(/"/g, '&quot;')}_"></label>
       <label class="dialog-field checkbox-field">Visible layers only<input name="visible" type="checkbox" checked></label>
       <label class="dialog-field checkbox-field">Trim transparent pixels<input name="trim" type="checkbox"></label>
-      <label class="dialog-field">Destination<select name="dest"><option value="zip">Download as ZIP archive</option><option value="puter">Save to a Puter folder…</option></select></label>`,
+      <label class="dialog-field">Destination<select name="dest"><option value="zip">Download as ZIP archive</option><option value="everything">Save to an Everything folder…</option></select></label>`,
   });
   if (!result) return;
   const format = fieldValue(result.form, 'format') as ExportFormat;
@@ -76,7 +76,7 @@ export async function exportLayers(e: Editor) {
     entries.push({ name, data: bytes });
   }
   if (!entries.length) throw new Error('All selected layers are empty.');
-  if (dest === 'puter') {
+  if (dest === 'everything') {
     saveToCloudFolder(e, entries.map((x) => ({ name: x.name, blob: bytesBlob(x.data, formatInfo[format].mime) })));
     return;
   }
@@ -132,7 +132,7 @@ export async function exportSvgFile(e: Editor) {
   e.message(`SVG exported (${formatBytes(text.length)})`);
 }
 
-/** Ask for a Puter folder and write the files there (names deduplicated).
+/** Ask for an Everything folder and write the files there (names deduplicated).
  * The picker never settles when dismissed, so the editor is not held busy. */
 export function saveToCloudFolder(e: Editor, files: { name: string; blob: Blob }[]) {
   e.release();

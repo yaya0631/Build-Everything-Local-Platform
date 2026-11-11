@@ -1,11 +1,11 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Doc, AUTOSAVE_MS, RETRY_MS, publishing, versioning } from '../src/lib/doc.js';
-import * as P from '../src/lib/puter.js';
+import * as P from '../src/lib/everything.js';
 import { createBackstage } from '../src/views/backstage.js';
 
 /**
- * Inside the Puter desktop a new document is saved where the user chooses, with Puter's Save dialog, and only
+ * Inside the Everything desktop a new document is saved where the user chooses, with Everything's Save dialog, and only
  * when the user asks; elsewhere it still goes into the app folder on its own.
  */
 
@@ -13,8 +13,8 @@ const docx = (text) => new Blob([text], { type: P.DOCX_MIME });
 const notFound = () => Object.assign(new Error('does not exist'), { code: 'subject_does_not_exist' });
 
 let files, dialogs, clock;
-/** A Puter SDK with a file system in memory and a Save dialog the test answers (dialogs[i].save / .cancel). */
-function installPuter({ env = 'app', picker = true, cancelAware = true } = {}) {
+/** An Everything SDK with a file system in memory and a Save dialog the test answers (dialogs[i].save / .cancel). */
+function installEverything({ env = 'app', picker = true, cancelAware = true } = {}) {
   files = new Map();
   dialogs = [];
   clock = 1000;
@@ -55,8 +55,8 @@ function installPuter({ env = 'app', picker = true, cancelAware = true } = {}) {
       return saved;
     });
   }
-  globalThis.puter = { env, fs, ui };
-  return globalThis.puter;
+  globalThis.everything = { env, fs, ui };
+  return globalThis.everything;
 }
 
 /** Let the promise chains between the editor, the document and the dialog run. */
@@ -69,11 +69,11 @@ beforeEach(() => {
 });
 afterEach(() => {
   vi.useRealTimers();
-  delete globalThis.puter;
+  delete globalThis.everything;
 });
 
-describe('the first save inside the Puter desktop', () => {
-  beforeEach(() => installPuter());
+describe('the first save inside the Everything desktop', () => {
+  beforeEach(() => installEverything());
 
   it('waits for Save: autosaves and retries neither write a file nor open the dialog', async () => {
     const doc = Doc.blank();
@@ -82,8 +82,8 @@ describe('the first save inside the Puter desktop', () => {
     await vi.advanceTimersByTimeAsync(AUTOSAVE_MS + RETRY_MS * 3);
     // The page going to the background, a reconnection or a sign-in ask for an autosave directly.
     expect(await doc.save({ auto: true, now: true })).toBe(false);
-    expect(puter.ui.showSaveFilePicker).not.toHaveBeenCalled();
-    expect(puter.fs.write).not.toHaveBeenCalled();
+    expect(everything.ui.showSaveFilePicker).not.toHaveBeenCalled();
+    expect(everything.fs.write).not.toHaveBeenCalled();
     expect(doc.path).toBeNull();
     expect(doc.status).toBe('unsaved');
     doc.destroy();
@@ -113,12 +113,12 @@ describe('the first save inside the Puter desktop', () => {
     expect(doc.choosingPlace).toBe(false);
     expect(paths).toEqual([{ path: '~/Desktop/Report.docx', name: 'Report', copy: false, savedAs: false }]);
     // The dialog wrote the file; later edits autosave there with an ordinary write and no dialog.
-    expect(puter.fs.write).not.toHaveBeenCalled();
+    expect(everything.fs.write).not.toHaveBeenCalled();
     doc.attach(async () => v2);
     doc.changed();
     await vi.advanceTimersByTimeAsync(AUTOSAVE_MS + 5);
-    expect(puter.fs.write).toHaveBeenCalledOnce();
-    expect(puter.fs.write.mock.calls[0][0]).toBe('~/Desktop/Report.docx');
+    expect(everything.fs.write).toHaveBeenCalledOnce();
+    expect(everything.fs.write.mock.calls[0][0]).toBe('~/Desktop/Report.docx');
     expect(files.get('~/Desktop/Report.docx')).toBe(v2);
     expect(dialogs).toHaveLength(1);
     doc.destroy();
@@ -241,7 +241,7 @@ describe('the first save inside the Puter desktop', () => {
     window.dispatchEvent(new MessageEvent('message', { data: { msg: 'click' }, source: window }));
     await settle();
     expect(settled).toBe(false);
-    // Esc in Puter's dialog: the desktop closes it without a word to the app, and gives the window the focus back.
+    // Esc in Everything's dialog: the desktop closes it without a word to the app, and gives the window the focus back.
     focus();
     expect(await closed).toBe(false);
     expect(doc.choosingPlace).toBe(false);
@@ -333,7 +333,7 @@ describe('the first save inside the Puter desktop', () => {
   it('counts only the time in the dialog as the user\'s, not a stalled connection after it answered', async () => {
     let release;
     // The room memory lives in the cloud: a stalled connection holds the step after the dialog.
-    puter.kv = { del: vi.fn(() => new Promise((resolve) => { release = resolve; })), get: async () => null, set: async () => {} };
+    everything.kv = { del: vi.fn(() => new Promise((resolve) => { release = resolve; })), get: async () => null, set: async () => {} };
     const doc = Doc.blank();
     doc.attach(async () => docx('v1'));
     doc.changed();
@@ -341,7 +341,7 @@ describe('the first save inside the Puter desktop', () => {
     await settle();
     expect(doc.choosingPlace).toBe(true);
     dialogs[0].save();
-    await vi.waitFor(() => expect(puter.kv.del).toHaveBeenCalled());
+    await vi.waitFor(() => expect(everything.kv.del).toHaveBeenCalled());
     // Leaving now reports a slow save after a while, rather than waiting on the user for ever.
     expect(doc.choosingPlace).toBe(false);
     expect(doc.path).toBeNull();
@@ -360,7 +360,7 @@ describe('the first save inside the Puter desktop', () => {
     doc.changed();
     await vi.advanceTimersByTimeAsync(AUTOSAVE_MS + 5);
     expect(dialogs).toHaveLength(0);
-    expect(puter.fs.write).not.toHaveBeenCalled();
+    expect(everything.fs.write).not.toHaveBeenCalled();
     const saving = doc.save();
     await settle();
     expect(dialogs[0].suggestedName).toBe('Letter.docx');
@@ -379,7 +379,7 @@ describe('the first save inside the Puter desktop', () => {
     doc.attach(async () => docx('v1'));
     expect(await doc.rename('Taken')).toBeNull();
     expect(doc.name).toBe('Taken');
-    expect(puter.fs.stat).not.toHaveBeenCalled();
+    expect(everything.fs.stat).not.toHaveBeenCalled();
     const saving = doc.save();
     await settle();
     expect(dialogs[0].suggestedName).toBe('Taken.docx');
@@ -389,8 +389,8 @@ describe('the first save inside the Puter desktop', () => {
   });
 });
 
-describe('Save a copy inside the Puter desktop', () => {
-  beforeEach(() => installPuter());
+describe('Save a copy inside the Everything desktop', () => {
+  beforeEach(() => installEverything());
 
   let original, current;
   async function savedDocument() {
@@ -418,7 +418,7 @@ describe('Save a copy inside the Puter desktop', () => {
     // Edits now go to the copy.
     doc.changed();
     await vi.advanceTimersByTimeAsync(AUTOSAVE_MS + 5);
-    expect(puter.fs.write.mock.calls.map((call) => call[0])).toEqual(['~/Desktop/Report copy.docx']);
+    expect(everything.fs.write.mock.calls.map((call) => call[0])).toEqual(['~/Desktop/Report copy.docx']);
     doc.destroy();
   });
 
@@ -439,27 +439,27 @@ describe('Save a copy inside the Puter desktop', () => {
     await settle();
     doc.changed();
     await vi.advanceTimersByTimeAsync(AUTOSAVE_MS + 5);
-    expect(puter.fs.write.mock.calls.map((call) => call[0])).toEqual(['Documents/Report.docx']);
+    expect(everything.fs.write.mock.calls.map((call) => call[0])).toEqual(['Documents/Report.docx']);
     dialogs[0].cancel();
     expect(await copying).toBe('');
     doc.destroy();
   });
 });
 
-describe('without Puter\'s Save dialog', () => {
+describe('without Everything\'s Save dialog', () => {
   it('saves a new document into the app folder on its own on the open web', async () => {
-    installPuter({ env: 'web' });
+    installEverything({ env: 'web' });
     const doc = Doc.blank();
     doc.attach(async () => docx('v1'));
     doc.changed();
     await vi.advanceTimersByTimeAsync(AUTOSAVE_MS + 5);
     expect(doc.path).toBe('Documents/Untitled document.docx');
-    expect(puter.ui.showSaveFilePicker).not.toHaveBeenCalled();
+    expect(everything.ui.showSaveFilePicker).not.toHaveBeenCalled();
     doc.destroy();
   });
 
-  it('saves a new document into the app folder in a Puter desktop without the dialog', async () => {
-    installPuter({ picker: false });
+  it('saves a new document into the app folder in an Everything desktop without the dialog', async () => {
+    installEverything({ picker: false });
     expect(P.asksWhereToSave()).toBe(false);
     const doc = Doc.blank();
     doc.attach(async () => docx('v1'));
@@ -473,7 +473,7 @@ describe('without Puter\'s Save dialog', () => {
 
 describe('saveFileAs', () => {
   it('answers with the file the dialog wrote, or null when it was cancelled', async () => {
-    installPuter();
+    installEverything();
     const saving = P.saveFileAs(docx('x'), 'A.docx');
     await settle();
     dialogs[0].save();
@@ -485,7 +485,7 @@ describe('saveFileAs', () => {
   });
 
   it('works with an SDK whose dialog promise has no undefinedOnCancel', async () => {
-    installPuter({ cancelAware: false });
+    installEverything({ cancelAware: false });
     const saving = P.saveFileAs(docx('x'), 'A.docx');
     await settle();
     dialogs[0].save();
@@ -502,7 +502,7 @@ describe('the File view\'s Save As', () => {
   };
   afterEach(() => { document.body.replaceChildren(); });
 
-  it('opens Puter\'s Save dialog for the copy instead of asking for a name', async () => {
+  it('opens Everything\'s Save dialog for the copy instead of asking for a name', async () => {
     vi.useRealTimers();
     let answer;
     const saveCopyWhere = vi.fn(() => new Promise((resolve) => { answer = resolve; }));

@@ -6,7 +6,7 @@ import { addHighlight } from '../../src/core/highlight.js';
 import { addNote } from '../../src/core/notes.js';
 
 async function openDocument(page) {
-  await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
+  await page.route('**/sdk/everything.js', (route) => route.fulfill({ body: '' }));
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   const sheet = doc.addPage([600, 800]);

@@ -11,7 +11,7 @@ import { environment, owner, editor, SERVER, until } from './collab-helpers.js';
 
 Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true });
 beforeEach(() => { vi.stubGlobal('navigator', { ...globalThis.navigator, onLine: true }); });
-afterEach(() => { delete globalThis.puter; vi.unstubAllGlobals(); });
+afterEach(() => { delete globalThis.everything; vi.unstubAllGlobals(); });
 
 const path = '/alice/Spreadsheets/Budget.xlsx';
 
@@ -21,13 +21,13 @@ it("does not save into a shared workbook's file opened while its room could not 
   const env = environment();
   const wb = new Workbook({ sheets: [{ name: 'Budget' }] });
   env.files.set(path, new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()));
-  const room = await RoomClient.create({ puter: env.sdk(owner), server: SERVER, wb, name: 'Budget', file: { path, uid: 'u1' } });
+  const room = await RoomClient.create({ everything: env.sdk(owner), server: SERVER, wb, name: 'Budget', file: { path, uid: 'u1' } });
   const token = (await call(env.sdk(owner), SERVER, { op: 'invite', room, role: 'editor' })).token;
-  const bob = new RoomClient({ puter: env.sdk(editor), server: SERVER, room, token, store: memoryOutbox(), poll: 60_000, noPeers: true, toXlsx: (w) => workbookToXlsx(w) });
+  const bob = new RoomClient({ everything: env.sdk(editor), server: SERVER, room, token, store: memoryOutbox(), poll: 60_000, noPeers: true, toXlsx: (w) => workbookToXlsx(w) });
   await bob.open();
-  globalThis.puter = env.sdk(owner);
-  const stat = puter.fs.stat;
-  puter.fs.stat = async (p) => { if (!env.files.has(p)) throw Object.assign(new Error(`${p} does not exist`), { code: 'subject_does_not_exist' }); return stat(p); };
+  globalThis.everything = env.sdk(owner);
+  const stat = everything.fs.stat;
+  everything.fs.stat = async (p) => { if (!env.files.has(p)) throw Object.assign(new Error(`${p} does not exist`), { code: 'subject_does_not_exist' }); return stat(p); };
   // The file, opened on its own.
   const file = await workbookFromFile(env.files.get(path).buffer, 'Budget.xlsx');
   const doc = new Doc({ wb: file, name: 'Budget', path, uid: 'u1' });

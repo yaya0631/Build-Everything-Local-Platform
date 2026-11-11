@@ -1,5 +1,5 @@
 /**
- * Full-screen stand-ins for the app: the Puter SDK did not load, or the URL
+ * Full-screen stand-ins for the app: the Everything SDK did not load, or the URL
  * points at a cloud file and there is no session yet to read it with.
  * Working itself needs neither; a new sheet opens straight away.
  */
@@ -17,7 +17,7 @@ export function errorView(title, message, onRetry) {
 }
 
 /**
- * A file on Puter was asked for without a session. `onSignIn` opens Puter's
+ * A file on Everything was asked for without a session. `onSignIn` opens Everything's
  * dialog (and resolves when it closes); `onSkip` starts a new spreadsheet.
  */
 export function signInView({ title, message, onSignIn, onSkip }) {
@@ -25,7 +25,7 @@ export function signInView({ title, message, onSignIn, onSkip }) {
    * The wait is said under the button rather than inside its label: a label drawn at the disabled
    * 45% measures 2.0:1, and it is the only sign anything is happening. The button is turned off with
    * aria-disabled, not disabled, so the browser does not blur it and a keyboard user comes back from
-   * Puter's dialog where they left off; the click is refused here instead.
+   * Everything's dialog where they left off; the click is refused here instead.
    */
   let waiting = false;
   const status = el('p.auth-status', { role: 'status' });
@@ -36,7 +36,7 @@ export function signInView({ title, message, onSignIn, onSkip }) {
       waiting = true;
       cta.setAttribute('aria-disabled', 'true');
       cta.setAttribute('aria-busy', 'true');
-      status.textContent = 'Waiting for Puter…';
+      status.textContent = 'Waiting for Everything…';
       try { await onSignIn(); }
       finally {
         waiting = false;
@@ -45,7 +45,7 @@ export function signInView({ title, message, onSignIn, onSkip }) {
         status.textContent = '';
       }
     },
-  }, 'Sign in to Puter');
+  }, 'Sign in to Everything');
   return el('div.auth-view.view', {},
     el('div.auth-card', {},
       el('div.empty-icon', { html: icon('lock', 28) }),

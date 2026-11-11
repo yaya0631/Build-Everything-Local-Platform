@@ -91,17 +91,17 @@ export async function openOfflineSheet() {
   const blocked = pending.filter((row) => row.conflict).length;
   const note = () => {
     if (!pending.length) {
-      return 'Everything is in your Puter cloud. Anything you change while offline is kept here and sent when you are back.';
+      return 'Everything is in your Everything cloud. Anything you change while offline is kept here and sent when you are back.';
     }
     if (!blocked) {
-      return 'These changes are saved on this device and will go to your Puter cloud as soon as it answers.';
+      return 'These changes are saved on this device and will go to your Everything cloud as soon as it answers.';
     }
     if (blocked === pending.length) {
       return pending.length === 1
         ? 'This change is saved on this device, and it is waiting on you: the cloud moved on while you were offline, so only one version of it can stand.'
         : 'These changes are saved on this device, and each is waiting on you: the cloud moved on while you were offline, so only one version of each can stand.';
     }
-    return 'These changes are saved on this device. Most go to your Puter cloud as soon as it answers - the ones marked below need a decision from you first.';
+    return 'These changes are saved on this device. Most go to your Everything cloud as soon as it answers - the ones marked below need a decision from you first.';
   };
 
   body.append(

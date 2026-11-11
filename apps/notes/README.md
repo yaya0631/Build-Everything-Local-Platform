@@ -1,9 +1,9 @@
 # Notes
 
-A free-form digital notebook on [Puter](https://localhost:8443): notebooks,
+A free-form digital notebook on [Everything](https://localhost:8443): notebooks,
 sections and pages, note containers you can place anywhere on the page,
 tags, ink, tables, pictures, recordings and search. No framework and no
-backend of its own, just Puter.js and Vite.
+backend of its own, just Everything.js and Vite.
 
 The window has a title bar, a ribbon (File, Home, Insert, Draw, View, Help
 and a contextual Table tab), a navigation rail, a sections pane, a pages
@@ -72,7 +72,7 @@ All icons and artwork are original or from Lucide.
   text and notebook backups.
 - **Assist.** Summarize a page, find action items, suggest questions,
   rewrite or proofread a selection and ask questions about the page, using
-  AI through the user's Puter account.
+  AI through the user's Everything account.
 - **Dictate** into a note where the browser supports speech recognition.
 - **Command search** (Alt+Q) finds and runs any command by name.
 - **Key hints.** Press and release Alt to put letters on the ribbon tabs,
@@ -110,8 +110,8 @@ Shortcuts lists them all.
 
 ## Storage
 
-Everything is a file in the app's folder of the user's Puter cloud
-(`puter.fs`, relative paths); `puter.kv` is not used.
+Everything is a file in the app's folder of the user's Everything cloud
+(`everything.fs`, relative paths); `everything.kv` is not used.
 
 ```
 notes/library.json          notebook order
@@ -131,11 +131,11 @@ Page content is HTML limited to an allowlist (`src/lib/sanitize.js`); every
 paste, import, stored page and shared snapshot is sanitized before it
 reaches the page.
 
-## Inside a Puter app
+## Inside an Everything app
 
-When `puter.env` is `app`, the user is already signed in and the account
+When `everything.env` is `app`, the user is already signed in and the account
 menu has no Sign Out item. On a website, a sign-in screen offers Continue
-with Puter.
+with Everything.
 
 ## Development
 
@@ -147,7 +147,7 @@ npm run build      # runs the license check first
 ```
 
 `npm run dev` and open `http://localhost:5231/?local` to try the app with a
-browser-only store (IndexedDB) instead of a Puter account. That mode exists
+browser-only store (IndexedDB) instead of an Everything account. That mode exists
 only in development builds.
 
 ## Third-party code

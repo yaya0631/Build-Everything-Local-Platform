@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import rawSource from '../src/workers/sign-worker.js?raw';
 import { SIGN_WORKER_VERSION } from '../src/lib/signlinks.js';
 import { instantiateWorker, makeKv, sha256Hex } from './helpers/worker-harness.js';
-import { makeFs } from './helpers/fake-puter.js';
+import { makeFs } from './helpers/fake-everything.js';
 
 const SECRET = 'test-admin-secret';
 const IMG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUg==';
@@ -15,7 +15,7 @@ async function buildWorker() {
   const fs = makeFs();
   await fs.write('signatures-data/d1/original.pdf', new Uint8Array([1, 2, 3]));
   const kv = makeKv();
-  const worker = instantiateWorker(source, { me: { puter: { kv, fs } } });
+  const worker = instantiateWorker(source, { me: { everything: { kv, fs } } });
   return { worker, kv, fs };
 }
 

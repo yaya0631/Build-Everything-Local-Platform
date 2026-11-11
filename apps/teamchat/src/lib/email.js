@@ -1,8 +1,8 @@
 /**
  * Emailing invitations — the calling side of worker/email.js, the one shared
  * worker the app's developer deploys (workspace workers cannot send mail).
- * The call goes through puter.workers.exec(), which forwards the signed-in
- * user's Puter token: that is what lets the worker send at all, and what
+ * The call goes through everything.workers.exec(), which forwards the signed-in
+ * user's Everything token: that is what lets the worker send at all, and what
  * makes each send bill the sender rather than the app owner.
  *
  * Nothing here sends on its own. Every message is one a person typed
@@ -13,7 +13,7 @@ import { EMAIL_WORKER_URL } from '../config.js';
 
 /** Sending needs the worker bridge (it carries the user's session). */
 export function emailAvailable() {
-  return Boolean(EMAIL_WORKER_URL && typeof puter !== 'undefined' && puter?.workers?.exec);
+  return Boolean(EMAIL_WORKER_URL && typeof everything !== 'undefined' && everything?.workers?.exec);
 }
 
 /**
@@ -87,7 +87,7 @@ export function parseEmails(text) {
 const SEND_TIMEOUT_MS = 60_000;
 
 const FRIENDLY = {
-  sign_in_required: 'Sign in with Puter to send invitations.',
+  sign_in_required: 'Sign in with Everything to send invitations.',
   daily_limit: 'You have sent as many invitation emails as one account can in a day. Try again tomorrow, or share the link directly.',
   too_many_recipients: 'That is too many addresses at once; send to 10 at a time.',
   invalid: 'The invitation could not be composed. Copy the link and share it directly.',
@@ -115,7 +115,7 @@ export async function sendInviteEmails({ kind, server, code, exp, workspace, cha
   }
   let res;
   try {
-    res = await puter.workers.exec(`${EMAIL_WORKER_URL}/invites`, {
+    res = await everything.workers.exec(`${EMAIL_WORKER_URL}/invites`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       ...(ctl ? { signal: ctl.signal } : {}),

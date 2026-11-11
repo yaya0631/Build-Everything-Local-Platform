@@ -20,7 +20,7 @@ const bound = (wb,kind)=>wb.evalRuleFormula(wb.activeSheetId,conditionalThreshol
 async function native(wb) {
  const zip=X.CFB.read(new Uint8Array(await(await workbookToXlsx(wb)).arrayBuffer()),{type:'array'});
  const xml=new TextDecoder().decode(X.CFB.find(zip,'/xl/worksheets/sheet1.xml').content);
- const part=X.CFB.find(zip,'/xl/workbook.xml');X.CFB.utils.cfb_add(zip,'/xl/workbook.xml',new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,'')));
+ const part=X.CFB.find(zip,'/xl/workbook.xml');X.CFB.utils.cfb_add(zip,'/xl/workbook.xml',new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,'')));
  return {wb:await workbookFromFile(X.CFB.write(zip,{type:'array',fileType:'zip'})),xml};
 }
 it.each(['scale','icons','bar'].flatMap(kind=>['num','percent','percentile'].map(type=>[kind,type])))('retains live %s %s parameter expressions through native cycles',async(kind,type)=>{

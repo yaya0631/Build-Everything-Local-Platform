@@ -1,6 +1,6 @@
 /**
  * Pure inventory logic: stock status, dashboard stats, list filtering
- * and sorting, and the CSV import merge. No DOM, no Puter; unit-tested.
+ * and sorting, and the CSV import merge. No DOM, no Everything; unit-tested.
  */
 
 import { round2 } from './util.js';

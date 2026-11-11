@@ -18,7 +18,7 @@ async function back(wb,change=s=>s,strip=true) {
  let sheetXml;
  for(const path of ['/xl/workbook.xml','/xl/worksheets/sheet1.xml']) {
   const p=X.CFB.find(zip,path);let text=new TextDecoder().decode(p.content);
-  if(path.endsWith('workbook.xml')) {if(strip)text=text.replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,'');}
+  if(path.endsWith('workbook.xml')) {if(strip)text=text.replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,'');}
   else sheetXml=text=change(text);
   p.content=new TextEncoder().encode(text);p.size=p.content.length;
  }

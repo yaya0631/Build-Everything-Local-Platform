@@ -21,7 +21,7 @@ describe('email worker: access and health', () => {
     expect(res.data).toMatchObject({ ok: true, version: '1' });
   });
 
-  it('refuses to send for a caller without a Puter session', async () => {
+  it('refuses to send for a caller without an Everything session', async () => {
     const w = loadEmailWorker();
     const res = await w.call('POST', '/copies', { json: copy(), asUser: null });
     expect(res.status).toBe(401);
@@ -31,7 +31,7 @@ describe('email worker: access and health', () => {
   it('reports presence, never values, from /whoami', async () => {
     const w = loadEmailWorker();
     const res = await w.call('GET', '/whoami');
-    expect(res.data.has).toEqual({ puter: true, authToken: true, email: true });
+    expect(res.data.has).toEqual({ everything: true, authToken: true, email: true });
     expect(JSON.stringify(res.data)).not.toContain('caller-token');
     expect(JSON.stringify(res.data)).not.toContain('owner-token');
   });

@@ -10,7 +10,7 @@ for (const backend of ["default", "WebGL"]) {
     page,
   }) => {
     test.setTimeout(180000);
-    await boot(page, backend as Backend, "window.puter={};");
+    await boot(page, backend as Backend, "window.everything={};");
     const result = await page.evaluate(async () => {
       const { writePsdWithPreciseStrokes } =
           await import("/src/model/psd-stroke-writer.ts"),
@@ -295,7 +295,7 @@ for (const backend of ["default", "WebGL"]) {
   test(`gradient opacity combines with strokes, geometry caches and document transforms (${backend})`, async ({
     page,
   }) => {
-    await boot(page, backend as Backend, "window.puter={};");
+    await boot(page, backend as Backend, "window.everything={};");
     const result = await page.evaluate(async () => {
       const { newDocument, layer, cropDocument, resizeDocument } =
           await import("/src/model/document.ts"),
@@ -573,7 +573,7 @@ for (const backend of ["default", "WebGL"]) {
 test("gradient controls preserve precision, stops, undo and layer locks", async ({
   page,
 }) => {
-  await boot(page, "default", "window.puter={};");
+  await boot(page, "default", "window.everything={};");
   const doc = newDocument(37, 29),
     assets = new Assets(),
     l = layer("vector", "Gradient", 37, 29);

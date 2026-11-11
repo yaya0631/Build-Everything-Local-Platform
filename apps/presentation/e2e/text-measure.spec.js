@@ -15,10 +15,10 @@ for (const row of nativeShaped.cases)
     page,
     browserName,
   }) => {
-    await page.route("**/sdk/puter.js", (route) =>
+    await page.route("**/sdk/everything.js", (route) =>
       route.fulfill({
         contentType: "application/javascript",
-        body: 'window.puter={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',
+        body: 'window.everything={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',
       }),
     );
     await page.goto("/");
@@ -44,10 +44,10 @@ for (const row of nativeShaped.cases)
 test("font measurement preserves canvas widths and leaves the document unchanged", async ({
   page,
 }) => {
-  await page.route("**/sdk/puter.js", (route) =>
+  await page.route("**/sdk/everything.js", (route) =>
     route.fulfill({
       contentType: "application/javascript",
-      body: 'window.puter={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',
+      body: 'window.everything={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',
     }),
   );
   await page.goto("/");
@@ -95,10 +95,10 @@ test("font measurement preserves canvas widths and leaves the document unchanged
 test("font heights agree with unclamped Canvas and CSS measurements", async ({
   page,
 }) => {
-  await page.route("**/sdk/puter.js", (route) =>
+  await page.route("**/sdk/everything.js", (route) =>
     route.fulfill({
       contentType: "application/javascript",
-      body: 'window.puter={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',
+      body: 'window.everything={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',
     }),
   );
   await page.goto("/");
@@ -176,10 +176,10 @@ test("font heights agree with unclamped Canvas and CSS measurements", async ({
 test("run kerning thresholds agree between canvas and both preview text paths", async ({
   page,
 }) => {
-  await page.route("**/sdk/puter.js", (route) =>
+  await page.route("**/sdk/everything.js", (route) =>
     route.fulfill({
       contentType: "application/javascript",
-      body: 'window.puter={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',
+      body: 'window.everything={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',
     }),
   );
   await page.goto("/");
@@ -262,10 +262,10 @@ test("run kerning thresholds agree between canvas and both preview text paths", 
 test("narrow text boxes keep zero-advance accents attached through PPTX round trips", async ({
   page,
 }) => {
-  await page.route("**/sdk/puter.js", (route) =>
+  await page.route("**/sdk/everything.js", (route) =>
     route.fulfill({
       contentType: "application/javascript",
-      body: 'window.puter={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',
+      body: 'window.everything={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',
     }),
   );
   await page.goto("/");
@@ -331,10 +331,10 @@ test("narrow text boxes keep zero-advance accents attached through PPTX round tr
 test("formatted words retain native line breaks through export and copying", async ({
   page,
 }) => {
-  await page.route("**/sdk/puter.js", (route) =>
+  await page.route("**/sdk/everything.js", (route) =>
     route.fulfill({
       contentType: "application/javascript",
-      body: 'window.puter={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',
+      body: 'window.everything={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',
     }),
   );
   await page.goto("/");

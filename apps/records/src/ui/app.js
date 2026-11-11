@@ -2,7 +2,7 @@
  * The app shell: routes between the home screen and open bases, owns the
  * account menu, the first-run notice, keyboard help and saving on exit.
  *
- * Routes (in the hash, so they work inside the Puter desktop too):
+ * Routes (in the hash, so they work inside the Everything desktop too):
  *   #/                                  home
  *   #/trash                             bases in the trash
  *   #/<baseId>[/<tableId>[/<viewId>[/<recordId>]]]
@@ -153,7 +153,7 @@ export class App {
     this.page = null;
   }
 
-  /** Import a CSV file as a new base (files opened from the Puter desktop). */
+  /** Import a CSV file as a new base (files opened from the Everything desktop). */
   importFile(file) {
     importFileDialog({
       file,

@@ -34,8 +34,8 @@ export class CollabManager extends Emitter {
     app.on('closed', (editor) => this.detach(editor, { leave: true }));
   }
 
-  get puter() {
-    return this.app.puter;
+  get everything() {
+    return this.app.everything;
   }
 
   /** { uuid, username } of the signed-in account, or null. */
@@ -46,15 +46,15 @@ export class CollabManager extends Emitter {
 
   /** Why sharing cannot work right now, or null when it can. */
   unavailable() {
-    if (!this.puter && !this.transportFor) return 'Sharing needs Puter, which could not be reached. Check your connection and reload the app.';
-    if (!this.identity()) return 'Sign in with Puter to share documents and open documents others share with you.';
+    if (!this.everything && !this.transportFor) return 'Sharing needs Everything, which could not be reached. Check your connection and reload the app.';
+    if (!this.identity()) return 'Sign in with Everything to share documents and open documents others share with you.';
     if (typeof navigator !== 'undefined' && navigator.onLine === false) return 'You are offline. Sharing needs a connection; your own files keep working.';
     return null;
   }
 
   transport(server) {
     if (this.transportFor) return this.transportFor(server);
-    return { call: (input) => call(this.puter, server, input) };
+    return { call: (input) => call(this.everything, server, input) };
   }
 
   sessionOf(editor) {
@@ -66,14 +66,14 @@ export class CollabManager extends Emitter {
   /** Share an open personal document: it becomes a shared document this account owns. */
   async share(editor, progress = () => {}) {
     const user = this.identity();
-    if (!user) throw new CollabError('Sign in with Puter to share documents.');
+    if (!user) throw new CollabError('Sign in with Everything to share documents.');
     if (this.sessionOf(editor)) return this.sessionOf(editor);
-    const server = this.deployServer ? await this.deployServer(progress) : await deploy(this.puter, progress);
+    const server = this.deployServer ? await this.deployServer(progress) : await deploy(this.everything, progress);
     const doc = editor.doc;
     // The owner's own earlier comments become theirs by name.
     if (doc.comments) doc.setComments(claimLocalComments(doc.comments, { id: user.uuid, name: user.username }));
     const room = uid('d').replace(/[^A-Za-z0-9_-]/g, '') + Math.random().toString(36).slice(2, 10);
-    const session = new CollabSession({ transport: this.transport(server), server, room, user, puter: this.puter, outbox: this.outbox, ...this.sessionOptions });
+    const session = new CollabSession({ transport: this.transport(server), server, room, user, everything: this.everything, outbox: this.outbox, ...this.sessionOptions });
     progress('Sharing the document...');
     await session.create(doc, editor.name);
     editor.file = { kind: 'shared', name: editor.name, server, room };
@@ -94,8 +94,8 @@ export class CollabManager extends Emitter {
       }
     }
     const user = this.identity();
-    if (!user) throw new CollabError('Sign in with Puter to open shared documents.');
-    const session = new CollabSession({ transport: this.transport(link.server), server: link.server, room: link.room, user, puter: this.puter, outbox: this.outbox, ...this.sessionOptions });
+    if (!user) throw new CollabError('Sign in with Everything to open shared documents.');
+    const session = new CollabSession({ transport: this.transport(link.server), server: link.server, room: link.room, user, everything: this.everything, outbox: this.outbox, ...this.sessionOptions });
     const data = await session.join(link.invite);
     const doc = VDocument.fromJSON({ nodes: data.nodes, assets: data.assets, comments: data.comments });
     const name = session.joinInfo?.name || doc.root.name;
@@ -241,9 +241,9 @@ export class CollabManager extends Emitter {
   // ---- shared documents list (home screen) ----
 
   async recent() {
-    if (!this.puter?.kv || !this.identity()) return [];
+    if (!this.everything?.kv || !this.identity()) return [];
     try {
-      const list = await this.puter.kv.get(DOCS_KEY);
+      const list = await this.everything.kv.get(DOCS_KEY);
       return Array.isArray(list) ? list : [];
     } catch {
       return [];
@@ -251,11 +251,11 @@ export class CollabManager extends Emitter {
   }
 
   async remember(entry) {
-    if (!this.puter?.kv) return;
+    if (!this.everything?.kv) return;
     try {
       const list = (await this.recent()).filter((e) => !(e.server === entry.server && e.room === entry.room));
       list.unshift({ ...entry, opened: Date.now() });
-      await this.puter.kv.set(DOCS_KEY, list.slice(0, MAX_DOCS));
+      await this.everything.kv.set(DOCS_KEY, list.slice(0, MAX_DOCS));
     } catch {
       // The list is a convenience; sharing works without it.
     }
@@ -266,10 +266,10 @@ export class CollabManager extends Emitter {
     const s = this.sessionOf(editorOrEntry);
     const server = s?.server || e?.server;
     const room = s?.room || e?.room;
-    if (!this.puter?.kv || !server) return;
+    if (!this.everything?.kv || !server) return;
     try {
       const list = (await this.recent()).filter((x) => !(x.server === server && x.room === room));
-      await this.puter.kv.set(DOCS_KEY, list);
+      await this.everything.kv.set(DOCS_KEY, list);
     } catch {
       // Ignore.
     }

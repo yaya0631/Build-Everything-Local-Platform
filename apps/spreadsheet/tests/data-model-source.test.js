@@ -43,7 +43,7 @@ it('preserves linked table source names through native XLSX export and later tab
   const wb=fixture();wb.addTable(wb.sheets[0].id,{r1:1,c1:1,r2:4,c2:2},{name:'InputOrders'});
   expect(wb.defineName('SourceAlias','InputOrders[]')).toBeNull();
   const out=await workbookToXlsx(wb),zip=X.CFB.read(new Uint8Array(await out.arrayBuffer()),{type:'array'}),part=X.CFB.find(zip,'/xl/workbook.xml');
-  part.content=new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,''));part.size=part.content.length;
+  part.content=new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,''));part.size=part.content.length;
   const reopened=await workbookFromFile(X.CFB.write(zip,{type:'array',fileType:'zip'}));
   expect(reopened.names.find(n=>n.name==='SourceAlias').ref).toBe('InputOrders[]');
   expect(reopened.dataModel.archive).toBe(wb.dataModel.archive);

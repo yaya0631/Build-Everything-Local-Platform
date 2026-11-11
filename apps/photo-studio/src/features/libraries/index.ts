@@ -1,6 +1,6 @@
 // Libraries: named collections of colors, gradients, patterns, text and
 // layer styles, brushes and graphics, shared by every document and synced
-// through Puter when signed in. Registration only; the panel, storage and
+// through Everything when signed in. Registration only; the panel, storage and
 // capture code load on first use.
 import type { Editor } from '../../editor';
 import { registerCommand, registerPanel, type Command } from '../../app/registry';
@@ -125,7 +125,7 @@ export function installLibraries(e: Editor) {
       const l = shownLibrary();
       if (!l) return;
       const { exportLibraryFile, LIBRARY_FILE_EXTENSION } = await import('./model');
-      const { download } = await import('../../persistence/puter');
+      const { download } = await import('../../persistence/everything');
       const text = await exportLibraryFile(l, (h) => lib()!.readAsset(h));
       download(new Blob([text], { type: 'application/json' }), `${l.name.replace(/[\\/:*?"<>|]+/g, '_') || 'Library'}${LIBRARY_FILE_EXTENSION}`);
       e.message(`Exported ${l.name}.`);
@@ -164,10 +164,10 @@ export function installLibraries(e: Editor) {
   cmd({
     id: 'libraries.sync',
     label: 'Sync Libraries Now',
-    description: 'Send library changes to Puter and take in changes made elsewhere',
+    description: 'Send library changes to Everything and take in changes made elsewhere',
     run: async (e) => {
       const l = await loaded();
-      // Puter may take a while (or never answer); the editor stays usable.
+      // Everything may take a while (or never answer); the editor stays usable.
       void l.sync().then(() => e.message(l.status.message));
     },
   });

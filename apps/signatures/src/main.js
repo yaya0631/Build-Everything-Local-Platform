@@ -31,19 +31,19 @@ function showError(title, message, onRetry) {
 
 async function start() {
   // Dev-only mock harness: http://localhost:5173/?mock=1 runs the whole app
-  // (including the sign worker) against an in-memory Puter.
+  // (including the sign worker) against an in-memory Everything.
   if (import.meta.env?.DEV && new URLSearchParams(location.search).has('mock')) {
-    const { installMockPuter } = await import('../dev/puter-mock.js');
-    installMockPuter();
+    const { installMockEverything } = await import('../dev/everything-mock.js');
+    installMockEverything();
   }
-  if (typeof puter === 'undefined') {
-    showError('Could not reach Puter', 'The Puter SDK failed to load. Check your connection and try again.', () => location.reload());
+  if (typeof everything === 'undefined') {
+    showError('Could not reach Everything', 'The Everything SDK failed to load. Check your connection and try again.', () => location.reload());
     return;
   }
 
   let signedIn = false;
   try {
-    signedIn = await Promise.resolve(puter.auth.isSignedIn());
+    signedIn = await Promise.resolve(everything.auth.isSignedIn());
   } catch {
     signedIn = false;
   }
@@ -60,7 +60,7 @@ async function boot() {
     await store.init();
   } catch (err) {
     console.error(err);
-    showError('Could not load your documents', 'Something went wrong talking to your Puter cloud.', () => location.reload());
+    showError('Could not load your documents', 'Something went wrong talking to your Everything cloud.', () => location.reload());
     return;
   }
 

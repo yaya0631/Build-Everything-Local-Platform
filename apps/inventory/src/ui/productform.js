@@ -755,7 +755,7 @@ export function openProductForm(product = null, { onSaved, prefill = null } = {}
     photoPreview,
     el('div.grow', {},
       el('div.photo-actions', {}, photoPick, photoRemove),
-      el('p.hint', {}, 'Shrunk to 800px and kept in your own Puter drive.')
+      el('p.hint', {}, 'Shrunk to 800px and kept in your own Everything drive.')
     ),
     photoFile
   ) : null;

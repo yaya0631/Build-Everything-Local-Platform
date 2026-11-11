@@ -3,7 +3,7 @@
 import type { Editor } from '../../editor';
 import { svg } from '../../app/icons';
 import { escapeXML } from '../../model/assets';
-import { download } from '../../persistence/puter';
+import { download } from '../../persistence/everything';
 import {
   coerceSetting,
   defaultPreferences,

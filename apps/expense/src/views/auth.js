@@ -7,16 +7,16 @@ export function authView({ onSignedIn }) {
     type: 'button',
     onclick: async () => {
       cta.disabled = true;
-      cta.textContent = 'Waiting for Puter';
+      cta.textContent = 'Waiting for Everything';
       try {
-        await puter.auth.signIn();
+        await everything.auth.signIn();
         onSignedIn();
       } catch {
         cta.disabled = false;
-        cta.textContent = 'Continue with Puter';
+        cta.textContent = 'Continue with Everything';
       }
     },
-  }, 'Continue with Puter');
+  }, 'Continue with Everything');
 
   return el('div.auth-view', {},
     el('div.auth-card', {},
@@ -27,11 +27,11 @@ export function authView({ onSignedIn }) {
         feature('scan', 'Receipt capture with AI OCR', 'Merchant, date, total, tax and category are read for you. You confirm, it saves.'),
         feature('folder', 'Expense reports', 'Group expenses into reports and move them from draft to submitted, approved and reimbursed.'),
         feature('scale', 'Reconciliation', 'Import a card or bank statement and match every line to an expense, automatically where it can.'),
-        feature('cloud', 'Your data, your cloud', 'Everything lives in your own Puter account. Nothing is sent anywhere else.')
+        feature('cloud', 'Your data, your cloud', 'Everything lives in your own Everything account. Nothing is sent anywhere else.')
       ),
       cta,
       el('p.auth-note', {}, 'Free. No ads. Powered by ',
-        el('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Puter'))
+        el('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Everything'))
     )
   );
 

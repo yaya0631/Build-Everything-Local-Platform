@@ -57,7 +57,7 @@ export function install(app) {
   };
 
   const hasDoc = (a) => Boolean(a.editor);
-  const signedInPuter = (a) => Boolean(a.puter?.ui?.showOpenFilePicker && a.user);
+  const signedInEverything = (a) => Boolean(a.everything?.ui?.showOpenFilePicker && a.user);
   app.commands.register([
     {
       id: 'file.place',
@@ -65,7 +65,7 @@ export function install(app) {
       shortcut: 'Shift+Mod+P',
       enabled: hasDoc,
       run: async (a) => {
-        if (signedInPuter(a)) return (await loadIO()).placeCommand(a);
+        if (signedInEverything(a)) return (await loadIO()).placeCommand(a);
         // Open the file picker while the click or key press is still being handled.
         const editor = a.editor;
         const picked = pickDeviceFiles();

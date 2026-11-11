@@ -1,7 +1,7 @@
 /**
- * Vector Studio collaboration worker (Puter worker runtime: `router`, `me`).
+ * Vector Studio collaboration worker (Everything worker runtime: `router`, `me`).
  * Built into public/worker/vector-studio-worker.js by `npm run build:worker`
- * and deployed by a document's owner into their own Puter account.
+ * and deployed by a document's owner into their own Everything account.
  */
 import { DocService } from './service.js';
 import { authenticate } from './auth.js';
@@ -36,12 +36,12 @@ router.get('/health', () => Response.json({ ok: true, protocol: 1, build: __WORK
 
 router.post('/api', async ({ request, user }) => {
   try {
-    if (!user?.puter) return Response.json({ message: 'Sign in with Puter to continue.' }, { status: 401 });
+    if (!user?.everything) return Response.json({ message: 'Sign in with Everything to continue.' }, { status: 401 });
     const text = await readBody(request);
     if (text === null) return Response.json({ message: 'A JSON request body is required.' }, { status: 400 });
     const input = JSON.parse(text);
-    const identity = await authenticate(request, user.puter, input);
-    return Response.json(await new DocService(me.puter).call(identity, input));
+    const identity = await authenticate(request, user.everything, input);
+    return Response.json(await new DocService(me.everything).call(identity, input));
   } catch (error) {
     const status = error instanceof SyntaxError ? 400 : error.status || 500;
     const message = error instanceof SyntaxError ? 'Invalid JSON request.' : error.status ? error.message : 'The shared document could not be updated. Please retry.';

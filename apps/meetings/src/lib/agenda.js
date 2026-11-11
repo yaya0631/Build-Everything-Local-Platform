@@ -1,6 +1,6 @@
 /**
  * The home screen's meeting list, minus the screen: date math, grouping,
- * the read-window strategy and the local snapshot. No DOM and no Puter in
+ * the read-window strategy and the local snapshot. No DOM and no Everything in
  * here — ui/agenda.js is a thin view over these, and everything below is
  * unit-tested on its own.
  *

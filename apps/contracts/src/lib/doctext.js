@@ -8,7 +8,7 @@
  *
  *   text/plain, .txt, .md   read directly
  *   application/pdf         text layer via pdf.js, loaded lazily
- *   scanned PDF or image    OCR via puter.ai.img2txt, with consent
+ *   scanned PDF or image    OCR via everything.ai.img2txt, with consent
  *
  * `extract.js` still takes a string; nothing about the extraction contract
  * changes. The result says which path was taken, because OCR output is
@@ -155,7 +155,7 @@ function canvasToBlob(canvas) {
 /* ------------------------------------------------------------------ */
 
 async function ocrBlob(blob) {
-  const result = await puter.ai.img2txt(blob);
+  const result = await everything.ai.img2txt(blob);
   return typeof result === 'string' ? result : String(result?.text ?? '');
 }
 

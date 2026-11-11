@@ -1,14 +1,14 @@
 import { afterEach, beforeAll, beforeEach, expect, it, vi } from 'vitest';
 import { Doc } from '../src/lib/doc.js';
 import { memoryStorage } from './helpers/memory-storage.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 
 // A .csv double-clicked on the desktop is edited as a spreadsheet and saved as an .xlsx: that file
 // goes beside the .csv, where whoever opened it looks, not into the app's own data folder.
 let mock;
 beforeAll(async () => { await Doc.blank().toXlsxBlob(); });
-beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); mock = installMockPuter(); vi.useFakeTimers(); });
-afterEach(() => { vi.useRealTimers(); delete globalThis.puter; });
+beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); mock = installMockEverything(); vi.useFakeTimers(); });
+afterEach(() => { vi.useRealTimers(); delete globalThis.everything; });
 
 function csvAt(path) {
   const csv = new Blob(['a,b\n1,2\n'], { type: 'text/csv' });
@@ -50,8 +50,8 @@ it('takes a free name beside it when an .xlsx of that name is there already', as
 
 it('saves into the app folder when the source\'s folder will not take the file', async () => {
   csvAt('/alice/Shared/data.csv');
-  const write = globalThis.puter.fs.write;
-  globalThis.puter.fs.write = async (p, ...rest) => {
+  const write = globalThis.everything.fs.write;
+  globalThis.everything.fs.write = async (p, ...rest) => {
     if (p.startsWith('/alice/')) throw Object.assign(new Error('Permission denied'), { code: 'access_denied' });
     return write(p, ...rest);
   };

@@ -1,4 +1,4 @@
-/** Backups run against the same mock puter global the store tests use,
+/** Backups run against the same mock everything global the store tests use,
     with an fs.readdir that reports whatever names each test plants. */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
@@ -15,10 +15,10 @@ function nameFor(at) {
   return `crm-backup-${new Date(at).toISOString().slice(0, 19).replace(/:/g, '-')}Z.json`;
 }
 
-function installPuterMock() {
+function installEverythingMock() {
   kvData = new Map();
   fsNames = [];
-  globalThis.puter = {
+  globalThis.everything = {
     env: 'web',
     kv: {
       get: vi.fn(async (k) => (kvData.has(k) ? kvData.get(k) : null)),
@@ -49,7 +49,7 @@ async function storeWithData() {
   return store;
 }
 
-beforeEach(installPuterMock);
+beforeEach(installEverythingMock);
 
 describe('parseBackupName', () => {
   it('round-trips the stamp and rejects foreign files', () => {
@@ -68,16 +68,16 @@ describe('listBackups', () => {
   });
 
   it('treats a missing directory as no backups yet', async () => {
-    puter.fs.readdir = vi.fn(async () => { throw new Error('not found'); });
+    everything.fs.readdir = vi.fn(async () => { throw new Error('not found'); });
     expect(await listBackups()).toEqual([]);
-    puter.fs.readdir = vi.fn(async () => { throw { code: 'subject_does_not_exist' }; });
+    everything.fs.readdir = vi.fn(async () => { throw { code: 'subject_does_not_exist' }; });
     expect(await listBackups()).toEqual([]);
   });
 
   it('refuses to call an unreachable folder empty', async () => {
     // Offline is not an answer about what is in the folder, and reporting
     // it as "no backups yet" says the copies are gone.
-    puter.fs.readdir = vi.fn(async () => { throw new Error('Failed to fetch'); });
+    everything.fs.readdir = vi.fn(async () => { throw new Error('Failed to fetch'); });
     await expect(listBackups()).rejects.toThrow();
   });
 });
@@ -90,7 +90,7 @@ describe('writeBackup', () => {
       (_, i) => nameFor(Date.UTC(2026, 0, 1) + i * DAY));
 
     await writeBackup(store);
-    const written = puter.fs.write.mock.calls.at(-1);
+    const written = everything.fs.write.mock.calls.at(-1);
     expect(written[0]).toMatch(/^backups\/crm-backup-/);
     expect(JSON.parse(written[1]).app).toBe('crm');
     expect(fsNames.length).toBe(BACKUP_KEEP);
@@ -100,9 +100,9 @@ describe('writeBackup', () => {
 describe('writeBackup when the folder cannot be listed', () => {
   it('still reports the backup it just wrote', async () => {
     const store = await storeWithData();
-    puter.fs.readdir = vi.fn(async () => { throw new Error('Failed to fetch'); });
+    everything.fs.readdir = vi.fn(async () => { throw new Error('Failed to fetch'); });
     await expect(writeBackup(store)).resolves.toMatchObject({ at: expect.any(Number) });
-    expect(puter.fs.write).toHaveBeenCalled();
+    expect(everything.fs.write).toHaveBeenCalled();
   });
 });
 
@@ -110,14 +110,14 @@ describe('runBackupIfDue', () => {
   it('writes when there is no backup at all', async () => {
     const store = await storeWithData();
     expect(await runBackupIfDue(store)).not.toBeNull();
-    expect(puter.fs.write).toHaveBeenCalled();
+    expect(everything.fs.write).toHaveBeenCalled();
   });
 
   it('stays quiet while the newest backup is fresh', async () => {
     const store = await storeWithData();
     fsNames = [nameFor(Date.now() - 2 * DAY)];
     expect(await runBackupIfDue(store)).toBeNull();
-    expect(puter.fs.write).not.toHaveBeenCalled();
+    expect(everything.fs.write).not.toHaveBeenCalled();
   });
 
   it('writes once the newest backup has aged out', async () => {
@@ -134,12 +134,12 @@ describe('runBackupIfDue', () => {
     const empty = new Store();
     await empty.init();
     expect(await runBackupIfDue(empty)).toBeNull();
-    expect(puter.fs.write).not.toHaveBeenCalled();
+    expect(everything.fs.write).not.toHaveBeenCalled();
   });
 
   it('never lets a filesystem error escape the boot path', async () => {
     const store = await storeWithData();
-    puter.fs.write = vi.fn(async () => { throw new Error('quota'); });
+    everything.fs.write = vi.fn(async () => { throw new Error('quota'); });
     await expect(runBackupIfDue(store)).resolves.toBeNull();
   });
 });

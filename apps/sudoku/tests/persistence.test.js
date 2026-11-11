@@ -35,12 +35,12 @@ function fakeLocalStorage({ failWrites = false } = {}) {
 }
 
 /**
- * A puter.js stand-in covering the surface this app uses: auth.isSignedIn and
+ * An everything.js stand-in covering the surface this app uses: auth.isSignedIn and
  * a key-value store. `failReads` models the case the sync logic most has to get
  * right, a reachable-but-broken cloud whose empty answer must not be mistaken
  * for an empty account.
  */
-function fakePuter({ signedIn = true, failReads = false, failWrites = false, store = new Map() } = {}) {
+function fakeEverything({ signedIn = true, failReads = false, failWrites = false, store = new Map() } = {}) {
   return {
     env: 'web',
     store,
@@ -82,7 +82,7 @@ let storage;
 beforeEach(() => {
   storage = fakeLocalStorage();
   vi.stubGlobal('localStorage', storage);
-  vi.stubGlobal('puter', undefined);
+  vi.stubGlobal('everything', undefined);
 });
 
 afterEach(() => {
@@ -176,8 +176,8 @@ describe('the game in progress', () => {
 describe('syncStats', () => {
   it('merges the account and this device, then leaves both holding the result', async () => {
     const cloudStats = recordSolved(emptyStats(), { difficulty: 'easy', elapsedMs: 90_000 });
-    const puter = fakePuter({ store: new Map([['sudoku:stats', JSON.stringify(cloudStats)]]) });
-    vi.stubGlobal('puter', puter);
+    const everything = fakeEverything({ store: new Map([['sudoku:stats', JSON.stringify(cloudStats)]]) });
+    vi.stubGlobal('everything', everything);
 
     const localStats = recordSolved(emptyStats(), { difficulty: 'hard', elapsedMs: 300_000 });
     const { stats, synced } = await syncStats(localStats);
@@ -187,17 +187,17 @@ describe('syncStats', () => {
     expect(stats.byDifficulty.hard.bestMs).toBe(300_000);
     // Both copies now agree.
     expect(loadStats().byDifficulty.easy.bestMs).toBe(90_000);
-    expect(JSON.parse(puter.store.get('sudoku:stats')).byDifficulty.hard.bestMs).toBe(300_000);
+    expect(JSON.parse(everything.store.get('sudoku:stats')).byDifficulty.hard.bestMs).toBe(300_000);
   });
 
   it('seeds an account that has never been written to', async () => {
-    const puter = fakePuter();
-    vi.stubGlobal('puter', puter);
+    const everything = fakeEverything();
+    vi.stubGlobal('everything', everything);
     const localStats = recordSolved(emptyStats(), { difficulty: 'easy', elapsedMs: 60_000 });
     const { stats, synced } = await syncStats(localStats);
     expect(synced).toBe(true);
     expect(stats.byDifficulty.easy.bestMs).toBe(60_000);
-    expect(puter.store.has('sudoku:stats')).toBe(true);
+    expect(everything.store.has('sudoku:stats')).toBe(true);
   });
 
   it('does not touch anything when the account cannot be read', async () => {
@@ -206,7 +206,7 @@ describe('syncStats', () => {
     // perfectly good records.
     const cloudStats = recordSolved(emptyStats(), { difficulty: 'easy', elapsedMs: 45_000 });
     const store = new Map([['sudoku:stats', JSON.stringify(cloudStats)]]);
-    vi.stubGlobal('puter', fakePuter({ failReads: true, store }));
+    vi.stubGlobal('everything', fakeEverything({ failReads: true, store }));
 
     const localStats = recordSolved(emptyStats(), { difficulty: 'hard', elapsedMs: 300_000 });
     const { stats, synced } = await syncStats(localStats);
@@ -218,12 +218,12 @@ describe('syncStats', () => {
   });
 
   it('does nothing when signed out', async () => {
-    vi.stubGlobal('puter', fakePuter({ signedIn: false }));
+    vi.stubGlobal('everything', fakeEverything({ signedIn: false }));
     const { synced } = await syncStats(emptyStats());
     expect(synced).toBe(false);
   });
 
-  it('does nothing when puter.js never loaded', async () => {
+  it('does nothing when everything.js never loaded', async () => {
     const { stats, synced } = await syncStats(emptyStats());
     expect(synced).toBe(false);
     expect(stats).toEqual(emptyStats());
@@ -234,8 +234,8 @@ describe('syncSavedGame', () => {
   it('takes the account’s game when this device has none', async () => {
     const cloudGame = playedGame();
     vi.stubGlobal(
-      'puter',
-      fakePuter({ store: new Map([['sudoku:save', JSON.stringify(encode(cloudGame, 500))]]) }),
+      'everything',
+      fakeEverything({ store: new Map([['sudoku:save', JSON.stringify(encode(cloudGame, 500))]]) }),
     );
     const { game, source } = await syncSavedGame(null);
     expect(source).toBe('cloud');
@@ -249,8 +249,8 @@ describe('syncSavedGame', () => {
     const cell = [...Array(CELLS).keys()].find((i) => !cloudGame.puzzle[i] && !cloudGame.values[i]);
     setValue(cloudGame, cell, solution[cell]);
     vi.stubGlobal(
-      'puter',
-      fakePuter({ store: new Map([['sudoku:save', JSON.stringify(encode(cloudGame, 900))]]) }),
+      'everything',
+      fakeEverything({ store: new Map([['sudoku:save', JSON.stringify(encode(cloudGame, 900))]]) }),
     );
 
     const { game, source } = await syncSavedGame(local);
@@ -263,30 +263,30 @@ describe('syncSavedGame', () => {
   it('keeps this device’s game when it is the newer one, and pushes it up', async () => {
     const local = playedGame();
     saveGame(local, 900);
-    const puter = fakePuter({
+    const everything = fakeEverything({
       store: new Map([['sudoku:save', JSON.stringify(encode(playedGame(), 100))]]),
     });
-    vi.stubGlobal('puter', puter);
+    vi.stubGlobal('everything', everything);
 
     const { source } = await syncSavedGame(local);
     expect(source).toBe('local');
-    expect(JSON.parse(puter.store.get('sudoku:save')).ts).toBe(900);
+    expect(JSON.parse(everything.store.get('sudoku:save')).ts).toBe(900);
   });
 
   it('seeds an account with no saved game', async () => {
     const local = playedGame();
     saveGame(local, 100);
-    const puter = fakePuter();
-    vi.stubGlobal('puter', puter);
+    const everything = fakeEverything();
+    vi.stubGlobal('everything', everything);
     const { source } = await syncSavedGame(local);
     expect(source).toBe('local');
-    expect(puter.store.has('sudoku:save')).toBe(true);
+    expect(everything.store.has('sudoku:save')).toBe(true);
   });
 
   it('ignores a corrupt game in the account rather than losing the local one', async () => {
     const local = playedGame();
     saveGame(local, 100);
-    vi.stubGlobal('puter', fakePuter({ store: new Map([['sudoku:save', '{"v":2,"values":"junk"}']]) }));
+    vi.stubGlobal('everything', fakeEverything({ store: new Map([['sudoku:save', '{"v":2,"values":"junk"}']]) }));
     const { game, source } = await syncSavedGame(local);
     expect(source).toBe('local');
     expect([...game.values]).toEqual([...local.values]);
@@ -295,14 +295,14 @@ describe('syncSavedGame', () => {
   it('keeps the local game when the account cannot be read', async () => {
     const local = playedGame();
     saveGame(local, 100);
-    vi.stubGlobal('puter', fakePuter({ failReads: true }));
+    vi.stubGlobal('everything', fakeEverything({ failReads: true }));
     const { game, source } = await syncSavedGame(local);
     expect(source).toBe('local');
     expect(game).toBe(local);
   });
 
   it('reports having nothing when neither side does', async () => {
-    vi.stubGlobal('puter', fakePuter());
+    vi.stubGlobal('everything', fakeEverything());
     const { game, source } = await syncSavedGame(null);
     expect(game).toBeNull();
     expect(source).toBe('none');
@@ -311,31 +311,31 @@ describe('syncSavedGame', () => {
 
 describe('writing to the account', () => {
   it('pushes the game in progress', async () => {
-    const puter = fakePuter();
-    vi.stubGlobal('puter', puter);
+    const everything = fakeEverything();
+    vi.stubGlobal('everything', everything);
     expect(await pushSavedGame(playedGame(), 42)).toBe(true);
-    expect(JSON.parse(puter.store.get('sudoku:save')).ts).toBe(42);
+    expect(JSON.parse(everything.store.get('sudoku:save')).ts).toBe(42);
   });
 
   it('reports a failed write rather than throwing', async () => {
-    vi.stubGlobal('puter', fakePuter({ failWrites: true }));
+    vi.stubGlobal('everything', fakeEverything({ failWrites: true }));
     expect(await pushSavedGame(playedGame())).toBe(false);
   });
 
   it('refuses a payload past the store’s size limit', async () => {
-    const puter = fakePuter();
-    puter.kv.MAX_VALUE_SIZE = 10;
-    vi.stubGlobal('puter', puter);
+    const everything = fakeEverything();
+    everything.kv.MAX_VALUE_SIZE = 10;
+    vi.stubGlobal('everything', everything);
     expect(await pushSavedGame(playedGame())).toBe(false);
-    expect(puter.store.size).toBe(0);
+    expect(everything.store.size).toBe(0);
   });
 
   it('clears a finished game from both places', async () => {
-    const puter = fakePuter({ store: new Map([['sudoku:save', '{}']]) });
-    vi.stubGlobal('puter', puter);
+    const everything = fakeEverything({ store: new Map([['sudoku:save', '{}']]) });
+    vi.stubGlobal('everything', everything);
     saveGame(playedGame());
     await clearSaveEverywhere();
     expect(loadSavedGame()).toBeNull();
-    expect(puter.store.has('sudoku:save')).toBe(false);
+    expect(everything.store.has('sudoku:save')).toBe(false);
   });
 });

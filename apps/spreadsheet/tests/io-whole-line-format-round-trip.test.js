@@ -59,7 +59,7 @@ it('ignores a sidecar whose line formats are malformed, and opens the book all t
   // Reach into the saved sidecar and replace the recorded formats with rubbish of every shape.
   const X = await import('../src/vendor/xlsx.mjs');
   const readBack = X.read(bytes, { type: 'array', cellStyles: true, cellFormula: true, cellNF: true });
-  const metaName = readBack.SheetNames.find((n) => /^_puter_meta/i.test(n));
+  const metaName = readBack.SheetNames.find((n) => /^_everything_meta/i.test(n));
   const meta = JSON.parse(X.utils.sheet_to_json(readBack.Sheets[metaName], { header: 1 }).map((row) => row[0]).join(''));
   const name = wb.sheet(id).name;
   meta.sheets[name].colStyles = { 1: { bold: true }, '-3': { bold: true }, '1e3': { bold: true }, 99999999: { bold: true }, two: { bold: true }, 4: 'bold', 5: null, 6: ['bold'] };

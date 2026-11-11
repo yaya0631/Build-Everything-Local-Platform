@@ -1,38 +1,38 @@
 /**
- * Everything that touches Puter directly (besides KV inside the backend):
+ * Everything that touches Everything directly (besides KV inside the backend):
  * auth, environment, profile pictures.
  */
 const PIC_KEY = 'legal.profilePicture';
 const USER_KEY = 'legal.user';
 
-export function puterAvailable() {
-  return typeof globalThis.puter !== 'undefined';
+export function everythingAvailable() {
+  return typeof globalThis.everything !== 'undefined';
 }
 
-export function puterEnv() {
+export function everythingEnv() {
   try {
-    return globalThis.puter?.env || 'web';
+    return globalThis.everything?.env || 'web';
   } catch {
     return 'web';
   }
 }
 
-/** Inside the Puter desktop ('app' env) the person is always signed in and cannot sign out. */
+/** Inside the Everything desktop ('app' env) the person is always signed in and cannot sign out. */
 export function canSignOut() {
-  return puterEnv() !== 'app';
+  return everythingEnv() !== 'app';
 }
 
 export async function isSignedIn() {
-  if (!puterAvailable()) return false;
+  if (!everythingAvailable()) return false;
   try {
-    return (await Promise.resolve(puter.auth.isSignedIn())) === true;
+    return (await Promise.resolve(everything.auth.isSignedIn())) === true;
   } catch {
     return false;
   }
 }
 
 export async function signIn() {
-  await puter.auth.signIn();
+  await everything.auth.signIn();
 }
 
 export function signOut() {
@@ -42,7 +42,7 @@ export function signOut() {
     for (const k of Object.keys(localStorage)) if (k.startsWith('legal.workspaces.')) localStorage.removeItem(k);
   } catch {}
   try {
-    puter.auth.signOut();
+    everything.auth.signOut();
   } catch {}
 }
 
@@ -52,7 +52,7 @@ export function signOut() {
  */
 export async function getUser() {
   try {
-    const user = await puter.auth.getUser();
+    const user = await everything.auth.getUser();
     try {
       localStorage.setItem(USER_KEY, JSON.stringify({ username: user.username, uuid: user.uuid }));
     } catch {}
@@ -83,7 +83,7 @@ export function cachedProfilePicture(username) {
 
 export async function fetchProfilePicture(username) {
   try {
-    const url = await puter.auth.getProfilePicture?.();
+    const url = await everything.auth.getProfilePicture?.();
     if (typeof url === 'string' && url.startsWith('data:image/') && url.length < 2_000_000) {
       try {
         localStorage.setItem(PIC_KEY, JSON.stringify({ user: username, url }));

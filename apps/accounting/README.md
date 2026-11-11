@@ -2,7 +2,7 @@
 
 Double-entry bookkeeping for small businesses. Send invoices, enter bills, categorize bank transactions, reconcile statements, and run the financial reports an accountant expects.
 
-Everything is stored in the user's own [Puter](http://localhost:8443) account. There is no server of ours and no database of ours.
+Everything is stored in the user's own [Everything](http://localhost:8443) account. There is no server of ours and no database of ours.
 
 ## Features
 
@@ -19,14 +19,14 @@ Everything is stored in the user's own [Puter](http://localhost:8443) account. T
 - **Customers, vendors, products and services**: detail pages with balances and history, CSV import and export.
 - **Closing date**: lock the books through a date so filed periods cannot change.
 - **Search** everything from the top bar (transactions by number, name, or amount; contacts; accounts; reports; pages), and Ctrl+Alt keyboard shortcuts (press `?` for the list). Date fields take `+`, `-`, `T`, `M`, `H`, `Y`, `R`, `W`, `K`.
-- **Attachments** on any transaction, stored in the user's Puter drive.
-- **Audit log** of recent changes, **backup and restore** (download or save to Puter), a **sample company** to explore, and dark, light, and system themes.
+- **Attachments** on any transaction, stored in the user's Everything drive.
+- **Audit log** of recent changes, **backup and restore** (download or save to Everything), a **sample company** to explore, and dark, light, and system themes.
 - An app-like layout on desktop, tablet, and phone (bottom tab bar, stacked line items, card lists).
 
 ## Stack
 
 - Vanilla JavaScript modules, no framework. [Vite](https://vitejs.dev) for dev and build, [Lucide](https://lucide.dev) icons, [Vitest](https://vitest.dev) tests.
-- [Puter.js](http://localhost:8443) for sign-in, the key-value store, and file storage.
+- [Everything.js](http://localhost:8443) for sign-in, the key-value store, and file storage.
 
 ### Performance
 
@@ -39,23 +39,23 @@ Everything is stored in the user's own [Puter](http://localhost:8443) account. T
 
 ## Storage design
 
-Puter's key-value store is DynamoDB underneath: reads are billed per 4 KB of an entry, writes per 1 KB of the whole entry, `list()` has a lower rate limit than `get`/`set`, and there are no secondary indexes. The design follows from that:
+Everything's key-value store is DynamoDB underneath: reads are billed per 4 KB of an entry, writes per 1 KB of the whole entry, `list()` has a lower rate limit than `get`/`set`, and there are no secondary indexes. The design follows from that:
 
 - **One small entry per record**, keyed by collection: `a:` accounts, `c:` contacts, `i:` items, `t:` transactions, `b:` bank lines, `r:` rules, `p:` recurring templates, `x:` tax rates, `n:` reconciliations, plus `settings`. Editing an invoice rewrites about 1 KB, never a shard.
 - **No index keys.** A company's books fit comfortably in memory, so every query (lists, search, reports) runs locally against the ledger. That keeps every write a single entry.
 - **A device cache in IndexedDB**, so opening the app is instant and does not re-read the books.
 - **Incremental sync through a change log.** Each save increments a `rev` counter and, in the same batch as the records, writes `log:<rev>` naming the keys it changed, set to expire after 30 days. Another device reads `rev` (one tiny get); if it moved, it reads only the log entries it missed and only the keys they name. A device that is more than 500 changes behind, or has been away longer than the log is kept and finds entries missing, reloads everything. An entry that is still missing ten minutes after a device first looked for it belongs to a batch that never landed, and is given up on.
 - **An outbox.** Edits are written to IndexedDB first and sent in batches of up to 100 entries, so a flaky connection never loses an edit and ten quick edits cost one request. Offline edits are kept and sent when the connection returns. A record the store refuses is kept on the device and retried, and does not hold back the edits queued behind it. Tabs share the device copy: an edit waiting in one tab's outbox is sent by that tab, and taken over by another only once that tab has closed (tracked with Web Locks), so an older edit from one tab never overwrites a newer one from another.
-- **Files never go to KV.** Attachments live at `attachments/<transaction id>/` and backups at `backups/` in the user's Puter drive.
+- **Files never go to KV.** Attachments live at `attachments/<transaction id>/` and backups at `backups/` in the user's Everything drive.
 - Reconciliations store the ids and amounts they cleared, so finishing one never rewrites hundreds of transactions, and later edits show up as discrepancies.
 
 ## Development
 
 ```sh
 npm install
-npm run dev      # http://localhost:5181/ (real Puter sign-in)
-                 # http://localhost:5181/mock.html runs on an in-memory Puter stand-in
-                 #   add ?reset to start over, ?env=app to simulate running inside Puter
+npm run dev      # http://localhost:5181/ (real Everything sign-in)
+                 # http://localhost:5181/mock.html runs on an in-memory Everything stand-in
+                 #   add ?reset to start over, ?env=app to simulate running inside Everything
 npm test
 npm run build
 ```

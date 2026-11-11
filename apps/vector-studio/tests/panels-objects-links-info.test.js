@@ -21,7 +21,7 @@ function setup() {
   doc.assets.set('a3', { mime: 'image/png', name: 'gone' });
   const imgs = [
     createImage('a1', 100, 50, [1, 0, 0, 1, 0, 0], { name: 'zebra' }),
-    createImage('a2', 100, 50, [1, 0, 0, 1, 200, 0], { name: 'apple', link: { source: 'puter', path: '/u/apple.jpg', name: 'apple.jpg', modified: 1 } }),
+    createImage('a2', 100, 50, [1, 0, 0, 1, 200, 0], { name: 'apple', link: { source: 'everything', path: '/u/apple.jpg', name: 'apple.jpg', modified: 1 } }),
     createImage('a3', 100, 50, [1, 0, 0, 1, 400, 0], { name: 'gone' }),
   ];
   doc.transact('Build', () => imgs.forEach((n) => doc.insert(n, layer.id)));
@@ -88,20 +88,20 @@ describe('Links panel', () => {
     app.prefs.set('linksPanel', null);
   });
 
-  it('unembeds into Puter and links the saved file', async () => {
+  it('unembeds into Everything and links the saved file', async () => {
     const { ed, doc, imgs, panel } = setup();
     globalThis.fetch ??= async () => ({ blob: async () => new Blob(['x']) });
     const realFetch = globalThis.fetch;
     globalThis.fetch = async () => ({ blob: async () => new Blob(['x'], { type: 'image/png' }) });
     app.user = { username: 'me' };
-    app.puter = { ui: { showSaveFilePicker: async (blob, name) => ({ path: `/me/${name}`, name }) } };
+    app.everything = { ui: { showSaveFilePicker: async (blob, name) => ({ path: `/me/${name}`, name }) } };
     ed.select([imgs[0].id]);
     panel.update();
     await panel.menu().find((x) => x.label === 'Unembed...').run();
-    expect(doc.get(imgs[0].id).link).toMatchObject({ source: 'puter', path: '/me/zebra.png' });
+    expect(doc.get(imgs[0].id).link).toMatchObject({ source: 'everything', path: '/me/zebra.png' });
     globalThis.fetch = realFetch;
     app.user = null;
-    app.puter = null;
+    app.everything = null;
   });
 });
 

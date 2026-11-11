@@ -4,7 +4,7 @@
   "private": true,
   "license": "AGPL-3.0-only",
   "type": "module",
-  "description": "A private, framework-free PDF workspace powered by Puter.",
+  "description": "A private, framework-free PDF workspace powered by Everything.",
   "scripts": {
     "dev": "vite",
     "build": "npm run licenses && vite build",
@@ -39,6 +39,6 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/HeyPuter/pdf-editor.git"
+    "url": "https://github.com/yaya0631/Build-Everything-Local-Platform"
   }
 }

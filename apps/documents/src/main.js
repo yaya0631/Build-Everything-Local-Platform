@@ -5,7 +5,7 @@ import { announce, toast } from './ui/toast.js';
 import { closeAllModals, confirmDialog, openModal } from './ui/modal.js';
 import { closeMenu } from './ui/menu.js';
 import { session } from './lib/session.js';
-import * as P from './lib/puter.js';
+import * as P from './lib/everything.js';
 import { Doc, needsUnloadWarning } from './lib/doc.js';
 import { errorView, signInView } from './views/gate.js';
 import { homeView } from './views/home.js';
@@ -128,7 +128,7 @@ function leaveDialog(doc, { unsaveable = false, undelivered = false } = {}) {
   if (unsaveable) {
     return confirmDialog({
       title: LEAVE_TITLES[0],
-      message: `This document could not be opened for editing, so it has not been saved to Puter. ${doc.blob ? 'Stay to download a copy, or leave without it.' : 'Leave without it?'}`,
+      message: `This document could not be opened for editing, so it has not been saved to Everything. ${doc.blob ? 'Stay to download a copy, or leave without it.' : 'Leave without it?'}`,
       confirmLabel: 'Leave without saving', cancelLabel: 'Stay',
     }).then((leave) => (leave ? 'leave' : 'stay'));
   }
@@ -138,7 +138,7 @@ function leaveDialog(doc, { unsaveable = false, undelivered = false } = {}) {
       title: LEAVE_TITLES[0],
       // A document that never reached a file has no "latest changes" to speak of; the whole of it is at stake.
       message: doc.waitsForPlace && doc.path
-        // Inside the Puter desktop a template or other file's edits wait for a Save to put them in a new .docx; the file stays as it is.
+        // Inside the Everything desktop a template or other file's edits wait for a Save to put them in a new .docx; the file stays as it is.
         ? `Your changes to “${P.displayName(doc.path)}” have not been saved yet. Keep editing to save them as a new document, or leave and discard them.`
         : doc.path || doc.lastSaved
         ? 'Your latest changes could not be saved. Keep editing to try again, or leave and discard those changes.'
@@ -148,7 +148,7 @@ function leaveDialog(doc, { unsaveable = false, undelivered = false } = {}) {
   }
   return new Promise((resolve) => {
     const content = el('div', {},
-      el('p.modal-text', {}, 'This document is not saved anywhere yet. Sign in to Puter to save it to your own cloud, or leave and discard it.'),
+      el('p.modal-text', {}, 'This document is not saved anywhere yet. Sign in to Everything to save it to your own cloud, or leave and discard it.'),
       el('div.row.row-end', { style: { flexWrap: 'wrap' } },
         el('button.btn.btn-ghost', { type: 'button', onclick: () => modal.close() }, 'Keep editing'),
         el('button.btn.btn-danger', { type: 'button', onclick: () => { resolve('leave'); modal.close(); } }, 'Leave without saving'),
@@ -173,7 +173,7 @@ function mountSignInGate(requestedHash, what) {
   document.title = 'Documents';
   mount('gate', { el: signInView({
     title: `Sign in to open this ${what}`,
-    message: `Documents live in your own Puter cloud. Sign in to open this ${what}, or start a new document without an account.`,
+    message: `Documents live in your own Everything cloud. Sign in to open this ${what}, or start a new document without an account.`,
     onSignIn: async () => { if (await session.signIn() && location.hash === requestedHash) route(); },
     onSkip: () => go('#/'),
   }) });
@@ -181,7 +181,7 @@ function mountSignInGate(requestedHash, what) {
 
 /**
  * The screen while something opens. `cancel`: what leaving does, offered once the wait is noticeable (a large file
- * on a slow connection, a request that hangs), since inside the Puter desktop there is no browser Back button.
+ * on a slow connection, a request that hangs), since inside the Everything desktop there is no browser Back button.
  */
 function showLoading(label = 'Opening', { cancel = null } = {}) {
   const leave = cancel && el('button.btn.btn-outline', { type: 'button', hidden: true, style: { marginTop: '6px' }, onclick: cancel }, 'Cancel');
@@ -409,11 +409,11 @@ async function openInvitation(link, requestedHash) {
 
 /**
  * Nobody has to sign in to write: the app opens straight into the editor.
- * Puter is asked for a sign-in at the first action that needs the cloud.
+ * Everything is asked for a sign-in at the first action that needs the cloud.
  */
 async function start() {
   if (!P.hasSDK()) {
-    appRoot.replaceChildren(errorView('Could not reach Puter', 'The Puter SDK failed to load. Check your connection and try again.', () => location.reload()));
+    appRoot.replaceChildren(errorView('Could not reach Everything', 'The Everything SDK failed to load. Check your connection and try again.', () => location.reload()));
     return;
   }
   P.onLaunchedWithItems((items) => {
@@ -422,7 +422,7 @@ async function start() {
     if (booted) nav.openPath(first.path);
     else launchedPath = first.path;
   });
-  // The Puter desktop window's close button waits for the document's edits, and asks about a never-saved one.
+  // The Everything desktop window's close button waits for the document's edits, and asks about a never-saved one.
   P.onWindowClose(createCloseWindow({ open: () => current, leaveDialog, exit: P.exitApp, asking: leaveQuestionOpen }));
   await boot();
 }

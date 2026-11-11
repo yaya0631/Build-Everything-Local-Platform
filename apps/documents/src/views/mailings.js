@@ -10,7 +10,7 @@
 import { el } from '../ui/dom.js';
 import { toast } from '../ui/toast.js';
 import { confirmDialog } from '../ui/modal.js';
-import * as P from '../lib/puter.js';
+import * as P from '../lib/everything.js';
 import { dialog, button } from './mailings-ui.js';
 import { createWizard } from './mailings-wizard.js';
 import { openRecipientGrid, openRecipientList, chooseSheet } from './mailings-recipients.js';
@@ -21,7 +21,7 @@ import { DOCUMENT_TYPES } from '../engine/docx-mail-merge.js';
 const BLANK = Object.freeze({ type: null, activeRecord: 1, preview: false, subject: '', addressField: '', list: null, mapping: {}, source: null, email: { format: 'html' }, external: null });
 const HIGHLIGHT = 'rgba(128, 128, 128, 0.28)';
 const RECIPIENT_FILES = ['.csv', '.tsv', '.txt', '.xlsx'];
-const sdk = () => (typeof puter !== 'undefined' ? puter : null);
+const sdk = () => (typeof everything !== 'undefined' ? everything : null);
 
 export function createMailings({ editor, pkg, error, onChange = () => {}, markDirty = () => {}, importFile, print, documentTitle = () => '', focus = () => editor()?.focus(), layoutChanged = () => {}, protectedDocument = () => false }) {
   // A document open read-only, or protected against editing, cannot become a main document or change its merge.
@@ -288,7 +288,7 @@ export function createMailings({ editor, pkg, error, onChange = () => {}, markDi
     if (canSend) {
       const choice = await chooseDelivery(messages.length, note);
       if (!choice) return;
-      if (choice === 'send') { await sendWithPuter(p, messages); return; }
+      if (choice === 'send') { await sendWithEverything(p, messages); return; }
     } else if (skipped.length) toast(`${skipped.length} ${skipped.length === 1 ? 'recipient has' : 'recipients have'} no valid email address and ${skipped.length === 1 ? 'was' : 'were'} left out`, { icon: 'info', duration: 5000 });
     // Downloadable messages open in any mail client as unsent drafts.
     if (messages.length === 1) P.downloadBlob(new Blob([emlMessage(messages[0])], { type: 'message/rfc822' }), emlName(1, messages[0].to));
@@ -301,11 +301,11 @@ export function createMailings({ editor, pkg, error, onChange = () => {}, markDi
   function chooseDelivery(count, note) {
     return new Promise(resolve => {
       let choice = null;
-      const modal = dialog({ title: 'Send Email Messages', submit: `Send ${count} ${count === 1 ? 'Message' : 'Messages'}`, body: el('p.modal-text', {}, `Each recipient gets a separate message from your Puter email address.${note} You can also download them as files to send from another mail app.`),
+      const modal = dialog({ title: 'Send Email Messages', submit: `Send ${count} ${count === 1 ? 'Message' : 'Messages'}`, body: el('p.modal-text', {}, `Each recipient gets a separate message from your Everything email address.${note} You can also download them as files to send from another mail app.`),
         actions: [button('Download Instead', () => { choice = 'download'; modal.close(); })], onSubmit: () => { choice = 'send'; }, onClose: () => resolve(choice) });
     });
   }
-  async function sendWithPuter(p, messages) {
+  async function sendWithEverything(p, messages) {
     let sent = 0, failed = 0, retried = false;
     const progress = toast(`Sending 0 of ${messages.length}…`, { icon: 'info', duration: 600000 });
     for (const message of messages) {
@@ -347,7 +347,7 @@ export function createMailings({ editor, pkg, error, onChange = () => {}, markDi
   const recipientItems = () => [
     { label: 'Type a New List…', disabled: !ready(), onSelect: () => mm.typeNewList() },
     { label: 'Use an Existing List…', hint: 'CSV, TSV or Excel workbook', disabled: !ready(), onSelect: () => mm.useExistingList() },
-    ...(P.canPickFiles() ? [{ label: 'Choose from Puter…', disabled: !ready(), onSelect: () => mm.useExistingList({ cloud: true }) }] : []),
+    ...(P.canPickFiles() ? [{ label: 'Choose from Everything…', disabled: !ready(), onSelect: () => mm.useExistingList({ cloud: true }) }] : []),
     ...(state().list ? [{ separator: true }, { label: 'Export List as CSV', onSelect: async () => { const { listToCsv } = await import('../lib/recipient-files.js'); P.downloadBlob(new Blob([listToCsv(state().list)], { type: 'text/csv' }), 'Recipients.csv'); } },
       { label: 'Remove Recipient List', disabled: !ready(), onSelect: () => { if (state().preview) { setState({ preview: false }); refreshPreview(); } setState({ list: null, mapping: {}, source: null, activeRecord: 1 }); } }] : []),
   ];

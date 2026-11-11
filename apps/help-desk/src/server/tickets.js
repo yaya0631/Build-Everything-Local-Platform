@@ -61,9 +61,9 @@ export async function createUser(store, K, input, by) {
     notes: cleanText(input.notes, LIMITS.notes) || '',
     locale: cleanLine(input.locale, 20) || null,
     tz: cleanLine(input.tz, 60) || null,
-    // Customers are never tied to a Puter account: an email address typed
+    // Customers are never tied to an Everything account: an email address typed
     // into a form proves nothing about who typed it.
-    puter: null,
+    everything: null,
     suspended: false,
     createdAt: now,
     updatedAt: now,
@@ -312,9 +312,9 @@ export async function createTicket(env, desk, ctx, input, actor) {
     problem: base.problem || null,
     key: secret(24),
     updatedBy: actor.id || null,
-    // Help center requests: which Puter account sent it (for "My requests"),
+    // Help center requests: which Everything account sent it (for "My requests"),
     // and whether it was filed under an existing customer by an unverified sender.
-    submitterPuter: actor.type === 'customer' && /^[\w-]{6,64}$/.test(String(input.submitterPuter || '')) ? input.submitterPuter : null,
+    submitterEverything: actor.type === 'customer' && /^[\w-]{6,64}$/.test(String(input.submitterEverything || '')) ? input.submitterEverything : null,
     unverified: actor.type === 'customer' && !!input.unverified,
   };
   if (actor.type === 'agent' && ticket.status === 'new' && ticket.assignee) ticket.status = 'open';
@@ -344,7 +344,7 @@ export async function createTicket(env, desk, ctx, input, actor) {
     { key: K.requesterTicket(requester.id, id), value: 1 },
     ...events.map((e) => ({ key: eventKey(K, id, e.id), value: e })),
   ];
-  if (ticket.submitterPuter) records.push({ key: K.submitterTicket(ticket.submitterPuter, id), value: 1 });
+  if (ticket.submitterEverything) records.push({ key: K.submitterTicket(ticket.submitterEverything, id), value: 1 });
   if (ticket.status === 'solved') records.push({ key: K.solved(id), value: now });
   await store.commit(K, records, { k: 't', id, v: ticket, by: actor.id || null, ev: summarizeEvents(events, actor) });
   const notified = await sendNotifications(env, {
@@ -461,7 +461,7 @@ export async function updateTicket(env, desk, ctx, id, input, actor) {
     // The help center link and "My requests" belonged to the old requester;
     // they must not keep showing the ticket, now about someone else.
     paths.key = secret(24);
-    paths.submitterPuter = null;
+    paths.submitterEverything = null;
     paths.unverified = false;
   }
   const events = [];
@@ -481,7 +481,7 @@ export async function updateTicket(env, desk, ctx, id, input, actor) {
   await store.commit(K, records, { k: 't', id, v: ticket, by: actor.id || null, ev: summarizeEvents(events, actor) });
   if (newRequester) {
     await store.del(K.requesterTicket(before.requester, id)).catch(() => {});
-    if (before.submitterPuter) await store.del(K.submitterTicket(before.submitterPuter, id)).catch(() => {});
+    if (before.submitterEverything) await store.del(K.submitterTicket(before.submitterEverything, id)).catch(() => {});
   }
   if (before.status === 'solved' && ticket.status !== 'solved') await store.del(K.solved(id)).catch(() => {});
   let notified = [];

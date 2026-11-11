@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import * as Y from 'yjs';
-import { fakePuter, alice, bob, cam } from './helpers/puter.js';
+import { fakeEverything, alice, bob, cam } from './helpers/everything.js';
 import { encode, decode, hash } from '../src/collab/protocol.js';
 import { addPage } from '../src/data/tree.js';
 import { insertBlock, listBlocks } from '../src/data/page.js';
@@ -47,7 +47,7 @@ async function read(env, user, doc) {
 describe('collaboration worker', () => {
   let env;
   beforeEach(() => {
-    env = fakePuter();
+    env = fakeEverything();
     env.forget();
   });
 
@@ -216,7 +216,7 @@ describe('collaboration worker', () => {
 describe('collaboration worker: access edge cases', () => {
   let env;
   beforeEach(() => {
-    env = fakePuter();
+    env = fakeEverything();
     env.forget();
   });
 
@@ -263,9 +263,9 @@ describe('collaboration worker: access edge cases', () => {
     expect(path).toBeTruthy();
     env.forget();
     // Reading that file fails once (not missing, just failing).
-    const realRead = env.puter.fs.read;
+    const realRead = env.everything.fs.read;
     let failures = 1;
-    env.puter.fs.read = async (p) => {
+    env.everything.fs.read = async (p) => {
       if (p === path && failures-- > 0) throw Object.assign(new Error('timeout'), { code: 'timeout' });
       return realRead(p);
     };

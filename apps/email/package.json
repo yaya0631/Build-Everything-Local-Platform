@@ -1,7 +1,7 @@
 {
-  "name": "puter-mail",
+  "name": "everything-mail",
   "version": "1.0.0",
-  "description": "A fast, private email client for your Puter account",
+  "description": "A fast, private email client for your Everything account",
   "type": "module",
   "private": true,
   "license": "AGPL-3.0-only",
@@ -17,7 +17,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/HeyPuter/email.git"
+    "url": "git+https://github.com/yaya0631/Build-Everything-Local-Platform"
   },
   "dependencies": {
     "lucide": "^1.28.0"

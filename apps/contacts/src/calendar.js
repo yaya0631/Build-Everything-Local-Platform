@@ -6,7 +6,7 @@
  * write its events over the same kind of AppConnection
  * (http://localhost:8443/Objects/AppConnection/). We launch Calendar in service
  * mode — no UI, `background: true` so the desktop never puts a window on screen
- * — and talk to the connection `puter.ui.launchApp` hands back. Calendar only
+ * — and talk to the connection `everything.ui.launchApp` hands back. Calendar only
  * answers apps on its own allowlist, so this works because the desktop tells it,
  * from the calling process rather than from anything we could claim, that the
  * caller is `contacts`.
@@ -22,7 +22,7 @@
  * mechanism.
  *
  * Everything degrades to "no calendar": on the open web there is no desktop to
- * launch anything into (puter.env !== 'app'), Calendar may not be installed, and
+ * launch anything into (everything.env !== 'app'), Calendar may not be installed, and
  * the user may not have it. Reads answer with null and the UI shows nothing;
  * writes reject with a message the caller can put in a toast. After a failure we
  * back off, doubling, so a missing Calendar costs one launch attempt rather than
@@ -78,7 +78,7 @@ export class CalendarApiError extends Error {
 }
 
 export function createCalendar({
-  getPuter = () => (typeof window !== 'undefined' ? window.puter : undefined),
+  getEverything = () => (typeof window !== 'undefined' ? window.everything : undefined),
   appName = APP_NAME,
   now = () => Date.now(),
   idleCloseMs = IDLE_CLOSE_MS,
@@ -97,9 +97,9 @@ export function createCalendar({
   let failures = 0 // consecutive failures, for how long that block lasts
   const listeners = new Set()
 
-  /** Can we talk to other apps at all? Only true inside the Puter desktop. */
+  /** Can we talk to other apps at all? Only true inside the Everything desktop. */
   function supported() {
-    const p = getPuter()
+    const p = getEverything()
     return Boolean(p && p.env === 'app' && p.ui && typeof p.ui.launchApp === 'function')
   }
 
@@ -211,7 +211,7 @@ export function createCalendar({
     if (connecting) return connecting
     if (!available()) return Promise.reject(new Error('Calendar is not available here'))
 
-    const p = getPuter()
+    const p = getEverything()
     const gen = generation
     connecting = new Promise((resolve, reject) => {
       let settled = false

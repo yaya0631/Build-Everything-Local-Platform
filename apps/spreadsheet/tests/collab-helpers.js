@@ -1,4 +1,4 @@
-// In-memory Puter for co-authoring tests: KV with events, files, restricted read tokens, and workers.exec
+// In-memory Everything for co-authoring tests: KV with events, files, restricted read tokens, and workers.exec
 // routed to a RoomService. Ported from the Whiteboard app's collaboration test helpers (via Photo Studio).
 import { RoomService } from '../src/collab/server/service.js';
 import { authenticate } from '../src/collab/server/auth.js';
@@ -65,15 +65,15 @@ export function environment() {
       if (!files.has(path)) throw new Error(`Missing file: ${path}`);
       const token = `header.${btoa(JSON.stringify({ type: 'access-token', user_uid: user.uuid, token_uid: crypto.randomUUID(), exp: Math.floor(Date.now() / 1000) + 86400 }))}.signature`;
       credentials.set(token, { user, path });
-      return `https://api.puter.test/token-read?uid=proof&token=${encodeURIComponent(token)}`;
+      return `https://api.everything.test/token-read?uid=proof&token=${encodeURIComponent(token)}`;
     },
   });
-  const workerPuter = {
-    kv, fs: fsFor(owner), auth: { getUser: async () => owner }, APIOrigin: 'https://api.puter.test',
+  const workerEverything = {
+    kv, fs: fsFor(owner), auth: { getUser: async () => owner }, APIOrigin: 'https://api.everything.test',
     authToken: `header.${btoa(JSON.stringify({ app_uid: 'app-sheet' }))}.signature`,
   };
-  // Puter's handle routes. `env.refuse` answers mints with that error code; `env.mints` and `env.revoked` record calls;
-  // `env.minted` holds every handle with its prefix, creation and revocation times, oldest first, as Puter lists them.
+  // Everything's handle routes. `env.refuse` answers mints with that error code; `env.mints` and `env.revoked` record calls;
+  // `env.minted` holds every handle with its prefix, creation and revocation times, oldest first, as Everything lists them.
   const minted = new Map();
   Object.assign(env, { refuse: null, mints: [], revoked: [], minted, listings: 0 });
   const fetcher = async (url, options = {}) => {
@@ -102,10 +102,10 @@ export function environment() {
     }
     return Response.json({ handle });
   };
-  const service = new RoomService(workerPuter, { now: () => env.now, fetcher, rooms: new Map() });
+  const service = new RoomService(workerEverything, { now: () => env.now, fetcher, rooms: new Map() });
   env.service = service;
   /** Another worker instance (its own loaded rooms) over the same storage. */
-  env.instance = () => new RoomService(workerPuter, { now: () => env.now, fetcher, rooms: new Map() });
+  env.instance = () => new RoomService(workerEverything, { now: () => env.now, fetcher, rooms: new Map() });
   const requestor = (token) => {
     const credential = credentials.get(token);
     if (!credential) throw Object.assign(new Error('Invalid credential'), { status: 401 });
@@ -122,7 +122,7 @@ export function environment() {
   env.sdk = (user) => {
     const prefix = user.uuid === owner.uuid ? '' : `account:${user.uuid}:`;
     return {
-      APIOrigin: 'https://api.puter.test',
+      APIOrigin: 'https://api.everything.test',
       authToken: `header.${btoa(JSON.stringify({ type: 'app-under-user', app_uid: 'app-sheet', user_uid: user.uuid }))}.signature`,
       auth: { isSignedIn: () => true, signIn: async () => true, getUser: async () => user },
       kv: { get: (key) => kv.get(prefix + key), set: (key, value) => kv.set(prefix + key, value) },
@@ -135,7 +135,7 @@ export function environment() {
           const input = JSON.parse(options.body);
           calls.push({ user: user.uuid, ...input });
           try {
-            const identity = await authenticate(new Request(url, { method: options.method, headers: options.headers, body: options.body }), requestor(options.headers['puter-auth']), input);
+            const identity = await authenticate(new Request(url, { method: options.method, headers: options.headers, body: options.body }), requestor(options.headers['everything-auth']), input);
             const result = await (env.route?.(user) ?? service).call(identity, input);
             return Response.json(result);
           } catch (error) {
@@ -152,7 +152,7 @@ export function environment() {
       },
     };
   };
-  return Object.assign(env, { kv, workerPuter });
+  return Object.assign(env, { kv, workerEverything });
 }
 
 export const SERVER = 'http://spreadsheet-test.localhost:8443';

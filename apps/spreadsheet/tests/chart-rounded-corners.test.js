@@ -12,7 +12,7 @@ const chart = (type, roundedCorners) => ({ type, title: 'Corners', anchor: { r: 
   appearance: { roundedCorners, background: '#f5d5bb', ...(['pie', 'donut'].includes(type) ? { pie: {} } : {}) } });
 const nativeBytes = zip => {
   const part = X.CFB.find(zip, '/xl/workbook.xml');
-  part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   part.size = part.content.length;
   return X.CFB.write(zip, { type: 'array', fileType: 'zip' });
 };

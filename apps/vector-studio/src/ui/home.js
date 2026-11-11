@@ -99,7 +99,7 @@ async function renderHome(app, host) {
     h('div.home-section-head', h('h2#home-recent-title.home-h2', 'Recent'), recentTools),
     recentList,
   );
-  host.replaceChildren(h('div.home', side, main, h('footer.home-footer', h('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Powered by Puter'))));
+  host.replaceChildren(h('div.home', side, main, h('footer.home-footer', h('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Powered by Everything'))));
   let items = [];
   const empty = (text) => {
     recentList.removeAttribute('role');

@@ -1,7 +1,7 @@
 {
   "name": "inventory-management",
   "version": "1.0.0",
-  "description": "Inventory management on Puter: products, quantities, locations, purchase cost, low-stock alerts, suppliers, and CSV import/export",
+  "description": "Inventory management on Everything: products, quantities, locations, purchase cost, low-stock alerts, suppliers, and CSV import/export",
   "type": "module",
   "private": true,
   "scripts": {

@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { pageBoxPdf } from '../fixtures/page-boxes.js';
 
 async function open(page, bytes) {
-  await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
+  await page.route('**/sdk/everything.js', (route) => route.fulfill({ body: '' }));
   await page.goto('/#library');
   const chooser = page.waitForEvent('filechooser');
   await page.keyboard.press('ControlOrMeta+o');

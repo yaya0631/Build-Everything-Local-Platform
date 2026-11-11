@@ -24,8 +24,8 @@ const extension = (xml, root, uri, body) => {
 };
 const relation = (xml, type, target) => {
   let n = 1;
-  while (new RegExp(`\\bId=["']puterSlicer${n}["']`).test(xml)) n++;
-  const id = `puterSlicer${n}`;
+  while (new RegExp(`\\bId=["']everythingSlicer${n}["']`).test(xml)) n++;
+  const id = `everythingSlicer${n}`;
   return { id, xml: xml.replace('</Relationships>', tag('Relationship', { Id: id, Type: SR + type, Target: target }) + '</Relationships>') };
 };
 
@@ -94,7 +94,7 @@ export function prepareXlsxSlicers(wb) {
   // That companion is its own identity, not an unrelated namespace collision.
   const preferredNames = new Set([...preferences.values()].filter(Boolean).map(name => name.toUpperCase()));
   const unrelatedNames = wb.names.filter(n => n.sheet || n.ref !== '#N/A' || !preferredNames.has(n.name.toUpperCase()));
-  const cacheNames = allocateNames(caches, cache => preferences.get(cache), 'PuterSlicerCache',
+  const cacheNames = allocateNames(caches, cache => preferences.get(cache), 'EverythingSlicerCache',
     [...unrelatedNames.map(n => n.name), ...[...tableIds.keys()].map(t => t.name)]);
   for (const cache of caches) cache.name = cacheNames.get(cache);
   // MS-XLSX 2.6.70: when any cache has an xr10 UID, every cache must have
@@ -110,7 +110,7 @@ export function prepareXlsxSlicers(wb) {
     let uid; do { uid = `{${crypto.randomUUID().toUpperCase()}}`; } while (uids.has(uid));
     cache.uid = uid; uids.add(uid);
   }
-  const views = [...records.keys()], viewNames = allocateNames(views, control => control.nativeName, 'PuterSlicer');
+  const views = [...records.keys()], viewNames = allocateNames(views, control => control.nativeName, 'EverythingSlicer');
   for (const control of views) records.get(control).name = viewNames.get(control);
   return { records, caches };
 }

@@ -25,7 +25,7 @@ it('preserves per-sheet zoom edits, native limits and drafts without recalculati
   expect(restored.sheets.map(s => s.viewZoom)).toEqual([.1, 4]);
   const zip = X.CFB.read(new Uint8Array(await (await workbookToXlsx(restored)).arrayBuffer()), { type: 'array' });
   const part = X.CFB.find(zip, '/xl/workbook.xml');
-  part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   part.size = part.content.length;
   const back = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'native.xlsx');
   expect(back.sheets.map(s => s.viewZoom)).toEqual([.1, 4]);

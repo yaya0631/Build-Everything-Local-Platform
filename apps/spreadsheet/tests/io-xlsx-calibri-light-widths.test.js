@@ -52,7 +52,7 @@ it.each([11, 16])('preserves explicit and default column geometry through native
     // relying on the application's private metadata to repair the export.
     const part = X.CFB.find(zip, '/xl/workbook.xml');
     part.content = new TextEncoder().encode(new TextDecoder().decode(part.content)
-      .replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+      .replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
     part.size = part.content.length;
     wb = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'native.xlsx');
   }

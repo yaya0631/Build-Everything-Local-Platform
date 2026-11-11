@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, expect, it } from 'vitest';
 import { Doc, autoSaveEnabled, setAutoSaveEnabled } from '../src/lib/doc.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 
 // The AutoSave switch: off, edits wait for Save; turned back on, what is waiting is saved.
 function memoryStorage() {
@@ -8,8 +8,8 @@ function memoryStorage() {
   return { getItem: (k) => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, String(v)), removeItem: (k) => m.delete(k), clear: () => m.clear() };
 }
 let mock;
-beforeEach(() => { mock = installMockPuter(); Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); });
-afterEach(() => { delete globalThis.puter; setAutoSaveEnabled(true); });
+beforeEach(() => { mock = installMockEverything(); Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); });
+afterEach(() => { delete globalThis.everything; setAutoSaveEnabled(true); });
 
 const documentWrites = () => mock.calls.filter(([op, p]) => op === 'write' && !p.includes('/.versions/'));
 

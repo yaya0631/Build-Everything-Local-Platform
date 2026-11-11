@@ -24,7 +24,7 @@ async function native(wb, deleted, inject = false) {
     const id = +body.match(/<c:axId val="(\d+)"/)[1];
     expect(['1', 'true'].includes(body.match(/<c:delete val="([^"]+)"/)[1])).toBe(deleted[id - 1]);
   });
-  edit(zip, '/xl/workbook.xml', xml => xml.replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  edit(zip, '/xl/workbook.xml', xml => xml.replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   return workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'axes.xlsx');
 }
 

@@ -34,10 +34,10 @@ try {
     await page.addInitScript(() =>
       Object.defineProperty(navigator, "gpu", { value: undefined }),
     );
-  await page.route("**/sdk/puter.js", (route) =>
+  await page.route("**/sdk/everything.js", (route) =>
     route.fulfill({
       contentType: "application/javascript",
-      body: "window.puter={};",
+      body: "window.everything={};",
     }),
   );
   await page.goto(server.resolvedUrls.local[0]);

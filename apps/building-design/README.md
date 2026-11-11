@@ -8,7 +8,7 @@
 
 Building Design models a building as real elements on levels: walls with layered constructions, doors and windows that cut their own openings, floors, ceilings, roofs, columns, beams, stairs, railings, furniture and fixtures, and rooms that measure themselves. Every view is generated from the one model, so a change in a plan shows up in sections, elevations, 3D, schedules and sheets at once.
 
-It runs entirely in the browser, with [Puter](https://localhost:8443) for sign-in, cloud files and sharing. You can use it without an account: projects are kept in your browser and can be saved to your device.
+It runs entirely in the browser, with [Everything](https://localhost:8443) for sign-in, cloud files and sharing. You can use it without an account: projects are kept in your browser and can be saved to your device.
 
 ## Features
 
@@ -57,8 +57,8 @@ It runs entirely in the browser, with [Puter](https://localhost:8443) for sign-i
 - Raster images placed in views to trace over or present.
 
 **Files**
-- Projects (.bdp) saved to your Puter cloud storage or to your device; open projects are kept in the browser so work survives a reload.
-- Share projects with other Puter users for viewing or editing, and work on them together: saving merges others' changes element by element so nobody overwrites anyone, changes others save appear while you work, and worksets divide the model into parts that views can show or hide.
+- Projects (.bdp) saved to your Everything cloud storage or to your device; open projects are kept in the browser so work survives a reload.
+- Share projects with other Everything users for viewing or editing, and work on them together: saving merges others' changes element by element so nobody overwrites anyone, changes others save appear while you work, and worksets divide the model into parts that views can show or hide.
 - Link other projects and IFC models from other BIM software, read-only, for coordination; load another project as a group; transfer types, materials, templates, line styles and other standards from another project.
 - Import DXF drawings into a plan, section or sheet as detail lines and text, to trace over or annotate.
 - Export to IFC (IFC4, for other BIM software), glTF and OBJ (3D), DXF (plans), PDF, SVG and PNG (drawings and sheets), and CSV (schedules).
@@ -67,7 +67,7 @@ It runs entirely in the browser, with [Puter](https://localhost:8443) for sign-i
 - Ribbon with contextual tabs, options bar, Properties palette with type selector and type editor (including wall, floor, roof and ceiling layer structures), Project Browser, view tabs, view control bar and status bar.
 - Two-letter keyboard shortcuts (for example WA wall, DR door, WN window, MV move) that you can reassign, export and import, command search (Ctrl+K), context menus and a full keyboard path through the panels.
 - An Options dialog for preferences such as tooltip detail, selection behaviour and live updates.
-- An assistant panel: ask about the project or ask for changes in plain words (through Puter's AI); every change it makes can be undone. AI spell checking for notes and names.
+- An assistant panel: ask about the project or ask for changes in plain words (through Everything's AI); every change it makes can be undone. AI spell checking for notes and names.
 - Light, dark and system themes. Works with mouse, trackpad, touch and keyboard, on desktops, tablets and phones.
 
 ## Getting around
@@ -84,7 +84,7 @@ Navigation: the wheel zooms at the cursor, the middle button pans. In 3D, drag w
 
 ```sh
 npm install
-npm run dev        # http://building-design.puter.localhost:5173/
+npm run dev        # http://building-design.localhost:8443/
 npm test           # unit tests (Vitest)
 npm run build      # production build in dist/
 ```
@@ -103,10 +103,10 @@ Open `/?sample` to start with the sample house.
 | Views | `src/views` | Plan, 3D/elevation/section, schedule and sheet controllers; one shared WebGL canvas plus a 2D overlay for text and feedback. |
 | Editing | `src/editor` | Tools, snapping, grips, temporary dimensions. |
 | Interface | `src/ui` | No framework: ribbon, panels, dialogs, menus. |
-| Files | `src/io` | Native files, Puter storage, recovery, and the IFC, glTF, OBJ, DXF, PDF and SVG writers. |
+| Files | `src/io` | Native files, Everything storage, recovery, and the IFC, glTF, OBJ, DXF, PDF and SVG writers. |
 | Collaboration | `src/core/sync.js`, `src/io/sync.js` | Element-level three-way merge of the shared project file against the copy last synchronized; polling for others' saves; worksets in `src/core/worksets.js`. |
 
-Lengths are millimetres internally and shown in the project's units. Settings are kept in a single Puter key-value record; projects are always stored as files, never in the key-value store.
+Lengths are millimetres internally and shown in the project's units. Settings are kept in a single Everything key-value record; projects are always stored as files, never in the key-value store.
 
 ## License
 

@@ -23,7 +23,7 @@ beforeEach(() => {
   reachable = true;
   record = { theme: 'dark', locale: 'de-DE' };
   writes = [];
-  vi.stubGlobal('puter', {
+  vi.stubGlobal('everything', {
     auth: { isSignedIn: () => true, getUser: async () => ({ username: 'demo', uuid: 'u-1' }) },
     kv: {
       get: vi.fn(async () => { if (!reachable) throw new TypeError('Failed to fetch'); return record; }),
@@ -75,7 +75,7 @@ it('lays a change made once the store answers over the record as it is, not over
   await session.setLocale('en-GB');
   expect(writes).toHaveLength(2);
   expect(writes[1]).toMatchObject({ theme: 'light', locale: 'en-GB' });
-  expect(puter.kv.get).toHaveBeenCalledTimes(2);
+  expect(everything.kv.get).toHaveBeenCalledTimes(2);
 });
 
 it('still takes an account with no record for one with the defaults', async () => {

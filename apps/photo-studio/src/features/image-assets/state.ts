@@ -10,9 +10,9 @@ export type AssetState = {
   status: 'idle' | 'working' | 'ready' | 'error';
   files: AssetFile[];
   issues: AssetIssue[];
-  // Problems writing to Puter or encoding (not tied to a layer name).
+  // Problems writing to Everything or encoding (not tied to a layer name).
   error?: string;
-  // Where the files were last written on Puter.
+  // Where the files were last written on Everything.
   folder?: string;
   // The document state the files were made from.
   doc?: PhotoDocument;
@@ -20,7 +20,7 @@ export type AssetState = {
   token: number;
   // Encoded files by content key, reused while their layer is unchanged.
   cache: Map<string, AssetFile>;
-  // Puter path → content key last written there.
+  // Everything path → content key last written there.
   written: Map<string, string>;
 };
 

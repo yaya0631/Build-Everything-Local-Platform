@@ -4,7 +4,7 @@
  * The frame this feeds is already the real defence: `sandbox` with neither
  * `allow-scripts` nor `allow-same-origin` means no mail script can run and
  * the frame is a unique opaque origin that cannot reach this app's storage or
- * its Puter token, and a `Content-Security-Policy` inside the frame stops
+ * its Everything token, and a `Content-Security-Policy` inside the frame stops
  * remote content loading. This runs anyway, because a typo in a sandbox
  * attribute should not be the difference between a rendered newsletter and a
  * disclosed auth token.

@@ -1,5 +1,5 @@
 /**
- * Recolor from Prompt: describe a mood, get color palettes from Puter AI
+ * Recolor from Prompt: describe a mood, get color palettes from Everything AI
  * chat (JSON), preview each on the selected artwork and apply one through
  * the Recolor machinery (or open it in Recolor to refine).
  */

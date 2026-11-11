@@ -51,7 +51,7 @@ export class App extends Emitter {
     this.samples = new SampleCache(this.engine);
     this.commands = new Commands(this);
     this.activePanel = 'playlist';
-    this.file = null; // { path?: Puter path, local?: IndexedDB key, name }
+    this.file = null; // { path?: Everything path, local?: IndexedDB key, name }
     this.saving = false;
     this.tools = { playlist: 'draw', pianoRoll: 'draw' };
     /** The last parameter the user changed, for "automate last tweaked". */
@@ -155,9 +155,9 @@ export class App extends Emitter {
     this.hintEl = h('span.status-hint', { 'aria-hidden': 'true' });
     const cloud = h('span.status-cloud');
     const syncCloud = () => {
-      const signedIn = Boolean(window.puter?.auth?.isSignedIn?.());
+      const signedIn = Boolean(window.everything?.auth?.isSignedIn?.());
       cloud.replaceChildren(icon(signedIn ? 'cloud' : 'hard-drive', 12), h('span', signedIn ? 'Cloud storage on' : 'Working on this device'));
-      cloud.title = signedIn ? 'Projects save to your Puter cloud' : 'Sign in to save projects to your Puter cloud';
+      cloud.title = signedIn ? 'Projects save to your Everything cloud' : 'Sign in to save projects to your Everything cloud';
     };
     this.on('account', syncCloud);
     syncCloud();

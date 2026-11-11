@@ -5,7 +5,7 @@ import { editorView } from '../src/views/editor.js';
 import { Doc } from '../src/lib/doc.js';
 import { session } from '../src/lib/session.js';
 import { closeAllModals } from '../src/ui/modal.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 import { workbookToXlsx } from '../src/core/io.js';
 import { Workbook } from '../src/core/workbook.js';
 
@@ -24,12 +24,12 @@ beforeEach(async () => {
   Object.defineProperty(HTMLElement.prototype, 'clientHeight', { configurable: true, get: () => 400 });
   vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue({ measureText: (t) => ({ width: t.length * 7 }), font: '' });
   document.body.innerHTML = '<div id="app"></div>';
-  ({ calls } = installMockPuter());
-  puter._signedIn = false;
-  puter.auth = {
-    isSignedIn: () => puter._signedIn,
-    signIn: vi.fn(async () => { puter._signedIn = true; }),
-    getUser: async () => (puter._signedIn ? { username: 'nariman', uuid: 'u-1' } : null),
+  ({ calls } = installMockEverything());
+  everything._signedIn = false;
+  everything.auth = {
+    isSignedIn: () => everything._signedIn,
+    signIn: vi.fn(async () => { everything._signedIn = true; }),
+    getUser: async () => (everything._signedIn ? { username: 'nariman', uuid: 'u-1' } : null),
   };
   await session.init();
 });
@@ -43,7 +43,7 @@ afterEach(() => {
   vi.useRealTimers();
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
-  delete globalThis.puter;
+  delete globalThis.everything;
   document.body.replaceChildren();
 });
 
@@ -58,7 +58,7 @@ function setup(leaveDialog = null) {
   return { doc, goHome };
 }
 
-describe('editing without a Puter session', () => {
+describe('editing without an Everything session', () => {
   it('shows "Sign in to save" instead of autosaving, and the pill signs in and saves', async () => {
     const { doc } = setup();
     const pill = view.el.querySelector('.save-status');
@@ -75,7 +75,7 @@ describe('editing without a Puter session', () => {
 
     pill.click();
     await vi.advanceTimersByTimeAsync(0);
-    expect(puter.auth.signIn).toHaveBeenCalledTimes(1);
+    expect(everything.auth.signIn).toHaveBeenCalledTimes(1);
     await vi.waitFor(() => expect(writes()).toEqual(['Spreadsheets/Untitled spreadsheet.xlsx']));
     await vi.waitFor(() => expect(doc.wb.dirty).toBe(false));
     expect(pill.classList.contains('signed-out')).toBe(false);
@@ -96,7 +96,7 @@ describe('editing without a Puter session', () => {
     leaveDialog.mockResolvedValueOnce('stay');
     expect(await view.flush()).toBe(false);
     expect(doc.wb.dirty).toBe(true);
-    expect(puter.auth.signIn).not.toHaveBeenCalled();
+    expect(everything.auth.signIn).not.toHaveBeenCalled();
 
     leaveDialog.mockResolvedValueOnce('leave');
     expect(await view.flush()).toBe(true);
@@ -111,7 +111,7 @@ describe('editing without a Puter session', () => {
     doc.wb.setInput(doc.wb.activeSheetId, 1, 0, 'more');
     leaveDialog.mockResolvedValueOnce('sign-in');
     expect(await view.flush()).toBe(true);
-    expect(puter.auth.signIn).toHaveBeenCalledTimes(1);
+    expect(everything.auth.signIn).toHaveBeenCalledTimes(1);
     expect(writes()).toEqual(['Spreadsheets/Untitled spreadsheet.xlsx']);
     expect(doc.wb.dirty).toBe(false);
     expect(goHome).not.toHaveBeenCalled();

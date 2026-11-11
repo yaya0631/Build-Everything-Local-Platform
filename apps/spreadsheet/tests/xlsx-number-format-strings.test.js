@@ -30,7 +30,7 @@ it('keeps literal escape-like text through cell copy and two native-only workshe
   for (let pass = 0; pass < 2; pass++) {
     const zip = X.CFB.read(new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()), { type: 'array' });
     const part = X.CFB.find(zip, '/xl/workbook.xml');
-    part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')); part.size = part.content.length;
+    part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')); part.size = part.content.length;
     const xml = new TextDecoder().decode(X.CFB.find(zip, '/xl/styles.xml').content);
     expect(formats(xml).filter(n => decodeXlsxString(n.getAttribute('formatCode')) === code)).toHaveLength(1);
     wb = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }));

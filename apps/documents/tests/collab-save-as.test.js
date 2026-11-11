@@ -2,7 +2,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as Y from 'yjs';
 
-vi.mock('../src/lib/puter.js', async (importOriginal) => {
+vi.mock('../src/lib/everything.js', async (importOriginal) => {
   const real = await importOriginal();
   const files = new Map();
   let clock = 1;
@@ -22,7 +22,7 @@ import { editorState } from '../src/collab/binding.js';
 import { CollabClient } from '../src/collab/client.js';
 import { MemoryHub } from '../src/collab/transports.js';
 import { Doc, versioning, publishing } from '../src/lib/doc.js';
-import * as P from '../src/lib/puter.js';
+import * as P from '../src/lib/everything.js';
 
 let hub = null;
 let joinAs = null;

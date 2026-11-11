@@ -18,19 +18,19 @@ import { avatar, field, textInput } from '../ui/bits.js';
 export async function confirmSignOut() {
   const ok = await confirmDialog({
     title: 'Sign out?',
-    message: 'Your data stays safe in your Puter account.',
+    message: 'Your data stays safe in your Everything account.',
     confirmLabel: 'Sign out',
     danger: false,
   });
   if (!ok) return;
-  puter.auth.signOut();
+  everything.auth.signOut();
   location.reload();
 }
 
 export function settingsView() {
   const root = el('div.view');
-  // Inside a Puter app the platform owns the session — no sign-out.
-  const isApp = typeof puter !== 'undefined' && puter.env === 'app';
+  // Inside an Everything app the platform owns the session — no sign-out.
+  const isApp = typeof everything !== 'undefined' && everything.env === 'app';
 
   root.append(
     el('div.page-head', {},
@@ -42,7 +42,7 @@ export function settingsView() {
   );
 
   /* --- Account --- */
-  const username = store.user?.username || 'Puter user';
+  const username = store.user?.username || 'Everything user';
   root.append(group('Account',
     el('div.user-chip', {},
       avatar(username),
@@ -53,7 +53,7 @@ export function settingsView() {
         el('div.row-title', {}, username),
         // A sentence, and the only place it is said: on a phone the one-line
         // cut left "Synced with …" beside the Sign out button.
-        el('div.row-sub.wrap', {}, 'Synced with your Puter cloud')
+        el('div.row-sub.wrap', {}, 'Synced with your Everything cloud')
       ),
       !isApp && el('button.btn.btn-ghost', { onclick: confirmSignOut }, 'Sign out')
     )
@@ -311,7 +311,7 @@ export function settingsView() {
       // takeable back, and somewhere they can find it.
       store.settings.ocrConsent
         ? settingRow('sparkle', 'Ask before AI reads a scan',
-          'Scanned documents with no text in them are currently read by Puter\'s AI without asking each time.', async () => {
+          'Scanned documents with no text in them are currently read by Everything\'s AI without asking each time.', async () => {
             try {
               await store.updateSettings({ ocrConsent: false });
               toast('You will be asked again next time');
@@ -366,8 +366,8 @@ export function settingsView() {
   /* --- About --- */
   root.append(group('About',
     el('p.about-text', {},
-      'Contract Manager stores everything in your own Puter cloud: nothing is sent anywhere else. Obligation extraction sends the text you give it to the AI; a scan with no text in it is sent as page images, and only once you have agreed to that. Built on ',
-      el('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Puter'),
+      'Contract Manager stores everything in your own Everything cloud: nothing is sent anywhere else. Obligation extraction sends the text you give it to the AI; a scan with no text in it is sent as page images, and only once you have agreed to that. Built on ',
+      el('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Everything'),
       '.')
   ));
 

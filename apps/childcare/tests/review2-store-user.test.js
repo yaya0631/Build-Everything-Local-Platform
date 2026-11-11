@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 /**
- * Second review: starting from the offline snapshot when Puter cannot say
+ * Second review: starting from the offline snapshot when Everything cannot say
  * who is signed in, but only for the same session.
  */
 import { describe, it, expect, vi } from 'vitest';
@@ -15,7 +15,7 @@ vi.mock('../src/ui/toast.js', () => ({ toast: vi.fn() }));
 vi.mock('../src/views/onboarding.js', () => ({ maybeOnboard: vi.fn() }));
 vi.mock('../src/core/backend.js', async (importOriginal) => {
   const real = await importOriginal();
-  return { ...real, createPuterBackend: () => real.createMemoryBackend() };
+  return { ...real, createEverythingBackend: () => real.createMemoryBackend() };
 });
 vi.mock('../src/team.js', async (importOriginal) => ({
   ...(await importOriginal()),
@@ -30,7 +30,7 @@ async function boot(token) {
   started = 0;
   document.body.innerHTML = '<div id="app"></div>';
   history.replaceState(null, '', '/#/');
-  globalThis.puter = {
+  globalThis.everything = {
     authToken: token,
     auth: { isSignedIn: () => true, getUser: async () => Promise.reject(new Error('Failed to fetch')), getProfilePicture: async () => null },
     kv: {},
@@ -41,9 +41,9 @@ async function boot(token) {
   return app;
 }
 
-describe('Puter cannot say who is signed in', () => {
+describe('Everything cannot say who is signed in', () => {
   it('starts as the last person seen in this same session', async () => {
-    globalThis.puter = { authToken: 'session-1' };
+    globalThis.everything = { authToken: 'session-1' };
     const platform = await import('../src/platform.js');
     await platform.rememberUser({ username: 'director', uuid: 'u1' });
     const app = await boot('session-1');
@@ -56,6 +56,6 @@ describe('Puter cannot say who is signed in', () => {
     expect(started).toBe(0);
     expect(app.user).toBeNull();
     expect(document.querySelector('.welcome')).not.toBeNull();
-    delete globalThis.puter;
+    delete globalThis.everything;
   });
 });

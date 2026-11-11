@@ -166,11 +166,11 @@ describe('modal keyboard focus past section headings and scrollers', () => {
 describe('modal description', () => {
   it('describes a dialog by the message it opens with', async () => {
     const { confirmDialog } = await import('../src/ui/modal.js');
-    confirmDialog({ title: 'Delete "Budget"?', message: 'It moves to the Trash in Puter.' });
+    confirmDialog({ title: 'Delete "Budget"?', message: 'It moves to the Trash in Everything.' });
     const panel = document.querySelector('.modal-panel');
     const id = panel.getAttribute('aria-describedby');
     expect(id).toBeTruthy();
-    expect(document.getElementById(id).textContent).toBe('It moves to the Trash in Puter.');
+    expect(document.getElementById(id).textContent).toBe('It moves to the Trash in Everything.');
   });
 
   it('leaves a dialog without an opening message undescribed', () => {

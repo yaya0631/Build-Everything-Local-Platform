@@ -1,6 +1,6 @@
 /**
  * Uploading documents: a dialog with a drop zone, and a helper that stores
- * dropped files directly. Files go to the app's Puter folder (files.js);
+ * dropped files directly. Files go to the app's Everything folder (files.js);
  * only a small reference is kept on the document record.
  */
 import '../styles/docs.css';

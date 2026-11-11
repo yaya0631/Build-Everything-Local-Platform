@@ -1,8 +1,8 @@
 // Version History: automatic versions of each document on save and at the
 // autosave interval, named versions saved on demand, all kept in this
 // browser (IndexedDB). Versions can be previewed on the canvas, restored as a
-// new history step, opened as a copy or deleted. Puter.js has no file
-// version API, so Puter files list the versions kept here too.
+// new history step, opened as a copy or deleted. Everything.js has no file
+// version API, so Everything files list the versions kept here too.
 import './versions.css';
 import type { Editor } from '../../editor';
 import type { DocumentSession } from '../../app/session';

@@ -2,7 +2,7 @@
  * Development only (?local): the real collaboration service (worker/service.js)
  * running in the browser on storage kept in localStorage, so sharing,
  * invitations, roles, presence and live editing can be tried without a
- * Puter account. Every tab of the dev server shares this one "server";
+ * Everything account. Every tab of the dev server shares this one "server";
  * open another tab with ?local&as=<name> to act as someone else.
  */
 import { WikiService } from '../../worker/service.js';
@@ -27,7 +27,7 @@ function save(state) {
   }
 }
 
-function fakePuter(listeners) {
+function fakeEverything(listeners) {
   const state = () => load();
   const missing = () => Object.assign(new Error('not found'), { code: 'subject_does_not_exist' });
   const kv = {
@@ -92,10 +92,10 @@ function fakePuter(listeners) {
   return { kv, fs, auth: { getUser: async () => OWNER }, authToken: 'dev.eyJhcHBfdWlkIjoiYXBwLWRldiJ9.dev', APIOrigin: 'https://api.invalid' };
 }
 
-/** A collab adapter like the one main.js builds for Puter, for a dev identity. */
+/** A collab adapter like the one main.js builds for Everything, for a dev identity. */
 export function localCollab(user) {
   const listeners = new Set();
-  const puter = fakePuter(listeners);
+  const everything = fakeEverything(listeners);
   const subs = new Map();
   // Subjects name their room (in the owner's key or the handle), so a signal
   // reaches only that space. Handles made before they named it get a signal
@@ -128,7 +128,7 @@ export function localCollab(user) {
     request: async (_server, op, data) => {
       try {
         const fetcher = async (_url, init) => ({ ok: true, json: async () => ({ handle: `dev-${identity.uuid.slice(0, 8)}-${init?.body ? JSON.parse(init.body).prefix.split(':')[1] : 'x'}` }) });
-        const service = new WikiService(puter, { fetcher });
+        const service = new WikiService(everything, { fetcher });
         return structuredClone(await service.call(identity, { op, ...data }));
       } catch (err) {
         throw Object.assign(new Error(err.message), { status: err.status || 500 });

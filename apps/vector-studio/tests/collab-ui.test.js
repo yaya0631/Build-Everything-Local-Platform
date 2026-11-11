@@ -76,7 +76,7 @@ describe('collaboration commands and menus', () => {
     expect(app.collab.unavailable()).toMatch(/Sign in/);
     app.commands.run('file.invite');
     await waitFor(() => document.querySelector('dialog[open]'));
-    expect(document.querySelector('dialog[open]').textContent).toMatch(/Sign in with Puter/);
+    expect(document.querySelector('dialog[open]').textContent).toMatch(/Sign in with Everything/);
     expect(dialogButton('Sign In') || dialogButton('OK')).toBeTruthy();
     // Comments still work in a personal document.
     expect(app.commands.isEnabled('comments.add')).toBe(true);
@@ -99,7 +99,7 @@ describe('collaboration commands and menus', () => {
     input.value = 'bob';
     dialogButton('Invite').click();
     await waitFor(() => /Invited bob/.test(document.querySelector('.collab-status-line').textContent));
-    expect(await net.puter.kv.get(`vs:${ed.collab.room}:named:bob`)).toMatchObject({ role: 'editor' });
+    expect(await net.everything.kv.get(`vs:${ed.collab.room}:named:bob`)).toMatchObject({ role: 'editor' });
     const result = await axe.run(document.querySelector('dialog[open]'), { rules: { 'color-contrast': { enabled: false }, region: { enabled: false } } });
     expect(result.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical').map((v) => v.id)).toEqual([]);
     dialogButton('Done').click();

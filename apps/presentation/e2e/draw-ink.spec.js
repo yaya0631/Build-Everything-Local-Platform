@@ -24,10 +24,10 @@ test.afterEach(({ page }) => {
 // The AI's answer to every question is `reply`; the prompts asked are kept
 // in window.__asked.
 async function start(page, { reply = null } = {}) {
-  await page.route("**/sdk/puter.js", (r) =>
+  await page.route("**/sdk/everything.js", (r) =>
     r.fulfill({
       contentType: "application/javascript",
-      body: `window.__asked=[];window.puter={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}},ai:{chat:async(prompt,image,test,options)=>{window.__asked.push({prompt,image:String(image).slice(0,22),options});return {message:{content:${JSON.stringify(reply ?? "")}}};}}};`,
+      body: `window.__asked=[];window.everything={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}},ai:{chat:async(prompt,image,test,options)=>{window.__asked.push({prompt,image:String(image).slice(0,22),options});return {message:{content:${JSON.stringify(reply ?? "")}}};}}};`,
     }),
   );
   await page.goto("/");
@@ -257,7 +257,7 @@ test("Ink to Text and Ink to Math ask the AI to read the ink", async ({
   // Math: the answer becomes an equation object, opened again for editing
   // by a double-click.
   await page.evaluate(() => {
-    window.puter.ai.chat = async () => ({ message: { content: "$$x^2+1$$" } });
+    window.everything.ai.chat = async () => ({ message: { content: "$$x^2+1$$" } });
   });
   await page.locator('[data-command="draw-pen1"]').click();
   await stroke(page, wave(400, 330));
@@ -288,7 +288,7 @@ test("Ink to Text puts the words on the ink's slide when another is shown meanwh
   await start(page);
   // The AI answers when the test says.
   await page.evaluate(() => {
-    window.puter.ai.chat = () =>
+    window.everything.ai.chat = () =>
       new Promise((resolve) => {
         window.__read = () => resolve({ message: { content: "Hello" } });
       });

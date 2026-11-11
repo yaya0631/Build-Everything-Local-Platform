@@ -10,7 +10,7 @@ test.skip(({ isMobile }) => isMobile, 'desktop workspace');
 test.use({ locale: 'ar-EG' });
 
 test('a measurement is labeled in any language', async ({ page }) => {
-  await page.route('**/sdk/puter.js', (route) => route.abort());
+  await page.route('**/sdk/everything.js', (route) => route.abort());
   const doc = await PDFDocument.create();
   doc.addPage([612, 792]);
   await page.goto('/#library');

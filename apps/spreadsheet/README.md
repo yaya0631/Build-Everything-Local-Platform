@@ -4,12 +4,12 @@
 
 An open-source alternative to Microsoft Excel: a fast, private spreadsheet app
 built with vanilla JavaScript (no frameworks),
-Vite, and [Puter.js](http://localhost:8443) as the only backend. Files
-are real `.xlsx` documents saved to your own Puter cloud, so they open in
+Vite, and [Everything.js](http://localhost:8443) as the only backend. Files
+are real `.xlsx` documents saved to your own Everything cloud, so they open in
 Excel, Numbers, or LibreOffice and never live on anyone else's server.
 
 Nobody has to sign in to work: the app opens straight into a new sheet, and
-Puter asks for a sign-in at the first action that needs the cloud, such as
+Everything asks for a sign-in at the first action that needs the cloud, such as
 saving, opening a file, or the spreadsheet list (`#/home`, behind the back
 arrow). Until then the edits stay in the tab (and in this browser's local
 draft) and the status pill reads "Sign in to save".
@@ -79,15 +79,15 @@ regenerate the PNG/ICO favicons, Apple touch icon, and standard/maskable install
   script (`=Übersicht!A1`, `=合計*2`), named formulas and named functions (a
   defined name can hold a constant, an expression, or a `LAMBDA` called like
   a function: `=Double(4)`), `IMAGE(url)` pictures inside cells,
-  `AI(prompt, [data])` answers from Puter's AI written into the cell (`#BUSY!`
+  `AI(prompt, [data])` answers from Everything's AI written into the cell (`#BUSY!`
   while it thinks; one question per distinct prompt, F9 asks again),
   `TRANSLATE(text, [from], [to])` (or `GOOGLETRANSLATE`) and
   `DETECTLANGUAGE(text)` through the same AI,
   `IMPORTRANGE("Budget", "Sheet1!A1:B10")` cells from another spreadsheet on
-  your Puter drive spilled into place (`#BUSY!` while the file loads),
+  your Everything drive spilled into place (`#BUSY!` while the file loads),
   `IMPORTDATA(url)` a CSV or TSV from the web, `IMPORTHTML(url, "table",
   2)` a table or list from a web page, and `IMPORTXML(url, "//item/title")`
-  nodes picked by XPath, spilled into place (through Puter's fetch, so most
+  nodes picked by XPath, spilled into place (through Everything's fetch, so most
   addresses work),
   `QUERY(range, "select A, sum(C) where B > 5 group by A order by sum(C)
   desc limit 10 label sum(C) 'Total'")` in the Sheets query language (select,
@@ -208,7 +208,7 @@ regenerate the PNG/ICO favicons, Apple touch icon, and standard/maskable install
   a chat or a document.
 - **AI assistant**: a chat beside the sheet, open by default (the Ask AI
   button, View → AI assistant, or Ctrl/Cmd+J open and close it; closed, it
-  stays closed on the next visit) where Puter's AI (Claude Opus 5.5) answers questions about the workbook
+  stays closed on the next visit) where Everything's AI (Claude Opus 5.5) answers questions about the workbook
   and changes it: it reads cells, works figures out with the formula engine
   rather than guessing, and can write values and formulas, fill a column,
   format, sort, insert and delete rows and columns, add charts, tables,
@@ -246,7 +246,7 @@ regenerate the PNG/ICO favicons, Apple touch icon, and standard/maskable install
   someone else's file runs only once you agree. Scripts are saved with the
   workbook, in `.xlsx` as a package part of their own that other programs
   leave alone.
-- **AI help with formulas**: describe what a cell should calculate and Puter's
+- **AI help with formulas**: describe what a cell should calculate and Everything's
   AI writes the formula (the sheet's headers, a few sample rows, tables, and
   named ranges are explained to it, and the dialog says which cells were
   sent; you check it and insert it), or ask it to explain the
@@ -380,7 +380,7 @@ regenerate the PNG/ICO favicons, Apple touch icon, and standard/maskable install
   key on it) to modify, duplicate or delete it; modifying a style reformats
   every cell that uses it, in one undo step, and a built-in style can be
   modified for one workbook and reset later. Merge Styles… copies the styles of
-  another spreadsheet (from the Spreadsheets folder, Puter, or this device) and
+  another spreadsheet (from the Spreadsheets folder, Everything, or this device) and
   asks before replacing same-named ones. Named styles travel in .xlsx files as
   the file's own cell styles, with cells linked to them.
 - **Conditional formatting**: highlight cells that are greater or less than,
@@ -493,7 +493,7 @@ regenerate the PNG/ICO favicons, Apple touch icon, and standard/maskable install
   and Find Next.
 - **Edit links** (Data → Edit links, or Data → Queries & Connections → Edit
   Links): every link to another workbook with its source file, kind, update
-  mode and status. Update Values reads the source again from your Puter drive
+  mode and status. Update Values reads the source again from your Everything drive
   and refreshes the cached cells the formulas read; Change Source points a
   link at another file (picked on the drive), Open Source opens it, Check
   Status looks for every source (and its sheets), and Break Link turns every
@@ -648,7 +648,7 @@ regenerate the PNG/ICO favicons, Apple touch icon, and standard/maskable install
   editable), or add to AutoCorrect; words in capitals, words with digits and
   web, email and file addresses are skipped unless you say otherwise.
   Shift+F7 opens the Thesaurus pane on the active cell's word: its meanings
-  with synonyms and antonyms from Puter's AI, a click to look any of them up,
+  with synonyms and antonyms from Everything's AI, a click to look any of them up,
   and Insert to put one in place of the word. The Translator pane translates
   typed text or the selected cells (as `TRANSLATE()` does) and puts the result
   in the active cell or back into the cells it came from, in one step.
@@ -658,7 +658,7 @@ regenerate the PNG/ICO favicons, Apple touch icon, and standard/maskable install
   loan calculator with an amortization schedule, a grade book, a weekly
   schedule, a project timeline drawn with conditional formatting, a monthly
   calendar, or a habit tracker, each with live formulas and blue input cells.
-- **Files**: every document is an `.xlsx` in `Spreadsheets/` on your Puter
+- **Files**: every document is an `.xlsx` in `Spreadsheets/` on your Everything
   drive, autosaved a moment after each change; if the file was written from
   elsewhere in the meantime (another device or tab), you are asked whether to
   overwrite it or reload theirs (a file merely renamed or moved elsewhere, its
@@ -667,7 +667,7 @@ regenerate the PNG/ICO favicons, Apple touch icon, and standard/maskable install
   (comma, semicolon, tab, or pipe separated, detected, or named by a leading
   `sep=;` line as Excel reads it), `.tsv`, and `.ods`
   files from your device (or drop one anywhere on the app, over a dialog
-  included) or from Puter (delimited text opens with its columns fitted to the
+  included) or from Everything (delimited text opens with its columns fitted to the
   data); a file is read by its bytes, so comma-separated text saved as
   `.xlsx` opens as text and a workbook named `.csv` as the workbook it is,
   while a `.csv`, `.tsv` or `.txt` that is not a workbook is delimited text
@@ -701,8 +701,8 @@ regenerate the PNG/ICO favicons, Apple touch icon, and standard/maskable install
   and table styling print as they show on screen. The home list sorts by last
   modified, name, or size, searches the names without their extensions, keeps
   its "2 min ago" times current, and files opened from elsewhere on the drive are
-  kept in a "Recently opened" strip on this device. Inside the Puter desktop, spreadsheets saved where
-  you chose in Puter's Save dialog are listed with the rest, wherever they are moved. The app registers for
+  kept in a "Recently opened" strip on this device. Inside the Everything desktop, spreadsheets saved where
+  you chose in Everything's Save dialog are listed with the rest, wherever they are moved. The app registers for
   "Open with" so double-clicking a spreadsheet opens it here.
 - **Regional formats**: pick how numbers and dates are written and read
   (account menu): `1.234,50` and `28.8.2026` in German, day-first dates in
@@ -755,9 +755,9 @@ regenerate the PNG/ICO favicons, Apple touch icon, and standard/maskable install
   in parentheses, or both for Number and Currency, and any custom format
   code's section colors ([Red], [Blue], …) color the cell text.
 - **Image from URL**: Insert → Image from URL fetches a PNG, JPEG, GIF, WebP,
-  or SVG through Puter and places it on the sheet like an uploaded picture.
+  or SVG through Everything and places it on the sheet like an uploaded picture.
 - **Pictures in cells**: Insert ▸ Image ▸ Place in Cell (from your device,
-  Puter or a URL) makes a picture the cell's value, fitted inside the cell in
+  Everything or a URL) makes a picture the cell's value, fitted inside the cell in
   proportion and aligned by the cell's alignment. It moves, sorts (after the
   values), filters, copies and undoes with its cell; `=A1` shows it, `TYPE`
   answers 128 and `ISNUMBER`/`ISTEXT` say no. Right-click ▸ Edit Alt Text… gives
@@ -791,7 +791,7 @@ regenerate the PNG/ICO favicons, Apple touch icon, and standard/maskable install
   bytes are not valid UTF-8, so accented names survive files from older
   Windows programs.
 - **Import from URL**: File → Import from URL fetches a .csv, .tsv, .xlsx, or
-  .ods from a web address through Puter and adds its sheets to the open
+  .ods from a web address through Everything and adds its sheets to the open
   spreadsheet (the format is read from the address or sniffed from the bytes).
 - **Editing together**: Share → Start editing together lets several people
   work in one spreadsheet at once. Everyone sees the others' edits within a
@@ -803,7 +803,7 @@ regenerate the PNG/ICO favicons, Apple touch icon, and standard/maskable install
   goes to where they are), their selection is outlined on the grid in their
   colour with their name, and the sheet tabs show who is on which sheet. The
   owner hands out invitation links that let people edit or only view (enforced
-  by the owner's own collaboration server, a Puter Worker, not only by the
+  by the owner's own collaboration server, an Everything Worker, not only by the
   interface), invites people by username, changes or removes access, and can
   stop at any time. Undo takes back only your own changes, and leaves alone
   what others changed since. Edits made offline wait on the device (through
@@ -818,14 +818,14 @@ regenerate the PNG/ICO favicons, Apple touch icon, and standard/maskable install
   orientation, scaled to the page width or split across pages), or the sheet
   or selection as .csv. The copy leaves out Show Changes' record of earlier
   cell values, as every download does. Send a link shares the file with each
-  address (Can view or Can edit; someone without a Puter account is invited)
+  address (Can view or Can edit; someone without an Everything account is invited)
   and emails them a link that opens it; the owner of a live workbook sends an
   invitation into it. The Share dialog offers Email a link too. Addresses are
   checked as they are typed, attachments are capped at 7 MB, the dialog shows
   what is attached and how large it is, and after a partial failure it keeps
   just the addresses that were not reached. Mail goes through the app's own
   email worker (`src/workers/email-worker.js`, adapted from the Calendar
-  app's), called with the user's Puter session and billed to them; it
+  app's), called with the user's Everything session and billed to them; it
   composes every message itself, accepts only workbook attachments it
   recognizes and links to the app, sends each person a message of their own,
   and caps how much one user can send a day. No credential is ever put in a
@@ -833,13 +833,13 @@ regenerate the PNG/ICO favicons, Apple touch icon, and standard/maskable install
 - **Threaded comments with @mentions**: typing @ in a comment or reply lists
   the people who can be mentioned (the members of a live workbook, the people
   the file is shared with, the workbook's other commenters), narrowed as you
-  type; a Puter username or an email address can be typed in full. A posted
+  type; an Everything username or an email address can be typed in full. A posted
   comment keeps whom it mentions, shows them highlighted, and carries them in
   .xlsx threaded comments (each comment's mentions list against the
   workbook's people). Anyone mentioned who cannot open the workbook is offered
   a share first (Can view or Can edit), then each is emailed the comment, its
-  cell and a link that opens the workbook at that cell (a Puter user known by
-  username at their Puter mailbox). Whoever has the workbook open sees a
+  cell and a link that opens the workbook at that cell (an Everything user known by
+  username at their Everything mailbox). Whoever has the workbook open sees a
   mention of them as it arrives, and on opening it the mentions they have not
   seen yet, with a button that goes to the comment. A comment that mentions
   someone can also assign its thread to them: the card says who it is
@@ -852,14 +852,14 @@ regenerate the PNG/ICO favicons, Apple touch icon, and standard/maskable install
   label. Restore brings a snapshot back (the current state is kept as a
   version first); unlabeled snapshots beyond 30 are pruned, labeled ones stay.
   The history belongs to the file, not to its name: renaming or moving it,
-  in the app or on the Puter desktop, keeps the history with it, and the next
+  in the app or on the Everything desktop, keeps the history with it, and the next
   snapshot brings the folder back to the name in use. A history left behind by
   a file deleted or renamed outside the app before it was kept that way is set
   aside, its snapshots kept, when another file takes that name, so no file
   lists or restores a stranger's snapshots.
 - **Show Changes**: Review → Show Changes (also File → Show changes, and
   Show Changes on the cell menu for the selected cells) opens a pane listing
-  the recent edits newest first: who made each one (the signed-in Puter
+  the recent edits newest first: who made each one (the signed-in Everything
   user), when, where, and what the cell held before and after, formulas shown
   as formulas. A paste or fill is one card that opens onto the cells it
   changed; rows and sheets inserted or deleted, and undo and redo, are listed
@@ -896,7 +896,7 @@ regenerate the PNG/ICO favicons, Apple touch icon, and standard/maskable install
   spreadsheet has been saved under its name meanwhile, which neither takes
   those edits for its own nor writes over them.
   Local drafts, print settings, and the lists of recently opened files and of those saved outside the app folder are scoped to the signed-in
-  Puter account. Older, unscoped browser records are retained but are not
+  Everything account. Older, unscoped browser records are retained but are not
   automatically offered to an account because their owner cannot be verified.
 - **Copy several ranges**: ranges added with Ctrl/Cmd+click copy together
   when they line up — the same rows side by side, or the same columns one
@@ -920,7 +920,7 @@ regenerate the PNG/ICO favicons, Apple touch icon, and standard/maskable install
   option by a word of its name. General: theme, regional format, whether the
   app opens on the start screen, and the font, size, sheet count and view a new
   workbook starts with, and the name written on your comments and changes
-  (your Puter account's unless you choose another). Formulas: this workbook's
+  (your Everything account's unless you choose another). Formulas: this workbook's
   calculation mode and iterative calculation (saved with the workbook, and
   labelled as such), how new workbooks calculate, and the error checking rules.
   Editing: where Enter moves (down, right, up, left, or nowhere), a fixed
@@ -934,7 +934,7 @@ regenerate the PNG/ICO favicons, Apple touch icon, and standard/maskable install
   Proofing (AutoCorrect, spelling), Save (AutoSave by default, how soon unsaved
   edits are copied into the browser), Accessibility (a stronger selection,
   reduced motion) and Privacy (AI features on or off). Changes apply at once and
-  follow your Puter account to other devices.
+  follow your Everything account to other devices.
 - **Quick Access Toolbar**: the row beside the title holds AutoSave, Save, Undo
   and Redo, and any other command: right-click a ribbon button → Add to Quick
   Access Toolbar, tick common commands in the toolbar's own arrow menu, or pick
@@ -957,7 +957,7 @@ regenerate the PNG/ICO favicons, Apple touch icon, and standard/maskable install
   Escape (which also dismisses a notice at the foot of the screen, as does the
   close button of one that offers an action), the home list marks itself busy
   while it loads and then says how many spreadsheets it found or what a search
-  matched, a sign-in that is waiting on Puter says so in a line of its own,
+  matched, a sign-in that is waiting on Everything says so in a line of its own,
   toolbar buttons expose pressed
   state and have 44px touch targets (as do a notice's Undo and Dismiss; the
   smaller controls of the bars, such as
@@ -1006,12 +1006,12 @@ src/
     sample.js         the sample budget
     templates.js      the template workbooks (invoice, to-do list, loan, ...)
   lib/
-    puter.js          every call to the Puter SDK
+    everything.js          every call to the Everything SDK
     doc.js            the open document: save, autosave, rename, export, drafts, version snapshots
     drafts.js         unsaved edits kept in the browser until the file holds them
     versions.js       version history snapshots under Spreadsheets/.versions
     recent.js         recently opened files (KV), for the home screen
-    made.js           spreadsheets the app saved outside its folder (Puter's Save dialog), for the home screen
+    made.js           spreadsheets the app saved outside its folder (Everything's Save dialog), for the home screen
     session.js        sign-in state (nobody, or who) and settings
   ui/                 grid, toolbar, formula bar, sheet tabs, the menu bar
                       (menubar.js), popover menus with submenus (menu.js), the
@@ -1036,7 +1036,7 @@ that can produce an array are found statically from their syntax tree and
 settled sheet-wide before any cell is read, so blank cells know which spill
 covers them.
 
-### Storage on Puter
+### Storage on Everything
 
 | Where | What | Why |
 |---|---|---|
@@ -1063,7 +1063,7 @@ in-cell pictures remain image values through references and lookups and save
 as native Excel rich values. Excel data-model pivots remain saved result cells;
 refreshing their model or operating Excel slicers is not supported.
 
-A very-hidden sheet named `_puter_meta` keeps JSON for the app's original
+A very-hidden sheet named `_everything_meta` keeps JSON for the app's original
 style overrides and inheritance, editable chart/image models, conditional
 formatting, row/column groups, protection, and other settings. Other apps
 ignore this sheet; this app reads it back. From a file another program wrote,
@@ -1117,9 +1117,9 @@ another program's file that reaches into another workbook (`[1]Sheet1!A1`)
 keeps the value that file cached, as there is no other workbook to read here,
 and is never written back as a formula; the sidecar keeps its text.
 
-When the app runs inside the Puter desktop (`puter.env === 'app'`) the
+When the app runs inside the Everything desktop (`everything.env === 'app'`) the
 desktop owns the session, so no sign-out is offered and exports go through
-Puter's own save dialog instead of a browser download.
+Everything's own save dialog instead of a browser download.
 
 ## Analytics
 
@@ -1130,7 +1130,7 @@ custom event goals under the site's Plausible settings → Goals:
 | --- | --- | --- |
 | `Spreadsheet Edited` | First successful data change in an editor session, including typing, pasting or AI-made changes | None |
 | `Spreadsheet Saved` | A cloud write completes, including autosaves and Save a copy | `method`: `manual`, `auto` or `copy` |
-| `Spreadsheet Exported` | A browser download starts or Puter's save picker completes, including selection and chart exports | `format`, `method`: `browser` or `puter` |
+| `Spreadsheet Exported` | A browser download starts or Everything's save picker completes, including selection and chart exports | `format`, `method`: `browser` or `everything` |
 | `AI Interaction` | A nonempty AI answer arrives; sidebar chats count once after the completed exchange | `feature`; sidebar replies also report whether they `changed` the workbook |
 
 AI features are `assistant`, `formula`, `translate`, `detect-language`, `ask-data`,
@@ -1155,9 +1155,9 @@ npm run preview    # serve dist/
 
 Two dev harnesses (not part of the production build):
 
-- `/mock.html` runs the whole app against an in-memory mock of the Puter SDK
-  (`dev/puter-mock.js`), so no Puter account is needed. Add `?env=app` to
-  simulate the Puter desktop or `?signedout` to start without a session.
+- `/mock.html` runs the whole app against an in-memory mock of the Everything SDK
+  (`dev/everything-mock.js`), so no Everything account is needed. Add `?env=app` to
+  simulate the Everything desktop or `?signedout` to start without a session.
 - `/dev/phone.html` shows the mock app in phone- and tablet-sized frames.
 
 In `/mock.html`, editing together runs against a room worker inside the page
@@ -1169,8 +1169,8 @@ into `public/worker/spreadsheet-worker.js` (part of `npm run build`).
 Email in `/mock.html` runs the real email worker inside the page
 (`dev/email-mock.js`): nothing is sent, and each message it would send is
 kept in `window.__mailbox` and logged. Addresses at `bounce.test` fail and
-addresses at `optout.test` have opted out. `npm run deploy:email-worker`
-deploys the worker as `spreadsheet-email` (done once, by the app owner).
+addresses at `optout.test` have opted out. The local server registers the
+worker as `spreadsheet-email` automatically.
 
 ### Tests
 
@@ -1182,18 +1182,18 @@ edits, moving and reordering, fill, sort, sheets, merges, notes, names,
 links, filters, conditional formatting, validation, charts), the rich
 clipboard, chart data and SVG output, find and replace, autocomplete
 context, `.xlsx` and `.csv` round trips through SheetJS, selection and
-keyboard navigation, the document controller against a mocked Puter, the
+keyboard navigation, the document controller against a mocked Everything, the
 print table, and the grid's DOM behavior under jsdom.
 
 ## Deploying
 
 `dist/` is fully static and built with relative paths, so it can be hosted
-anywhere, including Puter's own hosting. The app talks to Puter directly from
+anywhere, including Everything's own hosting. The app talks to Everything directly from
 the browser; there is no server.
 
 ---
 
-Powered by [Puter](http://localhost:8443).
+Powered by [Everything](http://localhost:8443).
 
 ## License
 

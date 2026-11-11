@@ -3,7 +3,7 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { boot, canvasClick, canvasDrag, downloadFrom, idle, menu, openFiles, panel, run, tool } from './helpers';
 // Real browser integration checks exercise GPU shaders, Wasm, and user workflows.
 test.beforeEach(async ({ page }) => {
-  await boot(page, 'default', 'window.puter={env:"app",auth:{isSignedIn:()=>true,getUser:async()=>({username:"test-user"})}};');
+  await boot(page, 'default', 'window.everything={env:"app",auth:{isSignedIn:()=>true,getUser:async()=>({username:"test-user"})}};');
 });
 
 /** File → New through its dialog; small documents keep the tests fast. */
@@ -108,8 +108,8 @@ test('both GPU compositors produce matching blend and transform pixels', async (
   expect(results.WebGL2.slice(0, 4)).toEqual([50, 0, 0, 255]);
   if (results.WebGPU) expect(results.WebGPU).toEqual(results.WebGL2);
 });
-test('Puter app account never offers sign out', async ({ page }) => {
-  await page.getByRole('button', { name: 'Puter account', exact: true }).click();
+test('Everything app account never offers sign out', async ({ page }) => {
+  await page.getByRole('button', { name: 'Everything account', exact: true }).click();
   await expect(page.getByRole('dialog')).toContainText('test-user');
   await expect(page.getByRole('button', { name: 'Sign out', exact: true })).toHaveCount(0);
 });
@@ -164,13 +164,13 @@ test('WebGL2 fallback starts when WebGPU is absent', async ({ page }) => {
   expect([png.bytes.readUInt32BE(16), png.bytes.readUInt32BE(20)]).toEqual([64, 48]);
 });
 
-test('Puter persistence writes project files and reuses the saved path', async ({ page }) => {
+test('Everything persistence writes project files and reuses the saved path', async ({ page }) => {
   const result = await page.evaluate(async () => {
-    const { PuterStorage } = await import('/src/persistence/puter.ts');
+    const { EverythingStorage } = await import('/src/persistence/everything.ts');
     const calls: string[] = [];
     const content = new Blob(['project bytes']);
     const item = { path: '/photo/test.photo', name: 'test.photo', read: async () => content };
-    window.puter = {
+    window.everything = {
       env: 'app',
       auth: {
         isSignedIn: () => true,
@@ -193,7 +193,7 @@ test('Puter persistence writes project files and reuses the saved path', async (
         showOpenFilePicker: async () => item,
       },
     };
-    const storage = new PuterStorage();
+    const storage = new EverythingStorage();
     await storage.save(content, 'test');
     await storage.save(content, 'test');
     const opened = await storage.open();

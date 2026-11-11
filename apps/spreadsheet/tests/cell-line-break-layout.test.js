@@ -67,7 +67,7 @@ it.each([false, true])('retains raw line endings and wrap=%s in external HTML an
   const bytes = await new Promise(resolve => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.readAsArrayBuffer(blob); });
   const zip = X.CFB.read(new Uint8Array(bytes), { type: 'array' });
   const book = X.CFB.find(zip, '/xl/workbook.xml');
-  book.content = new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  book.content = new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   book.size = book.content.length;
   const native = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'line-breaks.xlsx');
   const read = native.getCell(native.activeSheetId, 4, 3);

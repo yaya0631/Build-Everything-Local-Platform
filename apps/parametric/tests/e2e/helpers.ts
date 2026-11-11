@@ -4,7 +4,7 @@ import { type Page, expect } from '@playwright/test';
 export async function openApp(page: Page): Promise<string[]> {
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(e.message));
-  page.on('console', (m) => { if (m.type() === 'error' && !/js\.puter\.com|Failed to load resource/.test(m.text())) errors.push(m.text()); });
+  page.on('console', (m) => { if (m.type() === 'error' && !/js\.everything\.com|Failed to load resource/.test(m.text())) errors.push(m.text()); });
   await page.goto('/');
   await page.getByRole('button', { name: 'I understand' }).click();
   return errors;

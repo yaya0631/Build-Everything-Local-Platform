@@ -39,7 +39,7 @@ const cellAt = address => h => /^<c\b/.test(h) && xlsxAttr(h, 'r') === address;
 const solid = color => `<patternFill patternType="solid"><fgColor rgb="FF${color.slice(1)}"/></patternFill>`;
 const withoutMeta = data => {
   const z = zipEditor(data);
-  z.set('/xl/workbook.xml', z.get('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  z.set('/xl/workbook.xml', z.get('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   return z.finish();
 };
 

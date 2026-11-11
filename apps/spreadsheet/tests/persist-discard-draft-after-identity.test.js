@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeAll, beforeEach, expect, it, vi } from 'vitest';
 import { memoryStorage } from './helpers/memory-storage.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 import { Doc } from '../src/lib/doc.js';
 import { session } from '../src/lib/session.js';
 import { listDrafts, loadDraft } from '../src/lib/drafts.js';
@@ -18,17 +18,17 @@ if (!Blob.prototype.arrayBuffer) {
 beforeAll(async () => { await Doc.blank().toXlsxBlob(); });
 beforeEach(() => {
   globalThis.localStorage = memoryStorage();
-  installMockPuter();
+  installMockEverything();
   // Signed in, but the look-up of who is signed in fails at boot: records go under a throwaway scope.
-  puter.auth = { isSignedIn: () => true, signIn: async () => true, getUser: async () => puter._user };
-  puter._user = null;
+  everything.auth = { isSignedIn: () => true, signIn: async () => true, getUser: async () => everything._user };
+  everything._user = null;
 });
-afterEach(() => { session.state = 'unknown'; session.user = null; vi.restoreAllMocks(); delete globalThis.puter; });
+afterEach(() => { session.state = 'unknown'; session.user = null; vi.restoreAllMocks(); delete globalThis.everything; });
 
 const settle = () => new Promise((resolve) => setTimeout(resolve, 5));
 const text = (draft) => draft?.workbook.sheets[0].cells['0,0'].v;
 
-/** Budget.xlsx saved under the throwaway scope, with later edits drafted here that never reached Puter. */
+/** Budget.xlsx saved under the throwaway scope, with later edits drafted here that never reached Everything. */
 async function fileWithDraft() {
   const doc = Doc.blank();
   doc.wb.setInput(doc.wb.activeSheetId, 0, 0, 'saved');
@@ -50,7 +50,7 @@ it('discards a draft offered before the account resolved, once and for good', as
   const doc = await Doc.fromPath(path);
   expect(text(doc.recoverable)).toBe('offline edits');
 
-  puter._user = { username: 'nariman', uuid: 'u-1' };
+  everything._user = { username: 'nariman', uuid: 'u-1' };
   session._retryIdentity(0); // the look-up the session retries on its own, without the wait
   await settle();
   expect(storageScope()).toBe('uuid:u-1');
@@ -69,7 +69,7 @@ it('restores a draft offered before the account resolved, and drafts under the a
   await session.refresh();
   const path = await fileWithDraft();
   const doc = await Doc.fromPath(path);
-  puter._user = { username: 'nariman', uuid: 'u-1' };
+  everything._user = { username: 'nariman', uuid: 'u-1' };
   session._retryIdentity(0);
   await settle();
   try {

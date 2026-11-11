@@ -8,10 +8,10 @@
  *  - the Mockup panel (Window > Mockup)
  *
  * Match Font (Type > Match Font, the Match Font panel): identify lettering
- * in images or outlined type with Puter AI and set it as editable type.
+ * in images or outlined type with Everything AI and set it as editable type.
  *
  * Expand Image (Object > Generative > Expand Image, Fill Bleed): extend a
- * placed image with Puter AI or, without it, on this device.
+ * placed image with Everything AI or, without it, on this device.
  */
 import './styles.css';
 import './mockup-model.js';

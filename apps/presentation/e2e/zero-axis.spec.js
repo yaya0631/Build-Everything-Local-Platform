@@ -6,10 +6,10 @@ import { zeroAxisFixture } from "../tests/zero-axis-fixture.js";
 test("zero-axis shape strokes paint in canvas and slideshow, move without changing size, and copy in both directions", async ({
   page,
 }) => {
-  await page.route("**/sdk/puter.js", (r) =>
+  await page.route("**/sdk/everything.js", (r) =>
     r.fulfill({
       contentType: "application/javascript",
-      body: 'window.puter={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',
+      body: 'window.everything={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',
     }),
   );
   await page.goto("/#/home");

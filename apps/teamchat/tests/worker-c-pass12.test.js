@@ -16,12 +16,12 @@ import { transferWorkspace } from '../src/lib/archive.js';
 import { highlightSnippet } from '../src/lib/format.js';
 import { deployOwnWorker, resetBundleCache } from '../src/lib/deploy.js';
 
-/** A Puter account with no workspace server yet: the user document, the bundle the app ships, and a workers API that records what it creates. */
+/** An Everything account with no workspace server yet: the user document, the bundle the app ships, and a workers API that records what it creates. */
 function accountWithoutWorker() {
   const tick = () => new Promise((r) => setTimeout(r, 5));
   const account = { saved: { v: 1, profile: {}, prefs: {}, workspaces: [], worker: null }, created: [], createCalls: 0, failFirstCreate: null };
   globalThis.fetch = async () => new Response('/* teamchat-worker build=abcabcabcabc at=2000 */\nconsole.log(1);', { status: 200 });
-  globalThis.puter = {
+  globalThis.everything = {
     kv: {
       get: async () => { await tick(); return JSON.parse(JSON.stringify(account.saved)); },
       set: async (k, v) => { await tick(); account.saved = JSON.parse(JSON.stringify(v)); },
@@ -103,7 +103,7 @@ async function upload(u, wsId, name, type, bytes) {
 /** The app's bridge to a worker, faked route by route (by the end of the path); returns the calls made. */
 function fakeWorker(routes) {
   const made = [];
-  globalThis.puter = {
+  globalThis.everything = {
     workers: {
       exec: async (url, init = {}) => {
         const u = new URL(url);
@@ -189,7 +189,7 @@ describe('the client after an edit', () => {
     store.me = null;
     store.profile = null;
     store.convs.clear();
-    delete globalThis.puter;
+    delete globalThis.everything;
   });
 
   it('takes the old card off the message the moment the worker says the link changed, and asks for the new link\'s', async () => {
@@ -219,12 +219,12 @@ describe('the client after an edit', () => {
 });
 
 describe('an address that answers with a web page instead of a worker', () => {
-  const hadPuter = Object.hasOwn(globalThis, 'puter') ? globalThis.puter : undefined;
+  const hadEverything = Object.hasOwn(globalThis, 'everything') ? globalThis.everything : undefined;
   afterEach(() => {
-    if (hadPuter === undefined) delete globalThis.puter;
-    else globalThis.puter = hadPuter;
+    if (hadEverything === undefined) delete globalThis.everything;
+    else globalThis.everything = hadEverything;
   });
-  const answers = (res) => { globalThis.puter = { workers: { exec: async () => res } }; };
+  const answers = (res) => { globalThis.everything = { workers: { exec: async () => res } }; };
   const failure = (p) => p.then(() => null, (e) => e);
 
   it('is reported as no backend, the way a bare 404 is, not as a parsing error over the page', async () => {
@@ -500,10 +500,10 @@ describe('a file name that reads as something else', () => {
 });
 
 describe('a transfer whose completion the original refuses', () => {
-  const hadPuter = Object.hasOwn(globalThis, 'puter') ? globalThis.puter : undefined;
+  const hadEverything = Object.hasOwn(globalThis, 'everything') ? globalThis.everything : undefined;
   afterEach(() => {
-    if (hadPuter === undefined) delete globalThis.puter;
-    else globalThis.puter = hadPuter;
+    if (hadEverything === undefined) delete globalThis.everything;
+    else globalThis.everything = hadEverything;
   });
   const copies = async () => (await rt.kv.list('tc:ws:*')).filter((k) => /^tc:ws:[a-z0-9]+$/.test(k)).length;
 
@@ -515,7 +515,7 @@ describe('a transfer whose completion the original refuses', () => {
     expect((await as(alice).post(`/api/ws/${wsId}/transfer`, { to: bob.uuid })).ok).toBe(true);
     const oldRef = `${wsId}@teamchat-x`;
     let onComplete = null;
-    globalThis.puter = { workers: { exec: async (url, init) => {
+    globalThis.everything = { workers: { exec: async (url, init) => {
       const path = new URL(url).pathname;
       if (onComplete && path.endsWith('/transfer/complete')) await onComplete();
       return rt.dispatch(url, init, bob);
@@ -567,7 +567,7 @@ describe('two tabs creating their first workspace at once', () => {
     store.user = null;
     store.identity = null;
     store._ensuringWorker = null;
-    delete globalThis.puter;
+    delete globalThis.everything;
     resetBundleCache();
   });
 
@@ -595,7 +595,7 @@ describe('two tabs creating their first workspace at once', () => {
 
 describe('a worker whose creation call failed after the worker was made', () => {
   afterEach(() => {
-    delete globalThis.puter;
+    delete globalThis.everything;
     resetBundleCache();
   });
 

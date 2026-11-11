@@ -3,13 +3,13 @@ import { Doc } from '../src/lib/doc.js';
 import { draftKey, liveDraftKey, saveDraft, loadDraft } from '../src/lib/drafts.js';
 import { Workbook } from '../src/core/workbook.js';
 import { memoryStorage } from './helpers/memory-storage.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 
 let mock;
 // SheetJS is loaded on first use with a real dynamic import; warm it up so no test waits on it.
 beforeAll(async () => { await Doc.blank().toXlsxBlob(); });
-beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); mock = installMockPuter(); vi.useFakeTimers(); });
-afterEach(() => { vi.useRealTimers(); delete globalThis.puter; });
+beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); mock = installMockEverything(); vi.useFakeTimers(); });
+afterEach(() => { vi.useRealTimers(); delete globalThis.everything; });
 
 const PATH = 'Spreadsheets/Budget.xlsx';
 const MOVED = 'Spreadsheets/Plan.xlsx';
@@ -21,7 +21,7 @@ function refuseKey(refused) {
   localStorage.setItem = (key, value) => { if (key === refused) throw new Error('QuotaExceededError'); return setItem(key, value); };
 }
 
-/** A blank file on the drive with a draft of edits that never reached Puter waiting under its key, opened with the draft offered. */
+/** A blank file on the drive with a draft of edits that never reached Everything waiting under its key, opened with the draft offered. */
 async function openWithDraft() {
   const bytes = await Doc.blank().toXlsxBlob();
   mock.fs.set(PATH, { blob: bytes, size: bytes.size, modified: 1 });

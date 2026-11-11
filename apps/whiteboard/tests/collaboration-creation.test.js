@@ -30,7 +30,7 @@ for (const failure of ["invalid", "snapshot", "metadata", "owner"])
         service.call(owner, { ...input, update: "invalid!" }),
       );
     } else {
-      const target = failure === "snapshot" ? service.puter.fs : kv;
+      const target = failure === "snapshot" ? service.everything.fs : kv;
       const method = failure === "snapshot" ? "write" : "set";
       const original = target[method];
       let failed = false;
@@ -91,8 +91,8 @@ test("concurrent creation keeps the first snapshot and lets a stale retry reopen
   const reading = new Promise((resolve) => {
     enteredRead = resolve;
   });
-  const write = service.puter.fs.write;
-  service.puter.fs.write = async (...args) => {
+  const write = service.everything.fs.write;
+  service.everything.fs.write = async (...args) => {
     enteredWrite();
     await writeGate;
     return write(...args);

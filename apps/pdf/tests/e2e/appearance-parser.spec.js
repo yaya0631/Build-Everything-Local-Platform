@@ -10,7 +10,7 @@ for (const kind of ['text', 'dropdown', 'checkbox', 'radio', 'button'])
       test(`${action} remains responsive with a malformed ${kind} ${location} appearance`, async ({
         page,
       }) => {
-        await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
+        await page.route('**/sdk/everything.js', (route) => route.fulfill({ body: '' }));
         await page.goto('/#library');
         const { doc } = await malformedAppearancePdf({ kind, location });
         if (action === 'flatten')

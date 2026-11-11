@@ -39,7 +39,7 @@ export function organizationLink(server, token, base = location.href) {
   return url.href;
 }
 export function createOrganization({
-  puter,
+  everything,
   call,
   deploy,
   refreshDeployment = async () => {},
@@ -51,7 +51,7 @@ export function createOrganization({
   const listeners = new Set();
   const changed = () => listeners.forEach((fn) => fn(info));
   const prepare = (address) =>
-    refreshDeployment(puter(), address).catch(() => {
+    refreshDeployment(everything(), address).catch(() => {
       // An unavailable update must not prevent use of a healthy worker.
     });
   async function site() {
@@ -86,8 +86,8 @@ export function createOrganization({
     async discover(href = location.href) {
       const link = readOrganizationLink(href);
       if (link) return link;
-      const saved = puter().auth?.isSignedIn?.()
-        ? await puter()
+      const saved = everything().auth?.isSignedIn?.()
+        ? await everything()
             .kv.get(ORG_KEY)
             .catch(() => null)
         : null;
@@ -103,16 +103,16 @@ export function createOrganization({
       await prepare(next);
       return {
         server: next,
-        info: await call(puter(), next, { op: "org.info" }),
+        info: await call(everything(), next, { op: "org.info" }),
       };
     },
     async use(address) {
       const next = workerURL(address);
       await prepare(next);
-      const nextInfo = await call(puter(), next, { op: "org.info" });
+      const nextInfo = await call(everything(), next, { op: "org.info" });
       server = next;
       info = nextInfo;
-      await puter().kv.set(ORG_KEY, { server });
+      await everything().kv.set(ORG_KEY, { server });
       changed();
       return info;
     },
@@ -128,9 +128,9 @@ export function createOrganization({
     async restore(previous) {
       server = previous?.server || null;
       info = previous?.info || null;
-      if (server) await puter().kv.set(ORG_KEY, { server });
+      if (server) await everything().kv.set(ORG_KEY, { server });
       else
-        await puter()
+        await everything()
           .kv.del?.(ORG_KEY)
           ?.catch?.(() => {});
       changed();
@@ -139,7 +139,7 @@ export function createOrganization({
       if (!server) throw Error("Join an organization first.");
       const address = server;
       await prepare(address);
-      return call(puter(), address, { op, ...data });
+      return call(everything(), address, { op, ...data });
     },
     async refresh() {
       if (!server) return null;
@@ -150,15 +150,15 @@ export function createOrganization({
     async setup(name, domains = [], progress = () => {}) {
       // Switch only once the new organization is set up, so a refused name
       // or domain keeps the current organization in use and remembered.
-      const next = workerURL(await deploy(puter(), progress));
-      const nextInfo = await call(puter(), next, {
+      const next = workerURL(await deploy(everything(), progress));
+      const nextInfo = await call(everything(), next, {
         op: "org.setup",
         name,
         domains,
       });
       server = next;
       info = nextInfo;
-      await puter().kv.set(ORG_KEY, { server });
+      await everything().kv.set(ORG_KEY, { server });
       changed();
       return info;
     },
@@ -171,7 +171,7 @@ export function createOrganization({
     async leave() {
       server = null;
       info = null;
-      await puter()
+      await everything()
         .kv.del?.(ORG_KEY)
         .catch?.(() => {});
       changed();

@@ -9,10 +9,10 @@ for (const backend of ['default', 'WebGL']) {
       await page.addInitScript(() =>
         Object.defineProperty(navigator, 'gpu', { value: undefined }),
       );
-    await page.route('**/sdk/puter.js', (r) =>
+    await page.route('**/sdk/everything.js', (r) =>
       r.fulfill({
         contentType: 'application/javascript',
-        body: 'window.puter={};',
+        body: 'window.everything={};',
       }),
     );
     await page.goto('/');
@@ -213,7 +213,7 @@ for (const backend of ['default', 'WebGL']) {
 test('PSD UI duplication assigns a new identity while preserving opaque document data on download', async ({
   page,
 }) => {
-  await boot(page, 'default', 'window.puter={};');
+  await boot(page, 'default', 'window.everything={};');
   const bytes = await page.evaluate(async () => {
     const { writePsd } = await import('/tests/browser/psd-codec.ts');
     const { restorePsdMetadata } = await import('/src/model/psd-metadata.ts');

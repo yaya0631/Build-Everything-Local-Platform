@@ -1,7 +1,7 @@
 /**
  * Turning low-stock alerts into supplier orders: how much to order, who
  * to order it from, and what the order sheet says. Pure — no DOM, no
- * Puter; unit-tested.
+ * Everything; unit-tested.
  */
 
 import { alertProducts, DEFAULT_LOW_STOCK } from './inventory.js';

@@ -10,7 +10,7 @@ import { applyTheme, currentTheme } from './theme.js';
 import { initials } from './format.js';
 import { mountSearch } from './search-box.js';
 import { store } from '../lib/store.js';
-import { isPuterApp } from '../lib/puter.js';
+import { isEverythingApp } from '../lib/everything.js';
 import { reportMeta } from '../lib/reports.js';
 import { shortcutLabel } from './shortcuts.js';
 
@@ -133,7 +133,7 @@ export function mountShell(root, { user, picture, onSignOut }) {
       'sep',
       { label: 'Company settings', icon: 'settings', onClick: () => navigate('settings') },
       { label: 'Keyboard shortcuts', icon: 'keyboard', onClick: () => document.dispatchEvent(new CustomEvent('shortcuts:help')) },
-      ...(isPuterApp() ? [] : ['sep', { label: 'Sign out', icon: 'logout', onClick: onSignOut }]),
+      ...(isEverythingApp() ? [] : ['sep', { label: 'Sign out', icon: 'logout', onClick: onSignOut }]),
     ], { align: 'end', label: 'Account' });
   });
   const topbar = el('header.topbar', {},
@@ -188,8 +188,8 @@ export function mountShell(root, { user, picture, onSignOut }) {
     }
     nodes.push(el('div.panel-foot', {},
       'Your books are stored in your own ',
-      el('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Puter'),
-      ' account. Powered by Puter.'));
+      el('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Everything'),
+      ' account. Powered by Everything.'));
     swap(panel, ...nodes);
     panel.scrollTop = scroll;
   }
@@ -240,7 +240,7 @@ export function mountShell(root, { user, picture, onSignOut }) {
     const text = status === 'saving' ? 'Saving' : status === 'offline' ? `Offline${pending ? `, ${pending} unsaved` : ''}` : status === 'error' ? 'Not saved' : store.readOnly ? 'Read only' : 'Saved';
     const ico = status === 'offline' || status === 'error' ? 'offline' : status === 'saving' ? 'refresh' : 'cloud';
     sync.replaceChildren(el('span', { html: icon(ico, 15) }), el('span.sync-text', {}, text));
-    sync.title = status === 'error' ? 'Changes could not be saved to your Puter account. They are kept on this device and will be retried.' : text;
+    sync.title = status === 'error' ? 'Changes could not be saved to your Everything account. They are kept on this device and will be retried.' : text;
   }
   setSync({ status: 'idle', pending: 0 });
 

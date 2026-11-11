@@ -14,7 +14,7 @@
  * with an id takes moves its own history into the folder the id names.
  */
 
-import * as P from './puter.js';
+import * as P from './everything.js';
 
 export const VERSIONS_DIR = '.versions';
 export const AUTO_VERSION_MS = 10 * 60 * 1000;

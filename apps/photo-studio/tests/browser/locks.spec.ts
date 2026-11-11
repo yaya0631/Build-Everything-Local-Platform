@@ -3,7 +3,7 @@ import { makeRgbProfile } from '../color-fixtures';
 import { boot, canvasClick, downloadFrom, idle, layerPixel, menu, openFiles, panel, tool, undo } from './helpers';
 
 test.beforeEach(async ({ page }) => {
-  await boot(page, 'default', 'window.puter={};');
+  await boot(page, 'default', 'window.everything={};');
 });
 
 for (const backend of ['default', 'WebGL']) {

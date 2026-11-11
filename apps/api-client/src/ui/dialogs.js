@@ -15,7 +15,7 @@ import { openDialog, confirmDialog } from './dialog.js';
 import { canEdit } from '../data/shared.js';
 
 export const APP_VERSION = '0.1.0 alpha';
-const SOURCE_URL = 'https://github.com/heyputer/everything';
+const SOURCE_URL = 'https://github.com/yaya0631/Build-Everything-Local-Platform';
 
 const plural = (n, one, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 const formatLabel = (id) => FORMATS.find((f) => f.id === id)?.label || 'Unknown format';
@@ -766,7 +766,7 @@ const TRANSPORTS = [
     value: 'auto',
     label: 'Automatic',
     icon: 'zap',
-    text: 'Tries the browser first. When the browser is blocked (for example by CORS) and the request is safe to retry, it is sent again through the Puter relay. Recommended.',
+    text: 'Tries the browser first. When the browser is blocked (for example by CORS) and the request is safe to retry, it is sent again through the Everything relay. Recommended.',
   },
   {
     value: 'browser',
@@ -776,9 +776,9 @@ const TRANSPORTS = [
   },
   {
     value: 'relay',
-    label: 'Puter relay',
+    label: 'Everything relay',
     icon: 'server',
-    text: 'Works with any server. Every header is sent exactly as written and every response header is shown. Traffic passes through the Puter relay, while TLS (HTTPS encryption) is done in your browser. Requires signing in.',
+    text: 'Works with any server. Every header is sent exactly as written and every response header is shown. Traffic passes through the Everything relay, while TLS (HTTPS encryption) is done in your browser. Requires signing in.',
   },
 ];
 
@@ -851,7 +851,7 @@ export function openSettingsDialog(app, section = 'general') {
           'span.st-card-body',
           h('span.st-card-title', icon(t.icon, 15), t.label, t.value === 'auto' ? h('span.badge', 'Default') : null),
           h('span.st-card-text', { id: descId }, t.text),
-          disabled && app.session?.puter
+          disabled && app.session?.everything
             ? h('span.st-card-text', h('button.link-btn', { type: 'button', onclick: (e) => { e.preventDefault(); app.signIn(); } }, 'Sign in'), ' to use the relay.')
             : null,
         ),
@@ -901,7 +901,7 @@ export function openSettingsDialog(app, section = 'general') {
     counts();
     const user = app.session?.user?.username;
     const storage = signedIn
-      ? h('div.callout', { dataset: { kind: 'info' } }, icon('cloud', 16), h('div', h('strong', 'Synced to your Puter account'), h('div', `Collections, environments and history are saved on this device and synced to ${user ? `${user}'s` : 'your'} Puter account. Cookies and saved responses stay on this device.`)))
+      ? h('div.callout', { dataset: { kind: 'info' } }, icon('cloud', 16), h('div', h('strong', 'Synced to your Everything account'), h('div', `Collections, environments and history are saved on this device and synced to ${user ? `${user}'s` : 'your'} Everything account. Cookies and saved responses stay on this device.`)))
       : h(
           'div.callout',
           icon('database', 16),
@@ -909,7 +909,7 @@ export function openSettingsDialog(app, section = 'general') {
             'div',
             h('strong', 'Saved in this browser only'),
             h('div', 'Your work is stored on this device. Clearing site data removes it.'),
-            app.session?.puter ? h('div.st-callout-action', h('button.link-btn', { type: 'button', onclick: () => app.signIn() }, 'Sign in'), ' to sync across devices.') : null,
+            app.session?.everything ? h('div.st-callout-action', h('button.link-btn', { type: 'button', onclick: () => app.signIn() }, 'Sign in'), ' to sync across devices.') : null,
           ),
         );
     const action = (title, text, btn) => h('div.st-row', h('div.st-row-text', h('span.st-row-label', title), h('p.field-hint', text)), btn);
@@ -970,7 +970,7 @@ export function openSettingsDialog(app, section = 'general') {
         h('img.st-about-icon', { src: './icon-192.png', alt: '', width: 48, height: 48 }),
         h('div', h('div.st-about-name', 'API Client'), h('div.st-about-version', `Version ${APP_VERSION}`)),
       ),
-      h('p.st-about-text', 'Build, send and test HTTP requests in your browser. Organize them in collections, switch between environments, and optionally sync everything with your Puter account.'),
+      h('p.st-about-text', 'Build, send and test HTTP requests in your browser. Organize them in collections, switch between environments, and optionally sync everything with your Everything account.'),
       h(
         'div.st-about-links',
         h('a.btn', { href: SOURCE_URL, target: '_blank', rel: 'noopener' }, icon('github', 15), h('span', 'Source code'), h('span.sr-only', '(opens in a new tab)')),
@@ -1429,7 +1429,7 @@ export function openCookiesDialog(app) {
             'div.empty',
             icon('cookie', 28, 1.5),
             h('p.empty-title', 'No cookies yet'),
-            h('p', 'Cookies set by servers on requests sent through the Puter relay appear here. You can also add one yourself.'),
+            h('p', 'Cookies set by servers on requests sent through the Everything relay appear here. You can also add one yourself.'),
           ),
         );
       }
@@ -1666,7 +1666,7 @@ export function openCookiesDialog(app) {
   render();
   const body = h(
     'div.ck',
-    h('div.callout', { dataset: { kind: 'info' } }, icon('info', 16), h('div', "Cookies are stored on this device and sent with requests that go through the Puter relay. Browser requests use the browser's own cookie rules and cannot read or send these.")),
+    h('div.callout', { dataset: { kind: 'info' } }, icon('info', 16), h('div', "Cookies are stored on this device and sent with requests that go through the Everything relay. Browser requests use the browser's own cookie rules and cannot read or send these.")),
     h('div.ck-toolbar', h('label.sr-only', { for: domainSelectId }, 'Domain'), domainSelect, h('span.spacer'), addBtn),
     h('div.ck-layout', domainNav, main),
   );

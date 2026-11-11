@@ -57,14 +57,14 @@ describe('menu bar definitions', () => {
     const bare = menubarMenus({});
     const labels = (menus, id) => menuLeaves(menus.find((m) => m.id === id).items).map((it) => it.label);
     expect(labels(bare, 'file')).not.toContain('New from template…');
-    expect(labels(bare, 'file')).not.toContain('Open from Puter…');
+    expect(labels(bare, 'file')).not.toContain('Open from Everything…');
     expect(labels(bare, 'file')).toContain('Excel workbook (.xlsx)');
     expect(menubarMenus({ saving: true }).find((m) => m.id === 'file').items.map((it) => it?.label)).toContain('Export');
     expect(labels(menubarMenus({ saving: true }), 'file')).toContain('Excel workbook (.xlsx)');
     expect(labels(bare, 'help')).toEqual(['Search the menus…']);
     expect(labels(bare, 'insert')).toContain('Note');
-    expect(labels(bare, 'insert')).not.toContain('From Puter…');
-    expect(labels(menubarMenus(richFlags), 'insert')).toContain('From Puter…');
+    expect(labels(bare, 'insert')).not.toContain('From Everything…');
+    expect(labels(menubarMenus(richFlags), 'insert')).toContain('From Everything…');
     expect(labels(bare, 'data')).toContain('Filter');
     expect(labels(bare, 'data')).toContain('Create table…');
     expect(labels(bare, 'tools')).not.toContain('Write a formula with AI…');

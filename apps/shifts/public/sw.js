@@ -1,7 +1,7 @@
 /**
  * App-shell service worker: network-first with a cache fallback, so the
  * installed PWA stays fresh online and still opens offline. Application
- * data lives in Puter KV with a localStorage mirror; this worker only
+ * data lives in Everything KV with a localStorage mirror; this worker only
  * handles the shell (HTML, hashed assets, icons, manifest).
  */
 const CACHE_PREFIX = 'shifts-shell-';
@@ -54,7 +54,7 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   if (request.method !== 'GET') return;
   const url = new URL(request.url);
-  if (url.origin !== location.origin) return; // Puter SDK and APIs pass through
+  if (url.origin !== location.origin) return; // Everything SDK and APIs pass through
 
   event.respondWith(
     fetch(request)

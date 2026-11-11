@@ -28,7 +28,7 @@ function dragFiles(files, { stop = false, handled = false } = {}) {
 
 it('opens files dropped anywhere the screen underneath does not take them itself', async () => {
   vi.stubGlobal('matchMedia', () => ({ matches: false, addEventListener() {} }));
-  vi.stubGlobal('puter', {
+  vi.stubGlobal('everything', {
     auth: { isSignedIn: () => true, getUser: async () => ({ username: 'test' }) },
     fs: {
       readdir: async () => [], read: async () => new Blob(['document']), mkdir: async () => {},

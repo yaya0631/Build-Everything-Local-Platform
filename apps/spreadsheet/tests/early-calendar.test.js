@@ -97,7 +97,7 @@ it('retains serial dates through native XLSX and clipboard, edits and undo', asy
   wb.setInput(id,7,0,'1900-03-01'); expect(wb.getValue(id,7,0)).toBe(61); wb.undo(); expect(wb.getValue(id,7,0)).toBe(60);
   const blob=await workbookToXlsx(wb), bytes=await new Promise(resolve=>{const r=new FileReader();r.onload=()=>resolve(new Uint8Array(r.result));r.readAsArrayBuffer(blob);});
   const zip=X.CFB.read(bytes,{type:'array'}), part=X.CFB.find(zip,'/xl/workbook.xml');
-  part.content=new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,''));part.size=part.content.length;
+  part.content=new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,''));part.size=part.content.length;
   const restored=await workbookFromFile(X.CFB.write(zip,{type:'array',fileType:'zip'}),'calendar.xlsx');
   for(const [r,[n,, ,d]] of dates.entries()) { expect(restored.getValue(restored.activeSheetId,r,0)).toBe(n);expect(restored.getDisplay(restored.activeSheetId,r,0)).toBe(wb.getDisplay(id,r,0));expect(restored.getValue(restored.activeSheetId,r,1)).toBe(d); }
 });

@@ -43,7 +43,7 @@ it('retains printer-default paper through edits, drafts, copies and repeated nat
     const worksheet = new TextDecoder().decode(X.CFB.find(zip, '/xl/worksheets/sheet1.xml').content);
     expect(worksheet).not.toContain('paperSize=');
     const book = X.CFB.find(zip, '/xl/workbook.xml');
-    book.content = new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+    book.content = new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
     book.size = book.content.length;
     wb = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'native.xlsx');
     expect(wb.activeSheet.printSettings.paperSize).toBeNull();
@@ -79,7 +79,7 @@ it('imports native print areas and default fit counts; exports them without rely
   expect(worksheet.indexOf('<printOptions')).toBeLessThan(worksheet.indexOf('<pageMargins'));
   expect(worksheet.indexOf('<pageMargins')).toBeLessThan(worksheet.indexOf('<pageSetup'));
   const book = X.CFB.find(zip, '/xl/workbook.xml');
-  book.content = new TextEncoder().encode(decoder.decode(book.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  book.content = new TextEncoder().encode(decoder.decode(book.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   book.size = book.content.length;
   const back = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'external.xlsx');
   expect(back.activeSheet.printSettings).toEqual(original);
@@ -152,7 +152,7 @@ it.each(['downThenOver', 'overThenDown'])('preserves native %s page order throug
   const native = new TextDecoder().decode(X.CFB.find(zip, '/xl/worksheets/sheet1.xml').content);
   expect(native).toContain(`pageOrder="${pageOrder}"`);
   const book = X.CFB.find(zip, '/xl/workbook.xml');
-  book.content = new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  book.content = new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   book.size = book.content.length;
   const back = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'native.xlsx');
   expect(back.activeSheet.printSettings.pageOrder).toBe(pageOrder);

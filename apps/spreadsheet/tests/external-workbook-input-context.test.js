@@ -83,7 +83,7 @@ it('persists invalidation in JSON and native XLSX without the private metadata s
   expect(new Workbook(wb.toJSON()).getValue(id, 0, 0)).toEqual({ error: '#REF!' });
   const bytes = new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer());
   const zip = X.CFB.read(bytes, { type: 'array' }), part = X.CFB.find(zip, '/xl/workbook.xml');
-  X.CFB.utils.cfb_add(zip, '/xl/workbook.xml', new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')));
+  X.CFB.utils.cfb_add(zip, '/xl/workbook.xml', new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')));
   const restored = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }));
   expect(restored.getValue(restored.activeSheetId, 0, 0)).toEqual({ error: '#REF!' });
   expect(restored.activeSheet.cells.get('0,0').f).toContain('$B$1');
@@ -204,7 +204,7 @@ it('exports the preserved result after converting a local input to a native supp
   for (let cycle = 0; cycle < 2; cycle++) {
     const bytes = new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer());
     const zip = X.CFB.read(bytes, { type: 'array' }), part = X.CFB.find(zip, '/xl/workbook.xml');
-    X.CFB.utils.cfb_add(zip, '/xl/workbook.xml', new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')));
+    X.CFB.utils.cfb_add(zip, '/xl/workbook.xml', new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')));
     wb = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }));
     expect(wb.getValue(wb.activeSheetId, 0, 0)).toBe(41);
     expect(wb.externalWorkbooks.books[1].sheets[0].cells['0,1']).toBe(1);

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { Doc } from '../src/lib/doc.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 import { memoryStorage } from './helpers/memory-storage.js';
 import { loadDraft } from '../src/lib/drafts.js';
 
@@ -11,8 +11,8 @@ Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), conf
 // to come back trusted, so closing the tab before the first cloud save and
 // recovering the sheet let that content load without anyone agreeing.
 describe('outside-content permission in local drafts', () => {
-  beforeEach(() => { installMockPuter(); localStorage.clear(); });
-  afterEach(() => { delete globalThis.puter; });
+  beforeEach(() => { installMockEverything(); localStorage.clear(); });
+  afterEach(() => { delete globalThis.everything; });
 
   it('recovers an import from elsewhere with its content still blocked', async () => {
     const bytes = await Doc.blank().toXlsxBlob();

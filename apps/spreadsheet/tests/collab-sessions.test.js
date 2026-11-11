@@ -13,10 +13,10 @@ async function setup() {
   const wb = new Workbook({ sheets: [{ name: 'Budget' }] });
   wb.setInput(wb.sheets[0].id, 0, 0, 'Item');
   wb.setInput(wb.sheets[0].id, 0, 1, 'Cost');
-  const room = await RoomClient.create({ puter: env.sdk(owner), server: SERVER, wb, name: 'Budget', file: { path: '/alice/Spreadsheets/Budget.xlsx', uid: 'u1' } });
+  const room = await RoomClient.create({ everything: env.sdk(owner), server: SERVER, wb, name: 'Budget', file: { path: '/alice/Spreadsheets/Budget.xlsx', uid: 'u1' } });
   const invite = async (role) => (await call(env.sdk(owner), SERVER, { op: 'invite', room, role })).token;
   const join = async (user, { token, store = memoryOutbox(), ...rest } = {}) => {
-    const client = new RoomClient({ puter: env.sdk(user), server: SERVER, room, token, store, poll: 50, noPeers: true, ...rest });
+    const client = new RoomClient({ everything: env.sdk(user), server: SERVER, room, token, store, poll: 50, noPeers: true, ...rest });
     open.push(client);
     await client.open();
     return client;

@@ -60,7 +60,7 @@ afterEach(() => {
 describe('mail dialog — connection state line', () => {
   it.each([
     ['off', {}, 'Not connected', 'Connect'],
-    ['off', { lastError: 'Not available on this Puter server.' }, 'Not available on this Puter server.', 'Connect'],
+    ['off', { lastError: 'Not available on this Everything server.' }, 'Not available on this Everything server.', 'Connect'],
     ['connecting', {}, 'Connecting…', 'Connecting…'],
     ['ok', {}, 'Connected — invitations are checked automatically.', 'Check now'],
     ['foreground', {}, 'Checked while the calendar is open.', 'Check now'],
@@ -188,6 +188,6 @@ describe('mail dialog — disconnect', () => {
 
   it('mentions what access was granted and where to revoke it', () => {
     const dialog = open({ mailbox: makeMailbox(), intake: makeIntake(), store: makeStore() });
-    expect(dialog.textContent).toContain('Puter’s own app permissions settings');
+    expect(dialog.textContent).toContain('Everything’s own app permissions settings');
   });
 });

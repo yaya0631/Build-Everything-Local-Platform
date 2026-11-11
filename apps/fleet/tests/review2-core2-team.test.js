@@ -7,7 +7,7 @@ import * as team from '../src/team.js';
 
 const URL_ = 'http://fleet-abc.localhost:8443';
 afterEach(() => {
-  delete globalThis.puter;
+  delete globalThis.everything;
 });
 
 // 21 years of monthly buckets for each partitioned collection: a big import.
@@ -16,7 +16,7 @@ const months = Array.from({ length: 252 }, (_, i) => `${2006 + Math.floor(i / 12
 describe('bumping bucket versions', () => {
   it('bumps every bucket, even more than one request takes', async () => {
     const w = loadWorker();
-    globalThis.puter = { workers: { exec: w.exec(OWNER) } };
+    globalThis.everything = { workers: { exec: w.exec(OWNER) } };
     const backend = team.createWorkerBackend(URL_);
     const names = ['vehicles', ...months.map((m) => `fuel_${m}`), 'settings'];
     const meta = await backend.bumpVersions(names);
@@ -27,7 +27,7 @@ describe('bumping bucket versions', () => {
 
   it('reports the version each bump made', async () => {
     const w = loadWorker();
-    globalThis.puter = { workers: { exec: w.exec(OWNER) } };
+    globalThis.everything = { workers: { exec: w.exec(OWNER) } };
     const backend = team.createWorkerBackend(URL_);
     const names = months.map((m) => `meters_${m}`);
     await backend.bumpVersions(names);

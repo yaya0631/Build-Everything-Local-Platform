@@ -9,7 +9,7 @@ let view;
 beforeEach(() => {
   localStorage.clear();
   vi.stubGlobal('matchMedia', () => ({ matches: true }));
-  vi.stubGlobal('puter', { fs: {
+  vi.stubGlobal('everything', { fs: {
     mkdir: async () => {},
     readdir: async () => [{ path: 'Documents/Report.docx', name: 'Report.docx', size: 1200, modified: 1 }],
     stat: async () => { throw new Error('missing'); },

@@ -75,14 +75,14 @@ describe('previewing an image attachment', () => {
     expect(clicked).toEqual(['swatch.png']);
   });
 
-  it('offers Save to Puter in the preview where the shell can', async () => {
+  it('offers Save to Everything in the preview where the shell can', async () => {
     const given = [];
-    mount({ saveToPuter: async (blob, name) => { given.push(name); return { name }; } });
+    mount({ saveToEverything: async (blob, name) => { given.push(name); return { name }; } });
     await open('Print files, final versions');
     root.querySelector('.attachment').click();
     await settle(50);
     [...dialog().querySelectorAll('.preview-actions .btn')]
-      .find((btn) => btn.textContent.includes('Save to Puter')).click();
+      .find((btn) => btn.textContent.includes('Save to Everything')).click();
     await settle(50);
     expect(given).toEqual(['swatch.png']);
   });

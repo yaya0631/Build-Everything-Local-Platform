@@ -1,7 +1,7 @@
 /**
  * @mentions in threaded comments. A comment that mentions someone keeps who, alongside its text:
  * item.mentions = [{ id, name, user?, email?, start, length }], where text.slice(start, start + length) is the
- * "@Name" the person was mentioned as, `user` their Puter username and `email` their address (either or both;
+ * "@Name" the person was mentioned as, `user` their Everything username and `email` their address (either or both;
  * a mention read from a file may have neither). This is what the .xlsx threadedComments part keeps as each
  * comment's <mentions> list against the workbook's persons, so it travels with the file.
  *
@@ -107,18 +107,18 @@ export function mentionRuns(text, mentions) {
   return runs;
 }
 
-/** Whether a mention names this person (a Puter user, by username or by address). */
+/** Whether a mention names this person (an Everything user, by username or by address). */
 export function mentionIsOf(m, { username = '', email = '' } = {}) {
   if (!m) return false;
   if (username && m.user && m.user.toLowerCase() === String(username).toLowerCase()) return true;
   if (email && m.email && m.email === String(email).toLowerCase()) return true;
-  return !!username && !!m.email && m.email === `${String(username).toLowerCase()}@puter.email`;
+  return !!username && !!m.email && m.email === `${String(username).toLowerCase()}@everything.email`;
 }
 
-/** Where a mention's email goes: their address, else their Puter mailbox; '' when neither is known. */
+/** Where a mention's email goes: their address, else their Everything mailbox; '' when neither is known. */
 export function mentionAddress(m) {
   if (m?.email) return m.email;
-  return m?.user ? `${m.user.toLowerCase()}@puter.email` : '';
+  return m?.user ? `${m.user.toLowerCase()}@everything.email` : '';
 }
 
 /** The people a comment mentions, once each (by username or address), in the order first mentioned. */

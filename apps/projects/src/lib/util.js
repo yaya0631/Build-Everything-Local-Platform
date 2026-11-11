@@ -89,7 +89,7 @@ export function relativeTime(ts, now = Date.now()) {
   return dateFormat(RELATIVE_FALLBACK).format(new Date(ts));
 }
 
-/** Keep a filename safe for a Puter fs path segment. */
+/** Keep a filename safe for an Everything fs path segment. */
 export function safeFileName(name) {
   const trimmed = String(name || 'file').trim() || 'file';
   return trimmed.replace(/[/\\:*?"<>|]/g, '_').slice(0, 120);

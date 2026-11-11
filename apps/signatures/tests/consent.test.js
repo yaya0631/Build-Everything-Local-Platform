@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import rawSource from '../src/workers/sign-worker.js?raw';
 import { SIGN_WORKER_VERSION } from '../src/lib/signlinks.js';
 import { instantiateWorker, makeKv, sha256Hex } from './helpers/worker-harness.js';
-import { makeFs, makeFakePuter } from './helpers/fake-puter.js';
+import { makeFs, makeFakeEverything } from './helpers/fake-everything.js';
 import { createStore } from '../src/lib/store.js';
 import {
   describeDevice, formatOffset, evidenceLine, stampWithOffset, groupHex, DISCLOSURE_VERSION,
@@ -61,7 +61,7 @@ async function buildWorker() {
     .replace('__SIGN_PAGE_URL__', 'https://signatures.example/sign.html');
   const fs = makeFs();
   await fs.write('signatures-data/d1/original.pdf', PDF);
-  return instantiateWorker(source, { me: { puter: { kv: makeKv(), fs } } });
+  return instantiateWorker(source, { me: { everything: { kv: makeKv(), fs } } });
 }
 
 const snapshot = {
@@ -191,8 +191,8 @@ describe('the signing page sends the signer\'s clock with every act', () => {
 
 describe('document fingerprint', () => {
   it('is the SHA-256 of the original bytes, recorded once', async () => {
-    const p = makeFakePuter();
-    const store = createStore({ getPuter: () => p });
+    const p = makeFakeEverything();
+    const store = createStore({ getEverything: () => p });
     await store.init();
     const doc = await store.createDoc({ title: 'NDA', fileName: 'nda.pdf', pdfBytes: PDF, pageCount: 1 });
     const first = await store.recordFingerprint(doc.id);
@@ -206,8 +206,8 @@ describe('document fingerprint', () => {
   });
 
   it('records the owner\'s own consent in the app', async () => {
-    const p = makeFakePuter();
-    const store = createStore({ getPuter: () => p });
+    const p = makeFakeEverything();
+    const store = createStore({ getEverything: () => p });
     await store.init();
     const doc = await store.createDoc({ title: 'NDA', fileName: 'nda.pdf', pdfBytes: PDF, pageCount: 1 });
     await store.patchDoc(doc.id, { signers: [{ id: 'me', name: 'Alex', isMe: true, status: 'pending' }] });
@@ -223,15 +223,15 @@ describe('document fingerprint', () => {
   });
 
   it('fingerprints the rebuilt PDF after a failed send leaves a draft editable', async () => {
-    const p = makeFakePuter();
-    const store = createStore({ getPuter: () => p });
+    const p = makeFakeEverything();
+    const store = createStore({ getEverything: () => p });
     await store.init();
     const doc = await store.createDoc({ title: 'NDA', pdfBytes: PDF, pageCount: 1 });
     // Sending fingerprints before deploying the worker. A failed deployment
     // leaves the draft open to adding, rotating, or deleting pages.
     const before = await store.recordFingerprint(doc.id);
     await store.replacePdf(doc.id, new TextEncoder().encode('%PDF rebuilt'), 2);
-    const reloaded = createStore({ getPuter: () => p });
+    const reloaded = createStore({ getEverything: () => p });
     await reloaded.init();
     const after = await reloaded.recordFingerprint(doc.id);
     expect(after.hex).toBe(await sha256Hex('%PDF rebuilt'));
@@ -239,8 +239,8 @@ describe('document fingerprint', () => {
   });
 
   it('preserves the fingerprint when replacing the PDF fails', async () => {
-    const p = makeFakePuter();
-    const store = createStore({ getPuter: () => p });
+    const p = makeFakeEverything();
+    const store = createStore({ getEverything: () => p });
     await store.init();
     const doc = await store.createDoc({ title: 'NDA', pdfBytes: PDF, pageCount: 1 });
     const before = await store.recordFingerprint(doc.id);

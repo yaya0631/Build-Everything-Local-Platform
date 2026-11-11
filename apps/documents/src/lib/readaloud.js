@@ -1,12 +1,12 @@
 /**
  * Read aloud: the selected text, or the whole document, spoken through
- * Puter's text-to-speech. Speech synthesis takes a few thousand characters
+ * Everything's text-to-speech. Speech synthesis takes a few thousand characters
  * at a time, so the text is cut into chunks at paragraph and sentence
  * breaks, each chunk is fetched while the previous one plays, and Stop
  * halts the lot.
  */
 
-/** Puter speaks up to 3000 characters per request; leave room. */
+/** Everything speaks up to 3000 characters per request; leave room. */
 export const SPEECH_CHUNK_MAX = 2800;
 /** Reading a whole book at once is a mistake; this many chunks is plenty for one sitting. */
 export const SPEECH_CHUNK_LIMIT = 12;
@@ -73,7 +73,7 @@ function hardSplit(text, max) {
 /**
  * A reader: `start(text)` speaks it chunk by chunk and resolves true when it
  * finished on its own (false when stopped); `stop()` halts playback.
- * `speak(chunk)` resolves an HTMLAudioElement (Puter's txt2speech);
+ * `speak(chunk)` resolves an HTMLAudioElement (Everything's txt2speech);
  * `onState` hears 'loading', 'playing', and 'idle'.
  */
 export function createReader({ speak, onState = () => {}, chunkLimit = SPEECH_CHUNK_LIMIT, chunkMax = SPEECH_CHUNK_MAX }) {

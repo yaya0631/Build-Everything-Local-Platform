@@ -1,6 +1,6 @@
 /**
  * Publishing a read-only weekly schedule to a public link, backed by
- * Puter static hosting: the snapshot HTML is written to the app's cloud
+ * Everything static hosting: the snapshot HTML is written to the app's cloud
  * storage and served from a per-user subdomain that is reused on update.
  */
 import { el } from '../lib/dom.js';
@@ -21,7 +21,7 @@ function shareUrl(subdomain) {
 
 async function writeSnapshot(store, weekStart, filter) {
   const html = buildWeekSnapshot(store.state, weekStart, { filter });
-  await puter.fs.write(`${SHARE_DIR}/index.html`, html, { createMissingParents: true });
+  await everything.fs.write(`${SHARE_DIR}/index.html`, html, { createMissingParents: true });
 }
 
 /** Publishes (or refreshes) the share site and returns its subdomain. */
@@ -40,7 +40,7 @@ async function publish(store, weekStart, filter) {
   for (let attempt = 0; subdomain === null; attempt += 1) {
     const candidate = `shifts-${uid()}`;
     try {
-      const site = await puter.hosting.create(candidate, SHARE_DIR);
+      const site = await everything.hosting.create(candidate, SHARE_DIR);
       subdomain = site?.subdomain ?? candidate;
     } catch (err) {
       if (attempt >= 1) throw err;
@@ -52,7 +52,7 @@ async function publish(store, weekStart, filter) {
   } catch (err) {
     // The page is already public but unrecorded, so nothing in the app
     // could ever revoke it. Take it back down before reporting failure.
-    await puter.hosting.delete(subdomain).catch(() => {});
+    await everything.hosting.delete(subdomain).catch(() => {});
     throw err;
   }
   return subdomain;
@@ -76,11 +76,11 @@ export function openShareDialog(ctx, weekStart) {
 
   function render() {
     const site = store.state.settings.shareSite;
-    const puterAvailable = typeof globalThis.puter !== 'undefined' && globalThis.puter.hosting;
+    const everythingAvailable = typeof globalThis.everything !== 'undefined' && globalThis.everything.hosting;
 
-    if (!puterAvailable) {
+    if (!everythingAvailable) {
       body.replaceChildren(
-        el('div', { class: 'form-error' }, icon('circle-alert', 15), 'Sharing needs a signed-in Puter session.')
+        el('div', { class: 'form-error' }, icon('circle-alert', 15), 'Sharing needs a signed-in Everything session.')
       );
       return;
     }
@@ -202,7 +202,7 @@ export function openShareDialog(ctx, weekStart) {
             });
             if (!ok) return;
             try {
-              await puter.hosting.delete(site.subdomain);
+              await everything.hosting.delete(site.subdomain);
               await store.updateSettings({ shareSite: null });
               toast('Sharing stopped');
               render();

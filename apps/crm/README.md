@@ -2,8 +2,8 @@
 
 A CRM and sales pipeline for founders who do their own selling: leads,
 companies, deal stages, follow-ups, meeting history, and sales forecasts.
-Built with vanilla JavaScript on [Puter](http://localhost:8443), so all
-data lives in the signed-in user's own Puter cloud. No app server, no database
+Built with vanilla JavaScript on [Everything](http://localhost:8443), so all
+data lives in the signed-in user's own Everything cloud. No app server, no database
 to run.
 
 ## Features
@@ -107,13 +107,13 @@ to run.
 - Light, dark, and system themes (system is the default). Responsive,
   app-like layout: sidebar on desktop, tab bar and floating action button on
   mobile.
-- **AI assist, on Puter's own models.** Three buttons, each one pressed on
+- **AI assist, on Everything's own models.** Three buttons, each one pressed on
   purpose: paste a signature or some scribbles into a new lead or company
   and have the fields read out of it, draft a first pass of an email into
   the same editable body a template fills, and catch up on a long history.
   Every result lands in a field you can edit and nothing is saved on its
   own. One switch in Settings turns it all off, and it stays off wherever
-  `puter.ai` isn't available - the record you press a button on is the only
+  `everything.ai` isn't available - the record you press a button on is the only
   thing that ever leaves your own cloud.
 - **CSV in and out.** Import leads, companies, or deals from a spreadsheet
   with auto-detected column mapping, a preview, and merge-by-email (or by
@@ -140,7 +140,7 @@ to run.
 ## Stack
 
 - [Vite](https://vite.dev) for dev server and build
-- [Puter.js](http://localhost:8443) for auth, key-value storage, files,
+- [Everything.js](http://localhost:8443) for auth, key-value storage, files,
   and (optionally) the built-in AI models
 - [Lucide](https://lucide.dev) for icons
 - [Vitest](https://vitest.dev) for tests
@@ -155,15 +155,15 @@ npm test           # run the test suite
 npm run build      # production build to dist/
 ```
 
-The real app (`index.html`) requires a Puter session. For local development
-without one, open `/mock.html`, which loads `dev/puter-mock.js`: an in-memory
-Puter SDK mock persisted to localStorage. `/dev/phone.html` wraps the mock in
+The real app (`index.html`) requires an Everything session. For local development
+without one, open `/mock.html`, which loads `dev/everything-mock.js`: an in-memory
+Everything SDK mock persisted to localStorage. `/dev/phone.html` wraps the mock in
 a 390px iframe for quick phone-size checks. Neither is part of the production
 build.
 
 ## Storage
 
-Everything lives in Puter KV, one key per collection (`crm:settings:v1`,
+Everything lives in Everything KV, one key per collection (`crm:settings:v1`,
 `crm:companies:v1`, `crm:contacts:v1`, `crm:deals:v1`, `crm:activities:v1`,
 `crm:tasks:v1`), plus `crm:trash:v1` for 30-day undo and `crm:backup:v1`
 for the pre-import snapshot. A founder-scale CRM fits comfortably in KV,

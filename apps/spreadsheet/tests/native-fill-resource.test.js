@@ -37,7 +37,7 @@ async function output(wb, native = false) {
   const fill = xf => Number(xlsxAttr(xf, 'fillId') || 0);
   const normal = fill(xlsxElements(xlsxElements(styles, 'cellStyleXfs')[0], 'xf')[0]);
   const cell = address => fill(xfs[Number(xlsxAttr(xlsxElements(sheet, 'c').find(c => xlsxAttr(c, 'r') === address), 's') || 0)]);
-  if (native) set('/xl/workbook.xml', text('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  if (native) set('/xl/workbook.xml', text('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   return { normal, cell, styles, sheet, text, set, finish: () => X.CFB.write(zip, { type: 'array', fileType: 'zip' }) };
 }
 
@@ -165,12 +165,12 @@ it('adopts resources from older private metadata without freezing partial row or
     rowStyles: { 4: { bold: true } }, cells: { '4,2': { v: 17 }, '2,2': { v: 23, s: { italic: true } } },
   }] });
   const out = await output(wb), nativeBook = X.read(out.finish(), { type: 'array' });
-  const metaSheet = nativeBook.Sheets._puter_meta;
+  const metaSheet = nativeBook.Sheets._everything_meta;
   const json = Object.keys(metaSheet).filter(k => /^A\d+$/.test(k)).sort((a, b) => Number(a.slice(1)) - Number(b.slice(1)))
     .map(k => metaSheet[k].v).join('');
   const meta = parseXlsxMetadata(json); delete meta.nativeFillBaseline;
   expect(meta.sheets.Data.nativeRowStyleBase.bg).toBe('#345678');
-  writeExportMetadata(X, { SheetNames: nativeBook.SheetNames, PuterExportMeta: { name: '_puter_meta', data: meta } }, { get: out.text, set: out.set });
+  writeExportMetadata(X, { SheetNames: nativeBook.SheetNames, EverythingExportMeta: { name: '_everything_meta', data: meta } }, { get: out.text, set: out.set });
   const back = await workbookFromFile(out.finish()), id = back.activeSheetId;
   expect(back.activeSheet.rowStyles.get(4)).toEqual({ bold: true });
   expect(back.getCell(id, 4, 2).s).toBeUndefined();

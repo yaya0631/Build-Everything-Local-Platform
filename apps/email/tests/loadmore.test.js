@@ -10,7 +10,7 @@ const DAYS = ['2026-08-03', '2026-08-02', '2026-08-01'];
 
 const raw = (n) => [
   `From: Sender ${n} <s${n}@example.com>`,
-  'To: you@puter.email',
+  'To: you@everything.email',
   `Subject: Message ${n}`,
   'Date: Mon, 17 Aug 2026 10:30:00 GMT',
   'Content-Type: text/plain; charset=utf-8',

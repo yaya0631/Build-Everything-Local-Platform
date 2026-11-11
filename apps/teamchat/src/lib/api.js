@@ -1,6 +1,6 @@
 /**
- * The only channel between the app and its backends: puter.workers.exec()
- * against a Teamchat worker. exec() forwards the signed-in user's Puter
+ * The only channel between the app and its backends: everything.workers.exec()
+ * against a Teamchat worker. exec() forwards the signed-in user's Everything
  * token, which is how a worker knows who is calling.
  *
  * There is one worker per workspace owner, so every call names its target:
@@ -161,7 +161,7 @@ async function exec(base, method, path, { body, form, blob, keepalive } = {}) {
   }
   let res;
   try {
-    res = await puter.workers.exec(base.replace(/\/+$/, '') + path, init);
+    res = await everything.workers.exec(base.replace(/\/+$/, '') + path, init);
   } catch (e) {
     clearTimeout(timer);
     // A request that carried a file, or a body the size of an archive's page,

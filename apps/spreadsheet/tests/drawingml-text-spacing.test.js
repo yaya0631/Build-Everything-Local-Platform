@@ -25,7 +25,7 @@ it('retains per-run character spacing in native XLSX without private workbook me
   const wb = await workbookFromFile(shapeXlsx({ run: '<a:r><a:rPr sz="1800" spc="-90"/><a:t>Condensed</a:t></a:r><a:r><a:rPr spc="225"/><a:t> Expanded</a:t></a:r>' }));
   const zip = X.CFB.read(new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()), { type: 'array' });
   const part = X.CFB.find(zip, '/xl/workbook.xml');
-  part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   part.size = part.content.length;
   const back = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }));
   const art = Buffer.from(back.activeSheet.charts[0].src.split(',')[1], 'base64').toString();

@@ -1,4 +1,4 @@
-// Small one-shot requests to Puter's AI for the review panes: the answer is
+// Small one-shot requests to Everything's AI for the review panes: the answer is
 // asked for as JSON and read leniently.
 import * as cloud from "../cloud.js";
 import { AI_MODEL } from "../assistant.js";

@@ -36,7 +36,7 @@ it('retains an independent live secondary title through edits, duplication and n
     expect(axes[1]).toContain('<c:f>Summary!$G$1</c:f>');expect(axes[1]).toContain('Rate &amp; growth');
     expect(axes[1]).not.toContain('Primary dollars');
     for (const axis of axes) expect(axis.match(/<c:title>[\s\S]*?<\/c:title>/)[0]).toContain('rot="-5400000"');
-    const book=X.CFB.find(zip,'/xl/workbook.xml');set(book,decode(book).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,''));
+    const book=X.CFB.find(zip,'/xl/workbook.xml');set(book,decode(book).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,''));
     wb=await workbookFromFile(X.CFB.write(zip,{type:'array',fileType:'zip'}),'native.xlsx');
   }
   const sheet=wb.sheets[0];wb.renameSheet(sheet.id,"Owner's summary");wb.insertRows(sheet.id,0,2);

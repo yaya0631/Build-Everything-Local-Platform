@@ -393,7 +393,7 @@ export function openBookingEditor({
     ]),
   ]);
 
-  // Each booking gets its own Puter Meetings room, minted by the worker at
+  // Each booking gets its own Everything Meetings room, minted by the worker at
   // booking time and carried through the guest's confirmation, the .ics, and
   // the calendar event. On by default — an in-person page turns it off.
   const meetToggle = el('input', {
@@ -402,7 +402,7 @@ export function openBookingEditor({
     checked: page ? page.meet !== false : true,
   });
   const meetRow = el('label', { class: 'inline-field', style: { cursor: 'pointer' } }, [
-    el('span', { class: 'field__label', text: 'Puter Meetings link' }),
+    el('span', { class: 'field__label', text: 'Everything Meetings link' }),
     el('span', { class: 'switch' }, [
       meetToggle,
       el('span', { class: 'switch__track' }),
@@ -412,7 +412,7 @@ export function openBookingEditor({
 
   /* ---- The host's picture -------------------------------------------------- */
 
-  // Whether guests see the host's Puter profile picture at the top of the page.
+  // Whether guests see the host's Everything profile picture at the top of the page.
   // ON for a new page — a face is what a booking page normally leads with, and
   // the switch is right here to be turned off — but a page saved before this
   // existed stays as its host left it (normalizePage reads absent as OFF): the
@@ -452,7 +452,7 @@ export function openBookingEditor({
         img.src = res.picture;
         avatarPreview.replaceChildren(img);
       } else if (res.state === 'none') {
-        avatarNote.textContent = 'No picture is available from your Puter account';
+        avatarNote.textContent = 'No picture is available from your Everything account';
       }
     })
     .catch(() => {});

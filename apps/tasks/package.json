@@ -1,7 +1,7 @@
 {
   "name": "tasks",
   "version": "1.0.0",
-  "description": "Tasks — personal and shared to-do lists on Puter",
+  "description": "Tasks — personal and shared to-do lists on Everything",
   "type": "module",
   "private": true,
   "scripts": {

@@ -1,9 +1,9 @@
 // User preferences. Stored in localStorage for instant startup and mirrored to
-// one Puter KV entry when signed in so they follow the user across devices.
+// one Everything KV entry when signed in so they follow the user across devices.
 // Only values that differ from the defaults are saved.
 
 import { Emitter } from '../core/emitter.js';
-import { kvGet, kvSet, KV_SETTINGS_KEY } from './puter.js';
+import { kvGet, kvSet, KV_SETTINGS_KEY } from './everything.js';
 
 const LOCAL_KEY = 'circuits:settings';
 

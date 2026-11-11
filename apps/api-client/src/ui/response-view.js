@@ -116,8 +116,8 @@ export class ResponseView {
     const actions = [];
     if (err.code !== 'aborted') actions.push(h('button.btn.sm', { type: 'button', onclick: () => this.onRetry?.() }, icon('refresh', 14), 'Try again'));
     if (['cors', 'network', 'mixed-content', 'maybe-sent'].includes(err.code) && err.transport !== 'relay') {
-      if (signedIn) actions.push(h('button.btn.sm.primary', { type: 'button', onclick: () => this.onRelay?.() }, icon('server', 14), 'Send through Puter relay'));
-      else if (this.app.session.puter) actions.push(h('button.btn.sm.primary', { type: 'button', onclick: () => this.app.signIn() }, icon('logIn', 14), 'Sign in to use the relay'));
+      if (signedIn) actions.push(h('button.btn.sm.primary', { type: 'button', onclick: () => this.onRelay?.() }, icon('server', 14), 'Send through Everything relay'));
+      else if (this.app.session.everything) actions.push(h('button.btn.sm.primary', { type: 'button', onclick: () => this.app.signIn() }, icon('logIn', 14), 'Sign in to use the relay'));
     }
     if (err.code === 'script') actions.push(h('button.btn.sm', { type: 'button', onclick: () => this.app.console.setOpen(true) }, icon('terminal', 14), 'Open console'));
     const title = err.code === 'aborted' ? 'Request cancelled' : err.code === 'script' ? 'Script error' : err.code === 'timeout' ? 'Request timed out' : 'Could not send request';
@@ -193,7 +193,7 @@ export class ResponseView {
     sizeBtn.addEventListener('click', () => showPopover(sizeBtn, this.#sizes(r), { align: 'end', label: 'Size', focus: false }));
     const transport = h(
       'span.resp-transport',
-      { title: r.transport === 'relay' ? (r.autoRelay === 'fallback' ? 'Sent through the Puter relay because the browser could not reach the server' : 'Sent through the Puter relay') : 'Sent from the browser' },
+      { title: r.transport === 'relay' ? (r.autoRelay === 'fallback' ? 'Sent through the Everything relay because the browser could not reach the server' : 'Sent through the Everything relay') : 'Sent from the browser' },
       icon(r.transport === 'relay' ? 'server' : 'globe', 13),
       h('span', r.transport === 'relay' ? 'Relay' : 'Browser'),
     );
@@ -251,7 +251,7 @@ export class ResponseView {
             ),
           )
         : null,
-      h('p.metric-note', r.transport === 'relay' ? 'Measured in this browser, through the Puter relay.' : 'Measured in this browser. Browsers hide connection details for cross-origin requests.'),
+      h('p.metric-note', r.transport === 'relay' ? 'Measured in this browser, through the Everything relay.' : 'Measured in this browser. Browsers hide connection details for cross-origin requests.'),
     );
   }
 
@@ -526,7 +526,7 @@ export class ResponseView {
       h('div.resp-tools', filter, h('span.spacer'), h('span.resp-tools-note', `${headers.length} header${headers.length === 1 ? '' : 's'}`)),
       h('div.resp-scroll', h('table.data-table', h('thead', h('tr', h('th', 'Name'), h('th', 'Value'), h('th', h('span.sr-only', 'Copy')))), tbody)),
       r.transport === 'browser'
-        ? h('p.resp-note', icon('info', 13), h('span', 'Browsers only show headers the server exposes to web pages. Send through the Puter relay to see every header.'))
+        ? h('p.resp-note', icon('info', 13), h('span', 'Browsers only show headers the server exposes to web pages. Send through the Everything relay to see every header.'))
         : null,
     );
   }
@@ -540,7 +540,7 @@ export class ResponseView {
           'div.resp-empty.small',
           icon('cookie', 24),
           h('p', r.transport === 'browser' ? 'Browsers do not let web pages read cookies set by other sites.' : 'This response did not set any cookies.'),
-          r.transport === 'browser' ? h('p.resp-hint', 'Send through the Puter relay to see and keep cookies.') : null,
+          r.transport === 'browser' ? h('p.resp-hint', 'Send through the Everything relay to see and keep cookies.') : null,
         ),
       );
       return;

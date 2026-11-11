@@ -337,7 +337,7 @@ export class AssetExportPanel extends Panel {
       const files = await renderAssets(this.app, ed, assets, settingsOf(ed.doc));
       const { deliverFiles } = await import('../io/deliver.js');
       const base = ed.name.replace(/\.[^.]+$/, '') || 'Assets';
-      const msg = await deliverFiles(this.app, files, { dest: this.app.user && this.app.puter?.ui ? 'puter' : 'device', zip: this.zip.checked, zipName: `${base} Assets.zip` });
+      const msg = await deliverFiles(this.app, files, { dest: this.app.user && this.app.everything?.ui ? 'everything' : 'device', zip: this.zip.checked, zipName: `${base} Assets.zip` });
       if (msg) this.app.notify(msg, { polite: true });
       return files;
     } catch (err) {

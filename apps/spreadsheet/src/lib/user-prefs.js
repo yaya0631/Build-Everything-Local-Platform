@@ -1,16 +1,16 @@
 /**
  * Preferences that belong to the person, not to a spreadsheet (AutoCorrect's lists, the custom dictionary):
  * kept in this browser under the signed-in account's scope, so each account on a shared browser has its own,
- * and copied to puter.kv where there is a session, so they follow the account to another device.
+ * and copied to everything.kv where there is a session, so they follow the account to another device.
  *
  * Reading is synchronous, from this browser; syncPref brings in the account's copy when it is newer.
  */
 import { accountStorageKey } from './account-storage.js';
-import { kvGet, kvSet } from './puter.js';
+import { kvGet, kvSet } from './everything.js';
 
 /** The account's store is there: the SDK is loaded with its key-value store, and someone is signed in. */
 const canUseKv = () => {
-  const p = globalThis.puter;
+  const p = globalThis.everything;
   try { return typeof p?.kv?.get === 'function' && p?.auth?.isSignedIn?.() !== false; } catch { return false; }
 };
 

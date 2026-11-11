@@ -5,12 +5,12 @@ for (const action of ['Rename', 'Delete', 'Duplicate'])
     test(`${action}'s library dialog ${signedOut ? 'retires when its account ends' : 'still works within its account'}`, async ({
       page,
     }) => {
-      await page.route('**/sdk/puter.js', (route) =>
+      await page.route('**/sdk/everything.js', (route) =>
         route.fulfill({
           contentType: 'application/javascript',
           body: `window.account={username:'Alice'};window.actions=[];
         const record=(action,path)=>window.actions.push({action,path,account:window.account?.username??null});
-        window.puter={env:'web',auth:{isSignedIn:()=>!!window.account,getUser:async()=>window.account,
+        window.everything={env:'web',auth:{isSignedIn:()=>!!window.account,getUser:async()=>window.account,
           signIn:async()=>{window.account={username:'Bob'};},
           signOut:()=>new Promise(resolve=>{window.releaseSignOut=()=>{window.account=null;resolve();};})},
           fs:{readdir:async()=>[{name:'private.pdf',path:'PDF Editor/private.pdf'}],
@@ -76,7 +76,7 @@ for (const action of ['Rename', 'Delete', 'Duplicate'])
         await page.getByRole('button', { name: 'Settings', exact: true }).click();
         await page
           .getByRole('dialog', { name: 'Settings', exact: true })
-          .getByRole('button', { name: 'Sign in with Puter', exact: true })
+          .getByRole('button', { name: 'Sign in with Everything', exact: true })
           .click();
         await expect(page.locator('.account-label')).toHaveText('Bob');
         await expect(

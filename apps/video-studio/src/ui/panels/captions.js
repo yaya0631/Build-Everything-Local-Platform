@@ -1,5 +1,5 @@
 /**
- * Captions tab: captions generated from speech (Puter speech to text),
+ * Captions tab: captions generated from speech (Everything speech to text),
  * lyrics from a song, an editable list of the project's captions, and
  * .srt / .vtt import and .srt export. Captions are text clips marked
  * caption: true.
@@ -89,7 +89,7 @@ function applyCaptions(ctx, cues, { mode, preset, position, wrap = true, label =
 
 /**
  * Captions from the project's speech: mix the sound (opts.scope), turn it
- * into timed words with Puter speech to text, group them into lines and put
+ * into timed words with Everything speech to text, group them into lines and put
  * them on a new text track (mode 'replace' drops existing captions first).
  * onStep(index, fraction) follows the three stages. Returns how many
  * captions were added (0 when no speech was found).
@@ -176,13 +176,13 @@ function stepProgress(steps, label) {
 
 /** Sign-in prompt for the AI caption tools when signed out. */
 function signInState(ctx, title, text) {
-  const btn = ctx.account?.onSignIn ? h('button.btn.primary', { type: 'button', onclick: () => ctx.account.onSignIn() }, icon('cloud', 16), 'Sign in to Puter') : null;
+  const btn = ctx.account?.onSignIn ? h('button.btn.primary', { type: 'button', onclick: () => ctx.account.onSignIn() }, icon('cloud', 16), 'Sign in to Everything') : null;
   return { el: emptyState('user', title, text, btn), sync() {} };
 }
 
 function autoPanel(ctx, opts, save) {
   const { store } = ctx;
-  if (!aiAvailable(ctx)) return signInState(ctx, 'Sign in to generate captions', 'Generated captions turn speech into text with Puter AI, so they need a Puter account. You can still import subtitle files or add captions by hand.');
+  if (!aiAvailable(ctx)) return signInState(ctx, 'Sign in to generate captions', 'Generated captions turn speech into text with Everything AI, so they need an Everything account. You can still import subtitle files or add captions by hand.');
   const lang = selectField({ label: 'Spoken language', options: LANGUAGES, value: opts.language, onChange: (v) => { opts.language = v; save(); } });
   const scope = segmented({
     label: 'Listen to',
@@ -268,7 +268,7 @@ function songLabel(clip, asset) {
  */
 function lyricsPanel(ctx, opts, save) {
   const { store } = ctx;
-  if (!aiAvailable(ctx)) return signInState(ctx, 'Sign in to create lyrics', 'Lyrics are heard with Puter AI speech to text, so they need a Puter account. You can still import a lyrics subtitle file or type lines in the Captions list.');
+  if (!aiAvailable(ctx)) return signInState(ctx, 'Sign in to create lyrics', 'Lyrics are heard with Everything AI speech to text, so they need an Everything account. You can still import a lyrics subtitle file or type lines in the Captions list.');
   const song = h('select.select', { id: `lyr-song-${uid('x')}` });
   song.addEventListener('change', () => syncButton());
   const songField = h('div.field', h('label.field-label', { for: song.id }, 'Song'), song);
@@ -675,7 +675,7 @@ function openTranslate(ctx) {
   const status = h('p.asset-hint', { role: 'status' });
   const go = h('button.btn.primary', { type: 'button' }, icon('languages', 16), 'Translate');
   const cancel = h('button.btn', { type: 'button' }, 'Cancel');
-  const d = openDialog({ title: 'Translate captions', body: h('div.cap-form', h('p.dialog-text', `${clips.length} caption${clips.length === 1 ? '' : 's'} will be translated with Puter AI.`), lang.el, h('div.field', h('span.field-label', 'Put the translation'), how.el), status), actions: [cancel, go], className: 'small' });
+  const d = openDialog({ title: 'Translate captions', body: h('div.cap-form', h('p.dialog-text', `${clips.length} caption${clips.length === 1 ? '' : 's'} will be translated with Everything AI.`), lang.el, h('div.field', h('span.field-label', 'Put the translation'), how.el), status), actions: [cancel, go], className: 'small' });
   let abort = null;
   cancel.addEventListener('click', () => {
     abort?.abort();
@@ -724,7 +724,7 @@ function openTranslate(ctx) {
   });
 }
 
-/** Let Puter AI pick an emoji for captions where one fits, appended to the line. */
+/** Let Everything AI pick an emoji for captions where one fits, appended to the line. */
 async function addEmojis(ctx) {
   const { store } = ctx;
   const clips = captionClips(store.project);
@@ -755,7 +755,7 @@ async function addEmojis(ctx) {
 
 /**
  * Mark the key words of every caption (drawn in the caption's highlight
- * color): picked on this device, or by Puter AI when ai is set.
+ * color): picked on this device, or by Everything AI when ai is set.
  */
 async function highlightKeywords(ctx, { ai = false } = {}) {
   const { store } = ctx;

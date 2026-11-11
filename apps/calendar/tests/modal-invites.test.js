@@ -508,8 +508,8 @@ describe('deleting an invited event: the cancellation offer', () => {
   });
 });
 
-describe('a mail invitation addressed to the Puter mailbox', () => {
-  const MAILBOX = 'nariman@puter.email';
+describe('a mail invitation addressed to the Everything mailbox', () => {
+  const MAILBOX = 'nariman@everything.email';
   const ACCOUNT = 'nariman@work.example';
   const reset = () => {
     for (const node of document.querySelectorAll('.modal-scrim, .toast')) node.remove();

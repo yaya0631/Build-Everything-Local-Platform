@@ -20,7 +20,7 @@ const drop = (modal, files) => {
 const settle = () => new Promise((resolve) => setTimeout(resolve, 50));
 // Every draft id that has bytes in the attachment store.
 const storedIds = () => new Promise((resolve) => {
-  const req = indexedDB.open('puter-mail-draft-files', 1);
+  const req = indexedDB.open('everything-mail-draft-files', 1);
   req.onsuccess = () => {
     const tx = req.result.transaction('files', 'readonly');
     const keys = tx.objectStore('files').getAllKeys();
@@ -33,7 +33,7 @@ const storedIds = () => new Promise((resolve) => {
 
 beforeEach(() => {
   vi.stubGlobal('indexedDB', new IDBFactory());
-  vi.stubGlobal('puter', { ui: {}, APIOrigin: 'https://api.example', authToken: 'test', fs: { write: async () => {} } });
+  vi.stubGlobal('everything', { ui: {}, APIOrigin: 'https://api.example', authToken: 'test', fs: { write: async () => {} } });
   vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true })));
   drafts = createDraftStore('test', memoryStorage());
 });

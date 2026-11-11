@@ -55,7 +55,7 @@ describe('collaboration worker access', () => {
     await net.service.call(alice, { op: 'revoke-invites', room });
     await fails(net.service.call(bob, { op: 'join', room, invite: token }), 403);
     const later = await net.service.call(alice, { op: 'invite', room, role: 'editor' });
-    const service = new DocService(net.puter, { now: () => Date.now() + 31 * 86400000 });
+    const service = new DocService(net.everything, { now: () => Date.now() + 31 * 86400000 });
     await fails(service.call(bob, { op: 'join', room, invite: later.token }), 403);
   });
 
@@ -133,7 +133,7 @@ describe('request authentication', () => {
   it('accepts a signed request from the identity file owner and refuses tampering', async () => {
     const keys = await keyPair();
     const files = new Map([['/bob/AppData/id.json', JSON.stringify({ version: 1, publicKey: keys.publicKey })]]);
-    const puter = {
+    const everything = {
       fs: {
         stat: async (path) => ({ path, is_shared: false, owner: { username: 'bob' }, is_dir: false, size: 100 }),
         read: async (path) => new Blob([files.get(path)]),
@@ -143,14 +143,14 @@ describe('request authentication', () => {
     expect(tokenClaims(t)).toMatchObject({ type: 'access-token', user_uid: bob.uuid });
     const input = { op: 'sync', room: 'r', since: 0 };
     const signature = await sign(keys.privateKey, ['http://vs.localhost:8443', '/bob/AppData/id.json', await hash(JSON.stringify(input))]);
-    const request = (body = input, proof = { version: 1, path: '/bob/AppData/id.json', signature }) => ({ url: 'http://vs.localhost:8443/api', headers: new Map([['puter-auth', t], ['x-vector-studio-proof', JSON.stringify(proof)]]) });
-    expect(await authenticate(request(), puter, input)).toEqual({ uuid: bob.uuid, username: 'bob' });
-    await fails(authenticate(request(), puter, { ...input, since: 5 }), 401);
-    // A key file the caller does not own (Puter reports is_shared: null) proves nothing.
+    const request = (body = input, proof = { version: 1, path: '/bob/AppData/id.json', signature }) => ({ url: 'http://vs.localhost:8443/api', headers: new Map([['everything-auth', t], ['x-vector-studio-proof', JSON.stringify(proof)]]) });
+    expect(await authenticate(request(), everything, input)).toEqual({ uuid: bob.uuid, username: 'bob' });
+    await fails(authenticate(request(), everything, { ...input, since: 5 }), 401);
+    // A key file the caller does not own (Everything reports is_shared: null) proves nothing.
     const other = '/mallory/AppData/id.json';
     files.set(other, files.get('/bob/AppData/id.json'));
     const otherSig = await sign(keys.privateKey, ['http://vs.localhost:8443', other, await hash(JSON.stringify(input))]);
-    const shared = { ...puter, fs: { ...puter.fs, stat: async () => ({ is_shared: null, owner: { username: 'mallory' }, size: 1 }) } };
+    const shared = { ...everything, fs: { ...everything.fs, stat: async () => ({ is_shared: null, owner: { username: 'mallory' }, size: 1 }) } };
     await fails(authenticate(request(input, { version: 1, path: other, signature: otherSig }), shared, input), 401);
   });
 });

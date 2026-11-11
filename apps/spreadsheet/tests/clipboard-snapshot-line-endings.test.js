@@ -87,7 +87,7 @@ it('retains recovered line endings through edit, undo, copying and metadata-free
     const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = reject; reader.readAsArrayBuffer(blob);
   });
   const zip = X.CFB.read(new Uint8Array(bytes), {type:'array'}), part = X.CFB.find(zip,'/xl/workbook.xml');
-  part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,''));
+  part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,''));
   part.size = part.content.length;
   const back = await workbookFromFile(X.CFB.write(zip,{type:'array',fileType:'zip'}),'snapshot-line-endings');
   expect(back.getValue(back.activeSheetId,0,0)).toBe(text);

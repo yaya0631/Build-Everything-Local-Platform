@@ -23,7 +23,7 @@ async function saved(criterion) {
   const xml = new TextDecoder().decode(X.CFB.find(zip, '/xl/worksheets/sheet1.xml').content);
   X.CFB.utils.cfb_del(zip, '/xl/worksheets/sheet2.xml');
   const book = X.CFB.find(zip, '/xl/workbook.xml');
-  book.content = new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet name="_puter_meta"[^>]*\/>/, ''));
+  book.content = new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet name="_everything_meta"[^>]*\/>/, ''));
   book.size = book.content.length;
   return { wb, id, xml, native: X.CFB.write(zip, { type: 'array', fileType: 'zip' }) };
 }

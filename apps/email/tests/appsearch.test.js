@@ -14,7 +14,7 @@ const settle = (ms = 60) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const A_DRAFT = {
   id: 'd1',
-  domain: 'puter.email',
+  domain: 'everything.email',
   to: 'Ana Petrova <ana@example.com>',
   cc: '',
   subject: 'Quarter close',
@@ -95,7 +95,7 @@ describe('deleting for good', () => {
       .click();
     await settle(80);
 
-    // window.confirm answers false in the cross-origin iframe a Puter app runs
+    // window.confirm answers false in the cross-origin iframe an Everything app runs
     // in, so the guard has to be a dialog this app draws itself.
     const panel = document.querySelector('.modal-panel');
     expect(panel).not.toBeNull();

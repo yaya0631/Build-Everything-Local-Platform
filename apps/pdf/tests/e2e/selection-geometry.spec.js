@@ -3,8 +3,8 @@ import { PDFDocument, StandardFonts } from 'pdf-lib';
 import { readFile } from 'node:fs/promises';
 import { listHighlights } from '../../src/core/highlight.js';
 
-async function mockPuter(page) {
-  await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
+async function mockEverything(page) {
+  await page.route('**/sdk/everything.js', (route) => route.fulfill({ body: '' }));
 }
 async function openPdf(page, doc) {
   const chooser = page.waitForEvent('filechooser');
@@ -24,7 +24,7 @@ for (const zoom of [0.25, 1.5, 4])
     test(`search-mark selection uses glyph bounds with ${endpoints} at zoom ${zoom}`, async ({
       page,
     }) => {
-      await mockPuter(page);
+      await mockEverything(page);
       await page.goto('/#library');
       const doc = await PDFDocument.create();
       const font = await doc.embedFont(StandardFonts.Helvetica);
@@ -79,7 +79,7 @@ for (const size of [8, 30, 80, 160])
     test(`selected glyph bounds preserve bidirectional order for ${text} at ${size}px`, async ({
       page,
     }) => {
-      await mockPuter(page);
+      await mockEverything(page);
       await page.goto('/#library');
       const result = await page.evaluate(
         async ({ text, start, end, size }) => {

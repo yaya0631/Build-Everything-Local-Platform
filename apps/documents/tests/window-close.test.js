@@ -1,20 +1,20 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Doc, publishing, versioning } from '../src/lib/doc.js';
-import * as P from '../src/lib/puter.js';
+import * as P from '../src/lib/everything.js';
 import { CLOSE_TITLE, createCloseWindow } from '../src/views/window-close.js';
 import { closeAllModals } from '../src/ui/modal.js';
 
 /**
- * The Puter desktop window's close button: edits are written first, and a never-saved document (which inside
+ * The Everything desktop window's close button: edits are written first, and a never-saved document (which inside
  * the desktop waits for a first Save to ask where it goes) asks whether to save it before the window goes.
  */
 
 let files, dialogs;
-function installPuter() {
+function installEverything() {
   files = new Map();
   dialogs = [];
-  globalThis.puter = {
+  globalThis.everything = {
     env: 'app',
     exit: vi.fn(),
     fs: {
@@ -56,32 +56,32 @@ beforeEach(() => {
   versioning.enabled = false;
   publishing.enabled = false;
   vi.stubGlobal('matchMedia', () => ({ matches: false, addEventListener() {}, removeEventListener() {} }));
-  installPuter();
+  installEverything();
 });
 afterEach(() => {
   shown?.view.doc?.destroy();
   vi.unstubAllGlobals();
   closeAllModals();
   document.body.replaceChildren();
-  delete globalThis.puter;
+  delete globalThis.everything;
 });
 
-describe('closing the Puter window', () => {
+describe('closing the Everything window', () => {
   it('takes over the close button only inside the desktop, where the window can be closed', () => {
     const handler = () => {};
     expect(P.onWindowClose(handler)).toBe(true);
-    expect(puter.ui.onWindowClose).toHaveBeenCalledWith(handler);
-    delete puter.exit;
+    expect(everything.ui.onWindowClose).toHaveBeenCalledWith(handler);
+    delete everything.exit;
     expect(P.onWindowClose(handler)).toBe(false);
-    puter.env = 'web';
-    puter.exit = vi.fn();
+    everything.env = 'web';
+    everything.exit = vi.fn();
     expect(P.onWindowClose(handler)).toBe(false);
   });
 
   it('closes at once when nothing is waiting to be saved', async () => {
     editorWith(Doc.blank());
     expect(await closeWindow()).toBe(true);
-    expect(puter.exit).toHaveBeenCalledOnce();
+    expect(everything.exit).toHaveBeenCalledOnce();
     expect(question()).toBeNull();
     expect(dialogs).toHaveLength(0);
   });
@@ -90,7 +90,7 @@ describe('closing the Puter window', () => {
     shown = { kind: 'home', view: {} };
     closeWindow = createCloseWindow({ open: () => shown, leaveDialog: vi.fn(), exit: P.exitApp });
     expect(await closeWindow()).toBe(true);
-    expect(puter.exit).toHaveBeenCalledOnce();
+    expect(everything.exit).toHaveBeenCalledOnce();
   });
 
   it('writes a saved document\'s pending edits first, without asking', async () => {
@@ -103,7 +103,7 @@ describe('closing the Puter window', () => {
     expect(files.get('Documents/Report.docx')).toBe(edited);
     expect(question()).toBeNull();
     expect(dialogs).toHaveLength(0);
-    expect(puter.exit).toHaveBeenCalledOnce();
+    expect(everything.exit).toHaveBeenCalledOnce();
   });
 
   it('asks about a never-saved document, and Cancel keeps the window open', async () => {
@@ -117,7 +117,7 @@ describe('closing the Puter window', () => {
     expect(document.querySelectorAll('.modal-root:not(.closing) [role="dialog"]')).toHaveLength(1);
     press('Cancel');
     expect(await closing).toBe(false);
-    expect(puter.exit).not.toHaveBeenCalled();
+    expect(everything.exit).not.toHaveBeenCalled();
     expect(dialogs).toHaveLength(0);
     expect(shown.view.doc.dirty).toBe(true);
   });
@@ -141,7 +141,7 @@ describe('closing the Puter window', () => {
     await vi.waitFor(() => expect(question()).not.toBeNull());
     press('Close without saving');
     expect(await closing).toBe(true);
-    expect(puter.exit).toHaveBeenCalledOnce();
+    expect(everything.exit).toHaveBeenCalledOnce();
     expect(dialogs).toHaveLength(0);
     expect(files.size).toBe(0);
   });
@@ -152,33 +152,33 @@ describe('closing the Puter window', () => {
     await vi.waitFor(() => expect(question()).not.toBeNull());
     press('Save…');
     await vi.waitFor(() => expect(dialogs).toHaveLength(1));
-    // Esc in Puter's dialog sends the app no answer; the desktop gives the window the focus back.
+    // Esc in Everything's dialog sends the app no answer; the desktop gives the window the focus back.
     await new Promise((resolve) => setTimeout(resolve, P.DIALOG_FOCUS_MS + 20));
     window.dispatchEvent(new MessageEvent('message', { data: { msg: 'focus' }, source: window }));
     expect(await closing).toBe(false);
-    expect(puter.exit).not.toHaveBeenCalled();
+    expect(everything.exit).not.toHaveBeenCalled();
     expect(doc.dirty).toBe(true);
     // The close button works again: it asks once more.
     const again = closeWindow();
     await vi.waitFor(() => expect(question()).not.toBeNull());
     press('Close without saving');
     expect(await again).toBe(true);
-    expect(puter.exit).toHaveBeenCalledOnce();
+    expect(everything.exit).toHaveBeenCalledOnce();
   });
 
-  it('Save… opens Puter\'s Save dialog and closes once the document is saved', async () => {
+  it('Save… opens Everything\'s Save dialog and closes once the document is saved', async () => {
     const doc = newDocument();
     const closing = closeWindow();
     await vi.waitFor(() => expect(question()).not.toBeNull());
     press('Save…');
     await vi.waitFor(() => expect(dialogs).toHaveLength(1));
     expect(dialogs[0].suggestedName).toBe('Untitled document.docx');
-    expect(puter.exit).not.toHaveBeenCalled();
+    expect(everything.exit).not.toHaveBeenCalled();
     dialogs[0].save();
     expect(await closing).toBe(true);
     expect(doc.path).toBe('~/Desktop/Untitled document.docx');
     expect(files.has('~/Desktop/Untitled document.docx')).toBe(true);
-    expect(puter.exit).toHaveBeenCalledOnce();
+    expect(everything.exit).toHaveBeenCalledOnce();
   });
 
   it('stays open when the Save dialog opened from Save… is cancelled', async () => {
@@ -189,7 +189,7 @@ describe('closing the Puter window', () => {
     await vi.waitFor(() => expect(dialogs).toHaveLength(1));
     dialogs[0].cancel();
     expect(await closing).toBe(false);
-    expect(puter.exit).not.toHaveBeenCalled();
+    expect(everything.exit).not.toHaveBeenCalled();
     expect(doc.path).toBeNull();
     expect(doc.dirty).toBe(true);
     expect(leaveDialog).not.toHaveBeenCalled();
@@ -205,15 +205,15 @@ describe('closing the Puter window', () => {
     const doc = editorWith(new Doc({ name: 'Report', path: 'Documents/Report.docx' }));
     doc.attach(async () => new Blob(['edited']));
     doc.changed();
-    puter.fs.write.mockRejectedValueOnce(new Error('quota'));
+    everything.fs.write.mockRejectedValueOnce(new Error('quota'));
     vi.spyOn(console, 'error').mockImplementation(() => {});
     expect(await closeWindow()).toBe(false);
     expect(leaveDialog).toHaveBeenCalledWith(doc, { unsaveable: false, undelivered: false });
-    expect(puter.exit).not.toHaveBeenCalled();
+    expect(everything.exit).not.toHaveBeenCalled();
     leaveDialog.mockResolvedValueOnce('leave');
-    puter.fs.write.mockRejectedValueOnce(new Error('quota'));
+    everything.fs.write.mockRejectedValueOnce(new Error('quota'));
     expect(await closeWindow()).toBe(true);
-    expect(puter.exit).toHaveBeenCalledOnce();
+    expect(everything.exit).toHaveBeenCalledOnce();
   });
 
   it('waits for the answer to a question about the open document already on screen, rather than asking it again', async () => {
@@ -223,7 +223,7 @@ describe('closing the Puter window', () => {
     expect(await closeWindow()).toBe(false);
     expect(question()).toBeNull();
     expect(leaveDialog).not.toHaveBeenCalled();
-    expect(puter.exit).not.toHaveBeenCalled();
+    expect(everything.exit).not.toHaveBeenCalled();
     expect(document.querySelector('.toast-root').textContent).toContain('Answer the question about the open document first');
     // Once it is answered, the close button asks as usual.
     asking = false;

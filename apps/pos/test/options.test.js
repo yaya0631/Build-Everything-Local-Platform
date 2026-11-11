@@ -4,7 +4,7 @@ import {
   selectionValid, selectionOptions, optionsToSelection, formatDelta, groupSummary,
 } from '../src/lib/options.js';
 import { computeCart } from '../src/lib/totals.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 import { Store } from '../src/lib/store.js';
 
 const latte = {
@@ -159,7 +159,7 @@ describe('store persistence of options', () => {
   let store;
 
   beforeEach(async () => {
-    mock = installMockPuter();
+    mock = installMockEverything();
     store = new Store();
     await store.init();
   });

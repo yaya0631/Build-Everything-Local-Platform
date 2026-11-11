@@ -221,14 +221,14 @@ export function lintSurvey(survey) {
 export function errorMessage(err) {
   switch (err && err.code) {
     case 'email_unverified':
-      return 'Verify the email address on your Puter account, then try again. Sharing needs a verified account.';
+      return 'Verify the email address on your Everything account, then try again. Sharing needs a verified account.';
     case 'verify':
     case 'cooldown':
       return 'Your response collector is still starting up. Wait a minute and try again.';
     case 'network':
       return 'Could not reach your response collector. Check your connection and try again.';
     case 'unavailable':
-      return 'Sharing needs a Puter account.';
+      return 'Sharing needs an Everything account.';
     case 'too_large':
       return 'This survey is too large to publish. Try a smaller logo or fewer questions.';
     default:

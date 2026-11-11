@@ -1,5 +1,5 @@
 /**
- * Conditional writes over Puter's atomic list append. KV has no native CAS.
+ * Conditional writes over Everything's atomic list append. KV has no native CAS.
  *
  * Each revision has an immutable value and a list of proposed successors.
  * The FIRST appended successor wins. Its value is uploaded before the append,
@@ -10,7 +10,7 @@
  *
  * Legacy values use the fixed "initial" revision until their first write.
  * Successor links stay permanently; superseded payloads can be removed.
- * Sources: http://localhost:8443/KV/add/ and Puter's SystemKVStore.add,
+ * Sources: http://localhost:8443/KV/add/ and Everything's SystemKVStore.add,
  * which uses a single DynamoDB list_append update and returns the new list.
  *
  * A read costs one round trip per hop: the shortcut, then each revision's
@@ -80,7 +80,7 @@ export async function readKV(key) {
     let initial = null;
     let head = remembered;
     if (!head) {
-      initial = await puter.kv.get(key);
+      initial = await everything.kv.get(key);
       const parsed = decode(initial);
       head = parsed && typeof parsed === 'object' && Object.hasOwn(parsed, marker)
         ? pointer(parsed, key) : { revision: INITIAL, deleted: false };
@@ -93,8 +93,8 @@ export async function readKV(key) {
       // The link and the payload in one round trip. The payload is only
       // wasted when a successor exists, which means the start was behind.
       const [next, value] = await Promise.all([
-        puter.kv.get(linkKey(key, head.revision)).then(decode),
-        head.deleted || head.revision === INITIAL ? null : puter.kv.get(valueKey(key, head.revision)),
+        everything.kv.get(linkKey(key, head.revision)).then(decode),
+        head.deleted || head.revision === INITIAL ? null : everything.kv.get(valueKey(key, head.revision)),
       ]);
       if (absent(next)) {
         raw = value;
@@ -121,7 +121,7 @@ export async function readKV(key) {
       continue;
     }
     // Only a published successor justifies a missing immutable payload.
-    if (absent(await puter.kv.get(linkKey(key, head.revision)))) throw new KVReadError(key);
+    if (absent(await everything.kv.get(linkKey(key, head.revision)))) throw new KVReadError(key);
   }
   throw new KVReadError(key);
 }
@@ -131,8 +131,8 @@ export async function readKV(key) {
  * may have landed: leave its payload available for readback and rollback.
  */
 export async function compareAndSetKV(key, expected, raw, { revision = crypto.randomUUID() } = {}) {
-  if (typeof puter.kv.add !== 'function') {
-    throw Object.assign(new Error('This Puter SDK does not support safe concurrent saves. Reload to update it.'), { refused: true });
+  if (typeof everything.kv.add !== 'function') {
+    throw Object.assign(new Error('This Everything SDK does not support safe concurrent saves. Reload to update it.'), { refused: true });
   }
   if (!revisionId(revision)) throw new TypeError('Invalid publication revision');
   const deleted = absent(raw);
@@ -140,7 +140,7 @@ export async function compareAndSetKV(key, expected, raw, { revision = crypto.ra
   const payload = valueKey(key, revision);
   if (!deleted) {
     try {
-      await puter.kv.set(payload, raw);
+      await everything.kv.set(payload, raw);
     } catch (err) {
       /* Nothing has been appended, so this revision can never be published:
          a payload that landed with its acknowledgement lost is unreachable,
@@ -148,33 +148,33 @@ export async function compareAndSetKV(key, expected, raw, { revision = crypto.ra
          that never reached the append, so a caller holding storage of its
          own behind the payload (a value written across parts) can tell it
          from an append that may have been accepted. */
-      await Promise.resolve().then(() => puter.kv.del?.(payload)).catch(() => {});
+      await Promise.resolve().then(() => everything.kv.del?.(payload)).catch(() => {});
       if (err && typeof err === 'object') err.unsent = true;
       throw err;
     }
   }
-  const candidates = decode(await puter.kv.add(linkKey(key, expected.revision), [proposed]));
+  const candidates = decode(await everything.kv.add(linkKey(key, expected.revision), [proposed]));
   /* An append that does not resolve to the list cannot say who won, which
      is the same missing capability as no append at all - said as such,
      rather than as a read failure the forms report as a connection problem. */
   if (!Array.isArray(candidates)) {
-    throw Object.assign(new Error('This Puter SDK does not support safe concurrent saves. Reload to update it.'), { refused: true });
+    throw Object.assign(new Error('This Everything SDK does not support safe concurrent saves. Reload to update it.'), { refused: true });
   }
   if (!candidates.length) throw new KVReadError(key);
   const winner = pointer(candidates[0], key);
   if (winner.revision !== revision) {
     // The winner is a published head, so the next read can start from it.
     remember(key, winner);
-    if (!deleted) await Promise.resolve().then(() => puter.kv.del?.(payload)).catch(() => {});
+    if (!deleted) await Promise.resolve().then(() => everything.kv.del?.(payload)).catch(() => {});
     throw new KVConflictError(key);
   }
   remember(key, { revision, deleted });
   // Neither a failed shortcut nor a failed cleanup invalidates the append,
   // and neither waits for the other.
   await Promise.allSettled([
-    Promise.resolve().then(() => puter.kv.set(key, JSON.stringify(proposed))),
+    Promise.resolve().then(() => everything.kv.set(key, JSON.stringify(proposed))),
     expected.revision === INITIAL ? null
-      : Promise.resolve().then(() => puter.kv.del?.(valueKey(key, expected.revision))),
+      : Promise.resolve().then(() => everything.kv.del?.(valueKey(key, expected.revision))),
   ]);
   return { raw: raw ?? null, revision };
 }

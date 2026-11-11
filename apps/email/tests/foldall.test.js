@@ -69,7 +69,7 @@ describe('Expand all / Collapse all', () => {
 
   it('is not offered on a conversation of one', async () => {
     mount();
-    await open('Welcome to your Puter mailbox');
+    await open('Welcome to your Everything mailbox');
     expect(fold().hidden).toBe(true);
   });
 });

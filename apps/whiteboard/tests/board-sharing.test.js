@@ -15,7 +15,7 @@ function setup() {
   const env = environment();
   const boards = env.service,
     org = boards.org;
-  org.puter.email = {
+  org.everything.email = {
     async sendTransactional() {
       return { failed: [] };
     },

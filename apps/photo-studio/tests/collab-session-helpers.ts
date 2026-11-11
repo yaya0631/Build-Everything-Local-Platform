@@ -34,7 +34,7 @@ export function painted(assets: Assets) {
 export async function connect(env: Env, user: User, room: string, opts: { token?: string; ydoc?: Y.Doc; assets?: Assets; store?: MemoryStore<OutboxStores>; peers?: boolean; poll?: number } = {}): Promise<Person> {
   const assets = opts.assets ?? new Assets();
   const store = opts.store ?? new MemoryStore<OutboxStores>();
-  const client = new RoomClient({ puter: env.sdk(user), server: SERVER, room, token: opts.token, tiles: new TileIndex(assets.tiles), assets, store, ydoc: opts.ydoc, poll: opts.poll ?? 40, noPeers: !opts.peers });
+  const client = new RoomClient({ everything: env.sdk(user), server: SERVER, room, token: opts.token, tiles: new TileIndex(assets.tiles), assets, store, ydoc: opts.ydoc, poll: opts.poll ?? 40, noPeers: !opts.peers });
   open.push(client);
   await client.join();
   const binding = await openBinding(client, assets);
@@ -45,7 +45,7 @@ export async function share(env: Env, opts: { peers?: boolean; doc?: (assets: As
   const doc = (opts.doc ?? painted)(assets);
   const ydoc = new Y.Doc();
   const sdk = env.sdk(owner);
-  const room = await RoomClient.create({ puter: sdk, server: SERVER, tiles: new TileIndex(assets.tiles), assets, doc, comments: [], ydoc });
+  const room = await RoomClient.create({ everything: sdk, server: SERVER, tiles: new TileIndex(assets.tiles), assets, doc, comments: [], ydoc });
   const a = await connect(env, owner, room, { ydoc, assets, peers: opts.peers });
   return { room, a, doc };
 }

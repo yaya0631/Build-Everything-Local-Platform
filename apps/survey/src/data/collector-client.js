@@ -47,7 +47,7 @@ export async function sha256Hex(text) {
   return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
-/** Worker names to try, best first. Names are global across Puter, so a
+/** Worker names to try, best first. Names are global across Everything, so a
  *  taken name falls back to a suffixed one and finally a random one. Every
  *  name starts with `sv-`; the rest is the label share links carry. */
 export function workerNameCandidates(username) {
@@ -157,7 +157,7 @@ export function createCollectorClient({
     if (Date.now() < verifyBlockedUntil) {
       throw new WorkerError('The response collector is still starting. Try again shortly.', { code: 'cooldown' });
     }
-    if (!workers || !fs) throw new WorkerError('Publishing needs a Puter account.', { code: 'unavailable' });
+    if (!workers || !fs) throw new WorkerError('Publishing needs an Everything account.', { code: 'unavailable' });
 
     if (cfg && cfg.name) {
       // Upgrade in place: same name and URL, so shared links keep working.
@@ -204,7 +204,7 @@ export function createCollectorClient({
           lastErr = err;
           if (/verif/i.test(String(err && (err.message || err.code || err)))) {
             await discard();
-            throw new WorkerError('Verify the email address on your Puter account to start collecting responses.', {
+            throw new WorkerError('Verify the email address on your Everything account to start collecting responses.', {
               code: 'email_unverified',
             });
           }

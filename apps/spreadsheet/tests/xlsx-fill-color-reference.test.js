@@ -14,7 +14,7 @@ async function saved(wb) {
   const text = path => new TextDecoder().decode(X.CFB.find(zip, path).content);
   const set = (path, value) => X.CFB.utils.cfb_add(zip, path, new TextEncoder().encode(value));
   return { data, text, set, finish: () => X.CFB.write(zip, { type: 'array', fileType: 'zip' }), native: () => {
-    set('/xl/workbook.xml', text('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+    set('/xl/workbook.xml', text('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
     return X.CFB.write(zip, { type: 'array', fileType: 'zip' });
   } };
 }
@@ -42,7 +42,7 @@ it.each([
     for (const [key, value] of Object.entries(identity)) expect(xlsxAttr(xlsxElements(fill, 'fgColor')[0], key)).toBe(String(value));
     if (cycle) {
       const part = X.CFB.find(zip, '/xl/workbook.xml');
-      part.content = new TextEncoder().encode(text('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+      part.content = new TextEncoder().encode(text('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
       part.size = part.content.length;
     }
     wb = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }));

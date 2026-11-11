@@ -68,7 +68,7 @@ export function openRestore() {
       }, ' Choose a backup file'),
       fileInput,
       el('p.field-hint', { style: { marginTop: '12px' } },
-        'A JSON export does not contain your attached documents; those stay in your Puter cloud. Restoring reconnects the contracts to the files that are still there.'),
+        'A JSON export does not contain your attached documents; those stay in your Everything cloud. Restoring reconnects the contracts to the files that are still there.'),
     ]);
   }
 

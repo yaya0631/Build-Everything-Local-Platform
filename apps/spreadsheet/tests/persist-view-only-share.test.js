@@ -1,18 +1,18 @@
 import { afterEach, beforeAll, beforeEach, expect, it, vi } from 'vitest';
 import { Doc, VIEW_ONLY } from '../src/lib/doc.js';
 import { memoryStorage } from './helpers/memory-storage.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 
-// A spreadsheet shared with the user only to view took every edit as an autosave Puter refused, said
+// A spreadsheet shared with the user only to view took every edit as an autosave Everything refused, said
 // "Forbidden", and sent the whole book again at growing intervals for as long as the tab stayed open.
 beforeAll(async () => { await Doc.blank().toXlsxBlob(); });
 beforeEach(() => {
   Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true });
-  installMockPuter();
+  installMockEverything();
   vi.stubGlobal('navigator', { ...globalThis.navigator, onLine: true });
   vi.useFakeTimers();
 });
-afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); delete globalThis.puter; });
+afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); delete globalThis.everything; });
 
 async function openDocument() {
   const doc = Doc.blank();
@@ -25,10 +25,10 @@ async function openDocument() {
 it('says why a view-only spreadsheet is not saved, and does not keep trying', async () => {
   const doc = await openDocument();
   doc.viewOnly = true;
-  const write = puter.fs.write;
+  const write = everything.fs.write;
   const attempts = [];
-  puter.fs.write = async (path, ...rest) => {
-    if (path !== doc.path) return write.call(puter.fs, path, ...rest);
+  everything.fs.write = async (path, ...rest) => {
+    if (path !== doc.path) return write.call(everything.fs, path, ...rest);
     attempts.push(Date.now());
     throw Object.assign(new Error('Forbidden'), { code: 'access_denied' });
   };
@@ -48,10 +48,10 @@ it('says why a view-only spreadsheet is not saved, and does not keep trying', as
 
 it('keeps trying a spreadsheet the user may edit', async () => {
   const doc = await openDocument();
-  const write = puter.fs.write;
+  const write = everything.fs.write;
   const attempts = [];
-  puter.fs.write = async (path, ...rest) => {
-    if (path !== doc.path) return write.call(puter.fs, path, ...rest);
+  everything.fs.write = async (path, ...rest) => {
+    if (path !== doc.path) return write.call(everything.fs, path, ...rest);
     attempts.push(Date.now());
     throw new Error('Storage quota exceeded');
   };

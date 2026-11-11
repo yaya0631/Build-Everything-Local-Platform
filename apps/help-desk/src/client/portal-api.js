@@ -1,14 +1,14 @@
 /**
- * The help center's connection to a desk's server. Visitors need no Puter
+ * The help center's connection to a desk's server. Visitors need no Everything
  * account: reads and requests go out as plain fetch() calls. A visitor who
- * is signed in to Puter sends request calls through puter.workers.exec(),
+ * is signed in to Everything sends request calls through everything.workers.exec(),
  * which attaches their session so "My requests" can list everything they
  * filed from any device.
  *
  * Request links carry a secret key. Keys for requests sent from this device
  * are remembered in localStorage, per help desk.
  */
-import { sdk, isSignedIn } from './puter.js';
+import { sdk, isSignedIn } from './everything.js';
 
 export class PortalError extends Error {
   constructor(status, body) {

@@ -1,7 +1,7 @@
 /**
  * Home screen additions: the recent list hooks (app.recentFiles,
  * app.openRecent, app.removeRecent) and a "Your files" section listing the
- * .vstudio and .svg files in the default Puter folder.
+ * .vstudio and .svg files in the default Everything folder.
  */
 import { h } from '../../lib/dom.js';
 import { icon } from '../../ui/icons.js';
@@ -13,9 +13,9 @@ export function installHomeFiles(app, files) {
   app.recentFiles = async () => {
     const entries = files.recent.list();
     // Check cloud entries in the background; re-render if any disappeared.
-    if (files.cloud && app.puter?.fs?.stat) {
+    if (files.cloud && app.everything?.fs?.stat) {
       files.recent
-        .validate((p) => app.puter.fs.stat(p))
+        .validate((p) => app.everything.fs.stat(p))
         .then((removed) => {
           if (removed.length && !app.home.hidden) app.renderHome(app.home);
         })
@@ -74,7 +74,7 @@ function yourFilesSection(app, files) {
       list.replaceChildren(
         h(
           'div.files-signin-card',
-          h('p.muted', 'Sign in to keep your files in your own Puter cloud and see them here.'),
+          h('p.muted', 'Sign in to keep your files in your own Everything cloud and see them here.'),
           app.onSignIn ? h('button.btn.primary', { type: 'button', onclick: () => app.onSignIn() }, icon('login', 14), 'Sign in') : null,
           h('button.btn', { type: 'button', onclick: () => files.service.openLocal() }, icon('folder-open', 14), 'Open from this computer'),
         ),
@@ -126,7 +126,7 @@ function yourFilesSection(app, files) {
 async function loadThumb(app, files, it) {
   const key = `${it.path}|${it.modified}`;
   if (thumbCache.has(key)) return thumbCache.get(key);
-  const recent = await files.recent.thumb({ kind: 'puter', path: it.path });
+  const recent = await files.recent.thumb({ kind: 'everything', path: it.path });
   if (recent) {
     thumbCache.set(key, recent);
     return recent;
@@ -143,7 +143,7 @@ async function loadThumb(app, files, it) {
   }
   if (it.format !== 'native' || it.size > 4 * 1024 * 1024) return null;
   try {
-    const thumb = await limited(async () => readThumbnail(await app.puter.fs.read(it.path)));
+    const thumb = await limited(async () => readThumbnail(await app.everything.fs.read(it.path)));
     thumbCache.set(key, thumb);
     if (thumb) files.cache?.writeJSON(cachePath, { thumb }).catch(() => {});
     return thumb;

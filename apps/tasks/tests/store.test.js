@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeEach, beforeAll } from 'vitest';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 
 let mock;
 let store, KV_KEYS, normalizeTask, compareTasks, sampleDataset;
 
 beforeAll(async () => {
-  mock = installMockPuter();
+  mock = installMockEverything();
   // Import after the mock exists: the store module touches window/localStorage.
   ({ store, KV_KEYS, normalizeTask, compareTasks } = await import('../src/lib/store.js'));
   ({ sampleDataset } = await import('../src/lib/sample.js'));
@@ -38,19 +38,19 @@ describe('lists', () => {
     await store.updateSettings({ defaultListId: list.id });
 
     const order = [];
-    const orig = puter.kv.set.bind(puter.kv);
-    puter.kv.set = (key, val) => { order.push(key); return orig(key, val); };
+    const orig = everything.kv.set.bind(everything.kv);
+    everything.kv.set = (key, val) => { order.push(key); return orig(key, val); };
     try {
       await store.deleteList(list.id);
     } finally {
-      puter.kv.set = orig;
+      everything.kv.set = orig;
     }
 
     // The tab can close between the two writes. Tasks first leaves an
     // empty list; the other order strands tasks under a list tombstone.
     expect(order.indexOf(KV_KEYS.items)).toBeLessThan(order.indexOf(KV_KEYS.lists));
     // The default-list reset reaches the cloud too, not just memory.
-    const settings = await puter.kv.get(KV_KEYS.settings);
+    const settings = await everything.kv.get(KV_KEYS.settings);
     expect(settings.data.defaultListId).toBeNull();
   });
 
@@ -61,15 +61,15 @@ describe('lists', () => {
     // A full cloud rejects the first of the two writes. Abandoning the rest
     // of the sequence left the delete on this device only — the list, and
     // its tasks, came back the next time another device read the cloud.
-    const orig = puter.kv.set.bind(puter.kv);
-    puter.kv.set = async (key, val) => {
+    const orig = everything.kv.set.bind(everything.kv);
+    everything.kv.set = async (key, val) => {
       if (key === KV_KEYS.items) throw new Error('storage quota exceeded');
       return orig(key, val);
     };
     await expect(store.deleteList(list.id)).rejects.toThrow();
-    puter.kv.set = orig;
+    everything.kv.set = orig;
 
-    const lists = await puter.kv.get(KV_KEYS.lists);
+    const lists = await everything.kv.get(KV_KEYS.lists);
     expect(lists.data.lists).toHaveLength(0);
     expect(lists.data.deleted.map((d) => d.id)).toContain(list.id);
     // The rejected write is still queued, so the deletion converges.
@@ -327,16 +327,16 @@ describe('archiving', () => {
     });
 
     // Reopen the task while the sweep is between its fs round-trips.
-    const origRead = puter.fs.read.bind(puter.fs);
+    const origRead = everything.fs.read.bind(everything.fs);
     let fired = false;
-    puter.fs.read = async (...a) => {
+    everything.fs.read = async (...a) => {
       if (!fired) { fired = true; await store.uncompleteTask(t.id); }
       return origRead(...a);
     };
     try {
       await store.archiveOldCompleted({ now });
     } finally {
-      puter.fs.read = origRead;
+      everything.fs.read = origRead;
     }
 
     const kept = store.taskById(t.id);
@@ -354,12 +354,12 @@ describe('archiving', () => {
     // Another completion in the same month, but the archive read fails
     // transiently (network hiccup — the file exists).
     await store.addTask({ listId: list.id, title: 'Second archived', done: true, completedAt: now - 39 * 86400000 });
-    const origRead = puter.fs.read;
-    puter.fs.read = async () => { throw new Error('Gateway timeout'); };
+    const origRead = everything.fs.read;
+    everything.fs.read = async () => { throw new Error('Gateway timeout'); };
     try {
       await store.archiveOldCompleted({ now }).catch(() => {});
     } finally {
-      puter.fs.read = origRead;
+      everything.fs.read = origRead;
     }
 
     // The existing archive survives, and the unarchived completion stays in
@@ -398,8 +398,8 @@ describe('sharing', () => {
 
     // The share sheet renews on open; stop sharing while that renew's
     // cloud round-trips are still running.
-    const origUrl = puter.fs.getReadURL.bind(puter.fs);
-    puter.fs.getReadURL = async (...a) => {
+    const origUrl = everything.fs.getReadURL.bind(everything.fs);
+    everything.fs.getReadURL = async (...a) => {
       await store.disableShare(list.id);
       return origUrl(...a);
     };
@@ -407,7 +407,7 @@ describe('sharing', () => {
     try {
       renewed = await store.enableShare(list.id);
     } finally {
-      puter.fs.getReadURL = origUrl;
+      everything.fs.getReadURL = origUrl;
     }
 
     expect(renewed).toBeNull();
@@ -423,8 +423,8 @@ describe('sharing', () => {
     const path = `tasks-data/shares/${list.id}.json`;
     expect(mock.fileMap.has(path)).toBe(true);
 
-    const orig = puter.fs.delete;
-    puter.fs.delete = async () => { throw new Error('server hiccup'); };
+    const orig = everything.fs.delete;
+    everything.fs.delete = async () => { throw new Error('server hiccup'); };
     try {
       await store.disableShare(list.id);
       await new Promise((r) => setTimeout(r, 0));
@@ -432,7 +432,7 @@ describe('sharing', () => {
       // even though the app told the user sharing stopped.
       expect(mock.fileMap.has(path)).toBe(true);
     } finally {
-      puter.fs.delete = orig;
+      everything.fs.delete = orig;
     }
 
     // The next share sync still owes the delete and settles it.
@@ -445,19 +445,19 @@ describe('sharing', () => {
     await store.enableShare(list.id);
     const path = `tasks-data/shares/${list.id}.json`;
 
-    const orig = puter.fs.delete;
-    puter.fs.delete = async () => { throw new Error('offline'); };
+    const orig = everything.fs.delete;
+    everything.fs.delete = async () => { throw new Error('offline'); };
     try {
       await store.disableShare(list.id);
       await new Promise((r) => setTimeout(r, 0));
     } finally {
-      puter.fs.delete = orig;
+      everything.fs.delete = orig;
     }
     expect(mock.fileMap.has(path)).toBe(true);
 
     // A fresh session (same device) picks the debt up from the mirror.
     const next = new (store.constructor)();
-    next.cloud = puter;
+    next.cloud = everything;
     await next.init();
     await next.syncShares();
     expect(mock.fileMap.has(path)).toBe(false);
@@ -468,13 +468,13 @@ describe('sharing', () => {
     await store.enableShare(list.id);
     const path = `tasks-data/shares/${list.id}.json`;
 
-    const orig = puter.fs.delete;
-    puter.fs.delete = async () => { throw new Error('hiccup'); };
+    const orig = everything.fs.delete;
+    everything.fs.delete = async () => { throw new Error('hiccup'); };
     try {
       await store.disableShare(list.id);
       await new Promise((r) => setTimeout(r, 0));
     } finally {
-      puter.fs.delete = orig;
+      everything.fs.delete = orig;
     }
 
     await store.enableShare(list.id); // shared again before any retry ran
@@ -488,8 +488,8 @@ describe('sharing', () => {
     await store.enableShare(list.id);
 
     let writes = 0;
-    const orig = puter.fs.write.bind(puter.fs);
-    puter.fs.write = (...args) => { writes++; return orig(...args); };
+    const orig = everything.fs.write.bind(everything.fs);
+    everything.fs.write = (...args) => { writes++; return orig(...args); };
     try {
       await store.syncShares();
       await store.syncShares();
@@ -499,7 +499,7 @@ describe('sharing', () => {
       await store.syncShares();
       expect(writes).toBe(1); // real change → exactly one write
     } finally {
-      puter.fs.write = orig;
+      everything.fs.write = orig;
     }
   });
 
@@ -538,12 +538,12 @@ describe('sync state', () => {
     const events = [];
     const onSync = (e) => events.push(e.detail.pending);
     store.addEventListener('sync-state', onSync);
-    const orig = puter.kv.set;
-    puter.kv.set = async () => { throw new Error('storage quota exceeded'); };
+    const orig = everything.kv.set;
+    everything.kv.set = async () => { throw new Error('storage quota exceeded'); };
     try {
       await expect(store.updateList(list.id, { name: 'Over quota' })).rejects.toMatchObject({ quota: true });
     } finally {
-      puter.kv.set = orig;
+      everything.kv.set = orig;
       store.removeEventListener('sync-state', onSync);
     }
     // The write is queued; the offline/unsynced banner listens for this.

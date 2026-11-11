@@ -31,7 +31,7 @@ it('retains elapsed boundaries through recalculation, clipboard and external XLS
   const blob = await workbookToXlsx(wb);
   const bytes = await new Promise(resolve => { const r = new FileReader(); r.onload = () => resolve(new Uint8Array(r.result)); r.readAsArrayBuffer(blob); });
   const zip = X.CFB.read(bytes, { type:'array' }), part = X.CFB.find(zip, '/xl/workbook.xml');
-  part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')); part.size = part.content.length;
+  part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')); part.size = part.content.length;
   const restored = await workbookFromFile(X.CFB.write(zip, { type:'array', fileType:'zip' }), 'elapsed.xlsx');
   for (const [r, [value, code, display]] of cases.entries()) {
     expect(restored.getValue(restored.activeSheetId, r, 0)).toBe(value);

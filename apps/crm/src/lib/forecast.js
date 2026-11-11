@@ -1,6 +1,6 @@
 /**
  * Forecast & pipeline math. Pure functions over plain deal objects so the
- * whole module is testable without Puter or a DOM.
+ * whole module is testable without Everything or a DOM.
  *
  * A deal: { id, name, value, stage, expectedClose (ISO date), closedAt?, ... }
  * Stages carry the win probability used for weighting; won = 1, lost = 0.

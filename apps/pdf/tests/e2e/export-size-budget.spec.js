@@ -6,11 +6,11 @@ import { readFile } from 'node:fs/promises';
 const ERROR =
   'This export would exceed the 100 MB PDF limit. Reduce file size before saving or downloading.';
 async function setup(page, limit) {
-  await page.route('**/sdk/puter.js', (route) =>
+  await page.route('**/sdk/everything.js', (route) =>
     route.fulfill({
       contentType: 'application/javascript',
       body: `window.exportWrites = 0; window.exportPickers = 0;
-    window.puter = {env:'web', auth:{isSignedIn:()=>true,getUser:async()=>({username:'test-user'}),signIn:async()=>{},signOut:async()=>{}},
+    window.everything = {env:'web', auth:{isSignedIn:()=>true,getUser:async()=>({username:'test-user'}),signIn:async()=>{},signOut:async()=>{}},
     fs:{readdir:async()=>[],write:async()=>{window.exportWrites++;return {path:'PDFs/saved.pdf'};}},
     ui:{onLaunchedWithItems:()=>{},onItemsOpened:()=>{},showSaveFilePicker:async()=>{window.exportPickers++;return {path:'PDFs/chosen.pdf'};}}};`,
     }),
@@ -71,9 +71,9 @@ async function exportAction(page, action) {
   if (action === 'download')
     return page.getByRole('button', { name: 'Download', exact: true }).click();
   if (action === 'save')
-    return page.getByRole('button', { name: 'Save to Puter', exact: true }).click();
-  if (action === 'copy') return menu(page, 'Save a copy to Puter');
-  if (action === 'picker') return menu(page, 'Save to another Puter folder…');
+    return page.getByRole('button', { name: 'Save to Everything', exact: true }).click();
+  if (action === 'copy') return menu(page, 'Save a copy to Everything');
+  if (action === 'picker') return menu(page, 'Save to another Everything folder…');
   if (action === 'page') {
     if (!(await page.locator('#page-sidebar').isVisible()))
       await page.getByRole('button', { name: 'Toggle pages panel', exact: true }).click();

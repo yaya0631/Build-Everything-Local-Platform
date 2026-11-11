@@ -1,5 +1,5 @@
 /**
- * Captions from speech: mix the project's speech to 16 kHz mono, send it to Puter
+ * Captions from speech: mix the project's speech to 16 kHz mono, send it to Everything
  * speech to text, and turn the timed words into caption cues. Also reads
  * and writes .srt / .vtt subtitle files.
  *
@@ -469,11 +469,11 @@ export function splitForTranscription(samples, sampleRate, maxSeconds = CHUNK_SE
 
 // ---- Speech to text -----------------------------------------------------------
 
-export function puterAvailable() {
-  return typeof puter !== 'undefined' && Boolean(puter.ai?.speech2txt);
+export function everythingAvailable() {
+  return typeof everything !== 'undefined' && Boolean(everything.ai?.speech2txt);
 }
 
-/** A readable message from whatever a failed Puter call threw. */
+/** A readable message from whatever a failed Everything call threw. */
 export function errorMessage(err, fallback = 'Something went wrong.') {
   if (!err) return fallback;
   if (typeof err === 'string') return err;
@@ -501,7 +501,7 @@ export async function transcribePiece(samples, sampleRate, { language = 'auto', 
     const opts = { file, provider: 'xai' };
     if (lang) Object.assign(opts, { language: lang, format: true });
     if (testMode) opts.test_mode = true;
-    const res = await puter.ai.speech2txt(opts);
+    const res = await everything.ai.speech2txt(opts);
     if (signal?.aborted) throw abortError();
     const words = normalizeWords(res);
     if (words.length) return words;
@@ -514,7 +514,7 @@ export async function transcribePiece(samples, sampleRate, { language = 'auto', 
   try {
     const opts = {};
     if (lang) opts.language = lang;
-    const res = testMode ? await puter.ai.speech2txt(file, true) : await puter.ai.speech2txt(file, opts);
+    const res = testMode ? await everything.ai.speech2txt(file, true) : await everything.ai.speech2txt(file, opts);
     if (signal?.aborted) throw abortError();
     const words = normalizeWords(res);
     if (words.length) return words;

@@ -4,10 +4,10 @@ import { PDFDocument } from 'pdf-lib';
 import { readFile } from 'node:fs/promises';
 import { addMetadata, xmpDetails } from '../fixtures/metadata.js';
 
-const PUTER_MOCK = `window.puter = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async () => ({}) }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
-async function mockPuter(page) {
-  await page.route('**/sdk/puter.js', (route) =>
-    route.fulfill({ contentType: 'application/javascript', body: PUTER_MOCK }),
+const EVERYTHING_MOCK = `window.everything = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async () => ({}) }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
+async function mockEverything(page) {
+  await page.route('**/sdk/everything.js', (route) =>
+    route.fulfill({ contentType: 'application/javascript', body: EVERYTHING_MOCK }),
   );
 }
 async function openPdf(page, doc, name = 'report.pdf') {
@@ -64,7 +64,7 @@ function zipEntries(bytes) {
 test('Split PDF downloads the parts as one ZIP, by group size or at chosen pages', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   for (let i = 0; i < 5; i++) doc.addPage([100 + i, 100]);
@@ -107,7 +107,7 @@ for (const operation of ['extract', 'split'])
   test(`${operation} exports the authoritative XMP details without editing the open PDF`, async ({
     page,
   }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     const source = await PDFDocument.create();
     for (let i = 0; i < 3; i++) source.addPage([300 + i, 400]);
@@ -174,7 +174,7 @@ for (const outcome of ['success', 'failure'])
   test(`cancelling page extraction ignores a late ${outcome}`, async ({ page }) => {
     const downloads = [];
     page.on('download', (download) => downloads.push(download.suggestedFilename()));
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     const doc = await PDFDocument.create();
     doc.addPage([300, 400]);
@@ -194,7 +194,7 @@ for (const outcome of ['success', 'failure'])
 test('repeated extraction submissions produce one download and allow retry after failure', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([300, 400]);
@@ -243,7 +243,7 @@ test('a split keeps its submitted password on every part when protection changes
   page,
 }) => {
   const { unlockPdf } = await import('../../src/core/security.js');
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([300, 400]);
@@ -282,7 +282,7 @@ for (const stage of ['copying', 'encryption'])
   }) => {
     const downloads = [];
     page.on('download', (download) => downloads.push(download.suggestedFilename()));
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     const doc = await PDFDocument.create();
     doc.addPage([300, 400]);
@@ -312,7 +312,7 @@ for (const stage of ['copying', 'encryption'])
 test('large PDFs start with a valid split and explain plans over the file limit before export', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   for (let i = 0; i < 501; i++) doc.addPage([100 + i, 100]);
@@ -360,7 +360,7 @@ for (const stage of ['copying', 'encryption'])
   test(`closing a PDF cancels a thumbnail extraction during ${stage}`, async ({ page }) => {
     const downloads = [];
     page.on('download', (download) => downloads.push(download.suggestedFilename()));
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     const doc = await PDFDocument.create();
     doc.addPage([300, 400]);
@@ -389,7 +389,7 @@ test('thumbnail extraction retains its submitted protection while the source pas
   page,
 }) => {
   const { unlockPdf } = await import('../../src/core/security.js');
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([300, 400]);
@@ -418,7 +418,7 @@ test('thumbnail extraction retains its submitted protection while the source pas
 test('mixed valid and invalid split points cannot silently produce a partial split', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   for (let i = 0; i < 5; i++) doc.addPage([100 + i, 100]);
@@ -457,7 +457,7 @@ for (const operation of ['extract', 'split'])
   test(`${operation} refuses an indirect widget that cannot be flattened and preserves the open form`, async ({
     page,
   }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     await openPdf(page, await unflattenableWidget());
     const splitting = operation === 'split';
@@ -502,7 +502,7 @@ for (const operation of ['extract', 'split'])
 test('pages extracted from a PDF with a long name keep their page numbers in the file name', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   for (let i = 0; i < 3; i++) doc.addPage([300, 400]);
@@ -522,7 +522,7 @@ test('pages extracted from a PDF with a long name keep their page numbers in the
 
 test('Batch process keeps the password of the open PDF on its processed copy', async ({ page }) => {
   const { unlockPdf } = await import('../../src/core/security.js');
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([300, 400]);
@@ -543,7 +543,7 @@ test('Batch process keeps the password of the open PDF on its processed copy', a
 });
 
 test('Organize pages says why a page cannot be extracted or duplicated', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   await openPdf(page, await unflattenableWidget());
   const errors = [];
@@ -567,7 +567,7 @@ test('Organize pages says why a page cannot be extracted or duplicated', async (
 });
 
 test('Split a PDF says why a one-page PDF cannot be split', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([300, 400]);

@@ -66,7 +66,7 @@ export function openReceiptViewer(exp) {
       body.append(el('div.empty', {},
         el('div.empty-icon', { html: icon('imageOff', 26) }),
         el('h3', {}, 'Couldn’t load this receipt'),
-        el('p', {}, 'The file may have been moved or deleted from your Puter drive.')
+        el('p', {}, 'The file may have been moved or deleted from your Everything drive.')
       ));
       return;
     }

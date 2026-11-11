@@ -1,6 +1,6 @@
 /**
  * Where projects live:
- *   cloud   the user's Puter drive (needs sign-in)
+ *   cloud   the user's Everything drive (needs sign-in)
  *   device  files on this computer (File System Access API where available,
  *           otherwise download and file input)
  *   local   IndexedDB recovery copies of open projects, so work survives a
@@ -8,11 +8,11 @@
  *
  * Projects are files, never key-value records.
  */
-import { puterEnv } from '../platform.js';
+import { everythingEnv } from '../platform.js';
 
 export const CLOUD_DIR = 'Projects';
 
-// Cloud (Puter FS) -------------------------------------------------------------
+// Cloud (Everything FS) -------------------------------------------------------------
 
 /**
  * One page of projects in the app's folder, newest first.
@@ -20,7 +20,7 @@ export const CLOUD_DIR = 'Projects';
  */
 export async function cloudList(cursor = null, limit = 100) {
   try {
-    const page = await puter.fs.readdir({ path: CLOUD_DIR, sortBy: 'modified', sortOrder: 'desc', cursor, limit });
+    const page = await everything.fs.readdir({ path: CLOUD_DIR, sortBy: 'modified', sortOrder: 'desc', cursor, limit });
     const list = Array.isArray(page) ? page : page.items || [];
     return {
       items: list.filter((f) => !f.is_dir && !f.isDir && /\.bdp$/i.test(f.name)),
@@ -34,13 +34,13 @@ export async function cloudList(cursor = null, limit = 100) {
 }
 
 export async function cloudRead(path) {
-  const blob = await puter.fs.read(path);
+  const blob = await everything.fs.read(path);
   return blob.arrayBuffer();
 }
 
 /** A short fingerprint of a cloud file's current version (changes whenever it is written). */
 export async function cloudVersion(path) {
-  const s = await puter.fs.stat(path);
+  const s = await everything.fs.stat(path);
   return `${s.modified ?? ''}:${s.size ?? ''}:${s.uid ?? s.id ?? ''}`;
 }
 
@@ -50,7 +50,7 @@ export async function cloudVersion(path) {
  * isExistsError).
  */
 export async function cloudWrite(path, blob, overwrite = true) {
-  return puter.fs.write(path, blob, { overwrite, createMissingParents: true });
+  return everything.fs.write(path, blob, { overwrite, createMissingParents: true });
 }
 
 /** True when a write failed because the file already exists. */
@@ -66,24 +66,24 @@ export function isNotFoundError(err) {
 }
 
 export async function cloudDelete(path) {
-  await puter.fs.delete(path);
+  await everything.fs.delete(path);
 }
 
-/** Inside the Puter desktop, use its native file pickers. */
-export function usePuterPickers() {
-  return puterEnv() === 'app' && typeof puter?.ui?.showOpenFilePicker === 'function';
+/** Inside the Everything desktop, use its native file pickers. */
+export function useEverythingPickers() {
+  return everythingEnv() === 'app' && typeof everything?.ui?.showOpenFilePicker === 'function';
 }
 
-export async function puterOpenPicker() {
-  const item = await puter.ui.showOpenFilePicker({ accept: ['.bdp'] });
+export async function everythingOpenPicker() {
+  const item = await everything.ui.showOpenFilePicker({ accept: ['.bdp'] });
   const f = Array.isArray(item) ? item[0] : item;
   if (!f) return null;
   const blob = await f.read();
   return { name: f.name, path: f.path, buffer: await blob.arrayBuffer() };
 }
 
-export async function puterSavePicker(blob, suggestedName) {
-  const item = await puter.ui.showSaveFilePicker(blob, suggestedName);
+export async function everythingSavePicker(blob, suggestedName) {
+  const item = await everything.ui.showSaveFilePicker(blob, suggestedName);
   return item ? { name: item.name, path: item.path } : null;
 }
 

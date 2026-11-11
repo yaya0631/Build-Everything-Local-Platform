@@ -1,6 +1,6 @@
 /**
  * Turning received email into tickets. The owner's browser reads their
- * Puter mailbox and hands each new message to the import route; this module
+ * Everything mailbox and hands each new message to the import route; this module
  * decides whether it continues an existing request (the subject carries
  * the request number, as every notification email does) or starts a new one.
  */

@@ -1,10 +1,10 @@
 /**
- * The Editor pane: spelling (local dictionary), optional grammar and style suggestions from Puter's
+ * The Editor pane: spelling (local dictionary), optional grammar and style suggestions from Everything's
  * AI (off until the reader turns it on, and marked as AI), and document statistics with readability
  * scores computed on this device. Corrections are ordinary edits, one undo step each.
  */
 import { el, listItem, listboxKeys } from '../ui/dom.js';
-import * as P from '../lib/puter.js';
+import * as P from '../lib/everything.js';
 import { engineApi } from '../lib/engine-api.js';
 import { textStatistics, easeLabel } from '../lib/readability.js';
 import { checkGrammar, SUGGESTION_KINDS } from '../lib/proofing-ai.js';
@@ -75,13 +75,13 @@ export function createEditorPane({ editor, pkg, proofing, error, onState = () =>
   const aiList = el('div.rv-list', { role: 'list', 'aria-label': 'Grammar and style suggestions' });
   const aiRun = button('Check with AI', () => runAi(), { primary: true });
   const aiBody = el('div.rv-ai-body', {}, el('div.rv-checks', {}, ...kindBoxes.map(b => b.node)), el('div.rv-actions', {}, aiRun), aiStatus, aiList);
-  const ai = section('Grammar and refinements', el('label.rv-check.rv-ai-toggle', {}, aiToggle, el('span', {}, 'Suggest with ', el('span.rv-ai-badge', { title: 'Uses Puter AI' }, 'AI'))),
-    hint('When you run a check, the text being checked is sent to Puter AI. Nothing is sent until you choose Check with AI.'), aiBody);
+  const ai = section('Grammar and refinements', el('label.rv-check.rv-ai-toggle', {}, aiToggle, el('span', {}, 'Suggest with ', el('span.rv-ai-badge', { title: 'Uses Everything AI' }, 'AI'))),
+    hint('When you run a check, the text being checked is sent to Everything AI. Nothing is sent until you choose Check with AI.'), aiBody);
   function renderAi() {
     aiBody.hidden = !aiToggle.checked;
     const available = P.canUseAi();
     aiRun.disabled = !available || !!aiBusy;
-    if (!available) aiStatus.textContent = 'AI suggestions need Puter. Open this document in Puter to use them.';
+    if (!available) aiStatus.textContent = 'AI suggestions need Everything. Open this document in Everything to use them.';
     const visible = aiSuggestions.filter(s => !ignoredSuggestions.has(key(s)) && !(pkg()?.reviewSettings?.hideGrammaticalErrors));
     aiList.replaceChildren(...visible.map(s => el('div.rv-item.rv-ai-item', { role: 'listitem' },
       el('button.rv-ai-target', { type: 'button', onclick: () => reveal(editor(), s.start, s.end) }, el('span.rv-ai-kind', {}, SUGGESTION_KINDS[s.kind]), el('span.rv-ai-change', {}, el('del', {}, s.original), ' → ', el('ins', {}, s.suggestion))),

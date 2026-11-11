@@ -13,14 +13,14 @@ const RAW = readFileSync(
 const CALLER = {
   uuid: 'user-uuid-1',
   username: 'host',
-  puter: { authToken: 'caller-token' },
+  everything: { authToken: 'caller-token' },
 };
 
 const LINK = 'http://cal-rsvp-abc123.localhost:8443/rsvp/' + 'a'.repeat(40);
 const LINK2 = 'http://cal-rsvp-abc123.localhost:8443/rsvp/' + 'b'.repeat(40);
 
 /**
- * A worker with a fake `puter.email` on both the owner (`me`) and the caller
+ * A worker with a fake `everything.email` on both the owner (`me`) and the caller
  * (`user`) — the two forms the send can take. `outcome` lets a test decide what
  * a given send does; by default every message is accepted. The fake carries
  * the API's current name, `sendTransactional`; `legacyMailer` gives it only
@@ -43,11 +43,11 @@ function loadWorker({
       return { messageId: `m${sent.length}`, cost: 25, suppressed: [], failed: [], ...(out || {}) };
     });
   const me = {
-    puter: { kv, authToken: 'owner-token', email: { [method]: mailer('me', ownerSend) } },
+    everything: { kv, authToken: 'owner-token', email: { [method]: mailer('me', ownerSend) } },
   };
   const caller = {
     ...CALLER,
-    puter: { ...CALLER.puter, email: { [method]: mailer('user', callerSend) } },
+    everything: { ...CALLER.everything, email: { [method]: mailer('user', callerSend) } },
   };
   return { worker: instantiateWorker(RAW, { kv, me }), kv, sent, me, caller };
 }
@@ -88,16 +88,16 @@ describe('email worker: access', () => {
     expect((await res.json()).runtime).toBeNull();
 
     // Read per request: the same worker reports a preamble that arrives later.
-    globalThis.__PUTER_PREAMBLE_VERSION__ = '2.6.2+63f857ce3';
+    globalThis.__EVERYTHING_PREAMBLE_VERSION__ = '2.6.2+63f857ce3';
     try {
       const res2 = await world.worker.call('GET', '/health');
       expect((await res2.json()).runtime).toBe('2.6.2+63f857ce3');
     } finally {
-      delete globalThis.__PUTER_PREAMBLE_VERSION__;
+      delete globalThis.__EVERYTHING_PREAMBLE_VERSION__;
     }
   });
 
-  it('refuses a caller with no Puter session — nothing to bill, nothing to send', async () => {
+  it('refuses a caller with no Everything session — nothing to bill, nothing to send', async () => {
     const world = loadWorker();
     const res = await world.worker.call('POST', '/invites', { json: payload() });
     expect(res.status).toBe(401);
@@ -118,12 +118,12 @@ describe('email worker: access', () => {
     expect((await res.json()).sent).toBe(1);
   });
 
-  it('identifies a caller whose id is only reachable through their own Puter', async () => {
+  it('identifies a caller whose id is only reachable through their own Everything', async () => {
     const world = loadWorker();
     const anonymous = {
       // No uuid/username on the context object itself.
-      puter: {
-        ...world.caller.puter,
+      everything: {
+        ...world.caller.everything,
         auth: { getUser: async () => ({ uuid: 'user-uuid-9' }) },
       },
     };
@@ -131,7 +131,7 @@ describe('email worker: access', () => {
 
     // And that id — not a blank shared one — is what keyed the record: the
     // same event to the same guest from a DIFFERENT caller still sends.
-    const other = { uuid: 'user-uuid-2', puter: world.caller.puter };
+    const other = { uuid: 'user-uuid-2', everything: world.caller.everything };
     expect((await (await post(world, payload(), { user: other })).json()).sent).toBe(1);
     // ...while a repeat from the first caller is recognized as a duplicate.
     const repeat = await (await post(world, payload(), { user: anonymous })).json();
@@ -141,7 +141,7 @@ describe('email worker: access', () => {
 
   it('refuses a session it cannot pin to a person, rather than sharing a bucket', async () => {
     const world = loadWorker();
-    const faceless = { puter: { ...world.caller.puter } }; // no id, no auth handle
+    const faceless = { everything: { ...world.caller.everything } }; // no id, no auth handle
     const res = await post(world, payload(), { user: faceless });
     expect(res.status).toBe(401);
     expect((await res.json())).toMatchObject({ error: 'sign_in_required', detail: 'no_identity' });
@@ -152,7 +152,7 @@ describe('email worker: access', () => {
     const world = loadWorker();
     const res = await world.worker.call('GET', '/whoami', {
       user: world.caller,
-      headers: { 'puter-auth': 'a-token' },
+      headers: { 'everything-auth': 'a-token' },
     });
     const data = await res.json();
     expect(data).toMatchObject({
@@ -160,11 +160,11 @@ describe('email worker: access', () => {
       sawAuthHeader: true,
       boundAs: 'user',
       identified: true,
-      has: { puter: true, email: true },
+      has: { everything: true, email: true },
       owner: { email: true, authToken: true },
     });
     expect(data.callerKeys).toContain('uuid');
-    expect(data.puterKeys).toContain('authToken');
+    expect(data.everythingKeys).toContain('authToken');
     // Names and booleans only — no token, address, or id in the payload.
     expect(JSON.stringify(data)).not.toContain('caller-token');
     expect(JSON.stringify(data)).not.toContain('user-uuid-1');
@@ -287,7 +287,7 @@ describe('email worker: the message', () => {
     expect(world.sent[0].html).not.toContain('href');
   });
 
-  it('includes the Puter Meetings join link, in text and as a real link', async () => {
+  it('includes the Everything Meetings join link, in text and as a real link', async () => {
     for (const join of [
       'http://meetings.localhost:8443/#/m/abcd-efgh-ijkl', // open room code
       'http://meetings.localhost:8443/#/m/abc-defg-hij', //   classic room code
@@ -299,7 +299,7 @@ describe('email worker: the message', () => {
     }
   });
 
-  it('drops a meeting link that is not a Puter Meetings room URL, and still sends', async () => {
+  it('drops a meeting link that is not an Everything Meetings room URL, and still sends', async () => {
     for (const bad of [
       'https://evil.example/#/m/abcd-efgh-ijkl', //                 wrong host
       'http://meetings.localhost:8443.evil.example/#/m/abcd-efgh-ijkl', // host prefix trick
@@ -394,7 +394,7 @@ describe('email worker: never send the same thing twice', () => {
 describe('email worker: the organizer must be the caller', () => {
   const asUser = (email) => ({
     ...CALLER,
-    puter: { ...CALLER.puter, auth: { getUser: async () => ({ uuid: CALLER.uuid, email }) } },
+    everything: { ...CALLER.everything, auth: { getUser: async () => ({ uuid: CALLER.uuid, email }) } },
   });
 
   it('refuses an organizer address that is not the signed-in caller', async () => {
@@ -686,14 +686,14 @@ describe('email worker: authorizing the send', () => {
     expect(data.sent).toBe(1);
     expect(world.sent[0].via).toBe('user');
     expect(world.sent[0].emailAccessToken).toBe('owner-token');
-    expect(world.me.puter.email.sendTransactional).toHaveBeenCalledTimes(1);
+    expect(world.me.everything.email.sendTransactional).toHaveBeenCalledTimes(1);
   });
 
   it("sends through sendTransactional, the API's current name", async () => {
     const world = loadWorker();
     await post(world);
-    expect(world.me.puter.email.sendTransactional).toHaveBeenCalledTimes(1);
-    expect(world.me.puter.email.send).toBeUndefined();
+    expect(world.me.everything.email.sendTransactional).toHaveBeenCalledTimes(1);
+    expect(world.me.everything.email.send).toBeUndefined();
   });
 
   it('falls back to send() on a runtime whose SDK predates the rename', async () => {
@@ -701,7 +701,7 @@ describe('email worker: authorizing the send', () => {
     const data = await (await post(world)).json();
     expect(data.sent).toBe(1);
     expect(world.sent[0].via).toBe('me');
-    expect(world.me.puter.email.send).toHaveBeenCalledTimes(1);
+    expect(world.me.everything.email.send).toHaveBeenCalledTimes(1);
   });
 
   it('never retries a message the transport already rejected on delivery', async () => {
@@ -875,7 +875,7 @@ describe('email worker: the daily cap and a request that needs no mail', () => {
 describe('email worker: replies (the /replies fallback for mail-received invitations)', () => {
   const asUser = (email) => ({
     ...CALLER,
-    puter: { ...CALLER.puter, auth: { getUser: async () => ({ uuid: CALLER.uuid, email }) } },
+    everything: { ...CALLER.everything, auth: { getUser: async () => ({ uuid: CALLER.uuid, email }) } },
   });
 
   function replyIcs({ organizerEmail = 'alice@example.com', attendeeEmail = 'host@example.com', status = 'ACCEPTED', method = 'REPLY' } = {}) {
@@ -950,8 +950,8 @@ describe('email worker: replies (the /replies fallback for mail-received invitat
     expect(world.sent).toHaveLength(0);
   });
 
-  it("allows replying as the invitation's own <username>@puter.email address, even if it differs from the account email", async () => {
-    // The invitation was made out to host@puter.email; the signed-in account's
+  it("allows replying as the invitation's own <username>@everything.email address, even if it differs from the account email", async () => {
+    // The invitation was made out to host@everything.email; the signed-in account's
     // OWN email (host@example.com) is a different address entirely. Both name
     // the same person — refusing this would make it impossible to ever answer
     // as the address an invitation actually used.
@@ -959,8 +959,8 @@ describe('email worker: replies (the /replies fallback for mail-received invitat
     const res = await postReply(
       world,
       replyPayload({
-        attendee: { email: 'host@puter.email', name: 'Host' },
-        ics: replyIcs({ attendeeEmail: 'host@puter.email' }),
+        attendee: { email: 'host@everything.email', name: 'Host' },
+        ics: replyIcs({ attendeeEmail: 'host@everything.email' }),
       }),
       asUser('host@example.com'),
     );

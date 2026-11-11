@@ -2,13 +2,13 @@ import { afterEach, beforeAll, beforeEach, expect, it, vi } from 'vitest';
 import { Doc } from '../src/lib/doc.js';
 import { draftKey, loadDraft, listDrafts } from '../src/lib/drafts.js';
 import { memoryStorage } from './helpers/memory-storage.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 
 let mock;
 // SheetJS is loaded on first use with a real dynamic import; warm it up so no test waits on it.
 beforeAll(async () => { await Doc.blank().toXlsxBlob(); });
-beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); mock = installMockPuter(); vi.useFakeTimers(); });
-afterEach(() => { vi.useRealTimers(); delete globalThis.puter; });
+beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); mock = installMockEverything(); vi.useFakeTimers(); });
+afterEach(() => { vi.useRealTimers(); delete globalThis.everything; });
 
 const A1 = (doc) => doc.wb.getValue(doc.wb.activeSheetId, 0, 0);
 
@@ -21,7 +21,7 @@ async function openDocument() {
   return doc;
 }
 
-/** Delete a file the way the Puter desktop does: moved into ~/Trash under its bare id, its name kept in metadata. */
+/** Delete a file the way the Everything desktop does: moved into ~/Trash under its bare id, its name kept in metadata. */
 function trash(path) {
   const f = mock.fs.get(path);
   mock.fs.delete(path);
@@ -59,7 +59,7 @@ it('asks what to do with the edits when the open file is put in the trash elsewh
 it('asks as well when the file was renamed elsewhere to a name without the .xlsx extension', async () => {
   const doc = await openDocument();
   const path = doc.path;
-  await puter.fs.rename(path, 'Budget');
+  await everything.fs.rename(path, 'Budget');
   const conflicts = [];
   doc.addEventListener('conflict', (e) => conflicts.push(e.detail));
   doc.wb.setInput(doc.wb.activeSheetId, 0, 0, 'edited after the rename');

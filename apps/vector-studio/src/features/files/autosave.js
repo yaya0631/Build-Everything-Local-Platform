@@ -1,6 +1,6 @@
 /**
  * Autosave for crash recovery: every few minutes (and whenever the page is
- * hidden) dirty documents are written to a recovery store, the app's Puter
+ * hidden) dirty documents are written to a recovery store, the app's Everything
  * folder when signed in and this browser's private file system otherwise.
  * On startup, copies left behind by a session that is no longer running
  * are offered for recovery. Copies are removed when a document is saved or
@@ -11,7 +11,7 @@ import { uid } from '../../lib/ids.js';
 import { openDialog } from '../../ui/dialogs/dialog.js';
 import { serializeDocument, parseDocument } from './format.js';
 import { RecoveryStore, recoverableEntries } from './recovery.js';
-import { puterBackend, opfsBackend, opfsAvailable } from './backends.js';
+import { everythingBackend, opfsBackend, opfsAvailable } from './backends.js';
 import { relativeTime } from './naming.js';
 import { handleStore } from './handles.js';
 
@@ -33,14 +33,14 @@ export class Autosaver {
   /** The recovery store for the current sign-in state (null when nothing can persist). */
   get store() {
     if (this.fixedStore) return this.fixedStore;
-    const puter = this.app.puter;
-    const cloud = Boolean(puter?.fs && (this.app.env === 'app' || this.app.user));
+    const everything = this.app.everything;
+    const cloud = Boolean(everything?.fs && (this.app.env === 'app' || this.app.user));
     const local = opfsAvailable();
     const key = `${cloud}:${local}`;
     if (key !== this.storeKey) {
       this.storeKey = key;
       const backends = [];
-      if (cloud) backends.push(puterBackend(puter, ''));
+      if (cloud) backends.push(everythingBackend(everything, ''));
       if (local) backends.push(opfsBackend('vector-studio'));
       this.cached = backends.length ? new RecoveryStore(backends) : null;
     }
@@ -212,7 +212,7 @@ export class Autosaver {
       doc.savedRevision = -1;
       let file = null;
       const f = entry.file;
-      if (f?.kind === 'puter' && f.path) file = { kind: 'puter', path: f.path, name: f.name };
+      if (f?.kind === 'everything' && f.path) file = { kind: 'everything', path: f.path, name: f.name };
       else if (f?.kind === 'local' && f.handleId) {
         const handle = await handleStore.get(f.handleId);
         if (handle) file = { kind: 'local', name: f.name, handle, handleId: f.handleId };

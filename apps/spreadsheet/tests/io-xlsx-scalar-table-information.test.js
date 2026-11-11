@@ -40,7 +40,7 @@ it('intersects information-function arguments and legacy ROW outputs in scalar t
   expect([5, 6, 7].map(r => wb.getValue(copy, r, 0))).toEqual([200, 600, '']);
   const bytes = await (await workbookToXlsx(wb)).arrayBuffer();
   const zip = X.CFB.read(new Uint8Array(bytes), { type: 'array' }), part = X.CFB.find(zip, '/xl/workbook.xml');
-  part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   part.size = part.content.length;
   const external = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'external.xlsx');
   expect([5, 6, 7].map(r => external.getValue(external.sheetByName('Tasks').id, r, 1))).toEqual([200, 600, '']);

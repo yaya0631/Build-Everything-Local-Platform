@@ -56,7 +56,7 @@ function fakeFS() {
   };
 }
 
-const person = (uuid, username) => ({ puter: { auth: { getUser: async () => ({ uuid, username }) } } });
+const person = (uuid, username) => ({ everything: { auth: { getUser: async () => ({ uuid, username }) } } });
 
 function loadWorker() {
   const routes = [];
@@ -64,7 +64,7 @@ function loadWorker() {
   new Function('router', SOURCE)(router);
   const kv = fakeKV();
   const fsys = fakeFS();
-  const me = { puter: { kv, fs: fsys, auth: { getUser: async () => ({ uuid: 'owner-1', username: 'olivia' }) } } };
+  const me = { everything: { kv, fs: fsys, auth: { getUser: async () => ({ uuid: 'owner-1', username: 'olivia' }) } } };
   const handler = (method, path) => routes.find(([m, p]) => m === method && p === path)?.[2];
   return {
     kv,
@@ -76,7 +76,7 @@ function loadWorker() {
     async health() {
       return (await handler('GET', '/health')({ me })).json();
     },
-    /** A puter.workers.exec stand-in for the app-side client. */
+    /** An everything.workers.exec stand-in for the app-side client. */
     exec(user) {
       return async (url, init) => {
         const res = await handler('POST', '/api')({ me, user, request: { json: async () => JSON.parse(init.body), headers: new Headers() } });
@@ -107,7 +107,7 @@ describe('team worker', () => {
 
   it('refuses callers without a session', async () => {
     expect((await w.api(null, { op: 'meta' })).status).toBe(401);
-    expect((await w.api({ puter: { auth: { getUser: async () => { throw new Error('expired'); } } } }, { op: 'meta' })).status).toBe(401);
+    expect((await w.api({ everything: { auth: { getUser: async () => { throw new Error('expired'); } } } }, { op: 'meta' })).status).toBe(401);
   });
 
   it('lets the owner read and write buckets with the app key layout', async () => {
@@ -213,7 +213,7 @@ describe('team worker', () => {
   it('serves the app store through the worker backend for several people', async () => {
     await invite('driver', STRANGER);
     const url = 'http://fleet-abc.localhost:8443';
-    const mk = (user) => createStore({ backend: createWorkerBackend(url, { getPuter: () => ({ workers: { exec: w.exec(user) } }) }), flushDelay: 0 });
+    const mk = (user) => createStore({ backend: createWorkerBackend(url, { getEverything: () => ({ workers: { exec: w.exec(user) } }) }), flushDelay: 0 });
     const ownerStore = mk(OWNER);
     const driverStore = mk(STRANGER);
     await ownerStore.init();
@@ -259,7 +259,7 @@ describe('team worker hardening', () => {
     for (const op of ['constructor', 'toString', '__proto__', 'hasOwnProperty']) {
       const res = await w.api(OWNER, { op });
       expect(res.status, op).toBe(400);
-      expect(JSON.stringify(res.body)).not.toMatch(/authToken|puter/);
+      expect(JSON.stringify(res.body)).not.toMatch(/authToken|everything/);
     }
   });
 

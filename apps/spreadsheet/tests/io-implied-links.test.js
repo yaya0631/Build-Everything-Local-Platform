@@ -24,10 +24,10 @@ it('preserves a native link separately from text whose label differs from its ta
   XLSX.utils.book_append_sheet(book, {
     '!ref': 'A1:B1',
     A1: { t: 's', v: 'www.localhost:8443', l: { Target: 'https://example.com/elsewhere' } },
-    B1: { t: 's', v: 'Puter', l: { Target: 'http://localhost:8443' } },
+    B1: { t: 's', v: 'Everything', l: { Target: 'http://localhost:8443' } },
   }, 'Links');
   const wb = await workbookFromFile(XLSX.write(book, { type: 'array', bookType: 'xlsx' }), 'links.xlsx');
   const id = wb.activeSheetId;
   expect(wb.getCell(id, 0, 0)).toMatchObject({ v: 'www.localhost:8443', f: null, hyperlink: 'https://example.com/elsewhere' });
-  expect(wb.getCell(id, 0, 1)).toMatchObject({ v: 'Puter', f: null, hyperlink: 'http://localhost:8443' });
+  expect(wb.getCell(id, 0, 1)).toMatchObject({ v: 'Everything', f: null, hyperlink: 'http://localhost:8443' });
 });

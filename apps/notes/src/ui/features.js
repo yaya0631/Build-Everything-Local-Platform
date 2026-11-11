@@ -178,7 +178,7 @@ async function printout(app, file, range) {
   }
 }
 
-/** Inserts pictures or attachments picked from the user's Puter files. */
+/** Inserts pictures or attachments picked from the user's Everything files. */
 export async function pickFromCloud(app, { accept = '*/*', attach = false } = {}) {
   const picker = app.cloudPicker();
   if (!picker) return;
@@ -1239,7 +1239,7 @@ export function helpDialog(app) {
       tip('todo', 'Tags', `Mark paragraphs with tags such as To Do (${shortcutLabel('Mod+1')}) and Important (${shortcutLabel('Mod+2')}). Find Tags lists them all.`),
       tip('pen', 'Draw', 'On the Draw tab, pick a pen or highlighter to write by hand. Use Lasso Select to move ink and Insert Space to make room.'),
       tip('search', 'Search', `Press ${shortcutLabel('Mod+E')} to search every notebook, or ${shortcutLabel('Mod+F')} to find on the current page.`),
-      tip('cloud', 'Saved to your cloud', 'Everything saves automatically to your Puter account. Deleted items stay in Deleted Notes for 60 days.'),
+      tip('cloud', 'Saved to your cloud', 'Everything saves automatically to your Everything account. Deleted items stay in Deleted Notes for 60 days.'),
     ),
     actions: [{ label: 'Keyboard Shortcuts', run: () => setTimeout(() => app.shortcutsDialog()) }, { label: 'Close', primary: true }],
   });
@@ -1251,8 +1251,8 @@ export function aboutDialog() {
     width: 440,
     body: h('div.about',
       h('img', { src: './favicon.svg', alt: '', width: 56, height: 56 }),
-      h('p', h('strong', 'Notes'), ' is a free-form digital notebook. Your notebooks are stored as files in your own Puter cloud storage.'),
-      h('p.field-hint', 'Built with Puter.js. Icons from Lucide (ISC license). Ink smoothing by perfect-freehand (MIT license). Equations by Temml (MIT license). PDF printouts by pdf.js (Apache-2.0 license).'),
+      h('p', h('strong', 'Notes'), ' is a free-form digital notebook. Your notebooks are stored as files in your own Everything cloud storage.'),
+      h('p.field-hint', 'Built with Everything.js. Icons from Lucide (ISC license). Ink smoothing by perfect-freehand (MIT license). Equations by Temml (MIT license). PDF printouts by pdf.js (Apache-2.0 license).'),
     ),
     actions: [{ label: 'Close', primary: true }],
   });

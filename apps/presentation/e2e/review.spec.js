@@ -14,11 +14,11 @@ const MIME =
 const MOD = process.platform === "darwin" ? "Meta" : "Control";
 
 async function stub(page, { ai = null } = {}) {
-  await page.route("**/sdk/puter.js", (r) =>
+  await page.route("**/sdk/everything.js", (r) =>
     r.fulfill({
       contentType: "application/javascript",
       body:
-        'window.puter={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}' +
+        'window.everything={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}' +
         (ai ? `,ai:{chat:async(messages)=>(${ai})(messages)}` : "") +
         "};",
     }),

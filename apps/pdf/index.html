@@ -11,7 +11,7 @@
     <link rel="manifest" href="%BASE_URL%manifest.json" />
     <meta
       name="description"
-      content="Open, annotate, fill, and organize PDFs. A private PDF workspace with files in your own Puter cloud."
+      content="Open, annotate, fill, and organize PDFs. A private PDF workspace with files in your own Everything cloud."
     />
     <title>PDF Editor</title>
     <script>
@@ -36,7 +36,7 @@
           if (
             desktopMessages.has(event.data?.msg) &&
             !(
-              globalThis.puter?.env === 'app' &&
+              globalThis.everything?.env === 'app' &&
               window.parent !== window &&
               event.source === window.parent
             )
@@ -46,7 +46,7 @@
         true,
       );
     </script>
-    <script src="/sdk/puter.js" async></script>
+    <script src="/sdk/everything.js" async></script>
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>

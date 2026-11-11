@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 /**
- * Third review: the offline start is for Puter being unreachable, not for a
- * session Puter refused.
+ * Third review: the offline start is for Everything being unreachable, not for a
+ * session Everything refused.
  */
 import { describe, it, expect, vi } from 'vitest';
 import { tick } from './helpers.js';
@@ -15,7 +15,7 @@ vi.mock('../src/ui/toast.js', () => ({ toast: vi.fn() }));
 vi.mock('../src/views/onboarding.js', () => ({ maybeOnboard: vi.fn() }));
 vi.mock('../src/core/backend.js', async (importOriginal) => {
   const real = await importOriginal();
-  return { ...real, createPuterBackend: () => real.createMemoryBackend() };
+  return { ...real, createEverythingBackend: () => real.createMemoryBackend() };
 });
 vi.mock('../src/team.js', async (importOriginal) => ({
   ...(await importOriginal()),
@@ -23,15 +23,15 @@ vi.mock('../src/team.js', async (importOriginal) => ({
   updateWorkerIfNeeded: vi.fn(),
 }));
 
-describe('Puter refuses the session', () => {
+describe('Everything refuses the session', () => {
   it('shows the welcome screen instead of opening the offline copy', async () => {
-    globalThis.puter = { authToken: 'session-1' };
+    globalThis.everything = { authToken: 'session-1' };
     const platform = await import('../src/platform.js');
     await platform.rememberUser({ username: 'director', uuid: 'u1' });
     document.body.innerHTML = '<div id="app"></div>';
     history.replaceState(null, '', '/#/');
-    // What puter.auth.getUser rejects with when /whoami answers 401.
-    globalThis.puter = {
+    // What everything.auth.getUser rejects with when /whoami answers 401.
+    globalThis.everything = {
       authToken: 'session-1',
       auth: { isSignedIn: () => true, getUser: async () => Promise.reject({ status: 401, message: 'Unauthorized' }), getProfilePicture: async () => null },
       kv: {},
@@ -40,6 +40,6 @@ describe('Puter refuses the session', () => {
     for (let i = 0; i < 40 && !started && !document.querySelector('.welcome'); i++) await tick(5);
     expect(started).toBe(0);
     expect(document.querySelector('.welcome')).not.toBeNull();
-    delete globalThis.puter;
+    delete globalThis.everything;
   });
 });

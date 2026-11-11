@@ -215,7 +215,7 @@ function profileHeader(ctx, candidate, job) {
       size: 16,
       danger: true,
       onClick: async () => {
-        // Attachments live in the user's own Puter drive, not in the app's
+        // Attachments live in the user's own Everything drive, not in the app's
         // storage, and deleting a candidate takes their whole directory
         // with it. The retention review's confirm says so and the wipe's
         // does; this one listed everything except the resumes, which are
@@ -225,7 +225,7 @@ function profileHeader(ctx, candidate, job) {
           title: `Delete ${candidate.name}?`,
           message: [
             'Their interviews, scorecards, offers, and onboarding plan are permanently removed.',
-            files > 0 ? `${plural(files, 'uploaded file')} ${files === 1 ? 'is' : 'are'} deleted from your Puter drive too.` : null,
+            files > 0 ? `${plural(files, 'uploaded file')} ${files === 1 ? 'is' : 'are'} deleted from your Everything drive too.` : null,
           ]
             .filter(Boolean)
             .join(' '),

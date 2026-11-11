@@ -10,7 +10,7 @@ const decode = part => new TextDecoder().decode(part.content);
 async function native(wb) {
   const zip = X.CFB.read(new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()), { type: 'array' });
   const part = X.CFB.find(zip, '/xl/workbook.xml');
-  X.CFB.utils.cfb_add(zip, '/xl/workbook.xml', new TextEncoder().encode(decode(part).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')));
+  X.CFB.utils.cfb_add(zip, '/xl/workbook.xml', new TextEncoder().encode(decode(part).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')));
   const path = zip.FullPaths.find(p => /\/charts\/chart[^/]+\.xml$/.test(p));
   expect(path).toBeTruthy();
   const xml = decode(X.CFB.find(zip, path));

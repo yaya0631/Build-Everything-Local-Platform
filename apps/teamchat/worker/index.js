@@ -1,11 +1,11 @@
 /**
- * Teamchat API: a Puter Serverless Worker.
+ * Teamchat API: an Everything Serverless Worker.
  *
- * Every workspace owner runs a copy of this worker in their own Puter
+ * Every workspace owner runs a copy of this worker in their own Everything
  * account (the app deploys it for them), so a workspace's data lives in its
- * owner's key-value store (me.puter.kv), which is what lets every member
+ * owner's key-value store (me.everything.kv), which is what lets every member
  * read and write the same channels, and the owner pays for it. Callers are
- * identified by the Puter session that puter.workers.exec() forwards;
+ * identified by the Everything session that everything.workers.exec() forwards;
  * nothing about identity is trusted from request bodies. Only the owner may
  * create workspaces here (see assertMayCreate); members of other people's
  * workspaces only ever touch data inside those workspaces.
@@ -24,7 +24,7 @@
  *                             partner side { ws, ch, ref, rch, secret } (see worker/connect.js)
  *   tc:conv:{conv}:seq        message counter (kv.incr)
  *   tc:conv:{conv}:b:{n}      message block n: { m: [...], x: {overlays} }
- *   tc:file:{id}              attachment metadata (bytes live in me.puter.fs)
+ *   tc:file:{id}              attachment metadata (bytes live in me.everything.fs)
  *   tc:ws:{ws}:pins:{conv}    pinned messages: { items: [{ seq, by, ts }] }
  *   tc:ws:{ws}:u:{uuid}:inbox   activity inbox ring: { items: [{ k, c, s, by, ts }] }
  *   tc:ws:{ws}:u:{uuid}:threads followed threads: { t: { [threadId]: { c, s, at } } }
@@ -164,7 +164,7 @@ async function ensureProfile(id, seed = null, { known = undefined } = {}) {
     await kv().update(key, changed);
   }
   // The handle sits on every card of theirs as well, and a mention is
-  // resolved by the card's: an account renamed on Puter was shown, and
+  // resolved by the card's: an account renamed on Everything was shown, and
   // reached by @-mention, under its old name in every workspace here. So
   // does what the seed changed: the profile travels with a join (of a
   // workspace, or of a channel shared with one), and a name, title, colour
@@ -765,7 +765,7 @@ function assertWritable(ws, { moving = false } = {}) {
  * of them go in a single batched read: the workspace, the caller's document,
  * and whatever else the route asked for (`also`, answered as `extra`).
  *
- * Where it is not, asking Puter is an HTTP call of its own, so it runs
+ * Where it is not, asking Everything is an HTTP call of its own, so it runs
  * beside the workspace read rather than in front of it, and only the
  * caller's own keys wait on it. Done one after another, as it used to be,
  * every request here began with three round trips before it looked at
@@ -795,7 +795,7 @@ async function requireMembership(wsId, who, { write = false, lapsed = false, doc
   } else {
     const [idRes, wsRes] = await Promise.allSettled([
       identify(who),
-      who?.puter ? kv().get(KEYS.ws(wsId)) : null,
+      who?.everything ? kv().get(KEYS.ws(wsId)) : null,
     ]);
     // Answered in the order the request would have met them: who is asking,
     // and only then whether there is anything here to ask about.
@@ -1013,7 +1013,7 @@ async function dropPresence(wsId, who, conv = null) {
   for (const [c, h] of Object.entries(act.h || {})) if (within(c) && h?.m) for (const uuid of uuids) if (Object.hasOwn(h.m, uuid)) paths.push(`h.${c}.m.${uuid}`);
   for (const [c, t] of Object.entries(act.t || {})) if (within(c) && t) for (const uuid of uuids) if (Object.hasOwn(t, uuid)) paths.push(`t.${c}.${uuid}`);
   // Each path its own argument, as the store's remove takes them (see
-  // dev/worker-runtime.js, strictPaths): handed one array, puter.js refuses
+  // dev/worker-runtime.js, strictPaths): handed one array, everything.js refuses
   // the call before it leaves the worker, and every removal here, and at
   // every other fan-out below, failed quietly under its catch.
   for (let i = 0; i < paths.length; i += 100) await kv().remove(key, ...paths.slice(i, i + 100)).catch(() => {});
@@ -1730,7 +1730,7 @@ async function sendPushes(ws, uuids, n, readDocs = null) {
     if (event === 'message' && level !== 'all') return;
     // The workspace as the app refers to it, its id at this server (the
     // deep link below names it so, and the app opens it by that name).
-    const server = (workerHost || 'server').replace(/\.puter\.work$/, '');
+    const server = (workerHost || 'server').replace(/\.everything\.work$/, '');
     const ref = `${ws.id}@${server}`;
     for (const [sid, sub] of Object.entries(subs)) {
       if (!sub?.endpoint || !pushAllowed(sub.prefs)) continue;
@@ -2432,7 +2432,7 @@ router.get('/api/ws/:ws', route(async ({ params, request, user }) => {
   // (For someone from a connected workspace the list is where their card
   // is updated from, and /api/me leaves this workspace out of their answer.)
   if (!profile.workspaces.includes(ws.id)) await listWorkspace(id.uuid, ws.id).catch(() => {});
-  // The handle on the card is the account's as Puter says it (see identify),
+  // The handle on the card is the account's as Everything says it (see identify),
   // and what an @-mention is matched against. A rename is carried to the
   // cards of the workspaces the account's record here lists (see
   // ensureProfile); a card on a workspace the record did not list (one
@@ -3061,7 +3061,7 @@ router.delete('/api/ws/:ws/members/:uuid', route(async ({ params, user }) => {
 /* ---- scheduled messages and reminders ----------------------------------- */
 
 /**
- * A Puter worker only runs while handling a request, so anything due is
+ * An Everything worker only runs while handling a request, so anything due is
  * delivered by whichever member's sync poll comes first after its time.
  * The queue is one document per workspace, a map by id (so entries can be
  * claimed one at a time), and the earliest due time is kept in the
@@ -4083,7 +4083,7 @@ async function endHuddle(wsId, conv, entry, act = null, ws = null, audience = nu
 /**
  * "I am in the huddle here": start one, join the one in progress, or, sent
  * again every HUDDLE_HEARTBEAT_MS, stay in it. The body carries the invite
- * code of the caller's own Puter Peer server, which is what the others dial;
+ * code of the caller's own Everything Peer server, which is what the others dial;
  * the roster that comes back is what the caller dials. Threads have no
  * huddles of their own (the conversation's is theirs), and a channel has to
  * be joined, not merely previewed.
@@ -4286,7 +4286,7 @@ function recordPresence(wsId, uuid, act, state, at = now()) {
  * that opens, replaces it. Sent keepalive from pagehide; one write.
  */
 router.delete('/api/ws/:ws/presence', route(async ({ params, user }) => {
-  const [id, ws] = await Promise.all([identify(user), user?.puter ? kv().get(KEYS.ws(params.ws)) : null]);
+  const [id, ws] = await Promise.all([identify(user), user?.everything ? kv().get(KEYS.ws(params.ws)) : null]);
   if (!ws || !ws.members?.[id.uuid]) fail(403, 'forbidden', 'You are not a member of this workspace');
   await recordPresence(params.ws, id.uuid, {}, 'off');
   return { ok: true };
@@ -4294,7 +4294,7 @@ router.delete('/api/ws/:ws/presence', route(async ({ params, user }) => {
 
 router.get('/api/ws/:ws/sync', route(async ({ params, request, user, defer }) => {
   // The route every open tab runs every few seconds, so its shape matters
-  // more than any other's. Who is asking is an HTTP call to Puter and the
+  // more than any other's. Who is asking is an HTTP call to Everything and the
   // workspace and activity documents are one batched read: none of the three
   // waits on another, and only the caller's own document has to (its key is
   // their uuid), which goes below beside nothing else.
@@ -4317,7 +4317,7 @@ router.get('/api/ws/:ws/sync', route(async ({ params, request, user, defer }) =>
   } else {
     const [idRes, readRes] = await Promise.allSettled([
       identify(user),
-      user?.puter && named ? getMany([KEYS.ws(params.ws), KEYS.activity(params.ws), ...counter]) : [null, null],
+      user?.everything && named ? getMany([KEYS.ws(params.ws), KEYS.activity(params.ws), ...counter]) : [null, null],
     ]);
     if (idRes.status === 'rejected') throw idRes.reason;
     if (readRes.status === 'rejected') throw readRes.reason;
@@ -4340,7 +4340,7 @@ router.get('/api/ws/:ws/sync', route(async ({ params, request, user, defer }) =>
   // who is typing to whom, which for a direct message or a private channel
   // is the members' business alone. All three came up in one read where the
   // caller was already known, and the caller's own followed the other two
-  // where Puter had to be asked first. Presence is cut for guests
+  // where Everything had to be asked first. Presence is cut for guests
   // to the people their bootstrap gave them, a list it left on their member
   // document; a guest whose document predates the list (opened before this
   // build) is not told of anyone until they open the workspace again, which
@@ -8021,7 +8021,7 @@ router.post('/api/ws/:ws/search/reindex', route(async ({ params, request, user }
  * the id makes the record a direct get, the secret is stored only as a
  * SHA-256 hash and compared in constant time, and the token is shown to the
  * admin exactly once. These are the only routes besides /health that take
- * no Puter session, so they are rate-limited per token and reject oversized
+ * no Everything session, so they are rate-limited per token and reject oversized
  * bodies before touching storage.
  */
 const TOKEN_RE = /^(tch|tcb)_([a-z0-9]{10})_([a-z0-9]{32})$/;
@@ -9883,7 +9883,7 @@ router.post('/api/ws/:ws/transfer/complete', route(async ({ params, request, use
   // came to, its localhost:8443 name or its host, in lower case, which is how the
   // app writes a reference's server (see refs.js serverKeyOf). The app never
   // asks for this; a request made another way is refused with the reason.
-  const serverKey = (host) => String(host || '').toLowerCase().replace(/\.puter\.work$/, '');
+  const serverKey = (host) => String(host || '').toLowerCase().replace(/\.everything\.work$/, '');
   const at = to.indexOf('@');
   if (to.slice(0, at) === ws.id && workerHost && serverKey(to.slice(at + 1)) === serverKey(workerHost)) fail(400, 'invalid', 'A workspace cannot be moved to itself');
   await kv().update(KEYS.ws(ws.id), { movedTo: to, movedAt: now() });
@@ -10020,7 +10020,7 @@ async function requireMember(wsId, who, { also = null } = {}) {
   if (ready) {
     readValues = await getMany([KEYS.ws(wsId), ...want]);
   } else {
-    const readable = validWsId(wsId) && who?.puter;
+    const readable = validWsId(wsId) && who?.everything;
     const [idRes, readRes] = await Promise.allSettled([
       identify(who),
       readable ? getMany([KEYS.ws(wsId), ...want]) : [null],

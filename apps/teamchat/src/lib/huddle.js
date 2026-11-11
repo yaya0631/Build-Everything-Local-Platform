@@ -5,9 +5,9 @@
  * links that carry audio, and camera or screen video when someone turns
  * them on.
  *
- * Every participant runs a Puter Peer server of their own
- * (`puter.peer.serve()`) and publishes its invite code in the roster; the
- * others dial it with `puter.peer.connect()`. So the media is a full mesh,
+ * Every participant runs an Everything Peer server of their own
+ * (`everything.peer.serve()`) and publishes its invite code in the roster; the
+ * others dial it with `everything.peer.connect()`. So the media is a full mesh,
  * and nobody hosts: whoever leaves, the rest stay connected. A newcomer
  * dials everyone already listed; beyond that, when two participants both
  * know of each other and have no link, the one with the greater id dials
@@ -17,7 +17,7 @@
  * whose server answered from `conn.owner.uuid`, and both are checked
  * against the workspace's members before a link carries anything.
  *
- * On each link the Puter data channel carries a small JSON protocol
+ * On each link the Everything data channel carries a small JSON protocol
  * (hello, state, signal, bye) and a MediaLink (lib/rtc.js) puts the tracks
  * on the RTCPeerConnection under it.
  *
@@ -119,10 +119,10 @@ export class Huddle extends EventTarget {
    * @param {string} opts.uuid       this member
    * @param {string} opts.name       shown to peers before the roster names them
    * @param {(uuid: string) => boolean} opts.isMember  may this account take part?
-   * @param {() => object} [opts.peer]  the Puter Peer API (defaults to puter.peer)
+   * @param {() => object} [opts.peer]  the Everything Peer API (defaults to everything.peer)
    * @param {object} [opts.media]       navigator.mediaDevices
    */
-  constructor({ uuid, name, isMember, peer = () => globalThis.puter?.peer, media = globalThis.navigator?.mediaDevices } = {}) {
+  constructor({ uuid, name, isMember, peer = () => globalThis.everything?.peer, media = globalThis.navigator?.mediaDevices } = {}) {
     super();
     this.#uuid = String(uuid);
     this.#name = cleanName(name);
@@ -162,7 +162,7 @@ export class Huddle extends EventTarget {
     const api = this.#peerApi();
     if (!api || typeof api.serve !== 'function') {
       this.state = 'ended';
-      throw new Error('Huddles need a newer Puter.js; reload the app and try again.');
+      throw new Error('Huddles need a newer Everything.js; reload the app and try again.');
     }
     api.ensureTurnRelays?.().catch?.(() => {});
     await this.#acquireMic();

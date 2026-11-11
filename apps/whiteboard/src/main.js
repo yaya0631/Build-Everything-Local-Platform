@@ -587,19 +587,19 @@ let boards = [],
   librarySort = "recent",
   cloud = null,
   cloudIds = new Set(),
-  // Boards the signed-in account keeps in its Puter drive, by the index
+  // Boards the signed-in account keeps in its Everything drive, by the index
   // read at sign-in; the library marks them.
   cloudIndex = new Set(),
   cloudTitles = new Map(),
-  // Boards in Puter by the time of the copy Puter last held as far as this
-  // page knows: every upload first checks that Puter holds nothing newer.
+  // Boards in Everything by the time of the copy Everything last held as far as this
+  // page knows: every upload first checks that Everything holds nothing newer.
   cloudStamps = new Map(),
-  // The version of each board's file in Puter that this page last read or
-  // wrote, where Puter tells it: while it is unchanged, no one else has
+  // The version of each board's file in Everything that this page last read or
+  // wrote, where Everything tells it: while it is unchanged, no one else has
   // saved the board, and the check needs no download.
   cloudVersions = new Map(),
   // The copy each board's last upload tried to write when its answer was
-  // lost: it may be the one in Puter, and is this page's own.
+  // lost: it may be the one in Everything, and is this page's own.
   cloudAttempts = new Map(),
   // Cloud boards with edits awaiting upload, by the time of the latest.
   pendingCloud = new Map(),
@@ -1340,7 +1340,7 @@ const comments = createCommentsUI({
   },
 });
 const organization = createOrganization({
-  puter: () => window.puter,
+  everything: () => window.everything,
   call: collaborationCall,
   deploy,
   refreshDeployment,
@@ -1365,7 +1365,7 @@ const migrationHost = lazily(() =>
 const migration = { open: async () => (await migrationHost()).open() };
 const migrationOptions = {
   org: organization,
-  puter: () => window.puter,
+  everything: () => window.everything,
   modal,
   toast,
   download,
@@ -1396,7 +1396,7 @@ async function openMigration() {
       return toast("Your organization has turned off Miro imports.");
     await migration.open();
   } catch (error) {
-    toast(error.message || "Could not connect to Puter.");
+    toast(error.message || "Could not connect to Everything.");
   }
 }
 const adminLoader = lazily(() =>
@@ -1509,8 +1509,8 @@ const organizationHome = createOrganizationHome({
         }
       }),
   request: (server, op, data) =>
-    collaborationCall(window.puter, server, { op, ...data }),
-  signedIn: () => !!window.puter?.auth?.isSignedIn?.(),
+    collaborationCall(window.everything, server, { op, ...data }),
+  signedIn: () => !!window.everything?.auth?.isSignedIn?.(),
   admin: adminConsole,
   library: () => organizationLibrary.open(),
   connect: () => connect(),
@@ -1570,15 +1570,15 @@ const altText = createAltText({
 const onboarding = createOnboarding({
   focusCanvas: () => document.querySelector("#canvas")?.focus(),
 });
-// Feedback goes to the people who make Whiteboard through Puter's own
-// dialog, so it is offered only where Puter can show it.
+// Feedback goes to the people who make Whiteboard through Everything's own
+// dialog, so it is offered only where Everything can show it.
 const feedbackAvailable = () =>
-  typeof window.puter?.ui?.showFeedbackDialog === "function";
+  typeof window.everything?.ui?.showFeedbackDialog === "function";
 async function sendFeedback() {
   if (!feedbackAvailable()) return;
   // Resolves false when dismissed, and also when a cross-origin isolated
   // page could not tell, so only a confirmed send is thanked.
-  if (await window.puter.ui.showFeedbackDialog())
+  if (await window.everything.ui.showFeedbackDialog())
     toast("Thank you for your feedback.");
 }
 const helpCenter = createHelpCenter({
@@ -3298,7 +3298,7 @@ function save({ outlined = false } = {}) {
         current?.id === snapshot.id &&
         status(
           cloudIds.has(snapshot.id)
-            ? "Saving to Puter…"
+            ? "Saving to Everything…"
             : "Saved on this device",
         )
       );
@@ -3321,7 +3321,7 @@ function save({ outlined = false } = {}) {
     cloudTimer = setTimeout(() => sync(snapshot), 1500);
   }
 }
-// Uploads go one at a time, so each one checks Puter's copy after the one
+// Uploads go one at a time, so each one checks Everything's copy after the one
 // before it has landed and recorded its time.
 function sync(snapshot) {
   return (cloudChain = cloudChain.then(() => upload(snapshot)));
@@ -3335,7 +3335,7 @@ async function upload(snapshot) {
   const report = (text) => current?.id === snapshot.id && status(text);
   let writing = false;
   try {
-    report("Saving to Puter…");
+    report("Saving to Everything…");
     if (cloudStamps.has(snapshot.id)) {
       // Another device may have saved this board since this page last
       // read or wrote it; that copy is kept rather than written over.
@@ -3351,23 +3351,23 @@ async function upload(snapshot) {
         remote.updated > held &&
         remote.updated !== cloudAttempts.get(snapshot.id)
       ) {
-        // This device's copy is not the one in Puter now.
+        // This device's copy is not the one in Everything now.
         cloudStamps.delete(snapshot.id);
         cloudVersions.delete(snapshot.id);
         cloudIds.delete(snapshot.id);
         cloudIndex.delete(snapshot.id);
         pendingCloud.delete(snapshot.id);
-        report("Newer copy in Puter");
+        report("Newer copy in Everything");
         renderBoardTag();
         refreshLibrary();
-        toast("A newer copy of this board is saved in Puter.", {
+        toast("A newer copy of this board is saved in Everything.", {
           label: "Open newer copy",
           run: () =>
             openCloudBoard(
               { name: `${snapshot.id}.json` },
               { replace: true },
             ).catch((e) =>
-              toast(e.message || "Could not open the copy in Puter."),
+              toast(e.message || "Could not open the copy in Everything."),
             ),
         });
         return;
@@ -3382,10 +3382,10 @@ async function upload(snapshot) {
     cloudIndex.add(snapshot.id);
     if (pendingCloud.get(snapshot.id) <= snapshot.updated)
       pendingCloud.delete(snapshot.id);
-    report("Saved to Puter");
+    report("Saved to Everything");
   } catch {
     // A write whose answer was lost may still have landed: the copy in
-    // Puter may be this one, which the next check must not take for
+    // Everything may be this one, which the next check must not take for
     // another device's.
     if (writing) {
       cloudAttempts.set(snapshot.id, snapshot.updated);
@@ -3393,7 +3393,7 @@ async function upload(snapshot) {
     }
     report("Cloud save failed");
     toast(
-      "Cloud save failed. Your local copy is safe. Use Save to Puter to retry.",
+      "Cloud save failed. Your local copy is safe. Use Save to Everything to retry.",
     );
   }
 }
@@ -3571,7 +3571,7 @@ async function home({
       ),
     ].map((canvas) => [canvas.dataset.preview, canvas]),
   );
-  app.innerHTML = `<div class="workspace"><aside class="sidebar"><a class="brand" href="#" aria-label="Whiteboard home">${logo}</a><div class="workspace-label">Personal workspace</div><nav aria-label="Board library"><button data-filter="all" class="nav-item ${filter === "all" ? "active" : ""}">${icon("layout-dashboard")}All boards<span>${libraryFigure(boards.filter((b) => !b.deletedAt).length + cloudOnly().length)}</span></button><button data-filter="favorites" class="nav-item ${filter === "favorites" ? "active" : ""}">${icon("star")}Favorites<span>${libraryFigure(boards.filter((b) => b.favorite && !b.deletedAt).length)}</span></button><button data-filter="trash" class="nav-item ${filter === "trash" ? "active" : ""}">${icon("trash-2")}Trash</button>${organizationHome.notificationsItem()}</nav>${organizationHome.sidebar()}<div class="sidebar-bottom">${window.puter?.auth?.isSignedIn?.() ? "" : `<div class="sidebar-note" role="note">${icon("hard-drive")}<span>${t("Boards stay in this browser until you sign in.")}</span><button class="text-btn" data-action="sign-in">${t("Sign in")}</button></div>`}${feedbackAvailable() ? `<button class="nav-item feedback-item" data-action="feedback">${icon("message-square-heart")}${t("Send feedback")}</button>` : ""}${themeControl(true)}<a class="powered" href="http://localhost:8443" target="_blank" rel="noopener">Powered by Puter ${icon("arrow-up-right")}</a></div></aside><main class="library"><h1 class="sr-only">Whiteboard</h1><header class="library-top"><span class="crumbs"><span class="crumb-parent">Workspace <span class="slash">/</span></span> <strong>${filter === "trash" ? "Trash" : filter === "favorites" ? "Favorites" : "All boards"}</strong></span><div class="top-right">${button("command", "Command palette (Ctrl/Cmd K)", "commands")}${button("users", "Join shared board", "join-shared")}${button("circle-help", "Help and training", "help-center")}${button("keyboard", "Keyboard shortcuts", "help")}${account.markup()}</div></header><div class="library-body">${
+  app.innerHTML = `<div class="workspace"><aside class="sidebar"><a class="brand" href="#" aria-label="Whiteboard home">${logo}</a><div class="workspace-label">Personal workspace</div><nav aria-label="Board library"><button data-filter="all" class="nav-item ${filter === "all" ? "active" : ""}">${icon("layout-dashboard")}All boards<span>${libraryFigure(boards.filter((b) => !b.deletedAt).length + cloudOnly().length)}</span></button><button data-filter="favorites" class="nav-item ${filter === "favorites" ? "active" : ""}">${icon("star")}Favorites<span>${libraryFigure(boards.filter((b) => b.favorite && !b.deletedAt).length)}</span></button><button data-filter="trash" class="nav-item ${filter === "trash" ? "active" : ""}">${icon("trash-2")}Trash</button>${organizationHome.notificationsItem()}</nav>${organizationHome.sidebar()}<div class="sidebar-bottom">${window.everything?.auth?.isSignedIn?.() ? "" : `<div class="sidebar-note" role="note">${icon("hard-drive")}<span>${t("Boards stay in this browser until you sign in.")}</span><button class="text-btn" data-action="sign-in">${t("Sign in")}</button></div>`}${feedbackAvailable() ? `<button class="nav-item feedback-item" data-action="feedback">${icon("message-square-heart")}${t("Send feedback")}</button>` : ""}${themeControl(true)}<a class="powered" href="http://localhost:8443" target="_blank" rel="noopener">Powered by Everything ${icon("arrow-up-right")}</a></div></aside><main class="library"><h1 class="sr-only">Whiteboard</h1><header class="library-top"><span class="crumbs"><span class="crumb-parent">Workspace <span class="slash">/</span></span> <strong>${filter === "trash" ? "Trash" : filter === "favorites" ? "Favorites" : "All boards"}</strong></span><div class="top-right">${button("command", "Command palette (Ctrl/Cmd K)", "commands")}${button("users", "Join shared board", "join-shared")}${button("circle-help", "Help and training", "help-center")}${button("keyboard", "Keyboard shortcuts", "help")}${account.markup()}</div></header><div class="library-body">${
     filter === "trash"
       ? ""
       : `<section aria-labelledby="start-heading"><div class="section-heading"><h2 id="start-heading">Start with a little inspiration</h2><button class="text-btn" data-action="templates">Browse all templates ${icon("arrow-up-right")}</button></div><div class="templates">${featuredTemplates()
@@ -3692,7 +3692,7 @@ function warmLibrarySearch() {
 function libraryFigure(n) {
   return new Intl.NumberFormat(language === "fr" ? "fr-CA" : "en-CA").format(n);
 }
-// How many boards the chosen list holds, those only in Puter included.
+// How many boards the chosen list holds, those only in Everything included.
 function libraryCount() {
   return (
     boards.filter(
@@ -3716,17 +3716,17 @@ function refreshLibrary() {
     libraryFigure(libraryCount());
   if (filter !== "organization") renderCards();
 }
-// The account's boards in Puter that are not on this device yet, which the
+// The account's boards in Everything that are not on this device yet, which the
 // library lists and counts with the boards here.
 function cloudOnly() {
   const here = new Set(boards.map((b) => b.id));
   return [...cloudTitles].filter(([id]) => !here.has(id));
 }
-// Cards for boards in the account's Puter drive that are not on this device.
-// The card of a board in the account's Puter drive that is not on this
+// Cards for boards in the account's Everything drive that are not on this device.
+// The card of a board in the account's Everything drive that is not on this
 // device.
 function cloudCard({ id, title }, n) {
-  return `<article class="board-card cloud-card"><button class="board-open" data-open-cloud="${escape(id)}" aria-label="Open ${escape(title)}" aria-describedby="cloud-card-${n}-meta"><div class="board-preview"><span class="empty-preview">${icon("cloud")}<span>${t("Open from Puter")}</span></span></div><div class="board-info"><h3>${escape(title)}</h3><p id="cloud-card-${n}-meta"><span class="meta-count"></span><span class="meta-date">${t("Not on this device yet")}</span></p><span class="card-storage" data-storage="cloud">${icon("cloud")}${t("Saved to Puter")}</span></div></button></article>`;
+  return `<article class="board-card cloud-card"><button class="board-open" data-open-cloud="${escape(id)}" aria-label="Open ${escape(title)}" aria-describedby="cloud-card-${n}-meta"><div class="board-preview"><span class="empty-preview">${icon("cloud")}<span>${t("Open from Everything")}</span></span></div><div class="board-info"><h3>${escape(title)}</h3><p id="cloud-card-${n}-meta"><span class="meta-count"></span><span class="meta-date">${t("Not on this device yet")}</span></p><span class="card-storage" data-storage="cloud">${icon("cloud")}${t("Saved to Everything")}</span></div></button></article>`;
 }
 // A card's badge says where the board is kept, in the words the open
 // board uses.
@@ -3920,7 +3920,7 @@ function libraryContent(b) {
 // The boards of the chosen list that match the search, in the chosen
 // order: those whose names match first, a name that is the search or
 // begins with it before others, then those matched by content. All boards
-// include those the account keeps in Puter that are not on this device
+// include those the account keeps in Everything that are not on this device
 // yet (`cloud`), in name order among the others; with no date to go by,
 // they follow the others by last edit.
 function libraryMatches(words = searchWords()) {
@@ -4042,7 +4042,7 @@ async function newBoard(template = "blank") {
 }
 // A new board opens even when this device could not store it, with the
 // notice its later edits would give, so it can be exported or saved to
-// Puter rather than silently kept in memory alone.
+// Everything rather than silently kept in memory alone.
 async function adoptBoard(b) {
   boards.push(b);
   try {
@@ -4091,13 +4091,13 @@ async function openBoard(b, { keepAddress = false } = {}) {
     sync(clone(current));
   }
   current = b;
-  // A board the account keeps in Puter goes on being saved there, as it
+  // A board the account keeps in Everything goes on being saved there, as it
   // was before the page was reloaded.
   if (
     !b.shared &&
     !cloudIds.has(b.id) &&
     cloudIndex.has(b.id) &&
-    window.puter?.auth?.isSignedIn?.()
+    window.everything?.auth?.isSignedIn?.()
   ) {
     cloudIds.add(b.id);
     cloudStamps.set(b.id, b.updated);
@@ -10507,7 +10507,7 @@ const accessKey = () =>
 // The tag over the canvas names the board's kind. It follows sharing along
 // with the controls, so a board being shared is not called personal once
 // its name can be edited again.
-// Where a board is kept: on the shared server, in the account's Puter
+// Where a board is kept: on the shared server, in the account's Everything
 // drive, or on this device alone.
 // A card's date: the day, with its year when that is not this year, so an
 // old board is not mistaken for one edited this spring.
@@ -10530,7 +10530,7 @@ function boardStorage(b) {
 }
 const STORAGE_TAGS = {
   shared: ["users", "Shared board"],
-  cloud: ["cloud", "Saved to Puter"],
+  cloud: ["cloud", "Saved to Everything"],
   device: ["hard-drive", "On this device"],
 };
 // A shared board this person may not change says so for as long as that
@@ -10562,16 +10562,16 @@ function storageTag(b) {
 // The status a board shows when it opens, before any save of this visit.
 function savedStatus(b) {
   return boardStorage(b) === "cloud"
-    ? "Saved to Puter"
+    ? "Saved to Everything"
     : "Saved on this device";
 }
-// The header's cloud button says whether the board is already in Puter.
+// The header's cloud button says whether the board is already in Everything.
 function cloudSaveLabel(b) {
   return b.shared
     ? "Save shared changes now"
     : boardStorage(b) === "cloud"
-      ? "Saved to Puter · Save again"
-      : "Save to Puter";
+      ? "Saved to Everything · Save again"
+      : "Save to Everything";
 }
 function renderBoardTag() {
   const tag = document.querySelector(".board-tag");
@@ -10880,10 +10880,10 @@ async function startCollaboration(target, token, localTimer) {
   status("Connecting to shared board…");
   try {
     await connect();
-    const user = await window.puter.auth.getUser();
+    const user = await window.everything.auth.getUser();
     if (current !== target || attempt !== collaborationAttempt) return;
     const session = new CollaborationSession({
-      puter: window.puter,
+      everything: window.everything,
       ...target.shared,
       user,
       changed: (board) => {
@@ -11230,7 +11230,7 @@ async function startCollaboration(target, token, localTimer) {
     collaborationScopes.set(target, session.scope);
     // Check the account's own deployment independently of joining: an old or
     // broken worker must not have to accept a join before it can be updated.
-    refreshDeployment(window.puter, session.server).catch(() => {
+    refreshDeployment(window.everything, session.server).catch(() => {
       if (collaboration === session && !session.closed)
         toast("Sharing update could not finish. Reopen this board to retry.");
     });
@@ -11327,13 +11327,13 @@ function shareProgress(target) {
   return state;
 }
 // What sharing a personal board does, before it does it: the board moves
-// into the person's Puter account and stays shared.
+// into the person's Everything account and stays shared.
 function confirmSharing(target) {
   return new Promise((resolve) => {
     let chosen = false;
     modal(
       "Share this board?",
-      `<p class="dialog-copy">${t("Sharing moves this board into your Puter account, so the people you invite can open it and work on it with you. It stays a shared board from then on; Duplicate still makes a personal copy.")}</p><div class="dialog-footer"><button class="secondary" id="cancel-share">${t("Cancel")}</button><button class="primary" id="confirm-share">${icon("users")}${t("Share board")}</button></div>`,
+      `<p class="dialog-copy">${t("Sharing moves this board into your Everything account, so the people you invite can open it and work on it with you. It stays a shared board from then on; Duplicate still makes a personal copy.")}</p><div class="dialog-footer"><button class="secondary" id="cancel-share">${t("Cancel")}</button><button class="primary" id="confirm-share">${icon("users")}${t("Share board")}</button></div>`,
       (d) => {
         d.querySelector("#cancel-share").onclick = () => d.close();
         d.querySelector("#confirm-share").onclick = () => {
@@ -11375,10 +11375,10 @@ async function shareBoard() {
       collaborationBusy = true;
       renderParticipants();
       await connect();
-      // After signing in, which may open Puter's own window.
+      // After signing in, which may open Everything's own window.
       progress = sharing = shareProgress(target);
       progress.show();
-      const user = await window.puter.auth.getUser();
+      const user = await window.everything.auth.getUser();
       // Members create shared boards on their organization's worker, where
       // its policies, directory, and audit log apply.
       let server;
@@ -11388,15 +11388,15 @@ async function shareBoard() {
         // brought up to date before the board is created on it, as opening
         // a shared board does: an outdated worker refuses the new board.
         progress.step("Preparing collaboration…");
-        await refreshDeployment(window.puter, server).catch(() => {});
+        await refreshDeployment(window.everything, server).catch(() => {});
       } else
-        server = await deploy(window.puter, (message) => {
+        server = await deploy(window.everything, (message) => {
           if (current === target) status(message);
           progress.step(message);
         });
       const room = uid();
       const staging = new CollaborationSession({
-        puter: window.puter,
+        everything: window.everything,
         server,
         room,
         user,
@@ -11455,13 +11455,13 @@ async function shareBoard() {
       await local.save(target);
       clearTimeout(cloudTimer);
       pendingCloud.delete(target.id);
-      // The shared board exists now. The copy in Puter is told about it so
+      // The shared board exists now. The copy in Everything is told about it so
       // other devices open the shared one; if that write fails, sharing
       // has still succeeded and only that copy is behind.
       await cloud
         .save(target)
         .catch(() =>
-          toast("Shared, but the copy in Puter could not be updated."),
+          toast("Shared, but the copy in Everything could not be updated."),
         );
       if (current !== target) return;
       progress.step("Connecting to shared board…");
@@ -11647,7 +11647,7 @@ async function shareBoard() {
               session
                 .request("join")
                 .then((result) =>
-                  allowLiveUpdates(session, window.puter, result),
+                  allowLiveUpdates(session, window.everything, result),
                 )
                 .catch(() => {
                   /* Live updates fall back to periodic synchronization. */
@@ -11706,7 +11706,7 @@ async function shareBoard() {
     progress?.finish();
     if (current === target && !collaboration)
       status("Sharing failed · try again");
-    toast(error.message || "Could not connect to Puter.");
+    toast(error.message || "Could not connect to Everything.");
   } finally {
     progress?.finish();
     if (sharing === progress) sharing = null;
@@ -11862,8 +11862,8 @@ function joinDialog(link = "") {
   // A link that opened the app is already filled in, so the dialog says
   // what it is rather than asking for it.
   const invited = /[#&]invite=[^&]/.test(link);
-  const guidance = !window.puter?.auth?.isSignedIn?.()
-    ? "Sign in with Puter to join this board."
+  const guidance = !window.everything?.auth?.isSignedIn?.()
+    ? "Sign in with Everything to join this board."
     : invited
       ? "You were invited to a shared board. Choose Join board to open it."
       : link
@@ -12226,25 +12226,25 @@ function participantsDialog() {
   );
 }
 async function connect() {
-  if (!window.puter)
-    throw Error("Puter could not load. Check your connection and try again.");
-  if (!window.puter.auth.isSignedIn()) {
-    // Closing Puter's sign-in window rejects with a plain object, which
+  if (!window.everything)
+    throw Error("Everything could not load. Check your connection and try again.");
+  if (!window.everything.auth.isSignedIn()) {
+    // Closing Everything's sign-in window rejects with a plain object, which
     // would show no message at all.
-    await window.puter.auth.signIn().catch((error) => {
+    await window.everything.auth.signIn().catch((error) => {
       throw error instanceof Error
         ? error
-        : Error("Sign in with Puter to continue.");
+        : Error("Sign in with Everything to continue.");
     });
     // Every header now shows who is signed in.
     await account.refresh();
     // Someone who signs in now gets their organization's policies, such as
     // its AI settings, just as if they had been signed in on arrival.
     await reconnectOrganization().catch(() => {});
-    cloud ??= new CloudStore(window.puter);
+    cloud ??= new CloudStore(window.everything);
     loadCloudIndex();
   }
-  cloud ??= new CloudStore(window.puter);
+  cloud ??= new CloudStore(window.everything);
   return cloud;
 }
 // Reconnect to a remembered or site-configured organization quietly.
@@ -12252,7 +12252,7 @@ async function reconnectOrganization() {
   if (organization.info) return;
   const found = await organization.discover();
   if (!found || readOrganizationLink(location.href)) return;
-  if (!window.puter?.auth?.isSignedIn?.()) return;
+  if (!window.everything?.auth?.isSignedIn?.()) return;
   await organization.use(found.server);
   if (!current) home({ keepAddress: true });
 }
@@ -12274,17 +12274,17 @@ async function cloudSave() {
     cloudIds.add(target.id);
     await sync(clone(target));
   } catch (e) {
-    toast(e.message || "Could not connect to Puter.");
+    toast(e.message || "Could not connect to Everything.");
   }
 }
-// Which boards the account keeps in Puter, so the library and the open
+// Which boards the account keeps in Everything, so the library and the open
 // board can say so. The index is one small file; nothing else is read.
 async function loadCloudIndex() {
-  if (!window.puter?.auth?.isSignedIn?.()) return;
+  if (!window.everything?.auth?.isSignedIn?.()) return;
   try {
-    cloud ??= new CloudStore(window.puter);
+    cloud ??= new CloudStore(window.everything);
     const files = await cloud.list();
-    if (!window.puter.auth.isSignedIn()) return;
+    if (!window.everything.auth.isSignedIn()) return;
     cloudIndex = new Set(files.map((f) => f.name.slice(0, -5)));
     cloudTitles = new Map(files.map((f) => [f.name.slice(0, -5), f.title]));
   } catch {
@@ -12308,11 +12308,11 @@ async function signInAccount() {
   toast(
     name
       ? t("Signed in as {name}.").replace("{name}", () => name)
-      : "Signed in with Puter.",
+      : "Signed in with Everything.",
   );
 }
 async function signOutAccount() {
-  if (!window.puter?.auth?.isSignedIn?.()) return;
+  if (!window.everything?.auth?.isSignedIn?.()) return;
   // A shared board lives in the account that is leaving; it is closed first.
   if (current?.shared) {
     await home();
@@ -12323,7 +12323,7 @@ async function signOutAccount() {
   clearTimeout(cloudTimer);
   if (current && pendingCloud.has(current.id)) await sync(clone(current));
   await cloud?.queue.catch(() => {});
-  window.puter.auth.signOut();
+  window.everything.auth.signOut();
   cloud = null;
   cloudIds.clear();
   cloudIndex.clear();
@@ -12342,14 +12342,14 @@ async function signOutAccount() {
   }
   toast("Signed out. Your local boards are still available.");
 }
-// Open a board from the account's Puter drive: its saved copy, unless this
-// device holds a newer one. The library's Puter cards and the notice about
+// Open a board from the account's Everything drive: its saved copy, unless this
+// device holds a newer one. The library's Everything cards and the notice about
 // a newer copy both use it.
 async function openCloudBoard(f, { replace = false } = {}) {
   const b = await cloud.read(f.path || `whiteboard/${f.name}`);
   const existing = boards.find((x) => x.id === b.id);
   if (existing && replace) {
-    // Asked for Puter's copy outright, after an edit here could not go up:
+    // Asked for Everything's copy outright, after an edit here could not go up:
     // the edits made on this device are kept as a board of their own
     // rather than lost.
     const kept = clone(existing);
@@ -12362,7 +12362,7 @@ async function openCloudBoard(f, { replace = false } = {}) {
     boards.push(kept);
     await local.save(kept);
     toast(
-      "Opened the copy from Puter. The edits made on this device are kept as their own board.",
+      "Opened the copy from Everything. The edits made on this device are kept as their own board.",
     );
   } else if (existing && existing.updated > b.updated) {
     toast("A newer local copy was kept.");
@@ -12527,7 +12527,7 @@ function boardOptions(b) {
           d.close();
           modal(
             "Delete this board permanently?",
-            `<p class="dialog-copy">${t("This removes the board and its recovery versions from this device. It cannot be undone.")}${boardStorage(b) === "cloud" ? ` ${t("The copy saved in Puter is kept.")}` : ""} <span data-user-content>${escape(b.title)}</span></p><div class="dialog-footer"><button class="secondary" id="cancel-purge">Keep in trash</button><button class="primary danger-fill" id="confirm-purge">Delete permanently</button></div>`,
+            `<p class="dialog-copy">${t("This removes the board and its recovery versions from this device. It cannot be undone.")}${boardStorage(b) === "cloud" ? ` ${t("The copy saved in Everything is kept.")}` : ""} <span data-user-content>${escape(b.title)}</span></p><div class="dialog-footer"><button class="secondary" id="cancel-purge">Keep in trash</button><button class="primary danger-fill" id="confirm-purge">Delete permanently</button></div>`,
             (dialog) => {
               dialog.querySelector("#cancel-purge").onclick = () =>
                 dialog.close();
@@ -12636,13 +12636,13 @@ function boardOptions(b) {
         try {
           await local.save(b);
           written = true;
-          // The copy in Puter takes the new name too, as it does when the
+          // The copy in Everything takes the new name too, as it does when the
           // board is renamed in the editor; the library would otherwise
           // show one name here and another on every other device.
           if (
             boardStorage(b) === "cloud" &&
             cloud &&
-            window.puter?.auth?.isSignedIn?.()
+            window.everything?.auth?.isSignedIn?.()
           ) {
             if (!cloudIds.has(id)) {
               cloudIds.add(id);
@@ -12756,7 +12756,7 @@ function boardOptions(b) {
           copy,
           b.shared
             ? {
-                id: await window.puter?.auth
+                id: await window.everything?.auth
                   ?.getUser?.()
                   .then((u) => u?.uuid)
                   .catch(() => null),
@@ -12820,7 +12820,7 @@ function boardOptions(b) {
         d.close();
         modal(
           "Move this board to the trash?",
-          `<p class="dialog-copy"><span data-user-content>${escape(b.title)}</span> · ${t("Boards in the trash can be restored from there.")}${boardStorage(b) === "cloud" ? ` ${t("The copy saved in Puter is kept.")}` : ""}</p><div class="dialog-footer"><button class="secondary" id="cancel-delete">Keep board</button><button class="primary danger-fill" id="confirm-delete">Move to trash</button></div>`,
+          `<p class="dialog-copy"><span data-user-content>${escape(b.title)}</span> · ${t("Boards in the trash can be restored from there.")}${boardStorage(b) === "cloud" ? ` ${t("The copy saved in Everything is kept.")}` : ""}</p><div class="dialog-footer"><button class="secondary" id="cancel-delete">Keep board</button><button class="primary danger-fill" id="confirm-delete">Move to trash</button></div>`,
           (dialog) => {
             dialog.querySelector("#cancel-delete").onclick = () =>
               dialog.close();
@@ -13101,7 +13101,7 @@ function help() {
       ["Ctrl/Cmd + Alt/Option + Shift + H", "Version history"],
       ["Ctrl or Cmd + Z", "Undo"],
       ["Ctrl or Cmd + Shift + Z or Ctrl or Cmd + Y", "Redo"],
-      ["Ctrl or Cmd + S", "Save to Puter"],
+      ["Ctrl or Cmd + S", "Save to Everything"],
       ["Ctrl or Cmd + A", "Select all objects"],
       ["Ctrl or Cmd + G / Shift + G", "Group / ungroup selection"],
       ["Ctrl or Cmd + D", "Duplicate selection"],
@@ -14460,11 +14460,11 @@ try {
   // A shared board already on this device opens directly for a signed-in
   // account, as it does when the address changes while the page is open:
   // reloading it asks nothing. Otherwise, as for an invitation, the dialog's
-  // button lets Puter's sign-in window open from a press.
+  // button lets Everything's sign-in window open from a press.
   const known =
     arrival?.room &&
     !arrival.token &&
-    window.puter?.auth?.isSignedIn?.() &&
+    window.everything?.auth?.isSignedIn?.() &&
     boards.some(
       (b) =>
         !b.deletedAt &&

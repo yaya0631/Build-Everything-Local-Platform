@@ -4,7 +4,7 @@
  *    the device by the effect shaders (model/stylize.js), in the preview and
  *    the export alike
  *  - AI restyle: the picture (or the frame at the playhead of a video) is
- *    redrawn by Puter AI in a chosen style; the result becomes a new image
+ *    redrawn by Everything AI in a chosen style; the result becomes a new image
  *    clip, replaces the picture of an image clip (undoable), or goes to the
  *    media library. Signed-out users see the sign-in prompt.
  * The frame capture and the AI call are injectable: ctx.restyleServices =
@@ -134,8 +134,8 @@ function looksSection(view) {
 function restyleSection(view) {
   const { ctx, store } = view;
   if (!aiAvailable(ctx)) {
-    const btn = ctx.account?.onSignIn ? h('button.btn.small', { type: 'button', onclick: () => ctx.account.onSignIn() }, icon('cloud', 14), 'Sign in to Puter') : null;
-    return propSection('AI restyle', [note('AI restyle redraws the picture with Puter AI, so it needs a Puter account.', 'user'), btn]);
+    const btn = ctx.account?.onSignIn ? h('button.btn.small', { type: 'button', onclick: () => ctx.account.onSignIn() }, icon('cloud', 14), 'Sign in to Everything') : null;
+    return propSection('AI restyle', [note('AI restyle redraws the picture with Everything AI, so it needs an Everything account.', 'user'), btn]);
   }
   let style = null;
   let busy = false;

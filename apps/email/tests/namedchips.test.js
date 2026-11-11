@@ -27,12 +27,12 @@ const chips = (modal) => [...modal.panel.querySelectorAll('#compose-to')[0].pare
 const names = (modal) => chips(modal).map((chip) => chip.querySelector('.chip-name').textContent);
 
 beforeEach(() => {
-  globalThis.puter = { ui: {}, fs: {}, APIOrigin: 'https://api.example', authToken: 't' };
+  globalThis.everything = { ui: {}, fs: {}, APIOrigin: 'https://api.example', authToken: 't' };
 });
 
 afterEach(() => {
   document.querySelectorAll('.modal-root').forEach((node) => node.remove());
-  delete globalThis.puter;
+  delete globalThis.everything;
 });
 
 describe('named recipient chips', () => {

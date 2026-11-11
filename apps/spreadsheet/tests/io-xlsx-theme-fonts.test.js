@@ -9,7 +9,7 @@ async function output(wb, { native = true, theme = null } = {}) {
   const zip = X.CFB.read(new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()), { type: 'array' });
   const get = p => new TextDecoder().decode(X.CFB.find(zip, p).content);
   const set = (p, s) => X.CFB.utils.cfb_add(zip, p, new TextEncoder().encode(s));
-  if (native) set('/xl/workbook.xml', get('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  if (native) set('/xl/workbook.xml', get('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   if (theme) { const xml = get('/xl/theme/theme1.xml'); const fonts = readFontTheme(xml); fonts.minor.latin.typeface = theme.minor; fonts.major.latin.typeface = theme.major;
     set('/xl/theme/theme1.xml', xml.replace(/<a:fontScheme\b[^>]*>[\s\S]*?<\/a:fontScheme>/, fontThemeXml(fonts))); }
   return { styles: get('/xl/styles.xml'), wb: await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' })) };
@@ -112,7 +112,7 @@ it('does not bind literal pasted fonts to a matching destination theme face', as
 it('keeps legacy app defaults while accepting a new native Normal binding', async () => {
   const book = X.utils.book_new();
   X.utils.book_append_sheet(book, X.utils.aoa_to_sheet([['Legacy']]), 'Data');
-  X.utils.book_append_sheet(book, X.utils.aoa_to_sheet([[JSON.stringify({ v: 1, sheets: { Data: { styles: { '0,0': { bold: true } } } } })]]), '_puter_meta');
+  X.utils.book_append_sheet(book, X.utils.aoa_to_sheet([[JSON.stringify({ v: 1, sheets: { Data: { styles: { '0,0': { bold: true } } } } })]]), '_everything_meta');
   const legacy = await workbookFromFile(X.write(book, { type: 'array', bookType: 'xlsx' }));
   expect(legacy.normalFont).toBeNull();
   expect(legacy.getCell(legacy.activeSheetId, 0, 0).s).toEqual({ bold: true });

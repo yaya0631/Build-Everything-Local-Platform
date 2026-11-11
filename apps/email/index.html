@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Puter Mail</title>
-  <meta name="description" content="A fast, private email client for your Puter account." />
+  <title>Everything Mail</title>
+  <meta name="description" content="A fast, private email client for your Everything account." />
   <meta name="theme-color" content="#f8fafd" media="(prefers-color-scheme: light)" />
   <meta name="theme-color" content="#131314" media="(prefers-color-scheme: dark)" />
   <link rel="icon" href="./favicon.ico" sizes="16x16 32x32 48x48" />
@@ -17,7 +17,7 @@
     // Apply the saved theme before first paint to avoid a flash.
     (() => {
       try {
-        const t = localStorage.getItem('puter-mail:theme');
+        const t = localStorage.getItem('everything-mail:theme');
         if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
       } catch {}
     })();
@@ -25,14 +25,14 @@
   <!-- defer keeps the SDK ahead of the module script below (same in-order
        queue) without parser-blocking the first paint. A script that could not
        load says so, so start-up can report it at once. -->
-  <script src="/sdk/puter.js" defer onerror="window.puterSdkFailed = true"></script>
+  <script src="/sdk/everything.js" defer onerror="window.everythingSdkFailed = true"></script>
   <script type="module" src="/src/main.js"></script>
 </head>
 <body>
   <div id="app" class="app">
     <div class="gate"><div class="gate-inner">
-      <div class="loading-placeholder loading-boot" role="status" aria-label="Loading Puter Mail">
-        <span class="sr-only">Loading Puter Mail</span>
+      <div class="loading-placeholder loading-boot" role="status" aria-label="Loading Everything Mail">
+        <span class="sr-only">Loading Everything Mail</span>
         <div class="skeleton-shapes" aria-hidden="true">
           <span class="skeleton-line skeleton-long"></span>
           <span class="skeleton-line skeleton-long"></span>

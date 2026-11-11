@@ -1,5 +1,5 @@
 /**
- * The Share dialog: invite people by Puter username or email address with a
+ * The Share dialog: invite people by Everything username or email address with a
  * role (can edit, can comment, can view), copy a link that admits whoever
  * opens it with a chosen role, see and change who has access, send a copy of
  * the document by email (Word or PDF), and stop sharing.
@@ -36,16 +36,16 @@ export function openShareDialog(api) {
   };
 
   /* ---- Invite ---- */
-  const people = el('input.input', { type: 'text', placeholder: api.local ? 'Not available for local sharing' : 'Puter usernames or email addresses', 'aria-label': 'People to invite', autocomplete: 'off', disabled: api.local,
+  const people = el('input.input', { type: 'text', placeholder: api.local ? 'Not available for local sharing' : 'Everything usernames or email addresses', 'aria-label': 'People to invite', autocomplete: 'off', disabled: api.local,
     onkeydown: e => { if (e.key === 'Enter') { e.preventDefault(); invite.click(); } } });
   let inviteRole = 'editor';
   const inviteRoleSelect = roleSelect(inviteRole, 'Role for the people you invite', v => { inviteRole = v; });
   const note = el('textarea.input.sh-note', { rows: 1, placeholder: 'Add a message (optional)', 'aria-label': 'Message for the people you invite', disabled: api.local });
   const invite = el('button.btn.btn-primary', { type: 'button', disabled: api.local, onclick: () => busy(invite, 'Inviting…', async () => {
     const names = people.value.split(/[\s,;]+/).map(s => s.trim()).filter(Boolean);
-    if (!names.length) { say('Enter at least one Puter username or email address.', true); people.focus(); return; }
+    if (!names.length) { say('Enter at least one Everything username or email address.', true); people.focus(); return; }
     const bad = names.filter(n => !EMAIL.test(n) && !/^@?[A-Za-z0-9._-]{1,64}$/.test(n));
-    if (bad.length) { say(`“${bad[0]}” is neither a Puter username nor an email address.`, true); return; }
+    if (bad.length) { say(`“${bad[0]}” is neither an Everything username nor an email address.`, true); return; }
     await api.ensureShared(text => say(text));
     const emailed = [], invited = [], failed = [];
     for (const name of names) {
@@ -59,7 +59,7 @@ export function openShareDialog(api) {
     }
     people.value = ''; note.value = '';
     const parts = [];
-    if (invited.length) parts.push(`${invited.join(', ')} can open the document from its link once signed in to Puter.`);
+    if (invited.length) parts.push(`${invited.join(', ')} can open the document from its link once signed in to Everything.`);
     if (emailed.length) parts.push(`Invitation sent to ${emailed.join(', ')}.`);
     if (failed.length) parts.push(`Not sent: ${failed.join('; ')}`);
     say(parts.join(' '), !!failed.length);
@@ -70,7 +70,7 @@ export function openShareDialog(api) {
     el('h3.sh-heading', {}, 'Invite people'),
     el('div.sh-row', {}, people, inviteRoleSelect),
     note,
-    el('div.sh-row.sh-row-end', {}, el('span.field-hint', {}, api.local ? 'This document is on this device: share it with other tabs of this browser using the link below.' : 'People sign in to Puter to open it. Invitations expire after seven days.'), invite));
+    el('div.sh-row.sh-row-end', {}, el('span.field-hint', {}, api.local ? 'This document is on this device: share it with other tabs of this browser using the link below.' : 'People sign in to Everything to open it. Invitations expire after seven days.'), invite));
 
   /* ---- Link ---- */
   let linkRole = 'editor';
@@ -81,7 +81,7 @@ export function openShareDialog(api) {
       await api.ensureShared(text => say(text));
       const url = await live().inviteLink(role);
       linkField.value = url; linkField.hidden = false;
-      try { await navigator.clipboard.writeText(url); if (!quiet) say(`Link copied. Anyone who opens it ${role === 'editor' ? 'can edit' : role === 'commenter' ? 'can comment' : 'can view'}${api.local ? ' (in this browser)' : ' once signed in to Puter'}.`); }
+      try { await navigator.clipboard.writeText(url); if (!quiet) say(`Link copied. Anyone who opens it ${role === 'editor' ? 'can edit' : role === 'commenter' ? 'can comment' : 'can view'}${api.local ? ' (in this browser)' : ' once signed in to Everything'}.`); }
       catch { if (!quiet) say('Copy the link below.'); linkField.select(); }
       renderAccess();
       return url;
@@ -138,7 +138,7 @@ export function openShareDialog(api) {
   const copySection = el('details.sh-section.sh-copy', {},
     el('summary.sh-heading', {}, 'Send a copy by email'),
     el('div.sh-row', {}, to, format),
-    el('div.sh-row.sh-row-end', {}, el('span.field-hint', {}, api.canEmail ? 'Sent from your Puter email address as an attachment. The copy does not change when the document does.' : 'Email is not available here; download the copy and attach it yourself.'), download, send));
+    el('div.sh-row.sh-row-end', {}, el('span.field-hint', {}, api.canEmail ? 'Sent from your Everything email address as an attachment. The copy does not change when the document does.' : 'Email is not available here; download the copy and attach it yourself.'), download, send));
   send.disabled = !api.canEmail; to.disabled = !api.canEmail;
 
   /* ---- Footer ---- */

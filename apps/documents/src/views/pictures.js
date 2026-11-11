@@ -767,7 +767,7 @@ export function createPictures({ editor, pkg, error, onChange = () => {}, base =
   function changePictureItems() {
     const ok = editable() && isPicture(selected());
     return [{ label: 'From a File…', icon: 'folderOpen', disabled: !ok, onSelect: () => pictureInput.click() },
-      ...(base.pictureFromCloud ? [{ label: 'From Puter…', disabled: !ok, onSelect: () => base.pictureFromCloud(async file => { pictureInput.files; const transfer = new DataTransfer(); transfer.items.add(file); pictureInput.files = transfer.files; pictureInput.dispatchEvent(new Event('change')); }) }] : [])];
+      ...(base.pictureFromCloud ? [{ label: 'From Everything…', disabled: !ok, onSelect: () => base.pictureFromCloud(async file => { pictureInput.files; const transfer = new DataTransfer(); transfer.items.add(file); pictureInput.files = transfer.files; pictureInput.dispatchEvent(new Event('change')); }) }] : [])];
   }
 
   /* ---- Ribbon ---- */

@@ -20,7 +20,7 @@ it.each([false, true])('exports concrete sparse values as native blank XFs and k
   for (let save = 0; save < 2; save++) {
     const zip = await zipFor(wb);
     if (!save) expect(wb.toJSON()).toEqual(source);
-    if (nativeOnly) setPart(zip, '/xl/workbook.xml', partText(zip, '/xl/workbook.xml').replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+    if (nativeOnly) setPart(zip, '/xl/workbook.xml', partText(zip, '/xl/workbook.xml').replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
     wb = await workbookFromFile(bytes(zip), 'values.xlsx');
     for (let r = 3; r <= 6; r++) for (let c = 2; c <= 4; c++) {
       const style = wb.styleAt(wb.activeSheetId, r, c);

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { summarizeBackup, readBackupFile, BackupError } from '../src/lib/backup.js';
-import { installMockPuter, installMockStorage } from './helpers/mock-puter.js';
+import { installMockEverything, installMockStorage } from './helpers/mock-everything.js';
 import { Store } from '../src/lib/store.js';
 import { todayISO, monthKeyOf } from '../src/lib/dates.js';
 
@@ -108,7 +108,7 @@ describe('importAll hardening', () => {
   let store;
 
   beforeEach(async () => {
-    mock = installMockPuter();
+    mock = installMockEverything();
     store = new Store();
     await store.init();
   });
@@ -272,7 +272,7 @@ describe('backups and the offline outbox', () => {
   const onDisk = () => JSON.parse(mock.files.get(`pos-data/sales-${key()}.json`) || '[]');
 
   beforeEach(async () => {
-    mock = installMockPuter();
+    mock = installMockEverything();
     storage = installMockStorage();
     store = new Store();
     await store.init();

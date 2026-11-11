@@ -1,6 +1,6 @@
 // Who is writing a comment, and the people a comment can mention.
 //
-// Signed in, the reviewer is their Puter user; otherwise they are asked for a
+// Signed in, the reviewer is their Everything user; otherwise they are asked for a
 // name once (offered "Guest"), which the browser remembers.
 
 const NAME_KEY = "presentation:reviewer-name";

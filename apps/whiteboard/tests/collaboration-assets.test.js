@@ -17,7 +17,7 @@ async function fixture() {
     item("image", 300, 0, { src: "asset:" + asset }),
   ];
   const session = new CollaborationSession({
-    puter: {},
+    everything: {},
     server: "http://whiteboard-test.localhost:8443",
     room: initial.id,
     user: owner,
@@ -151,8 +151,8 @@ test("commits check only images newly added to the board", async () => {
     next.items.push(item("image", 50, 0, { src: "asset:" + asset })),
   );
   let stats = 0;
-  const stat = boards.puter.fs.stat;
-  boards.puter.fs.stat = (...args) => (stats++, stat(...args));
+  const stat = boards.everything.fs.stat;
+  boards.everything.fs.stat = (...args) => (stats++, stat(...args));
   await commit((next) => (next.items[0].text = "xy"));
   assert.equal(stats, 0, "unchanged images are not checked again");
   const missing = await hash("data:image/png;base64,bm9uZQ==");
@@ -191,7 +191,7 @@ test("an image queued before access became commenter does not stop comments from
   let state;
   const open = () =>
     new CollaborationSession({
-      puter: env.sdk(editor),
+      everything: env.sdk(editor),
       server: "http://whiteboard-test.localhost:8443",
       room: b.id,
       user: editor,
@@ -270,7 +270,7 @@ test("an image the worker refuses is given up, and later edits still save", asyn
     reason,
     shown;
   const session = new CollaborationSession({
-    puter: env.sdk(editor),
+    everything: env.sdk(editor),
     server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: editor,
@@ -344,7 +344,7 @@ test("an image this device cannot store is still saved to the shared board", asy
   };
   let state, shown;
   const session = new CollaborationSession({
-    puter: env.sdk(owner),
+    everything: env.sdk(owner),
     server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: owner,
@@ -389,7 +389,7 @@ test("images past what one person may add a minute wait for the worker without r
   seed.destroy();
   let state, shown;
   const session = new CollaborationSession({
-    puter: env.sdk(owner),
+    everything: env.sdk(owner),
     server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: owner,
@@ -463,7 +463,7 @@ test("an image added while another uploads is uploaded before the edit adding it
   let state;
   const toasts = [];
   const session = new CollaborationSession({
-    puter: env.sdk(owner),
+    everything: env.sdk(owner),
     server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: owner,
@@ -557,7 +557,7 @@ test("an image that could not be downloaded is tried again on a quiet board", as
   await env.service.call(editor, { op: "join", room: b.id, token });
   let state;
   const session = new CollaborationSession({
-    puter: env.sdk(editor),
+    everything: env.sdk(editor),
     server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: editor,
@@ -596,7 +596,7 @@ test("a board's images download a few at a time", async () => {
     item("image", n * 100, 0, { src: "asset:" + id }),
   );
   const session = new CollaborationSession({
-    puter: {},
+    everything: {},
     server: "http://whiteboard-test.localhost:8443",
     room: initial.id,
     user: owner,
@@ -647,7 +647,7 @@ test("images no longer on the board are not kept on this device", async () => {
   const store = memoryStore();
   let state;
   const session = new CollaborationSession({
-    puter: env.sdk(owner),
+    everything: env.sdk(owner),
     server: "http://whiteboard-test.localhost:8443",
     room: b.id,
     user: owner,

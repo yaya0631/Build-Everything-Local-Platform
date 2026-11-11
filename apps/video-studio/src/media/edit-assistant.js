@@ -1,5 +1,5 @@
 /**
- * Edit assistant: describe an edit in plain words and Puter AI turns it
+ * Edit assistant: describe an edit in plain words and Everything AI turns it
  * into calls to a small set of edit tools, which the app checks and then
  * performs (see ui/assistant-actions.js).
  *
@@ -493,7 +493,7 @@ export function textStyle(raw) {
   return out;
 }
 
-/** The tools as OpenAI-style function definitions for puter.ai.chat({ tools }). */
+/** The tools as OpenAI-style function definitions for everything.ai.chat({ tools }). */
 export function toolSpecs() {
   return TOOLS.map((t) => ({ type: 'function', function: { name: t.name, description: t.description, parameters: t.parameters } }));
 }
@@ -731,7 +731,7 @@ export function parseActionList(reply) {
 
 const aborted = () => new DOMException('Cancelled', 'AbortError');
 
-/** Resolve with p, or reject as soon as signal aborts (Puter chat calls cannot be stopped, only ignored). */
+/** Resolve with p, or reject as soon as signal aborts (Everything chat calls cannot be stopped, only ignored). */
 function abortable(p, signal) {
   if (!signal) return p;
   if (signal.aborted) return Promise.reject(aborted());
@@ -743,7 +743,7 @@ function abortable(p, signal) {
 }
 
 /**
- * Ask the model what to do. chat(messages, options) is puter.ai.chat (or
+ * Ask the model what to do. chat(messages, options) is everything.ai.chat (or
  * a stand-in in tests). First with the edit tools; when the reply has no
  * tool calls (or tool calling fails), the request is asked again for a JSON
  * action list. Returns { calls, text, via: 'tools' | 'json' | 'none' }.

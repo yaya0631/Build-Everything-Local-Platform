@@ -11,7 +11,7 @@ vi.mock('../src/views/editor.js', () => ({
 it('keeps a file dropped on the loading screen and opens it once the app is up', async () => {
   vi.stubGlobal('matchMedia', () => ({ matches: false, addEventListener() {} }));
   let signIn;
-  vi.stubGlobal('puter', {
+  vi.stubGlobal('everything', {
     auth: { isSignedIn: () => new Promise((resolve) => { signIn = resolve; }), getUser: async () => ({ username: 'test' }) },
     fs: { readdir: async () => [], read: async () => new Blob(['document']), mkdir: async () => {}, stat: async () => null, write: async (path) => ({ path }) },
   });

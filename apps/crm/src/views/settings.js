@@ -34,7 +34,7 @@ import { todayISO, clamp, formatMoney, timeAgo, formatDate } from '../lib/util.j
 export async function confirmSignOut() {
   const ok = await confirmDialog({
     title: 'Sign out?',
-    message: 'Your data stays safe in your Puter account and will be here when you sign back in.',
+    message: 'Your data stays safe in your Everything account and will be here when you sign back in.',
     confirmLabel: 'Sign out',
     danger: false,
   });
@@ -42,7 +42,7 @@ export async function confirmSignOut() {
   // Let the SDK finish clearing the session before the reload re-runs the
   // auth check, or a raced reload can boot back into a half-signed-out state.
   try {
-    await puter.auth.signOut();
+    await everything.auth.signOut();
   } catch {}
   location.reload();
 }
@@ -637,7 +637,7 @@ export function settingsView() {
 
   /* ----- AI assist -----
      Opt-out, and only where the platform offers it. The copy says plainly
-     what leaves the user's cloud, because "your data stays in your Puter
+     what leaves the user's cloud, because "your data stays in your Everything
      cloud" is the promise this feature has to keep honest. */
   const aiRow = el('div.switch-slot');
   function renderAI() {
@@ -667,13 +667,13 @@ export function settingsView() {
         el('label.title', { for: 'ai-switch' }, 'AI assist'),
         el('div.sub', {}, available
           ? 'Adds three buttons: read pasted text into a new lead or company, draft an email, and catch up on a long history. Each one is a button you press, the result lands in a field you can edit, and nothing is saved on its own.'
-          : 'This Puter session doesn’t offer AI, so the assist buttons stay hidden.')
+          : 'This Everything session doesn’t offer AI, so the assist buttons stay hidden.')
       ),
       toggle
     ));
     if (available) {
       aiRow.append(el('p.settings-note.mt-sm', {},
-        'When you press one, the record you pressed it on - and nothing else - is sent to Puter’s AI for that one request. Turn this off and the app never contacts a model.'));
+        'When you press one, the record you pressed it on - and nothing else - is sent to Everything’s AI for that one request. Turn this off and the app never contacts a model.'));
     }
     if (hadFocus && !toggle.disabled) toggle.focus();
   }
@@ -1071,7 +1071,7 @@ export function settingsView() {
   async function eraseAll() {
     const ok = await confirmDialog({
       title: 'Erase all data?',
-      message: 'Every lead, company, deal, follow-up, and activity is removed from your Puter account. A one-slot snapshot is kept so you can undo it from here - nothing else is.',
+      message: 'Every lead, company, deal, follow-up, and activity is removed from your Everything account. A one-slot snapshot is kept so you can undo it from here - nothing else is.',
       confirmLabel: 'Erase everything',
     });
     if (!ok) return;
@@ -1115,7 +1115,7 @@ export function settingsView() {
       syncRow.append(el('p.card-empty', {},
         store.offline.offline
           ? 'Working offline. Everything you have changed is already in your cloud; anything you change now is kept here and sent when it answers.'
-          : 'Everything is in your Puter cloud. Changes made offline wait here until it answers.'));
+          : 'Everything is in your Everything cloud. Changes made offline wait here until it answers.'));
       return;
     }
     syncRow.append(el('div.settings-list', {},
@@ -1177,7 +1177,7 @@ export function settingsView() {
     btn.disabled = true;
     try {
       await writeBackup(store);
-      toast('Backed up to your Puter cloud', { icon: 'check' });
+      toast('Backed up to your Everything cloud', { icon: 'check' });
     } catch {
       toast('Backup failed. Check your connection', { icon: 'wifiOff' });
     }
@@ -1357,17 +1357,17 @@ export function settingsView() {
     );
 
   /* ----- account ----- */
-  const username = store.user?.username || 'Puter user';
+  const username = store.user?.username || 'Everything user';
   const accountRows = el('div.settings-list', {},
     el('div.settings-row.static', {},
       el('span.avatar', {}, username.charAt(0).toUpperCase()),
       el('div.grow', {},
         el('div.title', {}, username),
-        el('div.sub', {}, 'Signed in with Puter')
+        el('div.sub', {}, 'Signed in with Everything')
       )
     ),
-    // Inside Puter's desktop the platform owns the session - no sign-out.
-    puter.env !== 'app' && dataRow('logout', 'Sign out', 'Your data stays in your Puter account', confirmSignOut)
+    // Inside Everything's desktop the platform owns the session - no sign-out.
+    everything.env !== 'app' && dataRow('logout', 'Sign out', 'Your data stays in your Everything account', confirmSignOut)
   );
 
   renderBackup();
@@ -1496,7 +1496,7 @@ export function settingsView() {
     ),
     section('Waiting to sync', null,
       el('div.settings-body', {},
-        el('p.settings-note', {}, 'Changes are saved on this device first, so nothing is lost when the connection is - then they go to your Puter cloud. Anything still on its way shows here.')
+        el('p.settings-note', {}, 'Changes are saved on this device first, so nothing is lost when the connection is - then they go to your Everything cloud. Anything still on its way shows here.')
       ),
       syncRow
     ),
@@ -1509,7 +1509,7 @@ export function settingsView() {
         return btn;
       })(),
       el('div.settings-body', {},
-        el('p.settings-note', {}, 'A rolling copy of everything, kept in a backups folder in your own Puter cloud: insurance against a bad bulk edit or a corrupt write that the 30-day trash can’t cover. The oldest copies prune themselves.'),
+        el('p.settings-note', {}, 'A rolling copy of everything, kept in a backups folder in your own Everything cloud: insurance against a bad bulk edit or a corrupt write that the 30-day trash can’t cover. The oldest copies prune themselves.'),
         daysField('backup-days', 'Back up automatically every', 'autoBackupDays', 7,
           'Checked when you open the app. 0 turns automatic backups off.')
       ),

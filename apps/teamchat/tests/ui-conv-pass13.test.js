@@ -3,8 +3,8 @@
  * tests/helpers/dom.js: a small DOM with a tree, attributes, focus,
  * bubbling events and a selector engine, and matchMedia by viewport. Every
  * test boots a fresh DOM and a fresh module registry, so the listeners the
- * modules hang on window and document never outlive their test. Puter is
- * faked at `puter.workers.exec`; the toast, the theme, the modal layer and
+ * modules hang on window and document never outlive their test. Everything is
+ * faked at `everything.workers.exec`; the toast, the theme, the modal layer and
  * navigation are mocked, since they paint the page at import.
  */
 import { describe, it, expect, afterEach, vi } from 'vitest';
@@ -35,7 +35,7 @@ async function boot({ width = 1280, ...env } = {}) {
   dom?.uninstall();
   dom = installDom({ width, ...env });
   vi.resetModules();
-  globalThis.puter = { workers: { exec: async () => json({ code: 'not_found', message: 'nope' }, 404) } };
+  globalThis.everything = { workers: { exec: async () => json({ code: 'not_found', message: 'nope' }, 404) } };
   ({ store } = await import('../src/lib/store.js'));
   const { api } = await import('../src/lib/api.js');
   store.wsId = REF;
@@ -64,7 +64,7 @@ afterEach(() => {
   store = null;
   dom?.uninstall();
   dom = null;
-  delete globalThis.puter;
+  delete globalThis.everything;
   vi.restoreAllMocks();
 });
 

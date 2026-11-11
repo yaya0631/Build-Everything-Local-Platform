@@ -2,11 +2,11 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { store, DEFAULT_SETTINGS } from '../src/lib/store.js';
 import { sampleDataset, wipeSampleData } from '../src/lib/sample.js';
 
-/* The same stand-in for Puter that backup.test.js uses, so the wipe can be
+/* The same stand-in for Everything that backup.test.js uses, so the wipe can be
    exercised through the real store. */
 const kv = new Map();
 const files = new Map();
-globalThis.puter = {
+globalThis.everything = {
   auth: { getUser: async () => ({ username: 'test' }) },
   kv: {
     get: async (k) => (kv.has(k) ? kv.get(k) : null),

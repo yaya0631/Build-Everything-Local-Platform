@@ -269,7 +269,7 @@ export function installHousekeeping(e: Editor) {
       if (!subject) return;
       const { loadSettings, encodeDocument, bytesBlob, formatBytes } = await import('../files/pipeline');
       const { exportFileName } = await import('../files/encode');
-      const { download } = await import('../../persistence/puter');
+      const { download } = await import('../../persistence/everything');
       const out = await encodeDocument(e, { ...loadSettings(), format: 'png', canvasWidth: 0, canvasHeight: 0 }, subject);
       download(bytesBlob(out.bytes, out.mime), exportFileName(subject.name, 'png'));
       e.message(`PNG exported (${formatBytes(out.bytes.length)})`);

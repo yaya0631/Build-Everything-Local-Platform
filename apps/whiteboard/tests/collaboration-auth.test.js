@@ -9,18 +9,18 @@ import { environment, owner, editor } from "./collaboration-helpers.js";
 const server = "http://invited.localhost:8443";
 const input = { op: "join", room: "board" };
 
-async function capture(puter, data = input, origin = server) {
+async function capture(everything, data = input, origin = server) {
   let request;
-  puter.workers.exec = async (url, options) => {
+  everything.workers.exec = async (url, options) => {
     request = new Request(url, options);
     return Response.json({ ok: true });
   };
-  await call(puter, origin, data);
+  await call(everything, origin, data);
   return request;
 }
 
 function caller(env, request) {
-  return env.requestor(request.headers.get("puter-auth"));
+  return env.requestor(request.headers.get("everything-auth"));
 }
 
 test("restricted tokens authenticate through their owned proof without calling whoami", async () => {
@@ -55,14 +55,14 @@ test("compressed token subjects decode safely and ambiguous subjects are rejecte
   assert.deepEqual(claims({ t: "t", uu: compact, user_uid: editor.uuid }), {});
 });
 
-test("Puter's compressed access tokens cannot bypass proof verification", async () => {
+test("Everything's compressed access tokens cannot bypass proof verification", async () => {
   const env = environment(),
-    puter = env.sdk(owner);
-  await puter.fs.write("proof.json", "{}");
-  const url = new URL(await puter.fs.getReadURL("proof.json"));
+    everything = env.sdk(owner);
+  await everything.fs.write("proof.json", "{}");
+  const url = new URL(await everything.fs.getReadURL("proof.json"));
   const token = url.searchParams.get("token");
   const request = new Request(server + "/api", {
-    headers: { "puter-auth": token },
+    headers: { "everything-auth": token },
   });
   await assert.rejects(authenticate(request, env.requestor(token), input), {
     status: 401,
@@ -79,7 +79,7 @@ test("legacy uncompressed credentials still support signed collaboration request
 });
 
 test("unknown and ambiguous token types never enter the legacy authentication path", async () => {
-  const puter = { auth: { getUser: async () => owner } };
+  const everything = { auth: { getUser: async () => owner } };
   for (const claims of [
     null,
     [],
@@ -90,9 +90,9 @@ test("unknown and ambiguous token types never enter the legacy authentication pa
   ]) {
     const token = "header." + btoa(JSON.stringify(claims)) + ".signature";
     const request = new Request(server + "/api", {
-      headers: { "puter-auth": token },
+      headers: { "everything-auth": token },
     });
-    await assert.rejects(authenticate(request, puter, input), { status: 401 });
+    await assert.rejects(authenticate(request, everything, input), { status: 401 });
   }
   for (const claims of [
     { t: "s" },
@@ -102,32 +102,32 @@ test("unknown and ambiguous token types never enter the legacy authentication pa
   ]) {
     const token = "header." + btoa(JSON.stringify(claims)) + ".signature";
     const request = new Request(server + "/api", {
-      headers: { "puter-auth": token },
+      headers: { "everything-auth": token },
     });
-    assert.equal((await authenticate(request, puter, input)).uuid, owner.uuid);
+    assert.equal((await authenticate(request, everything, input)).uuid, owner.uuid);
   }
 });
 
 test("an invited worker never receives the caller's app credential", async () => {
-  const puter = environment().sdk(owner);
+  const everything = environment().sdk(owner);
   let delegated;
-  puter.workers.exec = async (_url, options) => {
-    // Puter workers.exec supplies authToken when this header is absent.
-    delegated = options.headers["puter-auth"] || puter.authToken;
+  everything.workers.exec = async (_url, options) => {
+    // Everything workers.exec supplies authToken when this header is absent.
+    delegated = options.headers["everything-auth"] || everything.authToken;
     return Response.json({ ok: true });
   };
-  await call(puter, "http://invited.localhost:8443", {
+  await call(everything, "http://invited.localhost:8443", {
     op: "join",
     room: "board",
   });
-  assert.notEqual(delegated, puter.authToken);
+  assert.notEqual(delegated, everything.authToken);
 });
 
 test("delegated credentials read only the public proof and still authenticate collaborators", async () => {
   const env = environment(),
-    puter = env.sdk(owner);
-  await puter.fs.write("whiteboard/private.json", "Private board");
-  const request = await capture(puter);
+    everything = env.sdk(owner);
+  await everything.fs.write("whiteboard/private.json", "Private board");
+  const request = await capture(everything);
   const user = caller(env, request);
   const proof = JSON.parse(request.headers.get("x-whiteboard-proof"));
   const file = JSON.parse(await (await user.fs.read(proof.path)).text());
@@ -182,7 +182,7 @@ test("an attacker cannot substitute their own publicly readable proof file", asy
   );
   // Even if the storage service allows this public read, the file is not owned
   // by the person authenticated by the stolen credential.
-  // Puter's stat response reports is_shared:null when the caller does not
+  // Everything's stat response reports is_shared:null when the caller does not
   // own a readable file. Use the victim's filesystem context for that check.
   user.fs = env.sdk(owner).fs;
   const headers = new Headers(request.headers);
@@ -204,15 +204,15 @@ test("an attacker cannot substitute their own publicly readable proof file", asy
   );
 });
 
-test("revocation takes effect once Puter's validation of the token is 30 seconds old", async () => {
+test("revocation takes effect once Everything's validation of the token is 30 seconds old", async () => {
   const env = environment(),
     request = await capture(env.sdk(owner));
   const user = caller(env, request);
   let at = Date.now();
   const now = () => at;
   await authenticate(request, user, input, now);
-  env.credentials.get(request.headers.get("puter-auth")).revoked = true;
-  // Requests in between reuse Puter's answer rather than asking again.
+  env.credentials.get(request.headers.get("everything-auth")).revoked = true;
+  // Requests in between reuse Everything's answer rather than asking again.
   at += 29_000;
   assert.equal(
     (await authenticate(request, user, input, now)).uuid,
@@ -222,9 +222,9 @@ test("revocation takes effect once Puter's validation of the token is 30 seconds
   await assert.rejects(authenticate(request, user, input, now), {
     status: 401,
   });
-  // An expired token is refused without asking Puter.
+  // An expired token is refused without asking Everything.
   const { exp } = JSON.parse(
-    atob(request.headers.get("puter-auth").split(".")[1]),
+    atob(request.headers.get("everything-auth").split(".")[1]),
   );
   await assert.rejects(
     authenticate(request, caller(env, request), input, () => exp * 1000),
@@ -234,25 +234,25 @@ test("revocation takes effect once Puter's validation of the token is 30 seconds
 
 test("credentials are reused across boards and reloads, and renewed before expiry", async (t) => {
   const env = environment(),
-    puter = env.sdk(owner);
+    everything = env.sdk(owner);
   const now = Date.now();
   t.mock.method(Date, "now", () => now);
-  const a = await capture(puter);
+  const a = await capture(everything);
   const b = await capture(
-    puter,
+    everything,
     { ...input, room: "another-board" },
     "http://other.localhost:8443",
   );
   const c = await capture(env.sdk(owner));
   assert.equal(env.credentials.size, 1);
-  assert.equal(a.headers.get("puter-auth"), b.headers.get("puter-auth"));
-  assert.equal(a.headers.get("puter-auth"), c.headers.get("puter-auth"));
+  assert.equal(a.headers.get("everything-auth"), b.headers.get("everything-auth"));
+  assert.equal(a.headers.get("everything-auth"), c.headers.get("everything-auth"));
   t.mock.method(Date, "now", () => now + 24 * 60 * 60_000);
-  const renewed = await capture(puter);
+  const renewed = await capture(everything);
   assert.equal(env.credentials.size, 2);
   assert.notEqual(
-    renewed.headers.get("puter-auth"),
-    a.headers.get("puter-auth"),
+    renewed.headers.get("everything-auth"),
+    a.headers.get("everything-auth"),
   );
   assert.equal(
     (await authenticate(renewed, caller(env, renewed), input)).uuid,
@@ -262,10 +262,10 @@ test("credentials are reused across boards and reloads, and renewed before expir
 
 test("concurrent calls share a mint and concurrent first-time tabs retain usable proofs", async () => {
   const env = environment(),
-    puter = env.sdk(owner);
-  puter.workers.exec = async () => Response.json({});
+    everything = env.sdk(owner);
+  everything.workers.exec = async () => Response.json({});
   await Promise.all(
-    Array.from({ length: 20 }, () => call(puter, server, input)),
+    Array.from({ length: 20 }, () => call(everything, server, input)),
   );
   assert.equal(env.credentials.size, 1);
   const other = environment();
@@ -282,27 +282,27 @@ test("concurrent calls share a mint and concurrent first-time tabs retain usable
 
 test("failed setup retries without sending an app credential, and account changes discard pending authorization", async () => {
   const env = environment(),
-    puter = env.sdk(owner);
+    everything = env.sdk(owner);
   let sends = 0;
-  puter.workers.exec = async () => {
+  everything.workers.exec = async () => {
     sends++;
     return Response.json({});
   };
-  const mint = puter.fs.getReadURL;
-  puter.fs.getReadURL = async () => {
+  const mint = everything.fs.getReadURL;
+  everything.fs.getReadURL = async () => {
     throw Error("Temporary mint failure");
   };
-  await assert.rejects(call(puter, server, input), /Temporary mint failure/);
+  await assert.rejects(call(everything, server, input), /Temporary mint failure/);
   assert.equal(sends, 0);
-  puter.fs.getReadURL = mint;
-  await call(puter, server, input);
+  everything.fs.getReadURL = mint;
+  await call(everything, server, input);
   assert.equal(sends, 1);
   const next = env.sdk(editor),
     nextMint = next.fs.getReadURL;
-  next.workers.exec = puter.workers.exec;
+  next.workers.exec = everything.workers.exec;
   next.fs.getReadURL = async (...args) => {
     const url = await nextMint(...args);
-    next.authToken = puter.authToken;
+    next.authToken = everything.authToken;
     return url;
   };
   await assert.rejects(call(next, server, input), /account changed/);
@@ -311,14 +311,14 @@ test("failed setup retries without sending an app credential, and account change
 
 test("signing covers the exact JSON body even if its input mutates during credential setup", async () => {
   const env = environment(),
-    puter = env.sdk(owner);
+    everything = env.sdk(owner);
   const data = { ...input },
-    mint = puter.fs.getReadURL;
-  puter.fs.getReadURL = async (...args) => {
+    mint = everything.fs.getReadURL;
+  everything.fs.getReadURL = async (...args) => {
     data.room = "changed-in-flight";
     return mint(...args);
   };
-  const request = await capture(puter, data);
+  const request = await capture(everything, data);
   const sent = await request.json();
   assert.equal(sent.room, "board");
   assert.equal(
@@ -329,13 +329,13 @@ test("signing covers the exact JSON body even if its input mutates during creden
 
 test("an unscoped credential returned by storage is rejected before contacting a worker", async () => {
   const env = environment(),
-    puter = env.sdk(owner);
-  puter.fs.getReadURL = async () =>
-    `https://api.puter.test/token-read?token=${encodeURIComponent(puter.authToken)}`;
-  await assert.rejects(capture(puter), /restricted collaboration credential/);
+    everything = env.sdk(owner);
+  everything.fs.getReadURL = async () =>
+    `https://api.everything.test/token-read?token=${encodeURIComponent(everything.authToken)}`;
+  await assert.rejects(capture(everything), /restricted collaboration credential/);
   assert.equal(
-    await puter.kv.get(
-      `whiteboard-collaboration-auth-v1:${await hash(puter.authToken)}`,
+    await everything.kv.get(
+      `whiteboard-collaboration-auth-v1:${await hash(everything.authToken)}`,
     ),
     null,
   );
@@ -483,11 +483,11 @@ test("mentions ignore punctuation that ends a sentence", async () => {
 
 test("a credential the worker stops accepting is replaced once, not reused until it expires", async () => {
   const env = environment(),
-    puter = env.sdk(owner),
+    everything = env.sdk(owner),
     tokens = [];
   let refuse = (token) => token === tokens[0];
-  puter.workers.exec = async (url, options) => {
-    const token = new Request(url, options).headers.get("puter-auth");
+  everything.workers.exec = async (url, options) => {
+    const token = new Request(url, options).headers.get("everything-auth");
     tokens.push(token);
     return refuse(token)
       ? Response.json(
@@ -498,9 +498,9 @@ test("a credential the worker stops accepting is replaced once, not reused until
   };
   // The first credential is accepted until it is not.
   refuse = () => false;
-  await call(puter, server, input);
+  await call(everything, server, input);
   refuse = (token) => token === tokens[0];
-  assert.deepEqual(await call(puter, server, input), { ok: true });
+  assert.deepEqual(await call(everything, server, input), { ok: true });
   assert.equal(tokens.length, 3);
   assert.notEqual(tokens[2], tokens[0], "a new credential is minted");
   const saved = [...env.data.entries()].find(([key]) =>
@@ -509,17 +509,17 @@ test("a credential the worker stops accepting is replaced once, not reused until
   assert.equal(saved.token, tokens[2], "and saved for the next reload");
   // Refused again at once, it is not minted again in a loop.
   refuse = () => true;
-  await assert.rejects(call(puter, server, input), { status: 401 });
+  await assert.rejects(call(everything, server, input), { status: 401 });
   assert.equal(tokens.length, 4);
 });
 
 test("requests refused at the same time all go again with one new credential", async () => {
   const env = environment(),
-    puter = env.sdk(owner),
+    everything = env.sdk(owner),
     tokens = [];
   let first;
-  puter.workers.exec = async (url, options) => {
-    const token = new Request(url, options).headers.get("puter-auth");
+  everything.workers.exec = async (url, options) => {
+    const token = new Request(url, options).headers.get("everything-auth");
     tokens.push(token);
     first ??= token;
     // Both requests are in flight before either is refused.
@@ -529,8 +529,8 @@ test("requests refused at the same time all go again with one new credential", a
       : Response.json({ ok: true });
   };
   const results = await Promise.all([
-    call(puter, server, input),
-    call(puter, server, input),
+    call(everything, server, input),
+    call(everything, server, input),
   ]);
   assert.deepEqual(results, [{ ok: true }, { ok: true }]);
   assert.equal(new Set(tokens).size, 2, "one new credential for both");

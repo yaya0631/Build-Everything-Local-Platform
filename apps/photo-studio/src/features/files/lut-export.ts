@@ -3,7 +3,7 @@
 import type { Editor } from '../../editor';
 import type { Layer, PhotoDocument } from '../../model/document';
 import { formDialog } from '../../ui/dialog';
-import { download } from '../../persistence/puter';
+import { download } from '../../persistence/everything';
 import { hasMask } from '../../model/masks';
 import { isBlendMode, type BlendMode } from '../../imaging/blend/modes';
 import { ADJUSTMENT_LABELS, planFor } from '../../imaging/adjust';

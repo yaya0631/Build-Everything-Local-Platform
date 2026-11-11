@@ -10,7 +10,7 @@ const reopen = zip => workbookFromFile(X.CFB.write(zip, { type: 'array', fileTyp
 // Drop the app's own record: the file as another program would leave it for this one.
 const nativeOnly = zip => {
   const book = X.CFB.find(zip, '/xl/workbook.xml');
-  book.content = new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  book.content = new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   book.size = book.content.length;
   return zip;
 };

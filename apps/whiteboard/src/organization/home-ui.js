@@ -200,7 +200,7 @@ export function createOrganizationHome({
   admin,
   library,
   rerender = () => {},
-  // Signs in first, from the click, so the Puter popup is not blocked.
+  // Signs in first, from the click, so the Everything popup is not blocked.
   connect = async () => {},
 }) {
   // Archived boards stay hidden until someone asks for them.
@@ -853,7 +853,7 @@ export function createOrganizationHome({
       const parsed = link ? readOrganizationLink(link) : null;
       modal(
         "Join an organization",
-        `<form id="org-join"><label class="field">${t("Organization link")}<input id="org-link" type="url" required value="${escape(link)}" placeholder="https://…#org=…"></label><p class="dialog-copy">${t("Sign in with Puter. If your organization uses domain capture, you can join by verifying your work email instead of an invitation.")}</p><p id="org-join-status" class="dialog-status" role="status"></p><div class="dialog-footer"><button type="button" class="secondary" id="org-join-setup">${t("Set up an organization")}</button><button class="primary">${t("Join organization")}</button></div></form>`,
+        `<form id="org-join"><label class="field">${t("Organization link")}<input id="org-link" type="url" required value="${escape(link)}" placeholder="https://…#org=…"></label><p class="dialog-copy">${t("Sign in with Everything. If your organization uses domain capture, you can join by verifying your work email instead of an invitation.")}</p><p id="org-join-status" class="dialog-status" role="status"></p><div class="dialog-footer"><button type="button" class="secondary" id="org-join-setup">${t("Set up an organization")}</button><button class="primary">${t("Join organization")}</button></div></form>`,
         (d) => {
           d.querySelector("#org-join-setup").onclick = () => {
             d.close();
@@ -1012,7 +1012,7 @@ export function createOrganizationHome({
     setupDialog() {
       modal(
         "Set up an organization",
-        `<form id="org-setup"><p class="dialog-copy">${t("Your Puter account becomes the organization's account owner. Organization boards, audit logs, and settings are stored in this account.")}</p><label class="field">${t("Organization name")}<input id="setup-name" required maxlength="120"></label><label class="field">${t("Email domains (optional)")}<input id="setup-domains"></label><p id="setup-status" class="dialog-status" role="status"></p><div class="dialog-footer"><button class="primary">${t("Create organization")}</button></div></form>`,
+        `<form id="org-setup"><p class="dialog-copy">${t("Your Everything account becomes the organization's account owner. Organization boards, audit logs, and settings are stored in this account.")}</p><label class="field">${t("Organization name")}<input id="setup-name" required maxlength="120"></label><label class="field">${t("Email domains (optional)")}<input id="setup-domains"></label><p id="setup-status" class="dialog-status" role="status"></p><div class="dialog-footer"><button class="primary">${t("Create organization")}</button></div></form>`,
         (d) => {
           d.querySelector("#org-setup").onsubmit = async (e) => {
             e.preventDefault();
@@ -1143,8 +1143,8 @@ addTranslations({
   Update: "Mise à jour",
   "You're all caught up.": "Vous êtes à jour.",
   "Organization link": "Lien de l’organisation",
-  "Sign in with Puter. If your organization uses domain capture, you can join by verifying your work email instead of an invitation.":
-    "Connectez-vous avec Puter. Si votre organisation utilise la capture de domaine, vous pouvez vous joindre en vérifiant votre courriel professionnel plutôt qu’avec une invitation.",
+  "Sign in with Everything. If your organization uses domain capture, you can join by verifying your work email instead of an invitation.":
+    "Connectez-vous avec Everything. Si votre organisation utilise la capture de domaine, vous pouvez vous joindre en vérifiant votre courriel professionnel plutôt qu’avec une invitation.",
   "Join organization": "Se joindre à l’organisation",
   "Join {name} at {host}?": "Se joindre à {name} à l’adresse {host}?",
   "This replaces {name} as your organization.":
@@ -1164,8 +1164,8 @@ addTranslations({
   "Email verified. You're in the organization.":
     "Courriel vérifié. Vous faites partie de l’organisation.",
   "Email verified.": "Courriel vérifié.",
-  "Your Puter account becomes the organization's account owner. Organization boards, audit logs, and settings are stored in this account.":
-    "Votre compte Puter devient le compte titulaire de l’organisation. Les tableaux, les journaux d’audit et les paramètres de l’organisation sont stockés dans ce compte.",
+  "Your Everything account becomes the organization's account owner. Organization boards, audit logs, and settings are stored in this account.":
+    "Votre compte Everything devient le compte titulaire de l’organisation. Les tableaux, les journaux d’audit et les paramètres de l’organisation sont stockés dans ce compte.",
   "Email domains (optional)": "Domaines de courriel (facultatif)",
   "Create organization": "Créer l’organisation",
   "Organization ready": "Organisation prête",

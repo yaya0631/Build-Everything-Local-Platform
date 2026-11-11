@@ -1,9 +1,9 @@
 // The page's library service: the repository (IndexedDB working copy plus
-// the Puter copy while signed in), the current index for the panel, sync
+// the Everything copy while signed in), the current index for the panel, sync
 // scheduling and change notices between tabs (BroadcastChannel, with a
 // storage event as the fallback).
 import { sha256Hex } from '../../model/provenance';
-import { MemoryLocalStore, IndexedDbLibraryStore, LibraryRepository, PuterLibraryCloud, type CloudLibraryStore, type SyncStatus } from './storage';
+import { MemoryLocalStore, IndexedDbLibraryStore, LibraryRepository, EverythingLibraryCloud, type CloudLibraryStore, type SyncStatus } from './storage';
 import { emptyIndex, findItem, newId, uniqueName, type Library, type LibraryIndex, type LibraryItem, type LibraryOp } from './model';
 
 type Listener = () => void;
@@ -11,15 +11,15 @@ const CHANNEL = 'photo-studio-libraries';
 const PING_KEY = 'photo-studio-libraries-changed';
 
 let cloudStore: CloudLibraryStore | undefined;
-/** The Puter copy while signed in (the app's own folder). */
+/** The Everything copy while signed in (the app's own folder). */
 function cloud(): CloudLibraryStore | undefined {
-  const p = (window as unknown as { puter?: { auth?: { isSignedIn?: () => boolean }; fs?: { read?: unknown; write?: unknown } } }).puter;
+  const p = (window as unknown as { everything?: { auth?: { isSignedIn?: () => boolean }; fs?: { read?: unknown; write?: unknown } } }).everything;
   try {
     if (!p?.auth?.isSignedIn?.() || typeof p.fs?.read !== 'function' || typeof p.fs?.write !== 'function') return undefined;
   } catch {
     return undefined;
   }
-  cloudStore ??= new PuterLibraryCloud(p.fs as ConstructorParameters<typeof PuterLibraryCloud>[0]);
+  cloudStore ??= new EverythingLibraryCloud(p.fs as ConstructorParameters<typeof EverythingLibraryCloud>[0]);
   return cloudStore;
 }
 

@@ -18,7 +18,7 @@ import {
   syncThemeColor,
   formatBytes,
 } from './lib/ui.js';
-import * as P from './lib/puter.js';
+import * as P from './lib/everything.js';
 import { waitFor } from './lib/abort.js';
 import {
   PdfSession,
@@ -59,7 +59,7 @@ const run =
     } catch (e) {
       // Closing the sign-in dialog is a choice, not a failure worth a red toast.
       if (P.isSignInCancelled(e)) return;
-      // Puter's SDK rejects with plain objects too, at times with the reason nested inside.
+      // Everything's SDK rejects with plain objects too, at times with the reason nested inside.
       toast(e?.message || e?.error?.message || 'Something went wrong. Please try again.', {
         error: true,
       });
@@ -70,8 +70,8 @@ function sameAccount(first, second) {
   if (first.uuid && second.uuid) return first.uuid === second.uuid;
   // The desktop's provisional label resolves to its existing account, not a new session.
   return (
-    first.username === 'Puter user' ||
-    second.username === 'Puter user' ||
+    first.username === 'Everything user' ||
+    second.username === 'Everything user' ||
     first.username === second.username
   );
 }
@@ -141,7 +141,7 @@ function refreshSDKAccount(hint) {
     if (signedIn && !user) {
       // A confirmed session can be signed out while its profile is still loading.
       // Callback metadata may be stale, so only the verified profile supplies its name.
-      setAccount({ username: 'Puter user' });
+      setAccount({ username: 'Everything user' });
       version = accountGeneration;
     }
     return signedIn ? P.currentUser() : null;
@@ -183,7 +183,7 @@ async function settleAccount(signal) {
   }
   signal?.throwIfAborted();
 }
-/** Cloud actions need a session: resolve the account, asking Puter to sign in when nobody is. */
+/** Cloud actions need a session: resolve the account, asking Everything to sign in when nobody is. */
 async function ensureSignedIn({ signal = accountController.signal } = {}) {
   await settleAccount(signal);
   if (user) return user;
@@ -195,7 +195,7 @@ async function ensureSignedIn({ signal = accountController.signal } = {}) {
       .then(async (account) => {
         await settleAccount(controller.signal);
         controller.signal.throwIfAborted();
-        if (!user) setAccount(account || { username: 'Puter user' });
+        if (!user) setAccount(account || { username: 'Everything user' });
         return user;
       })
       .finally(() => {
@@ -242,7 +242,7 @@ function settings() {
     const focused = accountActions.contains(document.activeElement);
     accountSummary.textContent = user
       ? `Signed in as ${user.username}`
-      : 'Work locally, or sign in to save PDFs in your Puter cloud.';
+      : 'Work locally, or sign in to save PDFs in your Everything cloud.';
     const nextAction = !user ? 'sign-in' : P.isApp() ? null : 'sign-out';
     if (nextAction === accountAction) return;
     accountAction = nextAction;
@@ -278,7 +278,7 @@ function settings() {
     if (!user)
       accountActions.append(
         button(
-          'Sign in with Puter',
+          'Sign in with Everything',
           'Cloud',
           run(async () => {
             await ensureSignedIn();
@@ -304,9 +304,9 @@ function shortcuts() {
       'div',
       { class: 'shortcut-list' },
       ...[
-        [P.isApp() ? 'Open from Puter' : 'Open a PDF', 'Ctrl / ⌘ O'],
-        ['Save to Puter', 'Ctrl / ⌘ S'],
-        [P.isApp() ? 'Save to another Puter folder' : 'Download', 'Ctrl / ⌘ Shift S'],
+        [P.isApp() ? 'Open from Everything' : 'Open a PDF', 'Ctrl / ⌘ O'],
+        ['Save to Everything', 'Ctrl / ⌘ S'],
+        [P.isApp() ? 'Save to another Everything folder' : 'Download', 'Ctrl / ⌘ Shift S'],
         ['Undo', 'Ctrl / ⌘ Z'],
         ['Redo', 'Ctrl / ⌘ Shift Z or Ctrl Y'],
         ['Find in PDF', 'Ctrl / ⌘ F'],
@@ -346,7 +346,7 @@ function about() {
       el(
         'p',
         {},
-        'PDF.js renders your pages. pdf-lib writes changes. Processing happens on your device; cloud files are stored through Puter.',
+        'PDF.js renders your pages. pdf-lib writes changes. Processing happens on your device; cloud files are stored through Everything.',
       ),
       el(
         'p',
@@ -378,7 +378,7 @@ async function canLeave(signal) {
         el(
           'p',
           {},
-          `${leavingEditor.name} has unsaved changes. Save them to Puter before leaving, or leave and discard them.`,
+          `${leavingEditor.name} has unsaved changes. Save them to Everything before leaving, or leave and discard them.`,
         ),
         [
           button('Cancel', null, () => dialog.close()),
@@ -424,7 +424,7 @@ async function canLeave(signal) {
       el(
         'p',
         {},
-        'This PDF is not saved anywhere yet. Sign in to Puter to save it to your own cloud, or leave and discard the changes. To download it instead, keep editing and choose Download.',
+        'This PDF is not saved anywhere yet. Sign in to Everything to save it to your own cloud, or leave and discard the changes. To download it instead, keep editing and choose Download.',
       ),
       [
         button('Keep editing', null, () => dialog.close()),
@@ -782,10 +782,10 @@ function showHome({ accountRefresh = false } = {}) {
             filter
               ? 'Try another file name.'
               : user
-                ? 'Open a PDF and save it to Puter to find it here.'
-                : 'Sign in with Puter to save and access your files across devices.',
+                ? 'Open a PDF and save it to Everything to find it here.'
+                : 'Sign in with Everything to save and access your files across devices.',
           ),
-          !user && !filter && button('Sign in with Puter', 'Cloud', run(ensureSignedIn)),
+          !user && !filter && button('Sign in with Everything', 'Cloud', run(ensureSignedIn)),
         ),
       );
       return;
@@ -928,7 +928,7 @@ function showHome({ accountRefresh = false } = {}) {
             if (
               await confirmAction(
                 'Delete PDF?',
-                `Delete ${file.name} from your Puter cloud? This cannot be undone.`,
+                `Delete ${file.name} from your Everything cloud? This cannot be undone.`,
                 'Delete PDF',
                 { signal },
               )
@@ -1015,7 +1015,7 @@ function showHome({ accountRefresh = false } = {}) {
               'quick-action',
             ),
             button('Pictures to PDF', 'Images', pickPictures, 'quick-action'),
-            button('Open from Puter', 'Cloud', pickCloud, 'quick-action'),
+            button('Open from Everything', 'Cloud', pickCloud, 'quick-action'),
             button(
               'Try a sample PDF',
               'BookOpen',
@@ -1047,7 +1047,7 @@ function showHome({ accountRefresh = false } = {}) {
           el(
             'span',
             {},
-            'PDFs are processed on your device. Cloud files are saved in your Puter account.',
+            'PDFs are processed on your device. Cloud files are saved in your Everything account.',
           ),
         ),
       ),
@@ -1071,7 +1071,7 @@ window.addEventListener('keydown', (e) => {
   if (document.querySelector('dialog[open]')) return;
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'o') {
     e.preventDefault();
-    // On the Puter desktop the files are in the cloud, so Open browses it, as other desktop
+    // On the Everything desktop the files are in the cloud, so Open browses it, as other desktop
     // apps do; the device picker stays in the File menu.
     if (P.isApp()) pickCloud();
     else pickDevice();
@@ -1127,7 +1127,7 @@ window.addEventListener('hashchange', () => {
 syncThemeColor();
 window.matchMedia?.('(prefers-color-scheme: dark)').addEventListener?.('change', syncThemeColor);
 // Nobody has to sign in to work: the app opens straight into a blank PDF (or the library at
-// its own URL), and Puter is asked for a sign-in at the first action that needs the cloud.
+// its own URL), and Everything is asked for a sign-in at the first action that needs the cloud.
 async function start() {
   if (location.hash === LIBRARY_HASH) {
     showHome();
@@ -1143,19 +1143,19 @@ async function start() {
 start();
 // The SDK script is async, so the workspace renders before it arrives and the account state
 // is applied once it has loaded. Only a signed-in account changes what the home shows.
-const initPuter = async () => {
+const initEverything = async () => {
   // The SDK signs the user in on its own before some cloud calls; the views follow.
   P.onAuth(run(refreshSDKAccount));
   if (P.isApp()) {
     // The desktop already has a session. File and close events must not wait for its profile.
-    setAccount({ username: 'Puter user' });
+    setAccount({ username: 'Everything user' });
     const onItems = (items) => {
       items = Array.isArray(items) ? items : [items];
       if (items.length) run(() => openDesktopItems(items))();
     };
     // onItemsOpened also replays the launch file. Subscribing to both reads it twice.
-    if (globalThis.puter.ui.onItemsOpened) globalThis.puter.ui.onItemsOpened(onItems);
-    else globalThis.puter.ui.onLaunchedWithItems?.(onItems);
+    if (globalThis.everything.ui.onItemsOpened) globalThis.everything.ui.onItemsOpened(onItems);
+    else globalThis.everything.ui.onLaunchedWithItems?.(onItems);
     // A second press of the close button while its question is open must not stack another
     // on top; the first answer decides. Only the question counts: a save it started that
     // never settles must not leave the button dead.
@@ -1179,12 +1179,12 @@ const initPuter = async () => {
     const account = await P.currentUser();
     if (version !== accountGeneration) return;
     if (token !== P.sessionToken()) return refreshSDKAccount();
-    setAccount(account || { username: 'Puter user' }, { profileOnly: P.isApp() });
+    setAccount(account || { username: 'Everything user' }, { profileOnly: P.isApp() });
   } else {
     accountToken = token;
     sessionState = 'out';
     editor?.updateAccount();
   }
 };
-if (globalThis.puter) initPuter();
-else window.addEventListener('load', initPuter, { once: true });
+if (globalThis.everything) initEverything();
+else window.addEventListener('load', initEverything, { once: true });

@@ -1,6 +1,6 @@
 /**
  * Firm users: the lawyers and staff whose time, tasks, and matters the app
- * tracks. A firm user can be linked to a Puter username so the app knows
+ * tracks. A firm user can be linked to an Everything username so the app knows
  * who is signed in.
  */
 import '../styles/settings.css';
@@ -61,8 +61,8 @@ export function openUserDialog(user = null) {
         field('Role', select({ name: 'role', value: user?.role || 'lawyer', options: USER_ROLES.map((r) => ({ value: r.id, label: r.label })) })),
         field('Hourly rate', moneyInput({ name: 'rate', cents: user?.rateCents || 0 }), { hint: 'Used for new time entries unless a matter sets its own rate.' }),
         field('Monthly billable target (hours)', textInput({ name: 'targetHours', type: 'number', min: '0', step: '1', value: String(user?.targetHours ?? ''), cls: 'num' })),
-        field('Puter username', textInput({ name: 'puterUsername', value: user?.puterUsername || '', placeholder: 'Optional', autocapitalize: 'off', spellcheck: 'false' }), {
-          hint: 'Links this person to their Puter account.',
+        field('Everything username', textInput({ name: 'everythingUsername', value: user?.everythingUsername || '', placeholder: 'Optional', autocapitalize: 'off', spellcheck: 'false' }), {
+          hint: 'Links this person to their Everything account.',
         }),
       ),
       h('fieldset.field', h('legend', 'Color'), color),
@@ -70,12 +70,12 @@ export function openUserDialog(user = null) {
     ),
     submitLabel: user ? 'Save changes' : 'Add user',
     onSubmit: (fd, form) => {
-      const username = String(fd.get('puterUsername') || '')
+      const username = String(fd.get('everythingUsername') || '')
         .trim()
         .replace(/^@/, '');
-      const clash = username && app.store.all('users').find((u) => u.id !== user?.id && u.puterUsername?.toLowerCase() === username.toLowerCase());
+      const clash = username && app.store.all('users').find((u) => u.id !== user?.id && u.everythingUsername?.toLowerCase() === username.toLowerCase());
       if (clash) {
-        const el = form.querySelector('[name=puterUsername]');
+        const el = form.querySelector('[name=everythingUsername]');
         el.setAttribute('aria-invalid', 'true');
         el.focus();
         toast(`${clash.name} is already linked to ${username}.`, { type: 'error' });
@@ -98,7 +98,7 @@ export function openUserDialog(user = null) {
         role: fd.get('role'),
         rateCents: rate,
         targetHours: target,
-        puterUsername: username,
+        everythingUsername: username,
         color: fd.get(color.querySelector('input').name) || user?.color || colorFor(String(fd.get('name'))),
         active: !!fd.get('active'),
       });
@@ -146,7 +146,7 @@ export function usersSection(ctx) {
                   h('th', { scope: 'col' }, 'Role'),
                   h('th.r', { scope: 'col' }, 'Rate'),
                   h('th.r', { scope: 'col' }, 'Target'),
-                  h('th', { scope: 'col' }, 'Puter account'),
+                  h('th', { scope: 'col' }, 'Everything account'),
                   h('th', { scope: 'col' }, 'Status'),
                   h('th', { scope: 'col' }, h('span.sr-only', 'Actions')),
                 ),
@@ -172,7 +172,7 @@ export function usersSection(ctx) {
                     h('td', roleLabel(u.role)),
                     h('td.r.num', u.rateCents ? `${formatMoney(u.rateCents)}/h` : h('span.subtle', 'Default')),
                     h('td.r.num', u.targetHours ? `${u.targetHours} h` : h('span.subtle', 'None')),
-                    h('td', u.puterUsername ? h('span.mono', u.puterUsername) : h('span.subtle', 'Not linked')),
+                    h('td', u.everythingUsername ? h('span.mono', u.everythingUsername) : h('span.subtle', 'Not linked')),
                     h('td', u.active === false ? pill('Inactive', 'neutral') : pill('Active', 'success')),
                     h(
                       'td.r',

@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Workbook } from '../src/core/workbook.js';
 import { renderMarkdown, safeHref } from '../src/ui/markdown.js';
 import { createAiPanel, loadAiSettings, friendlyAiError } from '../src/ui/aipanel.js';
-import * as P from '../src/lib/puter.js';
+import * as P from '../src/lib/everything.js';
 import { memoryStorage } from './helpers/memory-storage.js';
 import { toast } from '../src/ui/toast.js';
 

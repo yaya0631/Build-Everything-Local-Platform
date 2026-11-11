@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 import { afterEach, expect, it, vi } from 'vitest';
-import { fetchText, fetchBytes, MAX_FETCH_BYTES } from '../src/lib/puter.js';
+import { fetchText, fetchBytes, MAX_FETCH_BYTES } from '../src/lib/everything.js';
 
-afterEach(() => { delete window.puter; });
+afterEach(() => { delete window.everything; });
 
 const headers = (map) => ({ get: (k) => map[k.toLowerCase()] ?? null });
 /** A body read in chunks, as a Response streams it. */
@@ -11,7 +11,7 @@ function streaming(chunks) {
   const reader = { read: async () => (i < chunks.length ? { done: false, value: chunks[i++] } : { done: true, value: undefined }), cancel: vi.fn(async () => {}) };
   return { body: { getReader: () => reader }, reader };
 }
-const serve = (response) => { window.puter = { net: { fetch: vi.fn(async () => response) } }; };
+const serve = (response) => { window.everything = { net: { fetch: vi.fn(async () => response) } }; };
 
 // IMPORT* read whatever a web address served, however large, before any cell budget applied.
 it('refuses a response declared larger than the cap before reading it', async () => {

@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { editableChoicePdf } from '../fixtures/editable-choice.js';
 
 test('Fill forms keeps ambiguous editable suggestions selectable', async ({ page }) => {
-  await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
+  await page.route('**/sdk/everything.js', (route) => route.fulfill({ body: '' }));
   await page.goto('/#library');
   const { doc, field } = await editableChoicePdf();
   field.acroField.setOptions(
@@ -63,7 +63,7 @@ for (const inherited of [false, true])
     test(`Fill forms edits custom dropdown values (inherited=${inherited}, default=${defaultOnly})`, async ({
       page,
     }) => {
-      await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
+      await page.route('**/sdk/everything.js', (route) => route.fulfill({ body: '' }));
       await page.goto('/#library');
       const { doc } = await editableChoicePdf({ inherited, defaultOnly });
       const open = async (document) => {
@@ -145,7 +145,7 @@ for (const inherited of [false, true])
   test(`Fill forms keeps editable dropdowns read-only (inherited=${inherited})`, async ({
     page,
   }) => {
-    await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
+    await page.route('**/sdk/everything.js', (route) => route.fulfill({ body: '' }));
     await page.goto('/#library');
     const { doc } = await editableChoicePdf({ inherited, readOnly: true });
     const pending = page.waitForEvent('filechooser');

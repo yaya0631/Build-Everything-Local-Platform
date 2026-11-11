@@ -191,7 +191,7 @@ export function registerCommands(app) {
     { id: 'help.gettingStarted', label: 'Getting started', menuLabel: '&Getting started', icon: 'help', run: () => app.gettingStarted() },
     { id: 'help.shortcuts', label: 'Keyboard shortcuts', menuLabel: '&Keyboard shortcuts', icon: 'keyboard', shortcut: ['?', 'F1'], anywhere: true, run: () => app.showShortcuts() },
     { id: 'help.commands', label: 'Search commands', menuLabel: '&Search commands...', icon: 'command', shortcut: ['Mod+K', 'Mod+Shift+P'], anywhere: true, run: () => app.commandPalette() },
-    { id: 'help.github', label: 'Source code on GitHub', menuLabel: 'Source code on &GitHub', icon: 'github', run: () => window.open('https://github.com/heyputer/everything', '_blank', 'noopener,noreferrer') },
+    { id: 'help.github', label: 'Source code on GitHub', menuLabel: 'Source code on &GitHub', icon: 'github', run: () => window.open('https://github.com/yaya0631/Build-Everything-Local-Platform', '_blank', 'noopener,noreferrer') },
     { id: 'help.about', label: 'About Circuits', menuLabel: '&About Circuits', icon: 'info', run: () => app.about() },
   ]);
 

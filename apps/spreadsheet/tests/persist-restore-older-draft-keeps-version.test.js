@@ -5,13 +5,13 @@ import { listVersions, readVersion, RESTORE_LABEL } from '../src/lib/versions.js
 import { workbookFromFile } from '../src/core/io.js';
 import { Workbook } from '../src/core/workbook.js';
 import { memoryStorage } from './helpers/memory-storage.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 
 let mock;
 // SheetJS is loaded on first use with a real dynamic import; warm it up so no test waits on it.
 beforeAll(async () => { await Doc.blank().toXlsxBlob(); });
-beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); mock = installMockPuter(); vi.useFakeTimers(); });
-afterEach(() => { vi.useRealTimers(); delete globalThis.puter; });
+beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); mock = installMockEverything(); vi.useFakeTimers(); });
+afterEach(() => { vi.useRealTimers(); delete globalThis.everything; });
 
 const cellA1 = (wb) => wb.getValue(wb.activeSheetId, 0, 0);
 function book(value) {
@@ -20,7 +20,7 @@ function book(value) {
   return wb;
 }
 
-/** A file saved here (v1) with a draft of edits made on it that never reached Puter; then, when `elsewhere` is set, v2 written from another device. */
+/** A file saved here (v1) with a draft of edits made on it that never reached Everything; then, when `elsewhere` is set, v2 written from another device. */
 async function fileWithDraft({ elsewhere }) {
   const doc = Doc.blank();
   doc.wb.setInput(doc.wb.activeSheetId, 0, 0, 'v1');

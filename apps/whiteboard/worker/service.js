@@ -231,8 +231,8 @@ const ROSTERS = new Map();
 const MEMBER_LISTS = new Map();
 const MEMBERS_FRESH = 5000;
 // This instance's listings in flight, by when each began, and those waiting
-// their turn. Puter allows a worker five at once on paid plans and three on
-// free ones, across all its instances, so each instance runs two. Puter's
+// their turn. Everything allows a worker five at once on paid plans and three on
+// free ones, across all its instances, so each instance runs two. Everything's
 // SDK retries a refused request for about twelve seconds before failing,
 // so a listing in flight over two seconds, or one refused in the last ten,
 // means the worker is out of listings for now: copies are then answered
@@ -455,12 +455,12 @@ function pendingSize(store) {
   };
 }
 export class BoardService {
-  constructor(puter, { now = Date.now, fetcher = fetch, org, request } = {}) {
-    this.puter = puter;
-    this.kv = puter.kv;
+  constructor(everything, { now = Date.now, fetcher = fetch, org, request } = {}) {
+    this.everything = everything;
+    this.kv = everything.kv;
     this.now = now;
     this.fetcher = fetcher;
-    this.org = org || new OrgService(puter, { now, fetcher, request });
+    this.org = org || new OrgService(everything, { now, fetcher, request });
     // The organization's listings take their turn with the boards'.
     this.org.lists ??= (options) => this.listPage(options);
   }
@@ -495,7 +495,7 @@ export class BoardService {
       const page = await this.listPage({
         pattern: prefix,
         returnValues: values,
-        // Puter bills each row a page reads, so a listing that stops early
+        // Everything bills each row a page reads, so a listing that stops early
         // reads small pages; one read in full uses few requests.
         limit: !stop ? 1000 : cursor ? 200 : first,
         ...(reverse ? { reverse: true } : {}),
@@ -513,10 +513,10 @@ export class BoardService {
     return rows;
   }
   async readFile(path) {
-    return (await this.puter.fs.read(path)).text();
+    return (await this.everything.fs.read(path)).text();
   }
   async writeFile(path, value) {
-    await this.puter.fs.write(path, value, {
+    await this.everything.fs.write(path, value, {
       overwrite: true,
       dedupeName: false,
       createMissingParents: true,
@@ -667,7 +667,7 @@ export class BoardService {
   // whatever its age within the second and a half; otherwise, or when the
   // save is unnamed, the copy is checked again by a check begun after the
   // caller asked. The copy's own time is never compared with another
-  // clock's: a save's time as another instance or Puter's event service
+  // clock's: a save's time as another instance or Everything's event service
   // stamps it says nothing sure about this instance's clock, and a listing
   // begun before a record became visible must not pass for one made after.
   // Only older clients, which give no ids, are judged by the save's time.
@@ -763,7 +763,7 @@ export class BoardService {
         shared.paced = this.now();
       }
       covers = shared.asked;
-      // A listing that fails or is slow, as when Puter refuses it and its
+      // A listing that fails or is slow, as when Everything refuses it and its
       // SDK tries again, keeps the copy as it is meanwhile.
       if (await this.within(this.read(room, meta), PATIENCE)) return covers;
     }
@@ -1311,7 +1311,7 @@ export class BoardService {
   // `consented` comes from the worker account's browser once it lets this
   // app hand its board signals to other people.
   async events(room, user, { consented = false } = {}) {
-    const uid = appUid(this.puter.authToken);
+    const uid = appUid(this.everything.authToken);
     if (!uid) return null;
     // Only the worker's own account can watch its app KV directly.
     if (user.uuid === (await this.org.accountOwner()).uuid) {
@@ -1335,12 +1335,12 @@ export class BoardService {
     let code = "network";
     try {
       const res = await this.fetcher(
-        `${this.puter.APIOrigin}/events/kv-handles`,
+        `${this.everything.APIOrigin}/events/kv-handles`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${this.puter.authToken}`,
+            Authorization: `Bearer ${this.everything.authToken}`,
           },
           body: JSON.stringify({
             granteeUid: user.uuid,
@@ -1387,10 +1387,10 @@ export class BoardService {
     const handle = await this.kv.get(`wb:${room}:handle:${target}`);
     if (handle) {
       const res = await this.fetcher(
-        `${this.puter.APIOrigin}/events/kv-handles/${encodeURIComponent(handle)}`,
+        `${this.everything.APIOrigin}/events/kv-handles/${encodeURIComponent(handle)}`,
         {
           method: "DELETE",
-          headers: { Authorization: `Bearer ${this.puter.authToken}` },
+          headers: { Authorization: `Bearer ${this.everything.authToken}` },
           signal: AbortSignal.timeout(5000),
         },
       );
@@ -1738,7 +1738,7 @@ export class BoardService {
     return { ok: true };
   }
   async call(user, input) {
-    if (!user?.uuid) fail(401, "Sign in with Puter to continue.");
+    if (!user?.uuid) fail(401, "Sign in with Everything to continue.");
     if (!input || bytes(input) > 17_000_000)
       fail(413, "Collaboration request is too large.");
     this.access = new Map();
@@ -1924,7 +1924,7 @@ export class BoardService {
             ? await this.events(room, user)
             : null,
         owner: meta.owner,
-        app: appUid(this.puter.authToken),
+        app: appUid(this.everything.authToken),
         // Participants learn only whether the board is archived; who may
         // open it and whether it is under a legal hold are for its managers.
         settings: canManage(member.role)
@@ -2133,7 +2133,7 @@ export class BoardService {
     // Who owns each of these Yjs clients, the browsers whose edits the
     // board holds: the first account a commit added content under one with
     // owns it for good (see clientClaims), so the client that first wrote an
-    // object tells who added it. Read in one request, as Puter counts a get
+    // object tells who added it. Read in one request, as Everything counts a get
     // of several keys as one, for clients this instance has not seen.
     if (input.op === "creators") {
       const clients = [
@@ -2380,10 +2380,10 @@ export class BoardService {
       }));
       // A page with `more` also gives `next`, which the app hands back with
       // the next page's `before` so that page is read from where this one
-      // ended rather than from the newest edit. Puter's listing position
+      // ended rather than from the newest edit. Everything's listing position
       // says nothing sure once records are added or removed, so it is used
       // only if the first key it gives is no older than `before`: nothing
-      // older can then have been passed over. Otherwise, or if Puter
+      // older can then have been passed over. Otherwise, or if Everything
       // refuses it, the page is read from the newest edit.
       const resume =
         Number.isFinite(before) &&
@@ -2661,7 +2661,7 @@ export class BoardService {
       // upload's answer was lost or the same image is pasted again, is
       // neither written nor counted again.
       try {
-        await this.puter.fs.stat(path);
+        await this.everything.fs.stat(path);
         return { ok: true };
       } catch (error) {
         if (
@@ -2789,7 +2789,7 @@ export class BoardService {
             if (RELOADS.size > 1000)
               RELOADS.delete(RELOADS.keys().next().value);
           }
-          // A read that fails or is slow, as when Puter refuses it, has
+          // A read that fails or is slow, as when Everything refuses it, has
           // the client send the edit again shortly. Otherwise the commit
           // waits for a listing begun after it, shared and paced like those
           // for callers told of a save, so a burst of commits refused
@@ -2821,7 +2821,7 @@ export class BoardService {
         for (const asset of assets(after))
           if (!known.has(asset))
             try {
-              await this.puter.fs.stat(
+              await this.everything.fs.stat(
                 `whiteboard/shared/${room}/assets/${asset}.txt`,
               );
             } catch (error) {
@@ -2868,7 +2868,7 @@ export class BoardService {
                 const whole = async () => {
                   try {
                     return (
-                      (await this.puter.fs.stat(record.path))?.size === size
+                      (await this.everything.fs.stat(record.path))?.size === size
                     );
                   } catch (error) {
                     if (

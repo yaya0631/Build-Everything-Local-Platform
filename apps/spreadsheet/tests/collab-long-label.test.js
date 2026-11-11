@@ -12,8 +12,8 @@ afterEach(() => { for (const c of open.splice(0)) c.close(); });
 it('a step with a name longer than the room keeps is shared, its name cut without splitting a character', async () => {
   const env = environment();
   const wb = new Workbook({ sheets: [{ name: 'Plan' }] });
-  const room = await RoomClient.create({ puter: env.sdk(owner), server: SERVER, wb, name: 'Plan', file: null });
-  const a = new RoomClient({ puter: env.sdk(owner), server: SERVER, room, store: memoryOutbox(), poll: 50, noPeers: true });
+  const room = await RoomClient.create({ everything: env.sdk(owner), server: SERVER, wb, name: 'Plan', file: null });
+  const a = new RoomClient({ everything: env.sdk(owner), server: SERVER, room, store: memoryOutbox(), poll: 50, noPeers: true });
   open.push(a);
   await a.open();
   const refused = [];

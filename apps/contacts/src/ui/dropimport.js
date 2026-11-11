@@ -8,10 +8,10 @@
  *   - A file dragged from the *host OS* (Finder, a download, a mail
  *     attachment) lands as an ordinary HTML5 drop, with a File in
  *     `dataTransfer.files`. This is the only kind on the open web.
- *   - A file dragged from the *Puter desktop* fires no DOM drag event at all —
+ *   - A file dragged from the *Everything desktop* fires no DOM drag event at all —
  *     the desktop is dragging its own element, in its own document, and our
- *     window is an iframe underneath it. Puter delivers those to us through
- *     `puter.ui.onItemsOpened` instead, as cloud items to read.
+ *     window is an iframe underneath it. Everything delivers those to us through
+ *     `everything.ui.onItemsOpened` instead, as cloud items to read.
  *
  * Both funnel into one importer, so a dropped card behaves the same wherever
  * it came from. Registering `onItemsOpened` also covers opening a .vcf *with*
@@ -27,7 +27,7 @@ const VCARD_NAME = /\.(vcf|vcard)$/i
 /**
  * Whether a dropped thing looks like a vCard. The name is the reliable signal:
  * browsers disagree on the MIME type for .vcf (Chrome says `text/vcard`, some
- * say `text/x-vcard`, others send nothing at all), and a Puter item carries no
+ * say `text/x-vcard`, others send nothing at all), and an Everything item carries no
  * type in the first place.
  */
 export function isVCardFile(file) {
@@ -42,14 +42,14 @@ function hasFiles(dataTransfer) {
 }
 
 /**
- * Adapt a Puter FSItem to the shape the importer wants — the same `name` and
+ * Adapt an Everything FSItem to the shape the importer wants — the same `name` and
  * `text()` a File has, so neither path needs a special case downstream.
  */
 function itemAsFile(item) {
   return {
     name: item.name,
     async text() {
-      // read() goes through puter.fs under our own permissions, and is always
+      // read() goes through everything.fs under our own permissions, and is always
       // current. readURL is the pre-signed URL the desktop minted for this
       // exact file when it handed it to us — the fallback for a file whose
       // path isn't otherwise ours to read.
@@ -77,7 +77,7 @@ function itemAsFile(item) {
  *   instead when something was dropped but none of it was a vCard, so a drop
  *   never just vanishes
  * @param {EventTarget} [deps.target] where to listen (the document by default)
- * @param {Window} [deps.win] for the Puter SDK, injectable for tests
+ * @param {Window} [deps.win] for the Everything SDK, injectable for tests
  * @returns {{ stop: () => void }}
  */
 export function startDropImport({
@@ -159,9 +159,9 @@ export function startDropImport({
   ]
   if (target) for (const [type, fn] of listeners) target.addEventListener(type, fn)
 
-  // The Puter route. onItemsOpened holds a single callback, so this is
+  // The Everything route. onItemsOpened holds a single callback, so this is
   // registered once per app instance (from mountApp) and never in service mode.
-  const ui = win && win.puter && win.puter.ui
+  const ui = win && win.everything && win.everything.ui
   if (ui && typeof ui.onItemsOpened === 'function') {
     try {
       ui.onItemsOpened((items) => {

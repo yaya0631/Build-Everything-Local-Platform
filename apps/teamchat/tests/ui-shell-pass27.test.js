@@ -3,7 +3,7 @@
  * through tests/helpers/dom.js (a small DOM: elements, selectors, bubbling
  * events, focus with the focus fixup rule; no CSS). Every test boots a
  * fresh DOM and a fresh module registry, with a small workspace open in the
- * store and Puter faked at `puter.workers.exec`, as tests/ui-conv-pass23.test.js
+ * store and Everything faked at `everything.workers.exec`, as tests/ui-conv-pass23.test.js
  * has it; the modal layer, the toasts and the router are the real ones.
  */
 import { describe, it, expect, afterEach, vi } from 'vitest';
@@ -24,7 +24,7 @@ async function boot({ width = 1280, role = 'member', ...env } = {}) {
   // The app's root, which every dialog makes inert while it stands (see openModal).
   document.body.append(document.createElement('div'));
   document.body.lastChild.id = 'app';
-  globalThis.puter = { workers: { exec: async () => json({ code: 'not_found', message: 'nope' }, 404) } };
+  globalThis.everything = { workers: { exec: async () => json({ code: 'not_found', message: 'nope' }, 404) } };
   ({ store } = await import('../src/lib/store.js'));
   const { api } = await import('../src/lib/api.js');
   store.wsId = REF;
@@ -51,7 +51,7 @@ afterEach(async () => {
   store = null;
   dom?.uninstall();
   dom = null;
-  delete globalThis.puter;
+  delete globalThis.everything;
   vi.restoreAllMocks();
 });
 
@@ -447,7 +447,7 @@ describe('the Invite people dialog’s Email tab', () => {
     store.ws.invite = 'ABCD-EFGH-IJKL';
     store.ws.inviteExp = Date.now() + 3 * 3600_000;
     const sends = [];
-    globalThis.puter.workers.exec = async (url, init = {}) => {
+    globalThis.everything.workers.exec = async (url, init = {}) => {
       if (String(url).endsWith('/invites')) {
         sends.push(JSON.parse(init.body));
         return answer(sends.length);
@@ -506,12 +506,12 @@ describe('the Invite people dialog’s Email tab', () => {
   });
 });
 
-describe('the page shown when the Puter script did not load', () => {
+describe('the page shown when the Everything script did not load', () => {
   it('says what failed and what to try (a content blocker as well as the connection), and keeps Try again', () => {
     // main.js starts the app as it loads, so its words are read from the file.
     const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
-    expect(main).toContain("showError('Could not reach Puter', 'The Puter script (js.localhost:8443) did not load. Check your connection or a content blocker, then try again.', () => location.reload())");
-    expect(main).not.toContain('The Puter SDK failed to load');
+    expect(main).toContain("showError('Could not reach Everything', 'The Everything script (js.localhost:8443) did not load. Check your connection or a content blocker, then try again.', () => location.reload())");
+    expect(main).not.toContain('The Everything SDK failed to load');
   });
 });
 

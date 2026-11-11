@@ -20,10 +20,10 @@ const root = document.createElement('div');
 
 beforeAll(async () => {
   localStorage.clear();
-  await import('../dev/mock-puter.js');
+  await import('../dev/mock-everything.js');
   ({ app } = await import('../src/app.js'));
   const { mountShell } = await import('../src/views/shell.js');
-  const { currentUser } = await import('../src/client/puter.js');
+  const { currentUser } = await import('../src/client/everything.js');
   document.body.append(root);
   app.user = await currentUser();
   await app.loadDoc();

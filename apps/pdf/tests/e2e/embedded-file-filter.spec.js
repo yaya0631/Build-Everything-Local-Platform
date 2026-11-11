@@ -27,7 +27,7 @@ for (const [label, options] of [
     page,
   }) => {
     const { bytes, payload, password } = await encryptedAttachment(options);
-    await page.route('**/sdk/puter.js', (route) => route.abort());
+    await page.route('**/sdk/everything.js', (route) => route.abort());
     await page.goto('/#library');
     const chooser = page.waitForEvent('filechooser');
     await page.getByRole('button', { name: /Open a PDF/ }).click();

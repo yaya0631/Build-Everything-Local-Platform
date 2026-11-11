@@ -1,5 +1,5 @@
 /**
- * Entry point: apply the theme, connect to Puter (sign-in state, profile
+ * Entry point: apply the theme, connect to Everything (sign-in state, profile
  * picture, launch items), build the app and register feature modules.
  */
 import './styles/index.css';
@@ -11,12 +11,12 @@ import { installFeatures } from './features.js';
 const prefs = new Prefs();
 applyTheme(prefs.get('theme'));
 
-function waitForPuter(timeout = 5000) {
+function waitForEverything(timeout = 5000) {
   return new Promise((resolve) => {
-    if (typeof window.puter !== 'undefined') return resolve(window.puter);
+    if (typeof window.everything !== 'undefined') return resolve(window.everything);
     const t0 = performance.now();
     const tick = () => {
-      if (typeof window.puter !== 'undefined') resolve(window.puter);
+      if (typeof window.everything !== 'undefined') resolve(window.everything);
       else if (performance.now() - t0 > timeout) resolve(null);
       else setTimeout(tick, 50);
     };
@@ -24,12 +24,12 @@ function waitForPuter(timeout = 5000) {
   });
 }
 
-async function profile(puter) {
+async function profile(everything) {
   try {
-    const user = await puter.auth.getUser();
+    const user = await everything.auth.getUser();
     let picture = null;
     try {
-      picture = await puter.auth.getProfilePicture();
+      picture = await everything.auth.getProfilePicture();
     } catch {
       picture = null;
     }
@@ -41,22 +41,22 @@ async function profile(puter) {
 
 async function boot() {
   const root = document.getElementById('app');
-  const puter = await waitForPuter();
-  const env = puter?.env || 'web';
+  const everything = await waitForEverything();
+  const env = everything?.env || 'web';
   let user = null;
   let picture = null;
-  if (puter && (env === 'app' || puter.auth.isSignedIn())) ({ user, picture } = await profile(puter));
+  if (everything && (env === 'app' || everything.auth.isSignedIn())) ({ user, picture } = await profile(everything));
 
   const app = new App(root, {
     prefs,
     env,
     user,
     picture,
-    onSignIn: puter
+    onSignIn: everything
       ? async () => {
           try {
-            await puter.auth.signIn();
-            const p = await profile(puter);
+            await everything.auth.signIn();
+            const p = await profile(everything);
             app.setUser(p.user, p.picture);
           } catch {
             app.notify('Sign in was cancelled.');
@@ -64,14 +64,14 @@ async function boot() {
         }
       : null,
     onSignOut:
-      puter && env !== 'app'
+      everything && env !== 'app'
         ? async () => {
-            await puter.auth.signOut();
+            await everything.auth.signOut();
             app.setUser(null, null);
           }
         : null,
   });
-  app.puter = puter;
+  app.everything = everything;
   installFeatures(app);
   app.start();
   window.addEventListener('themechange', () => {

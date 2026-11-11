@@ -1,6 +1,6 @@
 import { Emitter } from '../lib/emitter.js';
 import { Roster } from '../lib/roster.js';
-import { getPuter } from '../lib/env.js';
+import { getEverything } from '../lib/env.js';
 import { isAnonymous, mintGuestGrant } from '../lib/account.js';
 import * as P from '../lib/protocol.js';
 import { cameraSendProfile, SCREEN_SEND_PROFILE, LINK_RECOVERY_BUDGET_MS, LINK_DROP_MS } from './rtc.js';
@@ -23,13 +23,13 @@ const HOST_DIAL_ATTEMPTS = 2;
 /** Re-shouts of a takeover, for links that were still forming at the time. */
 const HOST_CLAIM_REPEATS_MS = [2000, 5000];
 /**
- * A host's invite lives only as long as puter.peer's signaller socket. The
+ * A host's invite lives only as long as everything.peer's signaller socket. The
  * signaller mints a code per socket, so when the socket dies — a restart
  * of the signaller, a network blip — the invite dies with it, and the
  * meeting notices nothing: the calls already up ride their own WebRTC
  * transports, untouched. The invite still sits in the room directory
  * looking live, but a guest dialing it is told "Invalid invite code" and
- * waits for a host who is right there. Newer puter.js reopens the socket by
+ * waits for a host who is right there. Newer everything.js reopens the socket by
  * itself and comes back under a NEW code (a `reconnect` event, which
  * #adoptServer follows at once); older builds swallow the close and serve
  * nothing. Either way, a host cannot trust the code it published to still
@@ -66,11 +66,11 @@ export function isInvalidInviteError(error) {
  * A dial that never reached the signaller, so the invite was never even
  * looked at: the dialer's own socket to the signaller would not open (the
  * network on this side, or a signaller outage — which hits the host just
- * the same), or Puter's API could not say where the signaller is. No
+ * the same), or Everything's API could not say where the signaller is. No
  * verdict on the invite, then: the meeting may be running fine, and the
  * same code is worth dialing again once the way there is back.
  *
- * `puter.peer.connect()` rejects in exactly these cases — the current
+ * `everything.peer.connect()` rejects in exactly these cases — the current
  * library with the socket's own error event, which carries no message, an
  * older one with a message — and only then, so join() tags every such
  * rejection `kind: 'unreachable'` (an old library that rejects an invalid
@@ -112,7 +112,7 @@ function messageOf(error) {
  * be over in seconds — long before a Wi‑Fi switch or a laptop waking up
  * has its network back.
  *
- * It opens once puter.peer gives the link up and has to close early enough
+ * It opens once everything.peer gives the link up and has to close early enough
  * that the last attempt can get through before the host drops us.
  */
 const HOST_REDIAL_WINDOW_MS = LINK_DROP_MS - LINK_RECOVERY_BUDGET_MS - 10_000;
@@ -142,7 +142,7 @@ const SEEN_CHAT_MAX = 2000;
 /**
  * How long a wobbling link is given before we say so on the tile.
  *
- * puter.peer reports 'unstable' the moment ICE stops getting through and
+ * everything.peer reports 'unstable' the moment ICE stops getting through and
  * takes no action, because ICE usually heals it within a second or two.
  * That is the right call for recovery and the wrong one for a badge: hold
  * it back long enough not to flash at every stutter, and no longer, or
@@ -174,27 +174,27 @@ function trace(...args) {
 }
 
 /**
- * RoomSession — a meeting with Puter-peer signaling and mesh media.
+ * RoomSession — a meeting with Everything-peer signaling and mesh media.
  *
  * Topology:
- *  - The HOST creates the room with `puter.peer.serve()`. Its invite code
+ *  - The HOST creates the room with `everything.peer.serve()`. Its invite code
  *    is the meeting code, and every guest joins that room with
- *    `puter.peer.connect(code)`. Hosting is done on a Puter account; a
+ *    `everything.peer.connect(code)`. Hosting is done on an Everything account; a
  *    guest needs none — it joins on an anonymous token, and reaches the
  *    relays on the host's GUEST GRANT (see src/lib/account.js), which the
  *    host mints, hands out in WELCOME, renews, and re-announces in GRANT.
  *  - The host relays guest<->guest traffic: broadcastables (chat, state,
  *    reactions, stream metadata) fan out wrapped in FROM{id}.
- *  - Host<->guest media is added directly to the existing Puter peer
+ *  - Host<->guest media is added directly to the existing Everything peer
  *    connection.
- *  - Guest<->guest media uses temporary Puter peer servers whose invite
+ *  - Guest<->guest media uses temporary Everything peer servers whose invite
  *    codes are exchanged through the host connection. Renegotiation then
- *    travels over that guest<->guest Puter data channel.
+ *    travels over that guest<->guest Everything data channel.
  *
- * Links can die without closing: the Puter connection only reports `close`
+ * Links can die without closing: the Everything connection only reports `close`
  * when its data channel closes, and a data channel outlives the network
  * path under it (see MediaLink). A link whose transport is gone is rebuilt
- * on a fresh Puter connection — a guest dials the host again, the side
+ * on a fresh Everything connection — a guest dials the host again, the side
  * that served a guest<->guest link serves it again — while the peer keeps
  * its place in the roster. The host cannot dial anyone; it waits for the
  * guest to come back and only then, after a while, gives them up as gone.
@@ -244,7 +244,7 @@ export class RoomSession extends Emitter {
    * other. It goes to the host in our HELLO and nowhere else.
    */
   #secret = crypto.randomUUID();
-  #server = null; //        host only: the Puter peer server we serve
+  #server = null; //        host only: the Everything peer server we serve
   /**
    * Servers from hostings we stood down from. They stay up — guests that
    * dialed in through them still talk to us over their connections — but
@@ -280,7 +280,7 @@ export class RoomSession extends Emitter {
   #hostDoubtSince = null;
   #left = false;
   /**
-   * Whether a Puter account stands behind us. Hosting is done on one; a
+   * Whether an Everything account stands behind us. Hosting is done on one; a
    * guest may have none, and then takes part on an anonymous token with
    * the host's grant for relays. Read once, as the meeting starts.
    */
@@ -400,10 +400,10 @@ export class RoomSession extends Emitter {
   async host() {
     this.#acct = !isAnonymous();
     this.#meetingSecret ??= crypto.randomUUID();
-    const puter = getPuter();
+    const everything = getEverything();
     // The grant is minted alongside the server so that the room's very first
     // status write can carry it; a slow mint is not waited for past a moment.
-    const [server] = await Promise.all([puter.peer.serve(this.#peerOptions()), this.#mintGrant()]);
+    const [server] = await Promise.all([everything.peer.serve(this.#peerOptions()), this.#mintGrant()]);
     this.#adoptServer(server);
     this.code = this.#servedInvite;
     this.isHost = true;
@@ -422,16 +422,16 @@ export class RoomSession extends Emitter {
     this.code = code;
     this.startedAt = Date.now();
     try {
-      const puter = getPuter();
+      const everything = getEverything();
       this.#acct = !isAnonymous();
       if (!this.#acct) {
         trace(
-          'guest: no Puter session — joining anonymously,',
+          'guest: no Everything session — joining anonymously,',
           this.#grant ? 'with the host’s grant for relays' : 'with no grant (direct connections only)'
         );
       }
       // connect() itself can hang on a dead code — never trust it to settle.
-      const connectPromise = puter.peer.connect(code, this.#peerOptions());
+      const connectPromise = everything.peer.connect(code, this.#peerOptions());
       let conn;
       try {
         conn = await withTimeout(
@@ -601,7 +601,7 @@ export class RoomSession extends Emitter {
       for (const other of this.#peers.values()) {
         if (other.id !== peer.id) this.#sendRaw(other, joined);
       }
-      // ...and add media to the Puter-owned room connection.
+      // ...and add media to the Everything-owned room connection.
       this.#startMediaWith(peer);
     };
 
@@ -855,7 +855,7 @@ export class RoomSession extends Emitter {
       if (peer !== host) this.#renewDirectGuestLink(peer);
     }
 
-    // Announce our streams, then add media to the Puter-owned host connection.
+    // Announce our streams, then add media to the Everything-owned host connection.
     this.#startMediaWith(host);
     // Chat typed while the link was in doubt goes out again now.
     this.#resendOwnChat();
@@ -942,7 +942,7 @@ export class RoomSession extends Emitter {
 
   /**
    * The survivor that should take over: the lowest participant id among
-   * those with a Puter account — only such a one can mint guest grants, so
+   * those with an Everything account — only such a one can mint guest grants, so
    * guests without an account keep their relays — and, once no account is
    * left, the lowest id outright: the room directory takes anyone's writes,
    * so an anonymous host keeps the link alive for newcomers too.
@@ -998,7 +998,7 @@ export class RoomSession extends Emitter {
     trace('mesh: taking over as host (term', term + ')');
 
     // Claim the role before serving: the other survivors are on a claim
-    // deadline, and standing up a Puter peer server can take seconds.
+    // deadline, and standing up an Everything peer server can take seconds.
     this.#announceHostClaim();
     this.#repeatHostClaim();
     // Survivors we hold no link to — known only through the host that left,
@@ -1026,7 +1026,7 @@ export class RoomSession extends Emitter {
     try {
       // With an account, a grant of our own goes with the room we serve; an
       // anonymous successor keeps handing on the one it was given.
-      [server] = await Promise.all([getPuter().peer.serve(this.#peerOptions()), this.#mintGrant()]);
+      [server] = await Promise.all([getEverything().peer.serve(this.#peerOptions()), this.#mintGrant()]);
     } catch (error) {
       console.warn('[session] could not serve the meeting after taking over', error);
       if (this.#peers.size === 0) {
@@ -1041,7 +1041,7 @@ export class RoomSession extends Emitter {
       return;
     }
     if (this.#left || !this.isHost) {
-      closePuterServer(server);
+      closeEverythingServer(server);
       return;
     }
     // A server kept alive by an earlier stand-down would otherwise be
@@ -1193,7 +1193,7 @@ export class RoomSession extends Emitter {
     try {
       for (let attempt = 1; attempt <= HOST_DIAL_ATTEMPTS; attempt++) {
         if (this.#left || this.#hostId !== hostId || this.#hostConn) return;
-        const connecting = getPuter().peer.connect(invite, this.#peerOptions());
+        const connecting = getEverything().peer.connect(invite, this.#peerOptions());
         let conn = null;
         try {
           conn = await withTimeout(connecting, CONNECT_TIMEOUT_MS, 'Could not reach the new host.');
@@ -1235,7 +1235,7 @@ export class RoomSession extends Emitter {
   /**
    * Take a freshly served room as the one newcomers reach us through, and
    * watch it for the two ways the library moves it under us. `reconnect`:
-   * puter.js reopened a lost signaller socket and, the signaller minting a
+   * everything.js reopened a lost signaller socket and, the signaller minting a
    * code per socket, is now serving under a new invite — the published one
    * is dead from that moment, so the new one goes out at once, to the
    * room directory (#setCode, via 'code-changed') and to everyone in the call (a claim
@@ -1348,7 +1348,7 @@ export class RoomSession extends Emitter {
     const onDialError = (error) => {
       if (isInvalidInviteError(error)) settle('dead');
     };
-    getPuter()
+    getEverything()
       .peer.connect(invite, opts)
       .then(
         (conn) => {
@@ -1406,13 +1406,13 @@ export class RoomSession extends Emitter {
     if (this.#left || !this.isHost || !this.#server) return;
     let server;
     try {
-      server = await getPuter().peer.serve(this.#peerOptions());
+      server = await getEverything().peer.serve(this.#peerOptions());
     } catch (error) {
       console.warn('[session] could not re-serve after the invite went dead', error);
       return; // the next probe tries again
     }
     if (this.#left || !this.isHost) {
-      closePuterServer(server);
+      closeEverythingServer(server);
       return;
     }
     this.#retiredServers.push(this.#server);
@@ -1445,7 +1445,7 @@ export class RoomSession extends Emitter {
   // ---- guest grant ----
 
   /**
-   * Options for puter.peer.serve() / connect(). With an account behind us,
+   * Options for everything.peer.serve() / connect(). With an account behind us,
    * none: the account speaks for itself. Without one, the anonymous token
    * that names us to the signaller, and the grant that gets us relays.
    */
@@ -1473,7 +1473,7 @@ export class RoomSession extends Emitter {
       .then(
         (minted) => {
           this.#minting = false;
-          // null: nothing to mint on, or a puter.js that cannot — for good.
+          // null: nothing to mint on, or an everything.js that cannot — for good.
           if (this.#left || !minted) return;
           const until = minted.expiresAt ? `(good until ${new Date(minted.expiresAt).toLocaleTimeString()})` : '';
           trace('host: guest grant ready', until);
@@ -1557,7 +1557,7 @@ export class RoomSession extends Emitter {
 
   // ---- shared peer lifecycle ----
 
-  /** Register a peer backed by a Puter peer connection (host<->guest). */
+  /** Register a peer backed by an Everything peer connection (host<->guest). */
   #registerPeer(conn, identity) {
     if (this.#left || identity.id === this.selfId || this.#peers.has(identity.id)) {
       if (this.isHost) {
@@ -1580,7 +1580,7 @@ export class RoomSession extends Emitter {
     return peer;
   }
 
-  /** Register a guest peer whose direct Puter link is negotiated via the host. */
+  /** Register a guest peer whose direct Everything link is negotiated via the host. */
   #registerRelayedPeer(identity) {
     if (this.#left || identity.id === this.selfId || this.#peers.has(identity.id)) return null;
 
@@ -1597,7 +1597,7 @@ export class RoomSession extends Emitter {
     return {
       id: identity.id,
       identity,
-      conn, // null until a relayed guest<->guest Puter link is ready
+      conn, // null until a relayed guest<->guest Everything link is ready
       mediaStarted: false,
       joinedEmitted: false,
       directConnecting: false,
@@ -1634,7 +1634,7 @@ export class RoomSession extends Emitter {
     conn.addEventListener('close', (event) => {
       if (current()) this.#onPeerConnLost(peer, event?.reason || 'connection closed');
     });
-    // Not a link loss. puter.peer reports a negotiation that went wrong —
+    // Not a link loss. everything.peer reports a negotiation that went wrong —
     // a description the browser refused, say — and then carries on; when
     // the connection is really finished it closes, and close is above.
     // Tearing the link down here turned every SDP hiccup into a rebuild.
@@ -1654,7 +1654,7 @@ export class RoomSession extends Emitter {
   }
 
   /**
-   * A connection closed. puter.peer restarts ICE by itself and only closes
+   * A connection closed. everything.peer restarts ICE by itself and only closes
    * once that has failed, so this is a transport that is genuinely gone
    * rather than merely stalled — but the participant may still be there.
    * An intentional leave arrives as BYE instead, and tears down for real.
@@ -1680,7 +1680,7 @@ export class RoomSession extends Emitter {
   }
 
   /**
-   * Adopt a connection's media. puter.peer names each slot, so a track says
+   * Adopt a connection's media. everything.peer names each slot, so a track says
    * what it is on arrival and there is nothing to announce or guess.
    *
    * The transport watch here is for the roster badge only: the SDK restarts
@@ -1724,7 +1724,7 @@ export class RoomSession extends Emitter {
 
   /**
    * Host: a guest we have no working link to has until LINK_DROP_MS after
-   * their link first showed trouble to come back, whether puter.peer heals
+   * their link first showed trouble to come back, whether everything.peer heals
    * it in place or they dial back in (#markLinkConnected clears the
    * deadline), and is then given up as gone. The host cannot dial anyone,
    * so waiting is all it can do — but not for long, or the roster keeps a
@@ -1764,7 +1764,7 @@ export class RoomSession extends Emitter {
     this.#noteTrouble(peer);
     if (peer.linkLost) return;
     peer.linkLost = true;
-    // The deadline starts with the trouble, not with puter.peer giving the
+    // The deadline starts with the trouble, not with everything.peer giving the
     // link up, so a guest that vanished is gone a minute later.
     if (this.isHost) this.#awaitGuestReturn(peer);
     this.roster.update(peer.id, { reconnecting: true });
@@ -1950,7 +1950,7 @@ export class RoomSession extends Emitter {
         if (moot() || this.#hostConn) return;
         const invite = this.code;
         trace('link: dialing the host again at', invite, '(attempt', attempt + ')');
-        const connecting = getPuter().peer.connect(invite, this.#peerOptions());
+        const connecting = getEverything().peer.connect(invite, this.#peerOptions());
         let conn = null;
         try {
           conn = await withTimeout(connecting, CONNECT_TIMEOUT_MS, 'Could not reach the meeting.');
@@ -2028,7 +2028,7 @@ export class RoomSession extends Emitter {
   #renewDirectGuestLink(peer) {
     if (this.isHost || this.#left || peer.closed || peer.conn || !this.#hostConn) return;
     if (peer.directServer && this.selfId < peer.id) {
-      trace('guest: re-sending direct Puter invite to', peer.id);
+      trace('guest: re-sending direct Everything invite to', peer.id);
       this.#sendRawToHost(P.encode(P.makeTo(peer.id, P.makeLinkInvite(peer.directServer.inviteCode))));
       return;
     }
@@ -2062,12 +2062,12 @@ export class RoomSession extends Emitter {
     peer.directConnecting = true;
     let server = null;
     try {
-      const puter = getPuter();
+      const everything = getEverything();
       // An anonymous guest serves this link on the host's grant too — the
       // options go into the relay lookup a serve() makes, same as connect().
-      server = await puter.peer.serve(this.#peerOptions());
+      server = await everything.peer.serve(this.#peerOptions());
       if (this.#left || peer.closed || peer.conn) {
-        closePuterServer(server);
+        closeEverythingServer(server);
         peer.directConnecting = false;
         return;
       }
@@ -2093,9 +2093,9 @@ export class RoomSession extends Emitter {
 
       server.addEventListener('connection', onConnection);
       this.#sendRawToHost(P.encode(P.makeTo(peer.id, P.makeLinkInvite(server.inviteCode))));
-      trace('guest: sent direct Puter invite to', peer.id);
+      trace('guest: sent direct Everything invite to', peer.id);
     } catch (error) {
-      if (server) closePuterServer(server);
+      if (server) closeEverythingServer(server);
       peer.directConnecting = false;
       console.warn('[session] direct peer serve failed', error);
       // Say so once; the retries are quiet about it.
@@ -2145,7 +2145,7 @@ export class RoomSession extends Emitter {
 
       cleanup();
       peer.identity = msg.peer;
-      // Do NOT close the temp server here: puter's server.close() iterates
+      // Do NOT close the temp server here: everything's server.close() iterates
       // its `connections` and closes each one — including the connection we
       // just accepted — which closes `conn.peerconnection`. The imminent
       // addTrack would then throw InvalidStateError (signalingState
@@ -2155,7 +2155,7 @@ export class RoomSession extends Emitter {
       this.#activateDirectGuestLink(peer, conn);
       this.#sendRawOnConn(conn, P.encode(P.makeLinkReady(this.identity())));
       this.#startMediaWith(peer);
-      trace('guest: accepted direct Puter link from', peer.id);
+      trace('guest: accepted direct Everything link from', peer.id);
     };
 
     conn.addEventListener('message', onMessage);
@@ -2167,8 +2167,8 @@ export class RoomSession extends Emitter {
     if (this.isHost || this.#left || peer.closed || peer.conn || peer.directConnecting) return;
     peer.directConnecting = true;
 
-    const puter = getPuter();
-    const connectPromise = puter.peer.connect(inviteCode, this.#peerOptions());
+    const everything = getEverything();
+    const connectPromise = everything.peer.connect(inviteCode, this.#peerOptions());
     let conn;
     try {
       conn = await withTimeout(connectPromise, CONNECT_TIMEOUT_MS, 'Could not connect to a direct peer link.');
@@ -2233,7 +2233,7 @@ export class RoomSession extends Emitter {
         peer.identity = msg.peer;
         this.#activateDirectGuestLink(peer, conn);
         this.#startMediaWith(peer);
-        trace('guest: connected direct Puter link to', peer.id);
+        trace('guest: connected direct Everything link to', peer.id);
         finish(resolve, msg);
       };
       const onClose = (event) => finish(reject, new Error(event?.reason || 'Direct peer link closed.'));
@@ -2311,12 +2311,12 @@ export class RoomSession extends Emitter {
     peer.directConnecting = false;
     peer.directInvite = null;
     if (!keepStreams) this.#removePeerStreams(peer);
-    trace('guest: direct Puter link to', peer.id, 'closed:', reason);
+    trace('guest: direct Everything link to', peer.id, 'closed:', reason);
   }
 
   #closeDirectServer(peer, server = peer.directServer) {
     if (peer.directServer === server) peer.directServer = null;
-    closePuterServer(server);
+    closeEverythingServer(server);
   }
 
   #queueLinkInvite(peerId, msg) {
@@ -2476,10 +2476,10 @@ export class RoomSession extends Emitter {
     this.#pendingLinkInvites.clear();
     this.#chatLog = [];
     if (this.#server) {
-      closePuterServer(this.#server);
+      closeEverythingServer(this.#server);
       this.#server = null;
     }
-    for (const server of this.#retiredServers.splice(0)) closePuterServer(server);
+    for (const server of this.#retiredServers.splice(0)) closeEverythingServer(server);
     if (this.#hostConn) {
       try {
         this.#hostConn.close?.(reason);
@@ -2634,7 +2634,7 @@ function closeConn(conn, reason) {
   }
 }
 
-function closePuterServer(server) {
+function closeEverythingServer(server) {
   if (!server) return;
   try {
     if (typeof server.close === 'function') server.close();

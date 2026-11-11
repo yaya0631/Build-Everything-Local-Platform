@@ -1,6 +1,6 @@
 /**
  * Public share pages. Each shared document becomes one static, unlisted
- * HTML file in the user's own cloud, served through a Puter-hosted
+ * HTML file in the user's own cloud, served through an Everything-hosted
  * subdomain created once per account. The URL carries a random token, so
  * only people given the link can find it; un-sharing deletes the file.
  */
@@ -82,7 +82,7 @@ async function publishNow(store, docId, payLink) {
     // whole PDF writer as source, none of which belongs in the app's first load.
     const { sharePageHTML } = await import('./share-page.js');
     const html = await sharePageHTML(live, client, store.settings, payLink, { files });
-    await puter.fs.write(`${SHARE_DIR}/${token}.html`, html, { createMissingParents: true });
+    await everything.fs.write(`${SHARE_DIR}/${token}.html`, html, { createMissingParents: true });
     await recordShare(store, live, token);
   } catch (err) {
     // Whatever went up under a token the document does not carry can never
@@ -93,8 +93,8 @@ async function publishNow(store, docId, payLink) {
     // anywhere that could retire them. A failed refresh of an already-shared
     // page leaves it up: that page is the user's, and was theirs before.
     if (minted) {
-      await puter.fs.delete(`${SHARE_DIR}/${token}`, { recursive: true }).catch(() => {});
-      await puter.fs.delete(`${SHARE_DIR}/${token}.html`).catch(() => {});
+      await everything.fs.delete(`${SHARE_DIR}/${token}`, { recursive: true }).catch(() => {});
+      await everything.fs.delete(`${SHARE_DIR}/${token}.html`).catch(() => {});
     }
     throw err;
   }
@@ -124,8 +124,8 @@ async function publishAttachments(doc, token) {
     const name = safeFileName(entry.name);
     const at = `${dir}/${String(entry.id).replace(/[^a-z0-9]/gi, '')}-${name}`;
     try {
-      const blob = await puter.fs.read(entry.path);
-      await puter.fs.write(at, blob, { createMissingParents: true });
+      const blob = await everything.fs.read(entry.path);
+      await everything.fs.write(at, blob, { createMissingParents: true });
       // The href is a URL, and these names carry spaces and the occasional
       // ampersand: encode each segment, never the slash between them.
       const href = at.slice(SHARE_DIR.length + 1).split('/').map(encodeURIComponent).join('/');
@@ -141,7 +141,7 @@ async function publishAttachments(doc, token) {
 /** An absent folder is already private; a failed deletion still needs a retry. */
 async function removePublishedAttachments(token) {
   try {
-    await puter.fs.delete(`${SHARE_DIR}/${token}`, { recursive: true });
+    await everything.fs.delete(`${SHARE_DIR}/${token}`, { recursive: true });
   } catch (err) {
     if (!isMissingFileError(err)) throw err;
   }
@@ -152,7 +152,7 @@ async function recordShare(store, doc, token) {
   if (!store.settings.share?.subdomain) {
     // A blank index shields the site root: without one, a host could fall
     // back to listing the directory, exposing every share token.
-    await puter.fs.write(`${SHARE_DIR}/index.html`,
+    await everything.fs.write(`${SHARE_DIR}/index.html`,
       '<!doctype html><html lang="en"><head><meta charset="utf-8">'
       + '<meta name="robots" content="noindex, nofollow"><title>Nothing here</title></head>'
       + '<body style="font-family:system-ui;color:#5b5e66;display:grid;place-items:center;min-height:100vh;margin:0">'
@@ -160,11 +160,11 @@ async function recordShare(store, doc, token) {
       { createMissingParents: true }).catch(() => {});
     let subdomain = `inv-${randomToken(10)}`;
     try {
-      await puter.hosting.create(subdomain, SHARE_DIR);
+      await everything.hosting.create(subdomain, SHARE_DIR);
     } catch {
       // One retry with a fresh name in case of a collision.
       subdomain = `inv-${randomToken(12)}`;
-      await puter.hosting.create(subdomain, SHARE_DIR);
+      await everything.hosting.create(subdomain, SHARE_DIR);
     }
     await store.updateSettings({ share: { subdomain } });
   }
@@ -216,7 +216,7 @@ export async function unpublishDoc(store, doc) {
       // behind would keep files reachable at a URL after "no longer shared".
       await removePublishedAttachments(token);
       try {
-        await puter.fs.delete(`${SHARE_DIR}/${token}.html`);
+        await everything.fs.delete(`${SHARE_DIR}/${token}.html`);
       } catch (err) {
         if (!isMissingFileError(err)) throw err;
       }

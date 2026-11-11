@@ -210,8 +210,8 @@ export function createCollaboration({ editor, pkg, doc, local, error, onChange =
       if (readOnly()) throw new Error('This document is open read-only, so it cannot be edited together. Save a copy first.');
       engine.finishComposition();
       if (!local) {
-        if (!await signIn()) throw new Error('Sign in to Puter to share this document.');
-        // A template or other file whose edits go to a new .docx (inside the Puter desktop, at the first Save) is
+        if (!await signIn()) throw new Error('Sign in to Everything to share this document.');
+        // A template or other file whose edits go to a new .docx (inside the Everything desktop, at the first Save) is
         // shared as that .docx, as a new document is: the room must not be the template's, nor the file it writes.
         if (!doc.path || doc.waitsForPlace) { progress('Saving the document first…'); await saveFirst(); }
         if (!doc.path || doc.waitsForPlace) throw new Error('Save the document before sharing it.');
@@ -233,7 +233,7 @@ export function createCollaboration({ editor, pkg, doc, local, error, onChange =
     const url = await live.inviteLink(role);
     const name = documentName() || 'a document';
     const who = user().name;
-    const text = `${note ? `${note}\n\n` : ''}${who} invited you to ${role === 'editor' ? 'edit' : role === 'commenter' ? 'comment on' : 'view'} “${name}” in Documents.\n\nOpen it: ${url}\n\nYou will be asked to sign in to Puter. The invitation expires in seven days.`;
+    const text = `${note ? `${note}\n\n` : ''}${who} invited you to ${role === 'editor' ? 'edit' : role === 'commenter' ? 'comment on' : 'view'} “${name}” in Documents.\n\nOpen it: ${url}\n\nYou will be asked to sign in to Everything. The invitation expires in seven days.`;
     return sendMail({ to: address, subject: `${who} shared “${name}” with you`, text, username: who });
   }
   async function sendCopy(address, format, note) {

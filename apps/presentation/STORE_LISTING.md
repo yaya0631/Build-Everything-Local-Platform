@@ -10,7 +10,7 @@ Create, edit, and present real .pptx presentations in your browser. Ask AI for h
 
 Presentation is a clean, focused slide editor for anyone who needs to make a good impression. Open a .pptx file or start from a polished template, then shape your story with text, shapes, tables, and images. The app opens straight into a new presentation, so you can start working before you sign in.
 
-Your files stay real .pptx files from start to finish. Presentation edits them directly and keeps parts it doesn't edit, so you can share your work with anyone, whatever presentation app they use. When you're ready, save to your Puter cloud. Autosave takes it from there, and a local recovery draft protects your changes if your connection drops.
+Your files stay real .pptx files from start to finish. Presentation edits them directly and keeps parts it doesn't edit, so you can share your work with anyone, whatever presentation app they use. When you're ready, save to your Everything cloud. Autosave takes it from there, and a local recovery draft protects your changes if your connection drops.
 
 Need a hand? Ask the built-in AI assistant to draft slides, tighten your wording, build a table, or write speaker notes for every slide. You can see each change it makes and undo it in one step.
 
@@ -42,7 +42,7 @@ When it's time to present, the presenter view shows your notes, the next slide, 
 - Custom shows and slide ranges set in a file are followed when presenting
 - Slides that advance automatically follow the timing set in the file, with playback controls
 - Fonts embedded in a presentation display correctly, and you can embed your own TrueType or OpenType fonts
-- Open and save files on your Puter drive with the system Open and Save dialogs
+- Open and save files on your Everything drive with the system Open and Save dialogs
 
 ## Keywords
 

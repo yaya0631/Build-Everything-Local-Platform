@@ -1,6 +1,6 @@
 /**
  * Review ▸ Thesaurus (Shift+F7) and Review ▸ Translate: one pane beside the sheet with a tab for each, both
- * answered by Puter's AI.
+ * answered by Everything's AI.
  *
  * The thesaurus looks up the active cell's word (or one typed in), lists its senses with their synonyms and
  * antonyms, looks up any of those with a click, and puts one into the active cell in place of the word.
@@ -32,7 +32,7 @@ function browserLanguage() {
 const MAX_CELLS = 200;
 
 /**
- * `ctx` is the editor's context plus `ai` (prompt → Promise<text>, or null without Puter's AI) and `translate`
+ * `ctx` is the editor's context plus `ai` (prompt → Promise<text>, or null without Everything's AI) and `translate`
  * ((text, from, to) → Promise<text>).
  */
 export function createLanguagePane(ctx) {
@@ -71,7 +71,7 @@ export function createLanguagePane(ctx) {
     current = word;
     if (history.at(-1) !== word) history.push(word);
     back.disabled = history.length < 2;
-    if (!ctx.ai) { thStatus.textContent = 'The thesaurus needs Puter’s AI, which is not available here.'; results.replaceChildren(); return; }
+    if (!ctx.ai) { thStatus.textContent = 'The thesaurus needs Everything’s AI, which is not available here.'; results.replaceChildren(); return; }
     let senses = cache.get(word.toLowerCase());
     if (!senses) {
       thStatus.textContent = `Looking up “${word}”…`;
@@ -160,7 +160,7 @@ export function createLanguagePane(ctx) {
     if (go.disabled) return;
     const text = source.value;
     if (!text.trim()) { trStatus.textContent = 'Type some text, or use the selected cells.'; return; }
-    if (!ctx.translate) { trStatus.textContent = 'Translation needs Puter’s AI, which is not available here.'; return; }
+    if (!ctx.translate) { trStatus.textContent = 'Translation needs Everything’s AI, which is not available here.'; return; }
     const pieces = picked ? picked.cells.map((x) => x.text) : [text];
     go.disabled = true;
     trStatus.textContent = 'Translating…';

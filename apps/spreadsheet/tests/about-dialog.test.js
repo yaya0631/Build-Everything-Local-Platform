@@ -11,12 +11,12 @@ it('names the app, its version and its maker, and describes itself to a screen r
   const panel = document.querySelector('.modal-panel.about');
   expect(panel.getAttribute('aria-label')).toBe('About Spreadsheet');
   expect(panel.querySelector('.about-icon img')).not.toBeNull();
-  expect(panel.querySelector('.about-meta').textContent).toBe(`Version ${version} · by Puter Technologies Inc.`);
+  expect(panel.querySelector('.about-meta').textContent).toBe(`Version ${version} · by Everything Technologies Inc.`);
   expect(document.getElementById(panel.getAttribute('aria-describedby'))?.textContent).toContain('private spreadsheet');
-  expect(panel.querySelector('.about-legal').textContent).toBe(`© ${new Date().getFullYear()} Puter Technologies Inc. All rights reserved.`);
+  expect(panel.querySelector('.about-legal').textContent).toBe(`© ${new Date().getFullYear()} Everything Technologies Inc. All rights reserved.`);
 });
 
-it('links Puter\'s pages and every bundled license, each in a new tab', () => {
+it('links Everything\'s pages and every bundled license, each in a new tab', () => {
   openAbout();
   const links = [...document.querySelectorAll('.about-links a')];
   expect(links.map((a) => a.textContent)).toEqual(['Website', 'Privacy', 'Terms']);

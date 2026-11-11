@@ -4,7 +4,7 @@ import { closeMenu } from '../src/ui/menu.js';
 import { closeAllModals } from '../src/ui/modal.js';
 import { editorView } from '../src/views/editor.js';
 import { Doc } from '../src/lib/doc.js';
-import * as P from '../src/lib/puter.js';
+import * as P from '../src/lib/everything.js';
 import { toast } from '../src/ui/toast.js';
 
 // A spreadsheet shared with the user only to view opened as if it could be edited: nothing said so until
@@ -28,7 +28,7 @@ beforeEach(() => {
   vi.stubGlobal('cancelAnimationFrame', clearTimeout);
   listShared = vi.fn();
   toast.mockClear();
-  vi.stubGlobal('puter', { fs: { share() {}, getShares: async () => [], listShared } });
+  vi.stubGlobal('everything', { fs: { share() {}, getShares: async () => [], listShared } });
   Element.prototype.scrollIntoView = () => {};
   Element.prototype.scrollTo = () => {};
   Object.defineProperty(HTMLElement.prototype, 'clientWidth', { configurable: true, get: () => 800 });

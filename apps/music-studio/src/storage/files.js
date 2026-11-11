@@ -2,14 +2,14 @@
 // import audio and MIDI, recent files, and app.importAudio. The rules:
 //
 //   Signed out: Save keeps the project in this browser (IndexedDB, listed
-//   under Open) and offers a download; nothing touches Puter.
-//   Signed in: Save writes Projects/<name>.msproj in the app's Puter folder (new samples
+//   under Open) and offers a download; nothing touches Everything.
+//   Signed in: Save writes Projects/<name>.msproj in the app's Everything folder (new samples
 //   are uploaded once, on the first cloud save that needs them).
 //
 // Save state is shown through app.file ({ path?, local?, name }),
 // app.saving (+ app 'saving' event) and store.markSaved().
 
-import * as puter from './puter.js';
+import * as everything from './everything.js';
 import { MAX_IMPORT_BYTES } from './library.js';
 import * as E from '../model/edits.js';
 import { createChannel, colorAt, freeInsert, FILE_EXT } from '../model/project.js';
@@ -66,7 +66,7 @@ export class ProjectFiles {
   }
 
   signedIn() {
-    return puter.isSignedIn();
+    return everything.isSignedIn();
   }
 
   setFile(file) {
@@ -104,7 +104,7 @@ export class ProjectFiles {
     if (r.missing.length && !quiet) {
       const list = r.missing.slice(0, 3).join(', ') + (r.missing.length > 3 ? ` and ${r.missing.length - 3} more` : '');
       const signIn = !this.signedIn() && Object.values(project.samples).some((s) => s.path);
-      this.app.notify(`${r.missing.length === 1 ? 'A sample was' : `${r.missing.length} samples were`} not found (${list}). Their channels are kept.${signIn ? ' Sign in to load samples from your Puter cloud.' : ''}`, { error: true, timeout: 9000 });
+      this.app.notify(`${r.missing.length === 1 ? 'A sample was' : `${r.missing.length} samples were`} not found (${list}). Their channels are kept.${signIn ? ' Sign in to load samples from your Everything cloud.' : ''}`, { error: true, timeout: 9000 });
     }
     return r;
   }
@@ -112,18 +112,18 @@ export class ProjectFiles {
   // ---------------------------------------------------------------- open
 
   async open() {
-    if (this.signedIn()) return this.openFromPuter();
+    if (this.signedIn()) return this.openFromEverything();
     return this.app.openLocalProjects?.();
   }
 
-  async openFromPuter() {
+  async openFromEverything() {
     let dir;
     try {
       dir = await this.lib.cloudProjectsDir();
     } catch {
       dir = undefined;
     }
-    const items = await puter.pickFiles({ multiple: false, accept: FILE_EXT, path: dir });
+    const items = await everything.pickFiles({ multiple: false, accept: FILE_EXT, path: dir });
     const item = items[0];
     if (!item) return;
     if (/\.midi?$/i.test(item.name || '')) return this.importMidiBlob(await item.read(), item.name);
@@ -131,13 +131,13 @@ export class ProjectFiles {
   }
 
   async openPath(path) {
-    puter.requireSignedIn();
+    everything.requireSignedIn();
     if (!(await this.confirmDiscard())) return false;
     let project;
     try {
       project = await this.lib.loadCloud(path);
     } catch (err) {
-      throw new Error(puter.errorMessage(err, 'The project could not be opened.'));
+      throw new Error(everything.errorMessage(err, 'The project could not be opened.'));
     }
     const name = stripExtension(baseName(path));
     this.loadProject(project, { path, name });
@@ -198,7 +198,7 @@ export class ProjectFiles {
     const cloud = this.signedIn();
     const name = await promptDialog({
       title: 'Save project as',
-      label: cloud ? 'Name (saved to your Puter cloud)' : 'Name (saved in this browser)',
+      label: cloud ? 'Name (saved to your Everything cloud)' : 'Name (saved in this browser)',
       value: this.app.file?.name || this.store.project.name,
       confirm: 'Save',
       validate: (v) => (v.trim() ? '' : 'Enter a name.'),
@@ -209,8 +209,8 @@ export class ProjectFiles {
     const clean = name.trim().slice(0, 120);
     if (cloud) {
       const path = await this.lib.cloudPathFor(clean);
-      if (path !== this.app.file?.path && (await puter.exists(path))) {
-        const ok = await confirmDialog({ title: 'Replace project?', message: `A project named "${baseName(path)}" already exists in your Puter cloud. Replace it?`, confirm: 'Replace', danger: true });
+      if (path !== this.app.file?.path && (await everything.exists(path))) {
+        const ok = await confirmDialog({ title: 'Replace project?', message: `A project named "${baseName(path)}" already exists in your Everything cloud. Replace it?`, confirm: 'Replace', danger: true });
         if (!ok) return false;
       }
       this.renameProject(clean);
@@ -238,15 +238,15 @@ export class ProjectFiles {
       if (this.store.project === snapshot) this.store.markSaved();
       this.setFile({ path: r.path, name });
       if (r.missing.length) this.app.notify(`Saved, but ${r.missing.length === 1 ? 'one sample is' : `${r.missing.length} samples are`} not on this device and could not be uploaded.`, { error: true });
-      else if (!auto) this.app.notify(`Saved to your Puter cloud`);
+      else if (!auto) this.app.notify(`Saved to your Everything cloud`);
       return true;
     } catch (err) {
       if (auto) {
         console.warn('Music Studio: cloud autosave failed.', err);
-        if (puter.isQuotaError(err)) this.app.notify(puter.errorMessage(err), { error: true });
+        if (everything.isQuotaError(err)) this.app.notify(everything.errorMessage(err), { error: true });
         return false;
       }
-      this.app.notify(puter.errorMessage(err, 'The project could not be saved.'), { error: true, action: { label: 'Save to device', run: () => this.download() } });
+      this.app.notify(everything.errorMessage(err, 'The project could not be saved.'), { error: true, action: { label: 'Save to device', run: () => this.download() } });
       return false;
     } finally {
       this.setSaving(false);
@@ -284,17 +284,17 @@ export class ProjectFiles {
       return;
     }
     prefs.set('dismissedNotices', [...seen, 'localSave']);
-    const canSignIn = Boolean(puter.sdk()) && puter.env() !== 'app';
+    const canSignIn = Boolean(everything.sdk()) && everything.env() !== 'app';
     const r = await openDialog({
       title: 'Saved in this browser',
       className: 'save-notice',
       body: h(
         'div.save-notice-body',
         h('p', persistent ? 'Your project is saved in this browser on this device. Find it again with File > Open.' : 'This browser blocks site storage, so the project is kept only until you close the tab. Download a copy to keep it.'),
-        h('p', 'To keep a copy elsewhere, save the project file to your device. ', canSignIn ? 'Or sign in to Puter to save projects to your cloud and open them anywhere.' : ''),
+        h('p', 'To keep a copy elsewhere, save the project file to your device. ', canSignIn ? 'Or sign in to Everything to save projects to your cloud and open them anywhere.' : ''),
       ),
       buttons: [
-        ...(canSignIn ? [{ label: 'Sign in to Puter', value: 'signin' }] : []),
+        ...(canSignIn ? [{ label: 'Sign in to Everything', value: 'signin' }] : []),
         { label: 'Save to your device', value: 'download' },
         { label: 'OK', value: 'ok', primary: true },
       ],
@@ -398,17 +398,17 @@ export class ProjectFiles {
     return { sampleId: id, channelId: ch.id, duration };
   }
 
-  /** Imports an audio file already in Puter (the browser's My files). */
+  /** Imports an audio file already in Everything (the browser's My files). */
   async importAudioFromPath(path, opts = {}) {
-    puter.requireSignedIn();
+    everything.requireSignedIn();
     // Check the size first: downloads count against the user's allowance.
-    const size = (await puter.stat(path).catch(() => null))?.size;
+    const size = (await everything.stat(path).catch(() => null))?.size;
     if (size > MAX_IMPORT_BYTES) throw new Error(`"${baseName(path)}" is ${mb(size)}. Music Studio imports audio files up to ${mb(MAX_IMPORT_BYTES)}.`);
-    const blob = await puter.readFile(path);
+    const blob = await everything.readFile(path);
     return this.importAudio(blob, { name: baseName(path), path, ...opts });
   }
 
-  /** File > Import audio: from this device, or from Puter when signed in. */
+  /** File > Import audio: from this device, or from Everything when signed in. */
   async importAudioCommand() {
     let source = 'device';
     if (this.signedIn()) {
@@ -417,14 +417,14 @@ export class ProjectFiles {
         body: h('p', 'Add audio files as sampler channels. Choose where the files are.'),
         buttons: [
           { label: 'Cancel', value: null },
-          { label: 'From Puter', value: 'puter' },
+          { label: 'From Everything', value: 'everything' },
           { label: 'From this device', value: 'device', primary: true },
         ],
       });
       if (!source) return;
     }
-    if (source === 'puter') {
-      const items = await puter.pickFiles({ multiple: true, accept: AUDIO_EXTENSIONS });
+    if (source === 'everything') {
+      const items = await everything.pickFiles({ multiple: true, accept: AUDIO_EXTENSIONS });
       for (const item of items) await this.runImport(() => this.importAudioFromPath(item.path), item.name);
       return;
     }

@@ -36,7 +36,7 @@
 // MixerTrack = { id, name, color|null, volume (0..1.25), pan, width (0..2),
 //   mute, solo, fx: Slot[], routes: { [trackIndex]: gain } (inserts default to {0: 1}) }
 // Slot = { id, type (effects/catalog.js), on, mix (0..1), params }
-// SampleRef = { id, name, path|null (Puter file), local: key|null (IndexedDB), duration, rate, channels }
+// SampleRef = { id, name, path|null (Everything file), local: key|null (IndexedDB), duration, rate, channels }
 
 import { uid } from '../lib/util.js';
 import { defaultParams } from '../instruments/catalog.js';

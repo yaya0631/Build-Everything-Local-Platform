@@ -59,15 +59,15 @@ export async function confirmSignOut() {
   const ok = await confirmDialog({
     title: 'Sign out?',
     message: unsynced
-      ? `${unsynced} change${unsynced === 1 ? ' hasn’t' : 's haven’t'} synced to your Puter account yet and will be lost if you sign out now. Everything already synced stays safe.`
-      : 'Your inventory stays safe in your Puter account and will be here when you sign back in.',
+      ? `${unsynced} change${unsynced === 1 ? ' hasn’t' : 's haven’t'} synced to your Everything account yet and will be lost if you sign out now. Everything already synced stays safe.`
+      : 'Your inventory stays safe in your Everything account and will be here when you sign back in.',
     confirmLabel: 'Sign out',
     danger: unsynced > 0,
   });
   if (!ok) return;
   // Let sign-out finish before reloading, or the reload can cut off the
   // session teardown and come back still signed in.
-  try { await puter.auth.signOut(); } catch {}
+  try { await everything.auth.signOut(); } catch {}
   // The mirror and queue hold this account's data; the next person on
   // this browser must not browse it or replay it into their account.
   await releaseAccount().catch(() => {});
@@ -391,25 +391,25 @@ function renderInto(root) {
     }
   }
 
-  /* Account: inside a Puter app window the platform owns the session, so
+  /* Account: inside an Everything app window the platform owns the session, so
      offering sign-out would break the host — hide it there. */
   const username = store.user?.username;
-  const isPuterApp = typeof puter !== 'undefined' && puter.env === 'app';
+  const isEverythingApp = typeof everything !== 'undefined' && everything.env === 'app';
   root.append(
     el('h2.section-title', {}, 'Account'),
     el('div.settings-list', {},
       el('div.settings-row.row-stacks', {},
         el('span.user-avatar', {}, (username || 'P').charAt(0).toUpperCase()),
         el('div.grow', {},
-          el('div.title', {}, username || 'Puter user'),
-          el('div.sub', {}, isPuterApp ? 'Signed in with Puter' : 'Signed in with Puter cloud storage')
+          el('div.title', {}, username || 'Everything user'),
+          el('div.sub', {}, isEverythingApp ? 'Signed in with Everything' : 'Signed in with Everything cloud storage')
         ),
-        !isPuterApp && el('button.btn.btn-secondary', { onclick: confirmSignOut }, 'Sign out')
+        !isEverythingApp && el('button.btn.btn-secondary', { onclick: confirmSignOut }, 'Sign out')
       )
     ),
     el('p.small.muted', { style: { margin: '18px 4px' } },
-      'Inventory stores everything in your own Puter account. Powered by ',
-      el('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Puter'), '.')
+      'Inventory stores everything in your own Everything account. Powered by ',
+      el('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Everything'), '.')
   );
 }
 

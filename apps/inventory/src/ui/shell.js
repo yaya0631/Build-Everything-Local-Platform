@@ -141,8 +141,8 @@ export function mountShell(appRoot) {
   }
 
   /* Sidebar (desktop) */
-  const username = store.user?.username || 'Puter user';
-  const isPuterApp = typeof puter !== 'undefined' && puter.env === 'app';
+  const username = store.user?.username || 'Everything user';
+  const isEverythingApp = typeof everything !== 'undefined' && everything.env === 'app';
   const sidebarNav = el('div', { style: { display: 'contents' } });
   const isMac = /Mac|iP/.test(navigator.platform || '');
   const sidebar = el('nav.sidebar', { 'aria-label': 'Main navigation' },
@@ -167,7 +167,7 @@ export function mountShell(appRoot) {
     el('div.sidebar-user', {},
       el('span.user-avatar', {}, username.charAt(0).toUpperCase()),
       el('span.name', { title: username }, username),
-      !isPuterApp && el('button.icon-btn', {
+      !isEverythingApp && el('button.icon-btn', {
         html: icon('logout', 18, 2),
         'aria-label': 'Sign out',
         title: 'Sign out',

@@ -219,7 +219,7 @@ function env({ signedIn = true } = {}) {
   const store = new EditorStore(fixture());
   const imported = [];
   const library = {
-    backend: { kind: signedIn ? 'puter' : 'local' },
+    backend: { kind: signedIn ? 'everything' : 'local' },
     async importFile(file) {
       const a = normalizeAsset({ kind: 'audio', name: file.name, duration: s(2), hasAudio: true });
       imported.push(file);
@@ -232,14 +232,14 @@ function env({ signedIn = true } = {}) {
     synthesize: vi.fn(async () => new Blob(['voice'], { type: 'audio/mpeg' })),
     analyze: vi.fn(async () => lipsFor(2)),
   };
-  if (signedIn) globalThis.puter = { ai: {} };
+  if (signedIn) globalThis.everything = { ai: {} };
   return { store, ctx, imported };
 }
 
 const allClips = (p) => p.tracks.flatMap((t) => t.clips);
 
 afterEach(() => {
-  delete globalThis.puter;
+  delete globalThis.everything;
   document.body.replaceChildren();
 });
 

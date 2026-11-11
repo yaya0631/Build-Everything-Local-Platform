@@ -24,7 +24,7 @@ Convert (footnotes to endnotes, back, or swap). Endnotes render after the last
 line, continue on added pages, and round-trip through `endnotes.xml`.
 
 **Research** — Smart Lookup: a side pane with a short definition and related
-topics from Puter AI for the selection (or the word at the caret), with follow-up
+topics from Everything AI for the selection (or the word at the caret), with follow-up
 lookups and a web search link. Hidden when AI is unavailable; also in the
 document menu and Tools menu.
 

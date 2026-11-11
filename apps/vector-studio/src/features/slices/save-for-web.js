@@ -15,7 +15,7 @@ import { h } from '../../lib/dom.js';
 import { UserError } from '../../lib/errors.js';
 import { openDialog } from '../../ui/dialogs/dialog.js';
 import { renderRegion } from '../io/raster.js';
-import { canSaveToPuter, deliverFiles, safeFileName } from '../io/deliver.js';
+import { canSaveToEverything, deliverFiles, safeFileName } from '../io/deliver.js';
 import { quantize, indexedToRgba, encodeGIF, encodePNG8 } from './encode.js';
 import { sliceTable, sliceAreas, clipsToArtboard, defaultSliceName, updateSlice, findSlice } from './model.js';
 import { selectedSlices } from './tools.js';
@@ -291,8 +291,8 @@ export async function saveForWebDialog(app, editor) {
   const exportSel = h('select', [['all', 'All slices'], ['selected', 'Selected slices'], ['user', 'User slices']].map(([v, l]) => h('option', { value: v }, l)));
   exportSel.value = last.export || 'all';
   const sliceSel = h('select');
-  const dest = canSaveToPuter(app) ? h('select', [['device', 'This device (download)'], ['puter', 'Puter']].map(([v, l]) => h('option', { value: v }, l))) : null;
-  if (dest) dest.value = last.dest === 'puter' ? 'puter' : 'device';
+  const dest = canSaveToEverything(app) ? h('select', [['device', 'This device (download)'], ['everything', 'Everything']].map(([v, l]) => h('option', { value: v }, l))) : null;
+  if (dest) dest.value = last.dest === 'everything' ? 'everything' : 'device';
   const palette = h('div.sfw-palette', { role: 'img', 'aria-label': 'Color table' });
   const status = h('p.sfw-status', { role: 'status', 'aria-live': 'polite' });
   const tabs = ['original', 'optimized', '2up'].map((m) => h('button.sfw-tab', { type: 'button', role: 'tab', 'aria-selected': String(m === mode), onclick: () => setMode(m) }, { original: 'Original', optimized: 'Optimized', '2up': '2-Up' }[m]));
@@ -683,6 +683,6 @@ export async function saveSelectedSlices(app, editor) {
     if (res.blob) files.push({ name: `${sliceFileName(doc, row, false, base)}.${fmtInfo(s.format).ext}`, blob: res.blob });
   }
   if (!files.length) throw new UserError('The selected slices have no images (No Image slices).');
-  const msg = await deliverFiles(app, files, { dest: last.dest === 'puter' && canSaveToPuter(app) ? 'puter' : 'device', zip: files.length > 1, zipName: `${safeFileName(base)}-slices.zip` });
+  const msg = await deliverFiles(app, files, { dest: last.dest === 'everything' && canSaveToEverything(app) ? 'everything' : 'device', zip: files.length > 1, zipName: `${safeFileName(base)}-slices.zip` });
   if (msg) app.notify(msg);
 }

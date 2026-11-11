@@ -14,7 +14,7 @@ async function saved(wb) {
   const zip = X.CFB.read(bytes, { type: 'array' });
   const get = p => new TextDecoder().decode(X.CFB.find(zip, p).content);
   const xml = get('/xl/worksheets/sheet1.xml');
-  X.CFB.utils.cfb_add(zip, '/xl/workbook.xml', new TextEncoder().encode(get('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')));
+  X.CFB.utils.cfb_add(zip, '/xl/workbook.xml', new TextEncoder().encode(get('/xl/workbook.xml').replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')));
   const native = await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'native.xlsx');
   return { own, native, xml };
 }

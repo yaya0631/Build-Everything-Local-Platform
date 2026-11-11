@@ -50,10 +50,10 @@ for (const semantic of [
   test(`SmartArt paints ${["space", "space-local", "space-root", "canvas", "linear", "linear-cross"].includes(semantic) ? `${semantic} fallback` : ["height", "narrow", "exhausted"].includes(semantic) ? `${semantic === "height" ? "finite" : semantic} height fitting` : semantic === "root-composite" ? "root composite" : semantic === "point" ? "point-associated text" : semantic === "zero" ? "zero-height text" : semantic === "aspect" ? "text aspect" : semantic === "binding" ? "dimension binding" : semantic === "ancestor" ? "ancestor references" : semantic === "unbounded" ? "unbounded composite" : semantic === "association" ? "associated text" : semantic === "composite" ? "composite drawing" : semantic === "retry" ? "retained fitting" : semantic === "custom" ? "custom text" : semantic === "group" ? "shared text" : semantic ? "semantic" : "saved"} geometry and styled text through clipboard and download`, async ({
     page,
   }) => {
-    await page.route("**/sdk/puter.js", (r) =>
+    await page.route("**/sdk/everything.js", (r) =>
       r.fulfill({
         contentType: "application/javascript",
-        body: 'window.puter={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',
+        body: 'window.everything={env:"web",auth:{isSignedIn:async()=>false},ui:{onLaunchedWithItems:()=>{}}};',
       }),
     );
     await page.goto("/#/home");

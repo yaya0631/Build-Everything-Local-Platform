@@ -1,6 +1,6 @@
 /**
  * Storage backends. The app reads and writes files through this small
- * interface, so the same code runs on Puter, in memory (tests) and in
+ * interface, so the same code runs on Everything, in memory (tests) and in
  * IndexedDB (the ?local development mode).
  *
  *   read(path)      -> { text, modified, size } | null
@@ -10,7 +10,7 @@
  *   remove(path)    -> removes a file or a folder (missing is fine)
  *   copy(from, to)  -> copies a file
  *
- * puter.kv only holds small per-person settings (theme and the like). Base
+ * everything.kv only holds small per-person settings (theme and the like). Base
  * contents and files always go to the file system.
  */
 
@@ -25,7 +25,7 @@ export function isQuota(err) {
   return code === 'storage_limit_reached' || err?.status === 413;
 }
 
-/** Puter reports times in seconds; everything here uses milliseconds. */
+/** Everything reports times in seconds; everything here uses milliseconds. */
 const ms = (item) => {
   const m = Number(item?.modified ?? item?.mtime ?? 0);
   return m && m < 1e12 ? m * 1000 : m;
@@ -33,14 +33,14 @@ const ms = (item) => {
 
 const WRITE_OPTS = { overwrite: true, dedupeName: false, createMissingParents: true };
 
-/** Files under ~/AppData/<app>/<root>/ in the person's Puter cloud. */
-export function puterBackend(puter, root = 'records') {
+/** Files under ~/AppData/<app>/<root>/ in the person's Everything cloud. */
+export function everythingBackend(everything, root = 'records') {
   const p = (path) => `${root}/${path}`;
   return {
-    kind: 'puter',
+    kind: 'everything',
     async read(path) {
       try {
-        const blob = await puter.fs.read(p(path));
+        const blob = await everything.fs.read(p(path));
         const text = await blob.text();
         return { text, modified: null, size: blob.size };
       } catch (err) {
@@ -50,7 +50,7 @@ export function puterBackend(puter, root = 'records') {
     },
     async readBlob(path) {
       try {
-        return await puter.fs.read(p(path));
+        return await everything.fs.read(p(path));
       } catch (err) {
         if (isMissing(err)) return null;
         throw err;
@@ -58,12 +58,12 @@ export function puterBackend(puter, root = 'records') {
     },
     async write(path, data) {
       const blob = data instanceof Blob ? data : new Blob([data], { type: 'application/json' });
-      const item = await puter.fs.write(p(path), blob, WRITE_OPTS);
+      const item = await everything.fs.write(p(path), blob, WRITE_OPTS);
       return { modified: ms(item) || Date.now(), size: item?.size ?? blob.size };
     },
     async stat(path) {
       try {
-        const item = await puter.fs.stat(p(path));
+        const item = await everything.fs.stat(p(path));
         return { modified: ms(item), size: item?.size ?? null };
       } catch (err) {
         if (isMissing(err)) return null;
@@ -72,18 +72,18 @@ export function puterBackend(puter, root = 'records') {
     },
     async remove(path) {
       try {
-        await puter.fs.delete(p(path), { recursive: true });
+        await everything.fs.delete(p(path), { recursive: true });
       } catch (err) {
         if (!isMissing(err)) throw err;
       }
     },
     async copy(from, to) {
-      const blob = await puter.fs.read(p(from));
-      await puter.fs.write(p(to), blob, WRITE_OPTS);
+      const blob = await everything.fs.read(p(from));
+      await everything.fs.write(p(to), blob, WRITE_OPTS);
     },
     async space() {
       try {
-        return await puter.fs.space();
+        return await everything.fs.space();
       } catch {
         return null;
       }
@@ -194,18 +194,18 @@ export function openDb(name, store) {
 
 /* ------------------------------------------------------------------- kv */
 
-/** Small settings in puter.kv: one entry per setting group, read once. */
-export function puterKv(puter) {
+/** Small settings in everything.kv: one entry per setting group, read once. */
+export function everythingKv(everything) {
   return {
     async get(key) {
       try {
-        return await puter.kv.get(key);
+        return await everything.kv.get(key);
       } catch {
         return null;
       }
     },
     async set(key, value) {
-      return puter.kv.set(key, value);
+      return everything.kv.set(key, value);
     },
   };
 }

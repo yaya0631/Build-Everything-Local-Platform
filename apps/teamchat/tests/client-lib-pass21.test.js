@@ -27,7 +27,7 @@ const until = async (fn, ms = 5000) => {
 /** Route each call by the end of its path (first match wins); a handler gets the query and the request init. */
 function worker(routes) {
   const calls = [];
-  globalThis.puter = {
+  globalThis.everything = {
     workers: {
       exec: async (url, init = {}) => {
         const u = new URL(url);
@@ -67,7 +67,7 @@ function resetStore() {
   store.act = { c: {}, p: {}, w: 0, u: 0 };
   for (const t of store._readTimers.values()) clearTimeout(t);
   store._readTimers.clear();
-  delete globalThis.puter;
+  delete globalThis.everything;
 }
 
 const msg = (seq, text, extra = {}) => ({ seq, user: 'u-me', text, ts: seq * 1000, kind: 'msg', attachments: [], mentions: [], reactions: {}, replyCount: 0, ...extra });
@@ -86,7 +86,7 @@ function openChannel(messages, extra = {}) {
   return store.conv('c1');
 }
 
-describe('a photo or a file whose fetch failed while Puter could not confirm the sign-in', () => {
+describe('a photo or a file whose fetch failed while Everything could not confirm the sign-in', () => {
   afterEach(() => {
     vi.useRealTimers();
     clearAvatarCache();
@@ -96,10 +96,10 @@ describe('a photo or a file whose fetch failed while Puter could not confirm the
 
   it('is asked for again soon, as when nobody answered, not remembered as refused for minutes like a 403 or a 404', async () => {
     vi.useFakeTimers({ toFake: ['Date'] });
-    // The worker answers 401 for every request while Puter's word on the
+    // The worker answers 401 for every request while Everything's word on the
     // caller cannot be had (see worker/lib.js identify); polls and sends
     // recover on their next try, and so must the pictures drawn meanwhile.
-    const calls = worker({ '': () => json({ code: 'unauthorized', message: 'Your Puter session is not valid' }, 401) });
+    const calls = worker({ '': () => json({ code: 'unauthorized', message: 'Your Everything session is not valid' }, 401) });
     const asked = (what) => calls.filter((c) => c.includes(what)).length;
     await expect(avatarUrl(REF, 'u-ann', 3)).rejects.toMatchObject({ status: 401 });
     await expect(attachmentUrl(REF, 'f1')).rejects.toMatchObject({ status: 401 });
@@ -108,7 +108,7 @@ describe('a photo or a file whose fetch failed while Puter could not confirm the
     await expect(attachmentUrl(REF, 'f1')).rejects.toBeTruthy();
     expect(asked('u-ann')).toBe(1);
     expect(asked('/files/f1')).toBe(1);
-    // Puter is answering again within the minute: the next redraw asks again.
+    // Everything is answering again within the minute: the next redraw asks again.
     vi.advanceTimersByTime(20_000);
     await expect(avatarUrl(REF, 'u-ann', 3)).rejects.toBeTruthy();
     await expect(attachmentUrl(REF, 'f1')).rejects.toBeTruthy();
@@ -134,7 +134,7 @@ describe('a photo or a file whose fetch failed while Puter could not confirm the
     expect(asked('u-ann')).toBe(2);
     // A refusal proper (a 403 of any other kind) is still remembered for minutes.
     let refusals = 0;
-    globalThis.puter.workers.exec = async () => { refusals++; return json({ code: 'forbidden', message: 'Not yours to download' }, 403); };
+    globalThis.everything.workers.exec = async () => { refusals++; return json({ code: 'forbidden', message: 'Not yours to download' }, 403); };
     await expect(attachmentUrl(REF, 'f3')).rejects.toMatchObject({ status: 403, code: 'forbidden' });
     vi.advanceTimersByTime(20_000);
     await expect(attachmentUrl(REF, 'f3')).rejects.toBeTruthy();
@@ -280,7 +280,7 @@ describe('a reply queued for a thread whose root was deleted before the connecti
     ref = `${wsId}@teamchat-api`;
   });
   beforeEach(async () => {
-    globalThis.puter = { workers: { exec: (url, init) => runtime.dispatch(url, init, USERS.alice) } };
+    globalThis.everything = { workers: { exec: (url, init) => runtime.dispatch(url, init, USERS.alice) } };
     const doc = (await alice().get(`/api/ws/${wsId}`)).data;
     store.wsId = ref;
     store.ws = doc.workspace;
@@ -416,7 +416,7 @@ describe('a reply of one\'s own landing in a thread', () => {
 });
 
 describe('a huddle peer who serves anew while the link to them still stands', () => {
-  // The fake Puter Peer API of tests/huddle-client.test.js, in miniature.
+  // The fake Everything Peer API of tests/huddle-client.test.js, in miniature.
   let streamN = 0;
   class FakeStream {
     constructor() { this.id = `st${++streamN}`; }

@@ -43,11 +43,11 @@ async function render(e: Editor) {
   const thumbs = await Promise.all(list.map((x) => (thumbKey(x.source) ? localStore().get<Blob>('thumbs', thumbKey(x.source)).catch(() => undefined) : undefined)));
   for (const u of urls) URL.revokeObjectURL(u);
   urls = thumbs.map((b) => (b ? URL.createObjectURL(b) : ''));
-  const where = (x: RecentEntry) => (x.source.kind === 'puter' ? x.source.path.replace(/\/[^/]*$/, '') || '/' : 'This device');
+  const where = (x: RecentEntry) => (x.source.kind === 'everything' ? x.source.path.replace(/\/[^/]*$/, '') || '/' : 'This device');
   section.innerHTML = `<h2>Recent</h2><div class="start-recent-grid">${list
     .map(
       (x, i) =>
-        `<button type="button" class="start-recent-item" data-recent="${i}" title="${escapeXML(x.source.kind === 'puter' ? x.source.path : x.name)}"><span class="start-recent-thumb">${urls[i] ? `<img src="${urls[i]}" alt="">` : svg(x.source.kind === 'puter' ? 'cloud' : 'image', 22)}</span><span class="start-recent-name">${escapeXML(x.name)}</span><span class="start-recent-where">${escapeXML(where(x))}${x.time ? ` · ${relativeTime(x.time)}` : ''}</span></button>`,
+        `<button type="button" class="start-recent-item" data-recent="${i}" title="${escapeXML(x.source.kind === 'everything' ? x.source.path : x.name)}"><span class="start-recent-thumb">${urls[i] ? `<img src="${urls[i]}" alt="">` : svg(x.source.kind === 'everything' ? 'cloud' : 'image', 22)}</span><span class="start-recent-name">${escapeXML(x.name)}</span><span class="start-recent-where">${escapeXML(where(x))}${x.time ? ` · ${relativeTime(x.time)}` : ''}</span></button>`,
     )
     .join('')}</div>`;
 }

@@ -53,7 +53,7 @@ function makeService({ answer = null, ready = true } = {}) {
     },
   }
 
-  const puter = {
+  const everything = {
     env: 'app',
     ui: {
       launchApp: vi.fn(async (opts) => {
@@ -66,20 +66,20 @@ function makeService({ answer = null, ready = true } = {}) {
     },
   }
 
-  return { service, connection, puter }
+  return { service, connection, everything }
 }
 
 function harness(options = {}, clientOptions = {}) {
-  const { service, puter } = makeService(options)
+  const { service, everything } = makeService(options)
   const calendar = createCalendar({
-    getPuter: () => puter,
+    getEverything: () => everything,
     launchTimeoutMs: 60,
     requestTimeoutMs: 60,
     idleCloseMs: 20,
     ...clientOptions,
   })
   clients.push(calendar)
-  return { service, puter, calendar }
+  return { service, everything, calendar }
 }
 
 /** An event as the Calendar API returns one. */
@@ -94,8 +94,8 @@ const event = (over = {}) => ({
 })
 
 describe('calendar client — where it works at all', () => {
-  it('is inert outside the Puter desktop', async () => {
-    const calendar = createCalendar({ getPuter: () => ({ env: 'web', ui: { launchApp: vi.fn() } }) })
+  it('is inert outside the Everything desktop', async () => {
+    const calendar = createCalendar({ getEverything: () => ({ env: 'web', ui: { launchApp: vi.fn() } }) })
     clients.push(calendar)
     expect(calendar.supported()).toBe(false)
     expect(await calendar.upcomingWith(['ada@analytical.co'])).toBeNull()
@@ -103,7 +103,7 @@ describe('calendar client — where it works at all', () => {
   })
 
   it('is inert with no SDK at all', async () => {
-    const calendar = createCalendar({ getPuter: () => undefined })
+    const calendar = createCalendar({ getEverything: () => undefined })
     clients.push(calendar)
     expect(calendar.supported()).toBe(false)
     expect(await calendar.upcomingWith(['ada@analytical.co'])).toBeNull()

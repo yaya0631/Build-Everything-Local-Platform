@@ -69,7 +69,7 @@ export class PipUnavailableError extends Error {
  *
  * Where Document PiP exists the window is a real document: a few tiles
  * laid out by the same {@link TileGrid} as the stage, plus mic, camera,
- * back-to-tab and leave. Inside the Puter desktop the app is a frame, which
+ * back-to-tab and leave. Inside the Everything desktop the app is a frame, which
  * browsers won't open a Document PiP window from — so the desktop opens it
  * for us and loads our `pip.html`, which finds this frame and hands over
  * its window; from there on it is the very same document. Everywhere else
@@ -219,7 +219,7 @@ export class PictureInPicture extends Emitter {
    * raise — a frame focusing itself moves nothing there.
    */
   #focusMeeting() {
-    if (this.#hosted) window.puter?.ui?.showWindow?.();
+    if (this.#hosted) window.everything?.ui?.showWindow?.();
     focusOpener();
   }
 
@@ -250,17 +250,17 @@ export class PictureInPicture extends Emitter {
     this.#mountWindow(win);
   }
 
-  // ---- hosted document picture-in-picture (Puter desktop) ----
+  // ---- hosted document picture-in-picture (Everything desktop) ----
 
   async #openHosted(epoch) {
-    const puter = window.puter;
+    const everything = window.everything;
     const token = `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`;
     installHostedAttachHook();
     const arrival = new Promise((resolve) => hostedArrivals.set(token, resolve));
 
     try {
       try {
-        await puter.ui.requestPictureInPicture({
+        await everything.ui.requestPictureInPicture({
           // Next to the app's page, wherever that is served from.
           url: new URL(`pip.html?token=${encodeURIComponent(token)}`, window.location.href).href,
           width: WINDOW_SIZE.width,
@@ -293,13 +293,13 @@ export class PictureInPicture extends Emitter {
         .finally(() => clearTimeout(timer))
         .catch((err) => {
           // A window is up with nothing in it — take it down before failing.
-          puter.ui.exitPictureInPicture?.()?.catch?.(() => {});
+          everything.ui.exitPictureInPicture?.()?.catch?.(() => {});
           throw err;
         });
 
       if (epoch !== this.#epoch) {
         // The meeting view is gone; see #openWindow.
-        puter.ui.exitPictureInPicture?.()?.catch?.(() => {});
+        everything.ui.exitPictureInPicture?.()?.catch?.(() => {});
         return;
       }
       this.#hosted = true;
@@ -505,7 +505,7 @@ export class PictureInPicture extends Emitter {
     if (dismiss) {
       // A hosted window is the desktop's to close: from in here `win` is a
       // frame, and a frame can't close itself.
-      if (hosted) window.puter?.ui?.exitPictureInPicture?.()?.catch?.(() => {});
+      if (hosted) window.everything?.ui?.exitPictureInPicture?.()?.catch?.(() => {});
       else win?.close();
       if (video && document.pictureInPictureElement === video) {
         document.exitPictureInPicture?.().catch(() => {});

@@ -11,7 +11,7 @@ test.skip(({ isMobile }) => isMobile, 'desktop workspace');
 test('a callout dragged to the left or straight up keeps its box clear of its point', async ({
   page,
 }) => {
-  await page.route('**/sdk/puter.js', (route) => route.abort());
+  await page.route('**/sdk/everything.js', (route) => route.abort());
   const doc = await PDFDocument.create();
   doc.addPage([612, 792]);
   await page.goto('/#library');

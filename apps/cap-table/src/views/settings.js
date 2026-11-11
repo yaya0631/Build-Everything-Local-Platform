@@ -16,7 +16,7 @@ import { store, Store, CompanyChangedError, isRefusal } from '../lib/store.js';
    whole label lowercased read holder names and certificate labels as common
    words, and a screen reader stopped spelling "CS-3". */
 const lowerFirst = (s) => (s ? s.charAt(0).toLowerCase() + s.slice(1) : s);
-import { isPuterApp } from '../lib/env.js';
+import { isEverythingApp } from '../lib/env.js';
 import { fmvStatus, sharesOutstanding, fullyDiluted } from '../lib/captable.js';
 import {
   sharePrice, dateLong, CURRENCIES, currencyLabel, shares, timeAgo,
@@ -290,7 +290,7 @@ export function settingsView() {
         el('p.confirm-message', {},
           `Cap Table keeps the last few snapshots of this company, taken automatically `
           + 'before an operation that rewrites everything at once. They live in your '
-          + 'own Puter cloud beside the data, and they are not part of an export.'),
+          + 'own Everything cloud beside the data, and they are not part of an export.'),
         list),
     });
   }
@@ -302,7 +302,7 @@ export function settingsView() {
       /* Which one, when two share a name: the creation time tells them apart,
          and when both were created in the same minute, whether it is the one
          on screen does. */
-      message: `${active ? 'This is the company you are in now, created' : 'Created'} ${timeAgo(c.createdAt)}. Its cap table, permanent audit history, and attached files are permanently removed from your Puter cloud. Export its data and History JSON first if you need to retain them.`,
+      message: `${active ? 'This is the company you are in now, created' : 'Created'} ${timeAgo(c.createdAt)}. Its cap table, permanent audit history, and attached files are permanently removed from your Everything cloud. Export its data and History JSON first if you need to retain them.`,
       confirmLabel: 'Delete company',
     });
     if (!ok) return;
@@ -319,7 +319,7 @@ export function settingsView() {
   async function wipeAll() {
     const ok = await confirmDialog({
       title: 'Delete everything here?',
-      message: 'This company’s profile, stakeholders, securities, and scenarios are removed from your Puter cloud. A restore point is taken first, so this can be undone from Settings. Permanent audit history is retained and records this deletion. Other companies are untouched.',
+      message: 'This company’s profile, stakeholders, securities, and scenarios are removed from your Everything cloud. A restore point is taken first, so this can be undone from Settings. Permanent audit history is retained and records this deletion. Other companies are untouched.',
       confirmLabel: 'Delete everything',
     });
     if (!ok) return;
@@ -509,7 +509,7 @@ export function settingsView() {
         title: `Delete the ${dateLong(v.date)} valuation?`,
         count: n,
         message: `Option strikes are no longer checked against it, and deleting it can’t be undone. `
-          + `${n === 1 ? 'Its 409A report sits' : `${n} files sit`} behind it in your Puter cloud.`,
+          + `${n === 1 ? 'Its 409A report sits' : `${n} files sit`} behind it in your Everything cloud.`,
       });
       if (!choice) return;
       deleteFiles = choice === 'delete';
@@ -531,7 +531,7 @@ export function settingsView() {
     }
   }
 
-  const username = store.user?.username || 'Puter user';
+  const username = store.user?.username || 'Everything user';
 
   const root = el('div', {},
     viewHead('Settings', 'Company, appearance, and your data'),
@@ -622,9 +622,9 @@ export function settingsView() {
     el('div.settings-section', {},
       el('h2', {}, 'Account'),
       el('div.settings-card', {},
-        row(username, 'Signed in with Puter',
-          // Inside Puter (env 'app') the platform owns the session - no sign-out.
-          isPuterApp() ? null : el('button.btn.btn-ghost', {
+        row(username, 'Signed in with Everything',
+          // Inside Everything (env 'app') the platform owns the session - no sign-out.
+          isEverythingApp() ? null : el('button.btn.btn-ghost', {
             html: icon('logout', 15, 2), onclick: confirmSignOut,
           }, ' Sign out')))),
 
@@ -637,11 +637,11 @@ export function settingsView() {
 export async function confirmSignOut() {
   const ok = await confirmDialog({
     title: 'Sign out?',
-    message: 'Your data stays safe in your Puter cloud and reappears when you sign back in.',
+    message: 'Your data stays safe in your Everything cloud and reappears when you sign back in.',
     confirmLabel: 'Sign out',
     danger: false,
   });
   if (!ok) return;
-  puter.auth.signOut();
+  everything.auth.signOut();
   location.reload();
 }

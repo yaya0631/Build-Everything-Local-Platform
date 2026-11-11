@@ -43,7 +43,7 @@ const CHANGED_DEBOUNCE_MS = 250
  *
  * @param {object} deps
  * @param {{ on: Function, off?: Function, postMessage: Function }} deps.connection
- *   the AppConnection from `puter.ui.parentApp()`
+ *   the AppConnection from `everything.ui.parentApp()`
  * @param {string} deps.callerApp the launching app's name, per readLaunchContext()
  * @param {Record<string, Function>} deps.methods method table (see createMethods)
  * @param {object} [deps.allowed] caller → grant map, for tests

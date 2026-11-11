@@ -94,7 +94,7 @@ it('reopens moved rules as native XLSX without private metadata',async()=>{
  const wb=setup(),id=wb.activeSheetId;wb.addRule(id,{type:'scale',range:g(1,0,5),from:'#000000',to:'#ffffff',scaleMinType:'min',scaleMaxType:'max',statisticsRange:'$A$2:$A$6'});
  move(wb,g(2,0,4),2,3);
  const zip=X.CFB.read(new Uint8Array(await(await workbookToXlsx(wb)).arrayBuffer()),{type:'array'}),book=X.CFB.find(zip,'/xl/workbook.xml');
- book.content=new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,''));book.size=book.content.length;
+ book.content=new TextEncoder().encode(new TextDecoder().decode(book.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,''));book.size=book.content.length;
  const reopened=await workbookFromFile(X.CFB.write(zip,{type:'array',fileType:'zip'}),'move.xlsx');
  expect([2,3,4].map(r=>look(reopened,r,3)?.bg)).toEqual(['#3f3f3f','#7f7f7f','#bfbfbf']);
  reopened.setInput(reopened.activeSheetId,5,0,'200');expect(look(reopened,3,3)?.bg).toBe('#3f3f3f');

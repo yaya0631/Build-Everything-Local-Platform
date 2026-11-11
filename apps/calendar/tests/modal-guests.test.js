@@ -26,7 +26,7 @@ const PEOPLE = [
   { contactId: 'c3', name: 'Grace Hopper', email: 'grace@navy.mil', label: 'Work', company: 'US Navy', favorite: false },
 ];
 
-/** A stand-in for the contacts client: local, synchronous, no Puter needed.
+/** A stand-in for the contacts client: local, synchronous, no Everything needed.
  *  `ready` is what the guest field gates on; `available` (can Contacts be
  *  launched right now?) is deliberately separate, so a test can have one without
  *  the other. */
@@ -175,7 +175,7 @@ describe('event modal — guest suggestions from Contacts', () => {
   it('saves a picked contact with their name alongside the address', async () => {
     const store = makeStore();
     modal.close();
-    // A resolved email stands in for the Puter permission prompt the organizer
+    // A resolved email stands in for the Everything permission prompt the organizer
     // stamp needs, so the save doesn't park waiting on it.
     modal = createEventModal({ store, contacts, requestEmail: async () => 'me@example.com' });
     modal.openNew({});

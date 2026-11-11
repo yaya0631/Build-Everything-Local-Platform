@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { createStore, KV_KEYS } from '../src/lib/store.js';
 import { templateSeed, templateInstance, duplicateSeed } from '../src/lib/model.js';
 import { copyTitle } from '../src/lib/util.js';
-import { makeFakePuter } from './helpers/fake-puter.js';
+import { makeFakeEverything } from './helpers/fake-everything.js';
 
 const PDF = new Uint8Array([0x25, 0x50, 0x44, 0x46]); // "%PDF"
 
@@ -103,8 +103,8 @@ describe('template storage', () => {
   let store;
 
   beforeEach(async () => {
-    p = makeFakePuter();
-    store = createStore({ getPuter: () => p });
+    p = makeFakeEverything();
+    store = createStore({ getEverything: () => p });
     await store.init();
   });
 
@@ -131,7 +131,7 @@ describe('template storage', () => {
     await store.deleteDoc(doc.id);
     expect([...(await store.readTemplatePdf(tpl.id))]).toEqual([...PDF]);
     // And a second store instance finds it.
-    const second = createStore({ getPuter: () => p });
+    const second = createStore({ getEverything: () => p });
     await second.init();
     expect(second.listTemplates()).toHaveLength(1);
   });

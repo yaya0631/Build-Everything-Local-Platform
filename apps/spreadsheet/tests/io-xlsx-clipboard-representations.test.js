@@ -14,7 +14,7 @@ it('preserves recovered native clipboard values and formats through native-only 
   for(let pass=0;pass<2;pass++) {
     const blob=await workbookToXlsx(wb), bytes=await new Promise(resolve=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.readAsArrayBuffer(blob);});
     const zip=XLSX.CFB.read(new Uint8Array(bytes),{type:'array'}),part=XLSX.CFB.find(zip,'/xl/workbook.xml');
-    part.content=new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,''));part.size=part.content.length;
+    part.content=new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,''));part.size=part.content.length;
     wb=await workbookFromFile(XLSX.CFB.write(zip,{type:'array',fileType:'zip'}),'pasted.xlsx');
     expected.forEach(({v,s},r)=>{
       expect(wb.getValue(wb.activeSheetId,r,1)).toEqual(v);

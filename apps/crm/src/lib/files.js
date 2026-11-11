@@ -1,8 +1,8 @@
 /**
- * Thin wrapper around puter.fs, the way store.js wraps puter.kv.
+ * Thin wrapper around everything.fs, the way store.js wraps everything.kv.
  *
  * Attachments are the app's first use of the file system: the bytes live
- * under an attachments/ directory in the user's own Puter cloud (relative
+ * under an attachments/ directory in the user's own Everything cloud (relative
  * paths resolve inside the app's directory), while KV keeps only the
  * metadata. No server, no third-party bucket - the file's fate stays in
  * the user's account.
@@ -58,14 +58,14 @@ export function formatBytes(bytes) {
  */
 export async function uploadFile(file) {
   const path = `${DIR}/${uid()}-${safeFileName(file.name)}`;
-  await puter.fs.write(path, file, { createMissingParents: true });
+  await everything.fs.write(path, file, { createMissingParents: true });
   return path;
 }
 
 /** The file's bytes back, as a Blob. Only ever from the app's own directory. */
 export function readFile(path) {
   if (!isAppFilePath(path)) return Promise.reject(new Error('Not an attachment path'));
-  return puter.fs.read(path);
+  return everything.fs.read(path);
 }
 
 /**
@@ -73,9 +73,9 @@ export function readFile(path) {
  * A file already gone must never block the boot or the purge that found it.
  */
 export async function deleteStoredFile(path) {
-  if (!isAppFilePath(path) || typeof puter === 'undefined' || !puter.fs?.delete) return;
+  if (!isAppFilePath(path) || typeof everything === 'undefined' || !everything.fs?.delete) return;
   try {
-    await puter.fs.delete(path);
+    await everything.fs.delete(path);
   } catch {
     // Already gone, or offline - either way nothing actionable.
   }

@@ -12,7 +12,7 @@ beforeEach(async () => {
   files = new Map([['Documents/Report.docx', new Blob(['r'])], ['Documents/Notes.docx', new Blob(['n'])]]);
   listing = null; // when set, readdir waits for it
   vi.stubGlobal('matchMedia', () => ({ matches: true }));
-  vi.stubGlobal('puter', { fs: {
+  vi.stubGlobal('everything', { fs: {
     mkdir: async () => {},
     read: async (path) => files.get(path),
     write: vi.fn(async (path, blob) => { files.set(path, blob); return { path, name: path.split('/').pop() }; }),
@@ -45,7 +45,7 @@ it('does not take the focus from the search field when a remembered row lands la
   listing = new Promise((resolve) => { release = resolve; });
   view.el.querySelector('[data-path="Documents/Report.docx"] .file-menu-btn').click();
   [...document.querySelectorAll('[role="menuitem"]')].find((item) => item.textContent.includes('Duplicate')).click();
-  await vi.waitFor(() => expect(puter.fs.write).toHaveBeenCalled());
+  await vi.waitFor(() => expect(everything.fs.write).toHaveBeenCalled());
   // Meanwhile the user is typing a search.
   const search = view.el.querySelector('.home-search');
   search.focus();

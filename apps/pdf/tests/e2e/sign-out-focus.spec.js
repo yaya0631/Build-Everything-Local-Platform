@@ -1,10 +1,10 @@
 import { test, expect } from '@playwright/test';
 
 async function setup(page) {
-  await page.route('**/sdk/puter.js', (route) =>
+  await page.route('**/sdk/everything.js', (route) =>
     route.fulfill({
       contentType: 'application/javascript',
-      body: `window.signOutCalls = 0; window.puter = {
+      body: `window.signOutCalls = 0; window.everything = {
       env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test'}),
         signOut: async () => { window.signOutCalls++; } },
       fs: { readdir: async () => [] }, ui: {},
@@ -13,7 +13,7 @@ async function setup(page) {
   );
   await page.goto('/');
   await expect(page.locator('.page-caption')).toHaveText('Page 1 of 1');
-  await expect(page.getByRole('button', { name: 'Save to Puter', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Save to Everything', exact: true })).toBeVisible();
   const bar = page.getByRole('menubar', { name: 'PDF menus' });
   if (await bar.isVisible()) await bar.getByRole('menuitem', { name: 'Page', exact: true }).click();
   else {

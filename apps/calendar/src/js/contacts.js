@@ -1,9 +1,9 @@
 /**
  * The user's address book, borrowed from the Contacts app.
  *
- * Inside the Puter desktop the calendar can talk to other apps: we launch
+ * Inside the Everything desktop the calendar can talk to other apps: we launch
  * Contacts as a headless API server and talk to it over the AppConnection that
- * `puter.ui.launchApp` hands back (http://localhost:8443/Objects/AppConnection/).
+ * `everything.ui.launchApp` hands back (http://localhost:8443/Objects/AppConnection/).
  * Contacts only answers apps on its own allowlist, so this works because the
  * desktop tells it — from the calling process, not from anything we could
  * claim — that the caller is `calendar`.
@@ -51,7 +51,7 @@
  * hour, and a query typed against it always counts as a miss.
  *
  * Everything here degrades to "no suggestions": on the open web there is no
- * desktop to launch anything (puter.env !== 'app'), Contacts may not be
+ * desktop to launch anything (everything.env !== 'app'), Contacts may not be
  * installed, and the user may not have it. Suggestions come from the snapshot,
  * so they keep working when Contacts is briefly unreachable; and no call in this
  * module ever rejects into the guest field's typing path.
@@ -214,7 +214,7 @@ function rank(entry, q) {
 }
 
 export function createContacts({
-  getPuter = () => (typeof puter !== 'undefined' ? puter : null),
+  getEverything = () => (typeof everything !== 'undefined' ? everything : null),
   appName = APP_NAME,
   now = () => Date.now(),
   // Which user's snapshot this is. Without one nothing is written to disk: a
@@ -252,9 +252,9 @@ export function createContacts({
 
   const storeKey = () => (userKey ? `${STORE_PREFIX}${userKey}` : '');
 
-  /** Can we talk to other apps at all? Only true inside the Puter desktop. */
+  /** Can we talk to other apps at all? Only true inside the Everything desktop. */
   function supported() {
-    const p = getPuter();
+    const p = getEverything();
     return Boolean(p && p.env === 'app' && p.ui && typeof p.ui.launchApp === 'function');
   }
 
@@ -451,7 +451,7 @@ export function createContacts({
     if (connecting) return connecting;
     if (!available()) return Promise.reject(new Error('Contacts is not available here'));
 
-    const p = getPuter();
+    const p = getEverything();
     const gen = generation;
     connecting = new Promise((resolve, reject) => {
       let settled = false;

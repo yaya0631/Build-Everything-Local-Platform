@@ -1,7 +1,7 @@
 /**
- * RSVP links — self-serve guest responses over a per-user Puter worker.
+ * RSVP links — self-serve guest responses over a per-user Everything worker.
  *
- * The calendar's only backend is puter.kv, which guests (who may have no Puter
+ * The calendar's only backend is everything.kv, which guests (who may have no Everything
  * account at all) can't touch. So each calendar user gets their own serverless
  * worker (`https://cal-<username>.localhost:8443`, deployed here on first use from
  * the template in src/workers/rsvp-worker.js) that runs under THEIR account and
@@ -58,10 +58,10 @@ import { toast as defaultToast } from './toast.js';
 //      (not just the candidate slot's), so no meeting can land inside another
 //      booking's protected before/after gap.
 // '9': booking emails actually send on the live platform — the bare
-//      me.puter.email.send() call is rejected there (the payer must be named
+//      me.everything.email.send() call is rejected there (the payer must be named
 //      via requesterToken); the worker now negotiates the same send forms as
 //      email-worker.js, with the host's own token as the self requester.
-// '10': meeting links — the RSVP snapshot carries the event's Puter Meetings
+// '10': meeting links — the RSVP snapshot carries the event's Everything Meetings
 //      link (guest page shows a Join row), and booking pages mint one per
 //      booking (page.meet), carried through the confirmation email, the .ics,
 //      the guest pages, and the admin pull onto the host's calendar event.
@@ -111,14 +111,14 @@ import { toast as defaultToast } from './toast.js';
 // '26': a booking sync whose body is not an object is refused (400) instead
 //      of being written over the live config as "no pages, no busy time".
 // '27': a value-carrying list is re-read in shards when it is heavy by bytes,
-//      not only when it is long — puter.kv.list truncates by payload too, and
+//      not only when it is long — everything.kv.list truncates by payload too, and
 //      a booking record it dropped is a slot offered twice.
-// '28': booking mails go through puter.email.sendTransactional — the send
+// '28': booking mails go through everything.email.sendTransactional — the send
 //      API's current name — falling back to send() on a runtime that still
 //      only knows the old one.
 // '29': host cancellations email the host a receipt as well as notifying the guest.
 // '30': forces each user's RSVP worker to redeploy onto the current runtime
-//      (puter.js with email.sendTransactional); /admin/ping reports it as runtime.
+//      (everything.js with email.sendTransactional); /admin/ping reports it as runtime.
 export const RSVP_WORKER_VERSION = '30';
 
 const CFG_KEY = 'cal:rsvp:cfg';
@@ -164,7 +164,7 @@ function randomHex(bytes) {
  * The name fronts every booking link the host hands out, so it leads with
  * theirs: `calendar.localhost:8443/#/nj/intro-call` (the label minus its `cal-`
  * prefix — see linkFor in booking.js) rather than ten random digits. Worker
- * names are global across Puter and immutable once taken, hence the fallbacks
+ * names are global across Everything and immutable once taken, hence the fallbacks
  * — a name someone else holds must cost a nicer URL, never the deploy. A
  * username with nothing usable in it (no Latin letters or digits at all) gets
  * the old random form, which is also what every worker deployed before this
@@ -221,7 +221,7 @@ export function createRsvpLinks({
   kv,
   store,
   user,
-  getPuter = () => (typeof puter !== 'undefined' ? puter : null),
+  getEverything = () => (typeof everything !== 'undefined' ? everything : null),
   fetchFn = (...args) => fetch(...args),
   blocked = isBlocked,
   requestUser = getUser,
@@ -468,8 +468,8 @@ export function createRsvpLinks({
       return cfg;
     }
 
-    const p = getPuter();
-    if (!p || !p.workers || !p.fs) throw new Error('rsvp: Puter workers are unavailable');
+    const p = getEverything();
+    if (!p || !p.workers || !p.fs) throw new Error('rsvp: Everything workers are unavailable');
 
     if (cfg && cfg.secret && cfg.name) {
       // Version upgrade: overwrite the source file in place — the worker keeps
@@ -751,7 +751,7 @@ export function createRsvpLinks({
         location: ev.location,
         description: ev.description,
         // The guest page's Join row. Pushed as-is; the worker holds it to the
-        // exact Puter Meetings shape (an imported foreign URL is dropped there,
+        // exact Everything Meetings shape (an imported foreign URL is dropped there,
         // same policy as the email worker).
         meetingUrl: (ev.meeting && ev.meeting.url) || '',
         organizerName: (ev.organizer && ev.organizer.name) || '',
@@ -806,7 +806,7 @@ export function createRsvpLinks({
   async function pass() {
     if (offline()) return 0;
     let failed = 0;
-    // The organizer stamp on my own events needs my email; if Puter's grant
+    // The organizer stamp on my own events needs my email; if Everything's grant
     // landed since boot, getUser() now includes it (no prompt is triggered).
     // A network call, and passes now run every minute — re-ask every few
     // minutes rather than on every pass for the whole session.
@@ -942,7 +942,7 @@ export function createRsvpLinks({
     unsubStore = store.subscribe(schedule);
     // Answers arrive from outside: poll while the tab is visible, and pull on
     // coming back to the calendar (visibilitychange for a hidden tab, focus
-    // for the app's own window inside the Puter desktop, where switching
+    // for the app's own window inside the Everything desktop, where switching
     // windows never hides the tab). The pull floor bounds what these can ask.
     pollTimer = setInterval(() => {
       if (typeof document !== 'undefined' && document.visibilityState === 'hidden') return;

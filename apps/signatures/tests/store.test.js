@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { createStore, KV_KEYS, DEFAULT_SETTINGS } from '../src/lib/store.js';
-import { makeFakePuter } from './helpers/fake-puter.js';
+import { makeFakeEverything } from './helpers/fake-everything.js';
 
 const PDF = new Uint8Array([0x25, 0x50, 0x44, 0x46]); // "%PDF"
 
@@ -9,8 +9,8 @@ describe('store', () => {
   let store;
 
   beforeEach(async () => {
-    p = makeFakePuter();
-    store = createStore({ getPuter: () => p });
+    p = makeFakeEverything();
+    store = createStore({ getEverything: () => p });
     await store.init();
   });
 
@@ -23,7 +23,7 @@ describe('store', () => {
   it('boots with defaults and loads documents from KV', async () => {
     expect(store.settings).toEqual(DEFAULT_SETTINGS);
     const doc = await draft();
-    const second = createStore({ getPuter: () => p });
+    const second = createStore({ getEverything: () => p });
     await second.init();
     expect(second.getDoc(doc.id)?.title).toBe('NDA');
     expect(second.listDocs()).toHaveLength(1);

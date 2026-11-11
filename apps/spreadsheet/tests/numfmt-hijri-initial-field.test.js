@@ -43,7 +43,7 @@ it('retains initial-field semantics through edits, HTML and metadata-free XLSX',
   wb.undo(); expect(wb.getValue(id,0,1)).toBe('الإثنين 29 الإثنين الإثنين');
   const blob = await workbookToXlsx(wb), bytes = await new Promise(resolve => { const r = new FileReader(); r.onload = () => resolve(new Uint8Array(r.result)); r.readAsArrayBuffer(blob); });
   const zip = X.CFB.read(bytes,{type:'array'}), part = X.CFB.find(zip,'/xl/workbook.xml');
-  part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,'')); part.size = part.content.length;
+  part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,'')); part.size = part.content.length;
   const back = await workbookFromFile(X.CFB.write(zip,{type:'array',fileType:'zip'}),'initial-field.xlsx');
   for (const [r,[value,code]] of examples.entries()) {
     expect(back.getValue(back.activeSheetId,r,0)).toBe(value);

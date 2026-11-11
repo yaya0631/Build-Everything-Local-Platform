@@ -7,7 +7,7 @@ import { h } from './lib/dom.js';
 import { icon } from './lib/icons.js';
 import { applyTheme } from './ui/prefs.js';
 import { Store } from './data/store.js';
-import { puterBackend, puterKv, indexedDbBackend, localKv } from './data/backend.js';
+import { everythingBackend, everythingKv, indexedDbBackend, localKv } from './data/backend.js';
 import { indexedDbJournal, journalName } from './data/journal.js';
 import { App } from './ui/app.js';
 
@@ -35,10 +35,10 @@ function signInScreen(onSignedIn) {
   const error = h('p.field-error', { role: 'alert' });
   btn.addEventListener('click', async () => {
     btn.disabled = true;
-    btn.textContent = 'Waiting for Puter...';
+    btn.textContent = 'Waiting for Everything...';
     error.textContent = '';
     try {
-      await puter.auth.signIn();
+      await everything.auth.signIn();
       onSignedIn();
     } catch (err) {
       btn.disabled = false;
@@ -57,7 +57,7 @@ function signInScreen(onSignedIn) {
       feature('vGrid', 'A fast spreadsheet-style grid with rich field types'),
       feature('fLink', 'Link records across tables, with lookups and rollups'),
       feature('fFormula', 'Formulas, filters, sorts, groups and summaries'),
-      feature('cloud', 'Stored as files in your own Puter cloud'),
+      feature('cloud', 'Stored as files in your own Everything cloud'),
     ),
     btn,
     error,
@@ -67,7 +67,7 @@ function signInScreen(onSignedIn) {
 
 async function profilePicture() {
   try {
-    return (await puter.auth.getProfilePicture?.()) || null;
+    return (await everything.auth.getProfilePicture?.()) || null;
   } catch {
     return null;
   }
@@ -87,13 +87,13 @@ async function start({ backend, kv, journal, user, env, onSignOut, picture }) {
   window.recordsApp = app;
   app.start();
   Promise.resolve(picture).then((p) => p && app.setPicture(p));
-  // Opened from the Puter desktop with CSV files ("Open with Records").
-  if (env === 'app' && typeof puter !== 'undefined' && puter.ui?.onLaunchedWithItems) {
-    puter.ui.onLaunchedWithItems(async (items) => {
+  // Opened from the Everything desktop with CSV files ("Open with Records").
+  if (env === 'app' && typeof everything !== 'undefined' && everything.ui?.onLaunchedWithItems) {
+    everything.ui.onLaunchedWithItems(async (items) => {
       for (const item of items || []) {
         if (!/\.(csv|tsv|txt)$/i.test(item.name || '')) continue;
         try {
-          const blob = await (item.read ? item.read() : puter.fs.read(item.path));
+          const blob = await (item.read ? item.read() : everything.fs.read(item.path));
           app.importFile(new File([blob], item.name, { type: blob.type || 'text/csv' }));
         } catch (err) {
           console.error(err);
@@ -106,40 +106,40 @@ async function start({ backend, kv, journal, user, env, onSignOut, picture }) {
 async function boot() {
   const params = new URLSearchParams(location.search);
   if (import.meta.env.DEV && params.has('local')) {
-    // Development sandbox: everything stays in this browser, no Puter account.
+    // Development sandbox: everything stays in this browser, no Everything account.
     const backend = await indexedDbBackend('records-local');
     start({ backend, kv: localKv('records-local:'), journal: await indexedDbJournal('records-local-journal'), user: { username: 'you' }, env: 'web', onSignOut: null, picture: null });
     return;
   }
-  if (typeof puter === 'undefined') {
-    errorScreen('Could not reach Puter', 'Records keeps your bases in your Puter cloud. Check your connection and try again.', () => location.reload());
+  if (typeof everything === 'undefined') {
+    errorScreen('Could not reach Everything', 'Records keeps your bases in your Everything cloud. Check your connection and try again.', () => location.reload());
     return;
   }
-  const env = puter.env;
+  const env = everything.env;
   const begin = async () => {
     loading();
     let user = null;
     try {
-      user = await puter.auth.getUser();
+      user = await everything.auth.getUser();
     } catch {
       /* the avatar falls back to initials */
     }
     start({
-      backend: puterBackend(puter),
-      kv: puterKv(puter),
+      backend: everythingBackend(everything),
+      kv: everythingKv(everything),
       journal: await indexedDbJournal(journalName(user)),
       user,
       env,
-      // Inside the Puter desktop the session belongs to Puter, so there is no sign-out.
+      // Inside the Everything desktop the session belongs to Everything, so there is no sign-out.
       onSignOut: env === 'app' ? null : async () => {
-        await puter.auth.signOut();
+        await everything.auth.signOut();
         location.hash = '';
         location.reload();
       },
       picture: profilePicture(),
     });
   };
-  if (env === 'app' || puter.auth.isSignedIn()) begin();
+  if (env === 'app' || everything.auth.isSignedIn()) begin();
   else signInScreen(begin);
 }
 

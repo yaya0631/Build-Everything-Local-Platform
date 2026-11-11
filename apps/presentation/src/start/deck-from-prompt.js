@@ -1,4 +1,4 @@
-// A presentation written from a description: Puter's AI drafts an outline
+// A presentation written from a description: Everything's AI drafts an outline
 // (a title slide and a number of content slides, each with speaker notes) as
 // JSON, and the deck is built from it with the assistant's own add_slide
 // tool, in the palette chosen. Nothing here touches the page; the chat

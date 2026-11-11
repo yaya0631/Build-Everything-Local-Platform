@@ -43,7 +43,7 @@ describe('Print', () => {
     mount();
     await settle(250);
     expect(printBtn().hidden).toBe(true);
-    rowFor('Welcome to your Puter mailbox').click();
+    rowFor('Welcome to your Everything mailbox').click();
     await settle(250);
     expect(printBtn().hidden).toBe(false);
     printBtn().click();
@@ -75,7 +75,7 @@ describe('Print', () => {
   it('is hidden again when the reader closes', async () => {
     mount();
     await settle(250);
-    rowFor('Welcome to your Puter mailbox').click();
+    rowFor('Welcome to your Everything mailbox').click();
     await settle(250);
     root.querySelector('[aria-label="Back to list"]').click();
     expect(printBtn().hidden).toBe(true);

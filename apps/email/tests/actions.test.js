@@ -53,7 +53,7 @@ afterEach(() => {
 });
 
 describe('where the keyboard goes after an action', () => {
-  const SUBJECT = 'Welcome to your Puter mailbox';
+  const SUBJECT = 'Welcome to your Everything mailbox';
 
   const nth = (n) => [...root.querySelectorAll('.row')][n];
 
@@ -143,7 +143,7 @@ describe('where the keyboard goes after an action', () => {
 });
 
 describe('restore', () => {
-  const SUBJECT = 'Welcome to your Puter mailbox';
+  const SUBJECT = 'Welcome to your Everything mailbox';
 
   it('sends an archived message back to the inbox', async () => {
     mount();

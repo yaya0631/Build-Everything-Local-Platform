@@ -3,7 +3,7 @@ import signSource from '../src/workers/sign-worker.js?raw';
 import emailSource from '../src/workers/email-worker.js?raw';
 import { SIGN_WORKER_VERSION } from '../src/lib/signlinks.js';
 import { instantiateWorker, makeKv, sha256Hex } from './helpers/worker-harness.js';
-import { makeFs } from './helpers/fake-puter.js';
+import { makeFs } from './helpers/fake-everything.js';
 import { randomCode, normalizeCode } from '../src/lib/util.js';
 
 const SECRET = 'test-admin-secret';
@@ -37,7 +37,7 @@ async function buildWorker() {
   const fs = makeFs();
   await fs.write('signatures-data/d1/original.pdf', new Uint8Array([1, 2, 3]));
   const kv = makeKv();
-  return { worker: instantiateWorker(source, { me: { puter: { kv, fs } } }), kv };
+  return { worker: instantiateWorker(source, { me: { everything: { kv, fs } } }), kv };
 }
 
 function snapshot(over = {}) {
@@ -266,9 +266,9 @@ describe('the request email mentions a code without carrying it', () => {
   it('says a code is needed and never what it is', async () => {
     const sent = [];
     const worker = instantiateWorker(emailSource, {
-      me: { puter: { kv: makeKv(), email: { send: async (m) => (sent.push(m), {}) }, authToken: 't' } },
+      me: { everything: { kv: makeKv(), email: { send: async (m) => (sent.push(m), {}) }, authToken: 't' } },
     });
-    const caller = { uuid: 'u-1', puter: { authToken: 'c' } };
+    const caller = { uuid: 'u-1', everything: { authToken: 'c' } };
     await worker.call('POST', '/send', {
       user: caller,
       json: {

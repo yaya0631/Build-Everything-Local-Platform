@@ -11,7 +11,7 @@ afterEach(() => { for (const c of open.splice(0)) c.close(); });
 
 async function room(env) {
   const wb = new Workbook({ sheets: [{ name: 'Plan' }] });
-  return RoomClient.create({ puter: env.sdk(owner), server: SERVER, wb, name: 'Plan' });
+  return RoomClient.create({ everything: env.sdk(owner), server: SERVER, wb, name: 'Plan' });
 }
 
 // The room turning this person away from its list of who is here (it holds as many as it takes) is no lost
@@ -26,7 +26,7 @@ it("says the room is full, not Offline, when it has no place for this person's p
     const session = `bobtab${String(n).padStart(2, '0')}`;
     env.data.set(`ss:${id}:presence:${session}`, { room: id, session, user: editor.uuid, username: 'bob', role: 'editor', expires: env.now + 90_000, at: env.now });
   }
-  const bob = new RoomClient({ puter: env.sdk(editor), server: SERVER, room: id, token, store: memoryOutbox(), poll: 60_000, noPeers: true });
+  const bob = new RoomClient({ everything: env.sdk(editor), server: SERVER, room: id, token, store: memoryOutbox(), poll: 60_000, noPeers: true });
   open.push(bob);
   await bob.open();
   await bob.checkIn().catch(() => {});
@@ -50,7 +50,7 @@ it("says the room is full, not Offline, when it has no place for this person's p
 it('says the room answered that this copy is ahead of it, and Live again once the room catches up', async () => {
   const env = environment();
   const id = await room(env);
-  const alice = new RoomClient({ puter: env.sdk(owner), server: SERVER, room: id, store: memoryOutbox(), poll: 60_000, noPeers: true });
+  const alice = new RoomClient({ everything: env.sdk(owner), server: SERVER, room: id, store: memoryOutbox(), poll: 60_000, noPeers: true });
   open.push(alice);
   await alice.open();
   const request = alice.request.bind(alice);

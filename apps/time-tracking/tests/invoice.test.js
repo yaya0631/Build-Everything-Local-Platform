@@ -3,12 +3,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { store, normalizeInvoiceLines, invoiceTotals } from '../src/lib/store.js';
 import { openCreateInvoice } from '../src/ui/invoice.js';
 import { fmtMoney } from '../src/lib/util.js';
-import { createPuterMock } from './puter-mock.js';
+import { createEverythingMock } from './everything-mock.js';
 
 let client;
 
 beforeEach(async () => {
-  vi.stubGlobal('puter', createPuterMock());
+  vi.stubGlobal('everything', createEverythingMock());
   vi.stubGlobal('matchMedia', () => ({ matches: true }));
   document.body.innerHTML = '<main id="app"></main>';
   await store.init();

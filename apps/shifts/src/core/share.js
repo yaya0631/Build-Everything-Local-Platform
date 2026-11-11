@@ -149,7 +149,7 @@ ${isFiltered(filter) ? `<p class="filtered">Showing ${esc(describeFilter(filter,
 <tbody>${bodyRows}</tbody>
 </table>
 </div>
-<footer>Read-only schedule snapshot. Published with Shifts, powered by Puter.</footer>
+<footer>Read-only schedule snapshot. Published with Shifts, powered by Everything.</footer>
 <script>
 document.getElementById('emp-filter').addEventListener('change', function () {
   var v = this.value;

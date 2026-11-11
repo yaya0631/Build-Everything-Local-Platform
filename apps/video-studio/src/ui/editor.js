@@ -174,7 +174,7 @@ export class Editor {
     ctx.review = createReviewPanel(ctx);
     this.el.append(ctx.review.el);
     ctx.mobile = createMobileChrome(ctx, this.el);
-    // Development builds make free sample clips with ?aitest (Puter's test mode).
+    // Development builds make free sample clips with ?aitest (Everything's test mode).
     ctx.aiTestMode = Boolean(import.meta.env?.DEV && new URLSearchParams(location.search).has('aitest'));
     ctx.assistant = createAiPanel(ctx);
     body.append(ctx.assistant.rail, ctx.assistant.el);
@@ -377,8 +377,8 @@ export class Editor {
       body: h('div.about',
         h('div.about-logo', appIcon(64)),
         h('p', 'A multi-track video editor that runs in your browser. Decoding and encoding use your device\'s hardware through WebCodecs, the preview is drawn with WebGL2, and audio math runs in WebAssembly.'),
-        h('p', 'Projects and media are saved as files in your Puter cloud.'),
-        h('p', h('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Powered by Puter')),
+        h('p', 'Projects and media are saved as files in your Everything cloud.'),
+        h('p', h('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Powered by Everything')),
       ),
     });
   }

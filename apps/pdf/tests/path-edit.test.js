@@ -370,7 +370,7 @@ it('retains unpainted degenerate drawings and ignores ordinary or invalid unpain
     '/V 1 /Kind /Bad /Rule /NonZero',
     '/V 1 /Kind /Shape /Rule /Bad',
   ]) {
-    expect(inspectPaths(await raw(`/PuterPath << ${hint} >> BDC 40 40 30 30 re n EMC`), 0)).toEqual(
+    expect(inspectPaths(await raw(`/EverythingPath << ${hint} >> BDC 40 40 30 30 re n EMC`), 0)).toEqual(
       [],
     );
   }

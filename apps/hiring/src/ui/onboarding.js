@@ -40,7 +40,7 @@ export function openOnboarding(store, ctx = null) {
         el(
           'p',
           {},
-          'Job pages, a candidate pipeline, interviews, scorecards, offers, and onboarding. Everything is stored in your own Puter account, never sold or shared.'
+          'Job pages, a candidate pipeline, interviews, scorecards, offers, and onboarding. Everything is stored in your own Everything account, never sold or shared.'
         )
       ),
       el('button', { class: 'btn btn-primary btn-block', onClick: renderSetup }, 'Set up my hiring'),

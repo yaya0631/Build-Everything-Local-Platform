@@ -19,7 +19,7 @@ import { deserialize, serialize } from '../model/serialization';
 import { Assets, escapeXML } from '../model/assets';
 import { readRGBA } from '../model/tiles';
 import { PsdPreviewEditError, readOriginalPsd, saveOriginalPsd } from '../model/psd-original';
-import { download, puter, canSignOut } from '../persistence/puter';
+import { download, everything, canSignOut } from '../persistence/everything';
 import { formDialog, information } from './dialog';
 export async function importFile(e: Editor, blob: Blob, name: string) {
   e.transform.apply();
@@ -220,7 +220,7 @@ export async function performAction(e: Editor, action: string): Promise<void> {
         .then(() => {
           e.saved = doc;
           e.update();
-          e.message('Saved to Puter');
+          e.message('Saved to Everything');
         })
         .catch((error) => e.message(String(error)));
       break;
@@ -300,15 +300,15 @@ export async function performAction(e: Editor, action: string): Promise<void> {
       break;
     }
     case 'account': {
-      const p = puter();
+      const p = everything();
       if (!p.auth.isSignedIn()) {
         await p.auth.signIn();
-        e.message('Connected to Puter');
+        e.message('Connected to Everything');
       } else {
         const user = await p.auth.getUser();
         if (canSignOut(p.env)) {
           const v = await formDialog(
-            'Puter account',
+            'Everything account',
             [],
             'Sign out',
             `Signed in as ${user.username}. Your local document will stay open.`,
@@ -318,7 +318,7 @@ export async function performAction(e: Editor, action: string): Promise<void> {
             e.storage.reset();
             e.message('Signed out');
           }
-        } else information('Puter account', `<p>Signed in as ${escapeXML(user.username)}</p>`);
+        } else information('Everything account', `<p>Signed in as ${escapeXML(user.username)}</p>`);
       }
       break;
     }

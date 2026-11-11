@@ -2003,7 +2003,7 @@ async function setup() {
   Object.defineProperty(w.crypto, "subtle", { value: crypto.subtle });
   w.indexedDB = new IDBFactory();
   w.matchMedia = () => ({ matches: false, addEventListener() {} });
-  w.puter = {
+  w.everything = {
     env: "web",
     auth: { isSignedIn: () => false },
     kv: { get: async () => null, set: async () => {} },

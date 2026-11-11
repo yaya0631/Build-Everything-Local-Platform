@@ -8,12 +8,12 @@ const credentials = new WeakMap();
 const lifetime = 24 * 60 * 60 * 1000;
 const uuid = /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i;
 
-async function loadCredential(puter, parent, refused) {
+async function loadCredential(everything, parent, refused) {
   // App KV is private to this account. Persist across reloads to avoid minting
-  // a new Puter access token for every space or tab (a rate-limited operation).
+  // a new Everything access token for every space or tab (a rate-limited operation).
   const context = await hash(parent);
   const key = `wiki-collaboration-auth-v1:${context}`;
-  const saved = await puter.kv.get(key);
+  const saved = await everything.kv.get(key);
   if (
     saved?.expires > Date.now() + 60_000 &&
     (!refused || saved.token !== refused.token)
@@ -23,17 +23,17 @@ async function loadCredential(puter, parent, refused) {
   // Concurrent first-time tabs may generate different keys. Give each proof
   // its own file so the last KV write cannot invalidate an earlier tab.
   const fingerprint = (await hash(JSON.stringify(keys.publicKey))).slice(0, 32);
-  const file = await puter.fs.write(
+  const file = await everything.fs.write(
     `wiki/identity/${context}-${fingerprint}.json`,
     JSON.stringify({ version: 1, publicKey: keys.publicKey }),
     { overwrite: true, dedupeName: false, createMissingParents: true },
   );
   const issued = Date.now();
-  const url = new URL(await puter.fs.getReadURL(file.path, '24h'));
+  const url = new URL(await everything.fs.getReadURL(file.path, '24h'));
   const token = url.searchParams.get('token');
   const claims = tokenClaims(token);
   if (
-    url.origin !== new URL(puter.APIOrigin).origin ||
+    url.origin !== new URL(everything.APIOrigin).origin ||
     url.pathname !== '/token-read' ||
     !token ||
     token === parent ||
@@ -48,9 +48,9 @@ async function loadCredential(puter, parent, refused) {
     token,
     expires: Math.min(issued + lifetime, claims.exp * 1000),
   };
-  if (puter.authToken !== parent)
-    throw Error('Your Puter account changed. Reopen the shared space.');
-  await puter.kv.set(key, credential, { disableSharing: true });
+  if (everything.authToken !== parent)
+    throw Error('Your Everything account changed. Reopen the shared space.');
+  await everything.kv.set(key, credential, { disableSharing: true });
   return credential;
 }
 
@@ -67,9 +67,9 @@ export function tokenClaims(token) {
       (claims.uu !== undefined && claims.user_uid !== undefined)
     )
       return {};
-    // Puter's TokenService compresses auth types on the wire. Expiry and the
+    // Everything's TokenService compresses auth types on the wire. Expiry and the
     // full-access flag keep their full names. This only decodes metadata;
-    // worker authentication still validates the token through Puter itself.
+    // worker authentication still validates the token through Everything itself.
     const type =
       claims.t === undefined
         ? claims.type
@@ -106,27 +106,27 @@ export function tokenClaims(token) {
 // something else refuses it, and minting is rate-limited. Returns whether
 // it was replaced.
 const replaced = new WeakMap();
-export function refuseCredential(puter, headers) {
-  const entry = credentials.get(puter),
+export function refuseCredential(everything, headers) {
+  const entry = credentials.get(everything),
     value = entry?.value;
   // Replaced already, or being replaced, for a request refused at the
   // same time: sent again with the new one.
   if (
     entry &&
-    (entry.stale || !value || value.token !== headers?.['puter-auth'])
+    (entry.stale || !value || value.token !== headers?.['everything-auth'])
   )
     return true;
   if (!value) return false;
-  if (Date.now() - (replaced.get(puter) || 0) < 60_000) return false;
-  replaced.set(puter, Date.now());
-  credentials.set(puter, { parent: entry.parent, stale: true, refused: value });
+  if (Date.now() - (replaced.get(everything) || 0) < 60_000) return false;
+  replaced.set(everything, Date.now());
+  credentials.set(everything, { parent: entry.parent, stale: true, refused: value });
   return true;
 }
 
-export async function authorize(puter, server, body) {
-  const parent = puter.authToken;
-  if (!parent) throw Error('Sign in with Puter to continue.');
-  let entry = credentials.get(puter);
+export async function authorize(everything, server, body) {
+  const parent = everything.authToken;
+  if (!parent) throw Error('Sign in with Everything to continue.');
+  let entry = credentials.get(everything);
   if (
     entry?.parent !== parent ||
     entry.stale ||
@@ -134,11 +134,11 @@ export async function authorize(puter, server, body) {
   ) {
     const refused = entry?.stale && entry.parent === parent && entry.refused;
     entry = { parent };
-    credentials.set(puter, entry);
-    entry.pending = loadCredential(puter, parent, refused).then(
+    credentials.set(everything, entry);
+    entry.pending = loadCredential(everything, parent, refused).then(
       (value) => (entry.value = value),
       (error) => {
-        if (credentials.get(puter) === entry) credentials.delete(puter);
+        if (credentials.get(everything) === entry) credentials.delete(everything);
         throw error;
       },
     );
@@ -149,10 +149,10 @@ export async function authorize(puter, server, body) {
     credential.path,
     await hash(body),
   ]);
-  if (puter.authToken !== parent)
-    throw Error('Your Puter account changed. Reopen the shared space.');
+  if (everything.authToken !== parent)
+    throw Error('Your Everything account changed. Reopen the shared space.');
   return {
-    'puter-auth': credential.token,
+    'everything-auth': credential.token,
     'x-wiki-proof': JSON.stringify({
       version: 1,
       path: credential.path,

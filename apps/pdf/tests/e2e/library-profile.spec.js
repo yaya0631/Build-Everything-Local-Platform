@@ -1,14 +1,14 @@
 import { test, expect } from '@playwright/test';
 
 async function setup(page, { holdListing = false } = {}) {
-  await page.route('**/sdk/puter.js', (route) =>
+  await page.route('**/sdk/everything.js', (route) =>
     route.fulfill({
       contentType: 'application/javascript',
       body: `
         window.listReads=0;
         window.files=[{name:'report.pdf',size:10},{name:'report-two.pdf',size:20},{name:'second.pdf',size:30}];
         const holdAction=update=>new Promise(resolve=>{window.finishAction=()=>{update();resolve({});};});
-        window.puter={env:'app',auth:{getUser:()=>new Promise((resolve,reject)=>{
+        window.everything={env:'app',auth:{getUser:()=>new Promise((resolve,reject)=>{
           window.finishProfile=fail=>{
             if(fail) reject(new Error('Profile unavailable')); else resolve({username:'alice'});
             setTimeout(()=>window.profileSettled=true,0);
@@ -41,7 +41,7 @@ async function setup(page, { holdListing = false } = {}) {
 async function finishProfile(page, outcome) {
   await page.evaluate((fail) => window.finishProfile(fail), outcome === 'failure');
   await expect.poll(() => page.evaluate(() => window.profileSettled)).toBe(true);
-  const name = outcome === 'success' ? 'alice' : 'Puter user';
+  const name = outcome === 'success' ? 'alice' : 'Everything user';
   await expect(page.locator('.account-label')).toHaveText(name);
   await expect(page.locator('.account-label')).toHaveAttribute('title', name);
 }
@@ -83,7 +83,7 @@ for (const outcome of ['success', 'failure']) {
       await expect(page.locator('.file-open')).toHaveText(['second.pdf']);
       await page.getByRole('button', { name: 'Settings', exact: true }).click();
       await expect(page.getByRole('dialog', { name: 'Settings', exact: true })).toContainText(
-        `Signed in as ${outcome === 'success' ? 'alice' : 'Puter user'}`,
+        `Signed in as ${outcome === 'success' ? 'alice' : 'Everything user'}`,
       );
       expect(errors).toEqual([]);
     });

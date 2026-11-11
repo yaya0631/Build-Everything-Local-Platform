@@ -16,9 +16,9 @@ import {
 } from './mcp.js'
 import { TOOLS } from './tools.js'
 
-function stubPuter() {
+function stubEverything() {
   const kv = new Map()
-  window.puter = {
+  window.everything = {
     kv: {
       list: async () => [...kv.entries()].map(([key, value]) => ({ key, value })),
       set: async (k, v) => {
@@ -77,7 +77,7 @@ describe('api/mcp', () => {
   const tool = async (name, args) => (await call('tools/call', { name, arguments: args })).result
 
   beforeEach(async () => {
-    stubPuter()
+    stubEverything()
     resetStore()
     methods = createMethods({ store })
     ada = createContact({
@@ -228,8 +228,8 @@ describe('api/mcp', () => {
     /** What the model has to be told: the ones it asked for and did not get. */
     it('names the contacts a batch could not delete', async () => {
       const [first, second] = store.all
-      const del = window.puter.kv.del
-      window.puter.kv.del = async (key) => {
+      const del = window.everything.kv.del
+      window.everything.kv.del = async (key) => {
         if (key.endsWith(second.id)) throw new Error('offline')
         return del(key)
       }
@@ -379,7 +379,7 @@ describe('api/server — both protocols on one connection', () => {
   let methods
 
   beforeEach(async () => {
-    stubPuter()
+    stubEverything()
     resetStore()
     await store.save(createContact({ firstName: 'Ada', lastName: 'Lovelace', emails: [{ value: 'ada@analytical.co' }] }))
     store.loaded = true

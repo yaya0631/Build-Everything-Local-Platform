@@ -1,5 +1,5 @@
 /**
- * Grammar and style suggestions through Puter's AI, opt-in from the Editor pane. Only the
+ * Grammar and style suggestions through Everything's AI, opt-in from the Editor pane. Only the
  * paragraphs being checked are sent; answers are parsed defensively and each suggestion is
  * located in the text it came from before it is offered.
  */

@@ -1,9 +1,9 @@
 /**
- * Offline layer: a per-user localStorage mirror of the Puter KV data plus
+ * Offline layer: a per-user localStorage mirror of the Everything KV data plus
  * a queue of writes made while unreachable. Modeled on the Accountant
  * app's offline module.
  *
- * The mirror stores the same raw JSON strings Puter holds:
+ * The mirror stores the same raw JSON strings Everything holds:
  *   shifts:cache:v1:user               { uuid, username }
  *   shifts:cache:v1:<uuid>:kv:<name>   raw collection JSON ('null' = known-missing)
  *   shifts:cache:v1:<uuid>:dirty       ["employees", "shifts", ...]
@@ -151,14 +151,14 @@ export const offline = {
   },
 
   /**
-   * When the Puter SDK itself couldn't load (offline, uncached), install a
+   * When the Everything SDK itself couldn't load (offline, uncached), install a
    * stand-in whose network calls all fail. The backend's cache fallbacks
    * and write queue then serve the whole app from local data.
    */
   installStub() {
-    const fail = () => Promise.reject(new TypeError('Offline: Puter is unreachable'));
+    const fail = () => Promise.reject(new TypeError('Offline: Everything is unreachable'));
     const meta = getMeta();
-    globalThis.puter = {
+    globalThis.everything = {
       auth: {
         isSignedIn: () => true,
         getUser: () => Promise.resolve(meta ? { uuid: meta.uuid, username: meta.username } : null),

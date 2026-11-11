@@ -67,7 +67,7 @@ const reading = () => root.querySelector('.app-frame').classList.contains('readi
 
 beforeEach(() => {
   window.localStorage.clear();
-  window.localStorage.setItem('puter-mail:notify', '1');
+  window.localStorage.setItem('everything-mail:notify', '1');
   shown = [];
   window.Notification = FakeNotification;
   hadFocus = document.hasFocus;

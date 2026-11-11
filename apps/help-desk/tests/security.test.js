@@ -155,11 +155,11 @@ describe('help center identity', () => {
     expect((await t.call(STRANGER, 'GET', `/p/${desk}/requests/${secretId}`)).status).toBe(403);
   });
 
-  it('ignores Puter account links in agent input', async () => {
+  it('ignores Everything account links in agent input', async () => {
     const t = makeBackend();
     const desk = await makeDesk(t);
-    const { user } = await t.ok(AGENT, 'POST', `/api/d/${desk}/users`, { name: 'Ceo', email: 'ceo@client.io', puter: STRANGER.uuid });
-    expect(user.puter).toBe(null);
+    const { user } = await t.ok(AGENT, 'POST', `/api/d/${desk}/users`, { name: 'Ceo', email: 'ceo@client.io', everything: STRANGER.uuid });
+    expect(user.everything).toBe(null);
   });
 });
 

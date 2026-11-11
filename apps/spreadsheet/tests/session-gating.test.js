@@ -3,33 +3,33 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vite
 import { memoryStorage } from './helpers/memory-storage.js';
 import { Doc, SIGN_IN_TO_SAVE } from '../src/lib/doc.js';
 import { session } from '../src/lib/session.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 import { storageScope } from '../src/lib/account-storage.js';
 import { workbookToXlsx } from '../src/core/io.js';
 import { Workbook } from '../src/core/workbook.js';
 
-describe('working without a Puter session', () => {
+describe('working without an Everything session', () => {
   let calls;
   // SheetJS loads through a real dynamic import that fake timers cannot advance; warm it up first.
   beforeAll(async () => { await workbookToXlsx(new Workbook()); });
   beforeEach(() => {
     vi.useFakeTimers();
     vi.stubGlobal('localStorage', memoryStorage());
-    ({ calls } = installMockPuter());
-    puter._signedIn = false;
-    puter.auth = {
-      isSignedIn: () => puter._signedIn,
-      signIn: vi.fn(async () => { puter._signedIn = true; }),
-      getUser: vi.fn(async () => (puter._signedIn ? { username: 'nariman', uuid: 'u-9' } : null)),
+    ({ calls } = installMockEverything());
+    everything._signedIn = false;
+    everything.auth = {
+      isSignedIn: () => everything._signedIn,
+      signIn: vi.fn(async () => { everything._signedIn = true; }),
+      getUser: vi.fn(async () => (everything._signedIn ? { username: 'nariman', uuid: 'u-9' } : null)),
     };
-    puter.kv = { get: vi.fn(async () => ({ theme: 'light' })), set: vi.fn(async () => true) };
+    everything.kv = { get: vi.fn(async () => ({ theme: 'light' })), set: vi.fn(async () => true) };
   });
   afterEach(() => {
     session.state = 'unknown';
     session.user = null;
     session._localChanges = {};
     vi.useRealTimers();
-    delete globalThis.puter;
+    delete globalThis.everything;
   });
 
   const writes = () => calls.filter(([op, path]) => op === 'write' && !path.includes('/.versions/')).map(([, path]) => path);
@@ -57,7 +57,7 @@ describe('working without a Puter session', () => {
 
     await expect(doc.save({ auto: true })).resolves.toBe(false);
     await expect(doc.save()).rejects.toThrow(SIGN_IN_TO_SAVE);
-    expect(puter.auth.signIn).not.toHaveBeenCalled();
+    expect(everything.auth.signIn).not.toHaveBeenCalled();
 
     expect(await session.signIn()).toBe(true);
     expect(session.signedIn).toBe(true);
@@ -71,29 +71,29 @@ describe('working without a Puter session', () => {
   it('keeps settings in this browser without a session and carries them into the account at sign-in', async () => {
     await session.init();
     await session.setTheme('dark');
-    expect(puter.kv.set).not.toHaveBeenCalled();
+    expect(everything.kv.set).not.toHaveBeenCalled();
     expect(JSON.parse(localStorage.getItem('spreadsheet:settings:v1')).theme).toBe('dark');
 
     await session.signIn();
     // The account had a light theme; the choice made a moment ago wins and is persisted.
     expect(session.settings.theme).toBe('dark');
-    await vi.waitFor(() => expect(puter.kv.set).toHaveBeenCalled());
-    expect(puter.kv.set.mock.calls[0][1]).toMatchObject({ theme: 'dark' });
+    await vi.waitFor(() => expect(everything.kv.set).toHaveBeenCalled());
+    expect(everything.kv.set.mock.calls[0][1]).toMatchObject({ theme: 'dark' });
   });
 
   it('shares one sign-in dialog between concurrent callers and reports a dismissed one', async () => {
     await session.init();
     let finish;
-    puter.auth.signIn.mockImplementationOnce(() => new Promise((resolve) => { finish = () => { puter._signedIn = true; resolve(); }; }));
+    everything.auth.signIn.mockImplementationOnce(() => new Promise((resolve) => { finish = () => { everything._signedIn = true; resolve(); }; }));
     const first = session.signIn();
     const second = session.signIn();
-    expect(puter.auth.signIn).toHaveBeenCalledTimes(1);
+    expect(everything.auth.signIn).toHaveBeenCalledTimes(1);
     finish();
     expect(await Promise.all([first, second])).toEqual([true, true]);
 
     session.state = 'out';
-    puter._signedIn = false;
-    puter.auth.signIn.mockRejectedValueOnce(new Error('User cancelled the authentication'));
+    everything._signedIn = false;
+    everything.auth.signIn.mockRejectedValueOnce(new Error('User cancelled the authentication'));
     expect(await session.signIn()).toBe(false);
     expect(session.signedOut).toBe(true);
   });
@@ -102,7 +102,7 @@ describe('working without a Puter session', () => {
     await session.init();
     const changes = vi.fn();
     session.addEventListener('change', changes);
-    puter._signedIn = true;
+    everything._signedIn = true;
     session.signedInAs({ username: 'nariman' });
     await vi.waitFor(() => expect(session.signedIn).toBe(true));
     expect(session.username).toBe('nariman');

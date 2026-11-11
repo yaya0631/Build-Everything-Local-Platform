@@ -1,6 +1,6 @@
 /**
  * The test mailbox: a handful of realistic raw RFC 822 messages served from
- * an in-memory fs with the same shape as puter.fs (readdir/read/stat) and the
+ * an in-memory fs with the same shape as everything.fs (readdir/read/stat) and the
  * same on-disk layout the `emailrx` extension writes. The suites mount the
  * whole app over it, so its normal code path runs against real MIME:
  * quoted-printable, base64, encoded words, multipart, attachments.
@@ -28,17 +28,17 @@ const join = (lines) => lines.join(CRLF);
 const MESSAGES = [
   {
     daysAgo: 0, hour: 9, minute: 24,
-    subject: 'Welcome to your Puter mailbox',
+    subject: 'Welcome to your Everything mailbox',
     raw: (date, to) => join([
-      `From: Puter Team <hello@localhost:8443>`,
+      `From: Everything Team <hello@localhost:8443>`,
       `To: ${to}`,
-      `Subject: Welcome to your Puter mailbox`,
+      `Subject: Welcome to your Everything mailbox`,
       `Date: ${date.toUTCString()}`,
       `Content-Type: text/plain; charset=utf-8`,
       ``,
       `Hi there,`,
       ``,
-      `This inbox lives entirely in your Puter account. Messages sent to your`,
+      `This inbox lives entirely in your Everything account. Messages sent to your`,
       `address are stored as files under /you/.mail, and this app simply reads`,
       `them. Nothing is copied anywhere else.`,
       ``,
@@ -50,18 +50,18 @@ const MESSAGES = [
       `- Your read/unread state stays on this device.`,
       ``,
       `Enjoy,`,
-      `The Puter Team`,
+      `The Everything Team`,
     ]),
   },
   {
     daysAgo: 0, hour: 8, minute: 2,
-    subject: '[HeyPuter/puter] Pull request #4821: Fix window snapping on multi-monitor setups',
+    subject: '[Everything/everything] Pull request #4821: Fix window snapping on multi-monitor setups',
     raw: (date, to) => {
       const boundary = 'gh-boundary-0001';
       return join([
         `From: GitHub <notifications@github.com>`,
         `To: ${to}`,
-        `Subject: [HeyPuter/puter] Pull request #4821: Fix window snapping on multi-monitor setups`,
+        `Subject: [Everything/everything] Pull request #4821: Fix window snapping on multi-monitor setups`,
         `Date: ${date.toUTCString()}`,
         `MIME-Version: 1.0`,
         `Content-Type: multipart/alternative; boundary="${boundary}"`,
@@ -76,7 +76,7 @@ const MESSAGES = [
         `Snapping previously used the primary display bounds for every window.`,
         `This change resolves the display under the cursor first.`,
         ``,
-        `View it on GitHub: https://github.com/HeyPuter/puter/pull/4821`,
+        `View it on GitHub: https://github.com/yaya0631/Build-Everything-Local-Platform`,
         `--${boundary}`,
         `Content-Type: text/html; charset=utf-8`,
         ``,

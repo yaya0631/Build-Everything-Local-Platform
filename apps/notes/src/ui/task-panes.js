@@ -313,7 +313,7 @@ export class TaskPanes {
     const copy = h('button.btn.small', { type: 'button', onclick: () => navigator.clipboard?.writeText(result).then(() => toast('Copied')) }, icon('copy', 14), 'Copy');
     outputActions.append(insert, copy);
     this.body.replaceChildren(h('div', { style: { padding: '0 14px 16px', display: 'grid', gap: '8px' } },
-      h('p.field-hint', 'Assist uses AI through your Puter account. Check its answers before relying on them.'),
+      h('p.field-hint', 'Assist uses AI through your Everything account. Check its answers before relying on them.'),
       ...buttons,
       h('div.field', { style: { marginTop: '8px' } }, ask, askBtn),
       output,

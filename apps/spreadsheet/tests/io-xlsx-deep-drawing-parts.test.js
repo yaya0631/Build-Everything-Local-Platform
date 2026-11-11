@@ -15,7 +15,7 @@ async function chartFile(edit) {
     entry.content = new TextEncoder().encode(fn(new TextDecoder().decode(entry.content)));
     entry.size = entry.content.length;
   };
-  change(/xl\/workbook\.xml$/, (xml) => xml.replace(/<sheet [^>]*name="_puter_meta"[^>]*\/>/, ''));
+  change(/xl\/workbook\.xml$/, (xml) => xml.replace(/<sheet [^>]*name="_everything_meta"[^>]*\/>/, ''));
   change(/charts\/chart[\d_]*\.xml$/, edit);
   return new Uint8Array(X.CFB.write(zip, { type: 'array', fileType: 'zip' }));
 }

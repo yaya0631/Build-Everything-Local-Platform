@@ -239,7 +239,7 @@ export class LibrariesPanel extends Panel {
     this.select.disabled = !libs.length;
     this.addBtn.disabled = !lib;
     const loc = this.store.location;
-    this.where.textContent = loc === 'cloud' ? 'Saved in your Puter cloud' : loc === 'local' ? 'Saved in this browser. Sign in to keep libraries in your cloud.' : '';
+    this.where.textContent = loc === 'cloud' ? 'Saved in your Everything cloud' : loc === 'local' ? 'Saved in this browser. Sign in to keep libraries in your cloud.' : '';
     this.content.classList.toggle('grid', this.view === 'grid');
     this.content.classList.toggle('list', this.view === 'list');
     if (!this.store.loaded) {

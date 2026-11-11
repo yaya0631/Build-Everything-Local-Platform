@@ -8,7 +8,7 @@
 //
 // Video media live in a pool of their own (videoPool(session)), keyed by
 // source id: { id, name, blob, mime, width, height, duration (seconds or 0),
-// fps (or 0), path (Puter path when the file is there), offline }. Like the
+// fps (or 0), path (Everything path when the file is there), offline }. Like the
 // audio pool it only grows, so undo can bring back a replaced video.
 
 import { uid } from './session-edits.js';
@@ -166,7 +166,7 @@ export function videoExtension(src) {
 
 /**
  * The session file's "video" entry and the media to write for it. A video
- * already stored on Puter is referenced by its path; otherwise (or with
+ * already stored on Everything is referenced by its path; otherwise (or with
  * `embed`, for ZIP packages) it is written into the session's media folder.
  * Returns null without a video clip.
  */

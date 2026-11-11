@@ -44,10 +44,10 @@ afterEach(() => {
 it('says that changes kept from an earlier visit could not be shared once the person may only view', async () => {
   const env = environment();
   const wb = new Workbook({ sheets: [{ name: 'Plan' }] });
-  const room = await RoomClient.create({ puter: env.sdk(owner), server: SERVER, wb, name: 'Plan' });
+  const room = await RoomClient.create({ everything: env.sdk(owner), server: SERVER, wb, name: 'Plan' });
   const token = (await call(env.sdk(owner), SERVER, { op: 'invite', room, role: 'editor' })).token;
   const store = memoryOutbox();
-  const first = new RoomClient({ puter: env.sdk(editor), server: SERVER, room, token, store, poll: 50, noPeers: true });
+  const first = new RoomClient({ everything: env.sdk(editor), server: SERVER, room, token, store, poll: 50, noPeers: true });
   clients.push(first);
   await first.open();
   // Offline, Bob changes a cell and closes the tab: the change waits in this browser.
@@ -58,7 +58,7 @@ it('says that changes kept from an earlier visit could not be shared once the pe
   // Meanwhile the owner made Bob a viewer.
   await call(env.sdk(owner), SERVER, { op: 'role', room, uuid: editor.uuid, role: 'viewer' });
   env.offlineUsers.delete(editor.uuid);
-  const again = new RoomClient({ puter: env.sdk(editor), server: SERVER, room, store, poll: 50, noPeers: true });
+  const again = new RoomClient({ everything: env.sdk(editor), server: SERVER, room, store, poll: 50, noPeers: true });
   clients.push(again);
   await again.open();
   expect(again.dropped).toBe(1);

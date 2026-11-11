@@ -9,7 +9,7 @@
  * vouches for its own people: when the two workspaces are connected they
  * come to share a secret, and the partner's worker signs a short-lived
  * token naming one of its members. The host checks the signature against
- * the connection's secret and the named uuid against the Puter identity
+ * the connection's secret and the named uuid against the Everything identity
  * of whoever presents the token, so a token is only ever good for the
  * person it names, and only for a few minutes.
  *

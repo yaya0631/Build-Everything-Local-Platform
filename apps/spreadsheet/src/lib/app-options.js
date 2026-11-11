@@ -20,7 +20,7 @@ export const OPTION_DEFAULTS = Object.freeze({
   fontSize: 11,
   newSheets: 1,
   newView: 'normal', // 'normal' | 'pageLayout' | 'pageBreak'
-  userName: '', // blank: the Puter account's name
+  userName: '', // blank: the Everything account's name
   startScreen: false, // true: the app opens on the start screen (the spreadsheet list) rather than a blank workbook
   // Edit
   enterMove: true,

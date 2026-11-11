@@ -1,6 +1,6 @@
 # Signatures
 
-Send documents for signature and manage them. A DocHub-style signing app built with vanilla JavaScript and [Puter](https://localhost:8443) as the only backend: your documents live in your own Puter cloud, and signers get private links that work without any account.
+Send documents for signature and manage them. A DocHub-style signing app built with vanilla JavaScript and [Everything](https://localhost:8443) as the only backend: your documents live in your own Everything cloud, and signers get private links that work without any account.
 
 ## What it does
 
@@ -23,19 +23,19 @@ No servers of ours anywhere. Three pieces:
 
 ```
 The app (this repo, static files)
-  Puter KV   sig:doc:<id>          document records: signers, fields, statuses,
+  Everything KV   sig:doc:<id>          document records: signers, fields, statuses,
                                    consent + evidence, fingerprint, audit
              sig:tpl:<id>          templates: roles + field layout
              sig:settings:v1       theme, name, onboarding flags
              sig:worker:cfg:v1     the user's sign worker (url + admin secret)
              sig:signature:v1      the user's reusable signature
-  Puter FS   signatures-data/<id>/original.pdf   the uploaded file
+  Everything FS   signatures-data/<id>/original.pdf   the uploaded file
              signatures-data/<id>/sigdata.json   field values incl. signature images
              signatures-data/<id>/signed.pdf     flattened copy, written on completion
              signatures-data/templates/<id>/original.pdf   a template's own PDF
 
 Sign worker (src/workers/sign-worker.js), ONE PER USER
-  Deployed automatically into the user's own Puter account on first send.
+  Deployed automatically into the user's own Everything account on first send.
   Serves capability URLs (/sign/<160-bit token>) and a JSON API the signing
   page (sign.html) renders from. Stores only token HASHES; managed by the app
   over /admin/* routes with a bearer secret whose hash is baked into the
@@ -44,15 +44,15 @@ Sign worker (src/workers/sign-worker.js), ONE PER USER
   closed; every attempt is recorded, so the app can send what it could not.
 
 Email worker (src/workers/email-worker.js), ONE FOR THE APP
-  Deployed once by the app owner (npm run deploy:email-worker). Called via
-  puter.workers.exec(), so every send is authorized by the worker but billed
+  Registered automatically by the local server as signatures-email. Called via
+  everything.workers.exec(), so every send is authorized by the worker but billed
   to the signed-in user. Composes all mail itself, only ever links to
   *.localhost:8443 sign capabilities, dedupes by content digest, and enforces
   per-request and per-day caps. Without it, the app falls back to copy-link
   sharing.
 ```
 
-The signing page never sees Puter: it talks only to the sign worker, and the worker origin plus token travel in the URL fragment so they stay out of server logs and referrer headers. Where an access code is set, unlocking it buys a short-lived per-tab session that every later call carries in a header.
+The signing page never sees Everything: it talks only to the sign worker, and the worker origin plus token travel in the URL fragment so they stay out of server logs and referrer headers. Where an access code is set, unlocking it buys a short-lived per-tab session that every later call carries in a header.
 
 PDF rendering is pdf.js; the flattened copy and the certificate page are built client-side with pdf-lib. No UI framework, no CSS framework; icons are Lucide.
 
@@ -65,8 +65,8 @@ npm run dev          # http://localhost:5173
 
 Two ways to run it:
 
-- **Real Puter**: open the dev URL and sign in. Everything works, including worker deployment and (if the email worker is deployed) email.
-- **Mock mode**: open `http://localhost:5173/?mock=1`. An in-memory Puter mock (dev/puter-mock.js) backs the whole app, and the sign worker actually runs in-page, so the full send and sign flow works offline. Email always "succeeds". Data resets on reload.
+- **Real Everything**: open the dev URL and sign in. Everything works, including worker deployment and (if the email worker is registered) email.
+- **Mock mode**: open `http://localhost:5173/?mock=1`. An in-memory Everything mock (dev/everything-mock.js) backs the whole app, and the sign worker actually runs in-page, so the full send and sign flow works offline. Email always "succeeds". Data resets on reload.
 
 ## Tests
 
@@ -75,7 +75,7 @@ npm test             # vitest, 314 tests
 npm run coverage
 ```
 
-The suite covers the document model, field geometry and snapping, templates and duplicates, the store on a fake Puter SDK, both workers instantiated the way the Puter runtime runs them (routes called as real HTTP, sequential signing included), the signlinks client talking to a real worker instantiation end to end, the email module, owner notifications on both channels, PDF merging, page plans and flattening with pdf-lib, and theming. Six suites drive DOM: the field editor's selection, the signing surface, the document list's rows and their action menu, the page rail, the add-pages dialog, and the signature pad's lifecycle, through real pointer and keyboard events. Where a screen reader is the only thing that would notice - a role=img field box whose label is the whole of what it gets - the label itself is asserted. The flattening tests measure every string the PDF draws against the box or column it belongs in, so text that escapes its bounds fails a test rather than only looking wrong in a viewer.
+The suite covers the document model, field geometry and snapping, templates and duplicates, the store on a fake Everything SDK, both workers instantiated the way the Everything runtime runs them (routes called as real HTTP, sequential signing included), the signlinks client talking to a real worker instantiation end to end, the email module, owner notifications on both channels, PDF merging, page plans and flattening with pdf-lib, and theming. Six suites drive DOM: the field editor's selection, the signing surface, the document list's rows and their action menu, the page rail, the add-pages dialog, and the signature pad's lifecycle, through real pointer and keyboard events. Where a screen reader is the only thing that would notice - a role=img field box whose label is the whole of what it gets - the label itself is asserted. The flattening tests measure every string the PDF draws against the box or column it belongs in, so text that escapes its bounds fails a test rather than only looking wrong in a viewer.
 
 ## Deploying
 
@@ -83,13 +83,13 @@ The suite covers the document model, field geometry and snapping, templates and 
 npm run build        # dist/
 ```
 
-Host `dist/` anywhere (Puter hosting works). Two notes:
+Host `dist/` anywhere (Everything hosting works). Two notes:
 
 - The sign worker embeds the URL of `sign.html` at deploy time, taken from the origin the app runs on. Users who first send from the production origin get links pointing there.
-- Email needs the shared worker deployed once by the app owner (redeploy after an upgrade: the app asks `/health` which message kinds a deployment can compose, and skips the ones it cannot):
+- Email needs the shared worker, which the local server registers automatically as `signatures-email` (restart after an upgrade: the app asks `/health` which message kinds a worker can compose, and skips the ones it cannot):
 
   ```sh
-  npm run deploy:email-worker    # -> http://signatures-email.localhost:8443
+  curl http://signatures-email.localhost:8443/health
   ```
 
 ## Scope notes

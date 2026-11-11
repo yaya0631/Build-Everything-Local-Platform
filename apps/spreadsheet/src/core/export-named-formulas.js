@@ -85,7 +85,7 @@ export function exportNamedTableReferences(wb, formula) {
     used ??= new Set(tokens.flatMap((t) => t.type === 'name' ? [t.value]
       : t.type === 'tref' && t.table === null && /^[A-Za-z_][A-Za-z0-9_.]*$/.test(t.spec.trim()) ? [t.spec.trim().toUpperCase()] : []));
     let name;
-    do { name = `_puter_rowref_${++index}`; } while (used.has(name.toUpperCase()));
+    do { name = `_everything_rowref_${++index}`; } while (used.has(name.toUpperCase()));
     used.add(name.toUpperCase());
     bindings.push([name, `LAMBDA(${expression})`]);
     references.set(key, name);

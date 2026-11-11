@@ -1,9 +1,9 @@
 /**
  * Test harness for the workers in src/workers: instantiates one the way the
- * Puter workers runtime would — a `router` global collecting routes, a `me`
- * global exposing the owner's own Puter resources — and lets tests call its
+ * Everything workers runtime would — a `router` global collecting routes, a `me`
+ * global exposing the owner's own Everything resources — and lets tests call its
  * routes as plain HTTP, with or without a signed-in caller (`user`, which the
- * runtime only populates for puter.workers.exec() callers). Request/Response
+ * runtime only populates for everything.workers.exec() callers). Request/Response
  * are small local shims so the harness never depends on which fetch globals
  * the test environment ships.
  */
@@ -52,7 +52,7 @@ export class ResponseShim {
   }
 }
 
-/* ---- Fake puter.kv (same shape the app tests use) ----------------------- */
+/* ---- Fake everything.kv (same shape the app tests use) ----------------------- */
 
 export function makeKv(initial = {}) {
   const map = new Map(Object.entries(initial));
@@ -117,9 +117,9 @@ function matchRoute(routes, method, pathname) {
  * Run worker source (placeholders already substituted) and return a `call`
  * able to hit its routes. `kv` is the worker-owner's storage; `me` overrides
  * the whole owner context for a worker that uses more of it than storage
- * (e.g. the email worker's `me.puter.email` / `me.puter.authToken`).
+ * (e.g. the email worker's `me.everything.email` / `me.everything.authToken`).
  */
-export function instantiateWorker(source, { kv = makeKv(), me = { puter: { kv } } } = {}) {
+export function instantiateWorker(source, { kv = makeKv(), me = { everything: { kv } } } = {}) {
   const routes = [];
   const add = (method) => (pattern, handler) => routes.push({ method, pattern, handler });
   const router = {
@@ -137,7 +137,7 @@ export function instantiateWorker(source, { kv = makeKv(), me = { puter: { kv } 
   );
 
   /** `user` stands in for the caller context the runtime attaches when the
-   *  request arrives through puter.workers.exec(); omit it to call as an
+   *  request arrives through everything.workers.exec(); omit it to call as an
    *  anonymous visitor. `bindAs` picks the property it arrives on — the
    *  runtime has used both `user` and `requestor`. */
   async function call(
@@ -174,11 +174,11 @@ export function instantiateWorker(source, { kv = makeKv(), me = { puter: { kv } 
 }
 
 /**
- * A fake `puter` global for the client module: fs.write stores files,
+ * A fake `everything` global for the client module: fs.write stores files,
  * workers.create instantiates the written source as a live worker, and
  * fetch requests can be bridged to it with `bridgeFetch`.
  */
-export function makeFakePuter() {
+export function makeFakeEverything() {
   const files = new Map();
   const workersByUrl = new Map();
   const created = [];
@@ -189,7 +189,7 @@ export function makeFakePuter() {
     fs: {
       write: vi.fn(async (path, content) => {
         files.set(path, content);
-        // Overwriting a deployed worker's file redeploys it (Puter semantics).
+        // Overwriting a deployed worker's file redeploys it (Everything semantics).
         for (const w of workersByUrl.values()) {
           if (w.filePath === path) w.instance = instantiateWorker(content, { kv: w.instance.kv });
         }
@@ -212,11 +212,11 @@ export function makeFakePuter() {
   };
 }
 
-/** A fetch() stand-in that routes requests to the fake puter's live workers. */
-export function bridgeFetch(fakePuter) {
+/** A fetch() stand-in that routes requests to the fake everything's live workers. */
+export function bridgeFetch(fakeEverything) {
   return async (url, init = {}) => {
     const u = new URL(url);
-    const worker = fakePuter.workersByUrl.get(u.origin);
+    const worker = fakeEverything.workersByUrl.get(u.origin);
     if (!worker) return new ResponseShim('no worker at ' + u.origin, { status: 502 });
     return worker.instance.call(init.method || 'GET', u.pathname + u.search, {
       headers: init.headers || {},

@@ -1,7 +1,7 @@
 PDF Editor: third-party notices
 
 These licenses apply to their respective dependencies, not to the application as a whole.
-Puter.js is loaded from /sdk/puter.js and is subject to Puter terms.
+Everything.js is loaded from /sdk/everything.js and is subject to Everything terms.
 
 
 ========================================================================
@@ -1428,7 +1428,7 @@ maintainers will, on request, provide the complete corresponding machine-
 readable source for the bundled Liberation Sans 1.07.4 fonts on a medium
 customarily used for software interchange, for no more than the cost of
 performing the distribution, by opening an issue at
-https://github.com/HeyPuter/pdf-editor.
+https://github.com/yaya0631/Build-Everything-Local-Platform
 
 ------------------------------------------------------------------------
 Liberation Sans license (GNU GPL v2 with the font exception)

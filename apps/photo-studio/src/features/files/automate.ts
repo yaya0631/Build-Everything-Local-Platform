@@ -1,8 +1,8 @@
 // File → Automate → Image Processor (and Batch once steps exist): convert many
-// files at once, resize to fit, run registered steps, zip or save to Puter.
+// files at once, resize to fit, run registered steps, zip or save to Everything.
 import type { Editor } from '../../editor';
 import type { DocumentSession } from '../../app/session';
-import { download } from '../../persistence/puter';
+import { download } from '../../persistence/everything';
 import { readRgbProfile } from '../../color/profile';
 import type { RGBA8 } from '../../imaging/types';
 import { canEncodeAvif, fitSize, formatInfo, type ExportContext, type ExportFormat, type ExportSettings, type SourceImage } from './encode';
@@ -33,7 +33,7 @@ export async function imageProcessor(e: Editor, batch: boolean) {
   dialog.innerHTML = `<form method="dialog">
     <h2>${batch ? 'Batch' : 'Image Processor'}</h2>
     <section class="processor-step"><h3><span>1</span>Select images</h3>
-      <div class="processor-buttons"><button type="button" data-act="local">Add from this device…</button><button type="button" data-act="cloud">Add from Puter…</button>${e.sessions.some((s) => s.hasDocument) ? '<button type="button" data-act="open">Add open documents</button>' : ''}<button type="button" data-act="clear">Clear</button></div>
+      <div class="processor-buttons"><button type="button" data-act="local">Add from this device…</button><button type="button" data-act="cloud">Add from Everything…</button>${e.sessions.some((s) => s.hasDocument) ? '<button type="button" data-act="open">Add open documents</button>' : ''}<button type="button" data-act="clear">Clear</button></div>
       <ul class="processor-list" aria-label="Images to process"></ul>
     </section>
     <section class="processor-step"><h3><span>2</span>Resize</h3>
@@ -48,7 +48,7 @@ export async function imageProcessor(e: Editor, batch: boolean) {
     </section>
     ${stepList.length ? `<section class="processor-step"><h3><span>4</span>Steps</h3>${stepList.map((s) => `<label class="dialog-field checkbox-field">${escapeXML(s.label)}<input type="checkbox" name="step:${escapeXML(s.id)}" ${batch ? 'checked' : ''}></label>`).join('')}</section>` : ''}
     <section class="processor-step"><h3><span>${stepList.length ? 5 : 4}</span>Save</h3>
-      <label class="dialog-field">Destination<select name="dest"><option value="zip">Download as ZIP archive</option><option value="puter">Save to a Puter folder…</option></select></label>
+      <label class="dialog-field">Destination<select name="dest"><option value="zip">Download as ZIP archive</option><option value="everything">Save to an Everything folder…</option></select></label>
     </section>
     <p class="processor-status" aria-live="polite"></p>
     <div class="dialog-actions"><button type="button" data-act="cancel">Cancel</button><button type="submit" class="primary" disabled>Run</button></div>
@@ -136,7 +136,7 @@ export async function imageProcessor(e: Editor, batch: boolean) {
           if (cancelled) return;
           close();
           if (!files.length) return;
-          if (opts.dest === 'puter') saveToCloudFolder(e, files);
+          if (opts.dest === 'everything') saveToCloudFolder(e, files);
           else {
             const zip = zipStore(files.map((f) => ({ name: f.name, data: f.bytes })));
             download(bytesBlob(zip, 'application/zip'), 'processed-images.zip');

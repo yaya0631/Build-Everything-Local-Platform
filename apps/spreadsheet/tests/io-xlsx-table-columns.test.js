@@ -95,7 +95,7 @@ it('exports all edge/corner definitions and enabled flags through two metadata-f
     const zip = await zipOf(wb);
     expect(xml(zip, '/xl/tables/table1.xml')).toContain('showFirstColumn="1" showLastColumn="1"');
     for (const type of Object.keys(customStyle)) expect(xml(zip, '/xl/styles.xml')).toContain(`type="${type}"`);
-    change(zip, '/xl/workbook.xml', text => text.replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+    change(zip, '/xl/workbook.xml', text => text.replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
     wb = await reopen(zip);
     expect(wb.activeSheet.tables[0]).toMatchObject({ firstColumn: true, lastColumn: true });
     expect([2, 3, 7].map(r => look(wb, r, 3).bg)).toEqual(['#bb0000', '#99ccff', '#008888']);
@@ -126,7 +126,7 @@ it('renders built-in edge emphasis, preserving explicit direct false and native 
   wb.setCells(id, [{ r: 2, c: 0, cell: { v: 'Entry', s: { bold: false } } }]);
   expect(look(wb, 2, 0).bold).toBe(false);
   const zip = await zipOf(wb);
-  change(zip, '/xl/workbook.xml', text => text.replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  change(zip, '/xl/workbook.xml', text => text.replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   const back = await reopen(zip);
   expect(look(back, 2, 2).bold).toBe(true);
 });

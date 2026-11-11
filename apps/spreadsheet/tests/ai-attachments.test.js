@@ -5,7 +5,7 @@ import { attachmentKind, attachmentProblem, attachmentsTooLarge, estimatePdfPage
 import { createAgent, requestMessages, userText } from '../src/core/aiagent.js';
 import { readAttachment, fitImageForVision, AttachmentError } from '../src/ui/aiattachments.js';
 import { createAiPanel } from '../src/ui/aipanel.js';
-import * as P from '../src/lib/puter.js';
+import * as P from '../src/lib/everything.js';
 import { memoryStorage } from './helpers/memory-storage.js';
 import { toast } from '../src/ui/toast.js';
 import { deflateSync } from 'node:zlib';

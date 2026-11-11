@@ -106,7 +106,7 @@ describe('Links panel', () => {
   async function withImage() {
     const ctx = await setup();
     ctx.doc.assets.set('img1', { mime: 'image/png', data: PNG_1x1, name: 'photo' });
-    const id = ctx.add(createImage('img1', 300, 150, [0.5, 0, 0, 0.5, 20, 30], { link: { source: 'puter', path: '/u/photo.png', name: 'photo.png' } }));
+    const id = ctx.add(createImage('img1', 300, 150, [0.5, 0, 0, 0.5, 20, 30], { link: { source: 'everything', path: '/u/photo.png', name: 'photo.png' } }));
     return { ...ctx, id };
   }
 

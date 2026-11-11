@@ -24,7 +24,7 @@ function fixture(line, { message = `"left${line}right"`, array = false } = {}) {
 }
 async function native(wb) {
   const zip = X.CFB.read(new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()), { type: 'array' });
-  replace(zip, '/xl/workbook.xml', read(zip, '/xl/workbook.xml').replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  replace(zip, '/xl/workbook.xml', read(zip, '/xl/workbook.xml').replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   return { xml: read(zip, '/xl/tables/table1.xml'), wb: await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'external.xlsx') };
 }
 

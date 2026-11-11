@@ -9,7 +9,7 @@ import { chartXlsx } from './helpers/xlsx-chart-fixture.js';
 const text = file => new TextDecoder().decode(file.content);
 function change(file, transform) { file.content = new TextEncoder().encode(transform(text(file))); file.size = file.content.length; }
 function native(zip) {
-  change(X.CFB.find(zip, '/xl/workbook.xml'), xml => xml.replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  change(X.CFB.find(zip, '/xl/workbook.xml'), xml => xml.replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   return X.CFB.write(zip, { type: 'array', fileType: 'zip' });
 }
 function source(wrap, type) {

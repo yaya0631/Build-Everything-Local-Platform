@@ -6,7 +6,7 @@
 import type { Editor } from '../../editor';
 import { registerCommand, registerPanel } from '../../app/registry';
 import { lazy, lazyPanel, lazyRun } from '../../app/lazy';
-import { download } from '../../persistence/puter';
+import { download } from '../../persistence/everything';
 import { installRecorder, recordOf } from './recorder';
 
 const panel = lazy(() => import('./panel'));

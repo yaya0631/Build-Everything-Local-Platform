@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { installPuterMock } from './helpers/puter-mock.js';
+import { installEverythingMock } from './helpers/everything-mock.js';
 import { Store, colorName, PROJECT_COLORS, LABEL_COLORS } from '../src/lib/store.js';
 import { mirror } from '../src/lib/mirror.js';
 import { columnTasks, projectProgress } from '../src/lib/board.js';
@@ -11,7 +11,7 @@ let store;
 
 beforeEach(async () => {
   vi.useFakeTimers();
-  mock = installPuterMock({ username: 'nadia' });
+  mock = installEverythingMock({ username: 'nadia' });
   store = new Store();
   await store.init();
 });
@@ -1254,7 +1254,7 @@ describe('save races', () => {
     for (let i = 0; i < 20; i++) await Promise.resolve();
 
     // 'Second' is not in what just landed, so this device is still ahead of
-    // Puter: the mirror copy must stay marked as unsent.
+    // Everything: the mirror copy must stay marked as unsent.
     expect(store.pendingUploads).toBe(1);
 
     await store.flushAll();
@@ -1565,7 +1565,7 @@ describe('offline reads', () => {
       await settle();
 
       // A later session on the same device, with no connection: the document
-      // comes from the mirror rather than from Puter.
+      // comes from the mirror rather than from Everything.
       const path = `projects-data/project-${doc.id}.json`;
       const read = mock.fs.read;
       mock.fs.read = async () => { throw new TypeError('Failed to fetch'); };

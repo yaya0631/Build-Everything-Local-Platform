@@ -9,7 +9,7 @@ import { memoryStorage } from './helpers/memory-storage.js';
 import { environment, owner, SERVER, wait } from './collab-helpers.js';
 
 Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true });
-afterEach(() => { delete globalThis.puter; });
+afterEach(() => { delete globalThis.everything; });
 
 const path = '/alice/Spreadsheets/Budget.xlsx';
 
@@ -20,11 +20,11 @@ it('does not tell the owner who stopped editing together that the owner stopped 
   const env = environment();
   const wb = new Workbook({ sheets: [{ name: 'Budget' }] });
   env.files.set(path, new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()));
-  const room = await RoomClient.create({ puter: env.sdk(owner), server: SERVER, wb, name: 'Budget', file: { path, uid: 'u1' } });
+  const room = await RoomClient.create({ everything: env.sdk(owner), server: SERVER, wb, name: 'Budget', file: { path, uid: 'u1' } });
   const sdk = env.sdk(owner);
-  // Forgetting the file's room is one more request to Puter, which takes a moment.
-  globalThis.puter = { ...sdk, kv: { ...sdk.kv, del: () => wait(400) } };
-  const client = new RoomClient({ puter: env.sdk(owner), server: SERVER, room, store: memoryOutbox(), poll: 50, noPeers: true, toXlsx: (w) => workbookToXlsx(w) });
+  // Forgetting the file's room is one more request to Everything, which takes a moment.
+  globalThis.everything = { ...sdk, kv: { ...sdk.kv, del: () => wait(400) } };
+  const client = new RoomClient({ everything: env.sdk(owner), server: SERVER, room, store: memoryOutbox(), poll: 50, noPeers: true, toXlsx: (w) => workbookToXlsx(w) });
   await client.open();
   const doc = Doc.forRoom(client, { path, uid: 'u1' });
   const closed = [];

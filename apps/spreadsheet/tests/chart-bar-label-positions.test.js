@@ -65,7 +65,7 @@ it('preserves omitted and explicit positions through duplication and native-only
     for (let pass = 0; pass < 2; pass++) {
       const zip = X.CFB.read(new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()), { type: 'array' });
       const part = X.CFB.find(zip, '/xl/workbook.xml');
-      part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')); part.size = part.content.length;
+      part.content = new TextEncoder().encode(new TextDecoder().decode(part.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')); part.size = part.content.length;
       const xml = new TextDecoder().decode(X.CFB.find(zip, '/xl/charts/chart1_1.xml').content);
       if (position == null) expect(xml).not.toContain('<c:dLblPos');
       else expect(xml).toContain(`<c:dLblPos val="${position}"/>`);

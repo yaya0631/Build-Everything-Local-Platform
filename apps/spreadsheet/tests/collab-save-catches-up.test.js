@@ -11,7 +11,7 @@ import { environment, owner, editor, SERVER, until } from './collab-helpers.js';
 
 Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true });
 const open = [];
-afterEach(() => { for (const c of open.splice(0)) c.close(); delete globalThis.puter; });
+afterEach(() => { for (const c of open.splice(0)) c.close(); delete globalThis.everything; });
 
 const path = '/alice/Spreadsheets/Plan.xlsx';
 
@@ -19,11 +19,11 @@ async function setup() {
   const env = environment();
   const wb = new Workbook({ sheets: [{ name: 'Plan' }] });
   env.files.set(path, new Uint8Array(await (await workbookToXlsx(wb)).arrayBuffer()));
-  const room = await RoomClient.create({ puter: env.sdk(owner), server: SERVER, wb, name: 'Plan', file: { path, uid: 'u1' } });
-  globalThis.puter = env.sdk(owner);
+  const room = await RoomClient.create({ everything: env.sdk(owner), server: SERVER, wb, name: 'Plan', file: { path, uid: 'u1' } });
+  globalThis.everything = env.sdk(owner);
   const join = async (user, token) => {
     // The owner's browser has not heard of the latest change yet: its next poll is a while away.
-    const client = new RoomClient({ puter: env.sdk(user), server: SERVER, room, token, store: memoryOutbox(), poll: 60_000, noPeers: true, toXlsx: (w) => workbookToXlsx(w) });
+    const client = new RoomClient({ everything: env.sdk(user), server: SERVER, room, token, store: memoryOutbox(), poll: 60_000, noPeers: true, toXlsx: (w) => workbookToXlsx(w) });
     open.push(client);
     await client.open();
     client.subscription?.off();
@@ -62,8 +62,8 @@ it("keeps the workbook shared when the owner's file cannot take its last changes
   await until(() => !theirs.replica.pending.length, 4000, 'delivery');
   // Neither the room's worker nor the owner's browser can write the file (the owner's drive is full).
   const full = () => Promise.reject(Object.assign(new Error('Your storage is full.'), { code: 'storage_limit_reached' }));
-  env.workerPuter.fs.write = full;
-  globalThis.puter.fs.write = full;
+  env.workerEverything.fs.write = full;
+  globalThis.everything.fs.write = full;
   await expect(stopSharing(doc)).rejects.toThrow(/storage is full/);
   expect(await fileA1()).toBe(null);
   // Nobody was shut out: the changes are still in the room, for the next try.

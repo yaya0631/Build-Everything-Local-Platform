@@ -6,7 +6,7 @@ import { stylesheet, declared } from './helpers/css.js';
 
 afterEach(() => { closeMenu(); document.body.replaceChildren(); });
 
-// The account menu gave "Sign in to Puter" a hint, "Save spreadsheets to your own cloud", that the menu
+// The account menu gave "Sign in to Everything" a hint, "Save spreadsheets to your own cloud", that the menu
 // never rendered: menu items had no hint. It is now a muted second line under the label, and the item's
 // description rather than part of its name.
 describe('a menu item hint', () => {
@@ -42,7 +42,7 @@ describe('the account menu', () => {
       auth: { isSignedIn: () => false, signIn: vi.fn(async () => {}), getUser: async () => null, signOut: vi.fn() },
       kv: { get: async () => null, set: async () => true },
     };
-    vi.stubGlobal('puter', sdk);
+    vi.stubGlobal('everything', sdk);
     anchor = document.createElement('button');
     document.body.append(anchor);
   });
@@ -58,7 +58,7 @@ describe('the account menu', () => {
     const { openAppMenu } = await import('../src/ui/appmenu.js');
     await session.init();
     openAppMenu(anchor);
-    const item = [...document.querySelectorAll('[role="menuitem"]')].find((b) => b.getAttribute('aria-label') === 'Sign in to Puter');
+    const item = [...document.querySelectorAll('[role="menuitem"]')].find((b) => b.getAttribute('aria-label') === 'Sign in to Everything');
     expect(item).toBeTruthy();
     expect(item.querySelector('.menu-hint').textContent).toBe('Save spreadsheets to your own cloud');
   });

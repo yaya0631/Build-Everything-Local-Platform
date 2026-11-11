@@ -175,10 +175,10 @@ describe('a page head whose comments, scripts and styles carry tags of their own
 });
 
 describe('an import whose opening request is answered but whose answer is lost', () => {
-  const hadPuter = Object.hasOwn(globalThis, 'puter') ? globalThis.puter : undefined;
+  const hadEverything = Object.hasOwn(globalThis, 'everything') ? globalThis.everything : undefined;
   afterEach(() => {
-    if (hadPuter === undefined) delete globalThis.puter;
-    else globalThis.puter = hadPuter;
+    if (hadEverything === undefined) delete globalThis.everything;
+    else globalThis.everything = hadEverything;
   });
   /** The app's bridge to the (real) worker, with the opening request handled by `onFinish`. */
   const bridge = (onFinish) => ({ workers: { exec: async (url, init = {}) => {
@@ -196,7 +196,7 @@ describe('an import whose opening request is answered but whose answer is lost',
   it('keeps the copy the worker had opened and answers its reference, rather than taking it down', async () => {
     const archive = await exported();
     let finishes = 0;
-    globalThis.puter = bridge(async (url, init) => {
+    globalThis.everything = bridge(async (url, init) => {
       finishes++;
       await rt.dispatch(url, init, alice); // the worker opens the copy...
       throw new TypeError('Failed to fetch'); // ...and the answer never arrives
@@ -212,17 +212,17 @@ describe('an import whose opening request is answered but whose answer is lost',
 
   it('still takes down a copy whose opening never reached the worker', async () => {
     const archive = await exported();
-    globalThis.puter = bridge(async () => { throw new TypeError('Failed to fetch'); });
+    globalThis.everything = bridge(async () => { throw new TypeError('Failed to fetch'); });
     await expect(importArchive('http://teamchat-new.localhost:8443', archive, { profile: { name: 'Alice' } })).rejects.toMatchObject({ code: 'network' });
     expect(await rt.kv.get(KEYS.ws('copylost001'))).toBeFalsy();
   });
 });
 
 describe('an import whose page or file request loses its answer', () => {
-  const hadPuter = Object.hasOwn(globalThis, 'puter') ? globalThis.puter : undefined;
+  const hadEverything = Object.hasOwn(globalThis, 'everything') ? globalThis.everything : undefined;
   afterEach(() => {
-    if (hadPuter === undefined) delete globalThis.puter;
-    else globalThis.puter = hadPuter;
+    if (hadEverything === undefined) delete globalThis.everything;
+    else globalThis.everything = hadEverything;
   });
   /** A page of the copy (`POST /api/ws/:ws/import`), not the creation (`POST /api/workspaces/import`). */
   const isPage = (path) => /^\/api\/ws\/[^/]+\/import$/.test(path);
@@ -243,15 +243,15 @@ describe('an import whose page or file request loses its answer', () => {
     const FILE = 'copiedfile01';
     const renamed = JSON.parse(JSON.stringify(archive).split(file.id).join(FILE));
     let blobs = 0;
-    globalThis.puter = { workers: { exec: async (url, init = {}) => {
+    globalThis.everything = { workers: { exec: async (url, init = {}) => {
       const path = new URL(url).pathname;
       if (path === `/api/ws/${wsId}/files/${FILE}`) { blobs++; return rt.dispatch(url.replace(FILE, file.id), init, alice); }
       return rt.dispatch(url, init, alice);
     } } };
     // Every page and the file lose their first answer: once as the connection dropping, once as the address answering nothing.
-    const base = globalThis.puter.workers.exec;
+    const base = globalThis.everything.workers.exec;
     const lost = {};
-    globalThis.puter.workers.exec = async (url, init) => {
+    globalThis.everything.workers.exec = async (url, init) => {
       const path = new URL(url).pathname;
       const res = await base(url, init);
       const kind = path.endsWith('/import/file') ? 'file' : isPage(path) ? `page:${JSON.parse(init.body).conv}` : null;
@@ -279,7 +279,7 @@ describe('an import whose page or file request loses its answer', () => {
   it('gives up after its tries, and takes the copy down as before; a refusal is not asked again', async () => {
     const { archive } = await exported();
     let pages = 0;
-    globalThis.puter = { workers: { exec: async (url, init = {}) => {
+    globalThis.everything = { workers: { exec: async (url, init = {}) => {
       if (isPage(new URL(url).pathname)) { pages++; throw new TypeError('Failed to fetch'); }
       return rt.dispatch(url, init, alice);
     } } };
@@ -288,7 +288,7 @@ describe('an import whose page or file request loses its answer', () => {
     expect(await rt.kv.get(KEYS.ws('copyretry01'))).toBeFalsy();
     // A page the worker refuses (a direct message none of the copy's members are in is passed over; a channel refused stops the import) is answered as before, at once.
     let asked = 0;
-    globalThis.puter = { workers: { exec: async (url, init = {}) => {
+    globalThis.everything = { workers: { exec: async (url, init = {}) => {
       if (isPage(new URL(url).pathname)) { asked++; return new Response(JSON.stringify({ code: 'invalid', message: 'Bad conversation id' }), { status: 400, headers: { 'Content-Type': 'application/json' } }); }
       return rt.dispatch(url, init, alice);
     } } };
@@ -298,10 +298,10 @@ describe('an import whose page or file request loses its answer', () => {
 });
 
 describe('an import whose creating request loses its answer', () => {
-  const hadPuter = Object.hasOwn(globalThis, 'puter') ? globalThis.puter : undefined;
+  const hadEverything = Object.hasOwn(globalThis, 'everything') ? globalThis.everything : undefined;
   afterEach(() => {
-    if (hadPuter === undefined) delete globalThis.puter;
-    else globalThis.puter = hadPuter;
+    if (hadEverything === undefined) delete globalThis.everything;
+    else globalThis.everything = hadEverything;
   });
   const isCreate = (path) => path === '/api/workspaces/import';
   async function exported(id) {
@@ -315,7 +315,7 @@ describe('an import whose creating request loses its answer', () => {
   it('goes on into the copy that request made, rather than leaving it behind and failing', async () => {
     const archive = await exported('copystub001');
     let created = 0;
-    globalThis.puter = { workers: { exec: async (url, init = {}) => {
+    globalThis.everything = { workers: { exec: async (url, init = {}) => {
       const res = await rt.dispatch(url, init, alice);
       if (isCreate(new URL(url).pathname)) { created++; throw new TypeError('Failed to fetch'); } // made, and the answer lost
       return res;
@@ -335,7 +335,7 @@ describe('an import whose creating request loses its answer', () => {
   it('asks once more where the request never reached the worker; a refusal is not asked again', async () => {
     const archive = await exported('copystub002');
     let attempts = 0;
-    globalThis.puter = { workers: { exec: async (url, init = {}) => {
+    globalThis.everything = { workers: { exec: async (url, init = {}) => {
       if (isCreate(new URL(url).pathname) && attempts++ === 0) throw new TypeError('Failed to fetch'); // never arrived
       return rt.dispatch(url, init, alice);
     } } };
@@ -343,7 +343,7 @@ describe('an import whose creating request loses its answer', () => {
     expect([ref, attempts]).toEqual(['copystub002@teamchat-new', 2]);
     expect((await rt.kv.get(KEYS.ws('copystub002'))).importing).toBeUndefined();
     let refused = 0;
-    globalThis.puter = { workers: { exec: async (url, init = {}) => {
+    globalThis.everything = { workers: { exec: async (url, init = {}) => {
       if (isCreate(new URL(url).pathname)) { refused++; return new Response(JSON.stringify({ code: 'invalid', message: 'That is not a Teamchat export' }), { status: 400, headers: { 'Content-Type': 'application/json' } }); }
       return rt.dispatch(url, init, alice);
     } } };

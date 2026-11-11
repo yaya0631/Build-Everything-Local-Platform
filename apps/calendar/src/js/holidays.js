@@ -3,7 +3,7 @@
  *
  * Holidays are NEVER stored. They are derived from a small rule set at render
  * time, which is what makes the feature free of every cost a stored holiday
- * calendar carries: nothing to sync, no `puter.kv` writes, no reconciliation
+ * calendar carries: nothing to sync, no `everything.kv` writes, no reconciliation
  * when the user switches country or scrolls to a year they have never opened,
  * nothing to accidentally edit, nothing that leaks into an `.ics` export as if
  * it were the user's own event, and nothing a reminder can fire on. It also

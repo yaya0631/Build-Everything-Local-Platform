@@ -4,7 +4,7 @@
  * from ever creating sync issues:
  *
  *   While offline the calendar is READ-ONLY. No data write is ever performed,
- *   queued, or replayed — so the cloud (puter.kv) stays the single source of
+ *   queued, or replayed — so the cloud (everything.kv) stays the single source of
  *   truth and there is nothing to reconcile on reconnect.
  *
  * `gate(store)` returns a proxy with the store's exact method surface:
@@ -234,7 +234,7 @@ export function renderOfflineScreen(root, { onRetry } = {}) {
         el('h1', { class: 'auth-card__title', text: "You're offline" }),
         el('p', {
           class: 'auth-card__sub',
-          text: 'Reconnect to load your calendar. Your events are safe in your Puter storage.',
+          text: 'Reconnect to load your calendar. Your events are safe in your Everything storage.',
         }),
         retry,
       ]),

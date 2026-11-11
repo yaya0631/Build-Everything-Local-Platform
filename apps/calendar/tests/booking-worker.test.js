@@ -24,7 +24,7 @@ async function loadWorker({ email, authToken } = {}) {
     .replace('__RSVP_WORKER_VERSION__', 'test')
     .replace('__RSVP_PAGE_URL__', PAGE_URL);
   const kv = makeKv();
-  const me = { puter: { kv, ...(email ? { email } : {}), ...(authToken ? { authToken } : {}) } };
+  const me = { everything: { kv, ...(email ? { email } : {}), ...(authToken ? { authToken } : {}) } };
   return instantiateWorker(source, { kv, me });
 }
 
@@ -556,7 +556,7 @@ describe('booking worker: booking', () => {
   });
 
   it('re-lists bookings in shards when the flat list is heavy, even if short', async () => {
-    // puter.kv.list truncates by payload size as well as by count. Three
+    // everything.kv.list truncates by payload size as well as by count. Three
     // hundred records with long notes weigh more than the trusted budget, so
     // the flat answer cannot be taken as the whole set — and a confirmed
     // booking it dropped would be offered to the next guest.
@@ -957,9 +957,9 @@ describe('booking worker: booking', () => {
 });
 
 describe('booking worker: meeting links', () => {
-  const ROOM = /^https:\/\/meetings\.puter\.com\/#\/m\/[a-z]{4}-[a-z]{4}-[a-z]{4}$/;
+  const ROOM = /^https:\/\/meetings\.everything\.com\/#\/m\/[a-z]{4}-[a-z]{4}-[a-z]{4}$/;
 
-  it('mints a distinct Puter Meetings room per booking by default, served everywhere', async () => {
+  it('mints a distinct Everything Meetings room per booking by default, served everywhere', async () => {
     const worker = await loadWorker();
     await syncBooking(worker); // pageDef carries no `meet` — absent means ON
     const first = await (await book(worker, 'abcd1234', { start: Date.UTC(2027, 0, 4, 9) })).json();
@@ -1032,7 +1032,7 @@ describe('booking worker: meeting links', () => {
     expect(ics).toContain(`DESCRIPTION:Join: ${out.booking.meetingUrl}`);
   });
 
-  it('never serves a stored link that is not a Puter Meetings room URL (defense in depth)', async () => {
+  it('never serves a stored link that is not an Everything Meetings room URL (defense in depth)', async () => {
     const worker = await loadWorker();
     await syncBooking(worker);
     const out = await (await book(worker, 'abcd1234', { start: Date.UTC(2027, 0, 4, 9) })).json();
@@ -1070,7 +1070,7 @@ describe('booking worker: meeting links', () => {
     const worker = await loadWorker({ email: { sendTransactional: send } });
     await syncBooking(worker, {
       pages: [pageDef({ meet: false })],
-      organizerName: 'Nariman: Puter',
+      organizerName: 'Nariman: Everything',
     });
     // A bare param value ends at the next ':' — this name used to close the
     // params and supply the ATTENDEE's value itself.
@@ -1085,7 +1085,7 @@ describe('booking worker: meeting links', () => {
     expect(ics).toContain(
       'ATTENDEE;CN="Eve:mailto:evil@attacker.test";PARTSTAT=ACCEPTED;ROLE=REQ-PARTICIPANT:mailto:ada@example.com',
     );
-    expect(ics).toContain('ORGANIZER;CN="Nariman: Puter":mailto:host@example.com');
+    expect(ics).toContain('ORGANIZER;CN="Nariman: Everything":mailto:host@example.com');
     expect(ics).not.toContain('mailto:evil@attacker.test\r\n');
   });
 

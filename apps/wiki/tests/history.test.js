@@ -6,7 +6,7 @@ import { addPage } from '../src/data/tree.js';
 import { insertBlock, listBlocks, setText } from '../src/data/page.js';
 import { restoreBlocks } from '../src/ui/history.js';
 import { deltaText } from '../src/data/richtext.js';
-import { fakePuter, alice } from './helpers/puter.js';
+import { fakeEverything, alice } from './helpers/everything.js';
 import { encode, decode, hash } from '../src/collab/protocol.js';
 
 const texts = (doc) => listBlocks(doc).map((b) => deltaText(b.delta));
@@ -56,7 +56,7 @@ describe('page history', () => {
   });
 
   it('keeps shared checkpoints as versions', async () => {
-    const env = fakePuter();
+    const env = fakeEverything();
     env.forget();
     const room = 'room0000hist';
     const tree = new Y.Doc();

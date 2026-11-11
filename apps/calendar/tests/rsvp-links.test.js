@@ -7,7 +7,7 @@ import {
   workerNameCandidates,
   RSVP_WORKER_VERSION,
 } from '../src/js/rsvp-links.js';
-import { makeKv, makeFakePuter, bridgeFetch } from './helpers/worker-harness.js';
+import { makeKv, makeFakeEverything, bridgeFetch } from './helpers/worker-harness.js';
 
 // The module (and the worker it deploys) use WebCrypto; jsdom doesn't ship it.
 if (!globalThis.crypto || !globalThis.crypto.subtle) {
@@ -31,19 +31,19 @@ async function settle(rsvp) {
 function makeWorld({ user = HOST, moduleOpts = {} } = {}) {
   const kv = makeKv();
   const store = createStore(kv);
-  const fakePuter = makeFakePuter();
+  const fakeEverything = makeFakeEverything();
   const rsvp = createRsvpLinks({
     kv,
     store,
     user,
-    getPuter: () => fakePuter,
-    fetchFn: bridgeFetch(fakePuter),
+    getEverything: () => fakeEverything,
+    fetchFn: bridgeFetch(fakeEverything),
     blocked: () => false,
     requestUser: async () => user,
     syncDelayMs: 0,
     ...moduleOpts,
   });
-  return { kv, store, fakePuter, rsvp };
+  return { kv, store, fakeEverything, rsvp };
 }
 
 async function hostEvent(store, overrides = {}) {
@@ -70,19 +70,19 @@ describe('rsvp-links: deploy + link issuing', () => {
   });
 
   it('deploys the worker on first hosted event and issues links for guests only', async () => {
-    expect(world.fakePuter.workers.create).not.toHaveBeenCalled();
+    expect(world.fakeEverything.workers.create).not.toHaveBeenCalled();
     const ev = await hostEvent(world.store);
     await settle(world.rsvp);
 
-    expect(world.fakePuter.workers.create).toHaveBeenCalledTimes(1);
+    expect(world.fakeEverything.workers.create).toHaveBeenCalledTimes(1);
     const links = world.rsvp.linksFor(ev.id);
     expect(Object.keys(links)).toEqual(['ada@example.com']); // never the host
-    expect(links['ada@example.com']).toMatch(/^https:\/\/cal-rsvp-[0-9a-f]{10}\.puter\.work\/rsvp\/[0-9a-f]{40}$/);
+    expect(links['ada@example.com']).toMatch(/^https:\/\/cal-rsvp-[0-9a-f]{10}\.everything\.work\/rsvp\/[0-9a-f]{40}$/);
 
     // The deployed source carries only the secret's hash, never the secret.
     const cfg = world.kv.map.get('cal:rsvp:cfg');
     expect(cfg.secret).toMatch(/^[0-9a-f]{64}$/);
-    for (const content of world.fakePuter.files.values()) {
+    for (const content of world.fakeEverything.files.values()) {
       expect(content).not.toContain(cfg.secret);
     }
   });
@@ -98,7 +98,7 @@ describe('rsvp-links: deploy + link issuing', () => {
       guests: [{ email: HOST.email, status: 'needs-action' }, { email: 'x@example.com', status: 'needs-action' }],
     });
     await settle(world.rsvp);
-    expect(world.fakePuter.workers.create).not.toHaveBeenCalled();
+    expect(world.fakeEverything.workers.create).not.toHaveBeenCalled();
   });
 
   it('upgrades an outdated worker in place — same URL, links survive, API appears', async () => {
@@ -110,13 +110,13 @@ describe('rsvp-links: deploy + link issuing', () => {
     const cfg = world.kv.map.get('cal:rsvp:cfg');
     world.kv.map.set('cal:rsvp:cfg', { ...cfg, version: '0' });
 
-    const writesBefore = world.fakePuter.fs.write.mock.calls.length;
+    const writesBefore = world.fakeEverything.fs.write.mock.calls.length;
     const upgraded = createRsvpLinks({
       kv: world.kv,
       store: world.store,
       user: HOST,
-      getPuter: () => world.fakePuter,
-      fetchFn: bridgeFetch(world.fakePuter),
+      getEverything: () => world.fakeEverything,
+      fetchFn: bridgeFetch(world.fakeEverything),
       blocked: () => false,
       requestUser: async () => HOST,
       syncDelayMs: 0,
@@ -126,14 +126,14 @@ describe('rsvp-links: deploy + link issuing', () => {
     await settle(upgraded);
 
     // Rewrote the source, no new worker, cfg re-stamped.
-    expect(world.fakePuter.fs.write.mock.calls.length).toBeGreaterThan(writesBefore);
-    expect(world.fakePuter.workers.create).toHaveBeenCalledTimes(1);
+    expect(world.fakeEverything.fs.write.mock.calls.length).toBeGreaterThan(writesBefore);
+    expect(world.fakeEverything.workers.create).toHaveBeenCalledTimes(1);
     expect(world.kv.map.get('cal:rsvp:cfg').version).toBe(RSVP_WORKER_VERSION);
 
     // The already-sent link still answers — the human link now redirects to
     // the app page, and the API resolves the same token.
     const u = new URL(link);
-    const worker = world.fakePuter.workersByUrl.get(u.origin);
+    const worker = world.fakeEverything.workersByUrl.get(u.origin);
     expect((await worker.instance.call('GET', u.pathname)).status).toBe(303);
     const api = await worker.instance.call('GET', `/api${u.pathname}`);
     expect(api.status).toBe(200);
@@ -149,15 +149,15 @@ describe('rsvp-links: deploy + link issuing', () => {
       kv: world.kv,
       store: world.store,
       user: HOST,
-      getPuter: () => world.fakePuter,
-      fetchFn: bridgeFetch(world.fakePuter),
+      getEverything: () => world.fakeEverything,
+      fetchFn: bridgeFetch(world.fakeEverything),
       blocked: () => false,
       requestUser: async () => HOST,
       syncDelayMs: 0,
     });
     await again.start();
     await settle(again);
-    expect(world.fakePuter.workers.create).toHaveBeenCalledTimes(1);
+    expect(world.fakeEverything.workers.create).toHaveBeenCalledTimes(1);
     // Links restored from the host's KV cache.
     expect(again.linksFor(ev.id)['ada@example.com']).toBe(
       world.rsvp.linksFor(ev.id)['ada@example.com'],
@@ -178,7 +178,7 @@ describe('rsvp-links: guest answers round-trip', () => {
 
   function guestPost(url, body) {
     const u = new URL(url);
-    const worker = world.fakePuter.workersByUrl.get(u.origin);
+    const worker = world.fakeEverything.workersByUrl.get(u.origin);
     return worker.instance.call('POST', `/api${u.pathname}`, { json: body });
   }
 
@@ -215,7 +215,7 @@ describe('rsvp-links: guest answers round-trip', () => {
     await settle(polled.rsvp);
     const link = polled.rsvp.linksFor(dinner.id)['ada@example.com'];
     const u = new URL(link);
-    const worker = polled.fakePuter.workersByUrl.get(u.origin);
+    const worker = polled.fakeEverything.workersByUrl.get(u.origin);
     expect((await worker.instance.call('POST', `/api${u.pathname}`, { json: { status: 'accepted' } })).status).toBe(200);
 
     await new Promise((r) => setTimeout(r, 150)); // a few polls, no store change, no refreshEvent
@@ -247,7 +247,7 @@ describe('rsvp-links: guest answers round-trip', () => {
   it('removing a guest revokes their link; deleting the event revokes all', async () => {
     const link = world.rsvp.linksFor(ev.id)['ada@example.com'];
     const u = new URL(link);
-    const worker = world.fakePuter.workersByUrl.get(u.origin);
+    const worker = world.fakeEverything.workersByUrl.get(u.origin);
 
     await world.store.saveEvent({
       ...world.store.getEvent(ev.id),
@@ -268,7 +268,7 @@ describe('rsvp-links: guest answers round-trip', () => {
     await world.store.saveEvent({ ...world.store.getEvent(ev.id), start: moved, end: moved + HOUR });
     await settle(world.rsvp);
     const u = new URL(world.rsvp.linksFor(ev.id)['ada@example.com']);
-    const worker = world.fakePuter.workersByUrl.get(u.origin);
+    const worker = world.fakeEverything.workersByUrl.get(u.origin);
     const record = worker.instance.kv.map.get(`rsvpw:evt:${ev.id}`);
     expect(record.snapshot.start).toBe(moved);
   });
@@ -279,7 +279,7 @@ describe('rsvp-links: guest answers round-trip', () => {
     await world.store.saveEvent({ ...world.store.getEvent(ev.id), meeting: { url: join } });
     await settle(world.rsvp);
     const u = new URL(world.rsvp.linksFor(ev.id)['ada@example.com']);
-    const worker = world.fakePuter.workersByUrl.get(u.origin);
+    const worker = world.fakeEverything.workersByUrl.get(u.origin);
     expect(worker.instance.kv.map.get(`rsvpw:evt:${ev.id}`).snapshot.meetingUrl).toBe(join);
     const data = await (await worker.instance.call('GET', `/api${u.pathname}`)).json();
     expect(data.event.meetingUrl).toBe(join);
@@ -320,8 +320,8 @@ describe('rsvp-links: verified deploys', () => {
       kv: world.kv,
       store: world.store,
       user: HOST,
-      getPuter: () => world.fakePuter,
-      fetchFn: bridgeFetch(world.fakePuter),
+      getEverything: () => world.fakeEverything,
+      fetchFn: bridgeFetch(world.fakeEverything),
       blocked: () => false,
       requestUser: async () => HOST,
       syncDelayMs: 0,
@@ -329,7 +329,7 @@ describe('rsvp-links: verified deploys', () => {
     await healed.start();
     await settle(healed);
 
-    expect(world.fakePuter.workers.create).toHaveBeenCalledTimes(1);
+    expect(world.fakeEverything.workers.create).toHaveBeenCalledTimes(1);
     expect(world.kv.map.get('cal:rsvp:cfg').version).toBe(RSVP_WORKER_VERSION);
     expect(world.kv.map.get('cal:rsvp:cfg').name).toBe(cfg.name);
     expect(healed.linksFor(ev.id)['ada@example.com']).toMatch(/\/rsvp\/[0-9a-f]{40}$/);
@@ -344,8 +344,8 @@ describe('rsvp-links: a request that never answers', () => {
     // rest of the session: no later pass, no pulled bookings, nothing short of
     // restarting the app. So the request must carry a deadline, and the pass
     // after it must still run.
-    const fakePuter = makeFakePuter();
-    const live = bridgeFetch(fakePuter);
+    const fakeEverything = makeFakeEverything();
+    const live = bridgeFetch(fakeEverything);
     let stall = false;
     const fetchFn = vi.fn((url, init = {}) => {
       if (!stall) return live(url, init);
@@ -362,7 +362,7 @@ describe('rsvp-links: a request that never answers', () => {
       kv,
       store,
       user: HOST,
-      getPuter: () => fakePuter,
+      getEverything: () => fakeEverything,
       fetchFn,
       blocked: () => false,
       requestUser: async () => HOST,
@@ -399,7 +399,7 @@ describe('rsvp-links: destructive-action guards', () => {
     await settle(world.rsvp);
     const link = world.rsvp.linksFor(ev.id)['ada@example.com'];
     const u = new URL(link);
-    const worker = world.fakePuter.workersByUrl.get(u.origin);
+    const worker = world.fakeEverything.workersByUrl.get(u.origin);
 
     // Session 2: same data, but the email grant is gone — getUser() has no
     // email, so isHosted() fails for every organizer-stamped event. That must
@@ -408,8 +408,8 @@ describe('rsvp-links: destructive-action guards', () => {
       kv: world.kv,
       store: world.store,
       user: null,
-      getPuter: () => world.fakePuter,
-      fetchFn: bridgeFetch(world.fakePuter),
+      getEverything: () => world.fakeEverything,
+      fetchFn: bridgeFetch(world.fakeEverything),
       blocked: () => false,
       requestUser: async () => null,
       syncDelayMs: 0,
@@ -444,8 +444,8 @@ describe('rsvp-links: destructive-action guards', () => {
       kv: world.kv,
       store: world.store,
       user: HOST,
-      getPuter: () => world.fakePuter,
-      fetchFn: bridgeFetch(world.fakePuter),
+      getEverything: () => world.fakeEverything,
+      fetchFn: bridgeFetch(world.fakeEverything),
       blocked: () => false,
       requestUser: async () => HOST,
       syncDelayMs: 0,
@@ -455,7 +455,7 @@ describe('rsvp-links: destructive-action guards', () => {
 
     // The old link must still answer — no reissue happened.
     const u = new URL(link);
-    const worker = world.fakePuter.workersByUrl.get(u.origin);
+    const worker = world.fakeEverything.workersByUrl.get(u.origin);
     expect((await worker.instance.call('GET', `/api${u.pathname}`)).status).toBe(200);
 
     // Reads recover → the same link is adopted, still no reissue.
@@ -476,7 +476,7 @@ describe('rsvp-links: destructive-action guards', () => {
     // "Another device" reissues ada's link: worker + stored KV now hold a new
     // token; this session's in-memory cache still has the old URL.
     const u = new URL(stale);
-    const worker = world.fakePuter.workersByUrl.get(u.origin);
+    const worker = world.fakeEverything.workersByUrl.get(u.origin);
     const cfg = world.kv.map.get('cal:rsvp:cfg');
     const resync = await worker.instance.call('POST', '/admin/sync', {
       headers: { authorization: `Bearer ${cfg.secret}` },
@@ -523,8 +523,8 @@ describe('rsvp-links: destructive-action guards', () => {
       kv: world.kv,
       store: world.store,
       user: HOST,
-      getPuter: () => world.fakePuter,
-      fetchFn: bridgeFetch(world.fakePuter),
+      getEverything: () => world.fakeEverything,
+      fetchFn: bridgeFetch(world.fakeEverything),
       blocked: () => false,
       requestUser: async () => HOST,
       syncDelayMs: 0,
@@ -534,7 +534,7 @@ describe('rsvp-links: destructive-action guards', () => {
 
     expect(second.linksFor(ev.id)['ada@example.com']).toBe(link);
     const u = new URL(link);
-    const worker = world.fakePuter.workersByUrl.get(u.origin);
+    const worker = world.fakeEverything.workersByUrl.get(u.origin);
     expect((await worker.instance.call('GET', `/api${u.pathname}`)).status).toBe(200);
   });
 });
@@ -544,13 +544,13 @@ describe('rsvp-links: offline safety', () => {
     const kv = makeKv();
     const store = createStore(kv);
     await store.load();
-    const fakePuter = makeFakePuter();
+    const fakeEverything = makeFakeEverything();
     const rsvp = createRsvpLinks({
       kv,
       store,
       user: HOST,
-      getPuter: () => fakePuter,
-      fetchFn: bridgeFetch(fakePuter),
+      getEverything: () => fakeEverything,
+      fetchFn: bridgeFetch(fakeEverything),
       blocked: () => true, // offline
       requestUser: async () => HOST,
       syncDelayMs: 0,
@@ -558,8 +558,8 @@ describe('rsvp-links: offline safety', () => {
     await rsvp.start();
     await hostEvent(store);
     await settle(rsvp);
-    expect(fakePuter.workers.create).not.toHaveBeenCalled();
-    expect(fakePuter.fs.write).not.toHaveBeenCalled();
+    expect(fakeEverything.workers.create).not.toHaveBeenCalled();
+    expect(fakeEverything.fs.write).not.toHaveBeenCalled();
   });
 });
 
@@ -621,13 +621,13 @@ describe('rsvp-links: guest suggestions round-trip', () => {
   /** A guest proposes an addition through the real (bridged) worker API. */
   function guestSuggest(link, fields) {
     const u = new URL(link);
-    const worker = world.fakePuter.workersByUrl.get(u.origin);
+    const worker = world.fakeEverything.workersByUrl.get(u.origin);
     return worker.instance.call('POST', `/api${u.pathname}/guests`, { json: fields });
   }
 
   function adminSuggestions() {
     const origin = world.rsvp.workerOrigin();
-    const worker = world.fakePuter.workersByUrl.get(origin);
+    const worker = world.fakeEverything.workersByUrl.get(origin);
     const secret = world.kv.map.get('cal:rsvp:cfg').secret;
     return worker.instance
       .call('GET', '/admin/responses', { headers: { authorization: `Bearer ${secret}` } })
@@ -672,8 +672,8 @@ describe('rsvp-links: guest suggestions round-trip', () => {
       kv: world.kv,
       store: world.store,
       user: HOST,
-      getPuter: () => world.fakePuter,
-      fetchFn: bridgeFetch(world.fakePuter),
+      getEverything: () => world.fakeEverything,
+      fetchFn: bridgeFetch(world.fakeEverything),
       blocked: () => false,
       requestUser: async () => HOST,
       toast: rebootToast,
@@ -727,7 +727,7 @@ describe('rsvp-links: guest suggestions round-trip', () => {
     // Simulate the response of a pull that left BEFORE the dismissal landed:
     // put the entry back on the worker, then force a fresh sync to deliver it.
     const origin = world.rsvp.workerOrigin();
-    const workerKv = world.fakePuter.workersByUrl.get(origin).instance.kv;
+    const workerKv = world.fakeEverything.workersByUrl.get(origin).instance.kv;
     workerKv.map.set(`rsvpw:sug:${ev.id}:sara@example.com`, {
       email: 'sara@example.com',
       name: '',
@@ -750,14 +750,14 @@ describe('rsvp-links: guest suggestions round-trip', () => {
     };
     kv.map.set('cal:rsvp:suggestions-seen', { 'old-event:x@example.com': 123 }); // prior stamps
     const store = createStore(failingKv);
-    const fakePuter = makeFakePuter();
+    const fakeEverything = makeFakeEverything();
     const toastSpy2 = vi.fn();
     const rsvp = createRsvpLinks({
       kv: failingKv,
       store,
       user: HOST,
-      getPuter: () => fakePuter,
-      fetchFn: bridgeFetch(fakePuter),
+      getEverything: () => fakeEverything,
+      fetchFn: bridgeFetch(fakeEverything),
       blocked: () => false,
       requestUser: async () => HOST,
       toast: toastSpy2,
@@ -770,7 +770,7 @@ describe('rsvp-links: guest suggestions round-trip', () => {
 
     const link = rsvp.linksFor(hosted.id)['ada@example.com'];
     const u = new URL(link);
-    await fakePuter.workersByUrl
+    await fakeEverything.workersByUrl
       .get(u.origin)
       .instance.call('POST', `/api${u.pathname}/guests`, { json: { email: 'sara@example.com' } });
     await rsvp.refreshEvent(hosted.id);
@@ -855,8 +855,8 @@ describe('rsvp-links: the worker is named for its host', () => {
       kv: world.kv,
       store: world.store,
       user: { ...HOST, username: 'nariman' },
-      getPuter: () => world.fakePuter,
-      fetchFn: bridgeFetch(world.fakePuter),
+      getEverything: () => world.fakeEverything,
+      fetchFn: bridgeFetch(world.fakeEverything),
       blocked: () => false,
       requestUser: async () => HOST,
       syncDelayMs: 0,
@@ -878,7 +878,7 @@ describe('rsvp-links: the worker is named for its host', () => {
     await world.rsvp.start();
     await hostEvent(world.store);
     await settle(world.rsvp);
-    expect(world.fakePuter.created).toEqual(['cal-nariman']);
+    expect(world.fakeEverything.created).toEqual(['cal-nariman']);
     expect(world.rsvp.workerOrigin()).toBe('http://cal-nariman.localhost:8443');
   });
 
@@ -886,7 +886,7 @@ describe('rsvp-links: the worker is named for its host', () => {
     // A worker can never be renamed, so reading a blip as "taken" would cost
     // this host `cal-nariman` permanently. The first name gets a second go.
     const world = makeWorld({ user: { ...HOST, username: 'nariman' }, moduleOpts: { createRetryMs: 0 } });
-    const create = world.fakePuter.workers.create;
+    const create = world.fakeEverything.workers.create;
     const real = create.getMockImplementation();
     let failed = false;
     create.mockImplementation(async (name, filePath) => {
@@ -905,9 +905,9 @@ describe('rsvp-links: the worker is named for its host', () => {
 
   it('falls past a name someone else already holds rather than failing the deploy', async () => {
     const world = makeWorld({ user: { ...HOST, username: 'nariman' }, moduleOpts: { createRetryMs: 0 } });
-    const create = world.fakePuter.workers.create;
+    const create = world.fakeEverything.workers.create;
     const real = create.getMockImplementation();
-    // Puter rejects a taken name; only the first candidate is taken here.
+    // Everything rejects a taken name; only the first candidate is taken here.
     create.mockImplementation(async (name, filePath) => {
       if (name === 'cal-nariman') throw new Error('name already in use');
       return real(name, filePath);
@@ -916,6 +916,6 @@ describe('rsvp-links: the worker is named for its host', () => {
     await world.rsvp.start();
     await hostEvent(world.store);
     await settle(world.rsvp);
-    expect(world.rsvp.workerOrigin()).toMatch(/^https:\/\/cal-nariman-[0-9a-f]{4}\.puter\.work$/);
+    expect(world.rsvp.workerOrigin()).toMatch(/^https:\/\/cal-nariman-[0-9a-f]{4}\.everything\.work$/);
   });
 });

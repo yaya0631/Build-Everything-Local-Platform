@@ -2,10 +2,10 @@ import { test, expect } from '@playwright/test';
 import { PDFDocument, StandardFonts } from 'pdf-lib';
 import { readFile, writeFile } from 'node:fs/promises';
 
-const PUTER_MOCK = `window.puter = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async () => ({}) }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
-async function mockPuter(page) {
-  await page.route('**/sdk/puter.js', (route) =>
-    route.fulfill({ contentType: 'application/javascript', body: PUTER_MOCK }),
+const EVERYTHING_MOCK = `window.everything = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async () => ({}) }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
+async function mockEverything(page) {
+  await page.route('**/sdk/everything.js', (route) =>
+    route.fulfill({ contentType: 'application/javascript', body: EVERYTHING_MOCK }),
   );
 }
 async function openPdf(page, doc, name = 'album.pdf') {
@@ -65,7 +65,7 @@ function zipEntries(bytes) {
 test('pages download as JPEG pictures in a ZIP, or as one PNG file for a single page', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   const font = await doc.embedFont(StandardFonts.Helvetica);
@@ -104,7 +104,7 @@ test('pages download as JPEG pictures in a ZIP, or as one PNG file for a single 
 });
 
 test('overlapping image ranges export each page once in the requested order', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   for (let i = 0; i < 3; i++) doc.addPage([200, 100]);
@@ -135,7 +135,7 @@ test('overlapping image ranges export each page once in the requested order', as
 test('a long picture export holds the editor busy behind a progress dialog that can cancel it', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   const font = await doc.embedFont(StandardFonts.Helvetica);
@@ -181,7 +181,7 @@ for (const [type, extension] of [
   test(`a long document name retains unique page numbers in a ${extension} export`, async ({
     page,
   }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     const doc = await PDFDocument.create();
     const font = await doc.embedFont(StandardFonts.Helvetica);
@@ -215,7 +215,7 @@ for (const [kind, name] of [
   test(`image ZIPs from long ${kind} names have portable filenames and extract to disk`, async ({
     page,
   }, testInfo) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     const doc = await PDFDocument.create();
     doc.addPage([200, 100]);
@@ -246,7 +246,7 @@ for (const [kind, name] of [
 }
 
 test('a filename cut beside an emoji exports without replacement characters', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([200, 100]);
@@ -286,7 +286,7 @@ for (const [format, label] of [
   ['image/jpeg', 'JPEG'],
 ])
   test(`a ${label} page picture records the resolution it was made at`, async ({ page }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     const doc = await PDFDocument.create();
     doc.addPage([200, 100]);

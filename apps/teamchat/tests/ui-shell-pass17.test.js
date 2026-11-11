@@ -4,7 +4,7 @@
  * small DOM: elements, selectors, bubbling events, focus with the focus
  * fixup rule, a hash location that fires hashchange on the next tick,
  * matchMedia by viewport; no CSS). Every test boots a fresh DOM and a fresh
- * module registry. Puter is faked at `puter.workers.exec`, as in
+ * module registry. Everything is faked at `everything.workers.exec`, as in
  * tests/ui-shell-pass16.test.js.
  */
 import { describe, it, expect, afterEach, vi } from 'vitest';
@@ -37,7 +37,7 @@ async function boot({ hash = '', width = 1280, routes = {}, ...env } = {}) {
   dom = installDom({ hash, width, ...env });
   vi.resetModules();
   const calls = [];
-  globalThis.puter = {
+  globalThis.everything = {
     workers: {
       exec: async (url, init = {}) => {
         const u = new URL(url);
@@ -81,7 +81,7 @@ async function boot({ hash = '', width = 1280, routes = {}, ...env } = {}) {
 afterEach(() => {
   dom?.uninstall();
   dom = null;
-  delete globalThis.puter;
+  delete globalThis.everything;
 });
 
 const tryAgain = (root) => [...root.querySelectorAll('button')].find((b) => b.textContent === 'Try again');

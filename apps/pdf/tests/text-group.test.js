@@ -506,7 +506,7 @@ it('replaces an edited paragraph block on every later edit instead of nesting in
     expect(paragraph.text).toBe(text);
     expect(paragraph.transform.slice(4)).toEqual([40 + i + 1, 330 - i - 1]);
     const source = stream(r.doc);
-    expect(source.match(/PuterParagraph/g)).toHaveLength(1);
+    expect(source.match(/EverythingParagraph/g)).toHaveLength(1);
     expect(source.match(/(^|\s)q(\s|$)/g)).toHaveLength(1);
     expect(source.match(/(^|\s)Q(\s|$)/g)).toHaveLength(1);
     // The line below the paragraph keeps its place.
@@ -630,7 +630,7 @@ it('ignores invalid or mismatched paragraph metadata and rejects invalid writes 
   ]) {
     const r = await read(
       await fixture(
-        `/PuterParagraph << ${data} >> BDC BT /F 18 Tf 22 TL 40 330 Td (One two three) Tj T* (four five.) Tj ET EMC`,
+        `/EverythingParagraph << ${data} >> BDC BT /F 18 Tf 22 TL 40 330 Td (One two three) Tj T* (four five.) Tj ET EMC`,
       ),
     );
     const g = groupTextParagraphs(r.groups)[0];

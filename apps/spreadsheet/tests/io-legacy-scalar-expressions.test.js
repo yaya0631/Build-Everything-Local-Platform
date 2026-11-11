@@ -27,7 +27,7 @@ it('intersects scalar operands by caller row/column while retaining explicit arr
  const base=w.toJSON();w.pasteCells(id,w.copyRange(id,{r1:3,c1:1,r2:3,c2:1}),4,1,{r:3,c:1});
  w.undo();expect(w.toJSON()).toEqual(base);
  const zip=X.CFB.read(new Uint8Array(await(await workbookToXlsx(w)).arrayBuffer()),{type:'array'}),p=X.CFB.find(zip,'/xl/workbook.xml');
- p.content=new TextEncoder().encode(new TextDecoder().decode(p.content).replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g,''));p.size=p.content.length;
+ p.content=new TextEncoder().encode(new TextDecoder().decode(p.content).replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g,''));p.size=p.content.length;
  const r=await workbookFromFile(X.CFB.write(zip,{type:'array',fileType:'zip'}),'external.xlsx');
  expect(r.getValue(r.activeSheetId,3,1)).toBe(-8);
  r.setInput(r.activeSheetId,1,1,-19);expect(r.getValue(r.activeSheetId,3,1)).toBe(-19);

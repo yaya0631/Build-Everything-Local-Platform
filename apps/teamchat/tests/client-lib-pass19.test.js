@@ -30,7 +30,7 @@ const until = async (fn, ms = 5000) => {
 /** Route each call by the end of its path (first match wins); a handler gets the query and the request init. */
 function worker(routes) {
   const calls = [];
-  globalThis.puter = {
+  globalThis.everything = {
     workers: {
       exec: async (url, init = {}) => {
         const u = new URL(url);
@@ -70,7 +70,7 @@ function resetStore() {
   store.act = { c: {}, p: {}, w: 0, u: 0 };
   for (const t of store._readTimers.values()) clearTimeout(t);
   store._readTimers.clear();
-  delete globalThis.puter;
+  delete globalThis.everything;
 }
 
 const msg = (seq, text, extra = {}) => ({ seq, user: 'u-me', text, ts: seq * 1000, kind: 'msg', attachments: [], mentions: [], reactions: {}, replyCount: 0, ...extra });
@@ -173,12 +173,12 @@ describe('message windows read from the worker itself, with deletions at the blo
     runtime = await bootRuntime();
     ({ wsId, general } = await workspaceWith(USERS.alice, [USERS.bob]));
     ref = `${wsId}@teamchat-api`;
-    globalThis.puter = { workers: { exec: (url, init) => runtime.dispatch(url, init, USERS.alice) } };
+    globalThis.everything = { workers: { exec: (url, init) => runtime.dispatch(url, init, USERS.alice) } };
     for (let i = 1; i <= 120; i++) await post(`m${i}`);
     for (const s of [50, 51, 100, 101]) await as(USERS.alice).del(`/api/ws/${wsId}/conv/${general.id}/messages/${s}`);
   });
   beforeEach(async () => {
-    globalThis.puter = { workers: { exec: (url, init) => runtime.dispatch(url, init, USERS.alice) } };
+    globalThis.everything = { workers: { exec: (url, init) => runtime.dispatch(url, init, USERS.alice) } };
     const doc = (await as(USERS.alice).get(`/api/ws/${wsId}`)).data;
     store.wsId = ref;
     store.ws = doc.workspace;
@@ -620,7 +620,7 @@ describe('a photo or a file the worker will not hand over', () => {
   it('is asked for again soon when nobody answered at all (the network, not a refusal)', async () => {
     vi.useFakeTimers({ toFake: ['Date'] });
     let n = 0;
-    globalThis.puter = { workers: { exec: async () => { n++; throw new TypeError('Failed to fetch'); } } };
+    globalThis.everything = { workers: { exec: async () => { n++; throw new TypeError('Failed to fetch'); } } };
     await expect(avatarUrl(REF, 'u-ann', 3)).rejects.toBeTruthy();
     await expect(avatarUrl(REF, 'u-ann', 3)).rejects.toBeTruthy();
     expect(n).toBe(1);
@@ -665,7 +665,7 @@ describe('what the device keeps for a workspace the account has left', () => {
     noteSearch(OTHER, 'keep me');
     store.identity = { uuid: 'u-me', username: 'me' };
     store.user = { v: 1, profile: {}, prefs: {}, workspaces: [{ ref: REF, name: 'Acme' }, { ref: OTHER, name: 'Other' }], worker: null };
-    globalThis.puter = { kv: { get: async () => structuredClone(store.user), set: async () => {} }, workers: { exec: async () => json({}) } };
+    globalThis.everything = { kv: { get: async () => structuredClone(store.user), set: async () => {} }, workers: { exec: async () => json({}) } };
     await store.forgetWorkspace(REF);
     expect(listDrafts(REF)).toEqual([]);
     expect(getDraft(draftKey(REF, 'c1'))).toBeNull();

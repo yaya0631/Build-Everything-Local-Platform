@@ -7,7 +7,7 @@ import { COLLECTIONS } from './store.js';
 import { TXN_TYPES } from './txn.js';
 import { ACCOUNT_TYPES } from './accounts.js';
 
-export const BACKUP_FORMAT = 'puter-bookkeeping-backup';
+export const BACKUP_FORMAT = 'everything-bookkeeping-backup';
 
 export function exportBackup(store) {
   const collections = {};

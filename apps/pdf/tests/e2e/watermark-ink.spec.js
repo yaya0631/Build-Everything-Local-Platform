@@ -7,7 +7,7 @@ for (const layout of ['horizontal', 'diagonal'])
   test(`watermark accents and descenders fit on a short page (${layout})`, async ({
     page,
   }, testInfo) => {
-    await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
+    await page.route('**/sdk/everything.js', (route) => route.fulfill({ body: '' }));
     await page.goto('/#library');
     const doc = await PDFDocument.create();
     doc.addPage([300, 20]);

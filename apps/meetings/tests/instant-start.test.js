@@ -90,7 +90,7 @@ vi.mock('../src/ui/meeting.js', () => ({
   mountMeeting: (...args) => world.mountMeeting(...args),
 }));
 
-function fakePuter({ signedIn = true } = {}) {
+function fakeEverything({ signedIn = true } = {}) {
   return {
     auth: {
       isSignedIn: () => signedIn,
@@ -118,7 +118,7 @@ const greenRoom = () => app.querySelector('.prejoin-error');
 
 beforeEach(async () => {
   localStorage.clear();
-  delete window.puter;
+  delete window.everything;
   globalThis.MediaStream = FakeMediaStream;
   Object.defineProperty(navigator, 'mediaDevices', {
     value: {
@@ -156,7 +156,7 @@ afterEach(() => {
 
 /** Load the app (home screen) with the given sign-in state and saved name. */
 async function boot({ signedIn = true, savedName = 'Ada Lovelace' } = {}) {
-  window.puter = fakePuter({ signedIn });
+  window.everything = fakeEverything({ signedIn });
   prefs = await import('../src/lib/prefs.js');
   if (savedName) prefs.setLocalPref('name', savedName);
   await import('../src/main.js');
@@ -220,12 +220,12 @@ describe('Start an instant meeting', () => {
 
   it('reports a start that failed and stays on the home screen, ready for another go', async () => {
     world.host = async () => {
-      throw new Error('Can’t reach Puter’s connection service.');
+      throw new Error('Can’t reach Everything’s connection service.');
     };
     await boot();
     clickStartInstant();
 
-    await vi.waitFor(() => expect(toasts.textContent).toContain('Can’t reach Puter’s connection service.'));
+    await vi.waitFor(() => expect(toasts.textContent).toContain('Can’t reach Everything’s connection service.'));
     expect(world.mountMeeting).not.toHaveBeenCalled();
     expect(greenRoom()).toBeNull();
     expect(newMeetingBtn().disabled).toBe(false);

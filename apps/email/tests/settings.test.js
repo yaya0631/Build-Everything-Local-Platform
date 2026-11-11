@@ -23,13 +23,13 @@ describe('createSettings', () => {
 
   it('answers the fallback for a stored value of the wrong type', () => {
     const storage = memoryStorage();
-    storage.setItem('puter-mail:settings:me', JSON.stringify({ signature: 42 }));
+    storage.setItem('everything-mail:settings:me', JSON.stringify({ signature: 42 }));
     expect(createSettings('me', storage).get('signature', '')).toBe('');
   });
 
   it('shrugs off a storage holding something that is not settings', () => {
     const storage = memoryStorage();
-    storage.setItem('puter-mail:settings:me', '[1, 2');
+    storage.setItem('everything-mail:settings:me', '[1, 2');
     const settings = createSettings('me', storage);
     expect(settings.get('signature', '')).toBe('');
     expect(settings.set('signature', 'Ana')).toBe(true);

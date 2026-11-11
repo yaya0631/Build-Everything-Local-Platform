@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { Doc } from '../src/lib/doc.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 import { memoryStorage } from './helpers/memory-storage.js';
 
 Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true });
@@ -11,8 +11,8 @@ Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), conf
 // linger on a path the file has left.
 describe('remembering the outside-content decision', () => {
   let mock;
-  beforeEach(() => { mock = installMockPuter(); localStorage.clear(); });
-  afterEach(() => { delete globalThis.puter; });
+  beforeEach(() => { mock = installMockEverything(); localStorage.clear(); });
+  afterEach(() => { delete globalThis.everything; });
 
   const place = async (path) => {
     const bytes = await Doc.blank().toXlsxBlob();

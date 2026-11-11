@@ -1,6 +1,6 @@
 /**
  * Dub dialog: speak the timeline's captions in another language with
- * Puter AI (translation and text to speech), on a new audio track, with
+ * Everything AI (translation and text to speech), on a new audio track, with
  * the original sound lowered, muted or kept, and the captions optionally
  * translated too.
  */
@@ -68,7 +68,7 @@ export function applyDub(project, { placed, language, original = 'lower', lines 
 export function openDubDialog(ctx, { translate = translateLines, speak = synthesize } = {}) {
   const { store } = ctx;
   if (!aiAvailable(ctx) && translate === translateLines) {
-    toast('Dubbing uses Puter AI for translation and voices. Sign in to Puter to use it.', { kind: 'info' });
+    toast('Dubbing uses Everything AI for translation and voices. Sign in to Everything to use it.', { kind: 'info' });
     return null;
   }
   const captionClips = [];

@@ -258,7 +258,7 @@ function data(readOnly) {
   };
   const nSample = sampleCount();
   const deleteAll = async () => {
-    const ok = await confirmDialog({ title: 'Delete all fleet data?', message: 'Every vehicle, record, and setting in this fleet will be permanently deleted. Download a backup first if you might need it. Files you uploaded stay in your Puter drive.', confirmLabel: 'Delete everything', danger: true });
+    const ok = await confirmDialog({ title: 'Delete all fleet data?', message: 'Every vehicle, record, and setting in this fleet will be permanently deleted. Download a backup first if you might need it. Files you uploaded stay in your Everything drive.', confirmLabel: 'Delete everything', danger: true });
     if (!ok) return;
     for (const c of COLLECTIONS) store.bulkRemove(c, store.all(c).map((r) => r.id));
     store.saveSettings({ ...defaultSettings(), onboarded: true });
@@ -285,7 +285,7 @@ function data(readOnly) {
       h('div.card-head', h('h2.grow', 'Where your data lives')),
       h(
         'div.card-body.stack',
-        h('p.muted', app.demo ? 'You are in the demo. Nothing is saved.' : app.team ? 'This fleet is shared through a team server in its owner’s Puter account. Records and files are stored there.' : 'Records are stored in your own Puter account. Photos and documents are files in this app’s folder in your Puter drive. A copy is kept on this device so the app works offline.'),
+        h('p.muted', app.demo ? 'You are in the demo. Nothing is saved.' : app.team ? 'This fleet is shared through a team server in its owner’s Everything account. Records and files are stored there.' : 'Records are stored in your own Everything account. Photos and documents are files in this app’s folder in your Everything drive. A copy is kept on this device so the app works offline.'),
         h('p', h('a', { href: REPO_URL, target: '_blank', rel: 'noopener noreferrer' }, 'Fleet is open source on GitHub'), '.'),
       ),
     ),

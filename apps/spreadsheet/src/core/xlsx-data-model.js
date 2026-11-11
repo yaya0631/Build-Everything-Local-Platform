@@ -85,11 +85,11 @@ export function writeXlsxDataModel(model, workbook, { get, set, binary, contentT
     ids.add(id);
     rels = rels.replace('</Relationships>', xmlTag('Relationship', { Id: id, Type: REL + type, Target: target }) + '</Relationships>');
   };
-  add('puterDataModel', 'powerPivotData', 'model/item.data');
+  add('everythingDataModel', 'powerPivotData', 'model/item.data');
   if (model.connectionsXml) {
     set('/xl/connections.xml', model.connectionsXml);
     contentType('/xl/connections.xml', 'application/vnd.openxmlformats-officedocument.spreadsheetml.connections+xml');
-    add('puterModelConnections', 'connections', 'connections.xml');
+    add('everythingModelConnections', 'connections', 'connections.xml');
   }
   set('/xl/_rels/workbook.xml.rels', rels);
   if (model.modelXml) {

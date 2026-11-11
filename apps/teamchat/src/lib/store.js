@@ -6,7 +6,7 @@
  *
  * Workspaces live on their owners' workers, so the store addresses them by
  * reference (`{wsId}@{server}`); `wsId` below is always such a reference.
- * What belongs to the user alone lives in their own Puter KV (lib/user.js).
+ * What belongs to the user alone lives in their own Everything KV (lib/user.js).
  *
  * Views subscribe with store.on(event, fn). Events:
  *   'profile'            profile, preferences, or workspace list changed
@@ -116,7 +116,7 @@ const REFRESH_SPAN = 3 * BLOCK_SIZE;
 /** Messages loaded on each side of a permalinked one. */
 const AROUND = 25;
 
-/** The user's own photo, in their Puter drive, the copy every worker is seeded from. */
+/** The user's own photo, in their Everything drive, the copy every worker is seeded from. */
 const AVATAR_FILE = 'teamchat/avatar.jpg';
 /** A sidebar section's name, in UTF-16 units as the dialog's maxlength counts them (the sections live in the user's own document; no worker holds them). */
 const SECTION_NAME_MAX = 40;
@@ -250,7 +250,7 @@ export const EV_AMBIGUOUS_CODE = 'events_connection_failed';
 export const EV_TERMINAL_BACKOFF_MS = 60 * 60_000;
 /**
  * The code a subscription is refused with when its own subject is not
- * there: a handle revoked from the Puter GUI, or one minted against an app
+ * there: a handle revoked from the Everything GUI, or one minted against an app
  * binding that has since changed. Unlike every other failure here, retrying
  * the same descriptor can never work — the worker caches a minted handle on
  * the member's own document and hands the same one back forever — so
@@ -314,13 +314,13 @@ function isHostGone(e) {
  * answering at all? A refusal is the host's word and stands until something
  * changes on one side; an address that does not answer is simply tried again.
  * A 401 is not the host's word either: the worker answers it whenever
- * Puter's word on who is asking cannot be had (see worker/lib.js identify),
- * which is Puter not answering the worker for a moment as often as a
+ * Everything's word on who is asking cannot be had (see worker/lib.js identify),
+ * which is Everything not answering the worker for a moment as often as a
  * sign-in that has lapsed, and the polls and sends refused in that moment
  * go through again on their next try (see files.js refused). Read as a
  * refusal, a shared channel said the member was not in it on the host, and
  * a join made in that moment was taken back, over a failure that was
- * Puter's and passing.
+ * Everything's and passing.
  */
 function isRefusal(e) {
   // Not a 408 or a 425 either: only ever a gateway's word (the request timed
@@ -419,7 +419,7 @@ const LATER_REUSE_MS = 30_000;
 class Store extends EventTarget {
   constructor() {
     super();
-    this.identity = null; // { uuid, username } from Puter
+    this.identity = null; // { uuid, username } from Everything
     this.user = null; // the user's own document (lib/user.js)
     this._flags = {}; // per-ref UI flags from the last reconciliation (unreachable)
     this._forgotten = new Map(); // workspace ref -> when the user's list dropped it here (see refreshWorkspaces)
@@ -602,8 +602,8 @@ class Store extends EventTarget {
    * the background so the shell renders at once.
    */
   async loadMe() {
-    const who = await puter.auth.getUser();
-    if (!who || !who.uuid) throw new ApiError(401, 'unauthorized', 'Your Puter session is not valid');
+    const who = await everything.auth.getUser();
+    if (!who || !who.uuid) throw new ApiError(401, 'unauthorized', 'Your Everything session is not valid');
     this.identity = { uuid: String(who.uuid), username: String(who.username || '').toLowerCase() };
     this._claimDevice();
     this.user = await loadUserDoc();
@@ -616,7 +616,7 @@ class Store extends EventTarget {
   }
 
   /**
-   * Sign this device out of Puter. The push subscription is the device's,
+   * Sign this device out of Everything. The push subscription is the device's,
    * not the account's: left standing, every direct message and mention to
    * the account that signed out kept arriving as banners, text and all, on
    * a computer that may be someone else's now, until some account signed in
@@ -637,12 +637,12 @@ class Store extends EventTarget {
       await withinMs(Promise.allSettled(this.workspaces.map((w) => unsubscribePush(w.ref))), SIGNOUT_PUSH_MS);
       await dropPushSubscription().catch(() => {});
     }
-    await puter.auth.signOut();
+    await everything.auth.signOut();
   }
 
   /**
    * The device may have served another account before this one (a sign-out
-   * and a sign-in, or a switch of Puter accounts): what that account left on
+   * and a sign-in, or a switch of Everything accounts): what that account left on
    * it unsent is not this one's to see. Drafts are dropped, and so is the
    * offline cache (the last bootstrap and pages the other account read,
    * their direct messages among them); queued messages stay in the outbox
@@ -710,7 +710,7 @@ class Store extends EventTarget {
   /** The canonical copy of the user's photo, kept in their own drive. */
   async _readOwnAvatar() {
     try {
-      const blob = await puter.fs.read(AVATAR_FILE);
+      const blob = await everything.fs.read(AVATAR_FILE);
       return blob && blob.size ? blob : null;
     } catch {
       return null;
@@ -721,14 +721,14 @@ class Store extends EventTarget {
   async updateAvatar(blob) {
     const servers = this._servers();
     if (blob) {
-      await puter.fs.write(AVATAR_FILE, blob, { overwrite: true, dedupeName: false, createMissingParents: true });
+      await everything.fs.write(AVATAR_FILE, blob, { overwrite: true, dedupeName: false, createMissingParents: true });
       const results = await Promise.allSettled(servers.map((url) => api.uploadAvatar(url, blob)));
       const ok = results.find((r) => r.status === 'fulfilled');
       if (!ok && servers.length) throw (results[0].reason || new Error('Could not upload the photo'));
       await this._mutateUser((doc) => { doc.profile = { ...doc.profile, avatar: Date.now() }; });
     } else {
       await Promise.allSettled(servers.map((url) => api.removeAvatar(url)));
-      await puter.fs.delete?.(AVATAR_FILE).catch?.(() => {});
+      await everything.fs.delete?.(AVATAR_FILE).catch?.(() => {});
       await this._mutateUser((doc) => { doc.profile = { ...doc.profile, avatar: null }; });
     }
     clearAvatarCache();
@@ -805,7 +805,7 @@ class Store extends EventTarget {
   }
 
   /**
-   * The user's own worker is reached by the URL Puter reported when it was
+   * The user's own worker is reached by the URL Everything reported when it was
    * created, which may sit outside localhost:8443; references to it must keep
    * resolving (see refs.js: hosts named only by a link never do).
    */
@@ -3533,13 +3533,13 @@ class Store extends EventTarget {
       }
       // Refused for good (full, archived, not a member any more): the huddle
       // cannot be had. Out of reach: the next heartbeat tries again while the
-      // links already up carry on. So does one Puter could not confirm for
-      // a moment (401, the worker's word whenever Puter's word on who is
+      // links already up carry on. So does one Everything could not confirm for
+      // a moment (401, the worker's word whenever Everything's word on who is
       // asking cannot be had; see files.js refused) or one the worker held
       // back (429): the seat stands on the worker for HUDDLE_TTL_MS, five
       // more beats, any of which keeps it. Read as a refusal, either put
       // the member out of the call, with a word about the huddle, over a
-      // failure that was Puter's and passing. The first post's refusal is
+      // failure that was Everything's and passing. The first post's refusal is
       // thrown to the join that awaits it, which says so once; a heartbeat's
       // has nobody waiting, so it is announced here.
       const passing = e instanceof ApiError && (e.status === 401 || e.status === 429 || isPlatformPage(e));
@@ -4869,8 +4869,8 @@ class Store extends EventTarget {
             // forgotten like a network failure, so a later render retries.
             // So is the address not answering for the moment (a bare 404
             // while the worker is redeployed, `no_backend`; see isRefusal),
-            // and a 401, which the worker answers whenever Puter's word on
-            // who is asking cannot be had (Puter not answering it for a
+            // and a 401, which the worker answers whenever Everything's word on
+            // who is asking cannot be had (Everything not answering it for a
             // moment as often as a sign-in that has lapsed; see files.js
             // refused): held as the worker's word on the message, either
             // left the card blank for the rest of the session, as if the
@@ -5195,7 +5195,7 @@ class Store extends EventTarget {
       }, (e) => {
         const renewable = this._readRenewable(read, e);
         // Nor is a read given up on a 401, the worker's word whenever
-        // Puter's word on who is asking cannot be had (Puter not answering
+        // Everything's word on who is asking cannot be had (Everything not answering
         // the worker for a moment as often as a sign-in that has lapsed;
         // see files.js refused): kept, and sent again with the next request
         // that gets through, which a lapsed sign-in never makes. Given up
@@ -5353,9 +5353,9 @@ class Store extends EventTarget {
    * owner their own subscription with nothing said about why.
    */
   appUid() {
-    const id = typeof puter !== 'undefined' ? puter?.appID : null;
+    const id = typeof everything !== 'undefined' ? everything?.appID : null;
     if (typeof id === 'string' && id.startsWith('app-')) return id;
-    return appUidFromToken(typeof puter !== 'undefined' ? puter?.authToken : null);
+    return appUidFromToken(typeof everything !== 'undefined' ? everything?.authToken : null);
   }
 
   /**
@@ -5401,7 +5401,7 @@ class Store extends EventTarget {
     this._evTeardown(holder);
     holder.retryUntil = 0;
     holder.retryDesc = null;
-    if (!desc || typeof puter === 'undefined' || typeof puter?.events?.onLocal !== 'function') return;
+    if (!desc || typeof everything === 'undefined' || typeof everything?.events?.onLocal !== 'function') return;
     // The owner subscribes directly to their own namespace; refused unless
     // the app running this tab is really the one the bootstrap named, since
     // subscribing as any other app would read as an unrelated subject.
@@ -5427,7 +5427,7 @@ class Store extends EventTarget {
     holder.state = 'arming';
     const epoch = holder.epoch;
     Promise.resolve()
-      .then(() => puter.events.onLocal(subject, ({ event } = {}) => {
+      .then(() => everything.events.onLocal(subject, ({ event } = {}) => {
         if (holder.epoch !== epoch) return;
         this._onEvSignal(holder, wsId, event);
       }, { ...(wantValue ? { includeValue: true } : {}), onError: (err) => {
@@ -5483,7 +5483,7 @@ class Store extends EventTarget {
   /**
    * A subscribe or a delivered onError: back off, then try the same
    * descriptor again. `err` is whatever the SDK rejected or onError'd with —
-   * a PuterJSError carrying `.code` when it is the SDK's own refusal. A code
+   * a EverythingJSError carrying `.code` when it is the SDK's own refusal. A code
    * in EV_TERMINAL_CODES means the platform surface itself is unavailable
    * here (not this holder's problem to retry its way out of), so it gets one
    * long, terminal wait instead of climbing the short advancing ladder. A
@@ -5659,7 +5659,7 @@ class Store extends EventTarget {
     const ending = () => !live() || holder.state !== 'on';
     Promise.resolve()
       .then(() => Promise.allSettled([
-        puter.events.onLocal(ping, ({ event } = {}) => {
+        everything.events.onLocal(ping, ({ event } = {}) => {
           if (live()) this._onEvSignal(holder, wsId, event);
         }, { includeValue: true, onError: (err) => {
           if (ending()) return;
@@ -5667,7 +5667,7 @@ class Store extends EventTarget {
           holder.rsub = null;
           this._onEvFailure(holder, wsId, desc, err);
         } }),
-        puter.events.onLocal(shard, ({ event } = {}) => {
+        everything.events.onLocal(shard, ({ event } = {}) => {
           if (live()) this._onRingEvent(holder, wsId, event);
         }, { includeValue: true, onError: (err) => {
           if (ending()) return;
@@ -6023,7 +6023,7 @@ class Store extends EventTarget {
    * Three consecutive safety polls (not poked, not signal-driven) that turn
    * up a change of a kind the worker always signals mean the subscription is
    * live but not delivering: past a shard's fair share of watchers, a grant
-   * revoked from the Puter GUI, a region where dispatch has gone quiet. Fall
+   * revoked from the Everything GUI, a region where dispatch has gone quiet. Fall
    * back to plain polling for a while rather than trust a signal that keeps
    * not coming.
    */
@@ -6141,8 +6141,8 @@ class Store extends EventTarget {
    * was (a server that is down answers the same way each time: the network
    * failing, a gateway's page, its own error), or the first of a new kind.
    * The wait between polls grows with the count (see poll). Not a 401: the
-   * worker answers it whenever Puter cannot confirm the sign-in, a moment's
-   * failure at Puter as often as a sign-in that has lapsed (see isRefusal),
+   * worker answers it whenever Everything cannot confirm the sign-in, a moment's
+   * failure at Everything as often as a sign-in that has lapsed (see isRefusal),
    * and the polls go through again on their next try; the app says so of
    * its own (see shell.js), and a poll held back would only delay the recovery.
    */

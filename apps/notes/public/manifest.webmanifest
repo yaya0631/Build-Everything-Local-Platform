@@ -1,7 +1,7 @@
 {
   "name": "Notes",
   "short_name": "Notes",
-  "description": "A free-form digital notebook stored in your own Puter cloud.",
+  "description": "A free-form digital notebook stored in your own Everything cloud.",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#f5f5f5",

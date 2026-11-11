@@ -4,10 +4,10 @@ import { PDFDocument, PDFName, PDFHexString, StandardFonts, degrees } from 'pdf-
 import { readFile } from 'node:fs/promises';
 import { addNote } from '../../src/core/notes.js';
 
-const PUTER_MOCK = `window.puter = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async () => ({}) }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
-async function mockPuter(page) {
-  await page.route('**/sdk/puter.js', (route) =>
-    route.fulfill({ contentType: 'application/javascript', body: PUTER_MOCK }),
+const EVERYTHING_MOCK = `window.everything = { env: 'web', auth: { isSignedIn: () => true, getUser: async () => ({username:'test-user'}), signIn: async () => {}, signOut: async () => {} }, fs: { readdir: async () => [], write: async () => ({}) }, ui: { onLaunchedWithItems: () => {}, onItemsOpened: () => {} } };`;
+async function mockEverything(page) {
+  await page.route('**/sdk/everything.js', (route) =>
+    route.fulfill({ contentType: 'application/javascript', body: EVERYTHING_MOCK }),
   );
 }
 async function openPdf(page, doc) {
@@ -49,7 +49,7 @@ for (const layerType of ['direct', 'indirect group', 'indirect membership'])
   test(`flattening a ${layerType} layer-controlled comment keeps it hidden through download and undo`, async ({
     page,
   }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     const doc = await PDFDocument.create();
     const sheet = doc.addPage([200, 200]);
@@ -122,7 +122,7 @@ for (const layerType of ['direct', 'indirect group', 'indirect membership'])
 test('flattening keeps a visible appearance whose ordinary XObject use is layer-hidden', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   const sheet = doc.addPage([200, 200]);
@@ -174,7 +174,7 @@ test('flattening keeps a visible appearance whose ordinary XObject use is layer-
 });
 
 test('Flatten bakes fields and comments into the page and can be undone', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   const font = await doc.embedFont(StandardFonts.Helvetica);
@@ -217,7 +217,7 @@ test('Flatten bakes fields and comments into the page and can be undone', async 
 });
 
 test('a PDF with nothing to flatten says so', async ({ page }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([300, 300]);
@@ -260,7 +260,7 @@ async function downloaded(page) {
 test('flattening a legacy note creates page content that survives download and undo', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([300, 300]);
@@ -285,7 +285,7 @@ test('flattening a legacy note creates page content that survives download and u
 test('an unsupported note stays editable and an unchanged flatten creates no undo step', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   doc.addPage([300, 300]);
@@ -307,7 +307,7 @@ test('an unsupported note stays editable and an unchanged flatten creates no und
 test('partial flatten reports a retained field and exports its canonical value and widget', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   const sheet = doc.addPage([300, 300]);
@@ -338,7 +338,7 @@ test('partial flatten reports a retained field and exports its canonical value a
 test('flattening preserves screen and print visibility through undo, redo, and reopening', async ({
   page,
 }) => {
-  await mockPuter(page);
+  await mockEverything(page);
   await page.addInitScript(() => {
     window.printedColors = [];
     window.print = () => {
@@ -430,7 +430,7 @@ for (const kind of ['note', 'highlight'])
   test(`flattening an indirect ${kind} counts it correctly and survives history and reopening`, async ({
     page,
   }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     const { doc } = await commentPdf(kind);
     await openPdf(page, doc);
@@ -476,7 +476,7 @@ for (const [rotation, expected] of [
   test(`flattening a shared legacy note keeps its ${rotation}-degree page upright through export and history`, async ({
     page,
   }) => {
-    await mockPuter(page);
+    await mockEverything(page);
     await page.goto('/#library');
     const doc = await PDFDocument.create();
     doc.addPage([300, 300]);

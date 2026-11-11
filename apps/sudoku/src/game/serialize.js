@@ -2,7 +2,7 @@
  * Turning a game into something storable, and back.
  *
  * The format is deliberately plain and versioned. It travels to two places
- * with different failure modes (localStorage on this device and puter.kv in the
+ * with different failure modes (localStorage on this device and everything.kv in the
  * player's account), and a save that cannot be read is a game lost, so
  * `decode` validates rather than trusts: wrong version, wrong length, a digit
  * outside 1-9, or a "solution" that is not a solved grid all return null and

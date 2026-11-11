@@ -1,7 +1,7 @@
 {
   "name": "video-studio",
   "version": "1.0.0",
-  "description": "Video Studio: a multi-track video editor on Puter. Timeline editing, text, effects, transitions, filters, keyframes, captions and export, stored in your own cloud.",
+  "description": "Video Studio: a multi-track video editor on Everything. Timeline editing, text, effects, transitions, filters, keyframes, captions and export, stored in your own cloud.",
   "type": "module",
   "private": true,
   "license": "AGPL-3.0-only",

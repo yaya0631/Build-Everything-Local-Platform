@@ -1,16 +1,16 @@
 # Expenses
 
 Receipt capture with AI OCR, expense reports, and reconciliation. Built with
-vanilla JavaScript (no frameworks), Vite, and [Puter.js](http://localhost:8443)
-as the only backend: your data lives in your own Puter account, not on anyone's server.
+vanilla JavaScript (no frameworks), Vite, and [Everything.js](http://localhost:8443)
+as the only backend: your data lives in your own Everything account, not on anyone's server.
 
 ## Features
 
 - **Receipt capture with AI OCR.** Take a photo, drop a scan or PDF, or paste an
-  image. The receipt is uploaded to your Puter drive and read by a vision model
-  through `puter.ai.chat`: merchant, date, total, tax, currency, category, payment
+  image. The receipt is uploaded to your Everything drive and read by a vision model
+  through `everything.ai.chat`: merchant, date, total, tax, currency, category, payment
   method and line items are pre-filled for you to confirm. If the vision call
-  fails, `puter.ai.img2txt` plus a text extraction pass takes over. Several
+  fails, `everything.ai.img2txt` plus a text extraction pass takes over. Several
   receipts at once are queued and confirmed one by one.
 - **Expenses.** Searchable, filterable list grouped by day: not in a report, in a
   report, reconciled, missing receipt, by category and month. Multi-select to add
@@ -39,13 +39,13 @@ as the only backend: your data lives in your own Puter account, not on anyone's 
   `aria-describedby`, focus management in dialogs (`inert` on the page behind),
   skip link, status live region for toasts, and colours checked for contrast and
   colour-vision deficiency.
-- **Puter desktop aware.** When `puter.env === 'app'` the sign-out option is
+- **Everything desktop aware.** When `everything.env === 'app'` the sign-out option is
   hidden, because the desktop owns the session.
 
-## Storage design (Puter)
+## Storage design (Everything)
 
-`puter.kv` holds only small, hot values. Everything that is a file or can grow
-lives in `puter.fs` under the app's data folder.
+`everything.kv` holds only small, hot values. Everything that is a file or can grow
+lives in `everything.fs` under the app's data folder.
 
 | Where | Key / path | What |
 |---|---|---|
@@ -70,9 +70,9 @@ npm test           # vitest
 
 Two dev harnesses (excluded from the production build):
 
-- **`/mock.html`** runs the full app against an in-memory mock of the Puter SDK
-  (`dev/puter-mock.js`) with a fake vision model. No Puter account needed; state
-  resets on reload. Add `?env=app` to simulate running inside the Puter desktop,
+- **`/mock.html`** runs the full app against an in-memory mock of the Everything SDK
+  (`dev/everything-mock.js`) with a fake vision model. No Everything account needed; state
+  resets on reload. Add `?env=app` to simulate running inside the Everything desktop,
   `?signedout=1` to see the intro page, `?aifail=1` to exercise the OCR failure path.
 - **`/dev/phone.html`** shows the mock app in phone-sized frames.
 
@@ -84,12 +84,12 @@ npm run preview    # serve dist/ locally
 ## Deploying
 
 `dist/` is fully static (built with relative paths), so it can be hosted anywhere,
-including Puter's own hosting via `puter.hosting`. The app talks to Puter directly
+including Everything's own hosting via `everything.hosting`. The app talks to Everything directly
 from the browser; there is no server to run.
 
 ---
 
-Powered by [Puter](http://localhost:8443).
+Powered by [Everything](http://localhost:8443).
 
 ## License
 

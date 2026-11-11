@@ -111,7 +111,7 @@ export class PeerNetwork {
   // `now` is the server's time, which tickets' expiry is measured in; a
   // device clock running ahead would otherwise refuse every peer.
   constructor({
-    puter,
+    everything,
     session,
     keys,
     roomKey,
@@ -127,7 +127,7 @@ export class PeerNetwork {
     related = (id, out, n) => n,
   }) {
     Object.assign(this, {
-      puter,
+      everything,
       session,
       keys,
       roomKey,
@@ -168,7 +168,7 @@ export class PeerNetwork {
     let expired = false,
       timer;
     try {
-      const pending = this.puter.peer.serve();
+      const pending = this.everything.peer.serve();
       pending
         .then((server) => {
           if (expired || this.closed) server.close();
@@ -266,7 +266,7 @@ export class PeerNetwork {
         if (this.links.get(peer.session) === pending)
           this.links.delete(peer.session);
       }, 12000);
-      this.puter.peer
+      this.everything.peer
         .connect(peer.invite)
         .then((conn) => {
           clearTimeout(timer);

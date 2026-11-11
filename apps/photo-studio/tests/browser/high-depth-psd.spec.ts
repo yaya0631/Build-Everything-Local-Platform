@@ -8,10 +8,10 @@ for (const backend of ['default', 'WebGL']) {
       await page.addInitScript(() =>
         Object.defineProperty(navigator, 'gpu', { value: undefined }),
       );
-    await page.route('**/sdk/puter.js', (r) =>
+    await page.route('**/sdk/everything.js', (r) =>
       r.fulfill({
         contentType: 'application/javascript',
-        body: 'window.puter={};',
+        body: 'window.everything={};',
       }),
     );
     await page.goto('/');
@@ -251,7 +251,7 @@ for (const backend of ['default', 'WebGL']) {
 test('HDR PSD file input and PSD download preserve depth and sample values', async ({
   page,
 }) => {
-  await boot(page, 'default', 'window.puter={};');
+  await boot(page, 'default', 'window.everything={};');
   const bytes = await page.evaluate(async () => {
     const { writeHighDepthPsd } = await import('/src/model/psd-high-depth.ts');
     const width = 9,

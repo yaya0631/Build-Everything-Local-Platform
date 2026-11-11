@@ -2,13 +2,13 @@
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { editorView } from '../src/views/editor.js';
 import { Doc } from '../src/lib/doc.js';
-import * as P from '../src/lib/puter.js';
+import * as P from '../src/lib/everything.js';
 import * as notifications from '../src/ui/toast.js';
 import { closeMenu } from '../src/ui/menu.js';
 
-// The selection-as-CSV and chart exports download to this device inside the Puter app, as the sheet
-// exports do: Puter's save dialog put them in the user's Puter files instead.
-vi.mock('../src/lib/puter.js', async (importOriginal) => ({
+// The selection-as-CSV and chart exports download to this device inside the Everything app, as the sheet
+// exports do: Everything's save dialog put them in the user's Everything files instead.
+vi.mock('../src/lib/everything.js', async (importOriginal) => ({
   ...(await importOriginal()),
   isApp: () => true,
   canSaveFiles: () => true,

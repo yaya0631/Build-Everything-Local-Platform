@@ -13,7 +13,7 @@ import { offline } from '../lib/offline.js';
 import { openOnboarding } from '../ui/onboarding.js';
 import { openImporter } from '../ui/importer.js';
 import { logoURL, prepareLogo } from '../ui/logo.js';
-import { isPuterApp } from '../lib/env.js';
+import { isEverythingApp } from '../lib/env.js';
 import {
   CURRENCIES, ROUNDINGS, TERM_DAYS, roundingLabel, termsLabel,
   parseAmount, downloadFile, debounce,
@@ -26,14 +26,14 @@ export async function confirmSignOut() {
   const ok = await confirmDialog({
     title: 'Sign out?',
     message: pending
-      ? `${pending} change${pending === 1 ? ' has' : 's have'} not synced to your Puter cloud yet and will be lost. The local copy of your data is removed from this device.`
-      : 'Your data stays safe in your Puter account. The local copy is removed from this device.',
+      ? `${pending} change${pending === 1 ? ' has' : 's have'} not synced to your Everything cloud yet and will be lost. The local copy of your data is removed from this device.`
+      : 'Your data stays safe in your Everything account. The local copy is removed from this device.',
     confirmLabel: 'Sign out',
     danger: pending > 0,
   });
   if (!ok) return;
   offline.clearAll();
-  puter.auth.signOut();
+  everything.auth.signOut();
   location.reload();
 }
 
@@ -65,16 +65,16 @@ export function settingsView() {
   );
 
   /* --- Account --- */
-  const username = store.user?.username || 'Puter user';
+  const username = store.user?.username || 'Everything user';
   root.append(group('Account',
     el('div.user-chip', {},
       el('span.user-avatar', {}, username.charAt(0).toUpperCase()),
       el('div.grow', {},
         el('div.title', {}, username),
-        el('div.sub', {}, 'Synced with your Puter cloud')
+        el('div.sub', {}, 'Synced with your Everything cloud')
       ),
-      // Inside Puter, the platform owns the session; no sign-out offered.
-      !isPuterApp() && el('button.btn.btn-ghost', { onclick: confirmSignOut }, 'Sign out')
+      // Inside Everything, the platform owns the session; no sign-out offered.
+      !isEverythingApp() && el('button.btn.btn-ghost', { onclick: confirmSignOut }, 'Sign out')
     )
   ));
 
@@ -252,7 +252,7 @@ export function settingsView() {
     placeholder: 'IBAN or account number, BIC\nA PayPal, Wise, or Stripe link\nReference to quote',
   }, store.settings.paymentDetails || ''));
 
-  /* Logo: picked here, stored in the user's own Puter files, and
+  /* Logo: picked here, stored in the user's own Everything files, and
      snapshotted onto each invoice, so replacing it never touches an
      invoice already issued. Removing it only stops future invoices from
      carrying one, which is why the hint says so out loud. */
@@ -371,7 +371,7 @@ export function settingsView() {
       el('span.field-label', {}, 'Logo'),
       logoBox,
       el('p.field-hint', {},
-        'Stored in your own Puter files and printed in the invoice header at a fixed height. Replacing or removing it leaves invoices you already issued exactly as they were.')
+        'Stored in your own Everything files and printed in the invoice header at a fixed height. Replacing or removing it leaves invoices you already issued exactly as they were.')
     ),
     logoInput
   ));
@@ -485,7 +485,7 @@ export function settingsView() {
   const backupList = el('div.settings-list');
   function renderBackups() {
     clear(backupList);
-    backupList.append(settingsRow('cloud', 'Back up now', 'Save a snapshot to your Puter cloud right away', async () => {
+    backupList.append(settingsRow('cloud', 'Back up now', 'Save a snapshot to your Everything cloud right away', async () => {
       try {
         const b = await store.writeBackup();
         toast(`Backed up ${prettySize(b.size)}`, { icon: 'cloud' });
@@ -537,7 +537,7 @@ export function settingsView() {
 
   root.append(group('Backups',
     field('Automatic backups', backupInterval, {
-      hint: `Saves a full snapshot into your Puter cloud when you open the app, keeping the last 8. Restore or download any of them below.`,
+      hint: `Saves a full snapshot into your Everything cloud when you open the app, keeping the last 8. Restore or download any of them below.`,
     }),
     backupList
   ));
@@ -627,8 +627,8 @@ export function settingsView() {
   /* --- About --- */
   root.append(group('About',
     el('p.about-text', {},
-      `Hourly stores everything in your own Puter account. Amounts are shown in ${store.settings.currency}. `,
-      'Built with ', el('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Puter'), '.')
+      `Hourly stores everything in your own Everything account. Amounts are shown in ${store.settings.currency}. `,
+      'Built with ', el('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Everything'), '.')
   ));
 
   function group(title, ...children) {

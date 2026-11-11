@@ -180,7 +180,7 @@ export async function completeXlsx(X, wb, book, bytes, { sourceWorkbook = null, 
   const defineHelper = ref => {
     if (helperNames.has(ref)) return helperNames.get(ref);
     let name;
-    do { name = `_PuterCF${++helperIndex}`; } while (usedNames.has(name.toUpperCase()));
+    do { name = `_EverythingCF${++helperIndex}`; } while (usedNames.has(name.toUpperCase()));
     usedNames.add(name.toUpperCase()); helperNames.set(ref, name);
     helpers.push(xmlTag('definedName', { name, hidden: 1 }, xmlText(toFileFormula(ref))));
     return name;
@@ -199,7 +199,7 @@ export async function completeXlsx(X, wb, book, bytes, { sourceWorkbook = null, 
   const richValues = richValueWriter({ get, set, binary: put, contentType });
   const persons = createPersonList();
   // A colour filter kept from a file names its colour as a format of this file's own (see writeXlsxFilter).
-  const filterColorFormats = (xml) => xml.replace(/\bdxfId="puter-(fill|ink)-([\da-f]{6})"/g,
+  const filterColorFormats = (xml) => xml.replace(/\bdxfId="everything-(fill|ink)-([\da-f]{6})"/g,
     (m, kind, hex) => `dxfId="${styles.differential(kind === 'fill' ? { bg: `#${hex}` } : { color: `#${hex}` })}"`);
   for (const [i, sheet] of wb.sheets.entries()) {
     if (i && pause) await pause();
@@ -214,9 +214,9 @@ export async function completeXlsx(X, wb, book, bytes, { sourceWorkbook = null, 
       const properties = sheet.color ? xmlTag('sheetPr', {}, xmlTag('tabColor', { rgb: `FF${sheet.color.slice(1).toUpperCase()}` })) : '';
       const protection = sheet.protected ? xmlTag('sheetProtection', { content: 1, objects: 1 }) : '';
       set(chartPath, writeXlsxPrint(HEADER + xmlTag('chartsheet', { xmlns: MAIN, 'xmlns:r': REL.slice(0, -1) },
-        properties + views + protection + xmlTag('drawing', { 'r:id': 'puterDrawing' })), sheet.printSettings));
+        properties + views + protection + xmlTag('drawing', { 'r:id': 'everythingDrawing' })), sheet.printSettings));
       set(`/xl/chartsheets/_rels/sheet${i + 1}.xml.rels`, HEADER + xmlTag('Relationships', { xmlns: 'http://schemas.openxmlformats.org/package/2006/relationships' },
-        xmlTag('Relationship', { Id: 'puterDrawing', Type: `${REL}drawing`, Target: drawing })));
+        xmlTag('Relationship', { Id: 'everythingDrawing', Type: `${REL}drawing`, Target: drawing })));
       // SheetJS supplies the workbook's sheet IDs and order. Change only this
       // relationship's part and type; hidden states and local names keep those IDs.
       set('/xl/_rels/workbook.xml.rels', get('/xl/_rels/workbook.xml.rels').replace(/<Relationship\b[^>]*\/>/g, rel =>
@@ -307,13 +307,13 @@ export async function completeXlsx(X, wb, book, bytes, { sourceWorkbook = null, 
       const parts = [];
       const drawing = await exportDrawings(X, wb, sheet, i + 1, { set, binary: put, contentType, recordDrawing, recordGroup, slicers });
       if (drawing) {
-        rels = rels.replace('</Relationships>', xmlTag('Relationship', { Id: 'puterDrawing', Type: `${REL}drawing`, Target: drawing }) + '</Relationships>');
+        rels = rels.replace('</Relationships>', xmlTag('Relationship', { Id: 'everythingDrawing', Type: `${REL}drawing`, Target: drawing }) + '</Relationships>');
         // A DrawingML drawing precedes the VML drawing used by cell comments.
-        const tag = xmlTag('drawing', { 'r:id': 'puterDrawing' });
+        const tag = xmlTag('drawing', { 'r:id': 'everythingDrawing' });
         xml = xml.replace(/(<legacyDrawing\b|<\/worksheet>)/, `${tag}$1`);
       }
       for (const t of sheet.tables) {
-        const id = ++tableId, target = `/xl/tables/table${id}.xml`, relId = `puterTable${id}`;
+        const id = ++tableId, target = `/xl/tables/table${id}.xml`, relId = `everythingTable${id}`;
         const ref = X.utils.encode_range({ s: { r: t.range.r1, c: t.range.c1 }, e: { r: t.range.r2, c: t.range.c2 } });
         let columns = '';
         const columnNames = wb.tableColumns(sheet.id, t);
@@ -324,7 +324,7 @@ export async function completeXlsx(X, wb, book, bytes, { sourceWorkbook = null, 
           columns += xmlTag('tableColumn', { id: offset + 1, name: encodeXlsxAttribute(columnNames[offset]), ...total.attrs }, (formula || '') + total.formula || null);
         }
         // A table still in the Excel style its file named is written in that style, which Excel draws as its own.
-        const name = t.nativeStyle && !t.customStyle && t.style !== 'none' ? t.nativeStyle : `PuterTableStyle${id}`;
+        const name = t.nativeStyle && !t.customStyle && t.style !== 'none' ? t.nativeStyle : `EverythingTableStyle${id}`;
         const appearance = name === t.nativeStyle ? null : tableStyleParts(t, wb);
         if (appearance) styles.tableStyle(name, appearance);
         const filterRef = X.utils.encode_range({ s: { r: t.range.r1, c: t.range.c1 }, e: { r: t.range.r2 - Number(t.totalsRow), c: t.range.c2 } });
@@ -416,7 +416,7 @@ export async function completeXlsx(X, wb, book, bytes, { sourceWorkbook = null, 
   workbook = writeXlsxWorkbookCustomViews(workbook, wb.customViews || [], wb);
   set('/xl/workbook.xml', workbook);
   set('/xl/styles.xml', styles.xml());
-  if (book.PuterExportMeta && conditionalRecords.size) {
+  if (book.EverythingExportMeta && conditionalRecords.size) {
     const theme = effectiveColorPalette(wb.colorPalette).theme;
     const nativeStyles = readXlsxStyles({ files: { 'xl/styles.xml': { content: encoder.encode(styles.xml()) } },
       Themes: { themeElements: { clrScheme: theme.map(rgb => ({ rgb: rgb.slice(1) })) } } });
@@ -432,7 +432,7 @@ export async function completeXlsx(X, wb, book, bytes, { sourceWorkbook = null, 
         signatures: priorities.flatMap(priority => byPriority.get(priority) || []) }));
       // Do not treat a native projection the reader cannot understand as a
       // deleted app rule. Such records remain privately owned until supported.
-      book.PuterExportMeta.data.sheets[name].nativeConditionalFormats = { version: 3, entries: baseline.filter(entry => entry.signatures.length) };
+      book.EverythingExportMeta.data.sheets[name].nativeConditionalFormats = { version: 3, entries: baseline.filter(entry => entry.signatures.length) };
     }
   }
   writeXlsxSlicers(wb, slicers, { get, set, contentType });
@@ -440,8 +440,8 @@ export async function completeXlsx(X, wb, book, bytes, { sourceWorkbook = null, 
   richValues.finish();
   set('/[Content_Types].xml', types);
   if (drawingRecords.size) await updateDrawingMetadata(X, zip, book, wb, drawingRecords, { get, set, groups: groupRecords });
-  if (book.PuterExportMeta) {
-    book.PuterExportMeta.data.nativeFillBaseline = styles.fillBaseline();
+  if (book.EverythingExportMeta) {
+    book.EverythingExportMeta.data.nativeFillBaseline = styles.fillBaseline();
     writeExportMetadata(X, book, { get, set });
   }
   return X.CFB.write(zip, { type: 'array', fileType: 'zip', compression: true });

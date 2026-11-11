@@ -46,7 +46,7 @@ export function setUpFirm({ firmName, currency, name, role, rateCents }) {
     rateCents: Number(rateCents) || 0,
     targetHours: role === 'lawyer' ? 120 : 0,
     color: PALETTE[0],
-    puterUsername: username,
+    everythingUsername: username,
     active: true,
   });
   if (!store.all('accounts').some((a) => a.type === 'trust'))

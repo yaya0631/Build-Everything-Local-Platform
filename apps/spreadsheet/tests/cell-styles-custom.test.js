@@ -116,7 +116,7 @@ describe('workbook named styles', () => {
     // From the file alone (another program's custom styles): the native records are read.
     // The app's record is a hidden sheet; renamed, the reader no longer takes it for one.
     const zip = X.CFB.read(bytes, { type: 'array' });
-    const book = part(bytes, '/xl/workbook.xml').replace(/name="_puter_meta"/, 'name="Elsewhere"');
+    const book = part(bytes, '/xl/workbook.xml').replace(/name="_everything_meta"/, 'name="Elsewhere"');
     X.CFB.utils.cfb_add(zip, '/xl/workbook.xml', new TextEncoder().encode(book));
     const nativeOnly = await workbookFromFile(new Uint8Array(X.CFB.write(zip, { type: 'array', fileType: 'zip' })), 'n.xlsx');
     const brand = nativeOnly.cellStyles.find((s) => s.name === 'Brand total');

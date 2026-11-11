@@ -87,7 +87,7 @@ for (const [format, decoder] of [
       test(`${action} preserves ${format} photo orientation ${orientation} with the ${decoder} decoder`, async ({
         page,
       }) => {
-        await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
+        await page.route('**/sdk/everything.js', (route) => route.fulfill({ body: '' }));
         if (decoder === 'image element')
           await page.addInitScript(() => {
             window.createImageBitmap = undefined;
@@ -234,7 +234,7 @@ for (const [format, orientation] of [
   test(`${format} photo orientation ${orientation} stays intrinsic when editing and replacing its image`, async ({
     page,
   }) => {
-    await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
+    await page.route('**/sdk/everything.js', (route) => route.fulfill({ body: '' }));
     await page.goto('/');
     await expect(page.locator('.page-caption')).toHaveText('Page 1 of 1');
     await chooseImage(page, 'Image', phonePhoto(orientation, format));

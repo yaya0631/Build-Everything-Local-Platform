@@ -47,9 +47,9 @@ router.get("/health", () =>
 );
 router.post("/api", async ({ request, user }) => {
   try {
-    if (!user?.puter)
+    if (!user?.everything)
       return new Response(
-        JSON.stringify({ message: "Sign in with Puter to continue." }),
+        JSON.stringify({ message: "Sign in with Everything to continue." }),
         { status: 401 },
       );
     const text = await readBody(request);
@@ -59,9 +59,9 @@ router.post("/api", async ({ request, user }) => {
         { status: 400 },
       );
     const input = JSON.parse(text);
-    const identity = await authenticate(request, user.puter, input);
-    const org = new OrgService(me.puter, { request });
-    const boards = new BoardService(me.puter, { org, request });
+    const identity = await authenticate(request, user.everything, input);
+    const org = new OrgService(me.everything, { request });
+    const boards = new BoardService(me.everything, { org, request });
     if (typeof input?.op === "string" && ORG_OPS.test(input.op))
       return Response.json(
         await organizationRequest(org, boards, identity, input),
@@ -87,7 +87,7 @@ router.post("/api", async ({ request, user }) => {
   }
 });
 // Documented REST and SCIM 2.0 endpoints, authenticated with API keys that
-// organization administrators create. They never accept Puter sessions.
+// organization administrators create. They never accept Everything sessions.
 for (const method of ["GET", "POST", "PUT", "PATCH", "DELETE"])
   for (const path of ["/v1/*path", "/scim/v2/*path", "/scim/v2"])
     router.custom(method, path, async ({ request, params }) => {
@@ -96,8 +96,8 @@ for (const method of ["GET", "POST", "PUT", "PATCH", "DELETE"])
           ? null
           : await readBody(request, 2_000_000);
         const body = text ? JSON.parse(text) : null;
-        const org = new OrgService(me.puter, { request });
-        const boards = new BoardService(me.puter, { org, request });
+        const org = new OrgService(me.everything, { request });
+        const boards = new BoardService(me.everything, { org, request });
         return await restRequest(
           org,
           boards,

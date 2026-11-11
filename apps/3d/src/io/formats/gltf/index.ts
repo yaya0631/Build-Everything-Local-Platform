@@ -137,7 +137,7 @@ defineFormat({
       encodeImage: encodeImagePng,
       packMetallicRoughness: packMetallicRoughnessPng,
       animationMode: o.animation_mode as 'ACTIONS',
-      generator: 'Puter 3D glTF exporter',
+      generator: 'Everything 3D glTF exporter',
     });
     reportWarnings(res.warnings);
     return { bytes: res.bytes, mime: glb ? 'model/gltf-binary' : 'model/gltf+json', ext: glb ? '.glb' : '.gltf' };

@@ -31,7 +31,7 @@ export const TAB_ERROR =
   "This sheet tab no longer exists. It may have been deleted from the spreadsheet.";
 
 // Google's export endpoints let any page read files shared by link, so they
-// are asked directly, signed in to Puter or not. Puter's CORS-free fetch,
+// are asked directly, signed in to Everything or not. Everything's CORS-free fetch,
 // which needs a signed-in account (and opens a sign-in window without one),
 // is tried only when a direct request is refused. Without it, a refusal
 // while online means Google would not hand the file over, as it does for a
@@ -40,10 +40,10 @@ export async function defaultFetcher(url, init) {
   try {
     return await fetch(url, init);
   } catch (error) {
-    const puter = typeof window !== "undefined" ? window.puter : null;
+    const everything = typeof window !== "undefined" ? window.everything : null;
     if (init?.signal?.aborted) throw error;
-    if (puter?.net?.fetch && puter.auth?.isSignedIn?.())
-      return puter.net.fetch(url, init);
+    if (everything?.net?.fetch && everything.auth?.isSignedIn?.())
+      return everything.net.fetch(url, init);
     if (typeof navigator !== "undefined" && navigator.onLine === false)
       throw error;
     throw Object.assign(Error(ACCESS_ERROR), { access: true, cause: error });
@@ -51,7 +51,7 @@ export async function defaultFetcher(url, init) {
 }
 
 const cancelled = () => new DOMException("Cancelled", "AbortError");
-// Puter's fetch ignores `signal`, so a cancelled download stops waiting for
+// Everything's fetch ignores `signal`, so a cancelled download stops waiting for
 // the request and its body here instead of hanging until Google answers.
 function abortable(promise, signal) {
   if (!signal) return promise;
@@ -105,7 +105,7 @@ export function createGoogle({ fetcher = defaultFetcher, DOMParser } = {}) {
     )
       throw Error("This Google link is not supported.");
     // Google answers export requests with a redirect to its file host.
-    // Puter's fetch returns redirects as they are, so they are followed here,
+    // Everything's fetch returns redirects as they are, so they are followed here,
     // only to Google's own hosts; a sign-in page elsewhere means no access.
     const sheetTab =
       /^https:\/\/docs\.google\.com\/spreadsheets\/.*[?&]gid=\d/.test(url);
@@ -141,7 +141,7 @@ export function createGoogle({ fetcher = defaultFetcher, DOMParser } = {}) {
     }
     if (signal?.aborted) throw cancelled();
     const type = response.headers?.get?.("content-type") || "";
-    // Puter's fetch passes Google's status on as a direct request does.
+    // Everything's fetch passes Google's status on as a direct request does.
     if (response.status === 404 || response.status === 410)
       throw Object.assign(Error(NOT_FOUND_ERROR), { missing: true });
     if (response.status === 400 && sheetTab)

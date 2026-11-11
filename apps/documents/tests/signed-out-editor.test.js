@@ -21,7 +21,7 @@ it('opens into a new document without a session, and saves once the status pill 
     },
     fs: { readdir: vi.fn(async () => []), mkdir: async () => {}, stat: async () => null, write },
   };
-  vi.stubGlobal('puter', sdk);
+  vi.stubGlobal('everything', sdk);
   document.body.innerHTML = '<div id="app"></div>';
   history.replaceState(null, '', '#/');
   await import('../src/main.js');
@@ -52,7 +52,7 @@ it('opens into a new document without a session, and saves once the status pill 
   expect(doc.dirty).toBe(true);
   expect(pill.textContent).toContain('Sign in to save');
 
-  // The pill opens Puter's sign-in; the pending edit is written right after it.
+  // The pill opens Everything's sign-in; the pending edit is written right after it.
   pill.click();
   await vi.advanceTimersByTimeAsync(0);
   expect(sdk.auth.signIn).toHaveBeenCalledTimes(1);

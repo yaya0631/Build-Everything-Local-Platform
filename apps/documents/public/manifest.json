@@ -1,8 +1,8 @@
 {
   "name": "Documents",
   "short_name": "Documents",
-  "description": "A fast, private word processor. Real .docx files, saved to your own Puter cloud.",
-  "id": "puter-documents",
+  "description": "A fast, private word processor. Real .docx files, saved to your own Everything cloud.",
+  "id": "everything-documents",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

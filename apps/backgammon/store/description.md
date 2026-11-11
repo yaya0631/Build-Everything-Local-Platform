@@ -38,7 +38,7 @@ it restores yours.
 size directly, so a 1080x2280 portrait canvas needs no 2280px-tall display to
 render it, and the machine taking the shot cannot leak into the file.
 
-**Two things stand in for the world outside the app.** The Puter peer API is
+**Two things stand in for the world outside the app.** The Everything peer API is
 stubbed, so photographing the invite panel does not open a session on a live
 service — the panel and the invite code are the app's own, only the code behind
 them is not. And the doubling cube's take-or-drop card is shot on its own and

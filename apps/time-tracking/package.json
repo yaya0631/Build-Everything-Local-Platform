@@ -1,7 +1,7 @@
 {
   "name": "hourly",
   "version": "1.0.0",
-  "description": "Timesheets and time tracking. Track billable hours by client, project, or task, on Puter.",
+  "description": "Timesheets and time tracking. Track billable hours by client, project, or task, on Everything.",
   "type": "module",
   "private": true,
   "scripts": {

@@ -1,11 +1,11 @@
 /**
- * Shared firms. Puter KV and files are private to each account, so a firm
- * shared by several people runs through a Puter worker in the firm owner's
+ * Shared firms. Everything KV and files are private to each account, so a firm
+ * shared by several people runs through an Everything worker in the firm owner's
  * own account. When the owner turns team sign-in on, the app writes the
  * worker (public/worker/legal-team-worker.js) to their drive, deploys it with
- * puter.workers.create, and copies the firm's records and files into it.
+ * everything.workers.create, and copies the firm's records and files into it.
  * From then on everyone (owner included) reads and writes through
- * puter.workers.exec, which forwards each person's own session for the
+ * everything.workers.exec, which forwards each person's own session for the
  * worker to check.
  *
  * Which firm a signed-in person is working in is stored in their own KV:
@@ -44,9 +44,9 @@ export function normalizeWorkerUrl(url) {
 }
 
 /** One API call to a team worker. Throws TeamError with a readable message. */
-export async function call(url, op, payload = {}, { timeoutMs = 30000, getPuter = () => globalThis.puter } = {}) {
-  const p = getPuter();
-  if (!p?.workers?.exec) throw new TeamError(0, 'no_sdk', 'Team access needs Puter. Reload and try again.');
+export async function call(url, op, payload = {}, { timeoutMs = 30000, getEverything = () => globalThis.everything } = {}) {
+  const p = getEverything();
+  if (!p?.workers?.exec) throw new TeamError(0, 'no_sdk', 'Team access needs Everything. Reload and try again.');
   const ctl = typeof AbortController === 'function' ? new AbortController() : null;
   const timer = setTimeout(() => ctl?.abort(), timeoutMs);
   let res;
@@ -222,7 +222,7 @@ const teamPath = (path) => path.replace(/\.{2,}/g, '.');
 export async function enableTeam({ store, onProgress = () => {} }) {
   onProgress('Preparing your firm server');
   const { source, build } = await fetchBundle();
-  const item = await puter.fs.write(WORKER_FILE, new Blob([source], { type: 'application/javascript' }), { overwrite: true, dedupeName: false, createMissingParents: true });
+  const item = await everything.fs.write(WORKER_FILE, new Blob([source], { type: 'application/javascript' }), { overwrite: true, dedupeName: false, createMissingParents: true });
   const path = item?.path || WORKER_FILE;
   let dep = null;
   let name = null;
@@ -231,7 +231,7 @@ export async function enableTeam({ store, onProgress = () => {} }) {
     name = randomName();
     onProgress(attempt ? 'Trying another server name' : 'Starting your firm server');
     try {
-      dep = await puter.workers.create(name, path);
+      dep = await everything.workers.create(name, path);
       if (dep && dep.success === false) {
         lastErr = new Error((dep.errors || []).join(', ') || 'The worker could not be created.');
         dep = null;
@@ -240,7 +240,7 @@ export async function enableTeam({ store, onProgress = () => {} }) {
       lastErr = err;
     }
   }
-  if (!dep) throw new Error(`Could not create the firm server in your Puter account. ${lastErr?.message || ''}`.trim());
+  if (!dep) throw new Error(`Could not create the firm server in your Everything account. ${lastErr?.message || ''}`.trim());
   const url = normalizeWorkerUrl(dep.url || `http://${name}.localhost:8443`);
   onProgress('Waiting for the server to come online');
   await waitForHealth(url, build);
@@ -259,7 +259,7 @@ export async function enableTeam({ store, onProgress = () => {} }) {
   } catch (err) {
     // Do not leave a half-filled server behind; trying again starts fresh.
     await Promise.resolve()
-      .then(() => puter.workers.delete?.(name))
+      .then(() => everything.workers.delete?.(name))
       .catch(() => {});
     throw err;
   }
@@ -275,7 +275,7 @@ export async function enableTeam({ store, onProgress = () => {} }) {
   for (const ref of files) {
     onProgress(`Copying documents (${++copied} of ${files.length})`);
     try {
-      const blob = await puter.fs.read(ref.path);
+      const blob = await everything.fs.read(ref.path);
       if (blob.size > 8 * 1024 * 1024) {
         skipped.push(ref.name);
         continue;
@@ -299,7 +299,7 @@ export async function updateWorkerIfNeeded(own) {
     const health = await fetch(`${own.url}/health`, { cache: 'no-store' }).then((r) => r.json());
     const { source, build } = await fetchBundle();
     if (!build || health?.build === build) return false;
-    await puter.fs.write(own.path, new Blob([source], { type: 'application/javascript' }), { overwrite: true, dedupeName: false });
+    await everything.fs.write(own.path, new Blob([source], { type: 'application/javascript' }), { overwrite: true, dedupeName: false });
     return true;
   } catch {
     return false;
@@ -325,7 +325,7 @@ export function parseJoin(query) {
 
 /** Switch between the person's own firm and firms they joined. */
 export async function switchWorkspace(current) {
-  await saveWorkspaces(globalThis.puter.kv, { ...app.workspaces, current });
+  await saveWorkspaces(globalThis.everything.kv, { ...app.workspaces, current });
   location.hash = '#/';
   location.reload();
 }
@@ -349,7 +349,7 @@ export async function leaveWorkspace(url, { removed = false } = {}) {
     await createIdbCache(`user:${app.user.uuid}:team:${url}`)
       .clear()
       .catch(() => {});
-  await saveWorkspaces(globalThis.puter.kv, { ...ws, joined: ws.joined.filter((j) => j.url !== url), current: ws.current === url ? 'own' : ws.current });
+  await saveWorkspaces(globalThis.everything.kv, { ...ws, joined: ws.joined.filter((j) => j.url !== url), current: ws.current === url ? 'own' : ws.current });
   location.hash = '#/';
   location.reload();
 }

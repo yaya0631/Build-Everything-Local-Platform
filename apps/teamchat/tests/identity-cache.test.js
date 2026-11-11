@@ -1,7 +1,7 @@
 /**
  * The short-lived identity cache (worker/lib.js's `identify`).
  *
- * Asking Puter who a caller is costs an HTTP round trip, and it is made on
+ * Asking Everything who a caller is costs an HTTP round trip, and it is made on
  * every request the worker serves — a poll every few seconds per open tab,
  * and again for every message, read and reaction. It is also the one call
  * that cannot be batched with a store read or pushed behind the answer,
@@ -20,7 +20,7 @@ import { IDENTITY_TTL_MS, resetIdentityCache } from '../worker/lib.js';
 const { alice, bob } = USERS;
 let rt;
 
-/** A caller whose token is their own, counting how often Puter was actually asked. */
+/** A caller whose token is their own, counting how often Everything was actually asked. */
 function caller(user, token, calls) {
   return { ...user, authToken: token, onIdentify: () => { calls.n += 1; } };
 }
@@ -29,7 +29,7 @@ beforeEach(async () => { rt = await boot(); });
 afterEach(() => { vi.useRealTimers(); resetIdentityCache(); });
 
 describe('identifying a caller', () => {
-  it('asks Puter once and reuses the answer for the requests that follow', async () => {
+  it('asks Everything once and reuses the answer for the requests that follow', async () => {
     const { wsId } = await workspaceWith(alice, [bob]);
     const calls = { n: 0 };
     const who = caller(alice, 'tok-alice', calls);
@@ -66,7 +66,7 @@ describe('identifying a caller', () => {
     expect(calls.n).toBe(2);
   });
 
-  it('caches nothing for a token Puter would not answer for', async () => {
+  it('caches nothing for a token Everything would not answer for', async () => {
     const { wsId } = await workspaceWith(alice, [bob]);
     const calls = { n: 0 };
     // A caller the runtime has a token for but no identity behind it.

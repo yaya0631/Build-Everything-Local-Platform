@@ -538,7 +538,7 @@ export function securitiesView() {
         count: attachments.length,
         message: reopens || unsettles || uncertifies || unexercises || undoes
           ? `${going.length > 1 ? 'These records carry' : 'This record carries'} ${attachments.length} `
-            + `attachment${attachments.length === 1 ? '' : 's'} in your Puter cloud.${reopens}${unsettles}${uncertifies}${unexercises}${undoes} `
+            + `attachment${attachments.length === 1 ? '' : 's'} in your Everything cloud.${reopens}${unsettles}${uncertifies}${unexercises}${undoes} `
             + `Undo restores the record${going.length > 1 ? 's' : ''}, but never a deleted file.`
           : null,
       });

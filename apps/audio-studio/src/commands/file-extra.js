@@ -13,7 +13,7 @@ import { exportAudio } from '../export/export.js';
 import { withProgress } from '../export/progress.js';
 import { exportOptionsFor, batchSettings, uniqueName } from '../batch/queue.js';
 import { zipStore } from '../lib/zip.js';
-import * as puter from '../storage/puter.js';
+import * as everything from '../storage/everything.js';
 
 const audio = (app) => (app.active?.kind === 'audio' ? app.active : null);
 
@@ -180,8 +180,8 @@ async function exportRangesDialog(app) {
   const naming = h('select.select', { 'aria-label': 'File names' }, h('option', { value: 'name' }, 'Marker names'), h('option', { value: 'prefix' }, 'Prefix and number'));
   const prefix = h('input.input', { type: 'text', value: baseName(doc.name), 'aria-label': 'Name prefix', disabled: true });
   naming.addEventListener('change', () => (prefix.disabled = naming.value !== 'prefix'));
-  const sdk = Boolean(puter.sdk());
-  const loc = h('select.select', { 'aria-label': 'Location' }, h('option', { value: 'puter', disabled: !sdk }, sdk ? `Puter folder (~/${puter.APP_DIR})` : 'Puter folder (not available)'), h('option', { value: 'download', selected: !sdk || saved.location !== 'puter' }, 'Download (ZIP for several files)'));
+  const sdk = Boolean(everything.sdk());
+  const loc = h('select.select', { 'aria-label': 'Location' }, h('option', { value: 'everything', disabled: !sdk }, sdk ? `Everything folder (~/${everything.APP_DIR})` : 'Everything folder (not available)'), h('option', { value: 'download', selected: !sdk || saved.location !== 'everything' }, 'Download (ZIP for several files)'));
   const r = await openDialog({
     title: 'Export Audio within Range Markers',
     body: h(
@@ -206,9 +206,9 @@ async function exportRangesDialog(app) {
   const options = exportOptionsFor(settings, { sampleRate: doc.sampleRate, channels: doc.channelCount });
   const names = rangeExportNames(chosen, { naming: naming.value, prefix: prefix.value, format: settings.format });
   let dir = null;
-  if (loc.value === 'puter') {
-    if (!puter.isSignedIn() && !(await puter.signIn().catch(() => false))) return;
-    dir = settings.dir || (await puter.appDir());
+  if (loc.value === 'everything') {
+    if (!everything.isSignedIn() && !(await everything.signIn().catch(() => false))) return;
+    dir = settings.dir || (await everything.appDir());
   }
   const files = [];
   const done = await withProgress(`Exporting ${chosen.length} range${chosen.length === 1 ? '' : 's'}`, async (onProgress, signal) => {
@@ -219,7 +219,7 @@ async function exportRangesDialog(app) {
         options,
         { signal, onProgress: (f) => onProgress((i + f) / chosen.length) },
       );
-      if (dir) await puter.writeFile(puter.joinPath(dir, names[i]), blob);
+      if (dir) await everything.writeFile(everything.joinPath(dir, names[i]), blob);
       else files.push({ name: names[i], blob });
     }
     return true;
@@ -267,7 +267,7 @@ export function installFileExtraCommands(app) {
     {
       id: 'file.revealInMedia',
       label: 'Reveal in Media Browser',
-      enabled: (a) => a.active?.source?.type === 'puter' && Boolean(a.active.source.path) && a.panels.has('media'),
+      enabled: (a) => a.active?.source?.type === 'everything' && Boolean(a.active.source.path) && a.panels.has('media'),
       run: async () => {
         app.dock.openPanel('media');
         await app.dock.instance('media')?.reveal?.(app.active.source.path);
@@ -283,7 +283,7 @@ export function installFileExtraCommands(app) {
         if (open) return app.activate(open);
         if (!o.path) return app.notify(`The session "${o.name}" is no longer open.`, { error: true });
         try {
-          await openFiles(app, [Object.assign(await puter.readFile(o.path), { name: o.name })]).then((docs) => docs[0] && (docs[0].source = { type: 'puter', path: o.path }));
+          await openFiles(app, [Object.assign(await everything.readFile(o.path), { name: o.name })]).then((docs) => docs[0] && (docs[0].source = { type: 'everything', path: o.path }));
         } catch {
           app.notify(`"${o.name}" could not be opened. It may have been moved or deleted.`, { error: true });
         }

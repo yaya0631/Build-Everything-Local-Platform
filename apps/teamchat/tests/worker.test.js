@@ -1,5 +1,5 @@
 /**
- * End-to-end tests of the worker against the in-memory Puter runtime: the
+ * End-to-end tests of the worker against the in-memory Everything runtime: the
  * real route code, real block math, fake storage.
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
@@ -108,12 +108,12 @@ describe('server ownership', () => {
     expect(h.data).toMatchObject({ ok: true, build: 'dev' });
     expect(h.data.runtime).toBeNull();
 
-    globalThis.__PUTER_PREAMBLE_VERSION__ = '2.6.2+63f857ce3';
+    globalThis.__EVERYTHING_PREAMBLE_VERSION__ = '2.6.2+63f857ce3';
     try {
       const h2 = await as(null).get('/health');
       expect(h2.data.runtime).toBe('2.6.2+63f857ce3');
     } finally {
-      delete globalThis.__PUTER_PREAMBLE_VERSION__;
+      delete globalThis.__EVERYTHING_PREAMBLE_VERSION__;
     }
   });
 });
@@ -1377,7 +1377,7 @@ describe('scheduled messages and reminders', () => {
     await sync(bob, wsId);
     // Two round trips: the workspace and the activity document in one batched
     // read, then bob's own (its key is his uuid, which nothing knew until
-    // Puter answered). Exactly the usual reads and nothing extra.
+    // Everything answered). Exactly the usual reads and nothing extra.
     expect(rt.kv._calls.ops - before).toBe(2);
     // Time passes: several clients poll at once, the message lands once.
     await rt.kv.update(KEYS.sched(wsId), { [`m.${sid}.dueAt`]: Date.now() - 1 });

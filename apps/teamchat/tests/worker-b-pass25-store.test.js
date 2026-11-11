@@ -23,7 +23,7 @@ function servers(routes, watch) {
   const most = new Map();
   const calls = [];
   let mostAnywhere = 0;
-  globalThis.puter = {
+  globalThis.everything = {
     workers: {
       exec: async (url, init = {}) => {
         const u = new URL(url);
@@ -73,7 +73,7 @@ afterEach(() => {
   store.profile = null;
   store.links = new Map();
   store.convs.clear();
-  delete globalThis.puter;
+  delete globalThis.everything;
 });
 
 describe('the words this workspace carries to the host of two channels shared with it', () => {

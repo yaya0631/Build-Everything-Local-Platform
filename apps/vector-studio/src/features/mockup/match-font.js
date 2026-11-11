@@ -1,6 +1,6 @@
 /**
  * Match Font: identify the lettering in a placed image or in outlined
- * type with Puter AI vision, suggest the closest fonts the app has, and
+ * type with Everything AI vision, suggest the closest fonts the app has, and
  * turn the lettering back into editable type (or restyle selected type).
  *
  * The chosen region of the selection is rendered to a picture (on white,

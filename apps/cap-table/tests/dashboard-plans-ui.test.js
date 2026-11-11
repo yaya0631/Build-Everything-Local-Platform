@@ -3,13 +3,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { store } from '../src/lib/store.js';
 import { dashboardView } from '../src/views/dashboard.js';
 import { capTableView } from '../src/views/captable.js';
-import { puterBackend } from './helpers/puter-kv.js';
+import { everythingBackend } from './helpers/everything-kv.js';
 
 let founders;
 beforeEach(async () => {
   vi.useFakeTimers({ toFake: ['Date'] });
   vi.setSystemTime(new Date('2026-09-10T12:00:00'));
-  puterBackend().install();
+  everythingBackend().install();
   await store.init();
   const cls = await store.addClass({ name: 'Common', kind: 'common' });
   const holder = await store.addStakeholder({ name: 'Founder', kind: 'founder' });

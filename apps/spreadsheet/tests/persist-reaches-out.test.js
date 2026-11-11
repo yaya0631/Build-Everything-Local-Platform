@@ -5,7 +5,7 @@ import { Doc } from '../src/lib/doc.js';
 import { Workbook } from '../src/core/workbook.js';
 import { workbookToXlsx } from '../src/core/io.js';
 import { memoryStorage } from './helpers/memory-storage.js';
-import { installMockPuter } from './helpers/mock-puter.js';
+import { installMockEverything } from './helpers/mock-everything.js';
 
 // The functions that reach outside the spreadsheet, and every other name they are registered under.
 const REACHING = ['IMPORTDATA', 'IMPORTHTML', 'IMPORTXML', 'IMPORTRANGE', 'AI', 'TRANSLATE', 'DETECTLANGUAGE', 'IMAGE'];
@@ -39,8 +39,8 @@ describe('the scan of a file being opened', () => {
   let mock;
   // SheetJS is loaded on first use with a real dynamic import; warm it up so no test waits on it.
   beforeAll(async () => { await workbookToXlsx(new Workbook()); });
-  beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); mock = installMockPuter(); });
-  afterEach(() => { delete globalThis.puter; });
+  beforeEach(() => { Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true }); mock = installMockEverything(); });
+  afterEach(() => { delete globalThis.everything; });
 
   async function fileWith(formula) {
     const wb = new Workbook();

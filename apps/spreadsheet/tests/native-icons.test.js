@@ -20,7 +20,7 @@ const xmlOf = (zip, path = '/xl/worksheets/sheet1.xml') => new TextDecoder().dec
 const change = (zip, path, fn) => { const part = X.CFB.find(zip, path); part.content = new TextEncoder().encode(fn(xmlOf(zip, path))); part.size = part.content.length; };
 async function reopen(wb, nativeOnly = false) {
   const zip = await zipOf(wb);
-  if (nativeOnly) change(zip, '/xl/workbook.xml', xml => xml.replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, ''));
+  if (nativeOnly) change(zip, '/xl/workbook.xml', xml => xml.replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, ''));
   return workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' }), 'icons.xlsx');
 }
 it.each(Object.keys(NATIVE_ICON_SETS).filter(name => !NATIVE_ICON_SETS[name].extended))('imports, evaluates and natively round-trips %s', async name => {

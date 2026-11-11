@@ -46,7 +46,7 @@ describe('writing assistant', () => {
     expect(error.cause).toBe(failure);
   });
 
-  it('reads the answer text from the response shapes Puter returns', () => {
+  it('reads the answer text from the response shapes Everything returns', () => {
     expect(responseText({ message: { content: ' Hi ' } })).toBe('Hi');
     expect(responseText({ message: { content: [{ type: 'text', text: 'A' }, { type: 'text', text: 'B' }] } })).toBe('AB');
     expect(responseText({ toString: () => 'plain' })).toBe('plain');

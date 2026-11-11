@@ -14,7 +14,7 @@ import { safeHref } from '../lib/markdown.js';
 import { RECURRENCE_FREQS, normalizeRecurrence, describeRecurrence } from '../lib/recurrence.js';
 import { REMINDER_OFFSETS, hasReminder, reminderDate } from '../lib/reminders.js';
 import { parseRoute, taskHash } from '../lib/routes.js';
-import { canPickFiles, pickFiles } from '../lib/puterui.js';
+import { canPickFiles, pickFiles } from '../lib/everythingui.js';
 
 /**
  * Open a task by navigating: the sheet lives in the route (see routes.js),
@@ -349,7 +349,7 @@ export function mountTaskSheet(projectId, taskId, { onClose } = {}) {
    * Only render-safe types open in a tab. Blob URLs run with this app's
    * origin, so anything the browser executes when opened inline — an HTML
    * file, or an SVG carrying an inline <script> — would run against the
-   * user's Puter session. Preview a strict allowlist of inert types
+   * user's Everything session. Preview a strict allowlist of inert types
    * (raster images, PDF, plain text); everything else is downloaded.
    */
   function canPreview(att) {
@@ -399,12 +399,12 @@ export function mountTaskSheet(projectId, taskId, { onClose } = {}) {
             title: isBroken
               ? `${att.path} is no longer there`
               : linked
-                ? `${att.path} (in your Puter Drive)`
+                ? `${att.path} (in your Everything Drive)`
                 : canPreview(att) ? `Open ${att.name}` : `Download ${att.name}`,
             onclick: () => (canPreview(att) ? openAttachment(att) : downloadAttachment(att)),
           }, att.name),
         linked && el('span.attach-tag', {
-          title: 'Linked from your Puter Drive, not copied here',
+          title: 'Linked from your Everything Drive, not copied here',
         }, isBroken ? 'missing' : 'linked'),
         web && el('span.attach-tag', {
           title: 'A web address this task points at, not a file kept here',
@@ -424,7 +424,7 @@ export function mountTaskSheet(projectId, taskId, { onClose } = {}) {
               title: linked || web ? 'Remove this link?' : 'Delete attachment?',
               message: linked
                 ? `The link to "${att.name}" is removed from this task. The file `
-                  + 'stays exactly where it is in your Puter Drive.'
+                  + 'stays exactly where it is in your Everything Drive.'
                 : web
                   ? `The link to "${att.name}" is removed from this task. Nothing on the `
                     + 'web is touched.'
@@ -515,8 +515,8 @@ export function mountTaskSheet(projectId, taskId, { onClose } = {}) {
         if (items.length) {
           renderAttachments();
           toast(items.length === 1
-            ? 'Linked from your Puter Drive'
-            : `${items.length} files linked from your Puter Drive`, { icon: 'link' });
+            ? 'Linked from your Everything Drive'
+            : `${items.length} files linked from your Everything Drive`, { icon: 'link' });
         }
       } catch (err) {
         console.error(err);
@@ -525,7 +525,7 @@ export function mountTaskSheet(projectId, taskId, { onClose } = {}) {
         linkBtn.disabled = false;
       }
     },
-  }, ' Add from Puter');
+  }, ' Add from Everything');
 
   // ---- comments ----------------------------------------------------------
 

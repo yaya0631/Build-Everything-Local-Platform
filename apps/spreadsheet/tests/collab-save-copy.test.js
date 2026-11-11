@@ -9,20 +9,20 @@ import { memoryStorage } from './helpers/memory-storage.js';
 import { environment, owner, editor, SERVER, until, wait } from './collab-helpers.js';
 
 Object.defineProperty(globalThis, 'localStorage', { value: memoryStorage(), configurable: true });
-afterEach(() => { delete globalThis.puter; });
+afterEach(() => { delete globalThis.everything; });
 
 async function setup() {
   const env = environment();
   const wb = new Workbook({ sheets: [{ name: 'Plan' }] });
-  const room = await RoomClient.create({ puter: env.sdk(owner), server: SERVER, wb, name: 'Plan' });
+  const room = await RoomClient.create({ everything: env.sdk(owner), server: SERVER, wb, name: 'Plan' });
   const token = (await call(env.sdk(owner), SERVER, { op: 'invite', room, role: 'editor' })).token;
   const sdk = env.sdk(editor);
-  // The drive answers a look-up of a missing file as Puter does.
-  globalThis.puter = { ...sdk, fs: { ...sdk.fs, mkdir: async () => ({}), stat: async (p) => {
+  // The drive answers a look-up of a missing file as Everything does.
+  globalThis.everything = { ...sdk, fs: { ...sdk.fs, mkdir: async () => ({}), stat: async (p) => {
     if (!env.files.has(p)) throw Object.assign(new Error('Not found'), { code: 'subject_does_not_exist' });
     return sdk.fs.stat(p);
   } } };
-  const client = new RoomClient({ puter: sdk, server: SERVER, room, token, store: memoryOutbox(), poll: 50, noPeers: true });
+  const client = new RoomClient({ everything: sdk, server: SERVER, room, token, store: memoryOutbox(), poll: 50, noPeers: true });
   await client.open();
   const doc = Doc.forRoom(client);
   const a1 = async (path) => {

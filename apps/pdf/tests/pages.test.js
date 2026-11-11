@@ -182,7 +182,7 @@ describe('page extraction', () => {
     const doc = await PDFDocument.create();
     for (let i = 0; i < 6; i++) {
       const page = doc.addPage([300, 300]);
-      const content = doc.context.flateStream(`0 0 ${10 + i} 10 re f`, { PuterTestPage: i });
+      const content = doc.context.flateStream(`0 0 ${10 + i} 10 re f`, { EverythingTestPage: i });
       page.node.set(PDFName.of('Contents'), doc.context.register(content));
     }
     for (let i = 1; i < 6; i++) {
@@ -193,7 +193,7 @@ describe('page extraction', () => {
     const copied = new Set();
     const clone = PDFRawStream.prototype.clone;
     const spy = vi.spyOn(PDFRawStream.prototype, 'clone').mockImplementation(function (context) {
-      const page = this.dict.lookup(PDFName.of('PuterTestPage'));
+      const page = this.dict.lookup(PDFName.of('EverythingTestPage'));
       if (page) copied.add(page.asNumber());
       return clone.call(this, context);
     });
@@ -250,7 +250,7 @@ describe('page extraction', () => {
     const objects = [...extracted.context.enumerateIndirectObjects()].map(([, object]) =>
       String(object),
     );
-    expect(objects.filter((text) => /Bead|Thread|PuterCopyPageIndex/.test(text))).toEqual([]);
+    expect(objects.filter((text) => /Bead|Thread|EverythingCopyPageIndex/.test(text))).toEqual([]);
     expect(extracted.getPage(0).node.has(PDFName.of('B'))).toBe(false);
     const reopened = await PDFDocument.load(source);
     await duplicatePage(reopened, 0);

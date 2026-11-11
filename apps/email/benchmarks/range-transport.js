@@ -6,10 +6,10 @@
  * both for compatibility, and reject oversized responses before parsing.
  * Other operations keep the SDK's permissions and retry behavior.
  */
-export function createMailFS(puter, mailPath, { fetch: fetcher = globalThis.fetch } = {}) {
+export function createMailFS(everything, mailPath, { fetch: fetcher = globalThis.fetch } = {}) {
   const read = async (path, options) => {
     const count = options?.byte_count;
-    if (!count) return puter.fs.read(path, options);
+    if (!count) return everything.fs.read(path, options);
     const offset = options.offset ?? 0;
     if (!Number.isSafeInteger(count) || count <= 0 || !Number.isSafeInteger(offset) || offset < 0
       || !Number.isSafeInteger(offset + count) || typeof path !== 'string'
@@ -19,11 +19,11 @@ export function createMailFS(puter, mailPath, { fetch: fetcher = globalThis.fetc
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 30000);
     try {
-      const url = new URL(`${puter.APIOrigin.replace(/\/$/, '')}/read`);
+      const url = new URL(`${everything.APIOrigin.replace(/\/$/, '')}/read`);
       url.search = new URLSearchParams({ file: path, offset: String(offset), byte_count: String(count) });
       const response = await fetcher(url.href, {
         credentials: 'include', cache: 'no-store', redirect: 'error', signal: controller.signal,
-        headers: { Authorization: `Bearer ${puter.authToken}`, Range: `bytes=${offset}-${offset + count - 1}` },
+        headers: { Authorization: `Bearer ${everything.authToken}`, Range: `bytes=${offset}-${offset + count - 1}` },
       });
       if (!response.ok) {
         controller.abort();
@@ -60,7 +60,7 @@ export function createMailFS(puter, mailPath, { fetch: fetcher = globalThis.fetc
       clearTimeout(timeout);
     }
   };
-  return new Proxy(puter.fs, {
+  return new Proxy(everything.fs, {
     get(target, key) {
       if (key === 'read') return read;
       const value = Reflect.get(target, key);

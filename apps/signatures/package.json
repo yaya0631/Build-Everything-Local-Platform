@@ -1,7 +1,7 @@
 {
   "name": "signatures",
   "version": "1.0.0",
-  "description": "Send documents for signature and manage them, powered by Puter",
+  "description": "Send documents for signature and manage them, powered by Everything",
   "type": "module",
   "private": true,
   "scripts": {
@@ -14,9 +14,9 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/HeyPuter/signatures.git"
+    "url": "git+https://github.com/yaya0631/Build-Everything-Local-Platform"
   },
-  "homepage": "https://github.com/HeyPuter/signatures#readme",
+  "homepage": "https://github.com/yaya0631/Build-Everything-Local-Platform",
   "dependencies": {
     "lucide": "^1.28.0",
     "pdf-lib": "^1.17.1",

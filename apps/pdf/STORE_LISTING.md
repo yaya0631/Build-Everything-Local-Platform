@@ -12,7 +12,7 @@ PDF Editor turns your browser into a complete PDF workspace. Open a file and cha
 
 Reviewing a document with others is just as simple. Highlight passages, leave sticky notes, and find every comment in one list sorted by page. When the pages need work, rotate, reorder, crop, merge, split, or extract them with a drag or a few clicks.
 
-There is nothing to install and no account needed to get started. You can open, edit, download, and print without signing in. Your PDFs are processed on your device, and they are uploaded only when you choose to save them to your Puter cloud. Originals stay untouched until you decide to save.
+There is nothing to install and no account needed to get started. You can open, edit, download, and print without signing in. Your PDFs are processed on your device, and they are uploaded only when you choose to save them to your Everything cloud. Originals stay untouched until you decide to save.
 
 PDF Editor is built for anyone who handles PDFs regularly and wants one focused tool for the whole job, from the first edit to the final signature.
 
@@ -25,7 +25,7 @@ PDF Editor is built for anyone who handles PDFs regularly and wants one focused 
 - **Add the finishing touches.** Insert images, shapes, stamps, watermarks, page numbers, headers, footers, and links.
 - **Protect sensitive files.** Lock a PDF with a password and choose who can print, copy, or edit it.
 - **Turn photos into PDFs.** Drop in PNG and JPEG pictures and each one becomes a page, set upright automatically.
-- **Keep your work private.** Files are processed on your device and saved to your Puter cloud only when you choose.
+- **Keep your work private.** Files are processed on your device and saved to your Everything cloud only when you choose.
 
 ## Who it's for
 

@@ -4,11 +4,11 @@ import { readFile } from 'node:fs/promises';
 import * as pdfjs from 'pdfjs-dist/legacy/build/pdf.mjs';
 
 async function setup(page, hold = false) {
-  await page.route('**/sdk/puter.js', (route) =>
+  await page.route('**/sdk/everything.js', (route) =>
     route.fulfill({
       contentType: 'application/javascript',
       body: `window.cryptoWrites=0; window.cryptoPickers=0;
-    window.puter={env:'web',auth:{isSignedIn:()=>true,getUser:async()=>({username:'test-user'}),signIn:async()=>{},signOut:async()=>{}},
+    window.everything={env:'web',auth:{isSignedIn:()=>true,getUser:async()=>({username:'test-user'}),signIn:async()=>{},signOut:async()=>{}},
     fs:{readdir:async()=>[],write:async()=>{window.cryptoWrites++;return{path:'PDFs/saved.pdf'};}},
     ui:{onLaunchedWithItems:()=>{},onItemsOpened:()=>{},showSaveFilePicker:async()=>{window.cryptoPickers++;return{path:'PDFs/chosen.pdf'};}}};`,
     }),
@@ -125,11 +125,11 @@ for (const action of ['download', 'save', 'folder'])
       await setup(page, true);
       await privatePdf(page, 200000);
       await protect(page);
-      if (action === 'folder') await menu(page, 'Save to another Puter folder…');
+      if (action === 'folder') await menu(page, 'Save to another Everything folder…');
       else
         await page
           .getByRole('button', {
-            name: action === 'save' ? 'Save to Puter' : 'Download',
+            name: action === 'save' ? 'Save to Everything' : 'Download',
             exact: true,
           })
           .click();

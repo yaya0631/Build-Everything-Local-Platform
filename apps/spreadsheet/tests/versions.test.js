@@ -4,12 +4,12 @@ import { Doc } from '../src/lib/doc.js';
 import { Workbook } from '../src/core/workbook.js';
 import { workbookToXlsx } from '../src/core/io.js';
 
-function installMockPuter() {
+function installMockEverything() {
   const fs = new Map();
   const dirs = new Set();
   const notFound = (p) => Object.assign(new Error(`${p} does not exist`), { code: 'subject_does_not_exist' });
   const item = (path, f) => ({ path, name: path.split('/').pop(), is_dir: !f, size: f?.size ?? null, modified: f?.modified ?? 1 });
-  globalThis.puter = {
+  globalThis.everything = {
     env: 'web',
     auth: { isSignedIn: () => true, getUser: async () => ({ username: 'demo' }) },
     kv: { get: async () => null, set: async () => true },
@@ -55,8 +55,8 @@ describe('version names and folders', () => {
 describe('snapshots on the drive', () => {
   let fs;
   beforeAll(async () => { await workbookToXlsx(new Workbook()); });
-  beforeEach(() => { fs = installMockPuter(); });
-  afterEach(() => { delete globalThis.puter; });
+  beforeEach(() => { fs = installMockEverything(); });
+  afterEach(() => { delete globalThis.everything; });
 
   it('lists and retains the newest snapshot when several were saved within one second', async () => {
     const path = 'Spreadsheets/Plan.xlsx';
@@ -152,8 +152,8 @@ it('keeps the histories of Budget.csv and Budget.xlsx apart', async () => {
 
 it('ages out the snapshots taken before a restore like automatic ones, keeping only the user\'s labels', async () => {
   const { saveVersion, listVersions, pruneVersions, RESTORE_LABEL } = await import('../src/lib/versions.js');
-  const { installMockPuter } = await import('./helpers/mock-puter.js');
-  installMockPuter();
+  const { installMockEverything } = await import('./helpers/mock-everything.js');
+  installMockEverything();
   const path = 'Spreadsheets/Growth.xlsx';
   await saveVersion(path, new Blob(['keep']), 'Milestone');
   for (let i = 0; i < 40; i++) await saveVersion(path, new Blob([`r${i}`]), RESTORE_LABEL, new Date(2026, 0, 1, 0, i));
@@ -161,5 +161,5 @@ it('ages out the snapshots taken before a restore like automatic ones, keeping o
   const left = await listVersions(path);
   expect(left.filter((v) => v.label === RESTORE_LABEL).length).toBeLessThanOrEqual(5);
   expect(left.some((v) => v.label === 'Milestone')).toBe(true);
-  delete globalThis.puter;
+  delete globalThis.everything;
 });

@@ -16,7 +16,7 @@ async function cycle(wb, metadata = false) {
   const get = p => new TextDecoder().decode(X.CFB.find(zip, p).content);
   const sheet = get('/xl/worksheets/sheet1.xml');
   if (!metadata) X.CFB.utils.cfb_add(zip, '/xl/workbook.xml', new TextEncoder().encode(get('/xl/workbook.xml')
-    .replace(/<sheet\b[^>]*name="_puter_meta\d*"[^>]*\/>/g, '')));
+    .replace(/<sheet\b[^>]*name="_everything_meta\d*"[^>]*\/>/g, '')));
   return { sheet, wb: await workbookFromFile(X.CFB.write(zip, { type: 'array', fileType: 'zip' })) };
 }
 

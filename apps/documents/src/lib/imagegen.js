@@ -1,5 +1,5 @@
 /**
- * A picture from a description, through Puter AI (`puter.ai.txt2img`). The
+ * A picture from a description, through Everything AI (`everything.ai.txt2img`). The
  * SDK answers with an <img> element; its source (a data URL, or a web
  * address) becomes a File so the picture goes onto the page the same way
  * an uploaded one does, and is stored in the document.
@@ -10,14 +10,14 @@ import { MAX_IMAGE_BYTES, readImageBlob } from './images.js';
 const tooLarge = () => new Error('Images must be under 15 MB');
 
 /**
- * The readable message for a picture Puter AI could not make. The SDK rejects with an Error or with its
+ * The readable message for a picture Everything AI could not make. The SDK rejects with an Error or with its
  * own { error: { code, message } } object, whose wording is the provider's; the provider's error stays on
  * the readable one as its cause.
  */
 export function generationError(e) {
   const detail = `${e?.message || ''} ${e?.error?.message || ''} ${e?.error?.code || e?.code || ''} ${typeof e === 'string' ? e : ''}`;
-  const message = /insufficient|balance|credit|funds|quota|allowance|402/i.test(detail) ? 'Your Puter AI allowance has run out for now.'
-    : /sign.?in|unauthori[sz]ed|401/i.test(detail) ? 'Sign in to Puter to generate pictures.'
+  const message = /insufficient|balance|credit|funds|quota|allowance|402/i.test(detail) ? 'Your Everything AI allowance has run out for now.'
+    : /sign.?in|unauthori[sz]ed|401/i.test(detail) ? 'Sign in to Everything to generate pictures.'
       : /network|failed to fetch|offline|timed? ?out/i.test(detail) ? 'The AI service could not be reached. Check your connection.'
         : /moderat|safety|content.?policy|flagged|inappropriate/i.test(detail) ? 'That description cannot be made into a picture. Try describing it differently.'
           : 'The picture could not be generated. Try again in a moment.';

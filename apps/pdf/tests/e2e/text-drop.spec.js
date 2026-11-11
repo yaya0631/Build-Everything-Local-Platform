@@ -6,7 +6,7 @@ for (const ending of ['\r\n', '\r', '\n'])
   test(`external text drops normalize ${JSON.stringify(ending)} line endings and retain history`, async ({
     page,
   }) => {
-    await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
+    await page.route('**/sdk/everything.js', (route) => route.fulfill({ body: '' }));
     await page.goto('/#library');
     const doc = await PDFDocument.create();
     const sheet = doc.addPage([400, 400]);
@@ -108,7 +108,7 @@ test('external text drops where it is dropped in browsers without caretRangeFrom
   await page.addInitScript(() => {
     delete Document.prototype.caretRangeFromPoint;
   });
-  await page.route('**/sdk/puter.js', (route) => route.fulfill({ body: '' }));
+  await page.route('**/sdk/everything.js', (route) => route.fulfill({ body: '' }));
   await page.goto('/#library');
   const doc = await PDFDocument.create();
   const sheet = doc.addPage([400, 400]);

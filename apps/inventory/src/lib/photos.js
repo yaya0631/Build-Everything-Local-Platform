@@ -1,5 +1,5 @@
 /**
- * Product photos, stored in the user's own Puter drive.
+ * Product photos, stored in the user's own Everything drive.
  *
  * The product record keeps only a path, so `inv:products:v2` stays a
  * small, fast KV value. Pictures are downscaled and re-encoded to WebP
@@ -13,8 +13,8 @@
 
 const DIR = 'inventory/images';
 
-/** The Puter filesystem, or null when it isn't available. */
-const fs = () => (typeof puter !== 'undefined' && puter?.fs ? puter.fs : null);
+/** The Everything filesystem, or null when it isn't available. */
+const fs = () => (typeof everything !== 'undefined' && everything?.fs ? everything.fs : null);
 
 export const photosSupported = () => !!fs();
 

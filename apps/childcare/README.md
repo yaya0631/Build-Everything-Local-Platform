@@ -2,7 +2,7 @@
 
 Free, open-source management for childcare centers, preschools, and family daycares. An open-source alternative to brightwheel, Procare, and HiMama.
 
-It is built with vanilla JavaScript, Vite, and [Lucide](https://lucide.dev) icons. [Puter.js](http://localhost:8443) is the only backend: there is no framework and no server of its own.
+It is built with vanilla JavaScript, Vite, and [Lucide](https://lucide.dev) icons. [Everything.js](http://localhost:8443) is the only backend: there is no framework and no server of its own.
 
 > **Early alpha.** Features may change and data could be lost. Please do not use it for real children's records or billing yet.
 
@@ -65,7 +65,7 @@ It is built with vanilla JavaScript, Vite, and [Lucide](https://lucide.dev) icon
   - allergies and medical needs, emergency contacts, family contacts, ages and birthdays, and immunizations;
   - room enrollment, and the waitlist;
   - balances and payments.
-- **Family app**: when the director turns on staff and family access, families sign in with their own Puter accounts. They see only their own children:
+- **Family app**: when the director turns on staff and family access, families sign in with their own Everything accounts. They see only their own children:
   - today's status and the entries shared with them;
   - daily reports and photos;
   - messages, announcements, the calendar, and menus;
@@ -84,7 +84,7 @@ It is built with vanilla JavaScript, Vite, and [Lucide](https://lucide.dev) icon
 
 ```sh
 npm install
-npm run dev      # http://childcare.puter.localhost:5173/
+npm run dev      # http://childcare.localhost:8443/
 npm test         # unit tests (Vitest)
 npm run build    # production build in dist/
 ```
@@ -97,13 +97,13 @@ Open `/?demo` for the director demo or `/?demo=family` for the family app, skipp
 src/
   main.js            boot: sign-in, invitations, demo, welcome screen
   app.js             shared runtime context and roles
-  platform.js        Puter auth, environment, profile picture
+  platform.js        Everything auth, environment, profile picture
   files.js           photos and documents: resizing, thumbnails, upload, cache
   team.js            staff and family access: worker deploy, worker backend, invitations
   core/              framework-free logic (unit tested)
     keys.js            KV key layout and partitions
     store.js           local-first store and sync engine
-    backend.js         Puter KV and in-memory backends
+    backend.js         Everything KV and in-memory backends
     cache.js           IndexedDB snapshot cache
     attendance.js      check-in records, presence, ratios
     activities.js      activity types, logging, daily reports
@@ -121,7 +121,7 @@ tests/               Vitest unit tests
 
 ### Storage design
 
-Puter KV is backed by DynamoDB, so the layout follows DynamoDB practice: small items, writes that touch only what changed, prefix queries instead of scans, and no data that grows without bound in a single item.
+Everything KV is backed by DynamoDB, so the layout follows DynamoDB practice: small items, writes that touch only what changed, prefix queries instead of scans, and no data that grows without bound in a single item.
 
 | Key | Holds |
 | --- | --- |
@@ -142,14 +142,14 @@ How it works:
 - **Empty days are free:** a day that the meta says was never written is never listed. The feed and reports use this to skip empty days.
 - **Inbox:** each conversation keeps a small summary record (last message and read times), so the inbox and unread badges never read the messages themselves.
 - **Local first:** writes apply locally first, then go out in debounced batches with retry and backoff. An IndexedDB snapshot, including unsent writes and recently used partitions, makes the app open instantly and work offline.
-- **Files:** photos and documents live in Puter's file system, never in KV, and records keep only a small reference. Photos are resized in the browser with `createImageBitmap` and `OffscreenCanvas`, and get a 480-pixel thumbnail for feeds. Downloaded files are cached in IndexedDB, because a file's path never changes once it is written.
+- **Files:** photos and documents live in Everything's file system, never in KV, and records keep only a small reference. Photos are resized in the browser with `createImageBitmap` and `OffscreenCanvas`, and get a 480-pixel thumbnail for feeds. Downloaded files are cached in IndexedDB, because a file's path never changes once it is written.
 
 ### Staff and family access
 
-Puter KV and files are private to each account, so a shared school runs through a [Puter worker](http://localhost:8443/Workers/) in the **director's own account** (`public/worker/childcare-team-worker.js`).
+Everything KV and files are private to each account, so a shared school runs through a [Everything worker](http://localhost:8443/Workers/) in the **director's own account** (`public/worker/childcare-team-worker.js`).
 
-- **Turning it on:** when the director turns on staff and family access, the app writes the worker to their drive and deploys it with `puter.workers.create`. It then copies the school's records and photos into it.
-- **After that:** everyone reads and writes through `puter.workers.exec`, which forwards each person's own session.
+- **Turning it on:** when the director turns on staff and family access, the app writes the worker to their drive and deploys it with `everything.workers.create`. It then copies the school's records and photos into it.
+- **After that:** everyone reads and writes through `everything.workers.exec`, which forwards each person's own session.
 - **Same layout:** the worker uses the same key layout, so the same store and sync engine run on top of it.
 - **Roles:** the worker identifies the caller from their session, never from the request, and checks every request against their role:
   - **Director and admins** can do everything.
@@ -163,7 +163,7 @@ Puter KV and files are private to each account, so a shared school runs through 
   - Each invitation is tied to a family or staff profile.
   - The token is stored only as a SHA-256 hash, works once, and expires after 14 days.
   - An invitation stops working if the person who sent it is removed.
-  - Joining always asks first, because it sends your Puter session to that school's server.
+  - Joining always asks first, because it sends your Everything session to that school's server.
 - **Updates:** when the app ships a newer worker build, the director's copy updates the next time they open the app.
 
 ### Performance notes
@@ -179,7 +179,7 @@ This is a forms, lists, and photos app, so the right tools are plain DOM, CSS, a
 
 ## Data and privacy
 
-A school's data lives in the director's Puter account (KV and files). Staff and families reach it only through the school worker, which checks every request. The app has no server of its own.
+A school's data lives in the director's Everything account (KV and files). Staff and families reach it only through the school worker, which checks every request. The app has no server of its own.
 
 ## License
 

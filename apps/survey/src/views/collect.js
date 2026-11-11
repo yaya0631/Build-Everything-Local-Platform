@@ -214,11 +214,11 @@ export async function mount(container, ctx) {
       h(
         'p',
         { class: 'muted' },
-        'Create a link to send by email, post anywhere, or embed in a website. Anyone with the link can answer, no account needed, and responses come straight back to your Puter account.',
+        'Create a link to send by email, post anywhere, or embed in a website. Anyone with the link can answer, no account needed, and responses come straight back to your Everything account.',
       ),
       !cfg
         ? h('p', { class: 'start-note' }, icon('info', { size: 14 }),
-            'The first time, a small response collector is set up in your Puter account. This can take up to 30 seconds.')
+            'The first time, a small response collector is set up in your Everything account. This can take up to 30 seconds.')
         : null,
       working
         ? h(
@@ -234,7 +234,7 @@ export async function mount(container, ctx) {
       busy && busy.error
         ? h('div', { class: 'banner banner-error', role: 'alert' }, icon('alert'),
             h('span', { class: 'grow' }, busy.error,
-              /verify the email/i.test(busy.error) ? [' ', h('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Open Puter')] : null))
+              /verify the email/i.test(busy.error) ? [' ', h('a', { href: 'http://localhost:8443', target: '_blank', rel: 'noopener' }, 'Open Everything')] : null))
         : null,
       h(
         'button',

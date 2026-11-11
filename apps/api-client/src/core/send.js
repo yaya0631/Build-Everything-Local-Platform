@@ -5,9 +5,9 @@
  *   must allow cross-origin requests (CORS), some headers (Cookie, Host,
  *   Origin...) cannot be set, and only CORS-exposed response headers are
  *   visible.
- * - relay: a raw HTTP/1.1 client over Puter's socket relay (TLS runs in the
+ * - relay: a raw HTTP/1.1 client over Everything's socket relay (TLS runs in the
  *   browser). Works with any server, sends every header as written and
- *   shows every response header, but needs a signed-in Puter account.
+ *   shows every response header, but needs a signed-in Everything account.
  *
  * 'auto' uses the browser first and switches to the relay when the browser
  * cannot reach the server, but only when doing so cannot send the request
@@ -188,7 +188,7 @@ export async function sendBrowser(resolved, { files, signal, timeoutMs = 0, foll
         transport: 'browser',
         url: resolved.url,
         redirects: [],
-        warnings: ['The server sent a redirect. Browsers hide redirect details from pages; turn on following redirects or use the Puter relay to see it.'],
+        warnings: ['The server sent a redirect. Browsers hide redirect details from pages; turn on following redirects or use the Everything relay to see it.'],
       };
     }
     const bytes = await readBody(res, t.signal, maxBytes);
@@ -221,7 +221,7 @@ function classifyFetchError(resolved, err) {
   if (typeof location !== 'undefined' && location.protocol === 'https:' && target.protocol === 'http:' && !isPrivateHost(target.hostname)) {
     return new SendError('The browser blocked a plain http:// request from this secure page.', {
       code: 'mixed-content',
-      hint: 'Use https://, or send it through the Puter relay.',
+      hint: 'Use https://, or send it through the Everything relay.',
       cause: err,
     });
   }
@@ -229,18 +229,18 @@ function classifyFetchError(resolved, err) {
     code: 'network',
     hint: isPrivateHost(target.hostname)
       ? 'Check that the server is running and allows cross-origin requests (CORS) from this page.'
-      : 'The server may not allow requests from web pages (CORS), or it may be unreachable. Sending through the Puter relay avoids CORS.',
+      : 'The server may not allow requests from web pages (CORS), or it may be unreachable. Sending through the Everything relay avoids CORS.',
     cause: err,
   });
 }
 
-/** Socket opener backed by Puter's network relay. */
-export function puterSockets(puter) {
-  return (host, port, tls) => (tls ? new puter.net.tls.TLSSocket(host, port) : new puter.net.Socket(host, port));
+/** Socket opener backed by Everything's network relay. */
+export function everythingSockets(everything) {
+  return (host, port, tls) => (tls ? new everything.net.tls.TLSSocket(host, port) : new everything.net.Socket(host, port));
 }
 
 export async function sendRelay(resolved, { files, signal, timeoutMs = 0, followRedirects: follow = true, openSocket, cookieJar, maxBytes = 100 * 1048576 } = {}) {
-  if (!openSocket) throw new SendError('Sign in to Puter to send requests through the relay.', { code: 'relay-unavailable', transport: 'relay' });
+  if (!openSocket) throw new SendError('Sign in to Everything to send requests through the relay.', { code: 'relay-unavailable', transport: 'relay' });
   let payload = null;
   let contentType = null;
   try {
@@ -334,13 +334,13 @@ export async function send(resolved, options = {}) {
   if (dropped.length && mode === 'browser') warnings.push(`The browser does not let pages set ${dropped.join(', ')}; ${dropped.length > 1 ? 'they were' : 'it was'} not sent.`);
   try {
     const res = await sendBrowser(resolved, options);
-    if (dropped.length && mode === 'auto') res.warnings.push(`The browser does not let pages set ${dropped.join(', ')}. Use the Puter relay to send ${dropped.length > 1 ? 'them' : 'it'}.`);
+    if (dropped.length && mode === 'auto') res.warnings.push(`The browser does not let pages set ${dropped.join(', ')}. Use the Everything relay to send ${dropped.length > 1 ? 'them' : 'it'}.`);
     res.warnings.unshift(...warnings);
     return res;
   } catch (err) {
     if (mode !== 'auto' || !(err instanceof SendError) || !['network', 'mixed-content'].includes(err.code) || local) throw err;
     if (!relay) {
-      err.hint = `${err.hint} Sign in to Puter to use the relay.`.trim();
+      err.hint = `${err.hint} Sign in to Everything to use the relay.`.trim();
       err.code = err.code === 'mixed-content' ? err.code : 'cors';
       throw err;
     }
@@ -348,7 +348,7 @@ export async function send(resolved, options = {}) {
     if (err.code !== 'mixed-content' && !canRetry(resolved)) {
       throw new SendError('The browser could not read the response, and the request may already have reached the server.', {
         code: 'maybe-sent',
-        hint: 'Send it again through the Puter relay if repeating it is safe.',
+        hint: 'Send it again through the Everything relay if repeating it is safe.',
       });
     }
     const res = await sendRelay(resolved, relayOpts);

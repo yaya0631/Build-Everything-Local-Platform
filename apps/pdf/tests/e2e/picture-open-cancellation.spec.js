@@ -19,7 +19,7 @@ for (const format of ['png', 'jpeg'])
         context.fillStyle = '#d02020';
         context.fillRect(0, 0, 4, 3);
         const picture = { mimeType: `image/${format}`, buffer: await canvas.encode(format) };
-        await page.route('**/sdk/puter.js', (route) => route.abort());
+        await page.route('**/sdk/everything.js', (route) => route.abort());
         let releaseModules,
           modulesRequested = false;
         const moduleGate = new Promise((resolve) => {

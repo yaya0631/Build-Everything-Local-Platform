@@ -1,4 +1,4 @@
-// Downloads to the user's device and local file selection (no Puter involved).
+// Downloads to the user's device and local file selection (no Everything involved).
 
 /** Saves a Blob through the browser's download flow. */
 export function downloadBlob(blob, filename) {

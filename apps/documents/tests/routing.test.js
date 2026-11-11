@@ -13,7 +13,7 @@ it('honors the latest navigation while another document is still loading', async
   let finishFirst;
   const first = new Promise((resolve) => { finishFirst = resolve; });
   const read = vi.fn((path) => path === 'Documents/A.docx' ? first : Promise.resolve(new Blob(['B'])));
-  vi.stubGlobal('puter', {
+  vi.stubGlobal('everything', {
     auth: { isSignedIn: () => true, getUser: async () => ({ username: 'test' }) },
     fs: { readdir: async () => [], read, mkdir: async () => {}, stat: async () => null, write: async () => ({}) },
   });
