@@ -3,6 +3,8 @@ import { fileURLToPath } from 'node:url'
 
 // https://vite.dev/config/
 export default defineConfig({
+  // Apps are served from /app/<name>/ on the platform, not the domain root.
+  base: './',
   plugins: [],
   resolve: {
     alias: {

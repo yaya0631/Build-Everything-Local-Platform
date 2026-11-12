@@ -250,6 +250,25 @@ test('Platform Conformance Suite (Section 4 + Security + Peer + Workers)', async
     assert.equal(badOrigin.status, 403);
   });
 
+  await t.test('1b. A client that aborts mid-request does not crash the server', async () => {
+    await new Promise((resolve) => {
+      const socket = net.connect(port, '127.0.0.1', () => {
+        socket.write(
+          'POST /api/auth/signin HTTP/1.1\r\n' +
+          'Host: 127.0.0.1\r\n' +
+          'Content-Type: application/json\r\n' +
+          'Content-Length: 200\r\n\r\n' +
+          '{"username":"carol","password":"'
+        );
+        setTimeout(() => { socket.destroy(); resolve(); }, 25);
+      });
+      socket.on('error', () => {});
+    });
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    const after = await fetch(`http://127.0.0.1:${port}/api/auth/status`);
+    assert.equal(after.status, 200, 'the server still answers after an aborted upload');
+  });
+
   await t.test('2. everything.auth (password sign-in, sign-out, session identity + redirect for missing password)', async () => {
     const client = createSdkClient(port, { app: 'chess', user: null });
     const { everything } = client;
@@ -329,6 +348,12 @@ test('Platform Conformance Suite (Section 4 + Security + Peer + Workers)', async
 
     const authedApp = await fetch(`http://127.0.0.1:${port}/app/notes/`, { headers: { Cookie: adminCookie } });
     assert.equal(authedApp.status, 200);
+
+    // A missing asset is a real 404, not the app's HTML shell: returning HTML
+    // here makes a broken script fail with a misleading MIME error.
+    const missingAsset = await fetch(`http://127.0.0.1:${port}/app/notes/assets/does-not-exist.js`, { headers: { Cookie: adminCookie } });
+    assert.equal(missingAsset.status, 404);
+    assert.match(missingAsset.headers.get('content-type') || '', /^text\/plain/);
 
     const loginPage = await fetch(`http://127.0.0.1:${port}/login`);
     assert.equal(loginPage.status, 200);

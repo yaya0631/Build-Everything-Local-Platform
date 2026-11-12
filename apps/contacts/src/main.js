@@ -49,7 +49,7 @@ function showSignIn() {
   root.innerHTML = `
     <div class="gate">
       <div class="gate__card">
-        <img class="gate__mark" src="/icon.svg" width="76" height="76" alt="" />
+        <img class="gate__mark" src="./icon.svg" width="76" height="76" alt="" />
         <h1 class="gate__title">Contacts</h1>
         <p class="gate__lead">Your private address book, synced to your Everything cloud. Free, no ads — your data stays in your account.</p>
         <button class="btn btn--primary btn--lg" data-signin>Sign in</button>
@@ -187,7 +187,7 @@ function renderServicePanel(callerApp, allowed) {
   root.innerHTML = `
     <div class="gate">
       <div class="gate__card">
-        <img class="gate__mark" src="/icon.svg" width="76" height="76" alt="" />
+        <img class="gate__mark" src="./icon.svg" width="76" height="76" alt="" />
         <h1 class="gate__title">Contacts</h1>
         <p class="gate__lead" data-service-lead></p>
       </div>
@@ -249,9 +249,9 @@ function init() {
 // cloud data or auth. Skipped in dev, inside the Everything desktop shell, and where
 // service workers are unavailable; failures are non-fatal (progressive
 // enhancement only).
-if (import.meta.env.PROD && 'serviceWorker' in navigator && !isEverythingApp()) {
+if (import.meta.env.PROD && 'serviceWorker' in navigator && !isEverythingApp() && location.pathname === '/') {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(() => {})
+    navigator.serviceWorker.register('./sw.js').catch(() => {})
   })
 }
 

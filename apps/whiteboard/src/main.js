@@ -572,7 +572,7 @@ const app = document.querySelector("#app");
 const icon = (name) => `<i data-lucide="${name}" aria-hidden="true"></i>`;
 const button = (name, label, action, extra = "") =>
   `<button class="icon-btn" aria-label="${label}" title="${label}" data-action="${action}" ${extra}>${icon(name)}</button>`;
-const brandImage = `<img src="/icons/icon-64.png" srcset="/icons/icon-128.png 2x" width="33" height="33" alt="" draggable="false">`;
+const brandImage = `<img src="./icons/icon-64.png" srcset="./icons/icon-128.png 2x" width="33" height="33" alt="" draggable="false">`;
 const logo = `<span class="brand-mark">${brandImage}</span><span>whiteboard<span class="brand-dot">.</span></span>`;
 let boards = [],
   current = null,

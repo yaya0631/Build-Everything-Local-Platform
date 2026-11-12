@@ -76,7 +76,7 @@ export async function prepareScriptFontSizes(names,alternatives){
         // Canvas Noto Sans is loaded by canvas.css, outside the dynamic face
         // registry. Read those same assets, never an installed namesake.
         const bundled=isBundledFont(name);
-        const faces=bundled?['NotoSans.ttf','NotoSans-Italic.ttf'].map(file=>({source:`url("/fonts/${file}")`})) : canvasFontSources(name);
+        const faces=bundled?['NotoSans.ttf','NotoSans-Italic.ttf'].map(file=>({source:`url("./fonts/${file}")`})) : canvasFontSources(name);
         let sources=bundled?[]:await localFamilyFaceMetadata(name);
         if(!sources.length)sources=(await Promise.all(faces.map(async face=>{
           const match=/^url\(("(?:\\.|[^"\\])*")\)$/.exec(face.source);

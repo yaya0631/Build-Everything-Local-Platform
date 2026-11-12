@@ -599,7 +599,7 @@ export function createApp(root, { store, user, rsvp = null, contacts = null, inv
     menuBtn,
     el('div', { class: 'header__brand' }, [
       el('span', { class: 'brand-mark' }, [
-        el('img', { src: '/icon-192.png', alt: '', width: '30', height: '30' }),
+        el('img', { src: './icon-192.png', alt: '', width: '30', height: '30' }),
       ]),
       el('span', { class: 'brand-name', text: 'Calendar' }),
     ]),

@@ -3,7 +3,7 @@ import { el } from './dom.js';
 /** The app icon itself. The 128px source keeps it sharp in the 32px slot on retina screens. */
 export function brandMark() {
   return el('img', {
-    src: '/icons/icon-128.png',
+    src: './icons/icon-128.png',
     alt: '',
     width: 32,
     height: 32,

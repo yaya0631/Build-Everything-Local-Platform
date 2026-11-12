@@ -1,6 +1,8 @@
 import { defineConfig } from "vite";
 
 export default defineConfig({
+  // Apps are served from /app/<name>/ on the platform, not the domain root.
+  base: "./",
   plugins: [],
   // Prebundle lazy CJS entry points so first use does not reload an open editor.
   // PathKit remains loaded on demand at runtime, including in the worker.

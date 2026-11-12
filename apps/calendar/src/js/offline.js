@@ -226,7 +226,7 @@ export function renderOfflineScreen(root, { onRetry } = {}) {
       el('div', { class: 'auth-card' }, [
         el('img', {
           class: 'auth-card__logo',
-          src: '/icon-192.png',
+          src: './icon-192.png',
           alt: 'Calendar',
           width: '56',
           height: '56',

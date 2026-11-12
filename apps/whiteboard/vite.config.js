@@ -44,6 +44,8 @@ const TYPES = { wasm: "application/wasm", js: "text/javascript" };
 const typeOf = (name) => TYPES[name.split(".").pop()] ?? "text/plain";
 
 export default defineConfig({
+  // Apps are served from /app/<name>/ on the platform, not the domain root.
+  base: "./",
   // The dependency scan reads only the app's page. Without this, Vite scans
   // every HTML file under the project, including the saved audit builds in
   // tmp/, which fails and disables dependency pre-bundling for the dev server.

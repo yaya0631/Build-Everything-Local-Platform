@@ -76,5 +76,5 @@ export function appShell(root: HTMLElement) {
 <dialog id="dialog"></dialog><div id="toast" role="status" hidden></div>`;
 }
 export function appIcon(size: number, className = '') {
-  return `<img class="app-icon${className ? ` ${className}` : ''}" src="/app-icon.png" width="${size}" height="${size}" alt="" draggable="false" decoding="async">`;
+  return `<img class="app-icon${className ? ` ${className}` : ''}" src="./app-icon.png" width="${size}" height="${size}" alt="" draggable="false" decoding="async">`;
 }

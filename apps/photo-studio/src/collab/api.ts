@@ -5,7 +5,7 @@ import { authorize, refuseCredential } from './auth';
 import type { CollabEverything } from './everything-types';
 
 export const WORKER_KEY = 'photo-studio-collab-worker-v1';
-export const WORKER_BUNDLE = '/worker/photo-studio-worker.js';
+export const WORKER_BUNDLE = './worker/photo-studio-worker.js';
 
 export class CollabError extends Error {
   constructor(

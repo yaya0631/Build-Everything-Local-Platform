@@ -389,7 +389,22 @@ nav{display:flex;align-items:center;gap:14px;font-size:14px}nav a,nav button{col
     return String(value ?? '').replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
   }
 
-  const server = http.createServer(async (req, res) => {
+  const server = http.createServer((req, res) => {
+    serveRequest(req, res).catch((error) => {
+      if (res.writableEnded) return;
+      if (!res.headersSent) {
+        sendJson(res, 500, { code: 'server_error', message: 'The request could not be completed.' });
+      } else {
+        res.destroy();
+      }
+      // A client that closes the tab mid-request is normal, not a server fault.
+      if (error?.code !== 'ECONNRESET' && error?.message !== 'aborted') {
+        console.error('Request failed:', error);
+      }
+    });
+  });
+
+  async function serveRequest(req, res) {
     const requestHost = ctx.requestHost(req);
     if (!isValidLocalHost(requestHost, hostPolicy)) {
       return sendJson(res, 403, { code: 'invalid_host', message: 'Forbidden Host header.' });
@@ -532,6 +547,13 @@ nav{display:flex;align-items:center;gap:14px;font-size:14px}nav a,nav button{col
       if (serveStaticFile(res, path.join(distRoot, cleanRel))) return;
       if (serveStaticFile(res, path.join(appRoot, 'public', cleanRel))) return;
       if (!requestUser) return loginRedirect(req, res, req.url || '/');
+      // A missing asset should be a 404, not the app's HTML shell. Serving
+      // index.html here makes a broken script fail with a confusing MIME error.
+      if (path.extname(cleanRel)) {
+        res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+        res.end('Not found');
+        return;
+      }
       if (serveStaticFile(res, path.join(distRoot, 'index.html'))) return;
     }
 
@@ -542,6 +564,12 @@ nav{display:flex;align-items:center;gap:14px;font-size:14px}nav a,nav button{col
       'X-Content-Type-Options': 'nosniff',
     });
     res.end(landingHtml(requestUser));
+  }
+
+  server.on('clientError', (error, socket) => {
+    if (error.code !== 'ECONNRESET' && error.message !== 'aborted') console.error('Client connection error:', error.message);
+    if (socket.writable) socket.end('HTTP/1.1 400 Bad Request\r\n\r\n');
+    else socket.destroy();
   });
 
   server.on('upgrade', (req, socket) => {

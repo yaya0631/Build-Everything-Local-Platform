@@ -101,7 +101,7 @@ export async function deploy(everything, progress = () => {}, expectedServer) {
   )
     return;
   progress("Preparing collaboration…");
-  const response = await fetch("/worker/whiteboard-worker.js", {
+  const response = await fetch("./worker/whiteboard-worker.js", {
     cache: "no-cache",
   });
   if (!response.ok)

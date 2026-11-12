@@ -51,7 +51,7 @@ function showError(message) {
   root.append(
     el('div', { class: 'screen' }, [
       el('div', { class: 'auth-card' }, [
-        el('img', { class: 'auth-card__logo', src: '/icon-192.png', alt: 'Calendar', width: '56', height: '56' }),
+        el('img', { class: 'auth-card__logo', src: './icon-192.png', alt: 'Calendar', width: '56', height: '56' }),
         el('h1', { class: 'auth-card__title', text: 'Something went wrong' }),
         el('p', { class: 'auth-card__sub', text: message }),
         el('button', {
@@ -86,7 +86,7 @@ function showSignIn() {
   root.append(
     el('div', { class: 'screen' }, [
       el('div', { class: 'auth-card' }, [
-        el('img', { class: 'auth-card__logo', src: '/icon-192.png', alt: 'Calendar', width: '56', height: '56' }),
+        el('img', { class: 'auth-card__logo', src: './icon-192.png', alt: 'Calendar', width: '56', height: '56' }),
         el('h1', { class: 'auth-card__title', text: 'Calendar' }),
         el('p', {
           class: 'auth-card__sub',
@@ -454,7 +454,7 @@ function renderServicePanel(callerApp, mode) {
       el('div', { class: 'auth-card' }, [
         el('img', {
           class: 'auth-card__logo',
-          src: '/icon-192.png',
+          src: './icon-192.png',
           alt: 'Calendar',
           width: '56',
           height: '56',

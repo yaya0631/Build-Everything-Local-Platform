@@ -981,7 +981,7 @@ function shellHtml() {
     <div class="app-shell" data-mobile="list">
       <header class="topbar">
         <div class="topbar__brand">
-          <span class="topbar__logo"><img src="/icon.svg" width="24" height="24" alt="" /></span>
+          <span class="topbar__logo"><img src="./icon.svg" width="24" height="24" alt="" /></span>
           <span class="topbar__name">Contacts</span>
         </div>
         <div class="topbar__actions">

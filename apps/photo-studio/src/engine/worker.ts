@@ -22,8 +22,14 @@ interface Wasm extends WebAssembly.Exports {
   ): void;
   encode_png(p: number, w: number, h: number, o: number): number;
 }
+// The worker is served from /app/<name>/assets/ on the platform, so the wasm
+// binary in the public folder is one directory up. The dev server serves the
+// public folder from the domain root instead.
+const wasmUrl = import.meta.env.DEV
+  ? '/photo-engine.wasm'
+  : new URL('../photo-engine.wasm', self.location.href);
 const ready = WebAssembly.instantiateStreaming(
-  fetch("/photo-engine.wasm"),
+  fetch(wasmUrl),
 ).then((r) => r.instance.exports as Wasm);
 const worker = self as unknown as DedicatedWorkerGlobalScope;
 worker.onmessage = async (
