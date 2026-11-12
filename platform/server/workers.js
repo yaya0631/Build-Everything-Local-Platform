@@ -319,7 +319,7 @@ export function createWorkersService(ctx) {
       if (!row) {
         return { status: 404, headers: { 'content-type': 'application/json' }, body: JSON.stringify({ error: 'worker_not_found', name: workerName }) };
       }
-      const ownerUser = db.prepare('SELECT * FROM users WHERE id = ?').get(row.owner_id) || ensureUser(db, 'local');
+      const ownerUser = db.prepare('SELECT * FROM users WHERE id = ?').get(row.owner_id) || ensureUser(db, 'local', undefined, { role: 'system' });
       const entry = getOrSpawnPool(row, ownerUser);
       entry.currentCaller = caller;
 

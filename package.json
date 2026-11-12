@@ -12,6 +12,7 @@
     "dev": "node platform/server/index.js",
     "build": "node platform/server/index.js --build",
     "start": "node platform/server/index.js",
+    "start:local": "node platform/server/index.js --host 127.0.0.1",
     "test": "node --test --test-force-exit platform/platform.test.js",
     "postinstall": "patch-package --patch-dir apps/presentation/patches --error-on-fail"
   },

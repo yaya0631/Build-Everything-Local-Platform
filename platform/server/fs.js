@@ -1,7 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import { ensureUser } from './auth.js';
 
 export function initFs(db) {
   db.exec(`
@@ -296,7 +295,15 @@ export function createFsService(ctx) {
     share(user, app, rawPath, targetUser, options = {}) {
       const vpath = normalizeVirtualPath(rawPath, app);
       const target = String(targetUser || '*').trim().toLowerCase();
-      if (target !== '*') ensureUser(db, target);
+      if (target !== '*') {
+        const found = db.prepare('SELECT id FROM users WHERE LOWER(username) = ? AND disabled = 0').get(target);
+        if (!found) {
+          const err = new Error('No account with that username.');
+          err.status = 404;
+          err.code = 'user_not_found';
+          throw err;
+        }
+      }
       const perm = options?.mode || options?.permission || 'view';
       db.prepare(`
         INSERT OR REPLACE INTO fs_shares (owner_id, path, target_user, permission, created_at)

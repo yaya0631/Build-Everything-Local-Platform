@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="robots" content="noindex" />
+  <title>Sign in · Everything Local</title>
+  <style>
+    :root {
+      --bg: #f2f5f9;
+      --surface: #ffffff;
+      --surface-2: #f1f3f6;
+      --text: #16181d;
+      --muted: #626a78;
+      --line: #dfe3ea;
+      --accent: #2563eb;
+      --accent-ink: #ffffff;
+      --accent-soft: #e8efff;
+      --danger: #b42318;
+      --danger-soft: #fee9e7;
+      --good: #0f7a4d;
+      --good-soft: #e3f6ec;
+      --shadow: 0 1px 2px rgba(16, 24, 40, .04), 0 18px 50px rgba(16, 24, 40, .12);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f1115;
+        --surface: #171a21;
+        --surface-2: #1e232c;
+        --text: #eef1f6;
+        --muted: #9aa3b2;
+        --line: #2b313c;
+        --accent: #6f9bff;
+        --accent-ink: #0b1220;
+        --accent-soft: #1b2b4d;
+        --danger: #ff8d84;
+        --danger-soft: #3b1512;
+        --good: #63d6a0;
+        --good-soft: #123326;
+        --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 18px 50px rgba(0, 0, 0, .32);
+      }
+    }
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; margin: 0; }
+    body {
+      display: grid;
+      place-items: center;
+      padding: 28px 18px;
+      background:
+        radial-gradient(900px 480px at 18% -12%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 62%),
+        radial-gradient(700px 420px at 100% 110%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 60%),
+        var(--bg);
+      color: var(--text);
+      font: 15px/1.55 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .card {
+      width: min(440px, 100%);
+      padding: 34px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+    }
+    .brand { display: inline-flex; align-items: center; gap: 11px; color: var(--text); font-weight: 750; letter-spacing: -.02em; margin-bottom: 28px; }
+    .brand:hover { text-decoration: none; }
+    .logo {
+      display: grid; place-items: center; width: 36px; height: 36px; border-radius: 11px;
+      background: linear-gradient(145deg, var(--accent), color-mix(in srgb, var(--accent) 52%, #7c3aed));
+      color: var(--accent-ink); font-weight: 800; font-size: 18px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, .35);
+    }
+    .brand small { color: var(--muted); font-weight: 600; }
+    .eyebrow { margin: 0 0 8px; color: var(--accent); font-size: 11.5px; font-weight: 750; letter-spacing: .13em; text-transform: uppercase; }
+    h1 { margin: 0; font-size: 27px; line-height: 1.12; letter-spacing: -.035em; }
+    .lede { margin: 10px 0 24px; color: var(--muted); font-size: 14px; }
+    .field { display: grid; gap: 6px; margin-bottom: 14px; }
+    .field label { font-size: 12.5px; font-weight: 700; color: var(--muted); }
+    .field .hint { color: var(--muted); font-size: 11.5px; }
+    input {
+      width: 100%; min-height: 42px; padding: 9px 12px;
+      background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px;
+      color: inherit; font: inherit; outline: none;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent); }
+    input[readonly] { color: var(--muted); }
+    .key-wrap { position: relative; }
+    .key-wrap input { padding-right: 62px; }
+    .key-toggle {
+      position: absolute; top: 6px; right: 6px; min-height: 30px; padding: 3px 9px;
+      border: 0; border-radius: 7px; background: var(--surface); color: var(--muted);
+      font: inherit; font-size: 11.5px; font-weight: 700; cursor: pointer;
+    }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%; min-height: 44px; padding: 10px 16px;
+      border: 1px solid var(--accent); border-radius: 11px;
+      background: var(--accent); color: var(--accent-ink);
+      font: inherit; font-weight: 700; cursor: pointer;
+      transition: background .15s, transform .05s;
+    }
+    .btn:hover { background: color-mix(in srgb, var(--accent) 88%, #000); }
+    .btn:active { transform: translateY(1px); }
+    .btn:disabled { opacity: .6; cursor: not-allowed; }
+    .error {
+      display: none; margin: 0 0 16px; padding: 11px 13px; border-radius: 10px;
+      background: var(--danger-soft); border: 1px solid color-mix(in srgb, var(--danger) 30%, var(--line));
+      color: var(--danger); font-size: 13px; font-weight: 600;
+    }
+    .error.show { display: block; }
+    .notice {
+      margin: 0 0 18px; padding: 12px 14px; border-radius: 10px;
+      background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--line));
+      color: var(--text); font-size: 13px;
+    }
+    .notice strong { display: block; margin-bottom: 2px; }
+    .foot { margin-top: 22px; color: var(--muted); font-size: 12.5px; text-align: center; }
+    .loading { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 14px; }
+    .spinner {
+      width: 16px; height: 16px; border-radius: 50%;
+      border: 2px solid var(--line); border-top-color: var(--accent);
+      animation: spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    [hidden] { display: none !important; }
+    @media (prefers-reduced-motion: reduce) {
+      .spinner { animation-duration: 2.4s; }
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <a class="brand" href="/"><span class="logo" aria-hidden="true">E</span><span>Everything <small>Local</small></span></a>
+
+    <div id="loading" class="loading"><span class="spinner" aria-hidden="true"></span><span>Checking this server…</span></div>
+
+    <section id="setup-view" hidden>
+      <p class="eyebrow">First run</p>
+      <h1>Create the administrator</h1>
+      <p class="lede">This account manages people, invites, AI providers and assistant access. You can add everyone else afterwards from Settings.</p>
+      <div class="notice"><strong>Only the first account is special.</strong> Choose a password you can keep. There is no password reset email on a home server; the administrator can reset passwords from the command line.</div>
+      <div class="error" id="setup-error" role="alert"></div>
+      <form id="setup-form" method="post" action="#" novalidate>
+        <div class="field">
+          <label for="setup-username">Username</label>
+          <input id="setup-username" name="username" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" required maxlength="32" placeholder="alex" />
+        </div>
+        <div class="field">
+          <label for="setup-email">Email <span class="hint">(optional)</span></label>
+          <input id="setup-email" name="email" type="email" autocomplete="email" spellcheck="false" placeholder="alex@home.local" />
+        </div>
+        <div class="field">
+          <label for="setup-password">Password</label>
+          <div class="key-wrap">
+            <input id="setup-password" name="password" type="password" autocomplete="new-password" required minlength="8" />
+            <button class="key-toggle" type="button" data-toggle="setup-password">Show</button>
+          </div>
+          <span class="hint">At least 8 characters.</span>
+        </div>
+        <div class="field">
+          <label for="setup-confirm">Confirm password</label>
+          <input id="setup-confirm" name="confirm" type="password" autocomplete="new-password" required minlength="8" />
+        </div>
+        <button class="btn" type="submit" id="setup-submit">Create account and continue</button>
+      </form>
+    </section>
+
+    <section id="signin-view" hidden>
+      <p class="eyebrow">Welcome back</p>
+      <h1>Sign in</h1>
+      <p class="lede">Use the account the administrator created for you.</p>
+      <div class="error" id="signin-error" role="alert"></div>
+      <form id="signin-form" method="post" action="#" novalidate>
+        <div class="field">
+          <label for="signin-username">Username</label>
+          <input id="signin-username" name="username" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" required maxlength="32" />
+        </div>
+        <div class="field">
+          <label for="signin-password">Password</label>
+          <div class="key-wrap">
+            <input id="signin-password" name="password" type="password" autocomplete="current-password" required />
+            <button class="key-toggle" type="button" data-toggle="signin-password">Show</button>
+          </div>
+        </div>
+        <button class="btn" type="submit" id="signin-submit">Sign in</button>
+      </form>
+      <p class="foot">Invited but no password yet? Open the invite link the administrator sent you.</p>
+    </section>
+
+    <section id="invite-view" hidden>
+      <p class="eyebrow">Invitation</p>
+      <h1>Join this server</h1>
+      <p class="lede" id="invite-lede">Choose a password for your new account.</p>
+      <div class="error" id="invite-error" role="alert"></div>
+      <form id="invite-form" method="post" action="#" novalidate>
+        <div class="field">
+          <label for="invite-username">Username</label>
+          <input id="invite-username" name="username" type="text" readonly />
+        </div>
+        <div class="field">
+          <label for="invite-email">Email <span class="hint">(optional)</span></label>
+          <input id="invite-email" name="email" type="email" autocomplete="email" spellcheck="false" />
+        </div>
+        <div class="field">
+          <label for="invite-password">Password</label>
+          <div class="key-wrap">
+            <input id="invite-password" name="password" type="password" autocomplete="new-password" required minlength="8" />
+            <button class="key-toggle" type="button" data-toggle="invite-password">Show</button>
+          </div>
+          <span class="hint">At least 8 characters.</span>
+        </div>
+        <div class="field">
+          <label for="invite-confirm">Confirm password</label>
+          <input id="invite-confirm" name="confirm" type="password" autocomplete="new-password" required minlength="8" />
+        </div>
+        <button class="btn" type="submit" id="invite-submit">Create my account</button>
+      </form>
+    </section>
+
+    <section id="invalid-view" hidden>
+      <p class="eyebrow">Invitation</p>
+      <h1>This invite is not valid</h1>
+      <p class="lede">It may have expired or already been used. Ask the administrator for a new invite link.</p>
+      <a class="btn" href="/login">Go to sign in</a>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      'use strict';
+
+      const $ = (id) => document.getElementById(id);
+      const params = new URLSearchParams(location.search);
+      const isJoin = location.pathname === '/join';
+      const inviteToken = params.get('token') || '';
+      const nextParam = params.get('next') || '/';
+      const next = nextParam.startsWith('/') && !nextParam.startsWith('//') ? nextParam : '/';
+      const views = ['loading', 'setup-view', 'signin-view', 'invite-view', 'invalid-view'];
+
+      function show(id) {
+        for (const view of views) $(view).hidden = view !== id;
+      }
+
+      function showError(id, message) {
+        const box = $(id);
+        box.textContent = message;
+        box.classList.add('show');
+      }
+
+      function clearError(id) {
+        const box = $(id);
+        box.textContent = '';
+        box.classList.remove('show');
+      }
+
+      async function post(path, body) {
+        const res = await fetch(path, {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        const data = await res.json().catch(() => null);
+        if (!res.ok) {
+          const err = new Error((data && data.message) || 'Request failed with HTTP ' + res.status);
+          err.status = res.status;
+          throw err;
+        }
+        return data;
+      }
+
+      function busy(button, on, label) {
+        button.disabled = on;
+        if (label) button.textContent = on ? label : button.dataset.label || label;
+      }
+
+      // Show/hide password buttons.
+      for (const button of document.querySelectorAll('[data-toggle]')) {
+        button.addEventListener('click', () => {
+          const input = $(button.dataset.toggle);
+          const visible = input.type === 'text';
+          input.type = visible ? 'password' : 'text';
+          button.textContent = visible ? 'Show' : 'Hide';
+        });
+      }
+
+      async function finish() {
+        location.replace(next);
+      }
+
+      $('setup-form').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        clearError('setup-error');
+        const username = $('setup-username').value.trim();
+        const email = $('setup-email').value.trim();
+        const password = $('setup-password').value;
+        const confirm = $('setup-confirm').value;
+        if (!username) return showError('setup-error', 'Choose a username.');
+        if (password.length < 8) return showError('setup-error', 'Choose a password with at least 8 characters.');
+        if (password !== confirm) return showError('setup-error', 'The two passwords do not match.');
+        const button = $('setup-submit');
+        busy(button, true, 'Creating account…');
+        try {
+          await post('/api/auth/setup', { username, email, password });
+          await finish();
+        } catch (err) {
+          showError('setup-error', err.message);
+          busy(button, false, 'Create account and continue');
+        }
+      });
+
+      $('signin-form').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        clearError('signin-error');
+        const username = $('signin-username').value.trim();
+        const password = $('signin-password').value;
+        if (!username || !password) return showError('signin-error', 'Enter your username and password.');
+        const button = $('signin-submit');
+        busy(button, true, 'Signing in…');
+        try {
+          await post('/api/auth/signin', { username, password });
+          await finish();
+        } catch (err) {
+          showError('signin-error', err.message);
+          busy(button, false, 'Sign in');
+        }
+      });
+
+      $('invite-form').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        clearError('invite-error');
+        const password = $('invite-password').value;
+        const confirm = $('invite-confirm').value;
+        if (password.length < 8) return showError('invite-error', 'Choose a password with at least 8 characters.');
+        if (password !== confirm) return showError('invite-error', 'The two passwords do not match.');
+        const button = $('invite-submit');
+        busy(button, true, 'Creating account…');
+        try {
+          await post('/api/auth/invite/accept', {
+            token: inviteToken,
+            password,
+            email: $('invite-email').value.trim(),
+          });
+          await finish();
+        } catch (err) {
+          showError('invite-error', err.message);
+          busy(button, false, 'Create my account');
+        }
+      });
+
+      async function loadInvite() {
+        if (!inviteToken) {
+          show('invalid-view');
+          return;
+        }
+        try {
+          const res = await fetch('/api/auth/invite?token=' + encodeURIComponent(inviteToken), {
+            credentials: 'same-origin',
+            headers: { Accept: 'application/json' },
+          });
+          const invite = await res.json().catch(() => null);
+          if (!res.ok || !invite) throw new Error('invalid');
+          $('invite-username').value = invite.username || '';
+          $('invite-email').value = invite.email || '';
+          $('invite-lede').textContent = 'Your username is ' + invite.username + '. Choose a password to finish joining.';
+          show('invite-view');
+          $('invite-password').focus();
+        } catch {
+          show('invalid-view');
+        }
+      }
+
+      async function start() {
+        if (isJoin) {
+          await loadInvite();
+          return;
+        }
+        try {
+          const res = await fetch('/api/auth/status', { credentials: 'same-origin', headers: { Accept: 'application/json' } });
+          const status = await res.json();
+          if (status.setup_required) {
+            show('setup-view');
+            $('setup-username').focus();
+            return;
+          }
+          if (status.signed_in) {
+            await finish();
+            return;
+          }
+          show('signin-view');
+          $('signin-username').focus();
+        } catch {
+          show('signin-view');
+          showError('signin-error', 'This server did not answer. Check that Everything Local is running, then reload.');
+        }
+      }
+
+      start();
+    })();
+  </script>
+</body>
+</html>

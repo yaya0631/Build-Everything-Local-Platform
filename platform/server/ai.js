@@ -274,35 +274,111 @@ export function createAiService(ctx) {
 /* HTTP                                                                */
 /* ------------------------------------------------------------------ */
 
+/** Tool calls keep their OpenAI shape; arguments stay JSON text end to end. */
+function normalizeToolCall(call, index) {
+  const fn = call?.function || {};
+  const name = String(fn.name || call?.name || '').trim();
+  if (!name) return null;
+  let args = fn.arguments ?? call?.arguments ?? call?.input;
+  if (typeof args !== 'string') {
+    try { args = JSON.stringify(args ?? {}); } catch { args = '{}'; }
+  }
+  return {
+    id: String(call?.id || `call_${Date.now().toString(36)}_${index}`),
+    type: 'function',
+    function: { name, arguments: args || '{}' },
+  };
+}
+
 function normalizeMessages(body) {
-  if (Array.isArray(body.messages)) {
-    return body.messages.map((m) =>
-      typeof m === 'string' ? { role: 'user', content: m } : { role: m?.role || 'user', content: m?.content ?? '' }
-    );
-  }
-  if (body.prompt !== undefined) return [{ role: 'user', content: String(body.prompt) }];
-  return [{ role: 'user', content: '' }];
+  const raw = Array.isArray(body?.messages)
+    ? body.messages
+    : body?.prompt !== undefined
+      ? [{ role: 'user', content: String(body.prompt) }]
+      : [{ role: 'user', content: '' }];
+
+  return raw.map((m) => {
+    if (typeof m === 'string') return { role: 'user', content: m };
+    const role = ['system', 'user', 'assistant', 'tool'].includes(m?.role) ? m.role : 'user';
+    const out = { role, content: m?.content ?? '' };
+    if (Array.isArray(m?.content)) out.content = m.content;
+    if (role === 'assistant' && Array.isArray(m?.tool_calls)) {
+      out.tool_calls = m.tool_calls.map(normalizeToolCall).filter(Boolean);
+      if (m?.content == null) out.content = '';
+    }
+    if (role === 'tool') {
+      out.tool_call_id = String(m?.tool_call_id || '');
+      if (m?.name) out.name = String(m.name);
+    }
+    if (m?.name && role !== 'tool') out.name = String(m.name);
+    return out;
+  });
 }
 
-/**
- * Only the platform page (`127.0.0.1`/`localhost`, no app subdomain) may change
- * AI settings. Requests with no Origin header are local tools and are allowed;
- * an app origin cannot rewrite provider keys.
- */
-function isSettingsRequest(req) {
-  const origin = req.headers.origin;
-  if (!origin) return true;
-  try {
-    const host = new URL(origin).hostname.toLowerCase();
-    return host === '127.0.0.1' || host === 'localhost' || host === '::1' || host === '[::1]';
-  } catch {
-    return false;
+/** Accept OpenAI-shaped tool schemas and drop anything malformed. */
+function normalizeTools(value) {
+  if (!Array.isArray(value)) return undefined;
+  const tools = [];
+  for (const item of value.slice(0, 64)) {
+    const fn = item?.function || item;
+    const name = String(fn?.name || '').trim();
+    if (!/^[a-zA-Z0-9_-]{1,64}$/.test(name)) continue;
+    const parameters = fn?.parameters && typeof fn.parameters === 'object'
+      ? fn.parameters
+      : { type: 'object', properties: {} };
+    tools.push({
+      type: 'function',
+      function: {
+        name,
+        description: String(fn?.description || '').slice(0, 4000),
+        parameters,
+      },
+    });
   }
+  return tools.length ? tools : undefined;
 }
 
-function assertSettingsRequest(req) {
-  if (isSettingsRequest(req)) return;
-  throw unavailableError('AI settings can only be changed from the local settings page.', 403);
+function requireAdmin(user) {
+  if (!user) {
+    const err = new Error('Sign in to continue.');
+    err.status = 401;
+    err.code = 'auth_required';
+    throw err;
+  }
+  if (user.role !== 'admin') {
+    const err = new Error('Only an administrator can change AI settings.');
+    err.status = 403;
+    err.code = 'admin_required';
+    throw err;
+  }
+  return user;
+}
+
+const DEFAULT_ASSISTANT_APPS = ['documents', 'photo-studio', 'video-studio', 'whiteboard'];
+// Keep in sync with ASSISTANT_NATIVE_APPS in platform/sdk/everything.js.
+const NATIVE_ASSISTANT_APPS = ['3d', 'parametric', 'building-design', 'spreadsheet', 'presentation'];
+
+function defaultAssistantConfig() {
+  return {
+    enabled: true,
+    apps: [...DEFAULT_ASSISTANT_APPS],
+    model: '',
+    confirm_destructive: true,
+  };
+}
+
+function cleanAssistantConfig(input, appNames) {
+  const base = defaultAssistantConfig();
+  const value = input && typeof input === 'object' ? input : {};
+  const apps = Array.isArray(value.apps)
+    ? value.apps.map(String).filter((name) => appNames.has(name) && !NATIVE_ASSISTANT_APPS.includes(name))
+    : base.apps;
+  return {
+    enabled: value.enabled === undefined ? base.enabled : !!value.enabled,
+    apps: [...new Set(apps)],
+    model: String(value.model || '').trim().slice(0, 200),
+    confirm_destructive: value.confirm_destructive === undefined ? true : !!value.confirm_destructive,
+  };
 }
 
 export async function handleAi(ctx, req, res, url, body, user, sendJson) {
@@ -316,19 +392,19 @@ export async function handleAi(ctx, req, res, url, body, user, sendJson) {
       return sendJson(res, 200, ai.status());
     }
     if (p === '/api/ai/providers' || p === '/api/ai/providers/save') {
+      requireAdmin(user);
       if (req.method === 'GET') {
         return sendJson(res, 200, ai.listProviders().map(ai.publicProvider));
       }
-      assertSettingsRequest(req);
       const saved = ai.saveProvider(body || {});
       return sendJson(res, 200, ai.publicProvider(saved));
     }
     if (p === '/api/ai/providers/delete') {
-      assertSettingsRequest(req);
+      requireAdmin(user);
       return sendJson(res, 200, ai.deleteProvider(body?.id));
     }
     if (p === '/api/ai/providers/test') {
-      assertSettingsRequest(req);
+      requireAdmin(user);
       const provider = ai.providerFromInput(body || {});
       const models = await createAdapter(provider).listModels();
       return sendJson(res, 200, { ok: true, provider: ai.publicProvider(provider), models });
@@ -337,7 +413,7 @@ export async function handleAi(ctx, req, res, url, body, user, sendJson) {
       return sendJson(res, 200, ai.presets);
     }
     if (p === '/api/ai/routes') {
-      assertSettingsRequest(req);
+      requireAdmin(user);
       if (req.method === 'GET') return sendJson(res, 200, ai.getSetting('routes', {}));
       const routes = {};
       for (const [capability, providerId] of Object.entries(body?.routes || {})) {
@@ -346,6 +422,20 @@ export async function handleAi(ctx, req, res, url, body, user, sendJson) {
         if (provider && provider.capabilities.includes(capability)) routes[capability] = provider.id;
       }
       return sendJson(res, 200, ai.setSetting('routes', routes));
+    }
+    if (p === '/api/ai/assistant') {
+      if (req.method === 'GET') {
+        const config = cleanAssistantConfig(ai.getSetting('assistant', defaultAssistantConfig()), ctx.appNames);
+        return sendJson(res, 200, {
+          ...config,
+          configured: ai.status().configured,
+          app_enabled: config.apps.includes(String(url.searchParams.get('app') || '')),
+          native_apps: [...NATIVE_ASSISTANT_APPS],
+        });
+      }
+      requireAdmin(user);
+      const saved = ai.setSetting('assistant', cleanAssistantConfig(body, ctx.appNames));
+      return sendJson(res, 200, { ...saved, configured: ai.status().configured, native_apps: [...NATIVE_ASSISTANT_APPS] });
     }
 
     /* ---- models ---- */
@@ -366,11 +456,20 @@ export async function handleAi(ctx, req, res, url, body, user, sendJson) {
     /* ---- chat ---- */
     if (p === '/api/ai/chat') {
       const messages = normalizeMessages(body || {});
+      const tools = normalizeTools(body?.tools);
+      const toolChoice = body?.tool_choice;
       const stream = !!body?.stream;
+      const request = {
+        ...body,
+        messages,
+        tools,
+        ...(toolChoice !== undefined ? { tool_choice: toolChoice } : {}),
+        stream: false,
+      };
 
       if (!stream) {
         const result = await ai.withFallback('chat', (adapter, provider) =>
-          adapter.chat({ ...body, messages, stream: false, model: body?.model || provider.default_model })
+          adapter.chat({ ...request, model: body?.model || provider.default_model })
         );
         return sendJson(res, 200, { ok: true, ...result });
       }
@@ -384,12 +483,25 @@ export async function handleAi(ctx, req, res, url, body, user, sendJson) {
       try {
         const { provider, adapter } = ai.requireCapability('chat');
         const result = await adapter.chat(
-          { ...body, messages, stream: true, model: body?.model || provider.default_model },
+          { ...request, stream: true, model: body?.model || provider.default_model },
           (text) => {
             started = true;
             res.write(JSON.stringify({ type: 'text', text }) + '\n');
           }
         );
+        for (const call of result.message?.tool_calls || []) {
+          let input = {};
+          try { input = JSON.parse(call.function?.arguments || '{}'); } catch { input = {}; }
+          res.write(JSON.stringify({
+            type: 'tool_use',
+            id: call.id,
+            name: call.function?.name,
+            input,
+          }) + '\n');
+        }
+        if (result.usage && Object.keys(result.usage).length) {
+          res.write(JSON.stringify({ type: 'usage', usage: result.usage }) + '\n');
+        }
         res.write(JSON.stringify({ type: 'done', message: result.message, finish_reason: result.finish_reason }) + '\n');
         res.end();
         return true;

@@ -6,7 +6,17 @@ import path from 'node:path';
 import http from 'node:http';
 import net from 'node:net';
 import vm from 'node:vm';
-import { createPlatformServer } from './server/index.js';
+import { DatabaseSync } from 'node:sqlite';
+import { createPlatformServer, isValidLocalHost, isValidLocalOrigin } from './server/index.js';
+import { initAuth, listUsers, createUser } from './server/auth.js';
+
+const TEST_USERS = {
+  alice: { password: 'alice-password', role: 'admin' },
+  bob: { password: 'bob-password', role: 'member' },
+  carol: { password: 'carol-password', role: 'member' },
+};
+
+const testToken = (user) => `tok-${user}`;
 
 function makeMockRTC() {
   const pairs = new Set();
@@ -68,12 +78,14 @@ function makeMockRTC() {
 }
 
 /** Direct HTTP call to the platform API, for the endpoints the SDK does not wrap. */
-async function api(port, subPath, { method = 'GET', body, user = 'local', origin } = {}) {
-  const res = await fetch(`http://127.0.0.1:${port}/api${subPath}?app=test`, {
+async function api(port, subPath, { method = 'GET', body, user = 'alice', token, origin } = {}) {
+  const bearer = token !== undefined ? token : user ? testToken(user) : null;
+  const sep = subPath.includes('?') ? '&' : '?';
+  const res = await fetch(`http://127.0.0.1:${port}/api${subPath}${sep}app=test`, {
     method,
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer tok-${user}`,
+      ...(bearer ? { Authorization: `Bearer ${bearer}` } : {}),
       ...(origin ? { Origin: origin } : {}),
     },
     body: body === undefined ? undefined : JSON.stringify(body),
@@ -88,8 +100,9 @@ async function api(port, subPath, { method = 'GET', body, user = 'local', origin
   return data;
 }
 
-function createSdkClient(port, { app = 'notes', user = null, rtcClass = null } = {}) {
+function createSdkClient(port, { app = 'notes', user = 'alice', token, rtcClass = null } = {}) {
   const sdkCode = fs.readFileSync(path.resolve(import.meta.dirname, 'sdk/everything.js'), 'utf8');
+  const bearer = token !== undefined ? token : user ? testToken(user) : null;
   const store = () => {
     const m = new Map();
     return {
@@ -98,7 +111,6 @@ function createSdkClient(port, { app = 'notes', user = null, rtcClass = null } =
       removeItem: (k) => m.delete(k),
     };
   };
-  const search = user ? `?user=${encodeURIComponent(user)}` : '';
   const sandbox = {
     fetch,
     WebSocket,
@@ -130,7 +142,7 @@ function createSdkClient(port, { app = 'notes', user = null, rtcClass = null } =
       hostname: `${app}.localhost`,
       origin: `http://127.0.0.1:${port}`,
       pathname: '/',
-      search,
+      search: '',
       assign(u) { this.href = u; },
     },
     __EVERYTHING_API_ORIGIN__: `http://127.0.0.1:${port}`,
@@ -140,12 +152,42 @@ function createSdkClient(port, { app = 'notes', user = null, rtcClass = null } =
   sandbox.globalThis = sandbox;
   const fn = new Function('globalThis', 'window', 'document', 'location', 'localStorage', 'sessionStorage', 'RTCPeerConnection', 'MediaStream', sdkCode);
   fn(sandbox, sandbox, sandbox.document, sandbox.location, sandbox.localStorage, sandbox.sessionStorage, sandbox.RTCPeerConnection, sandbox.MediaStream);
+  if (bearer) sandbox.everything.authToken = bearer;
   return sandbox;
+}
+
+/** Plain HTTP request for first-run tests where cookies matter more than the SDK. */
+async function rawRequest(port, requestPath, { method = 'GET', body, token, cookie } = {}) {
+  const headers = {};
+  if (body !== undefined) headers['Content-Type'] = 'application/json';
+  if (token) headers.Authorization = `Bearer ${token}`;
+  if (cookie) headers.Cookie = cookie;
+  const res = await fetch(`http://127.0.0.1:${port}${requestPath}`, {
+    method,
+    headers,
+    body: body === undefined ? undefined : JSON.stringify(body),
+    redirect: 'manual',
+  });
+  const text = await res.text();
+  let data = null;
+  try { data = JSON.parse(text); } catch { /* HTML or empty */ }
+  return { res, status: res.status, headers: res.headers, text, data };
 }
 
 test('Platform Conformance Suite (Section 4 + Security + Peer + Workers)', async (t) => {
   const tmpData = fs.mkdtempSync(path.join(os.tmpdir(), 'everything-local-test-'));
-  const srv = await createPlatformServer({ port: 0, dataDir: tmpData });
+  const srv = await createPlatformServer({
+    port: 0,
+    host: '127.0.0.1',
+    dataDir: tmpData,
+    seedUsers: Object.entries(TEST_USERS).map(([username, user]) => ({
+      username,
+      email: `${username}@home.local`,
+      password: user.password,
+      role: user.role,
+      token: testToken(username),
+    })),
+  });
   const port = srv.port;
 
   t.after(async () => {
@@ -153,43 +195,81 @@ test('Platform Conformance Suite (Section 4 + Security + Peer + Workers)', async
     fs.rmSync(tmpData, { recursive: true, force: true });
   });
 
-  await t.test('1. Security: Loopback binding, Host header (DNS rebinding guard), Origin check, and Hosted subdomain isolation', async () => {
+  await t.test('1. Security: loopback binding, LAN/Tailscale Host policy, strict Origin checks', async () => {
     assert.equal(srv.server.address().address, '127.0.0.1');
 
-    // DNS rebinding guard: invalid Host header on GET must return 403
-    const badHostStatus = await new Promise((resolve, reject) => {
-      const req = http.request({ host: '127.0.0.1', port, path: '/api/auth/whoami', method: 'GET', headers: { Host: 'attacker.example.com' } }, (res) => resolve(res.statusCode));
+    // The Host policy accepts this machine on a private network and nothing
+    // that could be a public DNS-rebinding name.
+    for (const host of [
+      'localhost:8443', '127.0.0.1:8443', '[::1]:8443',
+      '192.168.1.25:8443', '10.0.0.42', '172.20.10.2', '100.101.102.103:8443',
+      'docs.localhost:8443', 'home-server.local', 'attic-pc.tail1234.ts.net',
+      'fd7a:115c:a1e0::1234', '[fd7a:115c:a1e0::1234]:8443', 'fe80::1',
+    ]) {
+      assert.equal(isValidLocalHost(host, {}), true, `${host} is a private host`);
+    }
+    for (const host of ['attacker.example.com', 'mybox.example.com', '93.184.216.34', '1.1.1.1', '0.0.0.0', '']) {
+      assert.equal(isValidLocalHost(host, {}), false, `${host} is not a private host`);
+    }
+    assert.equal(isValidLocalHost('homelab.lan', { allowedHosts: new Set(['homelab.lan']) }), true);
+    assert.equal(isValidLocalHost('HOMELAB', { machineName: 'homelab' }), true);
+    assert.equal(isValidLocalHost('homelab.local', { machineName: 'homelab' }), true);
+
+    const policy = { allowedHosts: new Set(['media.lan']), machineName: 'homelab' };
+    assert.equal(isValidLocalOrigin('http://192.168.1.25:8443', '192.168.1.25:8443', policy), true);
+    assert.equal(isValidLocalOrigin('https://attic-pc.tail1234.ts.net', 'attic-pc.tail1234.ts.net', policy), true);
+    assert.equal(isValidLocalOrigin('http://192.168.1.25:8443', '192.168.1.25:8443', policy), true);
+    assert.equal(isValidLocalOrigin('http://notes.localhost:8443', '127.0.0.1:8443', policy), false, 'cross-origin app page');
+    assert.equal(isValidLocalOrigin('https://evil.example', '127.0.0.1:8443', policy), false);
+    assert.equal(isValidLocalOrigin('null', '127.0.0.1:8443', policy), false, 'opaque origin');
+
+    const statusForHost = (host) => new Promise((resolve, reject) => {
+      const req = http.request({ host: '127.0.0.1', port, path: '/api/auth/status', method: 'GET', headers: { Host: host } }, (res) => resolve(res.statusCode));
       req.on('error', reject);
       req.end();
     });
-    assert.equal(badHostStatus, 403);
 
-    // Valid *.localhost Host header succeeds
-    const goodHostStatus = await new Promise((resolve, reject) => {
-      const req = http.request({ host: '127.0.0.1', port, path: '/api/auth/whoami', method: 'GET', headers: { Host: `notes.localhost:${port}` } }, (res) => resolve(res.statusCode));
-      req.on('error', reject);
-      req.end();
-    });
-    assert.equal(goodHostStatus, 200);
+    // Public names are rejected at HTTP level too.
+    assert.equal(await statusForHost('attacker.example.com'), 403);
+    assert.equal(await statusForHost('93.184.216.34'), 403);
+    for (const host of ['192.168.1.25', '100.101.102.103', 'home-server.local', 'attic-pc.tail1234.ts.net', 'docs.localhost']) {
+      assert.equal(await statusForHost(`${host}:${port}`), 200, `${host} is served`);
+    }
 
-    // Cross-origin API call from external Origin must return 403
-    const badOriginRes = await fetch(`http://127.0.0.1:${port}/api/auth/signin`, {
-      method: 'POST',
-      headers: { Origin: 'https://evil.example', 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: 'local' }),
+    const sameOrigin = await fetch(`http://127.0.0.1:${port}/api/auth/status`, {
+      headers: { Origin: `http://127.0.0.1:${port}` },
     });
-    assert.equal(badOriginRes.status, 403);
+    assert.equal(sameOrigin.status, 200);
+    const crossOrigin = await fetch(`http://127.0.0.1:${port}/api/auth/status`, {
+      headers: { Origin: `http://notes.localhost:${port}` },
+    });
+    assert.equal(crossOrigin.status, 403);
+    const badOrigin = await fetch(`http://127.0.0.1:${port}/api/auth/status`, {
+      headers: { Origin: 'https://evil.example' },
+    });
+    assert.equal(badOrigin.status, 403);
   });
 
-  await t.test('2. everything.auth (signIn, signOut, isSignedIn, getUser, getProfilePicture, whoami)', async () => {
-    const client = createSdkClient(port, { app: 'chess' });
+  await t.test('2. everything.auth (password sign-in, sign-out, session identity + redirect for missing password)', async () => {
+    const client = createSdkClient(port, { app: 'chess', user: null });
     const { everything } = client;
 
+    assert.equal(await everything.auth.isSignedIn(), false);
+    assert.equal(await everything.auth.getUser(), null);
+    await assert.rejects(() => everything.auth.whoami(), (err) => err.status === 401);
+
+    await assert.rejects(
+      () => everything.auth.signIn({ username: 'carol', password: 'not-the-password' }),
+      (err) => err.status === 401 && err.code === 'invalid_credentials'
+    );
+
+    const signedIn = await everything.auth.signIn({ username: 'carol', password: TEST_USERS.carol.password });
+    assert.equal(signedIn.username, 'carol');
+    assert.equal(signedIn.role, 'member');
+    assert.equal(everything.authToken, signedIn.token);
     assert.equal(await everything.auth.isSignedIn(), true);
-    const u1 = await everything.auth.getUser();
-    assert.equal(u1.username, 'local');
-    const who = await everything.auth.whoami();
-    assert.equal(who.username, 'local');
+    assert.equal((await everything.auth.getUser()).username, 'carol');
+    assert.equal((await everything.auth.whoami()).username, 'carol');
 
     const pic = await everything.auth.getProfilePicture();
     assert.ok(pic.startsWith('data:image/svg+xml'));
@@ -197,12 +277,65 @@ test('Platform Conformance Suite (Section 4 + Security + Peer + Workers)', async
     await everything.auth.signOut();
     assert.equal(await everything.auth.isSignedIn(), false);
     assert.equal(await everything.auth.getUser(), null);
-    await assert.rejects(() => everything.auth.whoami(), (err) => err.status === 401);
+    assert.equal(everything.authToken, null);
 
-    const signedIn = await everything.auth.signIn({ username: 'alice' });
-    assert.equal(signedIn.username, 'alice');
-    assert.equal(await everything.auth.isSignedIn(), true);
-    assert.equal((await everything.auth.getUser()).username, 'alice');
+    // Without a password an app sends the browser to the sign-in page.
+    client.location.href = '';
+    void everything.auth.signIn({ username: 'carol' });
+    assert.ok(String(client.location.href).startsWith('/login?next='));
+  });
+
+  await t.test('2b. Account roles gate settings, server details and app pages', async () => {
+    const users = await api(port, '/auth/users');
+    const names = users.map((user) => user.username);
+    for (const name of ['alice', 'bob', 'carol']) assert.ok(names.includes(name), `${name} is listed`);
+    assert.ok(!names.includes('local'), 'the bundled worker account is not a person');
+
+    await assert.rejects(
+      () => api(port, '/auth/users', { user: 'bob' }),
+      (err) => err.status === 403 && err.code === 'admin_required'
+    );
+    await assert.rejects(() => api(port, '/ai/providers', { user: 'bob' }), (err) => err.status === 403);
+    await assert.rejects(() => api(port, '/server/info', { user: 'bob' }), (err) => err.status === 403);
+
+    const info = await api(port, '/server/info');
+    assert.equal(info.host, '127.0.0.1');
+    assert.equal(info.port, port);
+    assert.equal(info.secure, false);
+    assert.ok(info.urls.some((url) => url.includes('localhost')), 'loopback URL is advertised');
+    assert.ok(!info.urls.some((url) => url.includes('0.0.0.0')), 'the wildcard bind is not shown as a destination');
+    assert.equal(info.urls.length, 1, 'a loopback bind advertises only the loopback URL');
+
+    const adminCookie = `everything_auth_token=${encodeURIComponent(testToken('alice'))}`;
+    const memberCookie = `everything_auth_token=${encodeURIComponent(testToken('bob'))}`;
+
+    const settings = await fetch(`http://127.0.0.1:${port}/settings`, { headers: { Cookie: adminCookie } });
+    assert.equal(settings.status, 200);
+    const settingsHtml = await settings.text();
+    for (const section of ['People', 'Assistant', 'AI providers', 'Server access', 'Your account']) {
+      assert.ok(settingsHtml.includes(section), `the settings page includes ${section}`);
+    }
+
+    const memberSettings = await fetch(`http://127.0.0.1:${port}/settings`, { headers: { Cookie: memberCookie } });
+    assert.equal(memberSettings.status, 403);
+
+    const signedOutSettings = await fetch(`http://127.0.0.1:${port}/settings`, { redirect: 'manual' });
+    assert.equal(signedOutSettings.status, 302);
+    assert.match(signedOutSettings.headers.get('location'), /^\/login\?next=/);
+
+    const signedOutApp = await fetch(`http://127.0.0.1:${port}/app/notes/`, { redirect: 'manual' });
+    assert.equal(signedOutApp.status, 302);
+    assert.match(signedOutApp.headers.get('location'), /^\/login\?next=/);
+
+    const authedApp = await fetch(`http://127.0.0.1:${port}/app/notes/`, { headers: { Cookie: adminCookie } });
+    assert.equal(authedApp.status, 200);
+
+    const loginPage = await fetch(`http://127.0.0.1:${port}/login`);
+    assert.equal(loginPage.status, 200);
+    assert.ok((await loginPage.text()).includes('Sign in'));
+
+    const signedOutApi = await fetch(`http://127.0.0.1:${port}/api/auth/whoami`);
+    assert.equal(signedOutApi.status, 401);
   });
 
   await t.test('3. everything.fs (write, read, delete, readdir, stat, rename, mkdir, getReadURL, revokeReadURL, space, share, unshare, listShared, getShares)', async () => {
@@ -429,14 +562,14 @@ test('Platform Conformance Suite (Section 4 + Security + Peer + Workers)', async
     assert.equal(html.status, 200);
     assert.equal(html.body, '<h1>Published Local Site</h1>');
 
-    // Passwordless signIn from hosted-site subdomain is blocked (403)
+    // Sign-in from a hosted-site subdomain is blocked (403), even with valid credentials.
     const hostedSignIn = await fetch(`http://127.0.0.1:${port}/api/auth/signin`, {
       method: 'POST',
       headers: {
         Origin: `http://my-wiki-site.localhost:${port}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ username: 'local' }),
+      body: JSON.stringify({ username: 'carol', password: TEST_USERS.carol.password }),
     });
     assert.equal(hostedSignIn.status, 403);
 
@@ -473,7 +606,19 @@ test('Platform Conformance Suite (Section 4 + Security + Peer + Workers)', async
 
   await t.test('9. everything.ai (provider config, chat + streaming, image/speech/OCR, graceful degradation)', async () => {
     // One mock that speaks all three wire protocols the adapters support.
-    const seen = { auth: [], paths: [] };
+    const seen = { auth: [], paths: [], lastTools: null };
+    const testTools = [{
+      type: 'function',
+      function: {
+        name: 'read_page',
+        description: 'Read the current page.',
+        parameters: { type: 'object', properties: { target: { type: 'string', description: 'Where to look.' } } },
+      },
+    }];
+    const messyTools = [
+      ...testTools,
+      { type: 'function', function: { name: 'not a valid name!', description: 'dropped', parameters: { type: 'object' } } },
+    ];
     const mockAi = http.createServer(async (req, res) => {
       seen.paths.push(req.url);
       seen.auth.push(req.headers.authorization || req.headers['x-api-key'] || '');
@@ -490,18 +635,51 @@ test('Platform Conformance Suite (Section 4 + Security + Peer + Workers)', async
 
       if (req.url === '/v1/chat/completions') {
         const parsed = JSON.parse(body);
+        const messages = Array.isArray(parsed.messages) ? parsed.messages : [];
+        const last = messages[messages.length - 1] || {};
+        const lastText = typeof last.content === 'string' ? last.content : '';
+        const hasTools = Array.isArray(parsed.tools) && parsed.tools.length > 0;
+        const toolMessage = [...messages].reverse().find((m) => m.role === 'tool');
+        if (hasTools) seen.lastTools = parsed.tools;
+
         if (parsed.stream) {
           res.writeHead(200, { 'Content-Type': 'text/event-stream' });
-          res.write('data: ' + JSON.stringify({ choices: [{ delta: { content: 'Hello ' } }] }) + '\n\n');
-          res.write('data: ' + JSON.stringify({ choices: [{ delta: { content: 'world' } }] }) + '\n\n');
+          if (hasTools && /stream tool/i.test(lastText)) {
+            res.write('data: ' + JSON.stringify({ choices: [{ delta: { tool_calls: [{ index: 0, id: 'call_stream_1', type: 'function', function: { name: 'read_page', arguments: '' } }] } }] }) + '\n\n');
+            res.write('data: ' + JSON.stringify({ choices: [{ delta: { tool_calls: [{ index: 0, function: { arguments: '{"target":"main"}' } }] } }] }) + '\n\n');
+            res.write('data: ' + JSON.stringify({ choices: [{ delta: {}, finish_reason: 'tool_calls' }], usage: { prompt_tokens: 9, completion_tokens: 4, total_tokens: 13 } }) + '\n\n');
+          } else {
+            res.write('data: ' + JSON.stringify({ choices: [{ delta: { content: 'Hello ' } }] }) + '\n\n');
+            res.write('data: ' + JSON.stringify({ choices: [{ delta: { content: 'world' } }] }) + '\n\n');
+          }
           res.write('data: [DONE]\n\n');
           return res.end();
         }
+
         // Vision requests carry image parts; echo back what we saw.
-        const parts = parsed.messages?.[0]?.content;
+        const parts = messages[0]?.content;
         if (Array.isArray(parts)) {
           const hasImage = parts.some((p) => p.type === 'image_url' && String(p.image_url.url).startsWith('data:image/'));
           return send(200, { choices: [{ message: { role: 'assistant', content: hasImage ? 'OCR TEXT' : 'no image' } }] });
+        }
+        if (hasTools && toolMessage) {
+          return send(200, {
+            choices: [{ message: { role: 'assistant', content: 'Tool result: ' + toolMessage.content }, finish_reason: 'stop' }],
+            usage: { prompt_tokens: 12, completion_tokens: 4, total_tokens: 16 },
+          });
+        }
+        if (hasTools && /use the tool/i.test(lastText)) {
+          return send(200, {
+            choices: [{
+              message: {
+                role: 'assistant',
+                content: null,
+                tool_calls: [{ id: 'call_tool_1', type: 'function', function: { name: 'read_page', arguments: '{"target":"main"}' } }],
+              },
+              finish_reason: 'tool_calls',
+            }],
+            usage: { prompt_tokens: 7, completion_tokens: 3, total_tokens: 10 },
+          });
         }
         return send(200, { choices: [{ message: { role: 'assistant', content: 'Remote reply' }, finish_reason: 'stop' }] });
       }
@@ -517,21 +695,79 @@ test('Platform Conformance Suite (Section 4 + Security + Peer + Workers)', async
       }
       if (req.url === '/v1/messages') {
         const parsed = JSON.parse(body);
+        const messages = Array.isArray(parsed.messages) ? parsed.messages : [];
+        const hasTools = Array.isArray(parsed.tools) && parsed.tools.length > 0;
+        const blocks = messages.flatMap((m) => (Array.isArray(m.content) ? m.content : []));
+        const toolResult = blocks.find((b) => b?.type === 'tool_result');
+        const last = messages[messages.length - 1] || {};
+        const lastText = Array.isArray(last.content)
+          ? last.content.filter((b) => b?.type === 'text').map((b) => b.text).join(' ')
+          : String(last.content || '');
+        if (hasTools) seen.lastTools = parsed.tools;
+
         if (parsed.stream) {
           res.writeHead(200, { 'Content-Type': 'text/event-stream' });
-          res.write('data: ' + JSON.stringify({ type: 'content_block_delta', delta: { type: 'text_delta', text: 'Anthropic ' } }) + '\n\n');
-          res.write('data: ' + JSON.stringify({ type: 'content_block_delta', delta: { type: 'text_delta', text: 'reply' } }) + '\n\n');
+          if (hasTools && /stream tool/i.test(lastText)) {
+            res.write('data: ' + JSON.stringify({ type: 'message_start', message: { usage: { input_tokens: 11, output_tokens: 0 } } }) + '\n\n');
+            res.write('data: ' + JSON.stringify({ type: 'content_block_start', index: 0, content_block: { type: 'tool_use', id: 'toolu_stream_1', name: 'read_page', input: {} } }) + '\n\n');
+            res.write('data: ' + JSON.stringify({ type: 'content_block_delta', index: 0, delta: { type: 'input_json_delta', partial_json: '{"target":"main"}' } }) + '\n\n');
+            res.write('data: ' + JSON.stringify({ type: 'content_block_stop', index: 0 }) + '\n\n');
+            res.write('data: ' + JSON.stringify({ type: 'message_delta', delta: { stop_reason: 'tool_use' }, usage: { output_tokens: 5 } }) + '\n\n');
+          } else {
+            res.write('data: ' + JSON.stringify({ type: 'message_start', message: { usage: { input_tokens: 3, output_tokens: 0 } } }) + '\n\n');
+            res.write('data: ' + JSON.stringify({ type: 'content_block_start', index: 0, content_block: { type: 'text', text: '' } }) + '\n\n');
+            res.write('data: ' + JSON.stringify({ type: 'content_block_delta', index: 0, delta: { type: 'text_delta', text: 'Anthropic ' } }) + '\n\n');
+            res.write('data: ' + JSON.stringify({ type: 'content_block_delta', index: 0, delta: { type: 'text_delta', text: 'reply' } }) + '\n\n');
+            res.write('data: ' + JSON.stringify({ type: 'message_delta', delta: { stop_reason: 'end_turn' }, usage: { output_tokens: 2 } }) + '\n\n');
+          }
           return res.end();
+        }
+
+        if (hasTools && toolResult) {
+          return send(200, {
+            content: [{ type: 'text', text: 'Anthropic tool result: ' + toolResult.content }],
+            stop_reason: 'end_turn',
+            usage: { input_tokens: 9, output_tokens: 4 },
+          });
+        }
+        if (hasTools && /use the tool/i.test(lastText)) {
+          return send(200, {
+            content: [{ type: 'tool_use', id: 'toolu_1', name: 'read_page', input: { target: 'main' } }],
+            stop_reason: 'tool_use',
+            usage: { input_tokens: 5, output_tokens: 2 },
+          });
         }
         return send(200, { content: [{ type: 'text', text: 'Anthropic reply' }], stop_reason: 'end_turn' });
       }
       if (req.url === '/api/chat') {
         const parsed = JSON.parse(body);
+        const messages = Array.isArray(parsed.messages) ? parsed.messages : [];
+        const hasTools = Array.isArray(parsed.tools) && parsed.tools.length > 0;
+        const toolMessage = [...messages].reverse().find((m) => m.role === 'tool');
+        const last = messages[messages.length - 1] || {};
+        const lastText = typeof last.content === 'string' ? last.content : '';
+        if (hasTools) seen.lastTools = parsed.tools;
+
         if (parsed.stream) {
           res.writeHead(200, { 'Content-Type': 'application/x-ndjson' });
-          res.write(JSON.stringify({ message: { content: 'Ollama ' } }) + '\n');
-          res.write(JSON.stringify({ message: { content: 'native' } }) + '\n');
+          if (hasTools && /stream tool/i.test(lastText)) {
+            res.write(JSON.stringify({ message: { role: 'assistant', content: '', tool_calls: [{ function: { name: 'read_page', arguments: { target: 'main' } } }] } }) + '\n');
+            res.write(JSON.stringify({ done: true, done_reason: 'stop', prompt_eval_count: 6, eval_count: 3 }) + '\n');
+          } else {
+            res.write(JSON.stringify({ message: { content: 'Ollama ' } }) + '\n');
+            res.write(JSON.stringify({ message: { content: 'native' }, done: true }) + '\n');
+          }
           return res.end();
+        }
+
+        if (hasTools && toolMessage) {
+          return send(200, { message: { role: 'assistant', content: 'Ollama tool result: ' + toolMessage.content }, done: true, prompt_eval_count: 4, eval_count: 2 });
+        }
+        if (hasTools && /use the tool/i.test(lastText)) {
+          return send(200, {
+            message: { role: 'assistant', content: '', tool_calls: [{ function: { name: 'read_page', arguments: { target: 'main' } } }] },
+            done: true,
+          });
         }
         return send(200, { message: { role: 'assistant', content: 'Ollama reply' } });
       }
@@ -558,6 +794,29 @@ test('Platform Conformance Suite (Section 4 + Security + Peer + Workers)', async
     const localModels = await everything.ai.listModels();
     assert.equal(localModels[0].id, 'local-llama');
     assert.equal(String(await everything.ai.chat('Say hi')), 'Ollama reply');
+
+    // Ollama accepts OpenAI-shaped tool schemas and returns OpenAI-shaped tool calls.
+    const ollamaTool = await everything.ai.chat('Use the tool', { tools: messyTools });
+    assert.equal(ollamaTool.message.content, null);
+    assert.equal(seen.lastTools.length, 1, 'a malformed tool schema is dropped');
+    const ollamaCall = ollamaTool.message.tool_calls[0];
+    assert.equal(ollamaCall.function.name, 'read_page');
+    assert.equal(ollamaCall.function.arguments, '{"target":"main"}');
+    assert.ok(ollamaCall.id.startsWith('call_'), 'a missing provider id gets one');
+    const ollamaFollow = await everything.ai.chat([
+      { role: 'user', content: 'Use the tool' },
+      { role: 'assistant', content: null, tool_calls: [ollamaCall] },
+      { role: 'tool', tool_call_id: ollamaCall.id, name: 'read_page', content: 'Page body' },
+    ], { tools: testTools });
+    assert.equal(String(ollamaFollow), 'Ollama tool result: Page body');
+
+    const ollamaToolStream = await everything.ai.chat('Stream tool', { stream: true, tools: testTools });
+    const ollamaEvents = [];
+    for await (const event of ollamaToolStream) ollamaEvents.push(event);
+    const ollamaUse = ollamaEvents.find((event) => event.type === 'tool_use');
+    assert.equal(ollamaUse.name, 'read_page');
+    assert.deepEqual(ollamaUse.input, { target: 'main' });
+    assert.equal(ollamaEvents.find((event) => event.type === 'done').message.tool_calls[0].function.name, 'read_page');
 
     // App origins cannot rewrite provider records or keys.
     await assert.rejects(
@@ -589,6 +848,31 @@ test('Platform Conformance Suite (Section 4 + Security + Peer + Workers)', async
     }
     assert.equal(collected, 'Hello world');
 
+    // OpenAI tool calls: non-streaming, a tool-result follow-up, and streaming deltas.
+    const openAiTool = await everything.ai.chat('Use the tool', { tools: messyTools });
+    assert.equal(seen.lastTools.length, 1, 'the OpenAI request only receives valid tool schemas');
+    assert.equal(openAiTool.message.content, null);
+    const openAiCall = openAiTool.message.tool_calls[0];
+    assert.equal(openAiCall.id, 'call_tool_1');
+    assert.equal(openAiCall.function.name, 'read_page');
+    assert.equal(openAiCall.function.arguments, '{"target":"main"}');
+    assert.equal(openAiTool.finish_reason, 'tool_calls');
+    const openAiFollow = await everything.ai.chat([
+      { role: 'user', content: 'Use the tool' },
+      { role: 'assistant', content: null, tool_calls: [openAiCall] },
+      { role: 'tool', tool_call_id: openAiCall.id, name: 'read_page', content: 'Page body' },
+    ], { tools: testTools });
+    assert.equal(String(openAiFollow), 'Tool result: Page body');
+
+    const openAiToolStream = await everything.ai.chat('Stream tool', { stream: true, tools: testTools });
+    const openAiEvents = [];
+    for await (const event of openAiToolStream) openAiEvents.push(event);
+    const openAiUse = openAiEvents.find((event) => event.type === 'tool_use');
+    assert.equal(openAiUse.id, 'call_stream_1');
+    assert.equal(openAiUse.name, 'read_page');
+    assert.deepEqual(openAiUse.input, { target: 'main' });
+    assert.equal(openAiEvents.find((event) => event.type === 'done').message.tool_calls[0].function.arguments, '{"target":"main"}');
+
     const img = await everything.ai.txt2img('a cat');
     assert.ok(String(img.src).startsWith('data:image/png;base64,'), 'txt2img resolves an image with a data URL src');
 
@@ -609,6 +893,31 @@ test('Platform Conformance Suite (Section 4 + Security + Peer + Workers)', async
     await api(port, '/ai/routes', { method: 'POST', body: { routes: { chat: anthropic.id } } });
     assert.equal(String(await everything.ai.chat('hi')), 'Anthropic reply');
     assert.ok(seen.auth.includes('ak-test'), 'the Anthropic key goes in x-api-key');
+
+    // Anthropic tool_use blocks and tool_result turns round-trip.
+    const anthropicTool = await everything.ai.chat('Use the tool', { tools: messyTools });
+    assert.equal(seen.lastTools.length, 1, 'Anthropic receives only valid tools');
+    assert.equal(anthropicTool.message.content, null);
+    const anthropicCall = anthropicTool.message.tool_calls[0];
+    assert.equal(anthropicCall.id, 'toolu_1');
+    assert.equal(anthropicCall.function.name, 'read_page');
+    assert.equal(anthropicCall.function.arguments, '{"target":"main"}');
+    assert.equal(anthropicTool.finish_reason, 'tool_calls');
+    const anthropicFollow = await everything.ai.chat([
+      { role: 'user', content: 'Use the tool' },
+      { role: 'assistant', content: null, tool_calls: [anthropicCall] },
+      { role: 'tool', tool_call_id: anthropicCall.id, name: 'read_page', content: 'Page body' },
+    ], { tools: testTools });
+    assert.equal(String(anthropicFollow), 'Anthropic tool result: Page body');
+
+    const anthropicToolStream = await everything.ai.chat('Stream tool', { stream: true, tools: testTools });
+    const anthropicEvents = [];
+    for await (const event of anthropicToolStream) anthropicEvents.push(event);
+    const anthropicUse = anthropicEvents.find((event) => event.type === 'tool_use');
+    assert.equal(anthropicUse.id, 'toolu_stream_1');
+    assert.equal(anthropicUse.name, 'read_page');
+    assert.deepEqual(anthropicUse.input, { target: 'main' });
+    assert.equal(anthropicEvents.find((event) => event.type === 'done').finish_reason, 'tool_calls');
 
     // An unreachable routed provider falls back to a healthy one, then surfaces
     // `local_ai_unavailable` once no healthy provider is left.
@@ -632,6 +941,77 @@ test('Platform Conformance Suite (Section 4 + Security + Peer + Workers)', async
     for (const method of ['chat', 'txt2img', 'txt2vid', 'speech2txt', 'txt2speech', 'img2txt']) {
       await assert.rejects(() => everything.ai[method]('test'), (err) => err.code === 'local_ai_unavailable');
     }
+  });
+
+  await t.test('9b. Assistant config (admin-only writes) and SDK tool registration', async () => {
+    const config = await api(port, '/ai/assistant?app=documents', { user: 'bob' });
+    assert.equal(config.enabled, true);
+    assert.equal(config.app_enabled, true);
+    assert.equal(config.configured, false, 'no provider is configured');
+    assert.deepEqual(config.apps, ['documents', 'photo-studio', 'video-studio', 'whiteboard']);
+    assert.deepEqual(config.native_apps, ['3d', 'parametric', 'building-design', 'spreadsheet', 'presentation']);
+    assert.equal((await api(port, '/ai/assistant?app=notes', { user: 'bob' })).app_enabled, false);
+    await assert.rejects(
+      () => api(port, '/ai/assistant?app=notes', { user: null }),
+      (err) => err.status === 401
+    );
+
+    await assert.rejects(
+      () => api(port, '/ai/assistant', { method: 'POST', user: 'bob', body: { enabled: false } }),
+      (err) => err.status === 403 && err.code === 'admin_required'
+    );
+
+    const saved = await api(port, '/ai/assistant', {
+      method: 'POST',
+      body: { enabled: false, apps: ['notes', '3d', 'not-an-app'], model: '  tiny-model  ', confirm_destructive: false },
+    });
+    assert.equal(saved.enabled, false);
+    assert.deepEqual(saved.apps, ['notes'], 'native-assistant apps cannot be added to the shared list');
+    assert.equal(saved.model, 'tiny-model');
+    assert.equal(saved.confirm_destructive, false);
+    assert.ok(saved.native_apps.includes('3d'));
+    assert.equal((await api(port, '/ai/assistant?app=notes', { user: 'bob' })).app_enabled, true);
+
+    const restored = await api(port, '/ai/assistant', {
+      method: 'POST',
+      body: { enabled: true, apps: ['documents', 'photo-studio', 'video-studio', 'whiteboard'], model: '', confirm_destructive: true },
+    });
+    assert.equal(restored.enabled, true);
+    assert.equal(restored.confirm_destructive, true);
+
+    const sdk = createSdkClient(port, { app: 'notes', user: 'bob' });
+    const assistant = sdk.everything.assistant;
+    assert.deepEqual(assistant.nativeApps, ['3d', 'parametric', 'building-design', 'spreadsheet', 'presentation']);
+    assert.equal(typeof assistant.registerTool, 'function');
+    let handlerCalls = 0;
+    const removeFirst = assistant.registerTool({
+      function: {
+        name: 'notes_create',
+        description: 'Create a note.',
+        parameters: { type: 'object', properties: { title: { type: 'string' } } },
+      },
+      handler: () => { handlerCalls += 1; return { ok: true }; },
+    });
+    assert.equal(assistant._tools.length, 1);
+    assert.equal(assistant._tools[0].function.name, 'notes_create');
+
+    const removeSecond = assistant.registerTool({
+      function: { name: 'notes_create', description: 'Replacement.' },
+      handler: () => 'replaced',
+    });
+    assert.equal(assistant._tools.length, 1, 'registering the same name replaces it');
+    assert.equal(assistant._tools[0].function.description, 'Replacement.');
+    removeSecond();
+    assert.equal(assistant._tools.length, 0);
+    removeFirst();
+    assert.equal(assistant._tools.length, 0);
+
+    assert.throws(
+      () => assistant.registerTool({ function: { name: 'not a valid name!' }, handler: () => {} }),
+      /letters, numbers, underscores or dashes/
+    );
+    assert.throws(() => assistant.registerTool({ function: { name: 'ok_name' } }), /needs a handler/);
+    assert.equal(handlerCalls, 0);
   });
 
   await t.test('10. everything.peer (serve, connect, ensureTurnRelays, createGuestGrant + RTCPeerConnection SDP/ICE + media tracks)', async () => {
@@ -700,8 +1080,13 @@ test('Platform Conformance Suite (Section 4 + Security + Peer + Workers)', async
       async () => everything.net.fetch('https://example.com/api'),
       (err) => err.code === 'external_not_allowed'
     );
-    const localRes = await everything.net.fetch(`http://127.0.0.1:${port}/api/auth/whoami`);
+    const localRes = await everything.net.fetch(`http://127.0.0.1:${port}/api/auth/whoami`, {
+      headers: { Authorization: `Bearer ${testToken('alice')}` },
+    });
     assert.equal(localRes.status, 200);
+    assert.equal((await localRes.json()).username, 'alice');
+    const anonymousRes = await everything.net.fetch(`http://127.0.0.1:${port}/api/auth/whoami`);
+    assert.equal(anonymousRes.status, 401, 'the SDK never injects a default identity into net.fetch');
 
     // Test local TCP echo via everything.net.Socket
     const echoServer = net.createServer((sock) => sock.pipe(sock));
@@ -719,5 +1104,241 @@ test('Platform Conformance Suite (Section 4 + Security + Peer + Workers)', async
     assert.equal(echoed, 'ping-local');
     await new Promise((r) => echoServer.close(r));
   });
+});
+
+test('First run: setup, invites, admin protection and password recovery', async (t) => {
+  const tmpData = fs.mkdtempSync(path.join(os.tmpdir(), 'everything-local-setup-'));
+  const srv = await createPlatformServer({ port: 0, host: '127.0.0.1', dataDir: tmpData });
+  const port = srv.port;
+  t.after(async () => {
+    await srv.close();
+    fs.rmSync(tmpData, { recursive: true, force: true });
+  });
+
+  const fresh = await rawRequest(port, '/api/auth/status');
+  assert.equal(fresh.status, 200);
+  assert.equal(fresh.data.setup_required, true);
+  assert.equal(fresh.data.signed_in, false);
+
+  assert.equal((await rawRequest(port, '/api/apps')).status, 401);
+  assert.equal((await rawRequest(port, '/api/ai/providers')).status, 401);
+
+  const signedOutSettings = await rawRequest(port, '/settings');
+  assert.equal(signedOutSettings.status, 302);
+  assert.match(signedOutSettings.headers.get('location'), /^\/login\?next=/);
+  const signedOutApp = await rawRequest(port, '/app/notes/');
+  assert.equal(signedOutApp.status, 302);
+  assert.match(signedOutApp.headers.get('location'), /^\/login\?next=/);
+  const login = await rawRequest(port, '/login');
+  assert.equal(login.status, 200);
+  assert.ok(login.text.includes('Create the administrator'));
+
+  const weak = await rawRequest(port, '/api/auth/setup', {
+    method: 'POST',
+    body: { username: 'admin', password: 'short' },
+  });
+  assert.equal(weak.status, 400);
+  assert.equal(weak.data.code, 'weak_password');
+  assert.equal((await rawRequest(port, '/api/auth/status')).data.setup_required, true);
+
+  const setup = await rawRequest(port, '/api/auth/setup', {
+    method: 'POST',
+    body: { username: 'admin', email: 'admin@home.local', password: 'admin-password' },
+  });
+  assert.equal(setup.status, 200);
+  assert.ok(setup.data.token);
+  assert.equal(setup.data.user.role, 'admin');
+  const adminToken = setup.data.token;
+  const setCookie = setup.headers.get('set-cookie') || '';
+  assert.match(setCookie, /everything_auth_token=/);
+  assert.match(setCookie, /HttpOnly/);
+  assert.match(setCookie, /SameSite=Lax/);
+  const adminCookie = `everything_auth_token=${encodeURIComponent(adminToken)}`;
+
+  const status = await rawRequest(port, '/api/auth/status', { token: adminToken });
+  assert.equal(status.data.setup_required, false);
+  assert.equal(status.data.signed_in, true);
+  assert.equal(status.data.admin, true);
+  assert.equal(status.data.user.username, 'admin');
+
+  const secondSetup = await rawRequest(port, '/api/auth/setup', {
+    method: 'POST',
+    body: { username: 'intruder', password: 'intruder-password' },
+  });
+  assert.equal(secondSetup.status, 403);
+  assert.equal(secondSetup.data.code, 'setup_complete');
+
+  const invite = await rawRequest(port, '/api/auth/invites', {
+    method: 'POST',
+    token: adminToken,
+    body: { username: 'friend', email: 'friend@home.local', role: 'member' },
+  });
+  assert.equal(invite.status, 200);
+  assert.equal(invite.data.username, 'friend');
+  assert.ok(invite.data.url.includes('/join?token='));
+  assert.equal(invite.data.role, 'member');
+  const inviteToken = invite.data.token;
+
+  const invites = await rawRequest(port, '/api/auth/invites', { token: adminToken });
+  assert.equal(invites.status, 200);
+  assert.equal(invites.data.length, 1);
+
+  const peek = await rawRequest(port, `/api/auth/invite?token=${encodeURIComponent(inviteToken)}`);
+  assert.equal(peek.status, 200);
+  assert.equal(peek.data.username, 'friend');
+
+  const accepted = await rawRequest(port, '/api/auth/invite/accept', {
+    method: 'POST',
+    body: { token: inviteToken, password: 'friend-password' },
+  });
+  assert.equal(accepted.status, 200);
+  assert.equal(accepted.data.user.username, 'friend');
+  assert.equal(accepted.data.user.role, 'member');
+  const friendToken = accepted.data.token;
+  const friendUuid = accepted.data.user.uuid;
+  const friendCookie = `everything_auth_token=${encodeURIComponent(friendToken)}`;
+
+  const reused = await rawRequest(port, '/api/auth/invite/accept', {
+    method: 'POST',
+    body: { token: inviteToken, password: 'another-password' },
+  });
+  assert.equal(reused.status, 404);
+  assert.equal(reused.data.code, 'invite_invalid');
+
+  for (const path of ['/api/auth/users', '/api/ai/providers', '/api/ai/routes', '/api/server/info']) {
+    const denied = await rawRequest(port, path, { token: friendToken });
+    assert.equal(denied.status, 403, `member is denied ${path}`);
+    assert.equal(denied.data.code, 'admin_required');
+  }
+  const memberInvite = await rawRequest(port, '/api/auth/invites', {
+    method: 'POST',
+    token: friendToken,
+    body: { username: 'sneaky' },
+  });
+  assert.equal(memberInvite.status, 403);
+  assert.equal((await rawRequest(port, '/settings', { cookie: friendCookie })).status, 403);
+
+  const memberApps = await rawRequest(port, '/api/apps', { token: friendToken });
+  assert.equal(memberApps.status, 200);
+  assert.ok(memberApps.data.some((app) => app.name === 'notes'));
+
+  const memberPage = await rawRequest(port, '/app/notes/', { cookie: friendCookie });
+  assert.equal(memberPage.status, 200);
+  const adminSettings = await rawRequest(port, '/settings', { cookie: adminCookie });
+  assert.equal(adminSettings.status, 200);
+  assert.ok(adminSettings.text.includes('People'));
+  assert.ok(adminSettings.text.includes('Assistant'));
+
+  const people = await rawRequest(port, '/api/auth/users', { token: adminToken });
+  assert.equal(people.status, 200);
+  const names = people.data.map((user) => user.username);
+  assert.ok(names.includes('admin'));
+  assert.ok(names.includes('friend'));
+  assert.ok(!names.includes('local'), 'the internal worker account cannot sign in and is not listed');
+
+  const selfDisable = await rawRequest(port, '/api/auth/users/disable', {
+    method: 'POST',
+    token: adminToken,
+    body: { uuid: people.data.find((user) => user.username === 'admin').uuid, disabled: true },
+  });
+  assert.equal(selfDisable.status, 400);
+  assert.equal(selfDisable.data.code, 'invalid_request');
+
+  // An administrator can reset a forgotten password; every old session dies.
+  const reset = await rawRequest(port, '/api/auth/users/password', {
+    method: 'POST',
+    token: adminToken,
+    body: { uuid: friendUuid, new_password: 'friend-password-2' },
+  });
+  assert.equal(reset.status, 200);
+  assert.equal((await rawRequest(port, '/api/auth/whoami', { token: friendToken })).status, 401);
+
+  const oldPassword = await rawRequest(port, '/api/auth/signin', {
+    method: 'POST',
+    body: { username: 'friend', password: 'friend-password' },
+  });
+  assert.equal(oldPassword.status, 401);
+  assert.equal(oldPassword.data.code, 'invalid_credentials');
+
+  const newPassword = await rawRequest(port, '/api/auth/signin', {
+    method: 'POST',
+    body: { username: 'friend', password: 'friend-password-2' },
+  });
+  assert.equal(newPassword.status, 200);
+  assert.equal(newPassword.data.user.username, 'friend');
+  const friendToken2 = newPassword.data.token;
+
+  // Own password change keeps this session but invalidates the other ones.
+  const changed = await rawRequest(port, '/api/auth/password', {
+    method: 'POST',
+    token: adminToken,
+    body: { current_password: 'admin-password', new_password: 'admin-password-2' },
+  });
+  assert.equal(changed.status, 200);
+  assert.equal((await rawRequest(port, '/api/auth/whoami', { token: adminToken })).status, 200);
+  assert.equal((await rawRequest(port, '/api/auth/signin', {
+    method: 'POST',
+    body: { username: 'admin', password: 'admin-password' },
+  })).status, 401);
+  assert.equal((await rawRequest(port, '/api/auth/signin', {
+    method: 'POST',
+    body: { username: 'admin', password: 'admin-password-2' },
+  })).status, 200);
+
+  // Disabling an account ends its sessions and blocks future sign-ins.
+  const disable = await rawRequest(port, '/api/auth/users/disable', {
+    method: 'POST',
+    token: adminToken,
+    body: { uuid: friendUuid, disabled: true },
+  });
+  assert.equal(disable.status, 200);
+  assert.equal(disable.data.disabled, true);
+  assert.equal((await rawRequest(port, '/api/auth/whoami', { token: friendToken2 })).status, 401);
+  assert.equal((await rawRequest(port, '/api/auth/signin', {
+    method: 'POST',
+    body: { username: 'friend', password: 'friend-password-2' },
+  })).status, 401);
+
+  const signedOut = await rawRequest(port, '/api/auth/signout', { method: 'POST', token: adminToken });
+  assert.equal(signedOut.status, 200);
+  assert.match(signedOut.headers.get('set-cookie') || '', /Max-Age=0/);
+  assert.equal((await rawRequest(port, '/api/auth/whoami', { token: adminToken })).status, 401);
+});
+
+test('Legacy passwordless accounts migrate without exposing the worker user', () => {
+  const tmpData = fs.mkdtempSync(path.join(os.tmpdir(), 'everything-local-legacy-'));
+  const db = new DatabaseSync(path.join(tmpData, 'everything.sqlite'));
+  try {
+    // The shape of the pre-accounts database: people exist, but there is no
+    // password, role or session expiry yet.
+    db.exec(`
+      CREATE TABLE users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        uuid TEXT NOT NULL UNIQUE,
+        username TEXT NOT NULL UNIQUE,
+        email TEXT NOT NULL,
+        avatar_svg TEXT NOT NULL,
+        created_at INTEGER NOT NULL
+      );
+    `);
+    const insert = db.prepare('INSERT INTO users (uuid, username, email, avatar_svg, created_at) VALUES (?, ?, ?, ?, ?)');
+    insert.run('legacy-local', 'local', 'local@local.localhost', '<svg/>', Date.now());
+    insert.run('legacy-alice', 'alice', 'alice@local.localhost', '<svg/>', Date.now());
+
+    initAuth(db);
+
+    assert.deepEqual(listUsers(db).map((user) => user.username), ['alice'], 'the internal worker account is not a person');
+    const worker = db.prepare("SELECT role, disabled FROM users WHERE username = 'local'").get();
+    assert.equal(worker.role, 'system');
+    assert.equal(worker.disabled, 1);
+    assert.throws(
+      () => createUser(db, { username: 'local', password: 'local-password' }),
+      (err) => err.status === 400 && err.code === 'invalid_username'
+    );
+    assert.ok(db.prepare("SELECT id FROM users WHERE username = 'alice'").get(), 'legacy people keep their row for password recovery');
+  } finally {
+    db.close();
+    fs.rmSync(tmpData, { recursive: true, force: true });
+  }
 });
 

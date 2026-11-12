@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="color-scheme" content="light dark" />
-  <title>AI settings · Everything Local</title>
+  <title>Settings · Everything Local</title>
   <style>
     :root {
       --bg: #f6f7f9;
@@ -156,11 +156,74 @@
     }
     select:focus, input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent); }
     .routes-actions { display: flex; justify-content: end; margin-top: 14px; }
+    .section-nav { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 22px; }
+    .section-nav a {
+      padding: 7px 12px; border: 1px solid var(--line); border-radius: 999px;
+      background: var(--surface); color: var(--muted); font-size: 13px; font-weight: 650;
+    }
+    .section-nav a:hover { color: var(--text); border-color: color-mix(in srgb, var(--accent) 35%, var(--line)); text-decoration: none; }
+    .people { display: grid; gap: 10px; }
+    .person {
+      display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 13px; align-items: center;
+      padding: 13px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface);
+    }
+    .person.disabled { opacity: .62; }
+    .person-name { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; margin: 0; font-size: 15px; letter-spacing: -.01em; }
+    .person-meta { margin: 3px 0 0; color: var(--muted); font-size: 12.5px; overflow-wrap: anywhere; }
+    .person-actions { display: flex; flex-wrap: wrap; gap: 6px; justify-content: end; }
+    .role-chip { font-size: 10.5px; text-transform: uppercase; letter-spacing: .05em; }
+    .invite-list { display: grid; gap: 8px; margin-top: 12px; }
+    .invite-row {
+      display: flex; align-items: center; gap: 9px; padding: 9px 11px;
+      border: 1px solid var(--line); border-radius: 10px; background: var(--surface-2); font-size: 12.5px;
+    }
+    .invite-row code { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11.5px; }
+    .invite-row .who { font-weight: 700; white-space: nowrap; }
+    .apps-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px;
+      max-height: 330px; overflow: auto; padding: 2px;
+    }
+    .app-check {
+      display: flex; align-items: center; gap: 9px; padding: 9px 11px;
+      border: 1px solid var(--line); border-radius: 9px; background: var(--surface-2); font-size: 13px; font-weight: 600;
+    }
+    .app-check input { width: 16px; height: 16px; accent-color: var(--accent); flex: none; }
+    .app-check.disabled { opacity: .55; }
+    .app-check input:disabled { cursor: not-allowed; }
+    .app-check span small { display: block; color: var(--muted); font-size: 10.5px; font-weight: 500; }
+    .settings-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; justify-content: end; margin-top: 14px; }
+    .settings-actions .spacer { flex: 1; }
+    .pw-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    .server-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+    .server-card {
+      display: grid; gap: 4px; padding: 13px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-2);
+    }
+    .server-card .label { color: var(--muted); font-size: 11px; font-weight: 750; letter-spacing: .08em; text-transform: uppercase; }
+    .server-card code { font: 12.5px/1.45 ui-monospace, SFMono-Regular, Consolas, monospace; overflow-wrap: anywhere; }
+    .server-card .copy-row { display: flex; align-items: center; gap: 6px; }
+    .server-card .copy-row code { flex: 1; min-width: 0; }
+    .field + .field { margin-top: 12px; }
+    .hint { color: var(--muted); font-size: 11.5px; }
     .note {
       margin-top: 20px; padding: 14px 16px; border-radius: 12px;
       background: var(--surface-2); border: 1px solid var(--line); color: var(--muted); font-size: 13px;
     }
     .note strong { color: var(--text); }
+    .error {
+      display: none; margin: 0 0 14px; padding: 11px 13px; border-radius: 10px;
+      background: var(--danger-soft); border: 1px solid color-mix(in srgb, var(--danger) 30%, var(--line));
+      color: var(--danger); font-size: 13px; font-weight: 600;
+    }
+    .error.show { display: block; }
+    @media (max-width: 720px) {
+      .form-grid, .checks, .pw-grid { grid-template-columns: 1fr; }
+      .provider { grid-template-columns: auto minmax(0, 1fr); }
+      .provider-actions { grid-column: 1 / -1; justify-content: end; }
+      .route { grid-template-columns: 1fr; gap: 6px; }
+      .person { grid-template-columns: auto minmax(0, 1fr); }
+      .person-actions { grid-column: 1 / -1; justify-content: start; }
+      main { padding-top: 30px; }
+    }
     dialog {
       width: min(680px, calc(100% - 28px)); max-height: min(88vh, 900px); padding: 0;
       border: 1px solid var(--line); border-radius: 16px; background: var(--surface); color: var(--text);
@@ -242,19 +305,68 @@
     <section class="hero">
       <div>
         <p class="eyebrow">Settings</p>
-        <h1>AI providers</h1>
+        <h1>Settings</h1>
         <p class="lede">
-          Connect any OpenAI-compatible endpoint, Anthropic, or a local Ollama runtime.
-          Keys stay in the local database and are never sent back to the browser or to any app.
+          Manage the people who can sign in, choose where the assistant appears, connect AI providers,
+          and see how this server is reached on your network.
         </p>
       </div>
       <div class="status" id="status"><span class="dot" aria-hidden="true"></span><span id="status-text">Loading…</span></div>
     </section>
 
-    <section class="panel" aria-labelledby="providers-title">
+    <nav class="section-nav" aria-label="Settings sections">
+      <a href="#people">People</a>
+      <a href="#assistant">Assistant</a>
+      <a href="#providers">AI providers</a>
+      <a href="#server">Server access</a>
+      <a href="#account">Account</a>
+    </nav>
+
+    <section class="panel" id="people" aria-labelledby="people-title">
       <div class="panel-head">
         <div>
-          <h2 id="providers-title">Providers</h2>
+          <h2 id="people-title">People</h2>
+          <p>Each person signs in with their own account. New people join through a one-time invite link, or you can create an account and share its password directly.</p>
+        </div>
+        <div class="person-actions">
+          <button class="btn" id="create-invite" type="button">Invite someone</button>
+          <button class="btn btn-primary" id="create-user" type="button">Add account</button>
+        </div>
+      </div>
+      <div class="people" id="people-list"></div>
+      <div id="invites-wrap" hidden>
+        <h3 style="margin:18px 0 0;font-size:14px">Active invites</h3>
+        <div class="invite-list" id="invite-list"></div>
+      </div>
+    </section>
+
+    <section class="panel" id="assistant" aria-labelledby="assistant-title">
+      <div class="panel-head">
+        <div>
+          <h2 id="assistant-title">Assistant</h2>
+          <p>The Everything assistant appears inside the apps you choose. It can read the page, navigate, manage files and call the tools an app already provides. Without an AI provider it stays unavailable and the app keeps working normally.</p>
+        </div>
+      </div>
+      <form id="assistant-form">
+        <label class="switch"><input id="assistant-enabled" type="checkbox" /> Enable the assistant</label>
+        <div class="field">
+          <label for="assistant-model">Model override <span class="hint">(optional)</span></label>
+          <input id="assistant-model" type="text" autocomplete="off" spellcheck="false" placeholder="Leave blank to use the chat provider's default model" />
+        </div>
+        <div class="field">
+          <label>Apps with the assistant</label>
+          <div class="apps-grid" id="assistant-apps"></div>
+          <span class="hint">Apps with a native assistant keep their own panel and tools; the shared assistant is available to the rest.</span>
+        </div>
+        <label class="switch"><input id="assistant-confirm" type="checkbox" /> Ask before destructive actions</label>
+        <div class="settings-actions"><button class="btn btn-primary" type="submit" id="save-assistant">Save assistant</button></div>
+      </form>
+    </section>
+
+    <section class="panel" id="providers" aria-labelledby="providers-title">
+      <div class="panel-head">
+        <div>
+          <h2 id="providers-title">AI providers</h2>
           <p>Add a provider, paste its key, then choose which capabilities it should serve.</p>
         </div>
         <button class="btn btn-primary" id="add-provider" type="button">Add provider</button>
@@ -274,10 +386,56 @@
     </section>
 
     <p class="note">
-      <strong>Local by design.</strong> Provider records live in <code>platform/data/everything.sqlite</code>.
-      Requests go from this server to the endpoint you configure; apps never see provider keys.
+      <strong>Local by design.</strong> Account records and provider settings live in <code>platform/data/everything.sqlite</code>.
+      AI requests go from this server to the endpoint you configure; apps never see provider keys.
       Existing apps keep their normal unavailable state until at least one provider can serve their request.
     </p>
+
+    <section class="panel" id="server" aria-labelledby="server-title">
+      <div class="panel-head">
+        <div>
+          <h2 id="server-title">Server access</h2>
+          <p>Open one of these addresses on another device. The server accepts loopback and private-network hosts only, including Tailscale addresses.</p>
+        </div>
+      </div>
+      <div class="server-grid" id="server-info">
+        <div class="server-card"><span class="label">Addresses</span><span class="hint">Loading…</span></div>
+      </div>
+      <p class="note">
+        <strong>Family outside the house:</strong> install Tailscale on this machine and on their devices, then use this machine's
+        Tailscale name or its <code>100.x.y.z</code> address. Keep this port closed on your router: do not forward it to the internet.
+        Set <code>EVERYTHING_HOST=127.0.0.1</code> if you ever want this machine alone to connect.
+      </p>
+    </section>
+
+    <section class="panel" id="account" aria-labelledby="account-title">
+      <div class="panel-head">
+        <div>
+          <h2 id="account-title">Your account</h2>
+          <p>Signed in as <strong id="account-name">…</strong>. Changing your password signs out other browsers.</p>
+        </div>
+      </div>
+      <form id="password-form">
+        <div class="pw-grid">
+          <div class="field">
+            <label for="current-password">Current password</label>
+            <input id="current-password" type="password" autocomplete="current-password" required />
+          </div>
+          <div class="field">
+            <label for="new-password">New password</label>
+            <input id="new-password" type="password" autocomplete="new-password" minlength="8" required />
+          </div>
+          <div class="field">
+            <label for="confirm-password">Confirm new password</label>
+            <input id="confirm-password" type="password" autocomplete="new-password" minlength="8" required />
+          </div>
+        </div>
+        <div class="settings-actions">
+          <button class="btn btn-ghost" id="signout" type="button">Sign out</button>
+          <button class="btn btn-primary" type="submit" id="save-password">Change password</button>
+        </div>
+      </form>
+    </section>
   </main>
 
   <dialog id="provider-dialog" aria-labelledby="provider-dialog-title">
@@ -311,7 +469,7 @@
           <div class="field full">
             <label for="base-url">Base URL</label>
             <input id="base-url" name="base_url" type="text" placeholder="https://api.example.com/v1" autocomplete="off" spellcheck="false" required />
-            <span class="hint">The server appends <code>/chat/completions</code>, <code>/messages</code>, or <code>/api/chat</code>.</span>
+            <span class="hint">The server appends <code>/chat/completions</code>, <code>/v1/messages</code>, or <code>/api/chat</code>.</span>
           </div>
           <div class="field full">
             <label for="api-key">API key</label>
@@ -366,6 +524,117 @@
     </div>
   </dialog>
 
+  <dialog id="user-dialog" aria-labelledby="user-dialog-title">
+    <div class="dialog-head">
+      <div>
+        <h2 id="user-dialog-title">Add account</h2>
+        <p>The person can sign in immediately with this password. You can change it later.</p>
+      </div>
+      <button class="icon-btn" id="close-user-dialog" type="button" aria-label="Close">×</button>
+    </div>
+    <div class="dialog-body">
+      <div class="error" id="user-error" role="alert"></div>
+      <form id="user-form">
+        <div class="form-grid">
+          <div class="field">
+            <label for="new-user-name">Username</label>
+            <input id="new-user-name" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="32" required />
+          </div>
+          <div class="field">
+            <label for="new-user-email">Email <span class="hint">(optional)</span></label>
+            <input id="new-user-email" type="email" autocomplete="off" spellcheck="false" />
+          </div>
+          <div class="field">
+            <label for="new-user-role">Role</label>
+            <select id="new-user-role">
+              <option value="member">Member</option>
+              <option value="admin">Administrator</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="new-user-password">Password</label>
+            <input id="new-user-password" type="password" autocomplete="new-password" minlength="8" required />
+            <span class="hint">At least 8 characters.</span>
+          </div>
+        </div>
+        <div class="dialog-actions">
+          <span class="spacer"></span>
+          <button class="btn btn-ghost" type="button" id="cancel-user">Cancel</button>
+          <button class="btn btn-primary" type="submit" id="submit-user">Create account</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <dialog id="invite-dialog" aria-labelledby="invite-dialog-title">
+    <div class="dialog-head">
+      <div>
+        <h2 id="invite-dialog-title">Invite someone</h2>
+        <p>Send them a one-time link. They choose their own password when they open it.</p>
+      </div>
+      <button class="icon-btn" id="close-invite-dialog" type="button" aria-label="Close">×</button>
+    </div>
+    <div class="dialog-body">
+      <div class="error" id="invite-error" role="alert"></div>
+      <form id="invite-form">
+        <div class="form-grid">
+          <div class="field">
+            <label for="invite-name">Username</label>
+            <input id="invite-name" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="32" required />
+          </div>
+          <div class="field">
+            <label for="invite-email">Email <span class="hint">(optional)</span></label>
+            <input id="invite-email" type="email" autocomplete="off" spellcheck="false" />
+          </div>
+          <div class="field">
+            <label for="invite-role">Role</label>
+            <select id="invite-role">
+              <option value="member">Member</option>
+              <option value="admin">Administrator</option>
+            </select>
+          </div>
+        </div>
+        <div class="dialog-actions">
+          <span class="spacer"></span>
+          <button class="btn btn-ghost" type="button" id="cancel-invite">Cancel</button>
+          <button class="btn btn-primary" type="submit" id="submit-invite">Create invite link</button>
+        </div>
+      </form>
+      <div id="invite-result" hidden>
+        <p class="hint">Send this link to the person. It expires in 7 days and works once.</p>
+        <div class="invite-row">
+          <code id="invite-url"></code>
+          <button class="btn btn-small" id="copy-invite" type="button">Copy link</button>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="reset-dialog" aria-labelledby="reset-dialog-title">
+    <div class="dialog-head">
+      <div>
+        <h2 id="reset-dialog-title">Set a new password</h2>
+        <p id="reset-lede"></p>
+      </div>
+      <button class="icon-btn" id="close-reset-dialog" type="button" aria-label="Close">×</button>
+    </div>
+    <div class="dialog-body">
+      <div class="error" id="reset-error" role="alert"></div>
+      <form id="reset-form">
+        <div class="field">
+          <label for="reset-password">New password</label>
+          <input id="reset-password" type="password" autocomplete="new-password" minlength="8" required />
+          <span class="hint">This signs the person out of every browser.</span>
+        </div>
+        <div class="dialog-actions">
+          <span class="spacer"></span>
+          <button class="btn btn-ghost" type="button" id="cancel-reset">Cancel</button>
+          <button class="btn btn-primary" type="submit" id="submit-reset">Set password</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
   <div id="toast" role="status" aria-live="polite"></div>
 
   <script>
@@ -383,7 +652,11 @@
       const KIND_LABELS = { openai: 'OpenAI-compatible', anthropic: 'Anthropic Messages', ollama: 'Ollama native' };
 
       const $ = (id) => document.getElementById(id);
-      const state = { providers: [], presets: [], routes: {}, deleteId: null };
+      const state = {
+        providers: [], presets: [], routes: {}, deleteId: null,
+        users: [], invites: [], apps: [], assistant: {}, server: null,
+        me: null, resetUser: null,
+      };
 
       function el(tag, props = {}, children = []) {
         const node = document.createElement(tag);
@@ -419,12 +692,44 @@
         });
         const data = await res.json().catch(() => null);
         if (!res.ok) {
+          if (res.status === 401) {
+            location.assign('/login?next=' + encodeURIComponent(location.pathname));
+          }
           const err = new Error((data && data.message) || 'Request failed with HTTP ' + res.status);
           err.status = res.status;
           err.code = data && data.code;
           throw err;
         }
         return data;
+      }
+
+      function showErrorBox(id, message) {
+        const box = $(id);
+        box.textContent = message;
+        box.classList.add('show');
+      }
+
+      function hideErrorBox(id) {
+        const box = $(id);
+        box.textContent = '';
+        box.classList.remove('show');
+      }
+
+      async function copyText(text) {
+        try {
+          await navigator.clipboard.writeText(text);
+          toast('Copied to the clipboard');
+        } catch {
+          const area = document.createElement('textarea');
+          area.value = text;
+          area.style.position = 'fixed';
+          area.style.opacity = '0';
+          document.body.append(area);
+          area.select();
+          try { document.execCommand('copy'); toast('Copied to the clipboard'); }
+          catch { toast('Could not copy automatically. Select the link instead.'); }
+          area.remove();
+        }
       }
 
       function capabilityLabel(id) {
@@ -688,22 +993,335 @@
         }
       }
 
+      /* ---- people ---- */
+
+      function renderPeople() {
+        const list = $('people-list');
+        list.replaceChildren();
+        if (!state.users.length) {
+          list.append(el('div', { class: 'empty' }, [
+            el('strong', { text: 'No accounts yet' }),
+            el('p', { text: 'Create an account or invite someone. The first administrator was created during setup.' }),
+          ]));
+        }
+        for (const user of state.users) {
+          const chips = el('div', { class: 'chips' }, [
+            el('span', { class: 'chip key role-chip', text: user.role === 'admin' ? 'Admin' : 'Member' }),
+          ]);
+          if (user.disabled) chips.append(el('span', { class: 'chip nokey', text: 'Disabled' }));
+          if (state.me && user.uuid === state.me.uuid) chips.append(el('span', { class: 'chip', text: 'You' }));
+
+          const actions = el('div', { class: 'person-actions' });
+          actions.append(el('button', { class: 'btn btn-small', type: 'button', onclick: () => openReset(user) }, 'Set password'));
+          if (!state.me || user.uuid !== state.me.uuid) {
+            actions.append(el('button', {
+              class: 'btn btn-small' + (user.disabled ? '' : ' btn-danger'),
+              type: 'button',
+              onclick: () => toggleUser(user),
+            }, user.disabled ? 'Enable' : 'Disable'));
+          }
+
+          list.append(el('div', { class: 'person' + (user.disabled ? ' disabled' : '') }, [
+            el('div', { class: 'avatar', 'aria-hidden': 'true', text: initials(user.username) }),
+            el('div', {}, [
+              el('h3', { class: 'person-name' }, [user.username]),
+              el('p', { class: 'person-meta', text: user.email || 'No email' }),
+              chips,
+            ]),
+            actions,
+          ]));
+        }
+
+        const wrap = $('invites-wrap');
+        const invites = $('invite-list');
+        invites.replaceChildren();
+        wrap.hidden = !state.invites.length;
+        for (const invite of state.invites) {
+          invites.append(el('div', { class: 'invite-row' }, [
+            el('span', { class: 'who', text: invite.username }),
+            el('code', { text: invite.url }),
+            el('button', { class: 'btn btn-small', type: 'button', onclick: () => copyText(invite.url) }, 'Copy'),
+            el('button', { class: 'btn btn-small btn-danger', type: 'button', onclick: () => revokeInvite(invite) }, 'Revoke'),
+          ]));
+        }
+      }
+
+      async function loadPeople() {
+        const [users, invites] = await Promise.all([
+          request('/api/auth/users'),
+          request('/api/auth/invites'),
+        ]);
+        state.users = users || [];
+        state.invites = invites || [];
+        renderPeople();
+      }
+
+      function openUserDialog() {
+        $('user-form').reset();
+        hideErrorBox('user-error');
+        $('user-dialog').showModal();
+        $('new-user-name').focus();
+      }
+
+      async function createUser(event) {
+        event.preventDefault();
+        hideErrorBox('user-error');
+        const username = $('new-user-name').value.trim();
+        const email = $('new-user-email').value.trim();
+        const role = $('new-user-role').value;
+        const password = $('new-user-password').value;
+        if (!username) return showErrorBox('user-error', 'Choose a username.');
+        if (password.length < 8) return showErrorBox('user-error', 'Choose a password with at least 8 characters.');
+        const button = $('submit-user');
+        button.disabled = true;
+        try {
+          await request('/api/auth/users/create', {
+            method: 'POST',
+            body: { username, email, password, role },
+          });
+          $('user-dialog').close();
+          toast('Account created for ' + username);
+          await loadPeople();
+        } catch (err) {
+          showErrorBox('user-error', err.message);
+        } finally {
+          button.disabled = false;
+        }
+      }
+
+      async function toggleUser(user) {
+        const verb = user.disabled ? 'Enabling' : 'Disabling';
+        try {
+          await request('/api/auth/users/disable', {
+            method: 'POST',
+            body: { uuid: user.uuid, disabled: !user.disabled },
+          });
+          toast(verb.replace(/ing$/, 'ed') + ' ' + user.username);
+          await loadPeople();
+        } catch (err) {
+          toast(err.message);
+        }
+      }
+
+      function openReset(user) {
+        state.resetUser = user;
+        $('reset-form').reset();
+        hideErrorBox('reset-error');
+        $('reset-lede').textContent = 'Set a new password for ' + user.username + '. They will need it the next time they sign in.';
+        $('reset-dialog').showModal();
+        $('reset-password').focus();
+      }
+
+      async function submitReset(event) {
+        event.preventDefault();
+        hideErrorBox('reset-error');
+        const password = $('reset-password').value;
+        if (password.length < 8) return showErrorBox('reset-error', 'Choose a password with at least 8 characters.');
+        const button = $('submit-reset');
+        button.disabled = true;
+        try {
+          await request('/api/auth/users/password', {
+            method: 'POST',
+            body: { uuid: state.resetUser.uuid, new_password: password },
+          });
+          $('reset-dialog').close();
+          toast('Password updated for ' + state.resetUser.username);
+        } catch (err) {
+          showErrorBox('reset-error', err.message);
+        } finally {
+          button.disabled = false;
+        }
+      }
+
+      function openInviteDialog() {
+        $('invite-form').reset();
+        hideErrorBox('invite-error');
+        $('invite-result').hidden = true;
+        $('invite-url').textContent = '';
+        $('invite-dialog').showModal();
+        $('invite-name').focus();
+      }
+
+      async function createInvite(event) {
+        event.preventDefault();
+        hideErrorBox('invite-error');
+        const username = $('invite-name').value.trim();
+        const email = $('invite-email').value.trim();
+        const role = $('invite-role').value;
+        if (!username) return showErrorBox('invite-error', 'Choose a username.');
+        const button = $('submit-invite');
+        button.disabled = true;
+        try {
+          const invite = await request('/api/auth/invites', {
+            method: 'POST',
+            body: { username, email, role },
+          });
+          $('invite-url').textContent = invite.url;
+          $('invite-result').hidden = false;
+          toast('Invite link ready');
+          await loadPeople();
+        } catch (err) {
+          showErrorBox('invite-error', err.message);
+        } finally {
+          button.disabled = false;
+        }
+      }
+
+      async function revokeInvite(invite) {
+        try {
+          await request('/api/auth/invites/revoke', { method: 'POST', body: { token: invite.token } });
+          toast('Invite revoked');
+          await loadPeople();
+        } catch (err) {
+          toast(err.message);
+        }
+      }
+
+      /* ---- assistant ---- */
+
+      function renderAssistant() {
+        $('assistant-enabled').checked = !!state.assistant.enabled;
+        $('assistant-model').value = state.assistant.model || '';
+        $('assistant-confirm').checked = state.assistant.confirm_destructive !== false;
+        const box = $('assistant-apps');
+        box.replaceChildren();
+        const native = new Set(state.assistant.native_apps || []);
+        for (const app of state.apps) {
+          const input = el('input', { type: 'checkbox', value: app.name });
+          input.checked = (state.assistant.apps || []).includes(app.name);
+          input.disabled = native.has(app.name);
+          box.append(el('label', { class: 'app-check' + (input.disabled ? ' disabled' : '') }, [
+            input,
+            el('span', {}, [app.title || app.name, el('small', { text: input.disabled ? 'Uses its own assistant' : app.name })]),
+          ]));
+        }
+      }
+
+      async function loadAssistant() {
+        const [apps, assistant] = await Promise.all([
+          request('/api/apps'),
+          request('/api/ai/assistant'),
+        ]);
+        state.apps = apps || [];
+        state.assistant = assistant || {};
+        renderAssistant();
+      }
+
+      async function saveAssistant(event) {
+        event.preventDefault();
+        const button = $('save-assistant');
+        button.disabled = true;
+        try {
+          const apps = [...document.querySelectorAll('#assistant-apps input:checked')].map((input) => input.value);
+          state.assistant = await request('/api/ai/assistant', {
+            method: 'POST',
+            body: {
+              enabled: $('assistant-enabled').checked,
+              model: $('assistant-model').value.trim(),
+              apps,
+              confirm_destructive: $('assistant-confirm').checked,
+            },
+          });
+          toast('Assistant settings saved');
+          renderAssistant();
+        } catch (err) {
+          toast(err.message);
+        } finally {
+          button.disabled = false;
+        }
+      }
+
+      /* ---- server ---- */
+
+      async function loadServer() {
+        state.server = await request('/api/server/info');
+        renderServer();
+      }
+
+      function renderServer() {
+        const box = $('server-info');
+        box.replaceChildren();
+        const info = state.server;
+        if (!info) {
+          box.append(el('div', { class: 'server-card' }, [
+            el('span', { class: 'label', text: 'Addresses' }),
+            el('span', { class: 'hint', text: 'Could not read server details.' }),
+          ]));
+          return;
+        }
+        for (const url of info.urls || []) {
+          box.append(el('div', { class: 'server-card' }, [
+            el('span', { class: 'label', text: /localhost/.test(url) ? 'This machine' : 'Network' }),
+            el('div', { class: 'copy-row' }, [
+              el('code', { text: url }),
+              el('button', { class: 'btn btn-small', type: 'button', onclick: () => copyText(url) }, 'Copy'),
+            ]),
+          ]));
+        }
+        box.append(el('div', { class: 'server-card' }, [
+          el('span', { class: 'label', text: 'Binding' }),
+          el('code', { text: (info.host || '') + ':' + (info.port || '') }),
+          el('span', { class: 'hint', text: info.secure ? 'HTTPS / secure cookies' : 'HTTP on the private network' }),
+        ]));
+        box.append(el('div', { class: 'server-card' }, [
+          el('span', { class: 'label', text: 'AI provider' }),
+          el('code', { text: state.providers.some((p) => p.enabled) ? 'Configured' : 'Not configured' }),
+          el('span', { class: 'hint', text: state.providers.some((p) => p.enabled) ? 'The assistant can use the routed chat provider.' : 'Apps and accounts work without AI.' }),
+        ]));
+      }
+
+      /* ---- account ---- */
+
+      async function changePassword(event) {
+        event.preventDefault();
+        const current = $('current-password').value;
+        const next = $('new-password').value;
+        const confirm = $('confirm-password').value;
+        if (next.length < 8) return toast('Choose a password with at least 8 characters.');
+        if (next !== confirm) return toast('The two new passwords do not match.');
+        const button = $('save-password');
+        button.disabled = true;
+        try {
+          await request('/api/auth/password', { method: 'POST', body: { current_password: current, new_password: next } });
+          $('password-form').reset();
+          toast('Password changed');
+        } catch (err) {
+          toast(err.message);
+        } finally {
+          button.disabled = false;
+        }
+      }
+
+      async function signOut() {
+        try { await request('/api/auth/signout', { method: 'POST', body: {} }); } catch { /* leave anyway */ }
+        location.assign('/login');
+      }
+
       async function load() {
         try {
-          const [providers, presets, routes] = await Promise.all([
+          const [providers, presets, routes, me] = await Promise.all([
             request('/api/ai/providers'),
             request('/api/ai/presets'),
             request('/api/ai/routes'),
+            request('/api/auth/whoami'),
           ]);
           state.providers = providers;
           state.presets = presets;
           state.routes = routes || {};
+          state.me = me;
+          $('account-name').textContent = me.username;
           renderProviders();
           renderRoutes();
         } catch (err) {
-          toast('Could not load AI settings: ' + err.message);
+          toast('Could not load settings: ' + err.message);
           $('status-text').textContent = 'Settings unavailable';
+          return;
         }
+        const results = await Promise.allSettled([loadPeople(), loadAssistant(), loadServer()]);
+        for (const result of results) {
+          if (result.status === 'rejected') toast(result.reason.message);
+        }
+        renderServer();
       }
 
       $('add-provider').addEventListener('click', () => openProviderDialog());
@@ -723,6 +1341,26 @@
       $('cancel-confirm').addEventListener('click', () => $('confirm-dialog').close());
       $('delete-confirm').addEventListener('click', deleteProvider);
       $('routes-form').addEventListener('submit', saveRoutes);
+
+      $('create-user').addEventListener('click', openUserDialog);
+      $('close-user-dialog').addEventListener('click', () => $('user-dialog').close());
+      $('cancel-user').addEventListener('click', () => $('user-dialog').close());
+      $('user-form').addEventListener('submit', createUser);
+
+      $('create-invite').addEventListener('click', openInviteDialog);
+      $('close-invite-dialog').addEventListener('click', () => $('invite-dialog').close());
+      $('cancel-invite').addEventListener('click', () => $('invite-dialog').close());
+      $('invite-form').addEventListener('submit', createInvite);
+      $('copy-invite').addEventListener('click', () => copyText($('invite-url').textContent));
+
+      $('close-reset-dialog').addEventListener('click', () => $('reset-dialog').close());
+      $('cancel-reset').addEventListener('click', () => $('reset-dialog').close());
+      $('reset-form').addEventListener('submit', submitReset);
+
+      $('assistant-form').addEventListener('submit', saveAssistant);
+      $('password-form').addEventListener('submit', changePassword);
+      $('signout').addEventListener('click', signOut);
+
       for (const dialog of document.querySelectorAll('dialog')) {
         dialog.addEventListener('click', (event) => {
           if (event.target === dialog) dialog.close();

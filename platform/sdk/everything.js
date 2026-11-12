@@ -36,15 +36,27 @@
 
   var signedOut = storageGet(g.sessionStorage, 'everything.signedOut') === '1';
   var currentToken = storageGet(g.sessionStorage, 'everything.session.token')
-    || (tabUser ? 'tok-' + tabUser : storageGet(g.localStorage, 'everything.auth.token'))
-    || (signedOut ? null : 'tok-local');
+    || storageGet(g.localStorage, 'everything.auth.token')
+    || null;
+
+  function isPrivateHost(host) {
+    if (!host) return false;
+    if (host === 'localhost' || host === '127.0.0.1' || host === '::1') return true;
+    if (/\.localhost$/.test(host) || /\.local$/.test(host) || /\.ts\.net$/.test(host)) return true;
+    if (/^10\./.test(host) || /^192\.168\./.test(host) || /^169\.254\./.test(host)) return true;
+    var m = /^172\.(\d{1,3})\./.exec(host);
+    if (m && Number(m[1]) >= 16 && Number(m[1]) <= 31) return true;
+    var t = /^100\.(\d{1,3})\./.exec(host);
+    if (t && Number(t[1]) >= 64 && Number(t[1]) <= 127) return true;
+    return false;
+  }
 
   function assertLocalUrl(url) {
     if (typeof url === 'string' && /^https?:\/\//i.test(url)) {
       try {
         var u = new URL(url);
         var h = u.hostname.toLowerCase();
-        if (h !== 'localhost' && h !== '127.0.0.1' && h !== '[::1]' && !h.endsWith('.localhost')) {
+        if (h !== String(loc.hostname || '').toLowerCase() && !isPrivateHost(h)) {
           var err = new Error('External network URLs are blocked in Everything Local: ' + url);
           err.code = 'external_not_allowed';
           throw err;
@@ -78,6 +90,12 @@
     }).then(async function (res) {
       var data = await res.json().catch(function () { return null; });
       if (!res.ok) {
+        if (res.status === 401 && g.location && typeof g.location.assign === 'function') {
+          try {
+            var next = encodeURIComponent(String(loc.pathname || '/') + String(loc.search || ''));
+            g.location.assign('/login?next=' + next);
+          } catch { /* ignore */ }
+        }
         var err = new Error((data && data.message) || ('HTTP ' + res.status));
         err.code = (data && (data.code || data.error)) || 'api_error';
         err.status = res.status;
@@ -147,23 +165,32 @@
   everything.auth = {
     signIn: function (options) {
       var opts = options && typeof options === 'object' ? options : {};
-      var uname = opts.username || opts.user || tabUser || 'local';
-      return apiRequest('POST', '/auth/signin', { username: uname, email: opts.email }).then(function (res) {
-        signedOut = false;
-        currentToken = res.token;
-        storageRemove(g.sessionStorage, 'everything.signedOut');
-        storageSet(g.sessionStorage, 'everything.session.token', res.token);
-        if (!tabUser) storageSet(g.localStorage, 'everything.auth.token', res.token);
-        return res;
-      });
+      var uname = opts.username || opts.user || null;
+      var password = opts.password != null ? String(opts.password) : null;
+      if (uname && password) {
+        return apiRequest('POST', '/auth/signin', { username: uname, password: password }).then(function (res) {
+          signedOut = false;
+          currentToken = res.token;
+          storageRemove(g.sessionStorage, 'everything.signedOut');
+          storageSet(g.sessionStorage, 'everything.session.token', res.token);
+          if (!tabUser) storageSet(g.localStorage, 'everything.auth.token', res.token);
+          return res;
+        });
+      }
+      // Real accounts cannot be created from an app. Send the browser to the
+      // server's sign-in page and resume at the current URL afterwards.
+      var next = encodeURIComponent(String(loc.pathname || '/') + String(loc.search || ''));
+      if (g.location && typeof g.location.assign === 'function') g.location.assign('/login?next=' + next);
+      return new Promise(function () { /* wait for navigation */ });
     },
     signOut: function () {
-      return apiRequest('POST', '/auth/signout', {}).finally(function () {
+      return apiRequest('POST', '/auth/signout', {}).catch(function () {}).then(function () {
         signedOut = true;
         currentToken = null;
         storageSet(g.sessionStorage, 'everything.signedOut', '1');
         storageRemove(g.sessionStorage, 'everything.session.token');
         storageRemove(g.localStorage, 'everything.auth.token');
+        if (g.location && typeof g.location.assign === 'function') g.location.assign('/login');
       });
     },
     isSignedIn: function () {
@@ -1056,6 +1083,88 @@
     Socket: function (host, port) { return makeNetSocket(host, port, false); },
     tls: { TLSSocket: function (host, port) { return makeNetSocket(host, port, true); } },
   };
+
+  /* ------------------------------------------------------------------ */
+  /* Shared assistant                                                    */
+  /* ------------------------------------------------------------------ */
+
+  var ASSISTANT_NATIVE_APPS = ['3d', 'parametric', 'building-design', 'spreadsheet', 'presentation'];
+  everything.assistant = everything.assistant || {};
+  everything.assistant.nativeApps = ASSISTANT_NATIVE_APPS;
+  everything.assistant._tools = everything.assistant._tools || [];
+
+  /** Register one app-provided tool. Returns a function that removes it. */
+  everything.assistant.registerTool = function (tool) {
+    if (!tool || typeof tool !== 'object') throw new TypeError('registerTool expects a tool object.');
+    var fn = tool.function || tool;
+    var name = String(fn.name || '').trim();
+    if (!/^[a-zA-Z0-9_-]{1,64}$/.test(name)) {
+      throw new Error('Tool names use 1–64 letters, numbers, underscores or dashes.');
+    }
+    if (typeof tool.handler !== 'function') throw new Error('Tool "' + name + '" needs a handler function.');
+    var entry = Object.assign({}, tool, {
+      function: {
+        name: name,
+        description: String(fn.description || '').slice(0, 4000),
+        parameters: fn.parameters && typeof fn.parameters === 'object' ? fn.parameters : { type: 'object', properties: {} },
+      },
+      handler: tool.handler,
+    });
+    var list = everything.assistant._tools;
+    for (var i = 0; i < list.length; i++) {
+      if (((list[i].function || list[i]).name) === name) {
+        list[i] = entry;
+        return function () {
+          var at = list.indexOf(entry);
+          if (at >= 0) list.splice(at, 1);
+        };
+      }
+    }
+    list.push(entry);
+    return function () {
+      var at = list.indexOf(entry);
+      if (at >= 0) list.splice(at, 1);
+    };
+  };
+
+  everything.assistant.registerTools = function (tools) {
+    return (Array.isArray(tools) ? tools : []).map(everything.assistant.registerTool);
+  };
+
+  var assistantLoading = false;
+  function loadSharedAssistant() {
+    if (assistantLoading || !g.document || !g.document.createElement) return;
+    if (everything.assistant.mounted) return;
+    if (ASSISTANT_NATIVE_APPS.indexOf(APP_NAME) >= 0) return;
+    if (!g.document.body) {
+      setTimeout(loadSharedAssistant, 10);
+      return;
+    }
+    assistantLoading = true;
+    fetch(API_BASE + '/ai/assistant?app=' + encodeURIComponent(APP_NAME), {
+      credentials: 'include',
+      headers: apiHeaders(),
+    }).then(function (res) {
+      return res.ok ? res.json() : null;
+    }).then(function (cfg) {
+      if (!cfg || !cfg.enabled || !cfg.app_enabled) return;
+      g.__EVERYTHING_ASSISTANT_CONFIG__ = cfg;
+      var script = g.document.createElement('script');
+      script.src = API_ORIGIN.replace(/\/$/, '') + '/sdk/assistant.js';
+      script.async = true;
+      (g.document.head || g.document.documentElement).appendChild(script);
+    }).catch(function () {
+      /* An unreachable server leaves the app untouched. */
+    }).finally(function () {
+      assistantLoading = false;
+    });
+  }
+
+  if (g.document && g.document.readyState === 'loading') {
+    g.document.addEventListener('DOMContentLoaded', loadSharedAssistant);
+  } else {
+    setTimeout(loadSharedAssistant, 0);
+  }
 
   g.everything = everything;
 })();
