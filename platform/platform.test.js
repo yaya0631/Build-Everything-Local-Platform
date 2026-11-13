@@ -1053,12 +1053,6 @@ test('Platform Conformance Suite (Section 4 + Security + Peer + Workers)', async
     const explicitPaid = await everything.ai.txt2img('a blue dog', { model: 'gpt-image-2' });
     assert.ok(String(explicitPaid.src).startsWith('data:image/webp;base64,'), 'an explicit paid model is still honoured');
     assert.equal(seen.lastImageRequest.model, 'openai/gpt-image-2');
-    await api(port, '/ai/providers', {
-      method: 'POST',
-      body: { id: saved.id, name: 'Mock OpenAI', kind: 'openai', base_url: `${aiBase}/v1`, default_model: 'remote-model', enabled: true },
-    });
-
-    await api(port, '/ai/providers/delete', { method: 'POST', body: { id: openrouter.id } });
 
     // Cloudflare Workers AI: free-tier FLUX through its native /ai/run path.
     const cloudflare = await api(port, '/ai/providers', {
@@ -1073,13 +1067,37 @@ test('Platform Conformance Suite (Section 4 + Security + Peer + Workers)', async
       },
     });
     assert.equal(cloudflare.preset, 'cloudflare', 'the preset is stored so the adapter uses the native image path');
+
+    // The route still points at OpenRouter and the mock OpenAI provider is
+    // still disabled, so Automatic falls back from OpenRouter's paid-only
+    // catalogue to Cloudflare's free model.
+    seen.lastCloudflareImage = null;
+    const cloudflareFallback = await everything.ai.txt2img('a red fox');
+    assert.ok(String(cloudflareFallback.src).startsWith('data:image/jpeg;base64,'), 'Automatic falls back to Cloudflare and keeps the real image format');
+    assert.equal(seen.lastCloudflareImage.prompt, 'a red fox');
+    assert.equal(seen.lastCloudflareImage.steps, 4, 'Automatic uses the default step count');
+
+    // An explicit Cloudflare model is not sent to OpenRouter's image API; the
+    // provider that owns the model serves it.
+    seen.lastCloudflareImage = null;
+    const cloudflareExplicit = await everything.ai.txt2img('a red fox', { model: '@cf/black-forest-labs/flux-1-schnell' });
+    assert.ok(String(cloudflareExplicit.src).startsWith('data:image/jpeg;base64,'), 'an explicit Cloudflare model reaches Cloudflare');
+    assert.equal(seen.lastCloudflareImage.steps, 4);
+
+    await api(port, '/ai/providers', {
+      method: 'POST',
+      body: { id: saved.id, name: 'Mock OpenAI', kind: 'openai', base_url: `${aiBase}/v1`, default_model: 'remote-model', enabled: true },
+    });
+
+    await api(port, '/ai/providers/delete', { method: 'POST', body: { id: openrouter.id } });
+    await api(port, '/ai/routes', { method: 'POST', body: { routes: { txt2img: cloudflare.id } } });
+
     const cloudflareModels = await api(port, '/ai/models?capability=txt2img');
     assert.deepEqual(
       cloudflareModels.filter((m) => m.provider_id === cloudflare.id).map((m) => m.id),
       ['@cf/black-forest-labs/flux-1-schnell'],
       'the Cloudflare catalogue offers its free FLUX model'
     );
-    await api(port, '/ai/routes', { method: 'POST', body: { routes: { txt2img: cloudflare.id } } });
     const cloudflareImage = await everything.ai.txt2img('a red fox', { quality: 'high' });
     assert.ok(String(cloudflareImage.src).startsWith('data:image/jpeg;base64,'), 'a Cloudflare image is returned as a data URL in its real format');
     assert.equal(seen.lastCloudflareImage.prompt, 'a red fox');

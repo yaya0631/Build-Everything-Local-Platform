@@ -12,7 +12,7 @@
  */
 
 import crypto from 'node:crypto';
-import { createAdapter, isOpenRouter, PROVIDER_PRESETS, PROVIDER_KINDS, CAPABILITIES, unavailableError } from './ai-providers.js';
+import { createAdapter, isCloudflare, isOpenRouter, PROVIDER_PRESETS, PROVIDER_KINDS, CAPABILITIES, unavailableError } from './ai-providers.js';
 
 function hasColumn(db, table, column) {
   return db.prepare(`PRAGMA table_info(${table})`).all().some((row) => row.name === column);
@@ -408,6 +408,16 @@ export function createAiService(ctx) {
       if (isOpenRouter(provider)) {
         const alias = IMAGE_MODEL_ALIASES[looseModelKey(wanted)];
         if (alias) return alias;
+      }
+      // A model id that belongs to a different image API must not be sent to
+      // this provider. An explicit Cloudflare model should reach Cloudflare
+      // even when an older provider is tried first; the retryable error lets
+      // the fallback order move on instead of stopping on a 400.
+      if ((isCloudflare(provider) && !/^@cf\//i.test(wanted))
+        || (isOpenRouter(provider) && /^@cf\//i.test(wanted))) {
+        const err = unavailableError(`${provider.name} cannot serve the image model "${wanted}".`, 503);
+        err.code = 'image_model_wrong_provider';
+        throw err;
       }
       return wanted;
     }

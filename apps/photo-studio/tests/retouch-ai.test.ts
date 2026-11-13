@@ -16,6 +16,7 @@ describe('Everything AI wrapper', () => {
     expect(toAIError({ code: 'upstream_rejected' }).retryable).toBe(false);
     expect(toAIError({ code: 'network_error' }).code).toBe('network');
     expect(toAIError({ code: 'prompt_required' }).code).toBe('bad-request');
+    expect(toAIError({ code: 'image_model_wrong_provider', message: 'x' }).code).toBe('unavailable');
     expect(toAIError('boom').message).toBe('boom');
     const e = new AIError('cancelled', 'Cancelled.');
     expect(toAIError(e)).toBe(e);

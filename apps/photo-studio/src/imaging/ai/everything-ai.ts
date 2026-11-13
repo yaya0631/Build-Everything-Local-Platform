@@ -82,6 +82,7 @@ export function toAIError(e: unknown): AIError {
   if (code === 'insufficient_funds') return new AIError('funds', 'Your Everything balance is too low for this request.', false, e);
   if (code === 'free_image_model_unavailable') return new AIError('funds', msg || 'This provider has no free image models. Automatic only uses free models.', false, e);
   if (code === 'image_model_catalogue_unavailable') return new AIError('unavailable', msg || 'The image model list could not be read.', true, e);
+  if (code === 'image_model_wrong_provider') return new AIError('unavailable', msg || 'No configured provider can serve that image model.', true, e);
   if (code === 'prompt_required') return new AIError('bad-request', 'Enter a prompt first.', false, e);
   if (code === 'bad_request') return new AIError('bad-request', msg || 'The AI service rejected the request.', false, e);
   if (code === 'network_error' || code === 'request_timeout' || e instanceof TypeError) return new AIError('network', 'The AI service could not be reached. Try again.', true, e);
