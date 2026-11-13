@@ -144,6 +144,16 @@ const IMAGE_MODEL_ALIASES = {
 /** A stable automatic image model, preferred in this order when one exists. */
 const DEFAULT_IMAGE_MODELS = ['google/gemini-3.1-flash-image', 'openai/gpt-image-2'];
 
+/**
+ * OpenRouter marks free model variants with a `:free` suffix. The image
+ * catalogue has no free variants today, but keep the suffix as the signal so
+ * Automatic never mistakes a paid image model for a free one.
+ */
+const FREE_MODEL_SUFFIX = /:free$/i;
+function isFreeModelId(id) {
+  return FREE_MODEL_SUFFIX.test(String(id || '').trim());
+}
+
 /** The provider's spelling of a model, or '' when it cannot be told apart. */
 function canonicalModelId(wanted, ids) {
   const value = String(wanted || '').trim();
@@ -267,7 +277,10 @@ export function createAiService(ctx) {
     return (Array.isArray(provider.models) ? provider.models : [])
       .map((m) => (typeof m === 'string' ? { id: m, name: m } : { id: m?.id || m?.name, name: m?.name || m?.id }))
       .filter((m) => m.id)
-      .map((m) => ({ id: String(m.id), name: String(m.name || m.id) }));
+      .map((m) => {
+        const id = String(m.id);
+        return { id, name: String(m.name || id), ...(isFreeModelId(id) ? { free: true } : {}) };
+      });
   }
 
   function clearModelCache(id) {
@@ -293,7 +306,14 @@ export function createAiService(ctx) {
       const adapter = adapterFor(provider);
       const models = imageCatalog ? await adapter.listImageModels() : await adapter.listModels();
       const clean = (Array.isArray(models) ? models : [])
-        .map((m) => ({ id: String(m?.id || m?.name || ''), name: String(m?.name || m?.id || '') }))
+        .map((m) => {
+          const id = String(m?.id || m?.name || '');
+          return {
+            id,
+            name: String(m?.name || m?.id || ''),
+            ...(m?.free === true || isFreeModelId(id) ? { free: true } : {}),
+          };
+        })
         .filter((m) => m.id);
       modelCache.set(cacheKey, { at: now, ok: true, models: clean });
       return clean;
@@ -314,7 +334,14 @@ export function createAiService(ctx) {
     const imageCatalog = usesImageCatalog(provider, capability);
     const entries = new Map();
     for (const m of await liveModels(provider, capability)) {
-      entries.set(m.id, { id: m.id, name: m.name, provider: provider.name, provider_id: provider.id, source: 'live' });
+      entries.set(m.id, {
+        id: m.id,
+        name: m.name,
+        provider: provider.name,
+        provider_id: provider.id,
+        source: 'live',
+        ...(m.free ? { free: true } : {}),
+      });
     }
     for (const m of savedModels(provider)) {
       if (!entries.has(m.id)) entries.set(m.id, { ...m, provider: provider.name, provider_id: provider.id, source: 'saved' });
@@ -323,7 +350,15 @@ export function createAiService(ctx) {
     if (wanted && !imageCatalog) {
       const id = canonicalModelId(wanted, [...entries.keys()]) || wanted;
       if (entries.has(id)) entries.get(id).default = true;
-      else entries.set(id, { id, name: wanted, provider: provider.name, provider_id: provider.id, source: 'default', default: true });
+      else entries.set(id, {
+        id,
+        name: wanted,
+        provider: provider.name,
+        provider_id: provider.id,
+        source: 'default',
+        default: true,
+        ...(isFreeModelId(id) ? { free: true } : {}),
+      });
     }
     return [...entries.values()];
   }
@@ -355,8 +390,9 @@ export function createAiService(ctx) {
   /**
    * The model an image request should ask for. An app's explicit choice wins,
    * matched to the provider's own spelling. With no choice, providers that
-   * publish a separate image catalogue use a stable image model from it; a
-   * chat default must never be sent to an image API.
+   * publish a separate image catalogue use a free image model; OpenRouter has
+   * no free image models, so Automatic reports that instead of quietly billing
+   * a paid one. A chat default must never be sent to an image API.
    */
   async function resolveImageModel(provider, requested) {
     const wanted = String(requested || '').trim();
@@ -374,6 +410,24 @@ export function createAiService(ctx) {
     }
 
     if (usesImageCatalog(provider, 'txt2img')) {
+      if (isOpenRouter(provider)) {
+        const free = available.filter((m) => m.free || isFreeModelId(m.id));
+        if (free.length) return free[0].id;
+        if (!available.length) {
+          const err = unavailableError(
+            `Could not read ${provider.name}'s image model list. Check its key and base URL in Settings > AI, then try again.`,
+            502
+          );
+          err.code = 'image_model_catalogue_unavailable';
+          throw err;
+        }
+        const err = unavailableError(
+          `${provider.name} has no free image models. Its free models can chat, but image generation needs credits; Automatic will not choose a paid model. Add credits at https://openrouter.ai/settings/credits or configure another image provider in Settings > AI.`,
+          402
+        );
+        err.code = 'free_image_model_unavailable';
+        throw err;
+      }
       for (const id of DEFAULT_IMAGE_MODELS) {
         if (ids.includes(id)) return id;
       }

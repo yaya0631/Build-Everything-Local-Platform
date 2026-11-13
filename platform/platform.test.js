@@ -632,7 +632,18 @@ test('Platform Conformance Suite (Section 4 + Security + Peer + Workers)', async
 
   await t.test('9. everything.ai (provider config, chat + streaming, image/speech/OCR, graceful degradation)', async () => {
     // One mock that speaks all three wire protocols the adapters support.
-    const seen = { auth: [], paths: [], lastTools: null, lastModel: null, lastImageRequest: null };
+    const seen = {
+      auth: [],
+      paths: [],
+      lastTools: null,
+      lastModel: null,
+      lastImageRequest: null,
+      imageModels: [
+        { id: 'openai/gpt-image-2', name: 'OpenAI: GPT Image 2' },
+        { id: 'google/gemini-3.1-flash-image', name: 'Google: Gemini 3.1 Flash Image' },
+        { id: 'black-forest-labs/flux.1-schnell:free', name: 'FLUX.1 Schnell (free)' },
+      ],
+    };
     const testTools = [{
       type: 'function',
       function: {
@@ -656,12 +667,7 @@ test('Platform Conformance Suite (Section 4 + Security + Peer + Workers)', async
       if (req.url === '/api/tags') return send(200, { models: [{ name: 'local-llama' }] });
       if (req.url === '/v1/models') return send(200, { data: [{ id: 'remote-model' }, { id: 'vendor/claude-opus-5.5' }] });
       if (req.url === '/v1/images/models') {
-        return send(200, {
-          data: [
-            { id: 'google/gemini-3.1-flash-image', name: 'Google: Gemini 3.1 Flash Image' },
-            { id: 'openai/gpt-image-2', name: 'OpenAI: GPT Image 2' },
-          ],
-        });
+        return send(200, { data: seen.imageModels });
       }
 
       let body = '';
@@ -969,14 +975,19 @@ test('Platform Conformance Suite (Section 4 + Security + Peer + Workers)', async
     const openRouterImageModels = await api(port, '/ai/models?capability=txt2img');
     assert.deepEqual(
       openRouterImageModels.filter((m) => m.provider_id === openrouter.id).map((m) => m.id),
-      ['google/gemini-3.1-flash-image', 'openai/gpt-image-2'],
+      ['openai/gpt-image-2', 'google/gemini-3.1-flash-image', 'black-forest-labs/flux.1-schnell:free'],
       'the image catalogue is offered without the chat default'
+    );
+    assert.equal(
+      openRouterImageModels.find((m) => m.id === 'black-forest-labs/flux.1-schnell:free').free,
+      true,
+      'free image models are marked so Automatic can prefer them'
     );
 
     seen.lastImageRequest = null;
     const openRouterImage = await everything.ai.txt2img('a blue dog', { ratio: { w: 1600, h: 900 }, quality: 'high' });
     assert.ok(String(openRouterImage.src).startsWith('data:image/webp;base64,'), 'the response media_type is preserved');
-    assert.equal(seen.lastImageRequest.model, 'google/gemini-3.1-flash-image', 'Automatic resolves an image model');
+    assert.equal(seen.lastImageRequest.model, 'black-forest-labs/flux.1-schnell:free', 'Automatic resolves a free image model');
     assert.equal(seen.lastImageRequest.aspect_ratio, '16:9', 'pixel dimensions become an aspect ratio');
     assert.equal(seen.lastImageRequest.quality, 'high');
     assert.equal(seen.lastImageRequest.prompt, 'a blue dog');
@@ -998,6 +1009,45 @@ test('Platform Conformance Suite (Section 4 + Security + Peer + Workers)', async
       type: 'image_url',
       image_url: { url: 'data:image/png;base64,AAAA' },
     }]);
+
+    // Automatic never silently bills a paid image model. When OpenRouter's
+    // catalogue has no free image model, the request fails before it is sent.
+    seen.imageModels = [
+      { id: 'google/gemini-3.1-flash-image', name: 'Google: Gemini 3.1 Flash Image' },
+      { id: 'openai/gpt-image-2', name: 'OpenAI: GPT Image 2' },
+    ];
+    await api(port, '/ai/providers', {
+      method: 'POST',
+      body: {
+        id: openrouter.id,
+        name: 'Mock OpenRouter',
+        kind: 'openai',
+        preset: 'openrouter',
+        base_url: `${aiBase}/v1`,
+        default_model: 'remote-model',
+        capabilities: ['chat', 'txt2img', 'img2txt'],
+      },
+    });
+    // Keep the mock OpenAI provider from serving the request as a fallback.
+    await api(port, '/ai/providers', {
+      method: 'POST',
+      body: { id: saved.id, name: 'Mock OpenAI', kind: 'openai', base_url: `${aiBase}/v1`, default_model: 'remote-model', enabled: false },
+    });
+    seen.lastImageRequest = null;
+    await assert.rejects(
+      () => everything.ai.txt2img('a blue dog'),
+      (err) => err.code === 'free_image_model_unavailable' && /no free image models/i.test(err.message),
+      'Automatic explains that no free image model exists'
+    );
+    assert.equal(seen.lastImageRequest, null, 'no image request is sent without a free model');
+    const explicitPaid = await everything.ai.txt2img('a blue dog', { model: 'gpt-image-2' });
+    assert.ok(String(explicitPaid.src).startsWith('data:image/webp;base64,'), 'an explicit paid model is still honoured');
+    assert.equal(seen.lastImageRequest.model, 'openai/gpt-image-2');
+    await api(port, '/ai/providers', {
+      method: 'POST',
+      body: { id: saved.id, name: 'Mock OpenAI', kind: 'openai', base_url: `${aiBase}/v1`, default_model: 'remote-model', enabled: true },
+    });
+
     await api(port, '/ai/providers/delete', { method: 'POST', body: { id: openrouter.id } });
 
     const speech = await everything.ai.txt2speech('hello there', { voice: 'alloy' });

@@ -146,9 +146,14 @@ Capabilities are selected per provider: chat, image generation, text to speech,
 speech to text, image understanding and text to video. Routing can pin a
 capability to one provider; an unassigned capability uses the first enabled
 provider that supports it. OpenRouter image requests use its dedicated Image
-API and image-model catalogue, so an app's Automatic choice picks an image
-model rather than sending the chat default. Tool calls work across all three
-protocols, including streaming tool calls, which is what the assistant uses.
+API and image-model catalogue. An app's Automatic choice uses a free
+OpenRouter image model (`:free`) and never falls back to a paid one; when the
+catalogue has no free image model, the request stops with a clear message
+instead of billing. OpenRouter's free models can chat, but none of its image
+models are free, so image generation there needs credits or another provider.
+Choose an image model explicitly to use a paid one. Tool calls work across all
+three protocols, including streaming tool calls, which is what the assistant
+uses.
 Provider keys never leave the server and are never returned to a browser or an
 app.
 
