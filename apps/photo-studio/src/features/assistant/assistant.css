@@ -3,6 +3,9 @@
 .assistant-panel { display: flex; flex-direction: column; min-height: 0; height: 100%; font-size: 12px; }
 .dock-drawer .assistant-panel { height: min(900px, calc(100dvh - 110px)); }
 .ast-log { flex: 1; min-height: 120px; overflow-y: auto; padding: 8px; display: flex; flex-direction: column; gap: 8px; outline: none; }
+/* Messages keep their full height: a tall plan scrolls in the log instead of
+ * being squeezed (and clipped by its rounded overflow) to fit it. */
+.ast-log > * { flex: 0 0 auto; }
 .ast-text p { margin: 0 0 6px; line-height: 1.45; overflow-wrap: anywhere; }
 .ast-text p:last-child { margin-bottom: 0; }
 .ast-text ul, .ast-text ol { margin: 0 0 6px; padding-left: 18px; line-height: 1.45; }

@@ -103,6 +103,48 @@ test('a described edit becomes a checked plan that runs as one undo step', async
   expect(JSON.stringify(last.messages)).toContain('Outcome: Done: 2 steps applied');
 });
 
+test('a long reply scrolls in the panel so the whole plan can be reviewed', async ({ page }) => {
+  await boot(page, 'default', EVERYTHING);
+  await openImage(page, 160, 120, '#406080', 'photo.png');
+  await openAssistant(page);
+  await script(page, {
+    text: Array.from(
+      { length: 14 },
+      (_, i) => `Paragraph ${i + 1}: a detailed explanation of what this plan changes and why, long enough to wrap onto several lines in the Assistant panel.`,
+    ).join('\n\n'),
+    calls: [
+      {
+        name: 'propose_plan',
+        args: {
+          title: 'A long plan',
+          summary: 'Many steps to check before running.',
+          steps: Array.from({ length: 16 }, (_, i) => ({
+            action: 'op.set_colors',
+            args: { foreground: `#${String(i + 1).padStart(2, '0')}4060` },
+            note: `Change ${i + 1}`,
+          })),
+        },
+      },
+    ],
+  });
+  await send(page, 'plan a long edit');
+  const plan = page.locator('.ast-plan');
+  await expect(plan.locator('.ast-step')).toHaveCount(16);
+  // The plan keeps its full height inside the scrolling log; it is not squeezed
+  // and clipped by the log's flex layout.
+  const log = page.locator('.ast-log');
+  const sizes = await log.evaluate((el) => ({ client: el.clientHeight, scroll: el.scrollHeight }));
+  expect(sizes.scroll).toBeGreaterThan(sizes.client);
+  await log.evaluate((el) => {
+    el.scrollTop = el.scrollHeight;
+  });
+  await expect(plan.locator('.ast-step').last()).toBeInViewport();
+  const run = plan.getByRole('button', { name: 'Run All' });
+  await expect(run).toBeInViewport();
+  await run.click();
+  await expect(plan.locator('.ast-outcome')).toContainText('Done: 16 steps applied');
+});
+
 test('plans are validated, edited, run step by step and stopped', async ({ page }) => {
   await boot(page, 'default', EVERYTHING);
   await openImage(page, 160, 120, '#406080', 'photo.png');
