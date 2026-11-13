@@ -26,7 +26,7 @@ export const PROVIDER_PRESETS = [
   { id: 'vllm', label: 'vLLM (local)', kind: 'openai', base_url: 'http://127.0.0.1:8000/v1', capabilities: ['chat', 'img2txt'] },
   { id: 'opencode', label: 'OpenCode Zen', kind: 'openai', base_url: 'https://opencode.ai/inference/openai/v1', capabilities: ['chat', 'img2txt'] },
   { id: 'openai', label: 'OpenAI', kind: 'openai', base_url: 'https://api.openai.com/v1', capabilities: ['chat', 'txt2img', 'txt2speech', 'speech2txt', 'img2txt'] },
-  { id: 'openrouter', label: 'OpenRouter', kind: 'openai', base_url: 'https://openrouter.ai/api/v1', capabilities: ['chat', 'img2txt'] },
+  { id: 'openrouter', label: 'OpenRouter', kind: 'openai', base_url: 'https://openrouter.ai/api/v1', capabilities: ['chat', 'txt2img', 'img2txt'] },
   { id: 'anthropic', label: 'Anthropic', kind: 'anthropic', base_url: 'https://api.anthropic.com', capabilities: ['chat', 'img2txt'] },
   { id: 'google', label: 'Google Gemini', kind: 'openai', base_url: 'https://generativelanguage.googleapis.com/v1beta/openai', capabilities: ['chat', 'img2txt'] },
   { id: 'groq', label: 'Groq', kind: 'openai', base_url: 'https://api.groq.com/openai/v1', capabilities: ['chat'] },
@@ -258,14 +258,85 @@ async function pumpLines(upstream, onPayload) {
 /* OpenAI-compatible                                                   */
 /* ------------------------------------------------------------------ */
 
+/** OpenRouter speaks the OpenAI chat protocol but has its own image API. */
+export function isOpenRouter(provider) {
+  return provider?.preset === 'openrouter' || /openrouter\.ai/i.test(provider?.base_url || '');
+}
+
 function openAiHeaders(provider) {
   const headers = { 'content-type': 'application/json' };
   if (provider.api_key) headers.authorization = `Bearer ${provider.api_key}`;
-  if (provider.kind === 'openai' && /openrouter\.ai/.test(provider.base_url || '')) {
+  if (provider.kind === 'openai' && isOpenRouter(provider)) {
     headers['HTTP-Referer'] = 'http://localhost';
     headers['X-Title'] = 'Everything Local';
   }
   return headers;
+}
+
+// Ratios OpenRouter's image models commonly accept. A request carries pixels;
+// the API wants a ratio and lets the provider derive the exact dimensions.
+const IMAGE_RATIOS = [
+  [1, 1], [1, 2], [2, 1], [1, 3], [3, 1], [1, 4], [4, 1],
+  [2, 3], [3, 2], [3, 4], [4, 3], [4, 5], [5, 4],
+  [5, 2], [2, 5], [5, 7], [7, 5], [9, 16], [16, 9],
+  [9, 19.5], [19.5, 9], [9, 20], [20, 9], [9, 21], [21, 9],
+  [2.35, 1], [1, 2.35],
+];
+
+function closestImageRatio(width, height) {
+  const value = Number(width) / Number(height);
+  if (!Number.isFinite(value) || value <= 0) return '';
+  let best = null;
+  let bestScore = Infinity;
+  for (const [w, h] of IMAGE_RATIOS) {
+    const score = Math.abs(Math.log(value / (w / h)));
+    if (score < bestScore) {
+      best = [w, h];
+      bestScore = score;
+    }
+  }
+  return best ? `${best[0]}:${best[1]}` : '';
+}
+
+/** Turn an app's requested dimensions into OpenRouter's ratio/size fields. */
+function openRouterImageSize({ size, width, height, aspect_ratio, resolution }) {
+  const out = {};
+  if (aspect_ratio) out.aspect_ratio = String(aspect_ratio);
+  if (resolution) out.resolution = String(resolution);
+  const pixels = /^(\d+)\s*x\s*(\d+)$/i.exec(String(size || '').trim());
+  const w = Number(width) || (pixels ? Number(pixels[1]) : 0);
+  const h = Number(height) || (pixels ? Number(pixels[2]) : 0);
+  if (!out.aspect_ratio && w > 0 && h > 0) {
+    const ratio = closestImageRatio(w, h);
+    if (ratio) out.aspect_ratio = ratio;
+  }
+  // A tier ("1K", "2K", "4K") is a convenience size in the Image API. Keep an
+  // explicit tier when the app supplied one; pixel sizes become a ratio only.
+  if (!out.resolution && /^(512|768|1K|1\.5K|2K|4K)$/i.test(String(size || '').trim())) {
+    out.resolution = String(size).trim().toUpperCase();
+  }
+  return out;
+}
+
+/** Normalize a quality value that may also be a Gemini-style resolution tier. */
+function openRouterImageQuality(value) {
+  const quality = String(value || '').trim().toLowerCase();
+  if (!quality) return {};
+  if (['auto', 'low', 'medium', 'high'].includes(quality)) return { quality };
+  if (/^(512|768|1k|1\.5k|2k|4k)$/i.test(quality)) {
+    return { resolution: quality.toUpperCase() };
+  }
+  return {};
+}
+
+function imageResult(data) {
+  const first = data?.data?.[0] || {};
+  const mime = first.media_type || 'image/png';
+  if (first.b64_json) {
+    return { src: toDataUrl(Buffer.from(first.b64_json, 'base64'), mime), media_type: mime };
+  }
+  if (first.url) return { src: first.url, media_type: mime };
+  throw unavailableError('The image provider returned no picture.', 502);
 }
 
 /** OpenAI chat content: text, image parts, and the tool turn kept intact. */
@@ -346,6 +417,23 @@ function createOpenAiAdapter(provider) {
       throw lastError;
     },
 
+    ...(isOpenRouter(provider) ? {
+      /** OpenRouter's dedicated Image API has its own model catalogue. */
+      async listImageModels() {
+        const res = await request(`${base}/images/models`, {
+          headers: openAiHeaders(provider),
+          signal: AbortSignal.timeout(15000),
+        });
+        await assertOk(res, 'The image provider');
+        const data = await readJson(res);
+        return (data.data || data.models || []).map((m) => ({
+          id: m.id || m.name,
+          name: m.name || m.id,
+          provider: provider.name,
+        })).filter((m) => m.id);
+      },
+    } : {}),
+
     async chat({ messages, model, stream, temperature, max_tokens, tools, tool_choice }, onDelta) {
       const res = await request(`${base}/chat/completions`, {
         method: 'POST',
@@ -406,22 +494,36 @@ function createOpenAiAdapter(provider) {
       };
     },
 
-    async txt2img({ prompt, model, size, input_image }) {
-      const body = { model: model || provider.default_model, prompt: String(prompt || ''), n: 1 };
-      if (size) body.size = size;
-      if (input_image) body.image = input_image;
-      const res = await request(`${base}/images/generations`, {
+    async txt2img(input) {
+      const { prompt, model, size, quality, width, height, aspect_ratio, resolution, input_image, input_images } = input;
+      const chosenModel = model || provider.default_model;
+      const body = { model: chosenModel, prompt: String(prompt || ''), n: 1 };
+      let endpoint = `${base}/images/generations`;
+
+      if (isOpenRouter(provider)) {
+        // OpenRouter's Image API is a sibling of the chat API, not OpenAI's
+        // /images/generations. It takes reference images as input_references.
+        endpoint = `${base}/images`;
+        Object.assign(body, openRouterImageSize({ size, width, height, aspect_ratio, resolution }));
+        Object.assign(body, openRouterImageQuality(quality));
+        const references = (Array.isArray(input_images) ? input_images : [input_image])
+          .filter((value) => typeof value === 'string' && value);
+        if (references.length) {
+          body.input_references = references.map((url) => ({ type: 'image_url', image_url: { url } }));
+        }
+      } else {
+        if (size) body.size = size;
+        if (input_image) body.image = input_image;
+      }
+
+      const res = await request(endpoint, {
         method: 'POST',
         headers: openAiHeaders(provider),
         body: JSON.stringify(body),
         signal: AbortSignal.timeout(provider.timeout_ms || 180000),
       });
       await assertOk(res, 'The image provider');
-      const data = await readJson(res);
-      const first = data?.data?.[0] || {};
-      if (first.b64_json) return { src: toDataUrl(Buffer.from(first.b64_json, 'base64'), 'image/png') };
-      if (first.url) return { src: first.url };
-      throw unavailableError('The image provider returned no picture.', 502);
+      return imageResult(await readJson(res));
     },
 
     async txt2speech({ text, model, voice }) {

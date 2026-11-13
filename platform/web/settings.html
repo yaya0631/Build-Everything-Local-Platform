@@ -482,6 +482,7 @@
           <div class="field">
             <label for="default-model">Default model</label>
             <input id="default-model" name="default_model" type="text" placeholder="model-id" autocomplete="off" spellcheck="false" />
+            <span class="hint">Used for chat. Image generation uses the provider's image catalogue when it has one, as OpenRouter does.</span>
           </div>
           <div class="field">
             <label for="timeout">Timeout (ms)</label>
@@ -819,6 +820,8 @@
 
       function applyPreset(id) {
         const preset = state.presets.find((p) => p.id === id);
+        const form = $('provider-form');
+        form.dataset.preset = id || '';
         if (!preset) return;
         $('name').value = preset.label;
         $('kind').value = preset.kind;
@@ -833,6 +836,7 @@
         const form = $('provider-form');
         form.reset();
         form.dataset.id = provider ? provider.id : '';
+        form.dataset.preset = provider ? provider.preset || '' : '';
         $('provider-dialog-title').textContent = provider ? 'Edit provider' : 'Add provider';
         $('save-provider').textContent = provider ? 'Save changes' : 'Save provider';
         $('api-key').value = '';
@@ -844,7 +848,7 @@
         $('test-result').replaceChildren();
 
         if (provider) {
-          $('preset').value = '';
+          $('preset').value = state.presets.some((preset) => preset.id === provider.preset) ? provider.preset : '';
           $('name').value = provider.name || '';
           $('kind').value = provider.kind || 'openai';
           $('base-url').value = provider.base_url || '';
@@ -867,6 +871,7 @@
         const payload = {
           name: $('name').value.trim(),
           kind: $('kind').value,
+          preset: $('provider-form').dataset.preset || '',
           base_url: $('base-url').value.trim(),
           default_model: $('default-model').value.trim(),
           timeout_ms: Number($('timeout').value) || 120000,

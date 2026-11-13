@@ -737,11 +737,17 @@
     },
     txt2img: function (prompt, options) {
       var o = options || {};
+      var ratio = o.ratio && typeof o.ratio === 'object' ? o.ratio : null;
       return aiPost('/ai/txt2img', {
         prompt: String(prompt ?? ''),
         model: o.model,
         size: o.size,
+        width: o.width || (ratio && ratio.w),
+        height: o.height || (ratio && ratio.h),
+        aspect_ratio: o.aspect_ratio,
+        quality: o.quality,
         input_image: o.input_image,
+        input_images: o.input_images,
         options: o,
       }).then(imageResult);
     },

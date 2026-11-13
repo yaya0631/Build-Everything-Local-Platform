@@ -138,16 +138,19 @@ Three wire protocols cover the field:
 
 | Protocol | Used by | Endpoints appended to the base URL |
 | --- | --- | --- |
-| OpenAI-compatible | OpenRouter, Gemini, OpenCode Zen, OpenAI, and most hosted or local servers | `/chat/completions`, `/images/generations`, `/audio/speech`, `/audio/transcriptions` |
+| OpenAI-compatible | OpenRouter, Gemini, OpenCode Zen, OpenAI, and most hosted or local servers | `/chat/completions`, `/images/generations` (`/images` on OpenRouter), `/audio/speech`, `/audio/transcriptions` |
 | Anthropic Messages | Anthropic and compatible gateways | `/v1/messages` |
 | Ollama native | Ollama | `/api/chat` |
 
 Capabilities are selected per provider: chat, image generation, text to speech,
 speech to text, image understanding and text to video. Routing can pin a
 capability to one provider; an unassigned capability uses the first enabled
-provider that supports it. Tool calls work across all three protocols, including
-streaming tool calls, which is what the assistant uses. Provider keys never
-leave the server and are never returned to a browser or an app.
+provider that supports it. OpenRouter image requests use its dedicated Image
+API and image-model catalogue, so an app's Automatic choice picks an image
+model rather than sending the chat default. Tool calls work across all three
+protocols, including streaming tool calls, which is what the assistant uses.
+Provider keys never leave the server and are never returned to a browser or an
+app.
 
 Until a provider is saved, apps run normally and AI features report that they
 are unavailable. Image, video, speech and OCR calls fail cleanly rather than

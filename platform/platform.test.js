@@ -9,6 +9,7 @@ import vm from 'node:vm';
 import { DatabaseSync } from 'node:sqlite';
 import { createPlatformServer, isValidLocalHost, isValidLocalOrigin } from './server/index.js';
 import { initAuth, listUsers, createUser } from './server/auth.js';
+import { initAi } from './server/ai.js';
 
 const TEST_USERS = {
   alice: { password: 'alice-password', role: 'admin' },
@@ -631,7 +632,7 @@ test('Platform Conformance Suite (Section 4 + Security + Peer + Workers)', async
 
   await t.test('9. everything.ai (provider config, chat + streaming, image/speech/OCR, graceful degradation)', async () => {
     // One mock that speaks all three wire protocols the adapters support.
-    const seen = { auth: [], paths: [], lastTools: null, lastModel: null };
+    const seen = { auth: [], paths: [], lastTools: null, lastModel: null, lastImageRequest: null };
     const testTools = [{
       type: 'function',
       function: {
@@ -654,6 +655,14 @@ test('Platform Conformance Suite (Section 4 + Security + Peer + Workers)', async
 
       if (req.url === '/api/tags') return send(200, { models: [{ name: 'local-llama' }] });
       if (req.url === '/v1/models') return send(200, { data: [{ id: 'remote-model' }, { id: 'vendor/claude-opus-5.5' }] });
+      if (req.url === '/v1/images/models') {
+        return send(200, {
+          data: [
+            { id: 'google/gemini-3.1-flash-image', name: 'Google: Gemini 3.1 Flash Image' },
+            { id: 'openai/gpt-image-2', name: 'OpenAI: GPT Image 2' },
+          ],
+        });
+      }
 
       let body = '';
       for await (const c of req) body += c;
@@ -711,6 +720,13 @@ test('Platform Conformance Suite (Section 4 + Security + Peer + Workers)', async
       }
       if (req.url === '/v1/images/generations') {
         return send(200, { data: [{ b64_json: Buffer.from('PNGDATA').toString('base64') }] });
+      }
+      if (req.url === '/v1/images') {
+        seen.lastImageRequest = JSON.parse(body);
+        return send(200, {
+          data: [{ b64_json: Buffer.from('WEBPDATA').toString('base64'), media_type: 'image/webp' }],
+          usage: { cost: 0.02 },
+        });
       }
       if (req.url === '/v1/audio/speech') {
         res.writeHead(200, { 'Content-Type': 'audio/mpeg' });
@@ -932,6 +948,57 @@ test('Platform Conformance Suite (Section 4 + Security + Peer + Workers)', async
 
     const img = await everything.ai.txt2img('a cat');
     assert.ok(String(img.src).startsWith('data:image/png;base64,'), 'txt2img resolves an image with a data URL src');
+
+    // OpenRouter has a dedicated Image API and image-model catalogue. An
+    // Automatic request must choose an image model, never the chat default.
+    const openrouter = await api(port, '/ai/providers', {
+      method: 'POST',
+      body: {
+        name: 'Mock OpenRouter',
+        kind: 'openai',
+        preset: 'openrouter',
+        base_url: `${aiBase}/v1`,
+        api_key: 'or-test',
+        default_model: 'remote-model',
+        capabilities: ['chat', 'txt2img', 'img2txt'],
+      },
+    });
+    assert.equal(openrouter.preset, 'openrouter', 'the preset is stored so the adapter keeps its image API');
+    await api(port, '/ai/routes', { method: 'POST', body: { routes: { txt2img: openrouter.id } } });
+
+    const openRouterImageModels = await api(port, '/ai/models?capability=txt2img');
+    assert.deepEqual(
+      openRouterImageModels.filter((m) => m.provider_id === openrouter.id).map((m) => m.id),
+      ['google/gemini-3.1-flash-image', 'openai/gpt-image-2'],
+      'the image catalogue is offered without the chat default'
+    );
+
+    seen.lastImageRequest = null;
+    const openRouterImage = await everything.ai.txt2img('a blue dog', { ratio: { w: 1600, h: 900 }, quality: 'high' });
+    assert.ok(String(openRouterImage.src).startsWith('data:image/webp;base64,'), 'the response media_type is preserved');
+    assert.equal(seen.lastImageRequest.model, 'google/gemini-3.1-flash-image', 'Automatic resolves an image model');
+    assert.equal(seen.lastImageRequest.aspect_ratio, '16:9', 'pixel dimensions become an aspect ratio');
+    assert.equal(seen.lastImageRequest.quality, 'high');
+    assert.equal(seen.lastImageRequest.prompt, 'a blue dog');
+    assert.ok(seen.auth.includes('Bearer or-test'), 'the OpenRouter key is sent upstream');
+
+    const openRouterExplicit = await everything.ai.txt2img('a blue dog', { model: 'gpt-image-2', ratio: { w: 1024, h: 1024 } });
+    assert.equal(seen.lastImageRequest.model, 'openai/gpt-image-2', 'an app image model is mapped to the provider spelling');
+    assert.equal(seen.lastImageRequest.aspect_ratio, '1:1');
+    assert.ok(String(openRouterExplicit.src).startsWith('data:image/webp;base64,'));
+
+    await everything.ai.txt2img('make it watercolour', {
+      model: 'gemini-3.1-flash-image',
+      quality: '2K',
+      input_image: 'data:image/png;base64,AAAA',
+    });
+    assert.equal(seen.lastImageRequest.model, 'google/gemini-3.1-flash-image');
+    assert.equal(seen.lastImageRequest.resolution, '2K', 'Gemini quality tiers become an image resolution');
+    assert.deepEqual(seen.lastImageRequest.input_references, [{
+      type: 'image_url',
+      image_url: { url: 'data:image/png;base64,AAAA' },
+    }]);
+    await api(port, '/ai/providers/delete', { method: 'POST', body: { id: openrouter.id } });
 
     const speech = await everything.ai.txt2speech('hello there', { voice: 'alloy' });
     assert.ok(String(speech.src).startsWith('data:audio/mpeg;base64,'), 'txt2speech resolves audio with a data URL src');
@@ -1360,6 +1427,37 @@ test('First run: setup, invites, admin protection and password recovery', async 
   assert.equal(signedOut.status, 200);
   assert.match(signedOut.headers.get('set-cookie') || '', /Max-Age=0/);
   assert.equal((await rawRequest(port, '/api/auth/whoami', { token: adminToken })).status, 401);
+});
+
+test('OpenRouter providers gain image generation once without losing their key', () => {
+  const db = new DatabaseSync(':memory:');
+  try {
+    initAi(db);
+    // Simulate a database saved before OpenRouter image support existed.
+    db.prepare('DELETE FROM ai_settings WHERE key = ?').run('migration.openrouter_images_v1');
+    db.prepare(`
+      INSERT INTO ai_providers
+        (id, name, kind, base_url, api_key, default_model, models_json, capabilities_json, timeout_ms, enabled, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      'prov-old', 'Openrouter', 'openai', 'https://openrouter.ai/api/v1/', 'sk-secret',
+      'nemotron-3.5-super-vl:free', '[]', '["chat","img2txt"]', 120000, 1, Date.now(), Date.now()
+    );
+
+    initAi(db);
+
+    const migrated = db.prepare('SELECT * FROM ai_providers WHERE id = ?').get('prov-old');
+    assert.deepEqual(JSON.parse(migrated.capabilities_json), ['chat', 'img2txt', 'txt2img']);
+    assert.equal(migrated.preset, 'openrouter');
+    assert.equal(migrated.api_key, 'sk-secret', 'the saved key is untouched');
+
+    // The migration is one-time: a later deliberate capability change stands.
+    db.prepare('UPDATE ai_providers SET capabilities_json = ? WHERE id = ?').run('["chat"]', 'prov-old');
+    initAi(db);
+    assert.deepEqual(JSON.parse(db.prepare('SELECT capabilities_json FROM ai_providers WHERE id = ?').get('prov-old').capabilities_json), ['chat']);
+  } finally {
+    db.close();
+  }
 });
 
 test('Legacy passwordless accounts migrate without exposing the worker user', () => {

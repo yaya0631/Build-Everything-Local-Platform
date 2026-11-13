@@ -12,7 +12,42 @@
  */
 
 import crypto from 'node:crypto';
-import { createAdapter, PROVIDER_PRESETS, PROVIDER_KINDS, CAPABILITIES, unavailableError } from './ai-providers.js';
+import { createAdapter, isOpenRouter, PROVIDER_PRESETS, PROVIDER_KINDS, CAPABILITIES, unavailableError } from './ai-providers.js';
+
+function hasColumn(db, table, column) {
+  return db.prepare(`PRAGMA table_info(${table})`).all().some((row) => row.name === column);
+}
+
+/**
+ * Provider records written before OpenRouter's dedicated Image API was
+ * supported have no `txt2img` capability. Add it once, preserving the key and
+ * every other setting, so image requests start working without a re-save.
+ */
+function migrateOpenRouterImages(db) {
+  const key = 'migration.openrouter_images_v1';
+  if (db.prepare('SELECT 1 FROM ai_settings WHERE key = ?').get(key)) return;
+  const rows = db.prepare('SELECT id, kind, base_url, capabilities_json FROM ai_providers').all();
+  const update = db.prepare(`
+    UPDATE ai_providers
+    SET capabilities_json = ?,
+        preset = CASE WHEN preset IS NULL OR preset = '' THEN 'openrouter' ELSE preset END,
+        updated_at = ?
+    WHERE id = ?
+  `);
+  for (const row of rows) {
+    if (!/openrouter\.ai/i.test(row.base_url || '')) continue;
+    let capabilities = defaultCapabilities(row.kind);
+    try {
+      const parsed = JSON.parse(row.capabilities_json || '[]');
+      if (Array.isArray(parsed) && parsed.length) capabilities = parsed;
+    } catch {
+      /* fall back to the protocol defaults */
+    }
+    if (!capabilities.includes('txt2img')) capabilities.push('txt2img');
+    update.run(JSON.stringify(capabilities), Date.now(), row.id);
+  }
+  db.prepare('INSERT OR REPLACE INTO ai_settings (key, value_json) VALUES (?, ?)').run(key, 'true');
+}
 
 export function initAi(db) {
   db.exec(`
@@ -20,6 +55,7 @@ export function initAi(db) {
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL,
       kind TEXT NOT NULL,
+      preset TEXT,
       base_url TEXT NOT NULL,
       api_key TEXT,
       default_model TEXT,
@@ -35,6 +71,10 @@ export function initAi(db) {
       value_json TEXT NOT NULL
     );
   `);
+  if (!hasColumn(db, 'ai_providers', 'preset')) {
+    db.exec('ALTER TABLE ai_providers ADD COLUMN preset TEXT');
+  }
+  migrateOpenRouterImages(db);
 }
 
 /** Capabilities a provider kind can serve without extra configuration. */
@@ -50,6 +90,7 @@ function rowToProvider(row) {
     id: row.id,
     name: row.name,
     kind: row.kind,
+    preset: row.preset || '',
     base_url: row.base_url,
     api_key: row.api_key || '',
     default_model: row.default_model || '',
@@ -87,6 +128,21 @@ function looseModelKey(id) {
     .replace(/[\s_.:]+/g, '-')
     .replace(/-+/g, '-');
 }
+
+/**
+ * Photo Studio (and older settings) use these vendor-less image model names.
+ * OpenRouter requires the vendor prefix, so keep a last-resort mapping for
+ * when the live image catalogue cannot be reached.
+ */
+const IMAGE_MODEL_ALIASES = {
+  'gpt-image-1': 'openai/gpt-image-1',
+  'gpt-image-2': 'openai/gpt-image-2',
+  'gemini-3.1-flash-image': 'google/gemini-3.1-flash-image',
+  'gemini-3-pro-image': 'google/gemini-3-pro-image',
+};
+
+/** A stable automatic image model, preferred in this order when one exists. */
+const DEFAULT_IMAGE_MODELS = ['google/gemini-3.1-flash-image', 'openai/gpt-image-2'];
 
 /** The provider's spelling of a model, or '' when it cannot be told apart. */
 function canonicalModelId(wanted, ids) {
@@ -147,6 +203,7 @@ export function createAiService(ctx) {
     return {
       name,
       kind,
+      preset: PROVIDER_PRESETS.some((preset) => preset.id === input.preset) ? String(input.preset) : '',
       base_url: baseUrl,
       api_key: input.api_key === undefined ? undefined : String(input.api_key || '').trim(),
       default_model: String(input.default_model || '').trim(),
@@ -166,29 +223,32 @@ export function createAiService(ctx) {
     const id = existing ? existing.id : `prov-${crypto.randomBytes(6).toString('hex')}`;
     // An empty api_key on update means "keep the stored key".
     const apiKey = clean.api_key === undefined ? existing?.api_key ?? '' : clean.api_key || '';
+    // A preset is behaviour, not just a form-filling aid: it decides which
+    // image API the adapter calls. Preserve it when an edit does not name one.
+    const preset = clean.preset || existing?.preset || '';
 
     db.prepare(`
-      INSERT INTO ai_providers (id, name, kind, base_url, api_key, default_model, models_json, capabilities_json, timeout_ms, enabled, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO ai_providers (id, name, kind, preset, base_url, api_key, default_model, models_json, capabilities_json, timeout_ms, enabled, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
-        name = excluded.name, kind = excluded.kind, base_url = excluded.base_url, api_key = excluded.api_key,
-        default_model = excluded.default_model, models_json = excluded.models_json,
+        name = excluded.name, kind = excluded.kind, preset = excluded.preset, base_url = excluded.base_url,
+        api_key = excluded.api_key, default_model = excluded.default_model, models_json = excluded.models_json,
         capabilities_json = excluded.capabilities_json, timeout_ms = excluded.timeout_ms,
         enabled = excluded.enabled, updated_at = excluded.updated_at
     `).run(
-      id, clean.name, clean.kind, clean.base_url, apiKey, clean.default_model,
+      id, clean.name, clean.kind, preset, clean.base_url, apiKey, clean.default_model,
       JSON.stringify(clean.models), JSON.stringify(clean.capabilities),
       clean.timeout_ms, clean.enabled ? 1 : 0, existing?.created_at ?? now, now
     );
     adapterCache.delete(id);
-    modelCache.delete(id);
+    clearModelCache(id);
     return getProvider(id);
   }
 
   function deleteProvider(id) {
     db.prepare('DELETE FROM ai_providers WHERE id = ?').run(String(id));
     adapterCache.delete(String(id));
-    modelCache.delete(String(id));
+    clearModelCache(String(id));
     const routes = getSetting('routes', {});
     for (const [cap, provId] of Object.entries(routes)) {
       if (provId === id) delete routes[cap];
@@ -210,20 +270,35 @@ export function createAiService(ctx) {
       .map((m) => ({ id: String(m.id), name: String(m.name || m.id) }));
   }
 
+  function clearModelCache(id) {
+    const prefix = `${id}:`;
+    for (const key of modelCache.keys()) {
+      if (key === id || key.startsWith(prefix)) modelCache.delete(key);
+    }
+  }
+
+  /** Some providers (OpenRouter) have a separate catalogue for image models. */
+  function usesImageCatalog(provider, capability) {
+    return capability === 'txt2img' && typeof adapterFor(provider).listImageModels === 'function';
+  }
+
   /** The provider's live catalogue, cached; an unreachable provider keeps the last list it gave. */
-  async function liveModels(provider) {
+  async function liveModels(provider, capability) {
+    const imageCatalog = usesImageCatalog(provider, capability);
+    const cacheKey = `${provider.id}:${imageCatalog ? 'txt2img' : 'all'}`;
     const now = Date.now();
-    const hit = modelCache.get(provider.id);
+    const hit = modelCache.get(cacheKey);
     if (hit && now - hit.at < (hit.ok ? MODEL_CACHE_MS : MODEL_FAILURE_MS)) return hit.models;
     try {
-      const models = await adapterFor(provider).listModels();
+      const adapter = adapterFor(provider);
+      const models = imageCatalog ? await adapter.listImageModels() : await adapter.listModels();
       const clean = (Array.isArray(models) ? models : [])
         .map((m) => ({ id: String(m?.id || m?.name || ''), name: String(m?.name || m?.id || '') }))
         .filter((m) => m.id);
-      modelCache.set(provider.id, { at: now, ok: true, models: clean });
+      modelCache.set(cacheKey, { at: now, ok: true, models: clean });
       return clean;
     } catch {
-      modelCache.set(provider.id, { at: now, ok: false, models: hit?.models || [] });
+      modelCache.set(cacheKey, { at: now, ok: false, models: hit?.models || [] });
       return hit?.models || [];
     }
   }
@@ -231,19 +306,21 @@ export function createAiService(ctx) {
   /**
    * Everything an app may choose for a provider: its live models, models saved
    * in Settings, and the configured default. The default is resolved to the
-   * provider's own spelling when possible and marked `default`.
+   * provider's own spelling when possible and marked `default`. Image models
+   * come from the provider's image catalogue and never inherit a chat default.
    */
   async function providerModels(provider, capability) {
     if (capability && !provider.capabilities.includes(capability)) return [];
+    const imageCatalog = usesImageCatalog(provider, capability);
     const entries = new Map();
-    for (const m of await liveModels(provider)) {
+    for (const m of await liveModels(provider, capability)) {
       entries.set(m.id, { id: m.id, name: m.name, provider: provider.name, provider_id: provider.id, source: 'live' });
     }
     for (const m of savedModels(provider)) {
       if (!entries.has(m.id)) entries.set(m.id, { ...m, provider: provider.name, provider_id: provider.id, source: 'saved' });
     }
     const wanted = String(provider.default_model || '').trim();
-    if (wanted) {
+    if (wanted && !imageCatalog) {
       const id = canonicalModelId(wanted, [...entries.keys()]) || wanted;
       if (entries.has(id)) entries.get(id).default = true;
       else entries.set(id, { id, name: wanted, provider: provider.name, provider_id: provider.id, source: 'default', default: true });
@@ -275,6 +352,39 @@ export function createAiService(ctx) {
     return canonicalModelId(wanted, available.map((m) => m.id)) || wanted;
   }
 
+  /**
+   * The model an image request should ask for. An app's explicit choice wins,
+   * matched to the provider's own spelling. With no choice, providers that
+   * publish a separate image catalogue use a stable image model from it; a
+   * chat default must never be sent to an image API.
+   */
+  async function resolveImageModel(provider, requested) {
+    const wanted = String(requested || '').trim();
+    const available = await providerModels(provider, 'txt2img');
+    const ids = available.map((m) => m.id);
+
+    if (wanted) {
+      const canonical = canonicalModelId(wanted, ids);
+      if (canonical) return canonical;
+      if (isOpenRouter(provider)) {
+        const alias = IMAGE_MODEL_ALIASES[looseModelKey(wanted)];
+        if (alias) return alias;
+      }
+      return wanted;
+    }
+
+    if (usesImageCatalog(provider, 'txt2img')) {
+      for (const id of DEFAULT_IMAGE_MODELS) {
+        if (ids.includes(id)) return id;
+      }
+      if (ids.length) return ids[0];
+      // The catalogue was unreachable. Let the provider report the real error
+      // rather than sending its chat model to the image endpoint.
+      return DEFAULT_IMAGE_MODELS[0];
+    }
+    return String(provider.default_model || '').trim();
+  }
+
   /** Build a provider record from a form payload without saving it. */
   function providerFromInput(input) {
     const clean = normalizeInput(input);
@@ -282,6 +392,7 @@ export function createAiService(ctx) {
     return {
       id: existing?.id || 'preview',
       ...clean,
+      preset: clean.preset || existing?.preset || '',
       api_key: clean.api_key === undefined ? existing?.api_key || '' : clean.api_key || '',
       created_at: existing?.created_at || Date.now(),
       updated_at: Date.now(),
@@ -371,6 +482,7 @@ export function createAiService(ctx) {
     adapterFor,
     listModels,
     resolveChatModel,
+    resolveImageModel,
     getSetting,
     setSetting,
     resolve,
@@ -624,8 +736,8 @@ export async function handleAi(ctx, req, res, url, body, user, sendJson) {
 
     /* ---- single-shot capabilities ---- */
     if (p === '/api/ai/txt2img') {
-      const result = await ai.withFallback('txt2img', (adapter, provider) =>
-        adapter.txt2img({ ...body, model: body?.model || provider.default_model })
+      const result = await ai.withFallback('txt2img', async (adapter, provider) =>
+        adapter.txt2img({ ...body, model: await ai.resolveImageModel(provider, body?.model) })
       );
       return sendJson(res, 200, result);
     }
