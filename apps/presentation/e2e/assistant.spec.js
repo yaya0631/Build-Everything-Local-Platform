@@ -127,9 +127,9 @@ test("the assistant edits the slide, shows its steps, and undoes its reply", asy
   const requests = await page.evaluate(() => window.__requests);
   expect(requests).toHaveLength(2);
   expect(requests[0].options).toMatchObject({
-    model: "claude-opus-5-5",
     stream: true,
   });
+  expect(requests[0].options).not.toHaveProperty("model");
   expect(requests[0].options.tools).toBeGreaterThan(10);
   expect(requests[0].messages[1].content).toContain("<presentation_state>");
   expect(requests[0].messages[1].content).toContain("The user is on slide 1");

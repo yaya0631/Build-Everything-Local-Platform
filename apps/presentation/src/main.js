@@ -133,7 +133,6 @@ import {
 } from "./views/sections-model.js";
 import "./chrome/chrome.css";
 import { NO_CHANGE } from "./assistant-tools.js";
-import { AI_MODEL } from "./assistant.js";
 import { zipSync } from "fflate";
 import * as drafts from "./drafts.js";
 import * as recent from "./recent.js";
@@ -1173,7 +1172,6 @@ async function deckFromPrompt(description, options) {
   const { pres, name } = await generateDeck(description, {
     ...options,
     chat: (messages, opts) => cloud.aiChatStream(messages, opts),
-    model: AI_MODEL,
   });
   if (options.signal?.aborted || view !== "home") return;
   await openDocument(() => ({ pres, name, color: options.theme }));
@@ -4123,7 +4121,6 @@ const drawTools = createDrawTools({
   renderSlide: (s) => preview(doc.pres, s),
   chat: () =>
     cloud.canAI() ? globalThis.everything.ai.chat.bind(globalThis.everything.ai) : null,
-  aiModel: AI_MODEL,
   // Ink to Math sets what it reads as an equation object (src/insert),
   // looked up when used: the insert features are made after the Draw tab.
   equation: () => insertFeatures?.equations || null,

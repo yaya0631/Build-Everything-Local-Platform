@@ -227,7 +227,7 @@ describe('assistant panel', () => {
     expect(reply.querySelector('.cell-ref').textContent).toBe('A3');
     expect(reply.getAttribute('aria-busy')).toBeNull();
     expect(__everythingAnalytics.mock.calls).toEqual([['AI Interaction', { props: { feature: 'assistant', changed: true } }]]);
-    expect(P.aiChatStream.mock.calls[0][1].model).toBe('claude-opus-5-5');
+    expect(P.aiChatStream.mock.calls[0][1].model).toBeUndefined();
     const undo = reply.querySelector('.ai-undo');
     expect(undo.disabled).toBe(false);
     undo.click();

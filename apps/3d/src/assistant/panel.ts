@@ -13,29 +13,25 @@ import { readAttachment } from './attachments';
 import { viewportUI } from './capture';
 import { renderMarkdown } from './markdown';
 import { SYSTEM_PROMPT, sceneSnapshot } from './prompt';
-import { inEverythingDesktop, isSignedIn, loadEverything, signIn } from './everything';
+import { type AssistantModel, inEverythingDesktop, isSignedIn, listAssistantModels, loadEverything, signIn } from './everything';
 import { type AssistantHost, runTool, toolSpecs } from './tools';
 
-export const ASSISTANT_MODELS: { id: string; label: string; title: string }[] = [
-  { id: 'claude-fable-5-1', label: 'Fable 5.1', title: 'Claude Fable 5.1: the most capable' },
-  { id: 'claude-opus-5-5', label: 'Opus 5.5', title: 'Claude Opus 5.5' },
-  { id: 'claude-sonnet-5-5', label: 'Sonnet 5.5', title: 'Claude Sonnet 5.5: faster' },
-  { id: 'claude-haiku-5-5', label: 'Haiku 5.5', title: 'Claude Haiku 5.5: the fastest' },
-];
-const DEFAULT_MODEL = 'claude-opus-5-5';
+/** The empty id means "Automatic": let the server use the model chosen in Settings. */
+export const AUTO_MODEL = '';
 const SETTINGS_KEY = 'p3d:assistant';
 
 /** Development builds and browser tests may stand in for Everything AI with window.__assistantChat. */
 const devChat = (): ChatFn | null => (import.meta.env.DEV ? ((window as unknown as { __assistantChat?: ChatFn }).__assistantChat ?? null) : null);
 
-function loadModel(): string {
+/** The model last picked here; it is used only once the configured list confirms it. */
+function loadSavedModel(): string {
   try {
     const v = JSON.parse(localStorage.getItem(SETTINGS_KEY) ?? '{}') as { model?: string };
-    if (v.model && ASSISTANT_MODELS.some((m) => m.id === v.model)) return v.model;
+    if (typeof v.model === 'string') return v.model;
   } catch {
     /* settings are optional */
   }
-  return DEFAULT_MODEL;
+  return AUTO_MODEL;
 }
 
 function saveModel(model: string) {
@@ -160,7 +156,11 @@ export class AssistantPanel {
   private status: HTMLElement;
   private agent: Agent;
   private host: AssistantHost = { app, ui: viewportUI };
-  private model = loadModel();
+  private model = AUTO_MODEL;
+  private models: AssistantModel[] = [];
+  private modelsLoading: Promise<void> | null = null;
+  private modelsLoaded = false;
+  private modelSel: HTMLSelectElement;
   private renderQueued = false;
   private turn: Turn | null = null;
   private pendingText: Segment | null = null;
@@ -185,13 +185,11 @@ export class AssistantPanel {
     });
 
     const modelSel = el('select', { class: 'as-model', 'aria-label': 'AI model', title: 'AI model' });
-    for (const m of ASSISTANT_MODELS) {
-      const o = el('option', { value: m.id, title: m.title }, m.label);
-      o.selected = m.id === this.model;
-      modelSel.append(o);
-    }
+    this.modelSel = modelSel;
+    this.renderModels();
     modelSel.addEventListener('change', () => {
       this.model = modelSel.value;
+      this.renderModels();
       saveModel(this.model);
     });
     const newChat = el('button', { class: 'as-icon-btn', type: 'button', 'aria-label': 'New chat', 'data-tip': 'New Chat' }, ic('new_chat'));
@@ -243,6 +241,54 @@ export class AssistantPanel {
     );
     this.bindDrop();
     this.renderEmpty();
+    void this.loadModels();
+  }
+
+  /** Fill the picker from the models configured in Settings; no hardcoded ids. */
+  private loadModels(): Promise<void> {
+    if (this.modelsLoaded) return Promise.resolve();
+    if (this.modelsLoading) return this.modelsLoading;
+    this.modelsLoading = (async () => {
+      const models = await listAssistantModels();
+      if (!models) return; // signed out or offline: try again when a message is sent
+      this.models = models;
+      this.modelsLoaded = true;
+      const saved = loadSavedModel();
+      if (saved && models.some((m) => m.id === saved)) this.model = saved;
+      else if (saved) saveModel(AUTO_MODEL); // a model that is no longer configured
+      this.renderModels();
+    })().finally(() => {
+      this.modelsLoading = null;
+    });
+    return this.modelsLoading;
+  }
+
+  private renderModels() {
+    const sel = this.modelSel;
+    if (!sel) return;
+    sel.replaceChildren();
+    const auto = el('option', { value: AUTO_MODEL, title: 'Use the model chosen in Settings' }, 'Automatic');
+    auto.selected = this.model === AUTO_MODEL;
+    sel.append(auto);
+    const groups = new Map<string, AssistantModel[]>();
+    for (const m of this.models) {
+      const key = m.provider || 'Configured';
+      const list = groups.get(key) ?? [];
+      list.push(m);
+      groups.set(key, list);
+    }
+    for (const [provider, models] of groups) {
+      const group = document.createElement('optgroup');
+      group.label = provider;
+      for (const m of models.sort((a, b) => Number(!!b.default) - Number(!!a.default) || (a.name || a.id).localeCompare(b.name || b.id))) {
+        const o = el('option', { value: m.id, title: m.id }, m.name && m.name !== m.id ? m.name : m.id);
+        o.selected = m.id === this.model;
+        group.append(o);
+      }
+      sel.append(group);
+    }
+    sel.value = this.model;
+    sel.title = this.model || 'Automatic: use the model chosen in Settings';
   }
 
   get busy() {
@@ -350,6 +396,7 @@ export class AssistantPanel {
       this.notice('Sign in to your Everything account to use the assistant (it runs on Everything AI).', btn);
       return false;
     }
+    await this.loadModels();
     return true;
   }
 

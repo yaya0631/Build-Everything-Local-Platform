@@ -16,6 +16,7 @@ import type { ChatFn, StreamPart } from '../../src/assistant/ai';
 import { SYSTEM_PROMPT, sceneSnapshot } from '../../src/assistant/prompt';
 import { type Attachment, attachmentKind, attachmentMeta, attachmentsGone, attachmentsIntro, imageBlock, offerImages } from '../../src/assistant/attach';
 import { clearScriptFiles } from '../../src/scripting/files';
+import { listAssistantModels } from '../../src/assistant/everything';
 
 let host: AssistantHost;
 const objectNames = () => Object.values(app.doc.objects).map((o) => o.name).sort();
@@ -245,5 +246,38 @@ describe('docking beside the workspace', () => {
     // too little room left for the main editor: both sides scale instead
     fitLayoutWidth(layout, 1002, 400);
     expect(top.ratio).toBeCloseTo(0.7, 6);
+  });
+});
+
+describe('configured assistant models', () => {
+  it('lists the chat models chosen in Settings, and nothing when they cannot be fetched', async () => {
+    const w = globalThis as unknown as { everything?: unknown };
+    const before = w.everything;
+    try {
+      w.everything = {};
+      expect(await listAssistantModels()).toBeNull();
+      const asked: unknown[] = [];
+      w.everything = {
+        ai: {
+          listModels: async (options: unknown) => {
+            asked.push(options);
+            return [
+              { id: 'vendor/model-a', name: 'Model A', provider: 'OpenRouter', provider_id: 'p1', default: true },
+              { name: 'model-b' },
+              { id: '' },
+            ];
+          },
+        },
+      };
+      expect(await listAssistantModels()).toEqual([
+        { id: 'vendor/model-a', name: 'Model A', provider: 'OpenRouter', provider_id: 'p1', default: true },
+        { id: 'model-b', name: 'model-b', provider: 'Configured', provider_id: '', default: false },
+      ]);
+      expect(asked).toEqual([{ capability: 'chat' }]);
+      w.everything = { ai: { listModels: async () => { throw new Error('offline'); } } };
+      expect(await listAssistantModels()).toBeNull();
+    } finally {
+      w.everything = before;
+    }
   });
 });

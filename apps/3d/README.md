@@ -95,7 +95,8 @@ first use), Text Editor with run script, Python Console, script-registered opera
 shows and hides it, and the choice is remembered) where you describe what to build or change. It runs
 on Everything AI: it reads the scene, writes and runs scripts against the `bpy`-style API (a failing script
 is rolled back), looks up the API, takes viewport screenshots to check its work, and reads attached
-reference images, PDFs and text files. Everything it changes for one message is a single undo step.
+reference images, PDFs and text files. Everything it changes for one message is a single undo step. It
+runs on the chat model chosen in Settings, or another configured model picked in the panel's model menu.
 
 **Files.** Native `.p3d` project format with autosave/recovery; import of `.blend` files written by
 Blender 2.80–5.x; import/export of glTF/GLB, FBX, OBJ/MTL, STL, PLY and USD (USDA/USDC/USDZ);

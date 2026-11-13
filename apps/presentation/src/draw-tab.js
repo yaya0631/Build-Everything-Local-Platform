@@ -88,7 +88,6 @@ export function createDrawTools({
   selectShapes = () => {},
   renderSlide = null,
   chat = () => null,
-  aiModel = undefined,
   shapeLabels = {},
   equation = null,
 }) {
@@ -523,7 +522,6 @@ export function createDrawTools({
     try {
       const value = await readInk(picture.dataUrl, mode, {
         chat: ai,
-        model: aiModel,
       });
       if (!value) {
         toast("No writing could be read in that ink.");

@@ -23,6 +23,10 @@ export interface EverythingSDK {
     getUser(): Promise<{ username: string; uuid: string }>;
     getProfilePicture?(): Promise<string | null>;
   };
+  ai?: {
+    chat?: (messages: unknown, opts?: Record<string, unknown>) => Promise<unknown>;
+    listModels?: (options?: { capability?: string }) => Promise<unknown>;
+  };
   fs: {
     write(path: string, data: Blob | string, opts?: Record<string, unknown>): Promise<EverythingFSItem>;
     read(path: string): Promise<Blob>;
@@ -84,6 +88,44 @@ export function isSignedIn(): boolean {
     return !!sdk?.auth?.isSignedIn?.();
   } catch {
     return false;
+  }
+}
+
+/** A model the user configured in Settings, as the model picker shows it. */
+export interface AssistantModel {
+  id: string;
+  name?: string;
+  provider?: string;
+  provider_id?: string;
+  default?: boolean;
+}
+
+/**
+ * The chat models configured in Settings, or null when the list cannot be
+ * fetched (signed out, offline, or no SDK). An empty array means the fetch
+ * worked and no provider exposes a model.
+ */
+export async function listAssistantModels(): Promise<AssistantModel[] | null> {
+  const p = await loadEverything();
+  if (typeof p?.ai?.listModels !== 'function') return null;
+  try {
+    const list = await p.ai.listModels({ capability: 'chat' });
+    if (!Array.isArray(list)) return null;
+    return list
+      .map((m) => {
+        const item = (m && typeof m === 'object' ? m : {}) as Record<string, unknown>;
+        const id = String(item.id ?? item.name ?? '').trim();
+        return {
+          id,
+          name: String(item.name ?? id),
+          provider: String(item.provider ?? 'Configured'),
+          provider_id: String(item.provider_id ?? ''),
+          default: item.default === true,
+        };
+      })
+      .filter((m) => m.id);
+  } catch {
+    return null;
   }
 }
 

@@ -631,7 +631,7 @@ test('Platform Conformance Suite (Section 4 + Security + Peer + Workers)', async
 
   await t.test('9. everything.ai (provider config, chat + streaming, image/speech/OCR, graceful degradation)', async () => {
     // One mock that speaks all three wire protocols the adapters support.
-    const seen = { auth: [], paths: [], lastTools: null };
+    const seen = { auth: [], paths: [], lastTools: null, lastModel: null };
     const testTools = [{
       type: 'function',
       function: {
@@ -653,13 +653,14 @@ test('Platform Conformance Suite (Section 4 + Security + Peer + Workers)', async
       };
 
       if (req.url === '/api/tags') return send(200, { models: [{ name: 'local-llama' }] });
-      if (req.url === '/v1/models') return send(200, { data: [{ id: 'remote-model' }] });
+      if (req.url === '/v1/models') return send(200, { data: [{ id: 'remote-model' }, { id: 'vendor/claude-opus-5.5' }] });
 
       let body = '';
       for await (const c of req) body += c;
 
       if (req.url === '/v1/chat/completions') {
         const parsed = JSON.parse(body);
+        seen.lastModel = parsed.model;
         const messages = Array.isArray(parsed.messages) ? parsed.messages : [];
         const last = messages[messages.length - 1] || {};
         const lastText = typeof last.content === 'string' ? last.content : '';
@@ -720,6 +721,7 @@ test('Platform Conformance Suite (Section 4 + Security + Peer + Workers)', async
       }
       if (req.url === '/v1/messages') {
         const parsed = JSON.parse(body);
+        seen.lastModel = parsed.model;
         const messages = Array.isArray(parsed.messages) ? parsed.messages : [];
         const hasTools = Array.isArray(parsed.tools) && parsed.tools.length > 0;
         const blocks = messages.flatMap((m) => (Array.isArray(m.content) ? m.content : []));
@@ -766,6 +768,7 @@ test('Platform Conformance Suite (Section 4 + Security + Peer + Workers)', async
       }
       if (req.url === '/api/chat') {
         const parsed = JSON.parse(body);
+        seen.lastModel = parsed.model;
         const messages = Array.isArray(parsed.messages) ? parsed.messages : [];
         const hasTools = Array.isArray(parsed.tools) && parsed.tools.length > 0;
         const toolMessage = [...messages].reverse().find((m) => m.role === 'tool');
@@ -818,7 +821,10 @@ test('Platform Conformance Suite (Section 4 + Security + Peer + Workers)', async
     assert.ok(ollama.id);
     const localModels = await everything.ai.listModels();
     assert.equal(localModels[0].id, 'local-llama');
+    assert.equal(localModels[0].default, true, 'the configured default is offered even without a live catalogue');
+    assert.deepEqual(await api(port, '/ai/models?capability=txt2speech'), [], 'a chat-only provider is not offered for speech');
     assert.equal(String(await everything.ai.chat('Say hi')), 'Ollama reply');
+    assert.equal(seen.lastModel, 'local-llama');
 
     // Ollama accepts OpenAI-shaped tool schemas and returns OpenAI-shaped tool calls.
     const ollamaTool = await everything.ai.chat('Use the tool', { tools: messyTools });
@@ -858,13 +864,39 @@ test('Platform Conformance Suite (Section 4 + Security + Peer + Workers)', async
     assert.equal(saved.has_key, true);
     assert.equal(saved.api_key, undefined, 'the key must never be sent back to the browser');
 
+    // The model list offers live and saved ids, marks the provider default, and
+    // filters by capability.
+    const allModels = await everything.ai.listModels();
+    assert.ok(allModels.some((m) => m.id === 'remote-model' && m.default === true));
+    assert.ok(allModels.some((m) => m.id === 'vendor/claude-opus-5.5'));
+    const chatModels = await api(port, '/ai/models?capability=chat');
+    assert.equal(chatModels.length, allModels.length);
+
     const listed = await api(port, '/ai/providers');
     assert.equal(listed.length, 2);
     assert.equal(listed[0].api_key, undefined);
 
     await api(port, '/ai/routes', { method: 'POST', body: { routes: { chat: saved.id } } });
     assert.equal(String(await everything.ai.chat('Say hi')), 'Remote reply');
+    assert.equal(seen.lastModel, 'remote-model');
     assert.ok(seen.auth.includes('Bearer sk-test'), 'the provider key must be sent upstream');
+
+    // A saved default with a different spelling than the live catalogue is
+    // mapped to the provider's own id, vendor prefix and punctuation included.
+    await api(port, '/ai/providers', {
+      method: 'POST',
+      body: { id: saved.id, name: 'Mock OpenAI', kind: 'openai', base_url: `${aiBase}/v1`, default_model: 'claude-opus-5-5' },
+    });
+    assert.equal(String(await everything.ai.chat('Say hi')), 'Remote reply');
+    assert.equal(seen.lastModel, 'vendor/claude-opus-5.5', 'the configured default is mapped to the live model id');
+
+    // An app that sends no model gets the Assistant model override first.
+    await api(port, '/ai/assistant', { method: 'POST', body: { model: 'remote-model' } });
+    assert.equal(String(await everything.ai.chat('Say hi')), 'Remote reply');
+    assert.equal(seen.lastModel, 'remote-model', 'the Assistant model override wins when an app sends none');
+    assert.equal(String(await everything.ai.chat('Say hi', { model: 'vendor/claude-opus-5.5' })), 'Remote reply');
+    assert.equal(seen.lastModel, 'vendor/claude-opus-5.5', 'an app-chosen model still wins over the override');
+    await api(port, '/ai/assistant', { method: 'POST', body: { model: '' } });
 
     const stream = await everything.ai.chat('Stream hi', { stream: true });
     let collected = '';

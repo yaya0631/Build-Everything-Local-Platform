@@ -69,9 +69,43 @@ export function publicProvider(provider) {
   return { ...rest, has_key: !!key };
 }
 
+/** Live catalogues change slowly; asking every provider on every request would be slow and rude. */
+const MODEL_CACHE_MS = 5 * 60 * 1000;
+const MODEL_FAILURE_MS = 30 * 1000;
+
+/**
+ * Model ids drift between the spelling a person saves and the spelling a
+ * provider lists: OpenRouter lists the vendor prefix (`nvidia/…`) and uses a
+ * dot where the settings field may have a dash (`claude-opus-5.5`). Compare the
+ * names after dropping the vendor prefix and treating punctuation as a dash.
+ */
+function looseModelKey(id) {
+  return String(id || '')
+    .trim()
+    .toLowerCase()
+    .replace(/^.*\//, '')
+    .replace(/[\s_.:]+/g, '-')
+    .replace(/-+/g, '-');
+}
+
+/** The provider's spelling of a model, or '' when it cannot be told apart. */
+function canonicalModelId(wanted, ids) {
+  const value = String(wanted || '').trim();
+  if (!value || !ids.length) return '';
+  if (ids.includes(value)) return value;
+  const lower = value.toLowerCase();
+  const exact = ids.find((id) => id.toLowerCase() === lower);
+  if (exact) return exact;
+  const key = looseModelKey(value);
+  if (!key) return '';
+  const loose = ids.filter((id) => looseModelKey(id) === key);
+  return loose.length === 1 ? loose[0] : '';
+}
+
 export function createAiService(ctx) {
   const { db } = ctx;
   const adapterCache = new Map();
+  const modelCache = new Map();
 
   function listProviders() {
     return db.prepare('SELECT * FROM ai_providers ORDER BY created_at ASC').all().map(rowToProvider);
@@ -147,12 +181,14 @@ export function createAiService(ctx) {
       clean.timeout_ms, clean.enabled ? 1 : 0, existing?.created_at ?? now, now
     );
     adapterCache.delete(id);
+    modelCache.delete(id);
     return getProvider(id);
   }
 
   function deleteProvider(id) {
     db.prepare('DELETE FROM ai_providers WHERE id = ?').run(String(id));
     adapterCache.delete(String(id));
+    modelCache.delete(String(id));
     const routes = getSetting('routes', {});
     for (const [cap, provId] of Object.entries(routes)) {
       if (provId === id) delete routes[cap];
@@ -164,6 +200,79 @@ export function createAiService(ctx) {
   function adapterFor(provider) {
     if (!adapterCache.has(provider.id)) adapterCache.set(provider.id, createAdapter(provider));
     return adapterCache.get(provider.id);
+  }
+
+  /** Models saved with the provider, in either the string or the object form. */
+  function savedModels(provider) {
+    return (Array.isArray(provider.models) ? provider.models : [])
+      .map((m) => (typeof m === 'string' ? { id: m, name: m } : { id: m?.id || m?.name, name: m?.name || m?.id }))
+      .filter((m) => m.id)
+      .map((m) => ({ id: String(m.id), name: String(m.name || m.id) }));
+  }
+
+  /** The provider's live catalogue, cached; an unreachable provider keeps the last list it gave. */
+  async function liveModels(provider) {
+    const now = Date.now();
+    const hit = modelCache.get(provider.id);
+    if (hit && now - hit.at < (hit.ok ? MODEL_CACHE_MS : MODEL_FAILURE_MS)) return hit.models;
+    try {
+      const models = await adapterFor(provider).listModels();
+      const clean = (Array.isArray(models) ? models : [])
+        .map((m) => ({ id: String(m?.id || m?.name || ''), name: String(m?.name || m?.id || '') }))
+        .filter((m) => m.id);
+      modelCache.set(provider.id, { at: now, ok: true, models: clean });
+      return clean;
+    } catch {
+      modelCache.set(provider.id, { at: now, ok: false, models: hit?.models || [] });
+      return hit?.models || [];
+    }
+  }
+
+  /**
+   * Everything an app may choose for a provider: its live models, models saved
+   * in Settings, and the configured default. The default is resolved to the
+   * provider's own spelling when possible and marked `default`.
+   */
+  async function providerModels(provider, capability) {
+    if (capability && !provider.capabilities.includes(capability)) return [];
+    const entries = new Map();
+    for (const m of await liveModels(provider)) {
+      entries.set(m.id, { id: m.id, name: m.name, provider: provider.name, provider_id: provider.id, source: 'live' });
+    }
+    for (const m of savedModels(provider)) {
+      if (!entries.has(m.id)) entries.set(m.id, { ...m, provider: provider.name, provider_id: provider.id, source: 'saved' });
+    }
+    const wanted = String(provider.default_model || '').trim();
+    if (wanted) {
+      const id = canonicalModelId(wanted, [...entries.keys()]) || wanted;
+      if (entries.has(id)) entries.get(id).default = true;
+      else entries.set(id, { id, name: wanted, provider: provider.name, provider_id: provider.id, source: 'default', default: true });
+    }
+    return [...entries.values()];
+  }
+
+  /** Every model the signed-in person can pick, from every enabled provider. */
+  async function listModels({ capability } = {}) {
+    const providers = listProviders().filter((provider) => provider.enabled);
+    const groups = await Promise.all(providers.map((provider) => providerModels(provider, capability)));
+    return groups.flat();
+  }
+
+  /**
+   * The model a chat turn should ask for. An app's explicit choice wins; when
+   * it sends none, the Assistant model override in Settings comes first, then
+   * the provider's configured default. Either is mapped to the provider's own
+   * spelling so a saved `vendor/model` (or a dash/dot difference) still works.
+   */
+  async function resolveChatModel(provider, requested) {
+    let wanted = String(requested || '').trim();
+    if (!wanted) {
+      const assistant = getSetting('assistant', {});
+      wanted = String(assistant?.model || '').trim() || String(provider.default_model || '').trim();
+    }
+    if (!wanted) return '';
+    const available = await providerModels(provider);
+    return canonicalModelId(wanted, available.map((m) => m.id)) || wanted;
   }
 
   /** Build a provider record from a form payload without saving it. */
@@ -260,6 +369,8 @@ export function createAiService(ctx) {
     publicProvider,
     providerFromInput,
     adapterFor,
+    listModels,
+    resolveChatModel,
     getSetting,
     setSetting,
     resolve,
@@ -440,17 +551,9 @@ export async function handleAi(ctx, req, res, url, body, user, sendJson) {
 
     /* ---- models ---- */
     if (p === '/api/ai/models') {
-      const out = [];
-      for (const provider of ai.listProviders()) {
-        if (!provider.enabled) continue;
-        try {
-          const models = await createAdapter(provider).listModels();
-          out.push(...models.map((m) => ({ ...m, provider: provider.name, provider_id: provider.id })));
-        } catch {
-          /* an unreachable provider should not break the model list */
-        }
-      }
-      return sendJson(res, 200, out);
+      const requestedCapability = String(url.searchParams.get('capability') || '').trim();
+      const capability = CAPABILITIES.includes(requestedCapability) ? requestedCapability : undefined;
+      return sendJson(res, 200, await ai.listModels({ capability }));
     }
 
     /* ---- chat ---- */
@@ -468,8 +571,8 @@ export async function handleAi(ctx, req, res, url, body, user, sendJson) {
       };
 
       if (!stream) {
-        const result = await ai.withFallback('chat', (adapter, provider) =>
-          adapter.chat({ ...request, model: body?.model || provider.default_model })
+        const result = await ai.withFallback('chat', async (adapter, provider) =>
+          adapter.chat({ ...request, model: await ai.resolveChatModel(provider, body?.model) })
         );
         return sendJson(res, 200, { ok: true, ...result });
       }
@@ -483,7 +586,7 @@ export async function handleAi(ctx, req, res, url, body, user, sendJson) {
       try {
         const { provider, adapter } = ai.requireCapability('chat');
         const result = await adapter.chat(
-          { ...request, stream: true, model: body?.model || provider.default_model },
+          { ...request, stream: true, model: await ai.resolveChatModel(provider, body?.model) },
           (text) => {
             started = true;
             res.write(JSON.stringify({ type: 'text', text }) + '\n');

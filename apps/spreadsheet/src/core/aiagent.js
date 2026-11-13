@@ -15,9 +15,6 @@ import { dataBounds, describeRange } from './aiformula.js';
 import { TOOLS, TOOL_NAMES, changesWorkbook, qualified } from './aitools.js';
 import { attachmentsIntro, attachmentsGone, attachmentWeight, attachmentsFit, sentBytes } from './aiattach.js';
 
-/** The model the assistant runs on, through Everything's AI. */
-export const AI_MODEL = 'claude-opus-5-5';
-
 /** When the assistant asks before changing the workbook: before every change, before one that takes away data, or never. */
 export const APPROVAL_MODES = [
   { id: 'always', label: 'Ask before every change' },
@@ -273,7 +270,7 @@ export function createAgent({ chat, runTool, describe, approve, ready = null, sn
         let text = '';
         let cut = false; // the reply ran into MAX_OUTPUT_TOKENS
         const calls = [];
-        const iterable = chat(requestMessages(transcript), { model: AI_MODEL, tools: TOOLS, maxTokens: MAX_OUTPUT_TOKENS });
+        const iterable = chat(requestMessages(transcript), { tools: TOOLS, maxTokens: MAX_OUTPUT_TOKENS });
         const iter = iterable[Symbol.asyncIterator]();
         for (;;) {
           const next = await Promise.race([iter.next(), stopSignal]);

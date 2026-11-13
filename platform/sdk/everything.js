@@ -669,8 +669,9 @@
   }
 
   everything.ai = {
-    listModels: function () {
-      return apiRequest('GET', '/ai/models');
+    listModels: function (options) {
+      var capability = typeof options === 'string' ? options : options && options.capability;
+      return apiRequest('GET', '/ai/models' + (capability ? '?capability=' + encodeURIComponent(capability) : ''));
     },
     chat: function (prompt) {
       var opts = {};

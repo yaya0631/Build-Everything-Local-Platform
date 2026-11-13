@@ -208,7 +208,7 @@ regenerate the PNG/ICO favicons, Apple touch icon, and standard/maskable install
   a chat or a document.
 - **AI assistant**: a chat beside the sheet, open by default (the Ask AI
   button, View → AI assistant, or Ctrl/Cmd+J open and close it; closed, it
-  stays closed on the next visit) where Everything's AI (Claude Opus 5.5) answers questions about the workbook
+  stays closed on the next visit) where Everything's AI (the chat model chosen in Settings) answers questions about the workbook
   and changes it: it reads cells, works figures out with the formula engine
   rather than guessing, and can write values and formulas, fill a column,
   format, sort, insert and delete rows and columns, add charts, tables,

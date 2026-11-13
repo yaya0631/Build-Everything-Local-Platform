@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Workbook } from '../src/core/workbook.js';
-import { createAgent, requestMessages, userContent, userText, workbookSnapshot, suggestions, AI_MODEL, MAX_OUTPUT_TOKENS, SYSTEM_PROMPT } from '../src/core/aiagent.js';
+import { createAgent, requestMessages, userContent, userText, workbookSnapshot, suggestions, MAX_OUTPUT_TOKENS, SYSTEM_PROMPT } from '../src/core/aiagent.js';
 import { runTool, describeCall } from '../src/core/aitools.js';
 
 /** A model that plays back one scripted reply per request, recording what it was sent. */
@@ -47,8 +47,7 @@ describe('AI assistant loop', () => {
     expect(out.error).toBeUndefined();
     expect(wb.getValue(id, 3, 0)).toBe(10);
     expect(requests).toHaveLength(2);
-    expect(requests[0].options.model).toBe('claude-opus-5-5');
-    expect(AI_MODEL).toBe('claude-opus-5-5');
+    expect(requests[0].options.model).toBeUndefined();
     expect(requests[0].messages[0]).toEqual({ role: 'system', content: SYSTEM_PROMPT });
     expect(requests[0].messages[1].content).toContain('Today is 2026-09-27');
     expect(requests[0].messages[1].content).toContain('Selected: Sheet1!A1:A3');

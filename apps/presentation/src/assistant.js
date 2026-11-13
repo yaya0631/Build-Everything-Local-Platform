@@ -22,8 +22,6 @@ import {
 } from "./model.js";
 import { TOOLS, TOOL_NAMES, changesDeck } from "./assistant-tools.js";
 
-/** The model the assistant runs on, through Everything's AI. */
-export const AI_MODEL = "claude-opus-5-5";
 /** When the assistant asks before changing the deck. */
 export const APPROVAL_MODES = [
   { id: "always", label: "Ask before every change" },
@@ -287,7 +285,6 @@ export function createAgent({
         let text = "";
         const calls = [];
         const iterable = chat(requestMessages(transcript), {
-          model: AI_MODEL,
           tools: TOOLS,
         });
         const iter = iterable[Symbol.asyncIterator]();

@@ -17,9 +17,6 @@ import { toolSpecs, TOOL_NAMES, changesProject, costly } from './ai-tools.js';
 import { catalogBrief } from './edit-assistant.js';
 import { attachmentsIntro, attachmentsGone, attachmentWeight, attachmentsFit, sentBytes, ATTACHMENT_TURNS } from './ai-attach.js';
 
-/** The model the assistant runs on, through Everything's AI. */
-export const AI_MODEL = 'claude-opus-5-5';
-
 /** When the assistant asks before changing the project: before every change, before making video, or never. */
 export const APPROVAL_MODES = [
   { id: 'always', label: 'Ask before every change' },
@@ -232,7 +229,7 @@ export function createAgent({ chat, runTool, describe, approve, snapshot = () =>
         let text = '';
         let cut = false;
         const calls = [];
-        const iterable = chat(requestMessages(transcript), { model: AI_MODEL, tools: toolSpecs(), maxTokens: MAX_OUTPUT_TOKENS });
+        const iterable = chat(requestMessages(transcript), { tools: toolSpecs(), maxTokens: MAX_OUTPUT_TOKENS });
         const iter = iterable[Symbol.asyncIterator]();
         for (;;) {
           const next = await Promise.race([iter.next(), stopSignal]);

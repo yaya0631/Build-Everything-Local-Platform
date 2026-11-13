@@ -6,7 +6,7 @@ import './assistant.css';
 import type { Editor } from '../../editor';
 import { contributeMenu, registerCommand, registerPanel } from '../../app/registry';
 import { lazy, lazyPanel } from '../../app/lazy';
-import { ASSISTANT_MODELS, assistantSettings, saveAssistantSettings } from './settings';
+import { ASSISTANT_MODELS, AUTO_MODEL, assistantSettings, loadAssistantModels, saveAssistantSettings } from './settings';
 
 const panel = lazy(() => import('./panel'));
 const controller = lazy(() => import('./controller'));
@@ -32,7 +32,7 @@ export function installAssistant(e: Editor) {
         title: 'Assistant',
         icon: 'assistant',
         location: 'strip',
-        menu: () => ['assistant.ask', 'assistant.clear', '-', { label: 'Model', id: 'assistant.models', items: ASSISTANT_MODELS.map((m) => `assistant.model-${m.id}`) }, 'assistant.see-image'],
+        menu: () => ['assistant.ask', 'assistant.clear', '-', { label: 'Model', id: 'assistant.models', items: ['assistant.model-auto', ...ASSISTANT_MODELS.map((m) => `assistant.model-${m.id}`)] }, 'assistant.see-image'],
       },
       lazy(async () => {
         const m = await panel();
@@ -69,20 +69,44 @@ export function installAssistant(e: Editor) {
         ed.dock?.update();
       },
     },
-    ...ASSISTANT_MODELS.map((m) => ({
-      id: `assistant.model-${m.id}`,
-      label: `${m.label} (${m.note})`,
+    {
+      id: 'assistant.model-auto',
+      label: 'Automatic (use the model chosen in Settings)',
       recordable: false,
-      description: `Use ${m.label} for the Assistant`,
-      checked: () => assistantSettings.model === m.id,
-      run: (ed: Editor) => {
-        assistantSettings.model = m.id;
+      description: 'Use the model chosen for the Assistant in Everything Settings',
+      checked: () => assistantSettings.model === AUTO_MODEL,
+      run: (ed) => {
+        assistantSettings.model = AUTO_MODEL;
         saveAssistantSettings();
         ed.dock?.update();
-        ed.message(`The Assistant now uses ${m.label}.`);
+        ed.message('The Assistant now uses the model chosen in Settings.');
       },
-    })),
+    },
   );
+
+  /** Add a command for each model configured in Settings, once the list arrives. */
+  function registerModelCommands() {
+    for (const m of ASSISTANT_MODELS) {
+      registerCommand({
+        id: `assistant.model-${m.id}`,
+        label: `${m.label}${m.note ? ` (${m.note})` : ''}`,
+        recordable: false,
+        description: `Use ${m.label} for the Assistant`,
+        checked: () => assistantSettings.model === m.id,
+        run: (ed: Editor) => {
+          assistantSettings.model = m.id;
+          saveAssistantSettings();
+          ed.dock?.update();
+          ed.message(`The Assistant now uses ${m.label}.`);
+        },
+      });
+    }
+  }
+  void loadAssistantModels().then((ok) => {
+    if (!ok) return;
+    registerModelCommands();
+    e.dock?.update();
+  });
   // Listed directly in the Window menu (next to Scripts) rather than in Window → Panels.
   for (const [id, title] of [['assistant', 'Assistant'], ['generations', 'Generation History']])
     registerCommand({ id: `window.panel.${id}`, label: title, recordable: false, checked: (ed) => !!ed.dock?.isVisible(id), run: (ed) => ed.dock.show(id, true) });

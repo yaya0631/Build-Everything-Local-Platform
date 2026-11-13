@@ -75,7 +75,7 @@ test('a described edit becomes a checked plan that runs as one undo step', async
   // The model saw the document, the tools and (by default) a preview image; the search ran.
   const calls = await chatCalls(page);
   expect(calls).toHaveLength(2);
-  expect(calls[0].options.model).toBe('claude-fable-5-1');
+  expect(calls[0].options.model).toBeUndefined();
   expect(calls[0].options.tools!.map((t) => t.function.name)).toEqual(['search_catalog', 'get_details', 'propose_plan', 'answer']);
   const user = calls[0].messages.find((m) => m.role === 'user')!;
   expect(JSON.stringify(user.content)).toContain('200 × 150 px');

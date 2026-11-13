@@ -5,7 +5,7 @@
 import type { App } from '../app/app';
 import { appHost } from '../app/assistant-host';
 import { type ChatFn, everythingChat } from '../platform/ai';
-import { cloudAvailable, env, everything, signIn } from '../platform/everything';
+import { type AssistantModel, cloudAvailable, env, everything, listAssistantModels, signIn } from '../platform/everything';
 import { h } from '../ui/dom';
 import { icon } from '../ui/icons';
 import { toast } from '../ui/overlay';
@@ -17,23 +17,20 @@ import { readAttachment } from './attachments';
 import { SYSTEM_PROMPT, partSnapshot } from './prompt';
 import { runTool, toolSpecs } from './tools';
 
-export const ASSISTANT_MODELS: { id: string; label: string }[] = [
-  { id: 'claude-fable-5-1', label: 'Claude Fable 5.1 (most capable)' },
-  { id: 'claude-opus-5-5', label: 'Claude Opus 5.5' },
-  { id: 'claude-sonnet-5-5', label: 'Claude Sonnet 5.5 (faster)' },
-  { id: 'claude-haiku-5-5', label: 'Claude Haiku 5.5 (fastest)' },
-];
+/** The empty id means "Automatic": let the server use the model chosen in Settings. */
+export const AUTO_MODEL = '';
 const SETTINGS_KEY = 'parametric:assistant';
 
 /** Development builds and browser tests may stand in for Everything AI with window.__assistantChat. */
 const devChat = (): ChatFn | null => (import.meta.env.DEV ? (window as unknown as { __assistantChat?: ChatFn }).__assistantChat ?? null : null);
 
-function loadModel(): string {
+/** The model last picked here; it is used only once the configured list confirms it. */
+function loadSavedModel(): string {
   try {
     const v = JSON.parse(localStorage.getItem(SETTINGS_KEY) ?? '{}') as { model?: string };
-    if (v.model && ASSISTANT_MODELS.some((m) => m.id === v.model)) return v.model;
+    if (typeof v.model === 'string') return v.model;
   } catch { /* settings are optional */ }
-  return ASSISTANT_MODELS[0].id;
+  return AUTO_MODEL;
 }
 
 function saveModel(model: string) {
@@ -129,7 +126,11 @@ export class AssistantPanel {
   private status: HTMLElement;
   private agent: Agent;
   private host: AssistantHost;
-  private model = loadModel();
+  private model = AUTO_MODEL;
+  private models: AssistantModel[] = [];
+  private modelsLoading: Promise<void> | null = null;
+  private modelsLoaded = false;
+  private modelSel: HTMLSelectElement;
   private renderQueued = false;
   private turn: Turn | null = null;
   /** Set by tests and the dev mock to answer without Everything. */
@@ -155,8 +156,9 @@ export class AssistantPanel {
     });
 
     const modelSel = h('select', { class: 'input as-model', 'aria-label': 'AI model' }) as HTMLSelectElement;
-    for (const m of ASSISTANT_MODELS) modelSel.append(h('option', { value: m.id, selected: m.id === this.model }, m.label));
-    modelSel.addEventListener('change', () => { this.model = modelSel.value; saveModel(this.model); });
+    this.modelSel = modelSel;
+    this.renderModels();
+    modelSel.addEventListener('change', () => { this.model = modelSel.value; this.renderModels(); saveModel(this.model); });
     const newChat = h('button', { class: 'icon-btn', type: 'button', 'aria-label': 'New chat', title: 'New chat' }, icon('newChat', 16));
     newChat.addEventListener('click', () => this.reset());
 
@@ -196,7 +198,48 @@ export class AssistantPanel {
         h('div', { class: 'as-note' }, 'Sends your messages and a description of the part to Everything AI. Check designs before relying on them.')));
     this.bindDrop();
     this.renderEmpty();
+    void this.loadModels();
     app.store.on((reason) => { if (reason === 'load' && !this.agent.busy && !this.agent.messages.length) this.renderEmpty(); });
+  }
+
+  /** Fill the picker from the models configured in Settings; no hardcoded ids. */
+  private loadModels(): Promise<void> {
+    if (this.modelsLoaded) return Promise.resolve();
+    if (this.modelsLoading) return this.modelsLoading;
+    this.modelsLoading = (async () => {
+      const models = await listAssistantModels();
+      if (!models) return; // signed out or offline: try again when a message is sent
+      this.models = models;
+      this.modelsLoaded = true;
+      const saved = loadSavedModel();
+      if (saved && models.some((m) => m.id === saved)) this.model = saved;
+      else if (saved) saveModel(AUTO_MODEL); // a model that is no longer configured
+      this.renderModels();
+    })().finally(() => {
+      this.modelsLoading = null;
+    });
+    return this.modelsLoading;
+  }
+
+  private renderModels() {
+    const sel = this.modelSel;
+    if (!sel) return;
+    sel.replaceChildren();
+    sel.append(h('option', { value: AUTO_MODEL, title: 'Use the model chosen in Settings' }, 'Automatic'));
+    const groups = new Map<string, AssistantModel[]>();
+    for (const m of this.models) {
+      const key = m.provider || 'Configured';
+      groups.set(key, [...(groups.get(key) ?? []), m]);
+    }
+    for (const [provider, models] of groups) {
+      const group = h('optgroup', { label: provider });
+      for (const m of models.sort((a, b) => Number(!!b.default) - Number(!!a.default) || (a.name || a.id).localeCompare(b.name || b.id))) {
+        group.append(h('option', { value: m.id, title: m.id }, m.name && m.name !== m.id ? m.name : m.id));
+      }
+      sel.append(group);
+    }
+    sel.value = this.model;
+    sel.title = this.model || 'Automatic: use the model chosen in Settings';
   }
 
   focus() {
@@ -244,7 +287,7 @@ export class AssistantPanel {
   }
 
   /** Whether Everything AI can be used; otherwise explains why in the conversation. */
-  private ready(): boolean {
+  private async ready(): Promise<boolean> {
     if (this.chat || devChat()) return true;
     const sdk = everything() as unknown as { ai?: unknown } | null;
     if (!sdk?.ai) {
@@ -259,6 +302,7 @@ export class AssistantPanel {
       this.notice('Sign in to your Everything account to use the assistant (it runs on Everything AI).', btn);
       return false;
     }
+    await this.loadModels();
     return true;
   }
 
@@ -276,7 +320,7 @@ export class AssistantPanel {
   async submit() {
     let text = this.input.value.trim();
     if ((!text && !this.pending.length) || this.agent.busy || this.sending) return;
-    if (!this.ready()) return;
+    if (!(await this.ready())) return;
     let items: PendingFile[] = [];
     let files: Attachment[] = [];
     if (this.pending.length) {

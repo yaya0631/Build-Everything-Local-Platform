@@ -3,6 +3,7 @@ import { createAgent, requestMessages } from '../src/assistant/agent';
 import type { ChatMessage, StreamPart } from '../src/platform/ai';
 import type { ToolResult } from '../src/assistant/tools';
 import { type Attachment, attachmentKind, attachmentProblem, estimatePdfPages, imageBlock, pdfBlock, textBlock } from '../src/assistant/attach';
+import { listAssistantModels, setEverythingForTests } from '../src/platform/everything';
 
 type Reply = StreamPart[] | Error;
 
@@ -159,5 +160,36 @@ describe('assistant agent', () => {
     expect(tools.at(-1)!.content).toBe(big);
     expect(tools[0].content.length).toBeLessThan(2000);
     expect(out.reduce((n, m) => n + (typeof m.content === 'string' ? m.content.length : 0), 0)).toBeLessThanOrEqual(200000);
+  });
+});
+
+describe('configured assistant models', () => {
+  it('lists the chat models chosen in Settings, and nothing when they cannot be fetched', async () => {
+    try {
+      setEverythingForTests({ ai: {} } as never);
+      expect(await listAssistantModels()).toBeNull();
+      const asked: unknown[] = [];
+      setEverythingForTests({
+        ai: {
+          listModels: async (options: unknown) => {
+            asked.push(options);
+            return [
+              { id: 'vendor/model-a', name: 'Model A', provider: 'OpenRouter', provider_id: 'p1', default: true },
+              { name: 'model-b' },
+              { id: '' },
+            ];
+          },
+        },
+      } as never);
+      expect(await listAssistantModels()).toEqual([
+        { id: 'vendor/model-a', name: 'Model A', provider: 'OpenRouter', provider_id: 'p1', default: true },
+        { id: 'model-b', name: 'model-b', provider: 'Configured', provider_id: '', default: false },
+      ]);
+      expect(asked).toEqual([{ capability: 'chat' }]);
+      setEverythingForTests({ ai: { listModels: async () => { throw new Error('offline'); } } } as never);
+      expect(await listAssistantModels()).toBeNull();
+    } finally {
+      setEverythingForTests(null);
+    }
   });
 });

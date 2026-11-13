@@ -19,7 +19,7 @@ import { converse, systemPrompt, TOOLS, type ChatFn } from '../src/features/assi
 import { PlanRun, runLabel } from '../src/features/assistant/runner';
 import { ask, conversation, forgetSession, setChat, type PlanMessage } from '../src/features/assistant/controller';
 import { Catalog, commandInput, commandParams, words } from '../src/features/assistant/catalog';
-import { assistantSettings, sentNote } from '../src/features/assistant/settings';
+import { assistantSettings, ASSISTANT_MODELS, loadAssistantModels, modelLabel, sentNote } from '../src/features/assistant/settings';
 import { filterGenerations, GenerationStore } from '../src/persistence/generations';
 import { placementOf } from '../src/features/generations/panel';
 import { MemoryStore } from '../src/persistence/local-store';
@@ -620,5 +620,49 @@ describe('Generation History storage', () => {
     expect(filterGenerations(list, { kind: 'all', query: 'doc' })).toHaveLength(2);
     await store.clear();
     expect(await store.list()).toEqual([]);
+  });
+});
+
+describe('Assistant model settings', () => {
+  it('loads the chat models configured in Settings and keeps only a known saved id', async () => {
+    const w = globalThis as unknown as { everything?: unknown };
+    const before = w.everything;
+    const asked: unknown[] = [];
+    assistantSettings.model = 'gone-model';
+    try {
+      // A failed fetch leaves the list alone and can be tried again.
+      w.everything = { ai: { listModels: async () => { throw new Error('offline'); } } };
+      expect(await loadAssistantModels()).toBe(false);
+      expect(ASSISTANT_MODELS).toEqual([]);
+      expect(modelLabel('')).toBe('Automatic');
+
+      w.everything = {
+        ai: {
+          listModels: async (options: unknown) => {
+            asked.push(options);
+            return [
+              { id: 'vendor/model-a', name: 'Model A', provider: 'OpenRouter' },
+              { id: 'model-b', name: 'Model B', provider: 'Ollama' },
+            ];
+          },
+        },
+      };
+      expect(await loadAssistantModels()).toBe(true);
+      expect(asked).toEqual([{ capability: 'chat' }]);
+      expect(ASSISTANT_MODELS.map((m) => [m.id, m.label, m.note])).toEqual([
+        ['vendor/model-a', 'Model A', 'OpenRouter'],
+        ['model-b', 'Model B', 'Ollama'],
+      ]);
+      // The saved id was no longer configured, so the Assistant goes back to Automatic.
+      expect(assistantSettings.model).toBe('');
+      expect(modelLabel('')).toBe('Automatic');
+      expect(modelLabel('vendor/model-a')).toBe('Model A');
+      // The list is cached: no second request.
+      expect(await loadAssistantModels()).toBe(true);
+      expect(asked).toHaveLength(1);
+    } finally {
+      w.everything = before;
+      assistantSettings.model = '';
+    }
   });
 });

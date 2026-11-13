@@ -1,7 +1,6 @@
 // Small one-shot requests to Everything's AI for the review panes: the answer is
 // asked for as JSON and read leniently.
 import * as cloud from "../cloud.js";
-import { AI_MODEL } from "../assistant.js";
 
 export const aiAvailable = () => cloud.canAI();
 
@@ -31,7 +30,7 @@ export async function askJson(system, user, { maxTokens = 1500 } = {}) {
       { role: "system", content: system },
       { role: "user", content: user },
     ],
-    { model: AI_MODEL, maxTokens },
+    { maxTokens },
   ))
     if (part.type === "text") text += part.text;
   return parseJsonReply(text);
