@@ -210,6 +210,9 @@ export function createAiService(ctx) {
     if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
       throw unavailableError('The base URL must be http or https.', 400);
     }
+    if (/YOUR_ACCOUNT_ID/i.test(baseUrl)) {
+      throw unavailableError('Replace YOUR_ACCOUNT_ID in the base URL with your Cloudflare account ID.', 400);
+    }
     return {
       name,
       kind,

@@ -470,6 +470,7 @@
             <label for="base-url">Base URL</label>
             <input id="base-url" name="base_url" type="text" placeholder="https://api.example.com/v1" autocomplete="off" spellcheck="false" required />
             <span class="hint">The server appends <code>/chat/completions</code>, <code>/v1/messages</code>, or <code>/api/chat</code>.</span>
+            <span class="hint" id="preset-hint" hidden></span>
           </div>
           <div class="field full">
             <label for="api-key">API key</label>
@@ -818,10 +819,18 @@
         }
       }
 
+      function showPresetHint(id) {
+        const preset = state.presets.find((p) => p.id === id);
+        const hint = $('preset-hint');
+        hint.textContent = preset?.hint || '';
+        hint.hidden = !preset?.hint;
+      }
+
       function applyPreset(id) {
         const preset = state.presets.find((p) => p.id === id);
         const form = $('provider-form');
         form.dataset.preset = id || '';
+        showPresetHint(id);
         if (!preset) return;
         $('name').value = preset.label;
         $('kind').value = preset.kind;
@@ -862,6 +871,7 @@
           $('timeout').value = 120000;
           buildCapabilityChecks(['chat']);
         }
+        showPresetHint(form.dataset.preset);
         dialog.showModal();
         $('name').focus();
       }

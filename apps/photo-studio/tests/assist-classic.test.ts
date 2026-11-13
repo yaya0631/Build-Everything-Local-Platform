@@ -176,7 +176,7 @@ describe('Generate Image and Upscale helpers', async () => {
     expect(styledPrompt('a kite', 'none')).toBe('a kite');
     expect(qualityFor('', 'draft')).toBe('low');
     expect(qualityFor('gemini-3.1-flash-image', 'high')).toBe('2K');
-    expect(qualityFor('@cf/black-forest-labs/flux-1-schnell', 'high')).toBeUndefined();
+    expect(qualityFor('@cf/black-forest-labs/flux-1-schnell', 'high')).toBe('high');
   });
   it('states honest size limits for upscaling', () => {
     expect(upscaleSize(4000, 3000, 200)).toEqual({ width: 8000, height: 6000, fits: false });

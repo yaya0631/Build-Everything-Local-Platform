@@ -638,6 +638,7 @@ test('Platform Conformance Suite (Section 4 + Security + Peer + Workers)', async
       lastTools: null,
       lastModel: null,
       lastImageRequest: null,
+      lastCloudflareImage: null,
       imageModels: [
         { id: 'openai/gpt-image-2', name: 'OpenAI: GPT Image 2' },
         { id: 'google/gemini-3.1-flash-image', name: 'Google: Gemini 3.1 Flash Image' },
@@ -732,6 +733,15 @@ test('Platform Conformance Suite (Section 4 + Security + Peer + Workers)', async
         return send(200, {
           data: [{ b64_json: Buffer.from('WEBPDATA').toString('base64'), media_type: 'image/webp' }],
           usage: { cost: 0.02 },
+        });
+      }
+      if (req.url === '/client/v4/accounts/account-123/ai/run/@cf/black-forest-labs/flux-1-schnell') {
+        seen.lastCloudflareImage = JSON.parse(body);
+        return send(200, {
+          result: { image: Buffer.from([0xff, 0xd8, 0xff, 0xe0, 1, 2, 3]).toString('base64') },
+          success: true,
+          errors: [],
+          messages: [],
         });
       }
       if (req.url === '/v1/audio/speech') {
@@ -1049,6 +1059,52 @@ test('Platform Conformance Suite (Section 4 + Security + Peer + Workers)', async
     });
 
     await api(port, '/ai/providers/delete', { method: 'POST', body: { id: openrouter.id } });
+
+    // Cloudflare Workers AI: free-tier FLUX through its native /ai/run path.
+    const cloudflare = await api(port, '/ai/providers', {
+      method: 'POST',
+      body: {
+        name: 'Mock Cloudflare',
+        kind: 'openai',
+        preset: 'cloudflare',
+        base_url: `${aiBase}/client/v4/accounts/account-123/ai/v1`,
+        api_key: 'cf-test',
+        capabilities: ['txt2img'],
+      },
+    });
+    assert.equal(cloudflare.preset, 'cloudflare', 'the preset is stored so the adapter uses the native image path');
+    const cloudflareModels = await api(port, '/ai/models?capability=txt2img');
+    assert.deepEqual(
+      cloudflareModels.filter((m) => m.provider_id === cloudflare.id).map((m) => m.id),
+      ['@cf/black-forest-labs/flux-1-schnell'],
+      'the Cloudflare catalogue offers its free FLUX model'
+    );
+    await api(port, '/ai/routes', { method: 'POST', body: { routes: { txt2img: cloudflare.id } } });
+    const cloudflareImage = await everything.ai.txt2img('a red fox', { quality: 'high' });
+    assert.ok(String(cloudflareImage.src).startsWith('data:image/jpeg;base64,'), 'a Cloudflare image is returned as a data URL in its real format');
+    assert.equal(seen.lastCloudflareImage.prompt, 'a red fox');
+    assert.equal(seen.lastCloudflareImage.steps, 8, 'High quality becomes eight diffusion steps');
+    assert.ok(seen.auth.includes('Bearer cf-test'), 'the Cloudflare token is sent upstream');
+    await assert.rejects(
+      () => everything.ai.txt2img('a red fox', { input_image: 'data:image/png;base64,AAAA' }),
+      (err) => err.status === 400 && /does not accept reference images|text only/i.test(err.message),
+      'a Cloudflare text-to-image model rejects reference images with a clear message'
+    );
+    await assert.rejects(
+      () => api(port, '/ai/providers', {
+        method: 'POST',
+        body: {
+          name: 'Bad Cloudflare',
+          kind: 'openai',
+          preset: 'cloudflare',
+          base_url: 'https://api.cloudflare.com/client/v4/accounts/YOUR_ACCOUNT_ID/ai/v1',
+          capabilities: ['txt2img'],
+        },
+      }),
+      (err) => err.status === 400 && /YOUR_ACCOUNT_ID/.test(err.message),
+      'the placeholder account ID must be replaced before saving'
+    );
+    await api(port, '/ai/providers/delete', { method: 'POST', body: { id: cloudflare.id } });
 
     const speech = await everything.ai.txt2speech('hello there', { voice: 'alloy' });
     assert.ok(String(speech.src).startsWith('data:audio/mpeg;base64,'), 'txt2speech resolves audio with a data URL src');

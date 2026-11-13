@@ -44,6 +44,8 @@ export function styledPrompt(prompt: string, style: string): string {
 export function qualityFor(model: string, q: string): string | undefined {
   if (!model || model.startsWith('gpt-image')) return q === 'draft' ? 'low' : q === 'high' ? 'high' : 'medium';
   if (model.startsWith('gemini')) return q === 'high' ? '2K' : '1K';
+  // Cloudflare's FLUX model turns these into 2, 4 and 8 diffusion steps.
+  if (model.startsWith('@cf/')) return q;
   return undefined;
 }
 

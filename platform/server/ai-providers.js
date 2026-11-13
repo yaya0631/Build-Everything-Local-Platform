@@ -27,6 +27,14 @@ export const PROVIDER_PRESETS = [
   { id: 'opencode', label: 'OpenCode Zen', kind: 'openai', base_url: 'https://opencode.ai/inference/openai/v1', capabilities: ['chat', 'img2txt'] },
   { id: 'openai', label: 'OpenAI', kind: 'openai', base_url: 'https://api.openai.com/v1', capabilities: ['chat', 'txt2img', 'txt2speech', 'speech2txt', 'img2txt'] },
   { id: 'openrouter', label: 'OpenRouter', kind: 'openai', base_url: 'https://openrouter.ai/api/v1', capabilities: ['chat', 'txt2img', 'img2txt'] },
+  {
+    id: 'cloudflare',
+    label: 'Cloudflare Workers AI (free tier)',
+    kind: 'openai',
+    base_url: 'https://api.cloudflare.com/client/v4/accounts/YOUR_ACCOUNT_ID/ai/v1',
+    capabilities: ['txt2img'],
+    hint: 'Replace YOUR_ACCOUNT_ID with the account ID from the Workers AI page, then paste a Workers AI API token. FLUX.1 Schnell is included in the free daily allowance.',
+  },
   { id: 'anthropic', label: 'Anthropic', kind: 'anthropic', base_url: 'https://api.anthropic.com', capabilities: ['chat', 'img2txt'] },
   { id: 'google', label: 'Google Gemini', kind: 'openai', base_url: 'https://generativelanguage.googleapis.com/v1beta/openai', capabilities: ['chat', 'img2txt'] },
   { id: 'groq', label: 'Groq', kind: 'openai', base_url: 'https://api.groq.com/openai/v1', capabilities: ['chat'] },
@@ -126,7 +134,12 @@ async function assertOk(res, label) {
   let detail = body.slice(0, 300);
   try {
     const parsed = JSON.parse(body);
-    detail = parsed?.error?.message || parsed?.message || parsed?.error || detail;
+    const firstError = Array.isArray(parsed?.errors) ? parsed.errors[0] : null;
+    detail = parsed?.error?.message
+      || parsed?.message
+      || (typeof parsed?.error === 'string' ? parsed.error : '')
+      || (typeof firstError === 'string' ? firstError : firstError?.message)
+      || detail;
   } catch {
     /* keep the raw text */
   }
@@ -261,6 +274,69 @@ async function pumpLines(upstream, onPayload) {
 /** OpenRouter speaks the OpenAI chat protocol but has its own image API. */
 export function isOpenRouter(provider) {
   return provider?.preset === 'openrouter' || /openrouter\.ai/i.test(provider?.base_url || '');
+}
+
+/**
+ * Cloudflare Workers AI exposes chat through the OpenAI-compatible `/ai/v1`
+ * prefix but generates images on its native `/ai/run/{model}` path.
+ */
+export function isCloudflare(provider) {
+  return provider?.preset === 'cloudflare' || /api\.cloudflare\.com\/client\/v4\/accounts\//i.test(provider?.base_url || '');
+}
+
+/** Workers AI text-to-image models offered to Automatic. FLUX is free-tier. */
+const CLOUDFLARE_IMAGE_MODELS = [
+  { id: '@cf/black-forest-labs/flux-1-schnell', name: 'FLUX.1 Schnell (Cloudflare Workers AI)' },
+];
+
+/** The native run endpoint, next to the `/ai/v1` base URL. */
+function cloudflareRunUrl(base, model) {
+  const root = trimBase(base).replace(/\/ai(?:\/v\d+)?$/i, '');
+  return `${root}/ai/run/${String(model || '').replace(/^\/+/, '')}`;
+}
+
+/**
+ * Draft, Standard and High become FLUX's diffusion step count (1-8).
+ * Other quality values, including resolution tiers, use the model default.
+ */
+function cloudflareSteps(quality) {
+  const value = String(quality || '').trim().toLowerCase();
+  if (value === 'draft' || value === 'low') return 2;
+  if (value === 'high') return 8;
+  return 4;
+}
+
+/** Trust the bytes over the provider's label when the format is obvious. */
+function imageMimeFromBytes(bytes, fallback) {
+  if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) return 'image/jpeg';
+  if (bytes.length >= 8 && bytes.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) return 'image/png';
+  if (bytes.length >= 12 && bytes.subarray(0, 4).toString('ascii') === 'RIFF' && bytes.subarray(8, 12).toString('ascii') === 'WEBP') return 'image/webp';
+  return fallback;
+}
+
+/** Flatten Workers AI's `errors` array into one readable sentence. */
+function cloudflareErrorDetail(errors) {
+  return (Array.isArray(errors) ? errors : [])
+    .map((e) => (typeof e === 'string' ? e : e?.message || ''))
+    .filter(Boolean)
+    .join('; ');
+}
+
+/** Workers AI returns `{ result: { image: "<base64>" }, success }`. */
+function cloudflareImageResult(data) {
+  const result = data?.result;
+  const image = typeof result === 'string'
+    ? result
+    : result?.image || result?.[0]?.image || data?.image;
+  if (typeof image !== 'string' || !image) {
+    const detail = cloudflareErrorDetail(data?.errors);
+    throw unavailableError(`The image provider returned no picture${detail ? `: ${detail}` : '.'}`, 502);
+  }
+  const parsed = parseDataUrl(image);
+  const bytes = parsed ? parsed.data : Buffer.from(image, 'base64');
+  if (!bytes.length) throw unavailableError('The image provider returned an empty picture.', 502);
+  const mime = parsed?.mime || imageMimeFromBytes(bytes, 'image/jpeg');
+  return { src: toDataUrl(bytes, mime), media_type: mime };
 }
 
 function openAiHeaders(provider) {
@@ -434,6 +510,13 @@ function createOpenAiAdapter(provider) {
       },
     } : {}),
 
+    ...(isCloudflare(provider) ? {
+      /** Workers AI has no image catalogue endpoint; offer its free model. */
+      async listImageModels() {
+        return CLOUDFLARE_IMAGE_MODELS.map((m) => ({ ...m, provider: provider.name }));
+      },
+    } : {}),
+
     async chat({ messages, model, stream, temperature, max_tokens, tools, tool_choice }, onDelta) {
       const res = await request(`${base}/chat/completions`, {
         method: 'POST',
@@ -496,6 +579,34 @@ function createOpenAiAdapter(provider) {
 
     async txt2img(input) {
       const { prompt, model, size, quality, width, height, aspect_ratio, resolution, input_image, input_images } = input;
+
+      if (isCloudflare(provider)) {
+        const references = (Array.isArray(input_images) ? input_images : [input_image])
+          .filter((value) => typeof value === 'string' && value);
+        if (references.length) {
+          throw unavailableError(
+            'Cloudflare Workers AI FLUX.1 Schnell generates images from text only. Choose a model that supports reference images for this edit.',
+            400
+          );
+        }
+        const chosen = model || CLOUDFLARE_IMAGE_MODELS[0].id;
+        const cfBody = { prompt: String(prompt || '') };
+        if (/flux-1-schnell$/i.test(chosen)) cfBody.steps = cloudflareSteps(quality);
+        const cfRes = await request(cloudflareRunUrl(base, chosen), {
+          method: 'POST',
+          headers: openAiHeaders(provider),
+          body: JSON.stringify(cfBody),
+          signal: AbortSignal.timeout(provider.timeout_ms || 180000),
+        });
+        await assertOk(cfRes, 'The image provider');
+        const cfData = await readJson(cfRes);
+        if (cfData?.success === false) {
+          const detail = cloudflareErrorDetail(cfData.errors);
+          throw unavailableError(`The image provider rejected the request${detail ? `: ${detail}` : '.'}`, 502);
+        }
+        return cloudflareImageResult(cfData);
+      }
+
       const chosenModel = model || provider.default_model;
       const body = { model: chosenModel, prompt: String(prompt || ''), n: 1 };
       let endpoint = `${base}/images/generations`;

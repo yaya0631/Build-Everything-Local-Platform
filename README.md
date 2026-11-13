@@ -128,17 +128,18 @@ provider, paste its key, test the connection, choose a default model and route
 capabilities. There are no AI environment variables and no config files: every
 provider record, key and route is created on that page and stored locally.
 
-Twenty-seven presets are included, among them OpenRouter, Google Gemini,
-OpenCode Zen, OpenAI, Anthropic, Groq, Mistral, DeepSeek, Together, xAI,
-Fireworks, Cerebras, SambaNova, Hyperbolic, Novita, Nebius, Moonshot, Z.AI,
-Qwen, SiliconFlow, Perplexity, Cohere, Ollama, LM Studio, llama.cpp and vLLM.
-Any OpenAI-compatible endpoint works through **Custom OpenAI-compatible**.
+Twenty-eight presets are included, among them OpenRouter, Cloudflare Workers
+AI, Google Gemini, OpenCode Zen, OpenAI, Anthropic, Groq, Mistral, DeepSeek,
+Together, xAI, Fireworks, Cerebras, SambaNova, Hyperbolic, Novita, Nebius,
+Moonshot, Z.AI, Qwen, SiliconFlow, Perplexity, Cohere, Ollama, LM Studio,
+llama.cpp and vLLM. Any OpenAI-compatible endpoint works through **Custom
+OpenAI-compatible**.
 
 Three wire protocols cover the field:
 
 | Protocol | Used by | Endpoints appended to the base URL |
 | --- | --- | --- |
-| OpenAI-compatible | OpenRouter, Gemini, OpenCode Zen, OpenAI, and most hosted or local servers | `/chat/completions`, `/images/generations` (`/images` on OpenRouter), `/audio/speech`, `/audio/transcriptions` |
+| OpenAI-compatible | OpenRouter, Cloudflare Workers AI, Gemini, OpenCode Zen, OpenAI, and most hosted or local servers | `/chat/completions`, `/images/generations` (`/images` on OpenRouter, `/ai/run/{model}` on Cloudflare), `/audio/speech`, `/audio/transcriptions` |
 | Anthropic Messages | Anthropic and compatible gateways | `/v1/messages` |
 | Ollama native | Ollama | `/api/chat` |
 
@@ -151,7 +152,10 @@ OpenRouter image model (`:free`) and never falls back to a paid one; when the
 catalogue has no free image model, the request stops with a clear message
 instead of billing. OpenRouter's free models can chat, but none of its image
 models are free, so image generation there needs credits or another provider.
-Choose an image model explicitly to use a paid one. Tool calls work across all
+Choose an image model explicitly to use a paid one. Cloudflare Workers AI image
+requests use its native `/ai/run/{model}` path; FLUX.1 Schnell is included in
+the free daily allowance. Cloudflare needs an account ID in the base URL (the
+preset shows where) and a Workers AI API token. Tool calls work across all
 three protocols, including streaming tool calls, which is what the assistant
 uses.
 Provider keys never leave the server and are never returned to a browser or an
