@@ -1325,6 +1325,9 @@
           state.routes = routes || {};
           state.me = me;
           $('account-name').textContent = me.username;
+          // Presets arrive after the page's first paint; fill the dropdown now
+          // that the list is known, not only when the page opened.
+          fillPresets();
           renderProviders();
           renderRoutes();
         } catch (err) {

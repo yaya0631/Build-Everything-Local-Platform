@@ -1584,6 +1584,17 @@ test('OpenRouter providers gain image generation once without losing their key',
   }
 });
 
+test('The settings page fills provider presets after the list arrives', () => {
+  const html = fs.readFileSync(new URL('./web/settings.html', import.meta.url), 'utf8');
+  // The page opened with an empty dropdown because fillPresets ran before the
+  // request completed. Refill it once the preset list is known.
+  assert.match(
+    html,
+    /state\.presets = presets;[\s\S]{0,500}?fillPresets\(\);[\s\S]{0,300}?renderProviders\(\);/,
+    'the preset dropdown is filled when the preset list arrives'
+  );
+});
+
 test('Legacy passwordless accounts migrate without exposing the worker user', () => {
   const tmpData = fs.mkdtempSync(path.join(os.tmpdir(), 'everything-local-legacy-'));
   const db = new DatabaseSync(path.join(tmpData, 'everything.sqlite'));
