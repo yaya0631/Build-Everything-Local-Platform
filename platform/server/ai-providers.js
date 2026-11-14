@@ -511,6 +511,27 @@ function createOpenAiAdapter(provider) {
     } : {}),
 
     ...(isCloudflare(provider) ? {
+      /**
+       * Workers AI's OpenAI-compatible prefix has no `/models` route (it
+       * answers 405), but the native catalogue does. Listing it also verifies
+       * the account ID and token, which is what Test connection needs.
+       */
+      async listModels() {
+        const root = trimBase(base).replace(/\/ai(?:\/v\d+)?$/i, '');
+        const res = await request(`${root}/ai/models/search?per_page=50`, {
+          headers: openAiHeaders(provider),
+          signal: AbortSignal.timeout(15000),
+        });
+        await assertOk(res, 'The provider');
+        const data = await readJson(res);
+        const rows = Array.isArray(data?.result) ? data.result : [];
+        return rows.map((m) => ({
+          id: String(m?.name || m?.id || ''),
+          name: String(m?.name || m?.id || ''),
+          provider: provider.name,
+        })).filter((m) => m.id);
+      },
+
       /** Workers AI has no image catalogue endpoint; offer its free model. */
       async listImageModels() {
         return CLOUDFLARE_IMAGE_MODELS.map((m) => ({ ...m, provider: provider.name }));

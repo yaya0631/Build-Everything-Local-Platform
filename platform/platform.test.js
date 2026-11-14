@@ -735,6 +735,17 @@ test('Platform Conformance Suite (Section 4 + Security + Peer + Workers)', async
           usage: { cost: 0.02 },
         });
       }
+      if (req.url === '/client/v4/accounts/account-123/ai/models/search?per_page=50') {
+        return send(200, {
+          result: [
+            { name: '@cf/black-forest-labs/flux-1-schnell', description: 'FLUX', task: { name: 'Text-to-Image' } },
+            { name: '@cf/meta/llama-3.1-8b-instruct', description: 'Llama', task: { name: 'Text Generation' } },
+          ],
+          success: true,
+          errors: [],
+          messages: [],
+        });
+      }
       if (req.url === '/client/v4/accounts/account-123/ai/run/@cf/black-forest-labs/flux-1-schnell') {
         seen.lastCloudflareImage = JSON.parse(body);
         return send(200, {
@@ -1067,6 +1078,24 @@ test('Platform Conformance Suite (Section 4 + Security + Peer + Workers)', async
       },
     });
     assert.equal(cloudflare.preset, 'cloudflare', 'the preset is stored so the adapter uses the native image path');
+
+    // Test connection must use Workers AI's native catalogue: the
+    // OpenAI-compatible /ai/v1/models route answers 405.
+    const cloudflareTest = await api(port, '/ai/providers/test', {
+      method: 'POST',
+      body: {
+        name: 'Mock Cloudflare',
+        kind: 'openai',
+        preset: 'cloudflare',
+        base_url: `${aiBase}/client/v4/accounts/account-123/ai/v1`,
+        api_key: 'cf-test',
+        capabilities: ['txt2img'],
+      },
+    });
+    assert.ok(
+      cloudflareTest.models.some((m) => m.id === '@cf/black-forest-labs/flux-1-schnell'),
+      'Test connection reads the native Workers AI catalogue'
+    );
 
     // The route still points at OpenRouter and the mock OpenAI provider is
     // still disabled, so Automatic falls back from OpenRouter's paid-only
