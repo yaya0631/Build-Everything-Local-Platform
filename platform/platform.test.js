@@ -1624,6 +1624,49 @@ test('The settings page fills provider presets after the list arrives', () => {
   );
 });
 
+test('The shared assistant keeps app keyboard shortcuts out of its text box', async () => {
+  const { JSDOM } = await import('jsdom');
+  const dom = new JSDOM('<!doctype html><html><body><input id="app-field"></body></html>', {
+    runScripts: 'outside-only',
+    url: 'http://notes.localhost/',
+  });
+  const { window } = dom;
+  window.fetch = () => Promise.resolve({ ok: false, json: async () => null });
+  window.eval(fs.readFileSync(new URL('./sdk/everything.js', import.meta.url), 'utf8'));
+
+  const hits = [];
+  window.addEventListener('keydown', () => hits.push('window-bubble'));
+  window.addEventListener('keydown', () => hits.push('window-capture'), true);
+  window.document.addEventListener('keydown', () => hits.push('document-bubble'));
+  window.document.addEventListener('keydown', () => hits.push('document-capture'), true);
+
+  const host = window.document.createElement('div');
+  host.id = 'everything-assistant-host';
+  window.document.body.appendChild(host);
+  const root = host.attachShadow({ mode: 'open' });
+  const textarea = window.document.createElement('textarea');
+  root.appendChild(textarea);
+
+  textarea.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'b', bubbles: true, composed: true }));
+  assert.deepEqual(hits, [], 'typing in the assistant never reaches app shortcuts');
+
+  const field = window.document.getElementById('app-field');
+  field.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'b', bubbles: true, composed: true }));
+  assert.deepEqual(
+    hits,
+    ['window-capture', 'document-capture', 'document-bubble', 'window-bubble'],
+    'keys outside the assistant still reach app shortcuts, including capture listeners'
+  );
+
+  const removed = () => hits.push('removed');
+  window.addEventListener('keydown', removed, true);
+  window.removeEventListener('keydown', removed, true);
+  field.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'c', bubbles: true, composed: true }));
+  assert.ok(!hits.includes('removed'), 'removing a wrapped listener still works');
+
+  dom.window.close();
+});
+
 test('Legacy passwordless accounts migrate without exposing the worker user', () => {
   const tmpData = fs.mkdtempSync(path.join(os.tmpdir(), 'everything-local-legacy-'));
   const db = new DatabaseSync(path.join(tmpData, 'everything.sqlite'));

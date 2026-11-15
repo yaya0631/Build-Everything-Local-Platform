@@ -119,7 +119,9 @@ cross-app actions. Administrators can change the list, or the model and
 confirmation behavior, in **Settings → Assistant**.
 
 Without an AI provider the assistant reports that it is unavailable and every
-app keeps working normally.
+app keeps working normally. Keys typed into the panel stay with the panel: the
+SDK keeps app shortcuts from firing while the message box has focus, and the
+app's normal shortcuts return as soon as focus leaves it.
 
 ## AI settings
 

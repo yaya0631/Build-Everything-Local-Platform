@@ -1095,6 +1095,76 @@
   /* Shared assistant                                                    */
   /* ------------------------------------------------------------------ */
 
+  /*
+   * Keyboard isolation for the shared assistant.
+   *
+   * The panel lives in a shadow root inside the app page, so key events from
+   * its textarea still travel through the document and are retargeted to the
+   * host element. Apps check `event.target` for INPUT/TEXTAREA to avoid firing
+   * shortcuts while someone types; retargeting defeats that check, and many
+   * apps listen in the capture phase where stopping the event later is too
+   * late. Wrap global key listeners once, before app code registers them, and
+   * skip a call when the event started inside the assistant. Registering and
+   * removing listeners keeps working because the wrapper is cached per
+   * listener and phase.
+   */
+  (function isolateAssistantKeys() {
+    var HOST_ID = 'everything-assistant-host';
+    var KEY_TYPES = { keydown: 1, keyup: 1, keypress: 1 };
+    var wrapped = new WeakMap();
+
+    function fromAssistant(event) {
+      var path = typeof event.composedPath === 'function' ? event.composedPath() : null;
+      if (path) {
+        for (var i = 0; i < path.length; i++) {
+          if (path[i] && path[i].id === HOST_ID) return true;
+        }
+      }
+      return !!(event.target && event.target.id === HOST_ID);
+    }
+
+    function isKeyType(type) {
+      return Object.prototype.hasOwnProperty.call(KEY_TYPES, String(type).toLowerCase());
+    }
+
+    function guardFor(listener, capture) {
+      var byPhase = wrapped.get(listener);
+      if (!byPhase) {
+        byPhase = {};
+        wrapped.set(listener, byPhase);
+      }
+      var slot = capture ? 'capture' : 'bubble';
+      if (!byPhase[slot]) {
+        byPhase[slot] = function (event) {
+          if (fromAssistant(event)) return;
+          if (typeof listener === 'function') return listener.call(this, event);
+          if (listener && typeof listener.handleEvent === 'function') return listener.handleEvent(event);
+        };
+      }
+      return byPhase[slot];
+    }
+
+    function patch(target) {
+      if (!target || typeof target.addEventListener !== 'function') return;
+      var add = target.addEventListener;
+      var remove = target.removeEventListener;
+      target.addEventListener = function (type, listener, options) {
+        if (!listener || !isKeyType(type)) return add.call(this, type, listener, options);
+        var capture = options === true || !!(options && options.capture);
+        return add.call(this, type, guardFor(listener, capture), options);
+      };
+      target.removeEventListener = function (type, listener, options) {
+        if (!listener || !isKeyType(type)) return remove.call(this, type, listener, options);
+        var capture = options === true || !!(options && options.capture);
+        var byPhase = wrapped.get(listener);
+        return remove.call(this, type, (byPhase && byPhase[capture ? 'capture' : 'bubble']) || listener, options);
+      };
+    }
+
+    patch(g);
+    patch(g.document);
+  })();
+
   var ASSISTANT_NATIVE_APPS = ['3d', 'parametric', 'building-design', 'spreadsheet', 'presentation'];
   everything.assistant = everything.assistant || {};
   everything.assistant.nativeApps = ASSISTANT_NATIVE_APPS;
